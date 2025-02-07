@@ -1,0 +1,174 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TestAPI",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "default": []
+    }
+  ],
+  "paths": {
+    "/*": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      },
+      "put": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      },
+      "patch": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "default": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://test.com",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "x-wso2-auth-header": "Authorization",
+  "x-wso2-cors": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": [
+      "*"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "testKey"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  },
+  "x-wso2-production-endpoints": {
+    "urls": [
+      "https://run.mocky.io/v3/6fe7dc9b-2012-4534-8662-bc57ebe66826"
+    ],
+    "type": "http"
+  },
+  "x-wso2-sandbox-endpoints": {
+    "urls": [
+      "https://run.mocky.io/v3/6fe7dc9b-2012-4534-8662-bc57ebe66826"
+    ],
+    "type": "http"
+  },
+  "x-wso2-basePath": "/test/v1",
+  "x-wso2-transports": [
+    "http",
+    "https"
+  ],
+  "x-wso2-response-cache": {
+    "enabled": false,
+    "cacheTimeoutInSeconds": 300
+  }
+}

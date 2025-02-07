@@ -1,0 +1,4 @@
+{
+  "model": "mistral-large-latest",
+  "messages": [{"role": "user", "content": "Who is the most renowned French painter?"}]
+}

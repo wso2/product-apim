@@ -1,0 +1,35 @@
+{
+  "category": "Mediation",
+  "name": "apkCallInterceptorService",
+  "version": "v1",
+  "displayName": "Call Interceptor Service",
+  "description": "This policy allows you to call an interceptor service for a request message",
+  "policyAttributes": [
+    {
+      "name": "interceptorServiceURL",
+      "displayName": "Service URL",
+      "description": "Interceptor Service URL",
+      "validationRegex": "^(([\\w+]+\\:\\/\\/)?([\\w\\d-]+\\.)*[\\w-]+([\\.\\:]\\w+)*([\\/\\?\\=\\&\\#\\.]?[\\w-]+)*\\/?)$",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "includes",
+      "displayName": "Includes to Payload",
+      "description": "Includes a comma separated list of items (for example: request_header, request_body, response_header, response_body) to the request payload of interceptor service",
+      "validationRegex": "^(([a-zA-Z\\d_][a-zA-Z\\d_\\-]*)(,[a-zA-Z\\d_][a-zA-Z\\d_\\-]*)*)$",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request",
+    "response"
+  ],
+  "supportedGateways": [
+    "ChoreoConnect"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

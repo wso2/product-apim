@@ -1,0 +1,53 @@
+ {
+    "/*": {
+      "get": {
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application ",
+        "x-throttling-tier": "10KPerMin"
+      }
+    },
+    "/post": {
+      "get": {
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application ",
+        "x-throttling-tier": "10KPerMin"
+      }
+    },
+    "/list": {
+      "get": {
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application ",
+        "x-throttling-tier": "10KPerMin"
+      }
+    }
+  }

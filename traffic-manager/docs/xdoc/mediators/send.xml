@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Send Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Send Mediator</h2>
+
+<p>Send is considered as one of the most widely used mediators in ESB. It is
+built in to the core of the ESB. It performs a fundamental task of any ESB.
+This fundamental task is to send a message out from ESB.</p>
+
+<p>There are two modes of operation in a send mediator.</p>
+<ol>
+  <li>Sending the message using message level information</li>
+  <li>Sending the message to a predefined endpoint</li>
+</ol>
+
+<p>If we don't provide an Endpoint it will try to send the message using the
+wsa:to address of the message. Also if we use a send mediator in the out path
+of the ESB, without specifying an Endpoint it will send the message as a
+reply.</p>
+
+<p>If we provide an Endpoint, it will send the message according to the
+information in the Endpoint. Have a look at the endpoint guide for more
+details.</p>
+
+<p>Send mediator is the only way to send a message out from the ESB. If you
+want to forward the message to an Endpoint or to send the reply back this
+mediator must be used.</p>
+
+<p>The send mediator copies any message context properties from the current
+message context to the reply message received on the execution of the send
+operation so that the response could be correlated back to the request.
+Messages may be correlated by WS-A Message-ID, or even simple custom text
+labels (see the property mediator and samples).</p>
+
+<p>Note: A send operation may be blocking or non-blocking depending on the
+actual transport implementation used. As the default NIO based http/s
+implementation does not block on a send, care must be taken if the same message
+must be sent and then further processed (e.g. transformed). In such a scenario,
+it maybe required to first clone the message into two copies and then perform
+processing to avoid conflicts.</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;send/&gt;</pre>
+
+<p>If the message is to be sent to one or more endpoints, then the following is
+used: </p>
+<pre xml:space="preserve"> &lt;send&gt;
+   (endpointref | endpoint)+
+ &lt;/send&gt;</pre>
+
+<p>where the endpointref token refers to the following: </p>
+<pre xml:space="preserve"> &lt;endpoint key="name"/&gt;</pre>
+
+<p>and the endpoint token refers to an anonymous endpoint definition. </p>
+
+<p> If the response message is to be sent to a sequence, then the following is used: </p>
+
+<pre xml:space="preserve"> &lt;send receive="recevingSequence"&gt;
+   (endpointref | endpoint)+
+ &lt;/send&gt;</pre>
+ 
+<h3>UI Configuration</h3>
+
+<p><img src="../send-mediator/docs/images/send_mediator_screenshot.jpg" alt=""
+/> </p>
+
+<p>Figure 1: Send Mediator Options</p>
+
+<p>You can select the endpoint to be one of the following value. </p>
+<ul>
+  <li>None </li>
+  <li>Anonymous </li>
+  <li>Pick from Registry </li>
+  <li>Import </li>
+  <li>Receiving Sequence, this can be a static sequence or can be calculated using a XPath </li>
+</ul>
+<em>Note: You can manage endpoints from the "Manage Endoint" panel which can be
+accessed from the Manage-&gt; Mediation-&gt; Endpoints menu from the left hand
+side bar.</em> 
+
+<h3>Example</h3>
+
+<p>Send mediator used in in-path and out path</p>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;    
+    &lt;in&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+        &lt;drop/&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+&lt;/definitions&gt; </pre>
+
+<p>In this configuration first send is used inside a in mediator. As I have
+mentioned earlier, both request and response will go through the main sequence.
+But only request messages will go through the child mediators of in and only
+response messages will go through the out mediator. So the request will be
+forward to the endpoint with the given address. Response will go through the
+second send and this send mediator will send it back to the requester.</p>
+
+<p></p>
+</body>
+</html>

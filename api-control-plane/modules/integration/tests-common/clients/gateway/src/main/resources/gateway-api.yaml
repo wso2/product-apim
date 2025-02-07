@@ -1,0 +1,932 @@
+swagger: '2.0'
+######################################################
+# Prolog
+######################################################
+info:
+  version: "v2.1"
+  title: "WSO2 API Manager - Gateway"
+  description: |
+    This document specifies a **RESTful API** for WSO2 **API Manager** - Gateway.
+    Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/master/components/apimgt/org.wso2.carbon.apimgt.rest.api.gateway/src/main/resources/gateway-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
+  contact:
+    name: "WSO2"
+    url: "http://wso2.com/products/api-manager/"
+    email: "architecture@wso2.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+######################################################
+# The fixed parts of the URLs of the API
+######################################################
+
+# The schemes supported by the API
+schemes:
+  - https
+
+# The domain of the API.
+# This is configured by the customer during deployment.
+# The given host is just an example.
+host: apis.wso2.com
+
+# The base path of the API.
+# Will be prefixed to all paths.
+basePath: /api/am/gateway/v2
+
+# The following media types can be passed as input in message bodies of the API.
+# The actual media type must be specified in the Content-Type header field of the request.
+# The default is json, i.e. the Content-Type header is not needed to
+# be set, but supporting it serves extensibility.
+consumes:
+  - application/json
+
+# The following media types may be passed as output in message bodies of the API.
+# The media type(s) consumable by the requestor is specified in the Accept header field
+# of the corresponding request.
+# The actual media type returned will be specfied in the Content-Type header field
+# of the of the response.
+# The default of the Accept header is json, i.e. there is not needed to
+# set the value, but supporting it serves extensibility.
+produces:
+  - application/json
+
+
+######################################################
+# The "API Collection" resource APIs
+######################################################
+paths:
+  /redeploy-api:
+
+    #-----------------------------------------------------
+    # Redeploy the API in the Gateway
+    #-----------------------------------------------------
+    post:
+      summary: Re Deploy the API in the gateway
+      description: |
+        This operation is used to re deploy an API in the gateway. If the Tenant domain is not provided carbon.super
+        will be picked as the Tenant domain.
+      operationId: redployAPI
+      parameters:
+        - $ref: '#/parameters/apiName'
+        - $ref: '#/parameters/version'
+        - $ref: '#/parameters/tenantDomain'
+      responses:
+        200:
+          description: |
+            OK.
+            API successfully deployed in the Gateway.
+          schema:
+            $ref: '#/definitions/DeployResponse'
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X POST "https://127.0.0.1:9443/api/am/gateway/v2/redeploy-api?apiName=PizzaAPI&version=1.0&tenantDomain=registry.com\"
+          -H "Authorization: Basic YWRtaW46YWRtaW4="'
+
+
+  /undeploy-api:
+
+    #-----------------------------------------------------
+    # Undeploy the API in the Gateway
+    #-----------------------------------------------------
+    post:
+      summary: Uneploy the API in the gateway
+      description: |
+        This operation is used to undeploy an API in the gateway. If the Tenant domain is not provided carbon.super will
+        be picked as the Tenant domain.
+      operationId: undeployAPI
+      parameters:
+        - $ref: '#/parameters/apiName'
+        - $ref: '#/parameters/version'
+        - $ref: '#/parameters/tenantDomain'
+      responses:
+        200:
+          description: |
+            OK.
+            API successfully undeployed from the Gateway.
+          schema:
+            $ref: '#/definitions/DeployResponse'
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        x-code-samples:
+          - lang: Curl
+            source: 'curl -k -X POST "https://127.0.0.1:9443/api/am/gateway/v2/undeploy-api?apiName=PizzaAPI&version=1.0&tenantDomain=registry.com\"
+            -H "Authorization: Basic YWRtaW46YWRtaW4="'
+
+  /server-startup-healthcheck:
+    get:
+      summary: |
+        Health check to check if all the API are deployed during the server startup
+      description: |
+        Health check to check if all the API are deployed during the server startup
+      responses:
+        200:
+          description: |
+            OK.
+          content:
+            text/plain:
+              schema:
+                type: "string"
+                default: "OK"
+        500:
+          description: |
+            Internal Server Error.
+          content:
+            text/plain:
+              schema:
+                type: "string"
+                default: "Internal Server Error."
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/gateway/v2/server-startup-healthcheck"
+
+  /api-artifact:
+
+    #-----------------------------------------------------
+    # Get API Artifacts
+    #-----------------------------------------------------
+    get:
+      summary: Get API artifact from the storage
+      description: |
+        This operation is used to get the local entries, sequences and endpoints from the storage. If the Tenant domain
+        is not provided carbon.super will be picked as the Tenant domain.
+      operationId: getAPIArtifacts
+      parameters:
+        - $ref: '#/parameters/apiName'
+        - $ref: '#/parameters/version'
+        - $ref: '#/parameters/tenantDomain'
+      responses:
+        200:
+          description: |
+            OK.
+            API artifact successfully retrieved from the storage.
+          schema:
+            $ref: '#/definitions/APIArtifact'
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        x-code-samples:
+          - lang: Curl
+            source: 'curl -k "https://127.0.0.1:9443/api/am/gateway/v2/api-artifact?apiName=PizzaAPI&version=1.0&tenantDomain=registry.com"
+            -H "Authorization: Basic YWRtaW46YWRtaW4="'
+
+  /local-entry:
+
+    #-----------------------------------------------------
+    # Get local entry for the API
+    #-----------------------------------------------------
+    get:
+      summary: Get Local Entry from the storage
+      description: |
+        This operation is used to get local entry from the storage.If the Tenant domain is not provided carbon.super
+        will be picked as the Tenant domain.
+      operationId: getLocalEntries
+      parameters:
+        - $ref: '#/parameters/apiName'
+        - $ref: '#/parameters/version'
+        - $ref: '#/parameters/tenantDomain'
+      responses:
+        200:
+          description: |
+            OK.
+            Local entry for the API successfully retrieved from the storage.
+          schema:
+            $ref: '#/definitions/LocalEntry'
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        x-code-samples:
+          - lang: Curl
+            source: 'curl -k "https://127.0.0.1:9443/api/am/gateway/v2/local-entry?apiName=PizzaAPI&version=1.0&tenantDomain=registry.com"
+            -H "Authorization: Basic YWRtaW46YWRtaW4="'
+
+  /sequence:
+    #-----------------------------------------------------
+    # Get sequence for the API
+    #-----------------------------------------------------
+    get:
+      summary: Get sequences from the storage
+      description: |
+        This operation is used to get the API sequence from the storage. If the Tenant domain is not provided carbon.super
+        will be picked as the Tenant domain.
+      operationId: getSequences
+      parameters:
+        - $ref: '#/parameters/apiName'
+        - $ref: '#/parameters/version'
+        - $ref: '#/parameters/tenantDomain'
+      responses:
+        200:
+          description: |
+            OK.
+            Sequences for the API successfully retrieved from the storage.
+          schema:
+            $ref: '#/definitions/Sequences'
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        x-code-samples:
+          - lang: Curl
+            source: 'curl -k "https://127.0.0.1:9443/api/am/gateway/v2/sequence?apiName=PizzaAPI&version=1.0&tenantDomain=registry.com"
+            -H "Authorization: Basic YWRtaW46YWRtaW4="'
+
+  /end-points:
+
+    #-----------------------------------------------------
+    # Get Endpoints
+    #-----------------------------------------------------
+    get:
+      summary: Get end-points from the storage for the API
+      description: |
+        This operation is used to get the end-points from the storage. If the Tenant domain is not provided
+        carbon.super will be picked as the Tenant domain.
+      operationId: getEndpoints
+      parameters:
+        - $ref: '#/parameters/apiName'
+        - $ref: '#/parameters/version'
+        - $ref: '#/parameters/tenantDomain'
+      responses:
+        200:
+          description: |
+            OK.
+            End-points successfully retrieved from the storage for the API.
+          schema:
+            $ref: '#/definitions/Endpoints'
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Requested API does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        x-code-samples:
+          - lang: Curl
+            source: 'curl -k "https://127.0.0.1:9443/api/am/gateway/v2/end-points?apiName=PizzaAPI&version=1.0&tenantDomain=registry.com"
+            -H "Authorization: Basic YWRtaW46YWRtaW4="'
+
+  /apis:
+
+    #-----------------------------------------------------
+    # Get the list of APIS by providing context and version.
+    #-----------------------------------------------------
+    get:
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X GET "https://127.0.0.1:9443/api/am/gateway/v1/apis?context=/pizza/1.0.0&version=1.0&tenantDomain=registry.com"
+             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+      summary: Get the list of APIS by providing context and version.
+
+      description: |
+        This operation is used to get the API information from storage. If the Tenant domain is not provided
+        carbon.super will be picked as the Tenant domain.
+      parameters:
+        - name: context
+          description: |
+            Context of the API
+          in: query
+          type: string
+        - name: version
+          description: |
+            version of the API
+          in: query
+          type: string
+        - name: tenantDomain
+          description: |
+            Tenant Domain of the API
+          in: query
+          type: string
+      tags:
+        - Get API Info
+      responses:
+        200:
+          description: |
+            OK.
+            APIS successfully retrieved from the storage for the API.
+          schema:
+            $ref: '#/definitions/APIList'
+        400:
+          $ref: '#/responses/BadRequest'
+        404:
+          $ref: '#/responses/NotFound'
+
+
+  /apis/{apiId}:
+
+    #-----------------------------------------------------
+    # Get the subscription information of an api by providing the api context and version.
+    #-----------------------------------------------------
+    get:
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X GET "https://127.0.0.1:9443/api/am/gateway/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f?tenantDomain=registry.com"
+             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+      summary: Get the subscription information of an api by providing the api uuid.
+
+      description: |
+        This operation is used to get the subscription information of an API from storage. If the Tenant domain is not provided
+        carbon.super will be picked as the Tenant domain.
+      parameters:
+        - name: apiId
+          description: |
+            API ID of the API
+          in: path
+          type: string
+          required: true
+        - name: tenantDomain
+          description: |
+            Tenant Domain of the API
+          in: query
+          type: string
+      tags:
+        - Get API Info
+      responses:
+        200:
+          description: |
+            OK.
+            APIS successfully retrieved from the storage for the API.
+          schema:
+            $ref: '#/definitions/APIInfo'
+        400:
+          $ref: '#/responses/BadRequest'
+        404:
+          $ref: '#/responses/NotFound'
+
+  /applications:
+
+    #-----------------------------------------------------
+    # Get the applications information by providing the application name or uuid.
+    #-----------------------------------------------------
+    get:
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X GET "https://127.0.0.1:9443/api/am/gateway/v1/applications?name=PizzaAPP&tenantDomain=registry.com\"
+             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+      summary: Get the applications information by providing the application name or uuid.
+
+      description: |
+        This operation is used to get the application information from storage. If the Tenant domain is not
+        provided carbon.super will be picked as the Tenant domain.
+      parameters:
+        - name: name
+          description: |
+            Name of the Application
+          in: query
+          type: string
+        - name: uuid
+          description: |
+            UUID of the Application
+          in: query
+          type: string
+        - name: tenantDomain
+          description: |
+            Tenant Domain of the Application
+          in: query
+          type: string
+      tags:
+        - Get Application Info
+      responses:
+        200:
+          description: |
+            OK.
+            Applications successfully retrieved from the storage.
+          schema:
+            $ref: '#/definitions/ApplicationList'
+        400:
+          $ref: '#/responses/BadRequest'
+        404:
+          $ref: '#/responses/NotFound'
+
+  /subscriptions:
+
+    #-----------------------------------------------------
+    # Get the subscriptions meta information of an api by providing the api uuid and application uuid.
+    #-----------------------------------------------------
+    get:
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X GET "https://127.0.0.1:9443/api/am/gateway/v1/subscriptions?apiUUID=d290f1ee-6c54-4b01-90e6-d701748f0851&appUUID=d290f1ee-6c54-4b01-90e6-d701748f0851&tenantDomain=registry.com\"
+             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+      summary: Get the subscriptions meta information of an api by providing the api uuid and application uuid.
+
+      description: |
+        This operation is used to get the subscription information of an API from storage. If the Tenant domain is not provided
+        carbon.super will be picked as the Tenant domain.
+      parameters:
+        - name: apiUUID
+          description: |
+            UUID of the API
+          in: query
+          type: string
+        - name: appUUID
+          description: |
+            UUID of the Application
+          in: query
+          type: string
+        - name: tenantDomain
+          description: |
+            Tenant Domain of the Application
+          in: query
+          type: string
+      tags:
+        - Get Subscription Info
+      responses:
+        200:
+          description: |
+            OK.
+            Subscriptions successfully retrieved from the storage.
+          schema:
+            $ref: '#/definitions/Subscription'
+        400:
+          $ref: '#/responses/BadRequest'
+        404:
+          $ref: '#/responses/NotFound'
+
+
+######################################################
+# Parameters - required by some of the APIs above
+######################################################
+parameters:
+
+  # API name
+  # Specified as part of the query string
+  apiName:
+    name: apiName
+    in: query
+    description: |
+      Name of the API
+    type: string
+    required: true
+
+  # API version
+  # Specified as part of the query string
+  version:
+    name: version
+    in: query
+    description: |
+      version of the API
+    required: true
+    type: string
+
+  # Tenant Domain name
+  # Specified as part of the query string
+  tenantDomain:
+    name: tenantDomain
+    in: query
+    description: |
+      Tenant Domain of the API
+    type: string
+
+
+######################################################
+# The response schemas used by the API resources
+######################################################
+responses:
+
+  # Bad Request Error Response Schema
+  BadRequest:
+    description: Bad Request. Invalid request or validation error.
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: 400
+        message: "Bad Request"
+        description: "Invalid request or validation error"
+        moreInfo: ""
+        error: []
+
+  # Not Found Error Response Schema
+  NotFound:
+    description: Not Found. The specified resource does not exist.
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: 404
+        message: "Not Found"
+        description: "The specified resource does not exist"
+        moreInfo: ""
+        error: []
+
+######################################################
+# The resources used by some of the APIs above within the message body
+######################################################
+definitions:
+  #-----------------------------------------------------
+  # The deploy response resource
+  #-----------------------------------------------------
+  DeployResponse:
+    title: Deploy API Response
+    required:
+      - deployStatus
+    properties:
+      deployStatus:
+        description: |
+          This attribute declares whether deployment task is successfull or failed.
+        type: string
+        enum:
+          - DEPLOYED
+          - UNDEPLOYED
+          - ERROR
+        example: DEPLOYED
+      jsonPayload:
+        description: |
+          Attributes that returned after the api deployment
+        type: string
+
+  #-----------------------------------------------------
+  # The Endpoint response resource
+  #-----------------------------------------------------
+  Endpoints:
+    title: Endpoints Response
+    properties:
+      endpoints:
+        description: |
+          The end points which has been deployed in the gateway
+        type: array
+        items:
+          type: string
+          example: "<endpoint xmlns=\"http://ws.apache.org/ns/synapse\" name=\"PizzaShackAPI--v1.0.0_APIproductionEndpoint\"><http uri-template=\"https://localhost:9443/am/sample/pizzashack/v1/api/\"><timeout><responseAction>fault</responseAction></timeout></http><property name=\"ENDPOINT_ADDRESS\" value=\"https://localhost:9443/am/sample/pizzashack/v1/api/\"/></endpoint>"
+
+  #-----------------------------------------------------
+  # The Sequence response resource
+  #-----------------------------------------------------
+  Sequences:
+    title: Sequences Response
+    properties:
+      sequences:
+        description: |
+          The sequences which has been deployed in the gateway
+        type: array
+        items:
+          type: string
+          example: "<sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"PizzaShackAPI--v1.0.0_APIproductionEndpoint\"><http uri-template=\"https://localhost:9443/am/sample/pizzashack/v1/api/\"><timeout><responseAction>fault</responseAction></timeout></http><property name=\"ENDPOINT_ADDRESS\" value=\"https://localhost:9443/am/sample/pizzashack/v1/api/\"/></sequnce>"
+
+  #-----------------------------------------------------
+  # The Local Entry response resource
+  #-----------------------------------------------------
+  LocalEntry:
+    title: LocalEntry Response
+    properties:
+      localEntries:
+        description: |
+          The local entries which has been deployed in the gateway
+        type: array
+        items:
+          type : string
+          example : "localEntry xmlns=\"http://ws.apache.org/ns/synapse\" key=\"ga-config-key\" type=\"1\"><GoogleAnalyticsTracking xmlns=\"\">\n\t<!--Enable/Disable Google Analytics Tracking -->\n\t<Enabled>false</Enabled>\n\n\t<!-- Google Analytics Tracking ID -->\n\t<TrackingID>UA-XXXXXXXX-X</TrackingID>\n\n</GoogleAnalyticsTracking></localEntry>"
+
+  #-----------------------------------------------------
+  # The API Artifact response resource
+  #-----------------------------------------------------
+  APIArtifact:
+    title: API Artifact Response
+    properties:
+      api:
+        type: string
+        description: |
+          API Artifact deployed in Gateway.
+        example: ""
+
+  #-----------------------------------------------------
+  # The Error resource
+  #-----------------------------------------------------
+  Error:
+    title: Error object returned with 4XX HTTP status
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+        description: Error code
+      message:
+        type: string
+        description: Error message.
+      description:
+        type: string
+        description: |
+          A detail description about the error message.
+      moreInfo:
+        type: string
+        description: |
+          Preferably an url with more details about the error.
+      error:
+        type: array
+        description: |
+          If there are more than one error list them out.
+          For example, list out validation errors by each field.
+        items:
+          $ref: '#/definitions/ErrorListItem'
+
+  #-----------------------------------------------------
+  # The Error List Item resource
+  #-----------------------------------------------------
+  ErrorListItem:
+    title: Description of individual errors that may have occurred during a request.
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: string
+        description: Error code
+      message:
+        type: string
+        description: |
+          Description about individual errors occurred
+
+  #-----------------------------------------------------
+  # the Subscription info of API.
+  #-----------------------------------------------------
+  APIInfo:
+    title: Subscription Information for API.
+    properties:
+      apiUUID:
+        type: string
+        description: UUID of API.
+        example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+      apiId:
+        type: integer
+        example: 1
+      provider:
+        type: string
+        description: API Provider name.
+        example: "admin"
+      name:
+        type: string
+        description: Name of the API
+        example: "PizzaAPI"
+      version:
+        type: string
+        description: Version of the API.
+        example: "v1.0.0"
+      context:
+        type: string
+        description: Context of the API.
+        example: "/pizza/v1.0.0"
+      policy:
+        type: string
+        description: API level throttling policy.
+        example: "Gold"
+      apiType:
+        type: string
+        description: Type of the API.
+        example: "APIProduct"
+      isDefaultVersion:
+        type: boolean
+        description: Whether this is the default version of the API.
+        example: false
+      status:
+        type: string
+        description: Status of API.
+        example: "Published"
+      urlMappings:
+        type: array
+        items:
+          $ref: '#/definitions/URLMapping'
+      subscripitons:
+        type: array
+        items:
+          $ref: '#/definitions/SubscriptionInfo'
+
+  #-----------------------------------------------------
+  # The Subscription Info resource.
+  #-----------------------------------------------------
+  SubscriptionInfo:
+    properties:
+      subscriptionUUID:
+        type: string
+        example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+      subscriptionPolicy:
+        type: string
+        example: "Gold"
+      status:
+        type: string
+        example: "UnBlocked"
+      application:
+        $ref: '#/definitions/ApplicationInfo'
+
+  #-----------------------------------------------------
+  # The Application Info resource.
+  #-----------------------------------------------------
+  ApplicationInfo:
+    properties:
+      uuid:
+        type: string
+        example: "d290f1ee-6c54-4b01-90e6-d701848f0851"
+      id:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: "PizzaAPP"
+      subName:
+        type: string
+        example: "admin"
+      policy:
+        type: string
+        description: Application level throtting policy.
+        example: "Gold"
+      tokenType:
+        type: string
+        description: type of the token.
+        example: "JWT"
+      attributes:
+        type: object
+        additionalProperties:
+          type: string
+      keys:
+        type: array
+        items:
+          $ref: '#/definitions/ApplicationKeyMapping'
+
+  #-----------------------------------------------------
+  # The Application Key Mapping resource
+  #-----------------------------------------------------
+  ApplicationKeyMapping:
+    properties:
+      consumerKey:
+        type: string
+        example: "d290f1ee-6c54-4b01-90e6-d701848f0851"
+      keyType:
+        type: string
+        example: "Production"
+      keyManager:
+        type: string
+        example: "Resident Key Manager"
+
+  #-----------------------------------------------------
+  # The URL Mapping resource
+  #-----------------------------------------------------
+  URLMapping:
+    properties:
+      authScheme:
+        type: string
+        example: "Application & Application User"
+      throttlingPolicy:
+        type: string
+        example: "Unlimited"
+      httpMethod:
+        type: string
+        example: "GET"
+      urlPattern:
+        type: string
+        example: "/menu"
+      scopes:
+        type: array
+        items:
+          type: string
+          example: "read"
+  #-----------------------------------------------------
+  # The API List resource
+  #-----------------------------------------------------
+  APIList:
+    title: API List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of APIs returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/APIMetaData'
+  #-----------------------------------------------------
+  # The APIMetaData resource
+  #-----------------------------------------------------
+  APIMetaData:
+    properties:
+      apiUUID:
+        type: string
+        description: UUID of API.
+        example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+      apiId:
+        type: integer
+        example: 1
+      provider:
+        type: string
+        description: API Provider name.
+        example: "admin"
+      name:
+        type: string
+        description: Name of the API
+        example: "PizzaAPI"
+      version:
+        type: string
+        description: Version of the API.
+        example: "v1.0.0"
+      context:
+        type: string
+        description: Context of the API.
+        example: "/pizza/v1.0.0"
+      policy:
+        type: string
+        description: API level throttling policy.
+        example: "Gold"
+      apiType:
+        type: string
+        description: Type of the API.
+        example: "APIProduct"
+      isDefaultVersion:
+        type: boolean
+        description: Whether this is the default version of the API.
+        example: false
+      status:
+        type: string
+        description: Status of API.
+        example: "Published"
+
+  #-----------------------------------------------------
+  # The Application List resource
+  #-----------------------------------------------------
+  ApplicationList:
+    title: Application List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Applications returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/ApplicationInfo'
+
+  #-----------------------------------------------------
+  # The Subscription resource
+  #-----------------------------------------------------
+  Subscription:
+    properties:
+      subscriptionId:
+        type: integer
+      policyId:
+        type: string
+      apiId:
+        type: integer
+      appId:
+        type: integer
+      subscriptionState:
+        type: string
+
+
+
+#-----------------------------------------------------
+# END-OF-FILE
+#-----------------------------------------------------

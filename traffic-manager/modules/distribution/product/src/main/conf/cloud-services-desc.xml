@@ -1,0 +1,16 @@
+<!--
+     This has the configurations for the cloud services.
+     Label, link, icon, description, and the other similar information for each of the services are
+     given here.
+  -->
+<cloudServices xmlns="http://wso2.com/carbon/cloud/mgt/services">
+    <cloudService name="WSO2 Stratos Manager">
+    </cloudService>
+    <cloudService name="WSO2 API Manager" default="true">
+        <key>AM</key>
+        <label>API Manager</label>
+        <link>https://am.cloud.wso2.com</link>
+        <description>API Manager in the cloud.</description>
+    </cloudService>
+
+</cloudServices>

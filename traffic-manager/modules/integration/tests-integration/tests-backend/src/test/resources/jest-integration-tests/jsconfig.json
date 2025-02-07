@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "baseUrl": "./",
+        "jsx": "react",
+        "allowSyntheticDefaultImports": true,
+    },
+    "exclude": ["node_modules", "coverage"],
+    "typeAcquisition": {
+        "include": ["jest"]
+    }
+}

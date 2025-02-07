@@ -1,0 +1,1996 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://prov.to.it/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s1="http://prov.to.it/DatiANGCompl.xsd" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://prov.to.it/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://prov.to.it/">
+      <s:import namespace="http://prov.to.it/DatiANGCompl.xsd" />
+      <s:element name="getRicercaIndividuiXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Cognome" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Nome" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DataNascitaDAL" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DataNascitaAL" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DataMorteDAL" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DataMorteAL" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="ComuneNascita" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="Sesso" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="NumeroFamiglia" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="CartaIdentita" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TipoRicerca" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getRicercaIndividuiXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getRicercaIndividuiXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDatiPuntualibyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDatiPuntualibyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getDatiPuntualibyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDatiPuntualibyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDatiPuntualibyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getDatiPuntualibyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getIndirizziStoricibyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getIndirizziStoricibyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getIndirizziStoricibyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getIndirizziStoricibyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getIndirizziStoricibyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getIndirizziStoricibyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getMovimentiMigratoribyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getMovimentiMigratoribyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getMovimentiMigratoribyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getMovimentiMigratoribyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getMovimentiMigratoribyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getMovimentiMigratoribyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCarteIdentitabyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCarteIdentitabyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getCarteIdentitabyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCarteIdentitabyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCarteIdentitabyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getCarteIdentitabyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getLoginXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="NewPwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FlagScadenza" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getLoginXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getLoginXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getLoginWithCheckXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="NewPwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FlagScadenza" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="NumTentativi" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getLoginWithCheckXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getLoginWithCheckXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getOperatoreXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getOperatoreXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getOperatoreXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPermessiSoggiornobyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPermessiSoggiornobyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getPermessiSoggiornobyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPermessiSoggiornobyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPermessiSoggiornobyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getPermessiSoggiornobyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getEventibyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getEventibyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getEventibyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getEventibyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getEventibyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getEventibyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getFamigliabyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getFamigliabyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getFamigliabyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getFamigliabyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getFamigliabyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getFamigliabyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDiffidabyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDiffidabyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getDiffidabyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDiffidabyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDiffidabyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getDiffidabyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPassSostabyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="Targa" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPassSostabyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getPassSostabyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPassSostabyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Targa" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPassSostabyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getPassSostabyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getResidentibyIndirizzoXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Toponimo" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="DaCivico" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="DaEsponente" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="ACivico" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="AEsponente" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getResidentibyIndirizzoXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getResidentibyIndirizzoXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPratichebyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPratichebyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getPratichebyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPratichebyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPratichebyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getPratichebyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCittadinanzebyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCittadinanzebyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getCittadinanzebyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCittadinanzebyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCittadinanzebyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getCittadinanzebyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCarteIdentitainScadXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DataDa" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DataA" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCarteIdentitainScadXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getCarteIdentitainScadXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDatiCatastalibyMatricolaXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Matricola" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDatiCatastalibyMatricolaXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getDatiCatastalibyMatricolaXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDatiCatastalibyCFXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Applicazione" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Operatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PwdOperatore" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Account" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="FiltroEstrazione" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDatiCatastalibyCFXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:getDatiCatastalibyCFXMLResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://prov.to.it/DatiANGCompl.xsd">
+      <s:element name="getRicercaIndividuiXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="RicercaIndividui" type="s1:RicercaIndividuiDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="RicercaIndividuiDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroFamiglia" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cognome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Nome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Sesso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Indirizzo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="StatoCivile" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RapportoParentela" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceVia" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CivicoIntero" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CivicoBarrato" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getDatiPuntualibyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="DatiPuntuali" type="s1:DatiPuntualiDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="DatiPuntualiDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroFamiglia" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cognome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Nome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Sesso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Paternita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Maternita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComuneNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProvinciaNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NazioneNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FlagValiditaCFIS" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Indirizzo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="StatoCivile" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RapportoParentela" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cittadinanza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataCittadinanza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataMatrimonio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataCessazioneMatrimonio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComuneMatrimonio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProvinciaMatrimonio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Coniuge" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataEmigrazione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComuneEmigrazione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProvinciaEmigrazione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataDecesso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComuneDecesso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProvinciaDecesso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Ecopass" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="INASAIA" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataIngressoFamiglia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cap" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="StatusAnagrafico" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FlagStatus1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FlagStatus2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceVia" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CivicoIntero" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CivicoBarrato" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComuneNascita" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComuneMatrimonio" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComuneEmigrazione" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComuneDecesso" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceNazioneNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceCittadinanza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceStatusAnagrafico" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceStatoCivile" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceParentela" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Zona" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataInizioResidenza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceCimitero" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataAIRE" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComuneAIRE" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="StatoAIRE" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IndirizzoAIRE" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CapAIRE" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataImmigrazione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComuneImmigrazione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProvinciaImmigrazione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataIscrizioneAIRE" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MatricolaANPR" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FamigliaConvivenzaANPR" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoSchedaANPR" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getDatiPuntualibyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="DatiPuntuali" type="s1:DatiPuntualiDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getIndirizziStoricibyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="IndirizziStorici" type="s1:IndirizziStoriciDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="IndirizziStoriciDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Motivo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataInizio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataFine" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Indirizzo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataRegistrazione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceVia" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CivicoIntero" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CivicoBarrato" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getIndirizziStoricibyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="IndirizziStorici" type="s1:IndirizziStoriciDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getMovimentiMigratoribyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="MovimentiMigratori" type="s1:MovimentiMigratoriDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="MovimentiMigratoriDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Motivo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataInizio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Comune" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Provincia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataProvvedimento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComune" type="s:integer" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getMovimentiMigratoribyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="MovimentiMigratori" type="s1:MovimentiMigratoriDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCarteIdentitabyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="CarteIdentita" type="s1:CarteIdentitaDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CarteIdentitaDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Numero" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Comune" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Provincia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataRilascio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataScadenza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MotivoRilascio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FlagDescrizione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Estero" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataProroga" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComune" type="s:integer" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getCarteIdentitabyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="CarteIdentita" type="s1:CarteIdentitaDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getLoginXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Login" type="s1:LoginDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="LoginDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Codice" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Password" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Nome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Qualifica" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Ente" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Servizio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Menu" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag01" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag02" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag03" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag04" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag05" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag06" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag07" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag08" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag09" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag10" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag11" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag12" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag13" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag14" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag15" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag16" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag17" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag18" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag19" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag20" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag21" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag22" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag23" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag24" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag25" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag26" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag27" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag28" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag29" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag30" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag31" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Flag32" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TipoEnte" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TermColleg" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataScad" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DescrizioneServizio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FlagListe" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceOperatoreInterno" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DescrizioneEstesaServizio" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getLoginWithCheckXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="LoginWithCheck" type="s1:LoginDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getOperatoreXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Operatore" type="s1:LoginDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPermessiSoggiornobyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="PermessiSoggiorno" type="s1:PermessiSoggiornoDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="PermessiSoggiornoDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Numero" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Tipo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataRilascio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataScadenza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataDichiarazione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComuneQuestura" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProvinciaQuestura" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComune" type="s:integer" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getPermessiSoggiornobyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="PermessiSoggiorno" type="s1:PermessiSoggiornoDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getEventibyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Eventi" type="s1:EventiDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="EventiDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Evento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DescrizioneEvento" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Data" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Comune" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Provincia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Anno" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Numero" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PSSTRRUU" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComune" type="s:integer" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getEventibyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Eventi" type="s1:EventiDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getFamigliabyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Famiglia" type="s1:FamigliaDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="FamigliaDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroFamiglia" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cognome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Nome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Sesso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="StatoCivile" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RapportoParentela" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Dicitura" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceStatoCivile" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceParentela" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getFamigliabyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Famiglia" type="s1:FamigliaDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getDiffidabyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Diffida" type="s1:DiffidaDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="DiffidaDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Tipo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Motivo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Comune" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Provincia" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceComune" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataInizio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataFine" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Note" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getDiffidabyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Diffida" type="s1:DiffidaDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPassSostabyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="PassSosta" type="s1:PassSostaDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="PassSostaDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Tipo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Numero" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Anno" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Stato" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Targa" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Ambito" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Indirizzo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroCivico" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="EsponenteCivico" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CategoriaUtenza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DescrizioneCategoriaUtenza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Duplicati" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataRilascio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataInizioValidita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataFineValidita" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getPassSostabyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="PassSosta" type="s1:PassSostaDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getResidentibyIndirizzoXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="ResidentibyIndirizzo" type="s1:ResidentibyIndirizzoDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ResidentibyIndirizzoDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Via" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceVia" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroCivico" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="EsponenteCivico" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroFamiglia" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CognomeNome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RapportoParentela" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cittadinanza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NumeroFamiglie" type="s:integer" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getPratichebyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Pratiche" type="s1:PraticheDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="PraticheDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Descrizione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IDProtocollo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataProtocollo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Note" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getPratichebyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Pratiche" type="s1:PraticheDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCittadinanzebyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Cittadinanze" type="s1:CittadinanzeDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CittadinanzeDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataInizio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataFine" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cittadinanza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DescrizioneEstesa" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DescrizioneBreve" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DescrizioneLegge" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getCittadinanzebyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="Cittadinanze" type="s1:CittadinanzeDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getCarteIdentitainScadXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="CarteIdentitainScad" type="s1:CarteIdentitainScadDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CarteIdentitainScadDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="CognomeNome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Sesso" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataNascita" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodiceFiscale" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Eta" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Minore" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cittadinanza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Tipo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Numero" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MotivoRil" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Stato" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Espatrio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ComuneRil" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProvinciaRil" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataRilascio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataScadenza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataProroga" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodCittadinanza" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CodComuneRil" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Intestatario" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IntestatarioCF" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Indirizzo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Cap" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TimeStampELAB" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getDatiCatastalibyMatricolaXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="DatiCatastali" type="s1:DatiCatastaliDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="DatiCatastaliDati">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Matricola" type="s:integer" />
+          <s:element minOccurs="0" maxOccurs="1" name="Sezione" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Foglio" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Particella" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Subalterno" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Categoria" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="getDatiCatastalibyCFXMLResult">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="unbounded" name="DatiCatastali" type="s1:DatiCatastaliDati" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="getRicercaIndividuiXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getRicercaIndividuiXML" />
+  </wsdl:message>
+  <wsdl:message name="getRicercaIndividuiXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getRicercaIndividuiXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getDatiPuntualibyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getDatiPuntualibyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getDatiPuntualibyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getDatiPuntualibyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getDatiPuntualibyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getDatiPuntualibyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getDatiPuntualibyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getDatiPuntualibyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getIndirizziStoricibyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getIndirizziStoricibyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getIndirizziStoricibyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getIndirizziStoricibyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getIndirizziStoricibyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getIndirizziStoricibyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getIndirizziStoricibyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getIndirizziStoricibyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getMovimentiMigratoribyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getMovimentiMigratoribyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getMovimentiMigratoribyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getMovimentiMigratoribyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getMovimentiMigratoribyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getMovimentiMigratoribyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getMovimentiMigratoribyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getMovimentiMigratoribyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getCarteIdentitabyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getCarteIdentitabyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getCarteIdentitabyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getCarteIdentitabyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getCarteIdentitabyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getCarteIdentitabyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getCarteIdentitabyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getCarteIdentitabyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getLoginXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getLoginXML" />
+  </wsdl:message>
+  <wsdl:message name="getLoginXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getLoginXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getLoginWithCheckXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getLoginWithCheckXML" />
+  </wsdl:message>
+  <wsdl:message name="getLoginWithCheckXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getLoginWithCheckXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getOperatoreXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getOperatoreXML" />
+  </wsdl:message>
+  <wsdl:message name="getOperatoreXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getOperatoreXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getPermessiSoggiornobyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getPermessiSoggiornobyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getPermessiSoggiornobyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getPermessiSoggiornobyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getPermessiSoggiornobyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getPermessiSoggiornobyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getPermessiSoggiornobyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getPermessiSoggiornobyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getEventibyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getEventibyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getEventibyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getEventibyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getEventibyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getEventibyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getEventibyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getEventibyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getFamigliabyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getFamigliabyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getFamigliabyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getFamigliabyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getFamigliabyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getFamigliabyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getFamigliabyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getFamigliabyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getDiffidabyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getDiffidabyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getDiffidabyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getDiffidabyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getDiffidabyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getDiffidabyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getDiffidabyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getDiffidabyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getPassSostabyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getPassSostabyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getPassSostabyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getPassSostabyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getPassSostabyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getPassSostabyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getPassSostabyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getPassSostabyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getResidentibyIndirizzoXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getResidentibyIndirizzoXML" />
+  </wsdl:message>
+  <wsdl:message name="getResidentibyIndirizzoXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getResidentibyIndirizzoXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getPratichebyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getPratichebyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getPratichebyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getPratichebyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getPratichebyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getPratichebyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getPratichebyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getPratichebyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getCittadinanzebyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getCittadinanzebyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getCittadinanzebyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getCittadinanzebyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getCittadinanzebyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getCittadinanzebyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getCittadinanzebyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getCittadinanzebyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getCarteIdentitainScadXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getCarteIdentitainScadXML" />
+  </wsdl:message>
+  <wsdl:message name="getCarteIdentitainScadXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getCarteIdentitainScadXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getDatiCatastalibyMatricolaXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getDatiCatastalibyMatricolaXML" />
+  </wsdl:message>
+  <wsdl:message name="getDatiCatastalibyMatricolaXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getDatiCatastalibyMatricolaXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="getDatiCatastalibyCFXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:getDatiCatastalibyCFXML" />
+  </wsdl:message>
+  <wsdl:message name="getDatiCatastalibyCFXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:getDatiCatastalibyCFXMLResponse" />
+  </wsdl:message>
+  <wsdl:portType name="XMLWSANGComplSoap">
+    <wsdl:operation name="getRicercaIndividuiXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Ricerca degli individui in anagrafe (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getRicercaIndividuiXMLSoapIn" />
+      <wsdl:output message="tns:getRicercaIndividuiXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getDatiPuntualibyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Dati Puntuali di un individuo by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getDatiPuntualibyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getDatiPuntualibyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getDatiPuntualibyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Dati Puntuali di un individuo by Codice Fiscale (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getDatiPuntualibyCFXMLSoapIn" />
+      <wsdl:output message="tns:getDatiPuntualibyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getIndirizziStoricibyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Indirizzi storici di un individuo by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getIndirizziStoricibyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getIndirizziStoricibyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getIndirizziStoricibyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Indirizzi storici di un individuo by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getIndirizziStoricibyCFXMLSoapIn" />
+      <wsdl:output message="tns:getIndirizziStoricibyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getMovimentiMigratoribyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Movimenti Migratori di un individuo by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getMovimentiMigratoribyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getMovimentiMigratoribyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getMovimentiMigratoribyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Movimenti Migratori di un individuo by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getMovimentiMigratoribyCFXMLSoapIn" />
+      <wsdl:output message="tns:getMovimentiMigratoribyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitabyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Carte di identità di un individuo by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getCarteIdentitabyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getCarteIdentitabyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitabyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Carte di identità di un individuo by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getCarteIdentitabyCFXMLSoapIn" />
+      <wsdl:output message="tns:getCarteIdentitabyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getLoginXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Login individuo (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getLoginXMLSoapIn" />
+      <wsdl:output message="tns:getLoginXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getLoginWithCheckXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Login individuo - Controllo tentativi (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getLoginWithCheckXMLSoapIn" />
+      <wsdl:output message="tns:getLoginWithCheckXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getOperatoreXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Operatore (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getOperatoreXMLSoapIn" />
+      <wsdl:output message="tns:getOperatoreXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getPermessiSoggiornobyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Permessi di soggiorno di un individuo by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getPermessiSoggiornobyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getPermessiSoggiornobyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getPermessiSoggiornobyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Permessi di soggiorno di un individuo by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getPermessiSoggiornobyCFXMLSoapIn" />
+      <wsdl:output message="tns:getPermessiSoggiornobyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getEventibyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Eventi di un individuo by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getEventibyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getEventibyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getEventibyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Eventi di un individuo by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getEventibyCFXMLSoapIn" />
+      <wsdl:output message="tns:getEventibyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getFamigliabyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Stato di Famiglia di un individuo in base al suo status anagrafico (data evento) by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getFamigliabyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getFamigliabyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getFamigliabyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Stato di Famiglia di un individuo in base al suo status anagrafico (data evento) by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getFamigliabyCFXMLSoapIn" />
+      <wsdl:output message="tns:getFamigliabyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getDiffidabyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Diffida all'Immigrazione e/o all'Emigrazione by Matricola  (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getDiffidabyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getDiffidabyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getDiffidabyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Diffida all'Immigrazione e/o all'Emigrazione by CF  (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getDiffidabyCFXMLSoapIn" />
+      <wsdl:output message="tns:getDiffidabyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getPassSostabyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Pass Sosta by Matricola o Targa  (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getPassSostabyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getPassSostabyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getPassSostabyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Pass Sosta by CF o Targa  (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getPassSostabyCFXMLSoapIn" />
+      <wsdl:output message="tns:getPassSostabyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getResidentibyIndirizzoXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Residenti by Indirizzo (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getResidentibyIndirizzoXMLSoapIn" />
+      <wsdl:output message="tns:getResidentibyIndirizzoXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getPratichebyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Pratiche by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getPratichebyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getPratichebyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getPratichebyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Pratiche by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getPratichebyCFXMLSoapIn" />
+      <wsdl:output message="tns:getPratichebyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getCittadinanzebyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Cittadinanze by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getCittadinanzebyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getCittadinanzebyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getCittadinanzebyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Cittadinanze by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getCittadinanzebyCFXMLSoapIn" />
+      <wsdl:output message="tns:getCittadinanzebyCFXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitainScadXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Carte d'Identità in Scadenza (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getCarteIdentitainScadXMLSoapIn" />
+      <wsdl:output message="tns:getCarteIdentitainScadXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getDatiCatastalibyMatricolaXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Dati catastali by Matricola (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getDatiCatastalibyMatricolaXMLSoapIn" />
+      <wsdl:output message="tns:getDatiCatastalibyMatricolaXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getDatiCatastalibyCFXML">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Dati catastali by CF (Versione XML)</wsdl:documentation>
+      <wsdl:input message="tns:getDatiCatastalibyCFXMLSoapIn" />
+      <wsdl:output message="tns:getDatiCatastalibyCFXMLSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="XMLWSANGComplSoap" type="tns:XMLWSANGComplSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="getRicercaIndividuiXML">
+      <soap:operation soapAction="http://prov.to.it/getRicercaIndividuiXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDatiPuntualibyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getDatiPuntualibyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDatiPuntualibyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getDatiPuntualibyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getIndirizziStoricibyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getIndirizziStoricibyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getIndirizziStoricibyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getIndirizziStoricibyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMovimentiMigratoribyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getMovimentiMigratoribyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMovimentiMigratoribyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getMovimentiMigratoribyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitabyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getCarteIdentitabyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitabyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getCarteIdentitabyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getLoginXML">
+      <soap:operation soapAction="http://prov.to.it/getLoginXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getLoginWithCheckXML">
+      <soap:operation soapAction="http://prov.to.it/getLoginWithCheckXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getOperatoreXML">
+      <soap:operation soapAction="http://prov.to.it/getOperatoreXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPermessiSoggiornobyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getPermessiSoggiornobyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPermessiSoggiornobyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getPermessiSoggiornobyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getEventibyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getEventibyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getEventibyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getEventibyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getFamigliabyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getFamigliabyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getFamigliabyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getFamigliabyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDiffidabyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getDiffidabyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDiffidabyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getDiffidabyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPassSostabyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getPassSostabyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPassSostabyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getPassSostabyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getResidentibyIndirizzoXML">
+      <soap:operation soapAction="http://prov.to.it/getResidentibyIndirizzoXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPratichebyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getPratichebyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPratichebyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getPratichebyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCittadinanzebyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getCittadinanzebyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCittadinanzebyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getCittadinanzebyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitainScadXML">
+      <soap:operation soapAction="http://prov.to.it/getCarteIdentitainScadXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDatiCatastalibyMatricolaXML">
+      <soap:operation soapAction="http://prov.to.it/getDatiCatastalibyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDatiCatastalibyCFXML">
+      <soap:operation soapAction="http://prov.to.it/getDatiCatastalibyCFXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="XMLWSANGComplSoap12" type="tns:XMLWSANGComplSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="getRicercaIndividuiXML">
+      <soap12:operation soapAction="http://prov.to.it/getRicercaIndividuiXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDatiPuntualibyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getDatiPuntualibyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDatiPuntualibyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getDatiPuntualibyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getIndirizziStoricibyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getIndirizziStoricibyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getIndirizziStoricibyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getIndirizziStoricibyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMovimentiMigratoribyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getMovimentiMigratoribyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMovimentiMigratoribyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getMovimentiMigratoribyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitabyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getCarteIdentitabyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitabyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getCarteIdentitabyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getLoginXML">
+      <soap12:operation soapAction="http://prov.to.it/getLoginXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getLoginWithCheckXML">
+      <soap12:operation soapAction="http://prov.to.it/getLoginWithCheckXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getOperatoreXML">
+      <soap12:operation soapAction="http://prov.to.it/getOperatoreXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPermessiSoggiornobyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getPermessiSoggiornobyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPermessiSoggiornobyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getPermessiSoggiornobyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getEventibyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getEventibyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getEventibyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getEventibyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getFamigliabyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getFamigliabyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getFamigliabyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getFamigliabyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDiffidabyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getDiffidabyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDiffidabyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getDiffidabyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPassSostabyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getPassSostabyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPassSostabyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getPassSostabyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getResidentibyIndirizzoXML">
+      <soap12:operation soapAction="http://prov.to.it/getResidentibyIndirizzoXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPratichebyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getPratichebyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPratichebyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getPratichebyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCittadinanzebyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getCittadinanzebyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCittadinanzebyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getCittadinanzebyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getCarteIdentitainScadXML">
+      <soap12:operation soapAction="http://prov.to.it/getCarteIdentitainScadXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDatiCatastalibyMatricolaXML">
+      <soap12:operation soapAction="http://prov.to.it/getDatiCatastalibyMatricolaXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getDatiCatastalibyCFXML">
+      <soap12:operation soapAction="http://prov.to.it/getDatiCatastalibyCFXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="XMLWSANGCompl">
+    <wsdl:port name="XMLWSANGComplSoap" binding="tns:XMLWSANGComplSoap">
+      <soap:address location="http://10.99.20.10:7476/2.0/XMLWSANGCompl.asmx" />
+    </wsdl:port>
+    <wsdl:port name="XMLWSANGComplSoap12" binding="tns:XMLWSANGComplSoap12">
+      <soap12:address location="http://10.99.20.10:7476/2.0/XMLWSANGCompl.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>WSO2 ESB - Spring Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Spring Mediator</h2>
+
+<p>The Spring mediator exposes a spring bean as a mediator. The spring mediator
+creates an instance of a mediator, which is managed by Spring. This Spring bean
+must implement the Mediator interface for it to act as a Mediator. </p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;spring:spring bean="exampleBean" key="string"/&gt; </pre>
+
+<p></p>
+
+<p>The <strong>key</strong> will reference the Spring
+ApplicationContext/Configuration (i.e. spring configuration XML) used for the
+bean. This <strong>key</strong> can be a registry key or local entry key. The
+<strong>bean</strong> attribute is used for looking up a Spring bean from the
+spring Application Context. Therefore, a bean with same name must be in the
+given spring configuration. In additions, that bean must implement the Mediator
+interface. </p>
+
+<p></p>
+
+<h3>UI Configuration</h3>
+
+<p><img alt=""
+src="../spring-mediator/docs/images/spring-mediator-screenshot.jpg" /> </p>
+
+<p><strong>Figure1: Spring Mediator</strong> </p>
+<ul>
+  <li>Bean: The name of the bean </li>
+  <li>Key: The registry reference to the spring
+    Application-Context/Configuration used for the bean. You can select it by
+    clicking the "Registry Keys". <br />
+  </li>
+</ul>
+
+<h3>Example</h3>
+
+<p></p>
+<ol>
+  <li><pre>&lt;spring:spring bean="<strong>springtest</strong>" key="conf/sample/resources/spring/springsample.xml"/&gt;
+    </pre>
+    <p>In the above configuration, spring XML is in the registry and it can be
+    looked up using the registry key
+    <strong>conf/sample/resources/spring/springsample.xml</strong> . This
+    spring XML (i.e springsample.xml) must contain a bean with the name
+    <strong>springtest</strong>. The following figure shows an example can be
+    used as the registry resource - <strong>springsample.xml</strong>. </p>
+    <p></p>
+    <pre>&lt;!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd"&gt;
+&lt;beans&gt;   
+     &lt;bean id="<strong>springtest</strong>" class="org.apache.synapse.mediators.spring.SpringTestBean" singleton="false"&gt;   
+           &lt;property name="testProperty" value="100"/&gt;       
+     &lt;/bean&gt;
+&lt;/beans&gt;</pre>
+  </li>
+</ol>
+
+<p></p>
+</body>
+</html>

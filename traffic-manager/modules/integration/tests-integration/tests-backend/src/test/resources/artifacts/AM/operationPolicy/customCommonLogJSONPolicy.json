@@ -1,0 +1,23 @@
+{
+  "type": "operation_policy_specification",
+  "version": "v4.5.0",
+  "data": {
+    "category": "Mediation",
+    "name": "customCommonLogPolicy",
+    "version": "v1",
+    "displayName": "Custom Common Log Policy",
+    "description": "Using this policy, you can add a custom log message",
+    "applicableFlows": [
+      "request",
+      "response",
+      "fault"
+    ],
+    "supportedGateways": [
+      "Synapse"
+    ],
+    "supportedApiTypes": [
+      "HTTP"
+    ],
+    "policyAttributes": []
+  }
+}

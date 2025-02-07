@@ -1,0 +1,66 @@
+.tip-table {
+    border-collapse: collapse;
+    width:868px;
+}
+
+.tip-table tr td.tip-empty {
+    width: 20px;
+}
+
+.tip-top {
+    width: 202px;
+    height: 85px;
+    z-index: 90;
+}
+
+.tip-content-lifter {
+    margin-top: -20px;
+    position:relative;
+    font-size:11px;
+}
+.tip-content a.dashboard-subtitle {
+    line-height:30px;
+}
+.tip-content {
+    background: transparent url(../images/tip-back.png) repeat-y left top;
+    padding: 10px !important;
+    width: 182px;
+    z-index: 100;
+}
+
+.tip-bottom {
+    background: transparent url(../images/tip-bottom.png) no-repeat left top;
+    height: 11px;
+    width: 202px;
+}
+
+a.tip-title,h3.tip-title  {
+    color: #333333 !important;
+    font-size: 18px !important;
+    text-decoration: none;
+    margin-bottom:0 !important;
+    margin-top:0 !important;
+    display:block;
+}
+a.tip-title{
+    cursor:pointer;
+}
+
+a.tip-title:hover {
+    color: #930000 !important;
+}
+div#workArea h2.dashboard-title {
+    background-image: url(../images/dashboard-title-bg.gif);
+    background-position: left bottom;
+    background-repeat: repeat-x;
+    border-bottom: 0 none;
+    color: #000000;
+    font-size: 150%;
+    font-weight: bold;
+    line-height: 25px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+.tip-table-div{
+    height:10px;
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     	xmlns:cxf="http://cxf.apache.org/core"
+		xmlns:jaxws="http://cxf.apache.org/jaxws"
+		xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+		xsi:schemaLocation="
+			http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+			http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+			http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml"/>
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
+
+    <cxf:bus>
+        <cxf:features>
+            <cxf:logging/>
+        </cxf:features>
+    </cxf:bus>
+
+	<bean id="employeeService" class="server.service.EmployeeService" init-method="init"></bean>
+	<bean id="mobilePriceService" class="server.service.MobilePriceService" init-method="init"></bean>
+	<bean id="pouchPriceService" class="server.service.PouchPriceService" init-method="init"></bean>
+	<bean id="promoService" class="server.service.PromoService" init-method="init"></bean>
+	<bean id="salaryService" class="server.service.SalaryService" init-method="init"></bean>
+	<bean id="stockService" class="server.service.StockService" init-method="init"></bean>
+	<bean id="taskService" class="server.service.TaskService" init-method="init"></bean>
+	<bean id="jsonProvider"
+		class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
+	
+  	<jaxrs:server id="rservice" address="/rservice">
+  		<jaxrs:serviceBeans>
+  			<ref bean="employeeService"/>
+  			<ref bean="mobilePriceService"/>
+  			<ref bean="pouchPriceService"/>
+  			<ref bean="promoService"/>
+  			<ref bean="salaryService"/>
+  			<ref bean="stockService"/>
+  			<ref bean="taskService"/>
+  		</jaxrs:serviceBeans>
+  		<jaxrs:providers>
+			<ref bean='jsonProvider' />
+		</jaxrs:providers>
+  	</jaxrs:server>
+
+</beans>

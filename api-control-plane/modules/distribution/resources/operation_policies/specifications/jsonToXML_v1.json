@@ -1,0 +1,17 @@
+{
+  "category": "Mediation",
+  "name": "jsonToXML",
+  "version": "v1",
+  "displayName": "JSON to XML",
+  "description": "This policy allows you to change the payload from JSON to XML",
+  "applicableFlows": [
+    "request",
+    "response"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

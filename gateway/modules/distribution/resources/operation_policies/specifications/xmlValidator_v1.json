@@ -1,0 +1,16 @@
+{
+  "category": "Mediation",
+  "name": "xmlValidator",
+  "version": "v1",
+  "displayName": "XML Validator",
+  "description": "This policy validates the request body of the XML message",
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
