@@ -171,6 +171,8 @@
         url-mapping="$resource.getUriTemplate()"
         #end
         methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($aggregate.getFaultSequenceName() "fault")>
+
+        #if($resource.getAggregatedMediationScript().equalsIgnoreCase("null"))
 <inSequence>
 
 #if(!$aggregate.getInSequenceName().isEmpty())
@@ -261,6 +263,39 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #end
 <send/>
 </outSequence>
+        #else
+<inSequence>
+<property name="AcceptHeader" expression="$trp:Accept"/>
+<script language="js">
+    <![CDATA[
+                            $resource.getAggregatedMediationScript()
+                    ]]>
+</script>
+<filter source="boolean(get-property('CONTENT_TYPE'))" regex="false">
+    <then>
+        <property name="messageType" value="application/xml" scope="axis2"/>
+    </then>
+    <else>
+        <property name="messageType" expression="get-property('CONTENT_TYPE')" scope="axis2"/>
+    </else>
+</filter>
+<filter source="boolean(get-property('HTTP_SC'))" regex="false">
+    <then>
+        <property name="HTTP_SC" value="200" scope="axis2"/>
+    </then>
+    <else>
+        <property name="HTTP_SC" expression="get-property('HTTP_SC')" scope="axis2"/>
+    </else>
+</filter>
+#if($resource.getMethodsAsString().contains("GET")||$resource.getMethodsAsString().contains("DELETE"))
+<property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+#end
+<respond/>
+</inSequence>
+<outSequence>
+<send/>
+</outSequence>
+        #end
         </resource>
         #set ($resourceNo = $resourceNo + 1)
         #end  ## end of resource iterator
