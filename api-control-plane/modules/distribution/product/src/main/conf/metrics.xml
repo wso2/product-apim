@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+    ~
+    ~ WSO2 Inc. licenses this file to you under the Apache License,
+    ~ Version 2.0 (the "License"); you may not use this file except
+    ~ Yin compliance with the License.
+    ~ You may obtain a copy of the License at
+    ~
+    ~    http://www.apache.org/licenses/LICENSE-2.0
+    ~
+    ~ Unless required by applicable law or agreed to in writing,
+    ~ software distributed under the License is distributed on an
+    ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    ~ KIND, either express or implied.  See the License for the
+    ~ specific language governing permissions and limitations
+    ~ under the License.
+-->
+<!--
+    This is the main configuration file for metrics
+-->
+<Metrics xmlns="http://wso2.org/projects/carbon/metrics.xml">
+    <!--
+        Enable Metrics
+    -->
+    <Enabled>true</Enabled>
+    <!--
+        Metrics reporting configurations
+    -->
+    <Reporting>
+        <JMX>
+            <Enabled>true</Enabled>
+        </JMX>
+        <Console>
+            <Enabled>false</Enabled>
+            <!-- Polling Period in seconds.
+                This is the period for polling metrics from the metric registry and
+                printing in the console -->
+            <PollingPeriod>60</PollingPeriod>
+        </Console>
+        <CSV>
+            <Enabled>false</Enabled>
+            <Location>${carbon.home}/repository/logs/metrics/</Location>
+            <!-- Polling Period in seconds.
+                This is the period for polling metrics from the metric registry and
+                update CSV files in the given location -->
+            <PollingPeriod>60</PollingPeriod>
+        </CSV>
+        <JDBC>
+            <Enabled>false</Enabled>
+            <!-- Source of Metrics, which will be used to
+                identify each metric in database -->
+            <!-- Commented to use the hostname
+                <Source>Carbon</Source>
+            -->
+            <!--
+                JNDI name of the data source to be used by the JDBC Reporter.
+                This data source should be defined in a *-datasources.xml
+                file in conf/datasources directory.
+            -->
+            <DataSourceName>jdbc/WSO2MetricsDB</DataSourceName>
+            <!-- Polling Period in seconds.
+                This is the period for polling metrics from the metric registry and
+                updating the database with the values -->
+            <PollingPeriod>60</PollingPeriod>
+            <ScheduledCleanup>
+                <!--
+                    Schedule regular deletion of metrics data older than a set number of days.
+
+                    It is strongly recommended that you enable this job to ensure your metrics tables do not get extremely
+                    large. Deleting data older than seven days should be sufficient.
+                -->
+                <Enabled>true</Enabled>
+                <!-- This is the period for each cleanup operation in seconds -->
+                <ScheduledCleanupPeriod>86400</ScheduledCleanupPeriod>
+                <!-- The scheduled job will cleanup all data older than the specified days -->
+                <DaysToKeep>7</DaysToKeep>
+            </ScheduledCleanup>
+        </JDBC>
+        <DAS>
+            <Enabled>false</Enabled>
+            <!-- Source of Metrics, which will be used to
+                identify each metric sent in the streams -->
+            <!-- Commented to use the hostname
+                <Source>Carbon</Source>
+            -->
+            <!-- Polling Period in seconds.
+                This is the period for polling metrics from the metric registry and
+                sending events via the Data Publisher -->
+            <PollingPeriod>60</PollingPeriod>
+            <!-- The type used with Data Publisher -->
+            <Type>thrift</Type>
+            <!-- Data Receiver URL used by the Data Publisher -->
+            <ReceiverURL>tcp://localhost:7611</ReceiverURL>
+            <!-- Authentication URL for the Data Publisher -->
+            <!-- <AuthURL>ssl://localhost:7711</AuthURL> -->
+            <Username>admin</Username>
+            <Password>admin</Password>
+            <!-- Path for Data Agent Configuration -->
+            <DataAgentConfigPath>repository/conf/data-bridge/data-agent-config.xml</DataAgentConfigPath>
+        </DAS>
+    </Reporting>
+</Metrics>

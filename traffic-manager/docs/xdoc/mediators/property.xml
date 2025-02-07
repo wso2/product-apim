@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Property Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Property Mediator</h2>
+
+<p>Properties are name value pairs. Properties are a way to convey information
+across different processing units. For example user may need to set a transport
+property from the message mediation. Or user may need to remove a property
+which is set by the transport. This mediator sets or removes properties for a
+particular message.</p>
+
+<p>Property mediator has no direct impact on the message but rather on the
+message context flowing through Synapse. The properties set on a message can be
+later retrieved through the synapse:get-property(prop-name) XPath extension
+function. If a scope is specified for a property, the property could be set as
+a transport header property or an (underlying) Axis2 message context property,
+or as a Axis2 client option. If a scope is not specified, it will default to
+the Synapse message context scope. Using the property element with action
+specified as "remove" you can remove any existing message context properties.
+</p>
+
+<p>There are some well-defined properties that you can get/set on the Synapse
+message context scope:</p>
+
+<p></p>
+
+<table border="1" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td>Values</td>
+      <td>Meaning</td>
+    </tr>
+    <tr>
+      <td>RESPONSE</td>
+      <td>true</td>
+      <td>'true' means the message is to be marked as a response message</td>
+    </tr>
+    <tr>
+      <td>OUT_ONLY</td>
+      <td>true</td>
+      <td>'true' means the message is to be marked as an out-only message that
+        does not expect a response</td>
+    </tr>
+    <tr>
+      <td>ERROR_CODE</td>
+      <td>String</td>
+      <td>this is set to any error message code encountered during a fault</td>
+    </tr>
+    <tr>
+      <td>ERROR_MESSAGE</td>
+      <td>String</td>
+      <td>this is set to any error message text encountered during a fault</td>
+    </tr>
+    <tr>
+      <td>ERROR_DETAIL</td>
+      <td>String</td>
+      <td>this is set to any error message detail text encountered during a
+        fault</td>
+    </tr>
+    <tr>
+      <td>ERROR_EXCEPTION</td>
+      <td>String</td>
+      <td>this is set to any Java Exception encountered during a fault</td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<p>There are some Axis2 and module properties that are useful which are set at
+scope="axis2"</p>
+
+<table border="1" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td>Values</td>
+      <td>Meaning</td>
+    </tr>
+    <tr>
+      <td>MercurySequenceKey</td>
+      <td>integer</td>
+      <td>can be an identifier specifying an Mercury internal sequence key,
+      and</td>
+    </tr>
+    <tr>
+      <td>MercuryLastMessage</td>
+      <td>true</td>
+      <td>'true' will make this the last message and terminate the sequence</td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<p>There are some Axis2 client side properties/options that are useful which
+are set at scope="axis2-client"</p>
+
+<table border="1" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td>Values</td>
+      <td>Meaning</td>
+    </tr>
+    <tr>
+      <td>FORCE_HTTP_1.0</td>
+      <td>true</td>
+      <td>forces outgoing http/s messages to use HTTP 1.0 (instead of the
+        default 1.1)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<p><code><strong>The synapse:get-property() XPath extension
+function</strong></code></p>
+
+<p>The get-property() function allows any XPath expression used in a
+configuration to look-up information from the current message context. It is
+possible to retrieve properties previously set with the property mediator,
+and/or information from the Synapse or Axis2 message contexts or transport
+header. The function accepts the scope as an optional parameter as shown
+below:</p>
+
+<p>synapse:get-property( [(axis2 | axis2-client | transport),]
+&lt;property_name&gt; [,&lt;dateformat&gt;] ) </p>
+
+<p></p>
+
+<p>Some useful properties from the Synapse message context follows:</p>
+
+<table border="1" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td>Meaning</td>
+    </tr>
+    <tr>
+      <td>SYSTEM_DATE </td>
+      <td>Returns the current date as a String. Optionally a date format as per
+        standard date format may be supplied. e.g.
+        synapse:get-property("SYSTEM_DATE", "yyyy.MM.dd G 'at' HH:mm:ss z") or
+        get-property('SYSTEM_DATE')</td>
+    </tr>
+    <tr>
+      <td>SYSTEM_TIME </td>
+      <td>Returns the current time in milliseconds. (i.e. the difference,
+        measured in milliseconds, between the current time and midnight,
+        January 1, 1970 UTC)</td>
+    </tr>
+    <tr>
+      <td>To, From, Action, FaultTo, ReplyTo, MessageID</td>
+      <td>the message To and Action and WS-Addressing propertie</td>
+    </tr>
+    <tr>
+      <td>MESSAGE_FORMAT</td>
+      <td>returns the message format - i.e. returns pox, get, soap11 or
+      soap12</td>
+    </tr>
+    <tr>
+      <td>OperationName</td>
+      <td>returns the operation name for the message</td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<p>In addition to the above, one may use the get-property() function to
+retrieve Axis2 message context properties or transport headers. e.g.
+synapse:get-property('transport', 'USER_AGENT')</p>
+
+<p></p>
+
+<p><strong>SynapseXpath variables</strong></p>
+
+<p>There are a set of predefined XPath variables when writing XPaths in the
+Synapse Configuration. Those are as follows;</p>
+
+<table border="1" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td>Meaning</td>
+    </tr>
+    <tr>
+      <td>body</td>
+      <td>The SOAP 1.1 or 1.2 body element For example;
+        expression="$body/getQuote" refers to the first getQuote element in the
+        SOAP body regardless of whether the message is SOAP-11 or SOAP-12</td>
+    </tr>
+    <tr>
+      <td>header</td>
+      <td>The SOAP 1.1 or 1.2 header element For example;
+        expression="$header/wsa:To" refers to the addressing To header
+        regardless of whether this message is SOAP-11 or SOAP-12Further there
+        are some variable prefixes defined in Synapse XPaths which can be
+        usefull in writing the configurations;</td>
+    </tr>
+    <tr>
+      <td>ctx</td>
+      <td>Prefix for Synapse MessageContext properties For example;
+        expression="$ctx:RESPONSE" gives the value of the Synapse message
+        context property with name 'RESPONSE'</td>
+    </tr>
+    <tr>
+      <td>axis2</td>
+      <td>Prefix for Axis2 MessageContext properties For example;
+        expression="$axis2:messageType" gives the value of the axis2 message
+        context property with name 'messageType'</td>
+    </tr>
+    <tr>
+      <td>trp</td>
+      <td>Prefix for the transport headers For example;
+        expression="$trp:Content-Type" gives the value of the 'Content-Type'
+        transport header, which is going to be the Content-Type of the current
+        message </td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;property name="string" [action=set|remove] (value="literal" | expression="xpath") [scope=transport|axis2|axis2-client]/&gt;</pre>
+
+<p></p>
+
+<h3>UI Configuration</h3>
+
+<p><img src="../property-mediator/docs/images/property_mediator_screenshot.jpg"
+alt="" /> </p>
+
+<p><strong>Property Mediator Screenshot</strong> </p>
+
+<p>You have the following configuration under the property mediator. </p>
+<ul>
+  <li>Name: A name for the property. You can return the value of the property
+    by calling get-property(property-name) xpath extension function. </li>
+  <li>Action: The action to do. Possible values are 
+    <ul>
+      <li>Add: Add a new property </li>
+      <li>Remove: Remove the property with the given name </li>
+    </ul>
+  </li>
+  <li>Set Action As: Specify which type of value to store. Possible values are 
+    <ul>
+      <li>Value : A static text value </li>
+      <li>Expression: XPath expression to evaluate 
+        <p>If there are any namespaces involved in the XPath expression, you
+        can specify it in the Namespace Editor. </p>
+        <img src="../property-mediator/docs/images/namespaces_screenshot.jpg
+        "
+        alt="" /> 
+        <p><strong>Namespace Editor Screenshot</strong> </p>
+      </li>
+    </ul>
+  </li>
+  <li>Scope : Specify the scope the property is valid. Possible values are 
+    <ul>
+      <li>Synapse </li>
+      <li>Transport </li>
+      <li>Axis2 </li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Example</h3>
+<pre xml:space="preserve">  &lt;property name="symbol"
+                    expression="fn:concat('Normal Stock - ', //m0:getQuote/m0:request/m0:symbol)"
+                    xmlns:m0="http://services.samples/xsd"/&gt;
+
+  &lt;log level="custom"&gt;
+      &lt;property name="symbol" expression="get-property('symbol')"/&gt;        
+  &lt;/log&gt;    </pre>
+
+<p>In this example we are setting the property symbol and later we are logging
+it using the log mediator.</p>
+
+<p></p>
+</body>
+</html>

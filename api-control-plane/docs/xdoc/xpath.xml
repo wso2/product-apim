@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+        <title>
+            WSO2 ESB - XPath Functions &amp; Variables
+        </title>
+        <link href="css/esb-docs.css" rel="stylesheet"/>
+        <link href="styles/dist-docs.css" rel="stylesheet" type="text/css" media="all"/>
+    </head>
+    <body xml:lang="en">
+        [ <a href="docs_index.html"> Documentation Index </a> ]
+        <h1>WSO2 Enterprise Service Bus (ESB) XPath Extensions Catalog</h1>
+        <h2>Contents</h2>
+        <div class="toc">
+            <ol>
+                <li>
+                    <a href="#intro">Introduction</a>
+                </li>
+                <li>
+                    <a href="#functions">Functions</a>
+                    <ul>
+                        <li><a href="#get_prop">get-property</a></li>
+                    </ul>
+                    <ul>
+                        <li><a href="#get_prop">base64Encode</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#var">Variables</a>
+                    <ul>
+                        <li><a href="#axis2">axis2</a></li>
+                    </ul>
+                    <ul>
+                        <li><a href="#trp">trp</a></li>
+                    </ul>
+                    <ul>
+                        <li><a href="#ctx">ctx</a></li>
+                    </ul>
+                    <ul>
+                        <li><a href="#url">url</a></li>
+                    </ul>
+                </li>                
+            </ol>
+        </div>
+        <h3 id="intro" >Introduction</h3>
+        <p>
+            WSO2 ESB supports standard XPath functions and variables through its underlying XPath
+            engine. All these standard XPath features are available for configuring the ESB.
+            XPath allows to build custom functions to extend its functionality. There are several
+            custom XPath functions and variables defined by the WSO2 ESB for accessing various
+            message properties.
+        </p>
+        <h3 id="functions">Functions</h3>
+        <p>
+        There are two custom functions supported by the ESB.</p>
+        <ol>
+            <li>get-property</li>
+            <li>base64Encode</li>
+        </ol>
+        <h4 id="get_prop">get-property function</h4>
+        <p>Syntax:</p>
+        <ol>
+            <li>
+            get-property(String propertyName)</li>
+            <li>
+            get-property(String scope, String propertyName)</li>
+        </ol>
+        <p>
+        Get property function retrieves a message property at the given scope. If only the property
+            name is specified without the scope it assumes the default syanpse scope.</p>
+        <h4>
+        Supported Scopes</h4>
+        <ol>
+            <li>synpase</li>
+            <li>axis2</li>
+            <li>transport</li>
+        </ol>
+        <p>Special Properties suported by get-property function</p>
+        <table border="1" cellpadding="1" cellspacing="1">
+            <tbody>
+                <tr>
+                    <td>Name</td>
+                    <td>Return Value</td>
+                </tr>
+                <tr>
+                    <td>To</td>
+                    <td>Incoming URL as a String or empty string (&#171;&#187;) if a To address is
+                        not defined.
+                    </td>
+                </tr>
+                <tr>
+                    <td>From</td>
+                    <td>From address as a String or empty string (&#171;&#187;) if a From address
+                        is not defined
+                    </td>
+                </tr>
+                <tr>
+                    <td>Action</td>
+                    <td>SOAP Addressing Action header value as a String or empty string (&#171;&#187;)
+                        if a Action is not defined
+                    </td>
+                </tr>
+                <tr>
+                    <td>FaultTo</td>
+                    <td>SOAP FautTo header value as a String or empty string (&#171;&#187;) if a
+                        FaultTo address is not defined
+                    </td>
+                </tr>
+                <tr>
+                    <td>ReplyTo</td>
+                    <td>ReplyTo header value as a String or empty string (&#171;&#187;) if a
+                        ReplyTo address is not defined
+                    </td>
+                </tr>
+                <tr>
+                    <td>MessageID</td>
+                    <td>A unique identifier (UUID) for the message as a String or empty string (&#171;&#187;)
+                        if MessageID is not defined. This id is guaranteed to be unique.
+                    </td>
+                </tr>
+                <tr>
+                    <td>FAULT</td>
+                    <td>TRUE if the message has a fault or empty string if message doesn't have a
+                        fault
+                    </td>
+                </tr>
+                <tr>
+                    <td>MESSAGE_FORMAT</td>
+                    <td>Returns pox, get, soap11, soap12 depending on the message. If a message type
+                        is unknown this returns soap12
+                    </td>
+                </tr>
+                <tr>
+                    <td>OperationName</td>
+                    <td>Operation name corresponding to the message. A proxy service with a WSDL can
+                        have different operations. If the WSDL is not defined ESB defines fixed
+                        operations
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <h4 id="base64">base64Encode function</h4>
+        <p>Syntax:</p>
+
+        <p>base64Encode(string)</p>
+
+        <p>Returns the base64 encoded value of the argument.</p>
+
+        <h3 id="var">Variables</h3>
+        <p>There are several variables supported by the ESB. These are used for accessing various
+            properties and refer to fixed parts in the ESB.</p>
+        <ol>
+            <li>$axis2</li>
+            <li>$trp</li>
+            <li>$ctx</li>
+            <li>$url</li>
+        </ol>
+
+        <p>These XPath variables gets the properties at various scopes.</p>
+
+        <h4 id="axis2">$axis2</h4>
+
+        <p>Gets the property at the axis2 scope.</p>
+
+        <p>i.e. To get the property named 'messageType' use the following XPath expression</p>
+
+        <pre xml:space="preserve">$axis2:messageType</pre>
+
+        <h4 id="trp">$trp</h4>
+
+        <p>Gets a transport header.</p>
+
+        <p>i.e. To get the transport header named Content-Type use the following XPath expression</p>
+
+        <pre xml:space="preserve">$trp:Content-Type</pre>
+
+        <p>HTTP transport headers are considered to be case insensitive. So in HTTP case</p>
+
+        <p>$trp:Content-Type and $trp:CONENT-TYPE are equal.</p>
+
+        <h4 id="ctx">$ctx</h4>
+
+        <p>Gets a property at the default scope.</p>
+
+        <p>i.e To get the property named 'foo' at the default scope use the following XPath expresion</p>
+
+        <pre xml:space="preserve">$ctx:foo</pre>
+
+        <h4 id="url">$url</h4>
+
+        <p>Gets a URL parameter.</p>
+
+        <p>i.e. To get the URL parameter named 'bar' use the following XPth expression</p>
+
+        <pre xml:space="preserve">$url:foo</pre>
+    </body>
+</html>

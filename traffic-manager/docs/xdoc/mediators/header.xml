@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Header Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Header Mediator</h2>
+
+<p>The header mediator sets or removes a specified header from the current soap
+info-set. At the moment set header only supports simple valued headers. </p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;header name="qname" (value="literal" | expression="xpath") [action="set"]/&gt;
+ &lt;header name="qname" action="remove"/&gt;</pre>
+
+<p>The optional action attribute specifies whether the mediator should set or
+remove the header. If omitted, it defaults to a set-header.</p>
+
+<h3>UI Configuration</h3>
+
+<p><img alt=""
+src="../header-mediator/docs/images/header_mediator_screenshot.jpg" /> </p>
+
+<p><strong>Figure1: Header Mediator</strong> </p>
+
+<p>Here are the option you have in configuring the header mediator. </p>
+<ul>
+  <li>Name: Name of the header element, You can declare the namespace used in
+    the header element by clicking the Namespace link right to the text field.
+  </li>
+  <li>Action: (Set/Remove), Specify whether you want to remove this header from
+    the incomming message or set a new header, Default to Set. </li>
+  <li>Value/Expression: A static value or an xpath expression that will be
+    executed on the message to set the header value. </li>
+</ul>
+
+<h3>Example</h3>
+<pre xml:space="preserve">  &lt;in&gt;
+      &lt;RMSequence single="true" version="1.0"/&gt;
+      &lt;send&gt;
+         &lt;endpoint name="reliable"&gt;
+            &lt;address uri="http://localhost:9000/services/ReliableStockQuoteService"&gt;
+               &lt;enableRM/&gt;
+               &lt;enableAddressing/&gt;
+            &lt;/address&gt;
+         &lt;/endpoint&gt;
+      &lt;/send&gt;
+  &lt;/in&gt;
+  &lt;out&gt;
+      &lt;header name="wsrm:SequenceAcknowledgement" action="remove"
+              xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"/&gt;
+      &lt;header name="wsrm:Sequence" action="remove"
+              xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"/&gt;
+      &lt;header name="wsrm:AckRequested" action="remove"
+              xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"/&gt;
+      &lt;send/&gt;
+  &lt;/out&gt;</pre>
+
+<p>ESB receives a non reliable message and it forward it to an endpoint that
+supports reliable messaging. In this example when ESB recieves a message we
+send it using Reliable messaging. So the response ESB receives is having
+Reliable messaging headers. We don't want to send these headers to the client
+who doesn't support reliable messaging. So we remove the reliable messaging
+headers before sending the reponse to the client.</p>
+</body>
+</html>

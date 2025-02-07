@@ -1,0 +1,6 @@
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"{{sequence_name}}\">
+{% if custom_sequence is defined %}
+    {{ custom_sequence }}
+{% endif %}
+</sequence>

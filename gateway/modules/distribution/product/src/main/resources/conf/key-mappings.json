@@ -1,0 +1,107 @@
+{
+  "apim.cache.km_token.expiry_time": "apim.cache.token_expiry_time",
+  "apim.cache.gateway_token.expiry_time": "apim.cache.token_expiry_time",
+  "transport.receiver.tcp_port": [
+    "transport.thrift.receiver.tcpPort",
+    "transport.binary.receiver.tcpPort"
+  ],
+  "transport.receiver.ssl_port": [
+    "transport.thrift.receiver.sslPort",
+    "transport.binary.receiver.sslPort"
+  ],
+  "transport.receiver.ssl_enabled_protocols": [
+    "transport.thrift.receiver.sslEnabledProtocols",
+    "transport.binary.receiver.sslEnabledProtocols"
+  ],
+  "transport.receiver.ciphers": [
+    "transport.binary.receiver.ciphers",
+    "transport.thrift.receiver.ciphers"
+  ],
+  "transport.binary.receiver.ssl_receiver_thread_pool_size": "transport.binary.receiver.sslReceiverThreadPoolSize",
+  "transport.binary.receiver.tcp_receiver_thread_pool_size": "transport.binary.receiver.tcpReceiverThreadPoolSize",
+  "transport.binary.receiver.parameters.ciphers": "transport.binary.receiver.parameters.ciphers",
+  "synapse_properties.synapse_commons_json_buildValidNCNames": "synapse_properties.'synapse.commons.json.buildValidNCNames'",
+  "transport.http.socket_timeout": "passthru_http.'http.socket.timeout'",
+  "transport.http.core_worker_pool_size": "passthru_http.worker_pool_size_core",
+  "transport.http.max_worker_pool_size": "passthru_http.worker_pool_size_max",
+  "transport.http.worker_pool_queue_length": "passthru_http.worker_pool_queue_length",
+  "transport.http.io_buffer_size": "passthru_http.io_buffer_size",
+  "transport.http.max_http_connection_per_host_port": "passthru_http.'http.max.connection.per.host.port'",
+  "transport.http.preserve_http_user_agent": "passthru_http.'http.user.agent.preserve'",
+  "transport.http.preserve_http_server_name": "passthru_http.http.server.preserve",
+  "transport.http.preserve_http_headers": "passthru_http.'http.headers.preserve'",
+  "transport.http.max_message_size_bytes": "passthru_http.''valid.max.message.size.in.bytes'",
+  "transport.http.listener.port": "transport.passthru_http.listener.parameters.port",
+  "transport.http.listener.wsdl_epr_prefix": "transport.passthru_http.listener.parameters.WSDLEPRPrefix",
+  "transport.http.listener.bind_address": "transport.passthru_http.listener.bind-address",
+  "transport.http.listener.secured_port": "transport.passthru_https.listener.parameters.port",
+  "transport.http.listener.secured_protocols": "transport.passthru_https.listener.protocols",
+  "transport.http.listener.secured_wsdl_epr_prefix": "transport.passthru_https.listener.parameters.WSDLEPRPrefix",
+  "transport.http.listener.secured_bind_address": "transport.passthru_https.listener.parameters.bind-address",
+  "transport.http.listener.verify_client": "transport.passthru_https.listener.parameters.SSLVerifyClient",
+  "transport.http.listener.ssl_profile.read_interval": "transport.passthru_https.listener.ssl_profile_interval",
+  "transport.http.listener.keystore.file_name": "transport.passthru_https.listener.key_store.file_name",
+  "transport.http.listener.keystore.type": "transport.passthru_https.listener.key_store.type",
+  "transport.http.listener.keystore.password": "transport.passthru_https.listener.key_store.password",
+  "transport.http.listener.keystore.key_password": "transport.passthru_https.listener.key_store.key_password",
+  "transport.http.listener.truststore.file_name": "transport.passthru_https.listener.trust_store.file_name",
+  "transport.http.listener.truststore.type": "transport.passthru_https.listener.trust_store.type",
+  "transport.http.listener.truststore.password": "transport.passthru_https.listener.trust_store.password",
+  "transport.http.sender.warn_on_http_500": "transport.passthru_http.sender.warnOnHTTP500",
+  "transport.http.sender.proxy_host": [
+    "transport.passthru_http.sender.'http.proxyHost'",
+    "transport.passthru_https.sender.'http.proxyHost'"
+  ],
+  "transport.http.sender.proxy_port": [
+    "transport.passthru_http.sender.'http.proxyPort'",
+    "transport.passthru_https.sender.'http.proxyPort'"
+  ],
+  "transport.http.sender.non_proxy_hosts": [
+    "transport.passthru_http.sender.'http.nonProxyHosts'",
+    "transport.passthru_https.sender.'http.nonProxyHosts'"
+  ],
+  "transport.http.sender.keystore.file_name": "transport.passthru_https.sender.key_store.file_name",
+  "transport.http.sender.keystore.type": "transport.passthru_https.sender.key_store.type",
+  "transport.http.sender.keystore.password": "transport.passthru_https.sender.key_store.password",
+  "transport.http.sender.keystore.key_password": "transport.passthru_https.sender.key_store.key_password",
+  "transport.http.sender.truststore.file_name": "transport.passthru_https.sender.trust_store.file_name",
+  "transport.http.sender.truststore.type": "transport.passthru_https.sender.trust_store.type",
+  "transport.http.sender.truststore.password": "transport.passthru_https.sender.trust_store.password",
+  "transport.blocking_sender.enable_client_caching": [
+    "transport.blocking_https.sender.parameters.cacheHttpClient",
+    "transport.blocking_http.sender.parameters.cacheHttpClient"
+  ],
+  "transport.blocking_sender.transfer_encoding": [
+    "transport.blocking_https.sender.parameters.Transfer-Encoding",
+    "transport.blocking_http.sender.parameters.Transfer-Encoding"
+  ],
+  "transport.blocking_sender.default_connections_per_host": [
+    "transport.blocking_https.sender.parameters.defaultMaxConnectionsPerHost",
+    "transport.blocking_http.sender.parameters.defaultMaxConnectionsPerHost"
+  ],
+  "transport.blocking_sender.omit_soap12_action": [
+    "transport.blocking_https.sender.parameters.OmitSOAP12Action",
+    "transport.blocking_http.sender.parameters.OmitSOAP12Action"
+  ],
+  "transport.blocking_sender.so_timeout": [
+    "transport.blocking_https.sender.parameters.SO_TIMEOUT",
+    "transport.blocking_http.sender.parameters.SO_TIMEOUT"
+  ],
+  "apim.throttling.enable_persistence": "event_processor.enable_persistence",
+  "apim.throttling.event_sync.hostname": "event_processor.event_sync.hostname",
+  "apim.throttling.event_sync.port": "event_processor.event_sync.port",
+  "apim.throttling.event_management.hostname": "event_processor.event_management.hostname",
+  "apim.throttling.event_management.port": "event_processor.event_management.port",
+  "apim.notification.from_address": "output_adapter.email.from_address",
+  "apim.notification.username": "output_adapter.email.username",
+  "apim.notification.password": "output_adapter.email.password",
+  "apim.notification.hostname": "output_adapter.email.hostname",
+  "apim.notification.port": "output_adapter.email.port",
+  "apim.notification.enable_start_tls": "output_adapter.email.enable_start_tls",
+  "apim.notification.enable_authentication": "output_adapter.email.enable_authentication",
+  "apim.analytics.config_endpoint": "apim.analytics.properties.'auth.api.url'",
+  "broker.flow_control.global.low_limit":"broker.flowControl.global.lowLimit",
+  "broker.flow_control.global.high_limit":"broker.flowControl.global.highLimit",
+  "broker.flow_control.buffer_based.low_limit":"broker.flowControl.bufferBased.lowLimit",
+  "broker.flow_control.buffer_based.high_limit":"broker.flowControl.bufferBased.highLimit"
+}
