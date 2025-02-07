@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+- name: '📚 Create an Issue'
+  about: Create an issue if something does not work as expected or suggest new functionality/improvements to the product suite.
+  url: https://github.com/wso2/api-manager/issues/new/choose
+- name: '💬 Slack Channel'
+  url: 'https://apim-slack.wso2.com/'
+  about: |
+    Chat with the community to get quick clarifications for your questions.
