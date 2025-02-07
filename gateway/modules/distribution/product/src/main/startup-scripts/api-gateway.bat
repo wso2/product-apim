@@ -94,10 +94,6 @@ if ""%1""==""version""   goto commandVersion
 if ""%1""==""-version""  goto commandVersion
 if ""%1""==""--version"" goto commandVersion
 
-if ""%1""==""optimize""  	goto profileOptimizer
-if ""%1""==""-optimize"" 	goto profileOptimizer
-if ""%1""==""--optimize""	goto profileOptimizer
-
 shift
 goto setupArgs
 
