@@ -1,0 +1,83 @@
+{
+  "category": "Security",
+  "name": "opaPolicy",
+  "version": "v1",
+  "displayName": "Validate Request with OPA",
+  "description": "This policy allows you to validate requests based on the response from OPA policy engine. The Open Policy Agent is an open source, general-purpose policy engine that unifies policy enforcement across different technologies and systems. Before applying the policy, please make sure that the OPA policy engine is configured properly. Once a gateway receives a request, gateway will extract a predefined set of meta-data from the request and query OPA via HTTP/HTTPS. OPA Policy engine will evaluate the request meta-data against the configured policy and return it's validation response.Based on the response, gateway will allow or block the request.",
+  "policyAttributes": [
+    {
+      "name": "serverUrl",
+      "displayName": "OPA server URL",
+      "description": "OPA server's URL. Sample URL: https://opa-server-host:8181/v1/data. This can be an HTTP or HTTPS endpoint. If you are using a HTTPS endpoint, make sure the relevant certificates are added to the trust-store.",
+      "validationRegex": "([\\w+]+\\:\/\/)?([\\w\\d-]+\\.)*[\\w-]+[\\.\\:]?\\w+([\/\\?\\=\\&\\#\\.]?[\\w-]+)*\/?",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "accessKey",
+      "displayName": "Access Key",
+      "description": "Access key for the validation request. This is required only if the the token authentication mode is enabled at OPA server. This token will be sent along the OPA validation request as the Authorization header.",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "policy",
+      "displayName": "Policy",
+      "description": "Policy to be validated",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "rule",
+      "displayName": "Rule",
+      "description": "Rule to validate the policy",
+      "type": "String",
+      "defaultValue": "allow",
+      "required": true
+    },
+    {
+      "name": "sendAccessToken",
+      "displayName": "Send access token",
+      "description": "Select whether to send access token to the OPA payload.",
+      "validationRegex": "^(true|false)$",
+      "type": "Boolean",
+      "defaultValue": false,
+      "required": false
+    },
+    {
+      "name": "additionalProperties",
+      "displayName": "Additional properties",
+      "description": "Additional message context (request context) properties to be included in the OPA input. Add these properties in a comma separated list. Provided properties will be added to the OPA input payload after retrieving the values from the message context.",
+      "validationRegex": "^(([a-zA-Z\\d_][a-zA-Z\\d_\\-]*)(,[a-zA-Z\\d_][a-zA-Z\\d_\\-]*)*)$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "maxOpenConnections",
+      "displayName": "Max open connections",
+      "description": "Maximum number of open HTTP connections between the OPA server and gateway.",
+      "validationRegex": "^\\d{1,3}$",
+      "type": "Integer",
+      "defaultValue": 500,
+      "required": false
+    },
+    {
+      "name": "connectionTimeout",
+      "displayName": "Connection timeout",
+      "description": "Connection timeout in seconds for the connection between the OPA server and gateway.",
+      "validationRegex": "^\\d{1,3}$",
+      "type": "Integer",
+      "defaultValue": 30,
+      "required": false
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

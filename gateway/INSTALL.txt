@@ -1,0 +1,92 @@
+Installing  WSO2 API Manager (APIM)
+=================================
+
+
+Running WSO2 API Manager in standalone mode
+===========================================
+1. The directory containing this INSTALL.txt file will be the root and it will be
+   treated as Carbon home directory and let it be <APIM_HOME>.
+
+2. All the shell scripts and .bat files are available in <APIM_HOME>/bin folder.
+
+3. To start WSO2 APIM one can use either api-manager.sh or daemon.sh in all Unix
+   systems & api-manager.bat file on Windows operating systems.
+
+4. Either of the following commands can be used to start APIM
+      i)  ./api-manager.sh {console|start|stop|restart|version}
+     ii)  api-manager.bat {start|stop|version}
+
+        Usage: api-manager.sh [command] [options] [system-properties]
+
+            command:               
+                --start		    Start APIM as a Unix daemon in the background
+                --console	    Start APIM as a Unix daemon in the foreground
+                --stop		    Stop the APIM Unix daemon
+                --restart	    Restart the APIM Unix daemon
+                --version	    What version of the APIM server are you running
+                --optimize      Start APIM with specific features of the profile
+               
+            options:
+                --debug <port> 	Start the server in remote debugging mode.
+                                port: The remote debugging port.               
+                --cleanRegistry	Clean registry space
+                --reset		    Clean the cache & component repository and the
+                                registry space
+
+            system-properties:
+                -DhttpPort	Overrides the HTTP port defined in the
+                                repository/conf/tomcat/catalina-server.xml file
+                -DhttpsPort	Overrides the HTTPS port defined in the
+                                repository/conf/tomcat/catalina-server.xml file
+                -DSynapseServerName=[server-name]
+                                Server name of the synapse server
+                -DosgiConsole=[port]
+                                Start Carbon with Equinox OSGi console.
+                                If the optional 'port' parameter is provided, a
+                                telnet port will be opened
+                -DosgiDebugOptions=[options-file]
+                                Start Carbon with OSGi debugging enabled.
+                                If the optional 'options-file is provided, the
+                                OSGi debug options will be loaded from it.
+                -Dsetup		Clean the Registry database & other
+                                configuration, recreate DB, re-populate the
+                                configuration, and start Carbon
+                -Dcarbon.registry.root
+                                The root of the Registry used by
+                                this Carbon instance
+                -Dweb.location	The directory into which UI artifacts
+                                included in an Axis2 AAR file are extracted to
+
+
+Secure sensitive information in carbon configuration files
+----------------------------------------------------------
+
+There are sensitive information such as passwords in the carbon configuration.
+You can secure them by using secure vault. Please go through following steps to
+secure them with default mode.
+
+    On Linux: ./ciphertool.sh -Dconfigure
+    On Windows: ./ciphertool.bat -Dconfigure
+
+For more details see
+    https://apim.docs.wso2.com/en/next/install-and-setup/setup/security/logins-and-passwords/working-with-encrypted
+    -passwords/
+
+System Requirements
+=======================
+1. Minimum memory - 4 GB RAM (2 GB for JVM and 2 GB for the operating system)
+2. Processor      - 3 GHz Dual-core Xeon/Opteron (or latest)
+3. Java 11.0 or higher
+4. The Management Console requires you to enable Javascript of the Web browser,
+   with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
+   with IE. This can be achieved by setting your security level to
+   medium or lower.
+5. To compile and run the sample clients in <APIM_HOME>/samples, an Ant version is required. Ant 1.7.0
+   version is recommended
+6. To build WSO2 APIM from the Source distribution, it is necessary that you have
+   JDK 11 version and Maven 3.0.4 or later
+
+For more details see
+   https://apim.docs.wso2.com/en/next/install-and-setup/install/installation-prerequisites/
+
+

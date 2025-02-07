@@ -1,0 +1,192 @@
+/*
+ *  Copyright (c) 2005-2010, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+ *
+ *  WSO2 Inc. licenses this file to you under the Apache License,
+ *  Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ *
+ */
+
+body {
+    color: #000;
+    font-size: 11px;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    background-image: url( ../images/esb-docs-bg.gif );
+    background-repeat: repeat-x;
+    background-attachment: scroll;
+    background-position: left top;
+    text-decoration: none;
+    text-align: left;
+    padding: 0px;
+    list-style-type: square;
+    list-style-position: outside;
+}
+
+div#banner {
+	background-image: url(../images/esb-docs-header.gif);
+	background-repeat: no-repeat;
+	background-position: left top;
+	height: 38px;
+	padding-top: 30px;
+	padding-left: 265px;
+	border-bottom: 0px;
+}
+
+div#banner	span#bannerLeft {
+	font-size: 180%;
+	color: #542988;
+}
+
+div#breadcrumbs {
+	background-color: transparent;
+	border-top: solid 0px;
+	border-bottom: solid 0px;
+	height: 23px;
+	padding-top: 5px;
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+div#leftColumn {
+	margin-left: 0px;
+	margin-top: 0px;
+	border-top: 0px;
+	background-color: #F7F7F7;
+	border-left: solid 0px;
+	border-right: solid 1px #542988;
+	border-bottom: solid 1px #542988;
+}
+
+div#leftColumn div#navcolumn {
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 15px;
+	background-color: #F7F7F7;
+}
+
+
+div#contentBox {
+	margin-top: 10px;
+	margin-bottom: 15px;
+	font-size: 12px;
+}
+
+div#navcolumn h5 {
+	margin-bottom: 2px;
+	padding-bottom: 2px;
+	border-bottom: solid 1px #542988;
+	font-size: 110%;
+}
+
+#navcolumn li {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+p {
+}
+
+td {
+    background-color: #f8f8f8;
+    padding: 3px 5px;
+    outline-color: gray;
+    outline-width: 0;
+}
+
+a:link {
+    color: #36c;
+}
+
+a:visited {
+}
+
+a:hover {
+    color: #7f7f7f;
+}
+
+a:active {
+}
+
+body, td, select, input, li  {
+	line-height: 18px;
+}
+
+h1 {
+    color: #333;
+    font-size: 18px;
+    font-weight: bold;
+    font-style: normal;
+    line-height: normal;
+    background-image: none;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-position: left top;
+    text-decoration: none;
+    height: 30px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #663399;
+}
+
+h2 {
+    color: black;
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 24px;
+    border-bottom: 0px;
+    border-left: solid 1px #ccc;
+    border-right: solid 1px #ccc;
+    border-top: 0px;
+    background-color: #B5B5B5;
+    padding-left: 5px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    color: #fff;
+}
+
+h3 {
+    color: #3a3a3a;
+    font-size: 12px;
+    font-weight: bold;
+    padding-top: 10px;
+    padding-bottom: 4px;
+    padding-left: 10px;
+    border-left: 0px;
+    border-right: 0px;
+    border-top: 0px;
+    border-bottom: 1px solid #ccc;
+    background-image: url(../images/table-header.gif);
+    background-position: left bottom;
+    background-repeat: repeat-x;
+    background-color: transparent;
+}
+
+table {
+    background-color: #cbcbcb;
+    margin: 0;
+    padding: 1px;
+    border-style: solid;
+    border-width: 0;
+}
+
+th {
+    padding-left: 5px;
+}
+
+img {
+    background-color: gray;
+    padding: 1px;
+}
+div#footer {
+	background-color: #ccc;
+	padding-right: 20px;
+}

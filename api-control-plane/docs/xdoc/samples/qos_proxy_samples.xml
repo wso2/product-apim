@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+  <title>WSO2 ESB - QoS Proxy Service Samples </title>
+</head>
+
+<body>
+<h1>Running QoS addition and deduction proxy service samples with WSO2 ESB </h1>
+ <h2><a name="Sample200">Sample 200: Using WS-Security with policy attachments
+for proxy services</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;localEntry key="sec_policy" src="file:repository/samples/resources/policy/policy_3.xml"/&gt;
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;header name="wsse:Security" action="remove"
+                        xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"/&gt;
+                &lt;send&gt;
+                    &lt;endpoint&gt;
+                        &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+        &lt;policy key="sec_policy"/&gt;
+        &lt;enableSec/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Using WS-Security signing and encryption with proxy
+services through WS-Policy</strong> </p>
+
+<p><strong>Prerequisites:</strong><br />
+You may also need to download and install the unlimited strength policy files
+for your JDK before using Apache Rampart (e.g. see
+<a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">http://java.sun.com/javase/downloads/index_jdk5.jsp</a>) </p>
+
+<p>Start the Synapse configuration numbered 200: i.e. wso2esb-samples -sn 200<br
+/>
+Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>The proxy service expects to receive a signed and encrypted message as
+specified by the security policy. Please see Apache Rampart and Axis2
+documentation on the format of the policy file. The element 'engageSec'
+specifies that Apache Rampart should be engaged on this proxy service. Hence
+if Rampart rejects any request messages that does not conform to the
+specified policy, those messages will never reach the 'inSequence' to be
+processed. Since the proxy service is forwarding the received request to the
+simple stock quote service that does not use WS-Security, we are instructing
+ESB to remove the wsse:Security header from the outgoing message. To execute
+the client, send a stock quote request to the proxy service, and sign and
+encrypt the request by specifying the client side security policy as follows:
+</p>
+<pre xml:space="preserve">ant stockquote -Dtrpurl=http://localhost:8280/services/StockQuoteProxy -Dpolicy=./../../repository/samples/resources/policy/client_policy_3.xml</pre>
+
+<p>By following through the debug logs or TCPMon output, you could see that
+the request received by the proxy service was signed and encrypted. Also,
+looking up the WSDL of the proxy service by requesting the
+URLhttp://localhost:8280/services/StockQuoteProxy?wsdl reveals the security
+policy attachment to the supplied base WSDL. When sending the message to the
+backend service, you could verify that the security headers were removed, and
+that the response received does not use WS-Security, but that the response
+being forwarded back to the client is signed and encrypted as expected by the
+client. </p>
+
+<h2><a name="Sample201">Sample 201: Reliable message exchange between the
+client and proxy services using WS-ReliableMessaging</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;header name="wsrm:SequenceAcknowledgement" action="remove"
+                        xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"/&gt;
+                &lt;header name="wsrm:Sequence" action="remove"
+                        xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"/&gt;
+                &lt;send&gt;
+                    &lt;endpoint&gt;
+                        &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+        &lt;enableRM/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the reliable message exchange between the
+client and ESB using WS-ReliableMessaging (WS-RM)</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Deploy the SimpleStockQuoteService in the sample Axis2 server and start it
+on port 9000. </p>
+
+<p>Start ESB with the sample configuration number 201 (i.e. wso2esb-samples -sn 201). </p>
+
+<p>In the above configuration, a proxy service is created with WS-RM enabled
+using the &lt;enableRM/&gt; tag. Therefore, this proxy service is capable of
+communicating with a WS-RM client. It also removes the WS-RM headers in the
+In Sequence before the message is sent to the back end server. This is
+required as the reliable messaging is applicable only between the client and
+ESB. Now start the client with WS-RM as follows: </p>
+<pre xml:space="preserve">ant stockquote -Dsymbol=IBM -Dmode=quote -Daddurl=http://localhost:8280/services/StockQuoteProxy -Dwsrm=true</pre>
+
+<p>In this case, client sends WS-RM enabled request to ESB where ESB sends
+normal request to the server. This can be observed by examining the wire
+level messages between the client and ESB. These messages would be similar to
+the wire level messages shown in sample 101. Each message would perform a
+similar function to the messages discussed in sample 53. </p>
+
+<h2><a name="Sample202">Sample 202: Reliable message exchange between the
+client and proxy services using WS-ReliableMessaging 1.1</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+    &lt;proxy name=&quot;StockQuoteProxy&quot;&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;header name=&quot;wsrm:SequenceAcknowledgement&quot; action=&quot;remove&quot;
+                        xmlns:wsrm=&quot;http://docs.oasis-open.org/ws-rx/wsrm/200702&quot;/&gt;
+                &lt;header name=&quot;wsrm:Sequence&quot; action=&quot;remove&quot;
+                        xmlns:wsrm=&quot;http://docs.oasis-open.org/ws-rx/wsrm/200702&quot;/&gt;
+                &lt;header name=&quot;wsrm:AckRequested&quot; action=&quot;remove&quot;
+                        xmlns:wsrm=&quot;http://docs.oasis-open.org/ws-rx/wsrm/200702&quot;/&gt;
+                &lt;send&gt;
+                    &lt;endpoint&gt;
+                        &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/inSequence&gt;
+			&lt;outSequence&gt;
+				&lt;send/&gt;
+			&lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri=&quot;file:repository/samples/resources/proxy/sample_proxy_1.wsdl&quot;/&gt;
+        &lt;enableRM/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;
+</pre>
+
+<p><strong>Objective: Demonstrate the reliable message exchange between the
+client and ESB using WS-ReliableMessaging (WS-RM)</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Deploy the SimpleStockQuoteService in the sample Axis2 server and start it
+on port 9000. </p>
+
+<p>Start ESB with the sample configuration number 202 (i.e. wso2esb-samples -sn 202). </p>
+
+<p>In the above configuration, a proxy service is created with WS-RM enabled
+using the &lt;enableRM/&gt; tag. Therefore, this proxy service is capable of
+communicating with a WS-RM client. It also removes the WS-RM 1.1 headers in the
+In Sequence before the message is sent to the back end server. This is
+required as the reliable messaging is applicable only between the client and
+ESB. Now start the client with WS-RM as follows: </p>
+<pre xml:space="preserve">ant stockquote -Dsymbol=IBM -Dmode=quote -Daddurl=http://localhost:8280/services/StockQuoteProxy -Dwsrm11=true</pre>
+
+<p>In this case, client sends WS-RM enabled request to ESB where ESB sends
+normal request to the server. This can be observed by examining the wire
+level messages between the client and ESB. These messages would be similar to
+the wire level messages shown in sample 102. Each message would perform a
+similar function to the messages discussed in sample 53. </p>
+</body>
+</html>

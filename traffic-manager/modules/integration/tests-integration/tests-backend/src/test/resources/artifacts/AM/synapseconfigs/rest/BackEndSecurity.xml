@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <api xmlns="http://ws.apache.org/ns/synapse"
+         name="BackEndSecurity"
+         context="/backendSecurity/1.0.0">
+        <resource methods="GET" url-mapping="/" faultSequence="fault">
+            <inSequence>
+                <property name = "BACKEND_AUTHORIZATION_HEADER" expression = "$trp:Authorization" scope="transport"/>
+                <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+                <respond/>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
+

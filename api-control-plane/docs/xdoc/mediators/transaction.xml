@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Transaction Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Transaction Mediator</h2>
+  <p>
+    Transaction mediator can provide transaction facility for a set of mediators
+    defined as its child mediators. A transaction mediator with the action "new"
+    indicates the entry point for the transaction. A transaction is marked
+    completed by a transaction mediator with the action "commit". The suspend and
+    resume actions are used to pause a transaction at some point and start it again
+    later. Additionally, the transaction mediator supports three other actions,
+    i.e. use-existing-or-new, fault-if-no-tx, rollback.
+  </p>
+  <h3>Syntax</h3>
+  <pre xml:space="preserve"> &lt;syn:transaction action="commit|fault-if-no-tx|new|resume|suspend|rollback|use-existing-or-new" /&gt;</pre>
+  <h3>UI Configuration</h3>
+  <p>
+  <img alt="Transaction Mediator" src="../transaction-mediator/docs/images/transaction-mediator.png"/>
+  </p>
+  <h3>Action</h3>
+  <ul>
+    <li>Commit transaction: End the transaction</li>
+    <li>Fault if no transaction: Go to error handler if no transaction</li>
+    <li>Initiate new transaction: Entry point for new transaction</li>
+    <li>Resume transaction: Resume a puased transaction</li>
+    <li>Suspend transaction: Puase a transaction</li>
+    <li>Rollback transaction: Rollback a transaction</li>
+    <li>Use existing or initiate transaction: If a transaction already exists continue it or create a new transaction</li>
+  </ul>
+<p></p>
+</body>
+</html>

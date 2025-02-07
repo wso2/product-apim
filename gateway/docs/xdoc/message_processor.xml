@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+        <title>
+            WSO2 ESB - Message Processors
+        </title>
+        <link href="css/esb-docs.css" rel="stylesheet"/>
+        <link href="styles/dist-docs.css" rel="stylesheet" type="text/css" media="all"/>
+    </head>
+    <body xml:lang="en">
+        [ <a href="docs_index.html"> Documentation Index </a> ]
+        <h1>WSO2 ESB Message Processors</h1>
+        <h2>Contents</h2>
+        <div class="toc">
+            <ol>
+                <li>
+                    <a href="#intro">Introduction</a>
+                </li>
+                <li>
+                    <a href="#configuration">Message Processor Configuration</a>
+                </li>
+                <li>
+                    <a href="#fwdprocessor">Message Forwarding processor</a>
+                </li>
+                <li>
+                    <a href="#sampling">Message Sampling Processor</a>
+                </li>
+            </ol>
+        </div>
+        <h2 id="intro" >Introduction</h2>
+        <p>
+            Message processors can be used to implement different messaging and integration patters along with message stores.</p>
+        <p>
+            Message processors can consume the messages in message stores and perform some processing on them.
+        </p>
+        <p>For example think of a scenario where we have a back-end service that can only accept messages at a given rate and incoming traffic to the ESB has
+            a different message rate. So to serve that inbound traffic using the available back-end services we can have a message store that
+            temporarily stores the messages and a message processor that will consume those messages and send to the back end service at a predefined rate.</p>
+        <p>
+            Users can write their own message processor implementations and plug them using the Synapse configuration. WSO2 ESB ships two message processors implementations
+	    that can be used out of the box.
+        </p>
+        <ol>
+            <li>
+               <a href="#fwdprocessor">Message Forwarding processor</a>
+            </li>
+            <li>
+               <a href="#sampling">Message Sampling Processor</a>
+            </li>
+        </ol>
+        <h2 id="configuration">Message Processor Configuration</h2>
+        <pre xml:space="preserve">
+            &lt;messageProcessor name=&quot;string&quot; class=&quot;classname&quot; messageStore=&quot;classname&quot; &gt;
+                &lt;parameter name=&quot;string&quot; &gt; &quot;string&quot; &lt;/parameter&gt;*
+            &lt;/messageProcessor&gt;
+        </pre>
+        <p>
+            Message processor is a top level ESB configuration element where it should be given a unique name.
+        </p>
+        <p>
+            The 'class' attribute value is the fully qualified class name of the underlying message processor implementation.</p>
+        <p>
+            There can be many message processor implementations. Users can write their own message processor implementations and use them too.</p>
+        <p>
+            Parameters section is used to configure the parameters that is needed by underlying message processor implementation </p>
+
+        <h2 id="fwdprocessor">Message Forwarding Processor</h2>
+        <p>Message Forwarding Processor consumes messages in a given message store and sends them to an predefined address endpoint.</p>
+        <p>If a message is successfully delivered to the endpoint, the processor will delete the message from the message store.</p>
+        <p>In case of a failure it will re-try after a configured interval.</p>
+        <p>Message processor can be activated or deactivated from the UI.</p>
+        <p>When its in the deactivated state users can manually delete/resend messages from the management console.</p>
+	<p>Message forwarding processor is useful when it comes to implementing reliable delivery channels, dead letter channels and store-and-forward channels.</p>
+
+        <div class="image">
+            <a name="3">
+                <img alt="" src="message_processor/docs/images/message_processor_view.png"/>
+            </a>
+
+            <p>Figure 1: Messages ProcessorOperations</p>
+        </div>
+
+        <h3>Message Forwarding Processor Parameters</h3>
+        <table border="2" cellspacing="0" cellpadding="0" class="styledLeft">
+            <thead>
+                <tr>
+                    <td>Parameter Name</td>
+                    <td>Value</td>
+                    <td>Required</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>interval</td>
+                    <td>Message retry interval in milli seconds</td>
+                    <td>No default is value is 1000ms</td>
+                </tr>
+                <tr>
+                    <td>max.deliver.attempts</td>
+                    <td>Maximum re delivery attempts before deactivating the processor</td>
+                    <td>NO</td>
+                </tr>
+                <tr>
+                    <td>axis2.repo</td>
+                    <td>Axis2 Client repository to be use to send messages</td>
+                    <td>NO</td>
+                </tr>
+                <tr>
+                    <td>axis2.config</td>
+                    <td>Axis2 Configuration to be use to send messages</td>
+                    <td>NO</td>
+                </tr>
+                <tr>
+                    <td>message.processor.reply.sequence</td>
+                    <td>Name of the Sequence that reply of the message should be sent to</td>
+                    <td>NO</td>
+                </tr>
+                <tr>
+                    <td>message.processor.fault.sequence</td>
+                    <td>Name of the sequence that fault message should be sent to in case of a SOAP
+                        fault
+                    </td>
+                    <td>NO</td>
+                </tr>
+                <tr>
+                    <td>quartz.conf</td>
+                    <td>Quartz configuration file path</td>
+                    <td>NO</td>
+                </tr>
+
+                <tr>
+                    <td>cronExpression</td>
+                    <td>Cron Expression to be used to configure the re try pattern</td>
+                    <td>NO</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Message Context properties to be used with Message Forwarding Processor</h3>
+
+        <table border="2" cellspacing="0" cellpadding="0" class="styledLeft">
+            <thead>
+                <tr>
+                    <td>Property Name</td>
+                    <td>Value</td>
+                    <td>Required</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>target.endpoint</td>
+                    <td>Name of the Address Endpoint which message should be delivered to</td>
+                    <td>YES.</td>
+                </tr>
+                <tr>
+                    <td>OUT_ONLY</td>
+                    <td>true if this is a out only message</td>
+                    <td>Required for out only scenarios</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="sampling">Message Sampling Processor</h2>
+        <p>Message Sampling Processor consumes messages in message store and send it to a configured sequence.</p>
+        <p>This process happens in a pre-configured interval. Therefore this message processor implementation is useful in implementing delivery channels with fixed delivery rate.</p>
+
+        <h3>Message Sampling Processor Parameters</h3>
+        <table border="2" cellspacing="0" cellpadding="0" class="styledLeft">
+            <thead>
+                <tr>
+                    <td>Parameter Name</td>
+                    <td>Value</td>
+                    <td>Required</td>
+                </tr>
+            </thead>
+            <tbody>
+				<tr>
+                    <td>sequence</td>
+                    <td>SequenceID, which defines mediation flow</td>
+                    <td>YES</td>
+                </tr>
+				
+                <tr>
+                    <td>interval</td>
+                    <td>Message retry interval in milli seconds</td>
+                    <td>Default value is 1000ms</td>
+                </tr>
+                <tr>
+                    <td>quartz.conf</td>
+                    <td>Quartz configuration file path</td>
+                    <td>NO</td>
+                </tr>
+
+                <tr>
+                    <td>cronExpression</td>
+                    <td>Cron Expression to be used to configure the re try pattern</td>
+                    <td>NO</td>
+                </tr>
+            </tbody>
+        </table>
+
+	<p><strong>Note</strong>: When using the "SamplingProcessor" as a Message processor implementation, we must provide the "sequence" parameter (which contains 'endpoint' URI).</p>
+    </body>
+</html>

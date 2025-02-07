@@ -1,0 +1,129 @@
+components:
+  parameters:
+    region_id:
+      schema:
+        type: string
+        enum:
+          - fr
+          - de
+          - it
+    make:
+      schema:
+        type: string
+        enum:
+          - 108
+          - 2008
+    model:
+      schema:
+        type: string
+        enum:
+          - M2018
+          - MTPA
+    vin:
+      schema:
+        type: string
+    event_type:
+      schema:
+        type: string
+        enum:
+          - consumption
+  schemas:
+    consumption:
+      $schema: 'http://json-schema.org/draft-07/schema#'
+      type: object
+      additionalProperties: false
+      title: Car Co consumption event payload
+      required:
+        - header
+        - body
+      properties:
+        header:
+          type: object
+          additionalProperties: false
+          required:
+            - timestamp
+          properties:
+            timestamp:
+              type: string
+        body:
+          type: object
+          additionalProperties: false
+          required:
+            - fuel
+            - tyre
+            - battery
+            - oil
+          properties:
+            fuel:
+              title: fuel
+              type: integer
+            tyre:
+              title: tyre
+              type: number
+            battery:
+              title: battery
+              type: number
+            oil:
+              title: oil
+              type: integer
+      $id: 'http://eventportal.solace.cloud/apim/car-co/consumption/consumption.json'
+  messages:
+    consumption:
+      payload:
+        $ref: '#/components/schemas/consumption'
+      schemaFormat: application/vnd.aai.asyncapi+json;version=2.0.0
+      contentType: application/json
+      examples:
+        - payload:
+            header:
+              timestamp: '2021-04-20-11:28:47-UTC'
+            body:
+              fuel: 10
+              tyre: 1.8
+              battery: 2.4
+              oil: 90
+        - payload:
+            header:
+              timestamp: '2021-04-20-11:28:49-UTC'
+            body:
+              fuel: 10
+              tyre: 1.8
+              battery: 2.4
+              oil: 90
+channels:
+  'apim/car-co/api/V1/json/{region_id}/{make}/{model}/{vin}/{event_type}':
+    publish:
+      summary: subscribe to consumption events from vehicle
+      description: |
+        Consumption events are sent periodically.
+      operationId: onConsumption
+      bindings:
+        mqtt:
+          bindingVersion: ‘0.1.0’
+          qos: 1
+        http:
+          bindingVersion: ‘0.1.0’
+          type: request
+          method: POST
+      message:
+        $ref: '#/components/messages/consumption'
+    parameters:
+      region_id:
+        $ref: '#/components/parameters/region_id'
+      make:
+        $ref: '#/components/parameters/make'
+      model:
+        $ref: '#/components/parameters/model'
+      vin:
+        $ref: '#/components/parameters/vin'
+      event_type:
+        $ref: '#/components/parameters/event_type'
+asyncapi: 2.0.0
+info:
+  title: 'API:Consumption'
+  description: Subscribe to vehicle consumption event streams.
+  x-view: provider
+  version: 0.0.1
+  x-origin:
+    vendor: solace
+    name: apim-connector

@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
+  <title>WSO2 ESB - Proxy Service Samples </title>
+</head>
+
+<body>
+<h1>Running the Proxy Services samples with WSO2 Enterprise Service Bus (ESB)</h1>
+
+<h2><a name="Sample150">Sample 150: Introduction to proxy services</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Introduction to ESB proxy services</strong> </p>
+
+<p><strong>Prerequisites:</strong><br />
+Start the Synapse configuration numbered 150: i.e. wso2esb-samples -sn 150<br />
+Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>Once ESB starts, you could go to
+http://localhost:8280/services/StockQuoteProxy?wsdl and view the WSDL generated
+for the proxy service defined in the configuration. This WSDL is based on the
+source WSDL supplied in the proxy service definition, and is updated to
+reflect the proxy service EPR. </p>
+
+<p>Execute the stock quote client by requesting for a stock quote on the
+proxy service as follows: </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy</pre>
+
+<p>An 'inSequence' or 'endpoint' or both of these would decide how the
+message would be handled after the proxy service receives the message. In the
+above example, the request received is forwarded to the sample service hosted
+on Axis2. The 'outSequence' defines how the response is handled before it is
+sent back to the client. By default, a proxy service is exposed over all
+transports configured for ESB, unless these are specifically mentioned
+through the 'transports' attribute. </p>
+
+<h2><a name="Sample151">Sample 151: Custom sequences and endpoints with proxy
+services</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="proxy_1"&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;&lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;&lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/sequence&gt;
+    &lt;sequence name="out"&gt;
+        &lt;send/&gt;
+    &lt;/sequence&gt;
+    &lt;endpoint name="proxy_2_endpoint"&gt;
+        &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+    &lt;/endpoint&gt;
+    &lt;localEntry key="proxy_wsdl" src="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+
+    &lt;proxy name="StockQuoteProxy1"&gt;
+        &lt;publishWSDL key="proxy_wsdl"/&gt;
+        &lt;target inSequence="proxy_1" outSequence="out"/&gt;
+    &lt;/proxy&gt;
+
+    &lt;proxy name="StockQuoteProxy2"&gt;
+        &lt;publishWSDL key="proxy_wsdl"/&gt;
+        &lt;target endpoint="proxy_2_endpoint" outSequence="out"/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Using custom sequences and endpoints for message
+mediation with proxy services</strong> </p>
+
+<p><strong>Prerequisites:</strong><br />
+Start the Synapse configuration numbered 151: i.e. wso2esb-samples -sn 151<br />
+Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>This configuration creates two proxy services.. The first proxy service
+'StockQuoteProxy1' uses the sequence named 'proxy_1' to process incoming
+messages and the sequence named "out" to process outgoing responses. The
+second proxy service 'StockQuoteProxy2' is set to directly forward messages
+that are received to the endpoint named 'proxy_2_endpoint' without any
+mediation. </p>
+
+<p>You could send a stock quote request to each of these proxy services and
+receive the reply generated by the actual service hosted on the Axis2
+instance. </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy1<br />ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy2</pre>
+
+<h2><a name="Sample152">Sample 152: Switching transports and message format
+from SOAP to REST/POX</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;proxy name="StockQuoteProxy" transports="https"&gt;
+        &lt;target&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService" format="pox"/&gt;
+            &lt;/endpoint&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Switching transports and message format from SOAP to REST/POX</strong>
+</p>
+
+<p><strong>Prerequisites:</strong><br />
+Start the Synapse configuration numbered 152: i.e. wso2esb-samples -sn 152 </p>
+
+<p>Start the Axis2 server and deploy the SimpleStockQuoteService if not
+already done </p>
+
+<p>This configuration demonstrates how a proxy service could be exposed on a
+subset of available transports, and how it could switch from one transport to
+another. This example exposes the created proxy service only on https, and
+thus if the user tries to access it over http, would result in a fault. </p>
+<pre xml:space="preserve">ant stockquote -Dtrpurl=http://localhost:8280/services/StockQuoteProxy
+...
+     [java] org.apache.axis2.AxisFault: The service cannot be found for the endpoint reference (EPR) /services/StockQuoteProxy</pre>
+
+<p>Accessing this over https (ant stockquote
+-Dtrpurl=https://localhost:8243/services/StockQuoteProxy) causes the proxy
+service to access the SimpleStockQuoteService on the sample Axis2 server
+using REST/POX. This could be seen if the message exchange was captured using
+TCPMon as follows. The REST/POX response is now transformed back into a SOAP
+message and returned to the client. </p>
+<pre xml:space="preserve">POST http://localhost:9000/services/SimpleStockQuoteService HTTP/1.1
+Host: 127.0.0.1
+SOAPAction: urn:getQuote
+Content-Type: application/xml; charset=UTF-8;action="urn:getQuote";
+Transfer-Encoding: chunked
+Connection: Keep-Alive
+User-Agent: Synapse-HttpComponents-NIO
+
+75
+&lt;m0:getQuote xmlns:m0="http://services.samples/xsd"&gt;
+   &lt;m0:request&gt;
+      &lt;m0:symbol&gt;IBM&lt;/m0:symbol&gt;
+   &lt;/m0:request&gt;
+&lt;/m0:getQuote&gt;</pre>
+<pre xml:space="preserve">HTTP/1.1 200 OK
+Content-Type: application/xml; charset=UTF-8;action="http://services.samples/SimpleStockQuoteServicePortType/getQuoteResponse";
+Date: Tue, 24 Apr 2007 14:42:11 GMT
+Server: Synapse-HttpComponents-NIO
+Transfer-Encoding: chunked
+Connection: Keep-Alive
+
+2b3
+&lt;ns:getQuoteResponse xmlns:ns="http://services.samples/xsd"&gt;
+   &lt;ns:return&gt;
+      &lt;ns:change&gt;3.7730036841862384&lt;/ns:change&gt;
+      &lt;ns:earnings&gt;-9.950236235550818&lt;/ns:earnings&gt;
+      &lt;ns:high&gt;-80.23868444613285&lt;/ns:high&gt;
+      &lt;ns:last&gt;80.50750970812187&lt;/ns:last&gt;
+      &lt;ns:lastTradeTimestamp&gt;Tue Apr 24 20:42:11 LKT 2007&lt;/ns:lastTradeTimestamp&gt;
+      &lt;ns:low&gt;-79.67368355714606&lt;/ns:low&gt;
+      &lt;ns:marketCap&gt;4.502043663670823E7&lt;/ns:marketCap&gt;
+      &lt;ns:name&gt;IBM Company&lt;/ns:name&gt;
+      &lt;ns:open&gt;-80.02229531286982&lt;/ns:open&gt;
+      &lt;ns:peRatio&gt;25.089295161182022&lt;/ns:peRatio&gt;
+      &lt;ns:percentageChange&gt;4.28842665653824&lt;/ns:percentageChange&gt;
+      &lt;ns:prevClose&gt;87.98107059692451&lt;/ns:prevClose&gt;
+      &lt;ns:symbol&gt;IBM&lt;/ns:symbol&gt;
+      &lt;ns:volume&gt;19941&lt;/ns:volume&gt;
+   &lt;/ns:return&gt;&lt;/ns:getQuoteResponse&gt;</pre>
+
+<h2><a name="Sample153">Sample 153: Routing the messages arrived to a proxy
+service without processing the security headers</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+		&lt;property name="preserveProcessedHeaders" value="true"/&gt;
+                &lt;send&gt;
+                    &lt;endpoint&gt;
+                        &lt;address uri="http://localhost:9000/services/SecureStockQuoteService"/&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Routing the messages arrived to a proxy service without
+processing the MustUnderstand headers (Security header)</strong> </p>
+
+<p><strong>Prerequisites:</strong><br />
+You may also need to download and install the unlimited strength policy files
+for your JDK before using Apache Rampart (e.g. see
+<a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">http://java.sun.com/javase/downloads/index_jdk5.jsp</a>) </p>
+
+<p>Start the Synapse configuration numbered 153: i.e. wso2esb-samples -sn 153<br
+/>
+Start the Axis2 server and deploy the SecureStockQuoteService if not already
+done </p>
+
+<p>The proxy service will receive secure messages with security headers which
+are MustUnderstand. But hence element 'engageSec' is not present in the proxy
+configuration ESB will not engage that Apache Rampart on this proxy service.
+It is expected that an MustUnderstand failure exception on the AxisEngine
+would occur before the message arrives ESB. But ESB handles this message and
+gets it in by setting all the headers which are MustUnderstand and not
+processed to processed state. This will enable ESB to route the messages
+without reading the Security headers (just routing the messages from client
+to service, both of which are secure). To execute the client, send a stock
+quote request to the proxy service, and sign and encrypt the request by
+specifying the client side security policy as follows: </p>
+<pre xml:space="preserve">ant stockquote -Dtrpurl=http://localhost:8280/services/StockQuoteProxy -Dpolicy=./../../repository/samples/resources/policy/client_policy_3.xml</pre>
+
+<p>By following through the debug logs or TCPMon output, you could see that
+the request received by the proxy service was signed and encrypted. Also,
+looking up the WSDL of the proxy service by requesting the URL
+http://localhost:8280/services/StockQuoteProxy?wsdl reveals the security policy
+attachments are not there and security is not engaged. When sending the
+message to the backend service, you could verify that the security headers
+were there as in the original message to ESB from client, and that the
+response received does use WS-Security, and forwarded back to the client
+without any modification. You should note that this wont be a security hole
+because the message inside ESB is signed and encrypted and can only be
+forwarded to a secure service to be useful. </p>
+
+<h2><a name="Sample154">Sample 154: Load Balancing with Proxy Services </a> </h2>
+
+<div>
+<pre xml:space="preserve">   &lt;!-- A proxy service with a loadbalace endpoint --&gt;
+&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;proxy name="LBProxy" transports="https http" startOnLoad="true"&gt;
+        &lt;target faultSequence="errorHandler"&gt;
+            &lt;inSequence&gt;
+                &lt;send&gt;
+                    &lt;endpoint&gt;
+                        &lt;session type="simpleClientSession"/&gt;
+                        &lt;loadbalance algorithm="org.apache.synapse.endpoints.algorithms.RoundRobin"&gt;
+                            &lt;endpoint&gt;
+                                &lt;address uri="http://localhost:9001/services/LBService1"&gt;
+                                    &lt;enableAddressing/&gt;
+                                    &lt;suspendDurationOnFailure&gt;20&lt;/suspendDurationOnFailure&gt;
+                                &lt;/address&gt;
+                            &lt;/endpoint&gt;
+                            &lt;endpoint&gt;
+                                &lt;address uri="http://localhost:9002/services/LBService1"&gt;
+                                    &lt;enableAddressing/&gt;
+                                    &lt;suspendDurationOnFailure&gt;20&lt;/suspendDurationOnFailure&gt;
+                                &lt;/address&gt;
+                            &lt;/endpoint&gt;
+                            &lt;endpoint&gt;
+                                &lt;address uri="http://localhost:9003/services/LBService1"&gt;
+                                    &lt;enableAddressing/&gt;
+                                    &lt;suspendDurationOnFailure&gt;20&lt;/suspendDurationOnFailure&gt;
+                                &lt;/address&gt;
+                            &lt;/endpoint&gt;
+                        &lt;/loadbalance&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+                &lt;drop/&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_2.wsdl"/&gt;
+    &lt;/proxy&gt;
+    &lt;sequence name="errorHandler"&gt;
+
+        &lt;makefault&gt;
+            &lt;code value="tns:Receiver" xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+            &lt;reason value="COULDN'T SEND THE MESSAGE TO THE SERVER."/&gt;
+        &lt;/makefault&gt;
+
+        &lt;header name="To" action="remove"/&gt;
+        &lt;property name="RESPONSE" value="true"/&gt;
+
+        &lt;send/&gt;
+    &lt;/sequence&gt;
+&lt;/definitions&gt; </pre>
+</div>
+
+<p><strong>Objective: Load Balancing with Proxy Service</strong> </p>
+
+<p><strong>Prerequisites:</strong><br />
+</p>
+
+<p>Sample setup is same as LoadBalance endpoints (#53 to #54). </p>
+
+<p>Start the Synapse configuration numbered 154: i.e. wso2esb-samples -sn 154<br
+/>
+Start the Axis2 server and deploy the LoadbalanceFailoverService if not already
+done </p>
+
+<p>Runs the client with </p>
+<pre xml:space="preserve"> ant loadbalancefailover -Dmode=session -Dtrpurl=http://localhost:8280/services/LBProxy</pre>
+
+<p>Functionality is similar to the sample #54. </p>
+
+    <h2>
+      <a name="Sample155">Sample 155: Dual channel invocation
+      on both client side and serverside of synapse with Proxy Services</a>
+    </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"&gt;
+                    &lt;enableAddressing separateListener="true"/&gt;
+                &lt;/address&gt;
+            &lt;/endpoint&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+    <p>
+      <strong>Objective: Demonstrate the dual channel invocation with Synapse proxy services</strong>
+    </p>
+    <p>
+      <strong>Prerequisites:</strong><br/> Start the Synapse
+      configuration numbered 155: i.e. wso2esb-samples -sn 155<br/> Start the
+      Axis2 server and deploy the SimpleStockQuoteService if not already done
+    </p>
+    <p/>
+    <p>
+      This sample will show the action of the dual channel invocation within client and Synapse
+      as well as within synapse and the actual server. Note that if you want to enable dual
+      channel invocation you need to set the separateListener attribute to true of the
+      enableAddressing element of the endpoint.
+    </p>
+    <p>
+      Execute the stock quote client by requesting for a stock quote on a dual channel from the
+      proxy service as follows:
+    </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy -Dmode=dualquote</pre>
+    <p>
+      In the above example, the request received is forwarded to the sample service
+      hosted on Axis2 and the endpoint specifies to enable addressing and do the invocation
+      over a dual channel. If you observe this message flow by using a TCPmon, you could see that
+      on the channel you send the request to synapse the response has been written as an
+      HTTP 202 Accepted, where as the real response from synapse will come over a different channel
+      which cannot be obsesrved unless you use tcpdump to dump all the TCP level messages.
+    </p>
+    <p>
+      At the same time you can observe the behaviour of the invocation between synapse and
+      the actual Axis2 service, where you can see a 202 Accepted message being delivered to synapse
+      as the response to the request. The actual response will be delivered to synapse over a
+      different channel.
+    </p>
+
+    <h2>
+      <a name="Sample156">Sample 156: Service Integration with specifying the receiving sequence</a>
+    </h2>
+<pre xml:space="preserve">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;!-- Service Integration with specifying the receiving sequence --&gt;
+&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;localEntry key="sec_policy" src="file:repository/conf/sample/resources/policy/policy_3.xml"/&gt;
+
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;enrich&gt;
+                    &lt;source type="body"/&gt;
+                    &lt;target type="property" property="REQUEST"/&gt;
+                &lt;/enrich&gt;
+
+                &lt;send receive="SimpleServiceSeq"&gt;
+                    &lt;endpoint name="secure"&gt;
+                        &lt;address uri="http://localhost:9000/services/SecureStockQuoteService"&gt;
+                            &lt;enableSec policy="sec_policy"/&gt;
+                        &lt;/address&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;drop/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+    &lt;/proxy&gt;
+
+
+    &lt;sequence name="SimpleServiceSeq"&gt;
+        &lt;property name="SECURE_SER_AMT" expression="//ns:getQuoteResponse/ns:return/ax21:last"
+                xmlns:ns="http://services.samples" xmlns:ax21="http://services.samples/xsd"/&gt;
+        &lt;log level="custom"&gt;
+            &lt;property name="SecureStockQuoteService-Amount" expression="get-property('SECURE_SER_AMT')"/&gt;
+        &lt;/log&gt;
+        &lt;enrich&gt;
+            &lt;source type="body"/&gt;
+            &lt;target type="property" property="SecureService_Res"/&gt;
+        &lt;/enrich&gt;
+        &lt;enrich&gt;
+            &lt;source type="property" property="REQUEST"/&gt;
+            &lt;target type="body"/&gt;
+        &lt;/enrich&gt;
+        &lt;send receive="ClientOutSeq"&gt;
+            &lt;endpoint name="SimpleStockQuoteService"&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/sequence&gt;
+
+    &lt;sequence name="ClientOutSeq"&gt;
+        &lt;property name="SIMPLE_SER_AMT" expression="//ns:getQuoteResponse/ns:return/ax21:last"
+                       xmlns:ns="http://services.samples" xmlns:ax21="http://services.samples/xsd"/&gt;
+        &lt;log level="custom"&gt;
+            &lt;property name="SimpleStockQuoteService-Amount" expression="get-property('SIMPLE_SER_AMT')"/&gt;
+        &lt;/log&gt;
+        &lt;enrich&gt;
+            &lt;source type="body"/&gt;
+            &lt;target type="property" property="SimpleService_Res"/&gt;
+        &lt;/enrich&gt;
+
+        &lt;filter xpath="fn:number(get-property('SIMPLE_SER_AMT')) &gt; fn:number(get-property('SECURE_SER_AMT'))"&gt;
+            &lt;then&gt;
+                &lt;log&gt;
+                    &lt;property name="StockQuote" value="SecureStockQuoteService"/&gt;
+                &lt;/log&gt;
+                &lt;enrich&gt;
+                    &lt;source type="property" property="SecureService_Res"/&gt;
+                    &lt;target type="body"/&gt;
+                &lt;/enrich&gt;
+            &lt;/then&gt;
+            &lt;else&gt;
+                &lt;log&gt;
+                    &lt;property name="StockQuote" value="SimpleStockQuoteService"/&gt;
+                &lt;/log&gt;
+            &lt;/else&gt;
+        &lt;/filter&gt;
+
+        &lt;send/&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+    <p>
+      <strong>Objective: Using synapse to integrate services.</strong>
+    </p>
+    <p>
+      <strong>Prerequisites:</strong><br/> We will be using two services in this sample;
+        i.e. SimpleStockQuoteService and SecureStockQuoteService. Therefore the prerequisites
+        of sample 100 is also applied here.
+    </p>
+    <p>Start the Synapse
+      configuration numbered 156: i.e. wso2esb-samples -sn 156<br/> Start the
+      Axis2 server and deploy the SimpleStockQuoteService if not already done.
+    </p>
+    <p>
+      This sample contains a proxy service which provides the seamless integration of
+        SimpleStockQuoteService and SecureStockQuoteService. Once a client send a
+        request to this proxy service, it sends the same request to both these services
+        and resolve the service with cheapest stock quote price.
+    </p>
+    <p>
+      Execute the stock quote client by requesting for a cheapest stock quote
+        from the proxy service as follows:
+    </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy</pre>
+    <p>
+      Above sample uses the concept of specifying the receiving sequence in the
+        send mediator. In this case once the message is sent from the in sequence
+        then the response won't come to out sequence as the receiving sequence is
+        specified in the send mediator.
+    </p>
+
+
+    <h2>
+      <a name="Sample157">Sample 157: Conditional Router for Routing Messages based on HTTP URL, HTTP Headers and Query Parameters</a>
+    </h2>
+    <pre xml:space="preserve">
+&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+    &lt;proxy name=&quot;StockQuoteProxy&quot; transports=&quot;https http local&quot; startOnLoad=&quot;true&quot; trace=&quot;disable&quot;&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;conditionalRouter continueAfter=&quot;false&quot;&gt;
+                    &lt;conditionalRoute breakRoute=&quot;false&quot;&gt;
+                        &lt;condition&gt;
+                            &lt;match xmlns=&quot;&quot; type=&quot;header&quot; source=&quot;foo&quot; regex=&quot;bar.*&quot;/&gt;
+                        &lt;/condition&gt;
+                        &lt;target sequence=&quot;cnd1_seq&quot;/&gt;
+                    &lt;/conditionalRoute&gt;
+
+                    &lt;conditionalRoute breakRoute=&quot;false&quot;&gt;
+                        &lt;condition&gt;
+                            &lt;and xmlns=&quot;&quot;&gt;
+                                &lt;match type=&quot;header&quot; source=&quot;my_custom_header1&quot; regex=&quot;foo.*&quot;/&gt;
+                                &lt;match type=&quot;url&quot; regex=&quot;/services/StockQuoteProxy.*&quot;/&gt;
+                            &lt;/and&gt;
+                        &lt;/condition&gt;
+                        &lt;target sequence=&quot;cnd2_seq&quot;/&gt;
+                    &lt;/conditionalRoute&gt;
+
+                    &lt;conditionalRoute breakRoute=&quot;false&quot;&gt;
+                        &lt;condition&gt;
+                            &lt;and xmlns=&quot;&quot;&gt;
+                                &lt;match type=&quot;header&quot; source=&quot;my_custom_header2&quot; regex=&quot;bar.*&quot;/&gt;
+                                &lt;equal type=&quot;param&quot; source=&quot;qparam1&quot; value=&quot;qpv_foo&quot;/&gt;
+                                &lt;or&gt;
+                                    &lt;match type=&quot;url&quot; regex=&quot;/services/StockQuoteProxy.*&quot;/&gt;
+                                    &lt;match type=&quot;header&quot; source=&quot;my_custom_header3&quot; regex=&quot;foo.*&quot;/&gt;
+                                &lt;/or&gt;
+                                &lt;not&gt;
+                                    &lt;equal type=&quot;param&quot; source=&quot;qparam2&quot; value=&quot;qpv_bar&quot;/&gt;
+                                &lt;/not&gt;
+                            &lt;/and&gt;
+                        &lt;/condition&gt;
+                        &lt;target sequence=&quot;cnd3_seq&quot;/&gt;
+                    &lt;/conditionalRoute&gt;
+                &lt;/conditionalRouter&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+    &lt;/proxy&gt;
+
+    &lt;sequence name=&quot;cnd1_seq&quot;&gt;
+        &lt;log level=&quot;custom&quot;&gt;
+            &lt;property name=&quot;MSG_FLOW&quot; value=&quot;Condition (I) Satisfied&quot;/&gt;
+        &lt;/log&gt;
+        &lt;sequence key=&quot;send_seq&quot;/&gt;
+    &lt;/sequence&gt;
+    &lt;sequence name=&quot;cnd2_seq&quot;&gt;
+        &lt;log level=&quot;custom&quot;&gt;
+            &lt;property name=&quot;MSG_FLOW&quot; value=&quot;Condition (II) Satisfied&quot;/&gt;
+        &lt;/log&gt;
+        &lt;sequence key=&quot;send_seq&quot;/&gt;
+    &lt;/sequence&gt;
+    &lt;sequence name=&quot;cnd3_seq&quot;&gt;
+        &lt;log level=&quot;custom&quot;&gt;
+            &lt;property name=&quot;MSG_FLOW&quot; value=&quot;Condition (III) Satisfied&quot;/&gt;
+        &lt;/log&gt;
+        &lt;sequence key=&quot;send_seq&quot;/&gt;
+    &lt;/sequence&gt;
+
+    &lt;sequence name=&quot;send_seq&quot;&gt;
+        &lt;log level=&quot;custom&quot;&gt;
+            &lt;property name=&quot;DEBUG&quot; value=&quot;Condition Satisfied&quot;/&gt;
+        &lt;/log&gt;
+        &lt;send&gt;
+            &lt;endpoint name=&quot;simple&quot;&gt;
+                &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/sequence&gt;
+&lt;/definitions&gt;
+
+    </pre>
+    <p>
+      <strong>Objective: Routing Messages based on the HTTP Transport properties.</strong>
+    </p>
+    <p>
+      <strong>Prerequisites:</strong><br/> Start the Synapse configuration numbered 157: i.e. wso2esb-samples -sn 157
+        <br/>Start the Axis2 server and deploy the SimpleStockQuoteService if not already done.
+        For this particular case we will be using 'curl' to send requests with custom HTTP Headers to the proxy service. You may use a similar tool with facilitate those requirements.
+        <br/><br/>The request file : stockQuoteReq.xml, should contain the following request.
+    </p>
+    <pre xml:space="preserve">&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot; xmlns:ser=&quot;http://services.samples&quot; xmlns:xsd=&quot;http://services.samples/xsd&quot;&gt;
+   &lt;soap:Header/&gt;
+   &lt;soap:Body&gt;
+      &lt;ser:getQuote&gt;
+         &lt;ser:request&gt;
+            &lt;xsd:symbol&gt;IBM&lt;/xsd:symbol&gt;
+         &lt;/ser:request&gt;
+      &lt;/ser:getQuote&gt;
+   &lt;/soap:Body&gt;
+&lt;/soap:Envelope&gt;</pre>
+
+    <p>
+    Condition I : Matching HTTP Header <br/>
+    </p>
+    <pre xml:space="preserve">curl -d @stockQuoteReq.xml -H "Content-Type: application/soap+xml;charset=UTF-8" -H "foo:bar" "http://localhost:8280/services/StockQuoteProxy"
+    </pre>
+
+    <p>
+    Condition II : Matching HTTP Header AND Url<br/>
+    </p>
+    <pre xml:space="preserve">curl -d @stockQuoteReq.xml -H "Content-Type: application/soap+xml;charset=UTF-8" -H "my_custom_header1:foo1" "http://localhost:8280/services/StockQuoteProxy"</pre>
+
+    <p>
+    Condition III : Complex conditions with AND, OR and NOT<br/>
+    </p>
+    <pre xml:space="preserve">curl -d @stockQuoteReq.xml -H "Content-Type: application/soap+xml;charset=UTF-8" -H "my_custom_header2:bar" -H "my_custom_header3:foo" "http://localhost:8280/services/StockQuoteProxy?qparam1=qpv_foo&amp;qparam2=qpv_foo2"</pre>
+
+</body>
+</html>

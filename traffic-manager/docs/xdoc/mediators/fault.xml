@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Fault Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Fault Mediator</h2>
+
+<p>The fault mediator transforms the current message into a fault message, but
+does NOT send it. The &lt;send&gt; mediator needs to be invoked to send a fault
+message created this way. The fault message "To" header is set to the
+"Fault-To" of the original message if such a header exists on the original
+message. If a 'version' attribute is specified, the created fault message will
+be created as a selected SOAP 1.1, SOAP 1.2 or POX fault.</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;makefault [version="soap11|soap12|pox"]&gt;
+   &lt;code (value="literal" | expression="xpath")/&gt;
+   &lt;reason (value="literal" | expression="xpath")&gt;
+   &lt;node&gt;?
+   &lt;role&gt;?
+   &lt;detail&gt;?
+ &lt;/makefault&gt;</pre>
+
+<p></p>
+
+<h3>UI Configuration</h3>
+
+<p><img alt="Fault Mediator" src="../makefault-mediator/docs/images/fault.png" />
+</p>
+
+<p><strong>Figure1: Fault Mediator</strong> </p>
+
+<h4>Version</h4>
+
+<p>You can select the version of the SOAP fault message that you want to
+create. Options are SOAP 1.1 and SOAP 1.2. </p>
+
+<h4>Fault Code</h4>
+
+<p>You can specify a fault code</p>
+<ul>
+  <li>versionMismatch: SOAP version mismatch error</li>
+  <li>mustUnderstand: A soap error regarding must understand error</li>
+  <li>Client: Client side error</li>
+  <li>Server: Server side error</li>
+</ul>
+
+<h4>Fault String</h4>
+
+<p>The detailed fault string of the fault code can specify here. It can be give
+either as a string value or as an expression. NSEditor: You can click this link
+to add namespaces if you are providing an expression. You will be provided
+another panel named 'Namespace Editor' where you can provide any number of
+namespace prefixes and url that you have used in the xpath expression. Here is
+an example of the use of namespaces in an expression. </p>
+
+<h4>Fault Actor</h4>
+
+<p>SOAP 1.1 fault actor(if you select SOAP 1.1) </p>
+
+<p><img alt="SOAP 11 fault mediator"
+src="../makefault-mediator/docs/images/fault.png" /> </p>
+
+<p><strong>Figure2: SOAP 1.1 with fault expression selected </strong> </p>
+
+<h4>Detail</h4>
+
+<p>Some information about the fault can be added here</p>
+
+<p>If you select SOAP 1.2, you can see the followings</p>
+
+<p><img alt="SOAP 12 fault meditor"
+src="../makefault-mediator/docs/images/fault12.png" /> </p>
+
+<p><strong>Figure2: SOAP 1.2 with fault expression selected </strong> </p>
+
+<h4>Reason</h4>
+
+<p>Reason is the fault reason describing the fault code</p>
+
+<h4>Role</h4>
+
+<p>SOAP 1.2 role names</p>
+
+<h4>Node</h4>
+
+<p>SOAP 1.2 node name</p>
+
+<h3>Example</h3>
+<pre xml:space="preserve">
+&lt;makefault xmlns="http://ws.apache.org/ns/synapse" version="soap11"&gt;
+   &lt;code xmlns:soap11Env="http://schemas.xmlsoap.org/soap/envelope/" value="soap11Env:VersionMismatch" /&gt;
+   &lt;reason value="test message " /&gt;
+   &lt;role>&lt;/role&gt;
+&lt;/makefault&gt;
+</pre>
+</body>
+</html>

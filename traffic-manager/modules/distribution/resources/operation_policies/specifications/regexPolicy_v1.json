@@ -1,0 +1,16 @@
+{
+  "category": "Mediation",
+  "name": "regexPolicy",
+  "version": "v1",
+  "displayName": "Regex Policy",
+  "description": "This is a predefined Regular Expression policy that validates content based on the pattern you define. The regex policy builds the entire message and performs string processing to find potentially harmful constructs underneath the message body. This drops the performance of 10KB messages for 300 concurrent users by 3.6 times than the normal flow. The performance decrease may accelerate along with the message size",
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

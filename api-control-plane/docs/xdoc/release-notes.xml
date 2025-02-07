@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c), WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
+    <title>WSO2 API Manager v4.4.0 - 31st October 2024</title>
+</head>
+<body>
+<div id="main-content">
+<h1>WSO2 API Manager 4.4.0 Released!</h1>
+
+<p>
+    The WSO2 API Manager team is pleased to announce the release of version 4.4.0 of
+    the Open Source API Manager.
+</p>
+
+<p>
+    The WSO2 API Manager is a fully open source full lifecycle API Management product that can be deployed on-prem, <br/>
+    available on SaaS, deployed on a private cloud or deployed in a hybrid model. It comprises the following <br/>
+    components that provides all of its functionality.
+</p>
+
+<ul>
+    <li><b>API Designer and Publisher:</b> Allows API creators to design, implement and document APIs and <br/>
+    allows API product managers to manage the lifecycle of APIs and create API products by using one or more APIs.</li><br/>
+    <li><b>Developer Portal:</b> A portal for onboarding application creators. It allows application creators to discover, <br/>
+    subscribe, test and consume APIs through their applications.</li><br/>
+    <li><b>API Gateway:</b> Allows access to APIs/services by routing application traffic to the relevant endpoints. <br/>
+    The API Gateway is the component that enforces security, rate-limiting and transformations on API requests while <br/>
+    feeding valuable information of these requests to API Analytics.</li><br/>
+    <li><b>Key Manager:</b> The security token service of the API Manager which is responsible for  handling everything <br/>
+    related to authentication and authorization of API requests. It supports a wide variety of security protocols such <br/>
+    as OAuth2.0/OIDC, Basic Auth, API Key, SAML based single-sign-on.</li><br/>
+    <li><b>Traffic Manager:</b> Controls the traffic flow of the API gateway. This is used to apply request quotas on APIs <br/>
+    for monetization, access control or security related matters. In addition to configuring the available policies, users <br/>
+    can deploy their own policies on the traffic manager which will control the rate of traffic on the API gateways.</li><br/>
+    <li><b>API Analytics:</b> Monitors all traffic that’s routed through the API gateways to analyse usage patterns, <br/>
+    SLA violations, consumer behaviours, to provide business insights and so on.</li>
+</ul>
+
+<p>
+    For more information on WSO2 API Manager please visit <a href="https://wso2.com/api-management/">
+    https://wso2.com/api-management/</a>. Also take a look at the online product
+    <a href="https://apim.docs.wso2.com/en/4.3.0/">documentation</a>.
+</p>
+
+<h2>How to Run</h2>
+<ol>
+    <li>Extract the downloaded zip</li>
+    <li>Go to the bin directory in the extracted folder</li>
+    <li>Run the api-manager.sh or api-manager.bat as appropriate</li>
+    <li>Launch a web browser and navigate to <a href="https://localhost:9443/publisher">https://localhost:9443/publisher</a>
+        to access the API provider webapp
+    </li>
+    <li>Navigate to <a href="https://localhost:9443/devportal">https://localhost:9443/devportal</a> to access the Developer Portal</li>
+    <li>Navigate to <a href="https://localhost:9443/admin">https://localhost:9443/admin</a> to access Admin Portal</li>
+    <li>Use "admin", "admin" as the username and password to login as an admin</li>
+</ol>
+
+    <h2>Bug Fixes And Improvements in 4.4.0</h2>
+    <ul>
+        <li>GitHub (<a href="https://github.com/wso2/api-manager/issues?q=is%3Aissue+is%3Aclosed+label%3AComponent%2FAPIM+closed%3A2024-04-10..2024-10-31+">api-manager</a>)
+        </li>
+    </ul>
+
+    <h2>Known Issues</h2>
+    <ul>
+        <li>GitHub (<a href="https://github.com/wso2/api-manager/issues?q=is%3Aissue+is%3Aopen+label%3AComponent%2FAPIM">api-manager</a>)
+        </li>
+    </ul>
+
+<h2>How You Can Contribute</h2>
+    <br/>
+    You can use our Discord Channel and Stackoverflow Collective to engage with a wider audience.
+    |
+    <a href="https://wso2.com/community/">Join Us</a>
+    <br/><br/>
+<h3>
+    Reporting Issues
+</h3>
+<p>
+    We encourage you to report issues, documentation faults, and feature requests regarding WSO2 API Manager through the public <a href="https://github.com/wso2/api-manager/issues">API Manager Git Repo</a>.
+</p>
+
+<p>
+    And please be advised that, security issues must be reported to <a href="mailto:security@wso2.com">security@wso2.com</a>, not as a GitHub issue, in order to reach proper audience. We strongly advise following the <a href="https://security.docs.wso2.com/en/latest/security-reporting/vulnerability-reporting-guidelines/">WSO2 Security Vulnerability Reporting Guidelines</a> when reporting the security issues.
+</p>
+
+<p>
+    <i>-- The WSO2 API Manager Team --</i>
+</p>
+</div>
+</body>
+</html>

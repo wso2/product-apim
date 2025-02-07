@@ -1,0 +1,99 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "version" : "1.0.0",
+    "title" : "SwaggerPetstore_v2"
+  },
+  "security" : [ {
+    "default" : [ ]
+  } ],
+  "paths" : {
+    "/pets" : {
+      "get" : {
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "default" : [ "SwaggerPetstore_v2" ]
+        } ],
+        "x-auth-type" : "Application & Application User",
+        "x-throttling-tier" : "Unlimited",
+        "x-wso2-application-security": {
+          "security-types": ["oauth2"],
+          "optional": false
+        }
+      }
+    },
+    "/pets/{petId}" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "petId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "default" : [ ]
+        } ],
+        "x-auth-type" : "Application & Application User",
+        "x-throttling-tier" : "Unlimited",
+        "x-wso2-application-security": {
+          "security-types": ["oauth2"],
+          "optional": false
+        }
+      }
+    },
+    "/oldpets" : {
+      "delete" : {
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "default" : [ "SwaggerPetstore_v2" ]
+        } ],
+        "x-auth-type" : "Application & Application User",
+        "x-throttling-tier" : "Unlimited",
+        "x-wso2-application-security": {
+          "security-types": ["oauth2"],
+          "optional": false
+        }
+      }
+    }
+  },
+  "x-wso2-api-key-header": "ApiKey",
+  "securityDefinitions" : {
+    "default" : {
+      "type" : "oauth2",
+      "authorizationUrl" : "https://test.com",
+      "flow" : "implicit",
+      "scopes" : {
+        "SwaggerPetstore_v2" : "SwaggerPetstore_v2"
+      },
+      "x-scopes-bindings" : {
+        "SwaggerPetstore_v2" : "admin"
+      }
+    }
+  },
+  "x-throttling-tier" : "Unlimited",
+  "x-wso2-cors" : {
+    "corsConfigurationEnabled" : true,
+    "accessControlAllowOrigins" : [ "*" ],
+    "accessControlAllowCredentials" : false,
+    "accessControlAllowHeaders" : [ "authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction" ],
+    "accessControlAllowMethods" : [ "GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS" ]
+  },
+  "x-wso2-production-endpoints" : "https://localhost:9443/publisher-new/apis/create/openapi",
+  "x-wso2-sandbox-endpoints" : "https://localhost:9443/publisher-new/apis/create/openapi",
+  "x-wso2-basePath" : "/SwaggerPetstorev2/1.0.0"
+}

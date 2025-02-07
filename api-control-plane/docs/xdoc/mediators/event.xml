@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Drop Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Event Mediator</h2>
+
+<p>Event mediator publishes events to the given event source. Thus, the
+presence of defined event sources are necessary prior to the usage of this
+mediator. User can apply any mediation before sending the message to the event
+source. This allows features like transformation, logging, filtering to be
+applied to a message coming to an Event Source. </p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve">&lt;event xmlns=&quot;http://ws.apache.org/ns/synapse&quot; topic=&quot;&quot; [expression=&quot;&quot;] /&gt;</pre>
+
+<h3>UI Configuration</h3>
+
+<p><img src="../event-mediator/docs/images/event_mediator_screenshot.jpg"
+alt="" /> </p>
+<ul>
+  <li>Event Source: Select a source from currently available event sources. You
+    can define event sources from the "Event Sources" panel which can be
+    accessed from Configure-&gt; Event Sources menu of the right hand side menu
+    bar. </li>
+</ul>
+
+<h3>Usage Scenario</h3>
+<pre xml:space="preserve">&lt;!-- Simple Eventing configuration --&gt;
+ &lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+     &lt;sequence name="PublicEventSource" &gt;
+            &lt;log level="full"/&gt;
+            &lt;event topic="SampleEventSource"/&gt;
+     &lt;/sequence&gt;
+
+     &lt;proxy name="EventingProxy"&gt;
+         &lt;target inSequence="PublicEventSource" /&gt;
+     &lt;/proxy&gt;
+ &lt;/definitions&gt;</pre>
+
+<p>In this scenario user has defined an event topic called SampleEventSource.
+When a event notification comes to the EventingProxy proxy service, the
+messages will be logged and then sent to the event topic. </p>
+</body>
+</html>

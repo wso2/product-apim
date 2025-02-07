@@ -1,0 +1,35 @@
+{
+    "name": "wso2_apim_UI_Integration_tests",
+    "version": "3.0.0",
+    "description": "WSO2 API Manager UI Integration tests, Notes: --runInBand parameter is used for serialize the test execution, Otherwise since all test are running in single browser instance , cookie conflicts may occur",
+    "main": "app.jsx",
+    "scripts": {
+        "test": "jest --runInBand",
+        "gtest": "PUPPETEER_HEADLESS=True jest --runInBand",
+        "lint": "eslint source"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/wso2/product-apim"
+    },
+    "author": "WSO2 Org",
+    "license": "Apache-2.0",
+    "dependencies": {},
+    "devDependencies": {
+        "@babel/core": "^7.4.4",
+        "babel-eslint": "^10.0.2",
+        "babel-jest": "^24.8.0",
+        "babel-loader": "^8.0.6",
+        "eslint": "^4.18.2",
+        "eslint-config-airbnb": "^16.1.0",
+        "eslint-loader": "^2.0.0",
+        "eslint-plugin-import": "^2.9.0",
+        "eslint-plugin-jest": "^22.6.4",
+        "eslint-plugin-react": "v7.13.0",
+        "jest": "^24.8.0",
+        "jest-puppeteer": "^4.2.0",
+        "puppeteer": "^1.17.0",
+        "webpack": "v4.28.4",
+        "webpack-cli": "^3.3.2"
+    }
+}

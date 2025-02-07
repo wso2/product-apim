@@ -1,0 +1,23 @@
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"{{sequence_name}}\">
+{% if api_level_policies is defined %}
+{% for policy in api_level_policies %}
+    {{policy}}
+{% endfor %}
+{% endif %}
+{% if case_list is defined %}
+    <property name="switchExpression" expression="fn:concat($ctx:REST_METHOD,'_',$ctx:API_ELECTED_RESOURCE)" />
+    <switch source=\"$ctx:switchExpression\">
+    {% for case in case_list %}
+        <case regex=\"{{case.case_regex}}\">
+        {% for policy in case.policy_sequence %}
+            {{policy}}
+        {% endfor %}
+        </case>
+    {% endfor %}
+    </switch>
+{% endif %}
+{% if fault_sequence %}
+    <sequence xmlns="http://ws.apache.org/ns/synapse" name="fault"/>
+{% endif %}
+</sequence>

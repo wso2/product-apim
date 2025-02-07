@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
+    <title>
+      WSO2 ESB - Webapp Deployment Guide
+    </title>
+    <link href="css/esb-docs.css" rel="stylesheet"/>
+    <link href="styles/dist-docs.css" rel="stylesheet" type="text/css" media="all"/>
+  </head>
+  <body>
+      [ <a href="deployment_guide.html"> Deployment Guide </a> ]
+    <h1>
+      WSO2 Enterprise Service Bus (ESB) Webapp Deployment Guide
+    </h1>
+
+    <p>
+      WSO2 ESB can be deployed on different application servers such as IBM WebSphere,
+      BEA WebLogic Server, JBoss and Apache Tomcat. This guide describes how to deploy the ESB
+      on Apache Tomcat in a step-by-step manner. The methodology should be the same for
+      other application server deployments as well, but it will require some knowledge on the
+      application server for you to get it working on that particular application server.
+    </p>
+    <h2>Step 1 - Downloading and installing Apache Tomcat</h2>
+
+    <p>
+      You can download the latest version of Apache Tomcat from
+        <a href="http://archive.apache.org/dist/tomcat/">here</a> (We will be using Apache
+      Tomcat 5.5.20 to demonstrate this particular deployment). Extract the downloaded distribution
+      to a specific location and define the environment variables properly. (Assume you extracted
+      the downloaded Tomcat into the folder \opt\software\apache-tomcat-5.5.20)
+    </p>
+
+    <pre>E.g.: -
+    CATALINA_HOME=\opt\software\apache-tomcat-5.5.20
+    </pre>
+
+    <h2>Step 2 - Downloading and installing WSO2 ESB</h2>
+
+    <p>
+      Download the WSO2 ESB distribution and extract to a specific location in the file system.
+      (E.g.:- /opt/software/wso2esb-4.0.0).
+    </p>
+
+    <p>
+      Copy the repository in the extracted distribution to a different location
+      (this is the directory we are planning to treat as ESB_HOME, E.g.:- /opt/software/esb-home)
+    </p>
+
+    <h2>Step 3 - Enable HTTPS on the Apache Tomcat</h2>
+
+    <p>
+      Next you will need to enable HTTPS on Apache Tomcat since WSO2 ESB administration console
+      runs over HTTPS. To do this, open up the server.xml file located at $CATALINA_HOME/conf
+      using a text editor and uncomment the following:
+    </p>
+
+    <pre>
+  &lt;Connector port="8443" maxHttpHeaderSize="8192"
+        maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+        enableLookups="false" disableUploadTimeout="true"
+        acceptCount="100" scheme="https" secure="true"
+        clientAuth="false" sslProtocol="TLS"/&gt;</pre>
+
+    <p>
+      Then you will need to provide the keystore file location along with it's password as below.
+    </p>
+
+    <pre>
+  &lt;Connector port="8443" maxHttpHeaderSize="8192"
+        maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+        enableLookups="false" disableUploadTimeout="true"
+        acceptCount="100" scheme="https" secure="true"
+        clientAuth="false" sslProtocol="TLS"
+        keystoreFile = "/opt/software/wso2esb-3.0.1/resources/security/wso2carbon.jks"
+        keystorePass="wso2carbon"/&gt;</pre>
+
+    <h2>Step 4 - Setting environment variables</h2>
+
+    <p>
+      You will have to set an environment variable with the name CARBON_HOME pointing it to
+      the directory into which you have copied the repository directory.
+    </p>
+
+    <pre>E.g.:-
+    CARBON_HOME=/opt/software/esb-home
+    </pre>
+
+    <h2>Step 5 - Copying required files to Apache Tomcat</h2>
+
+    <p>Now create a new directory inside the webapps folder of Tomcat.</p>
+    <pre>E.g.:-
+    /opt/software/apache-tomcat-5.5.20/webapps/esb
+    </pre>
+
+    <p>
+      Next, you need to copy the WEB-INF folder of the extracted distribution of the ESB to
+      the created webapp directory.
+    </p>
+    <pre>E.g.:-
+  cp -r /opt/software/wso2esb-4.0.0/lib/core/WEB-INF /opt/software/apache-tomcat-5.5.20/webapps/esb/
+    </pre>
+    <p>
+        You should also copy all the jar files in lib/api directory of ESB distribution into the
+        WEB-INF/lib directory of the ESB webapp in Tomcat.
+    </p>
+    <pre>E.g.:-
+  cp /opt/software/wso2esb-4.0.0/lib/api/*.jar /opt/software/apache-tomcat-5.5.20/webapps/esb/WEB-INF/lib
+    </pre>
+
+    <h2>Step 6 - Configuring the WSO2 ESB</h2>
+
+    <ol>
+      <li>Open the carbon.xml file which is in the CARBON_HOME/conf folder and specify the
+        following URL as the ServerURL https://localhost:8443/esb/services/
+      </li>
+      <li>Then you need to specify the absolute paths of the WSO2CARBON_DB of the two files
+        registry.xml and user-mgt.xml
+        <pre>jdbc:derby:database/WSO2CARBON_DB;create=true</pre> has to be replaced with
+        <pre>jdbc:derby:/opt/software/esb-home/WSO2CARBON_DB;create=true</pre>
+      </li>
+      <li>In order for the logging to work properly you need to copy the log4j.properties file
+      found at the lib directory of the extracted distribution to the webapp classpath</li>
+      <li>You need to specify the absolute paths for the two .jks files wso2carbon.jks and
+        client-truststore.jks specified in the HTTPS transport configuration section of the
+        axis2.xml and also the wso2carbon.jks file specified in the carbon.xml file.
+      </li>
+      <li>Further, you need to uncomment the wsdlEPRPrefix parameter of the HTTP and HTTPS
+      transport receiver configurations and put the value as
+          <pre>http://${host}:${port}/services</pre>
+      </li>
+      <li>Finally you will have to specify the absolute path of the Synapse configuration files in the
+        axis2.xml file located at CARBON_HOME/repository/conf. Simply change,
+<pre>repository/deployment/server/synapse-config/default</pre>
+to
+<pre>/opt/software/esb-home/repository/deployment/server/synapse-config/default</pre>
+      </li>
+      </ol>
+    <h2>Step 7 - Starting the Apache Tomcat Server</h2>
+
+    <p>
+      Now you can start the Apache Tomcat server by giving the command from the tomcat
+      installation bin directory</p>
+    <pre>  ./catalina.sh run</pre>
+
+    <h2>Step 7 - Login to the WSO2 ESB Administration Console</h2>
+
+    <p>Now you should be able to login to the WSO2 ESB Administration Console as,</p>
+      <pre>  https://localhost:8443/esb/carbon</pre>
+
+    <h2>Specific Instructions when Deploying WSO2 ESB in Other Application Servers</h2>
+      <h3>JBoss</h3>
+      <ol>
+          <li>In [Step-5], You should skip copying jboss-transaction-api-1.0.1.GA.jar when copying jars from
+              /opt/software/wso2esb-4.0.0/lib/api/ to
+              /opt/software/apache-tomcat-5.5.20/webapps/esb/WEB-INF/lib
+          </li>
+          <li>
+              Delete /opt/software/esb-home/repository//components/plugins/geronimo-jta_1.1_spec-1.1.0.wso2v1.jar
+          </li>
+      </ol>
+      <p>Without following these two steps, Transaction Mediator will not work when WSO2 ESB deployed in JBoss</p>
+  </body>
+</html>
