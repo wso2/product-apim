@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inboundEndpoint xmlns="http://ws.apache.org/ns/synapse"
+                 xmlns:svns="http://org.wso2.securevault/configuration"
+                 name="SecureWebSocketEP"
+                 sequence="{{apim.wss.dispatch.sequence}}"
+                 onError="{{apim.wss.dispatch.on_error.sequence}}"
+                 protocol="wss"
+                 suspend="false">
+    <parameters>
+        <parameter name="inbound.ws.port">{{apim.wss.port}}</parameter>
+        <parameter name="ws.outflow.dispatch.sequence">{{apim.wss.out_dispatch_seq}}</parameter>
+        <parameter name="ws.pipeline.handler.class">{{apim.wss.handler.class}}</parameter>
+        <parameter name="dispatch.custom.sequence">{{apim.wss.dispatch.custom.sequence}}</parameter>
+        <parameter name="ws.outflow.dispatch.fault.sequence">{{apim.wss.outflow.dispatch.fault.sequence}}</parameter>
+        <parameter name="ws.client.side.broadcast.level">{{apim.wss.client.side.broadcast.level}}</parameter>
+        <parameter name="ws.use.port.offset">true</parameter>
+        {%if apim.wss.dispatch.idleTime is defined %}
+        <parameter name="ws.dispatch.idleTime">{{apim.wss.dispatch.idleTime}}</parameter>
+        {%endif%}
+        {%if apim.wss.outflow.dispatch.idleTime is defined %}
+        <parameter name="ws.outflow.dispatch.idleTime">{{apim.wss.outflow.dispatch.idleTime}}</parameter>
+        {%endif%}
+        <parameter name="wss.ssl.key.store.file">{{apim.wss.keystore.location}}</parameter>
+        <parameter name="wss.ssl.key.store.pass">{{apim.wss.keystore.password}}</parameter>
+        <parameter name="wss.ssl.cert.pass">{{apim.wss.keystore.key_password}}</parameter>
+        <parameter name="wss.ssl.protocols">{{apim.wss.ssl_enabled_protocols}}</parameter>
+        {% if apim.wss.ciphers is defined %}
+        <parameter name="wss.ssl.cipher.suites">{{apim.wss.ciphers}}</parameter>
+        {% endif %}
+        {%if apim.wss.pass_through_control_frames is defined %}
+        <parameter name="ws.pass.through.control.frames">{{apim.wss.pass_through_control_frames}}</parameter>
+        {%endif%}
+    </parameters>
+</inboundEndpoint>

@@ -1,0 +1,8 @@
+{
+  "production_endpoints": {
+    "url": "http://localhost:9763/sample-data-backend/rservice/pouchpriceservice/",
+    "config": null,
+    "template_not_supported": false
+  },
+  "endpoint_type": "http"
+}
