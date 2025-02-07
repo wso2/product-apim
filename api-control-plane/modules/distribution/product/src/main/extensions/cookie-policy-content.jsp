@@ -27,7 +27,7 @@
             <div>
                 <div>
                     <h1>
-                        WSO2 API Manager - Cookie Policy
+                        WSO2 API Control Plane - Cookie Policy
                     </h1>
                 </div>
                 <div>

@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>tm-p2-profile</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager - P2 Profile Generation - Traffic Manager Distribution</name>
+    <name>WSO2 Traffic Manager - P2 Profile Generation - Traffic Manager Distribution</name>
     <url>http://www.wso2.org</url>
 
     <build>

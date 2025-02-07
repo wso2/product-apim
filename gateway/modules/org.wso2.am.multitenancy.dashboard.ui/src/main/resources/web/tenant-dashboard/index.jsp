@@ -58,7 +58,7 @@
     }
     
 </style>
- <h2 class="dashboard-title">WSO2 API Manager quick start dashboard</h2>
+ <h2 class="dashboard-title">WSO2 API Gateway quick start dashboard</h2>
         <table class="tip-table">
             <tr>
                 <td class="tip-top web-applications"></td>

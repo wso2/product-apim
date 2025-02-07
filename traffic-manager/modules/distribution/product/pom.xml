@@ -29,9 +29,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wso2am-tm</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager Traffic Manager - Distribution </name>
+    <name>WSO2 Traffic Manager - Distribution </name>
     <url>http://www.wso2.org/projects/am/java</url>
-    <description>WSO2 API Manager Traffic Manager Distribution</description>
+    <description>WSO2 Traffic Manager Distribution</description>
 
     <dependencies>
         <dependency>

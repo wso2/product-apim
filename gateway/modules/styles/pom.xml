@@ -29,9 +29,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>am-gw-styles-parent</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager - Styles Parent</name>
+    <name>WSO2 API Gateway - Styles Parent</name>
     <url>http://wso2.com/products/api-manager</url>
-    <description>WSO2 API Manager Styles Parent</description>
+    <description>WSO2 API Gateway Styles Parent</description>
 
     <licenses>
         <license>

@@ -29,8 +29,8 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>am-tm-features</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager - Features Aggregator Module</name>
-    <description>Features specific to the WSO2 API Manager</description>
+    <name>WSO2 Traffic Manager - Features Aggregator Module</name>
+    <description>Features specific to the WSO2 Traffic Manager</description>
 
 
     <modules>

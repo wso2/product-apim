@@ -25,7 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wso2am-identity-local-authenticators</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager - Identity Local Authenticators</name>
+    <name>WSO2 API Control Plane - Identity Local Authenticators</name>
     <build>
         <plugins>
             <plugin>

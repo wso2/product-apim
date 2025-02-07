@@ -27,7 +27,7 @@
             <div>
                 <div>
                     <h1>
-                        WSO2 API Manager - Privacy Policy
+                        WSO2 API Control Plane - Privacy Policy
                     </h1>
                 </div>
                 <div>

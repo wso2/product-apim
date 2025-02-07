@@ -29,7 +29,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wso2apim-is-plugin</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager - APIM IS Plugin Module</name>
+    <name>WSO2 Traffic Manager - APIM IS Plugin Module</name>
     <url>http://wso2.com/products/api-manager</url>
 
     <licenses>

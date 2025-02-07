@@ -206,11 +206,11 @@
 
     <mailingLists>
         <mailingList>
-            <name>WSO2 API Manager Users' list</name>
+            <name>WSO2 API Control Plane Users' list</name>
             <post>https://stackoverflow.com/questions/tagged/wso2</post>
         </mailingList>
         <mailingList>
-            <name>WSO2 API Manager Developers' List</name>
+            <name>WSO2 API Control Plane Developers' List</name>
             <post>mailto:dev@wso2.org</post>
             <archive>https://mail.wso2.org/mailarchive/dev/</archive>
             <subscribe>mailto:dev-request@wso2.org?subject=subscribe</subscribe>

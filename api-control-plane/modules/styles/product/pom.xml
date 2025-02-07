@@ -30,7 +30,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.am.styles</artifactId>
     <packaging>bundle</packaging>
-    <name>WSO2 API Manager - Styles</name>
+    <name>WSO2 API Control Plane - Styles</name>
     <url>http://wso2.org</url>
 
     <build>

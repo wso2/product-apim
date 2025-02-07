@@ -23,19 +23,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v4.4.0 - 31st October 2024</title>
+    <title>WSO2 API Control Plane v4.5.0 - March 2024</title>
 </head>
 <body>
 <div id="main-content">
-<h1>WSO2 API Manager 4.4.0 Released!</h1>
+<h1>WSO2 API Control Plane 4.5.0 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 4.4.0 of
-    the Open Source API Manager.
+    The WSO2 API Manager team is pleased to announce the release of version 4.5.0 of
+    the Open Source API Control Plane.
 </p>
 
 <p>
-    The WSO2 API Manager is a fully open source full lifecycle API Management product that can be deployed on-prem, <br/>
+    The WSO2 API Control Plane is a fully open source full lifecycle API Management product that can be deployed on-prem, <br/>
     available on SaaS, deployed on a private cloud or deployed in a hybrid model. It comprises the following <br/>
     components that provides all of its functionality.
 </p>

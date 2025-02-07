@@ -10,7 +10,7 @@
 
     <artifactId>org.wso2.am.multitenancy.dashboard.ui</artifactId>
     <packaging>bundle</packaging>
-    <name>WSO2 API Manager - Multi Tenant Dashboard</name>
+    <name>WSO2 Traffic Manager - Multi Tenant Dashboard</name>
     <build>
 
         <plugins>

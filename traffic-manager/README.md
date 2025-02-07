@@ -32,7 +32,7 @@ System Requirements
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
-5. To build WSO2 API Manager from the source distribution, it is necessary that you have
+5. To build WSO2 Traffic Manager from the source distribution, it is necessary that you have
    JDK 11 and Maven 3.0.4 or later.
 
 Installation & Running

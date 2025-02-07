@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>acp-p2-profile</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager Control Plane - P2 Profile Generation</name>
+    <name>WSO2 API Control Plane - P2 Profile Generation</name>
     <url>http://www.wso2.org</url>
 
     <build>

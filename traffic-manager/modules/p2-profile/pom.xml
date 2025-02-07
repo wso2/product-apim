@@ -29,7 +29,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>am-tm-p2-profile-gen-parent</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager - P2 Profile Generation Parent</name>
+    <name>WSO2 Traffic Manager - P2 Profile Generation Parent</name>
     <url>http://wso2.com/products/api-manager</url>
     <description>WSO2 API  Manager P2 Profile Generation Parent</description>
 

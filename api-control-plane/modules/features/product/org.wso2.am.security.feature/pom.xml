@@ -27,7 +27,7 @@
 
     <artifactId>org.wso2.am.security.feature</artifactId>
 
-    <name>WSO2 API Manager - Secutity Aggregated Feature</name>
+    <name>WSO2 API Control Plane - Secutity Aggregated Feature</name>
     <url>http://wso2.org</url>
 
     <dependencies>

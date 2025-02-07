@@ -10,7 +10,7 @@
 
     <artifactId>org.wso2.am.multitenancy.dashboard.ui.feature</artifactId>
 
-    <name>WSO2 API Manager - Multi Tenant Dashboard Feature</name>
+    <name>WSO2 API Control Plane - Multi Tenant Dashboard Feature</name>
     <url>http://wso2.org</url>
 
     <dependencies>
