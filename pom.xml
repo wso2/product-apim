@@ -1462,7 +1462,7 @@
         <config.mapper.version>1.0.25</config.mapper.version>
 
         <!-- Diagnostic Tool Dependencies -->
-        <diagnostics.tool.version>1.0.16</diagnostics.tool.version>
+        <diagnostics.tool.version>1.0.17</diagnostics.tool.version>
 
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.11.34</identity.outbound.auth.oidc.version>
