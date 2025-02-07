@@ -1,0 +1,34 @@
+{
+    "category": "Mediation",
+    "name": "apkRedirectRequest",
+    "version": "v1",
+    "displayName": "Redirect Request",
+    "description": "This policy allows you to redirect a request",
+    "policyAttributes": [
+        {
+            "name": "url",
+            "displayName": "URL",
+            "description": "URL to redirect the request to",
+            "validationRegex": "^(([\\w+]+\\:\\/\\/)?([\\w\\d-]+\\.)*[\\w-]+([\\.\\:]\\w+)*([\\/\\?\\=\\&\\#\\.]?[\\w-]+)*\\/?)$",
+            "type": "String",
+            "required": true
+        },
+        {
+            "name": "statusCode",
+            "displayName": "Status Code",
+            "description": "Status code to display upon redirecting the request. Must be either 301 or 302",
+            "validationRegex": "^(301|302)$",
+            "type": "Integer",
+            "required": true
+        }
+    ],
+    "applicableFlows": [
+        "request"
+    ],
+    "supportedGateways": [
+        "ChoreoConnect"
+    ],
+    "supportedApiTypes": [
+        "HTTP"
+    ]
+}

@@ -1,0 +1,41 @@
+<sequence name="_opa_policy_failure_handler_" xmlns="http://ws.apache.org/ns/synapse">
+    <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
+        <then>
+            <property name="SOAP_FAULT_CODE" value="Client"/>
+            <makefault version="soap11">
+                <code expression="$ctx:SOAP_FAULT_CODE"/>
+                <reason value="Authentication Failure"/>
+                <detail expression="$ctx:ERROR_MESSAGE"/>
+            </makefault>
+        </then>
+        <else>
+            <payloadFactory media-type="json">
+                <format>{"code":"$1","message":"$2"}</format>
+                <args>
+                    <arg expression="$ctx:ERROR_CODE"/>
+                    <arg expression="$ctx:ERROR_MESSAGE"/>
+                </args>
+            </payloadFactory>
+            <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT|PATCH)).*$">
+                <property name="messageType" value="application/json" scope="axis2"/>
+            </filter>
+        </else>
+    </filter>
+    <filter xpath="$ctx:HTTP_RESPONSE_STATUS_CODE">
+        <then>
+            <property name="HTTP_SC" expression="$ctx:HTTP_RESPONSE_STATUS_CODE" scope="axis2"/>
+        </then>
+        <else>
+            <property name="HTTP_SC" value="401" scope="axis2"/>
+        </else>
+    </filter>
+    <property name="RESPONSE" value="true"/>
+    <header name="To" action="remove"/>
+    <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+    <property name="ContentType" scope="axis2" action="remove"/>
+    <property name="Authorization" scope="transport" action="remove"/>
+    <property name="Host" scope="transport" action="remove"/>
+    <property name="Accept" scope="transport" action="remove"/>
+    <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+    <sequence key="_cors_request_handler_"/>
+</sequence>

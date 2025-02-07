@@ -1,0 +1,2071 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta content="text/html; charset=iso-8859-1" http-equiv="content-type" />
+  <title>WSO2 ESB - Advanced Mediation Samples </title>
+</head>
+
+<body>
+<h1>Running the Advanced Mediation samples with WSO2 Enterprise Service Bus
+(ESB) </h1>
+
+<h2><a name="ScriptMediator">Using scripts in mediation (Script Mediator)</a>
+</h2>
+
+<p>The ESB Script Mediator is a ESB extension, and thus all prerequisites are
+not bundled by default with the ESB distribution. Before you use some script
+mediators you may need to manually add the required jar files to the ESB lib
+directory, and optionally perform other installation tasks as may be required
+by the individual scripting language. This is explained in the <a
+href="../samples_setup_guide.html#script">Samples Setup guide</a>. </p>
+
+<h2><a name="Sample350">Sample 350: Introduction to the script mediator using
+js scripts</a></h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;localEntry key="stockquoteScript" src="file:repository/samples/resources/script/stockquoteTransform.js"/&gt;
+
+    &lt;in&gt;
+        &lt;!-- transform the custom quote request into a standard quote request expected by the service --&gt;
+        &lt;script language="js" key="stockquoteScript" function="transformRequest"/&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;!-- transform the standard response back into the custom format the client expects --&gt;
+        &lt;script language="js" key="stockquoteScript" function="transformResponse"/&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+&lt;/definitions&gt; </pre>
+<pre xml:space="preserve">&lt;x&gt;&lt;![CDATA[
+  function transformRequest(mc) {
+     var symbol = mc.getPayloadXML()..*::Code.toString();
+     mc.setPayloadXML(
+        &lt;m:getQuote xmlns:m="http://services.samples"&gt;
+           &lt;m:request&gt;
+              &lt;m:symbol&gt;{symbol}&lt;/m:symbol&gt;
+           &lt;/m:request&gt;
+        &lt;/m:getQuote&gt;);
+  }
+
+  function transformResponse(mc) {
+     var symbol = mc.getPayloadXML()..*::symbol.toString();
+     var price = mc.getPayloadXML()..*::last.toString();
+     mc.setPayloadXML(
+        &lt;m:CheckPriceResponse xmlns:m="http://services.samples/xsd"&gt;
+   &lt;m:Code&gt;{symbol}&lt;/m:Code&gt;
+   &lt;m:Price&gt;{price}&lt;/m:Price&gt;
+        &lt;/m:CheckPriceResponse&gt;);
+  }
+]]&gt;&lt;/x&gt;</pre>
+
+<p><strong>Objective: Introduction to the script mediators</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Start the Synapse configuration numbered 350: i.e. wso2esb-samples -sn
+350<br />
+Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>This sample is similar to sample 8 but instead of using XSLT the
+transformation is done with JavaScript and E4X. Note that the script source
+loaded from a resource must be specified within a CDATA tag within an XML
+element. The script used in this example has two functions, 'transformRequest'
+and 'transformResponse', and the Synapse configuration uses the function
+attribute to specify which function should be invoked. Use the stock quote
+client to issue a custom quote client as follows.: </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dmode=customquote</pre>
+
+<p>ESB uses the script mediator and the specified Javascript function to
+convert the custom request to a standard quote request. Subsequently the
+response received is transformed and sent back to the client. </p>
+
+<h2><a name="Sample351">Sample 351: In-line script mediation with
+JavaScript</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;in&gt;
+        &lt;!-- transform the custom quote request into a standard quote requst expected by the service --&gt;
+        &lt;script language="js"&gt;&lt;![CDATA[
+               var symbol = mc.getPayloadXML()..*::Code.toString();
+               mc.setPayloadXML(
+                  &lt;m:getQuote xmlns:m="http://services.samples/xsd"&gt;
+                     &lt;m:request&gt;
+                        &lt;m:symbol&gt;{symbol}&lt;/m:symbol&gt;
+                     &lt;/m:request&gt;
+                  &lt;/m:getQuote&gt;);
+        ]]&gt;&lt;/script&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;!-- transform the standard response back into the custom format the client expects --&gt;
+        &lt;script language="js"&gt;&lt;![CDATA[
+               var symbol = mc.getPayloadXML()..*::symbol.toString();
+               var price = mc.getPayloadXML()..*::last.toString();
+               mc.setPayloadXML(
+                  &lt;m:CheckPriceResponse xmlns:m="http://services.samples/xsd"&gt;
+               &lt;m:Code&gt;{symbol}&lt;/m:Code&gt;
+               &lt;m:Price&gt;{price}&lt;/m:Price&gt;
+                  &lt;/m:CheckPriceResponse&gt;);
+            ]]&gt;&lt;/script&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+&lt;/definitions&gt; </pre>
+
+<p><strong>Objective: Introduction to in-line script mediation</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Start the Synapse configuration numbered 351: i.e. wso2esb-samples -sn
+351<br />
+Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>This example is functionally equivalent to sample # 350 and sample # 8, and
+demonstrates in-line script mediation in ESB. Use the stock quote client to
+send a custom quote as in example # 350 to test this example. </p>
+
+<h2><a name="Sample352">Sample 352: Accessing Synapse message context API
+methods using scripting language</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;in&gt;
+       &lt;!-- change the MessageContext into a response and set a response payload --&gt;
+       &lt;script language="js"&gt;&lt;![CDATA[
+          mc.setTo(mc.getReplyTo());
+          mc.setProperty("RESPONSE", "true");
+          mc.setPayloadXML(
+             &lt;ns:getQuoteResponse xmlns:ns="http://services.samples/xsd"&gt;
+                &lt;ns:return&gt;
+                   &lt;ns:last&gt;99.9&lt;/ns:last&gt;
+                &lt;/ns:return&gt;
+             &lt;/ns:getQuoteResponse&gt;);
+       ]]&gt;&lt;/script&gt;
+    &lt;/in&gt;
+    &lt;send/&gt;
+&lt;/definitions&gt; </pre>
+
+<p><strong>Objective: Accessing the Synapse APIs from scripting
+languages</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Start the Synapse configuration numbered 352: i.e. wso2esb-samples -sn
+352<br />
+</p>
+
+<p>This example shows how an inline JavaScript mediator script could access the
+Synapse message context API to set its 'To' EPR and to set a custom property to
+mark it as a response. Execute the stock quote client, and you will receive the
+response "99.9" as the last sale price as per the above script. </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/
+ ...
+stockquote:
+     [java] Standard :: Stock price = $99.9</pre>
+
+<h2><a name="Sample353">Sample 353: Using Ruby scripts for mediation</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;localEntry key="stockquoteScript" src="file:repository/samples/resources/script/stockquoteTransform.rb"/&gt;
+    &lt;in&gt;
+        &lt;!-- transform the custom quote request into a standard quote request expected by the service --&gt;
+        &lt;script language="rb" key="stockquoteScript" function="transformRequest"/&gt;
+
+        &lt;!-- send message to real endpoint referenced by name "stockquote" and stop --&gt;
+        &lt;send&gt;
+            &lt;endpoint name="stockquote"&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;!-- transform the standard response back into the custom format the client expects --&gt;
+        &lt;script language="rb" key="stockquoteScript" function="transformResponse"/&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+&lt;/definitions&gt; </pre>
+<pre xml:space="preserve">&lt;x&gt;&lt;![CDATA[
+require 'rexml/document'
+include REXML
+
+def transformRequest(mc)
+   newRequest= Document.new '&lt;m:getQuote xmlns:m="http://services.samples/xsd"&gt;'&lt;&lt;
+      '&lt;m:request&gt;&lt;m:symbol&gt;&lt;/m:symbol&gt;&lt;/m:request&gt;&lt;/m:getQuote&gt;'
+   newRequest.root.elements[1].elements[1].text = mc.getPayloadXML().root.elements[1].get_text
+   mc.setPayloadXML(newRequest)
+end
+
+def transformResponse(mc)
+   newResponse = Document.new '&lt;m:CheckPriceResponse xmlns:m="http://services.samples/xsd"&gt;&lt;m:Code&gt;' &lt;&lt;
+      '&lt;/m:Code&gt;&lt;m:Price&gt;&lt;/m:Price&gt;&lt;/m:CheckPriceResponse&gt;'
+   newResponse.root.elements[1].text = mc.getPayloadXML().root.elements[1].elements[1].get_text
+   newResponse.root.elements[2].text = mc.getPayloadXML().root.elements[1].elements[2].get_text
+   mc.setPayloadXML(newResponse)
+end
+]]&gt;&lt;/x&gt;</pre>
+
+<p><strong>Objective: Script mediators using Ruby</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>This sample uses Ruby so first setup support for this in ESB as described at
+<a href="../samples_setup_guide.html#script">Configuring JRuby</a>. </p>
+
+<p>Start the Synapse configuration numbered 353: i.e. wso2esb-samples -sn
+353<br />
+Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>This sample is functionally equivalent to sample # 350 (#351 and #8) but
+instead uses a Ruby script using the JRuby interpreter. The script has two
+functions, 'transformRequest' and 'transformResponse', and the Synapse
+configuration specifies which function is to be invoked when used. Execute the
+stock quote client to send a custom stock quote as per example #350 and check
+the received stock quote response. </p>
+
+<h2><a name="Sample354">Sample 354: Using In-lined Ruby scripts for
+mediation</a> </h2>
+
+<div>
+<pre xml:space="preserve">&lt;!-- Using In-lined Ruby scripts for mediation --&gt;
+&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;in&gt;
+        &lt;script language="rb"&gt;
+            &lt;![CDATA[
+                require 'rexml/document'
+                include REXML
+                newRequest= Document.new '&lt;m:getQuote xmlns:m="http://services.samples/xsd"&gt;&lt;m:request&gt;&lt;m:symbol&gt;...test...&lt;/m:symbol&gt;&lt;/m:request&gt;&lt;/m:getQuote&gt;'
+                newRequest.root.elements[1].elements[1].text = $mc.getPayloadXML().root.elements[1].get_text
+                $mc.setPayloadXML(newRequest)
+            ]]&gt;
+        &lt;/script&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;script language="rb"&gt;
+            &lt;![CDATA[
+                require 'rexml/document'
+                include REXML
+                newResponse = Document.new '&lt;m:CheckPriceResponse xmlns:m="http://services.samples/xsd"&gt;&lt;m:Code&gt;&lt;/m:Code&gt;&lt;m:Price&gt;&lt;/m:Price&gt;&lt;/m:CheckPriceResponse&gt;'
+                newResponse.root.elements[1].text = $mc.getPayloadXML().root.elements[1].elements[1].get_text
+                newResponse.root.elements[2].text = $mc.getPayloadXML().root.elements[1].elements[2].get_text
+                $mc.setPayloadXML(newResponse)
+            ]]&gt;
+        &lt;/script&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+&lt;/definitions&gt; </pre>
+</div>
+
+<p><strong>Objective: Script mediators using Ruby(In-lined Ruby
+Script)</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>This sample uses Ruby so first setup support for this in ESB as described at
+<a href="../samples_setup_guide.html#script">Configuring JRuby</a>. </p>
+
+<p>Start the Synapse configuration numbered 354: i.e. wso2esb-samples -sn
+354<br />
+Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>This sample is functionally equivalent to the sample #353. </p>
+
+<p>Runs the client with </p>
+<pre xml:space="preserve"> ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dmode=customquote</pre>
+
+<h2><a name="DBMediators">Database interactions in mediation (DBLookup /
+DBReport)</a> </h2>
+
+<p>Following database mediators use Derby in a client/server configuration by
+using the network server. Therefore, to proceed with the following samples, you
+need a working Derby database server and you have to follow the steps in <a
+href="../samples_setup_guide.html#derby">Sample Setup Guide</a> before going
+through the samples. </p>
+
+<h2><a name="Sample360">Sample 360: Introduction to dblookup mediator</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="myFaultHandler"&gt;
+        &lt;makefault&gt;
+            &lt;code value="tns:Receiver" xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+            &lt;reason expression="get-property('ERROR_MESSAGE')"/&gt;
+        &lt;/makefault&gt;
+
+        &lt;property name="RESPONSE" value="true"/&gt;
+        &lt;header name="To" expression="get-property('ReplyTo')"/&gt;
+        &lt;send/&gt;
+        &lt;drop/&gt;
+    &lt;/sequence&gt;
+
+    &lt;sequence name="main" onError="myFaultHandler"&gt;
+        &lt;in&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          value="** Looking up from the Database **"/&gt;
+            &lt;/log&gt;
+            &lt;dblookup xmlns="http://ws.apache.org/ns/synapse"&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;driver&gt;org.apache.derby.jdbc.ClientDriver&lt;/driver&gt;
+                        &lt;url&gt;jdbc:derby://localhost:1527/esbdb;create=false&lt;/url&gt;
+                        &lt;user&gt;esb&lt;/user&gt;
+                        &lt;password&gt;esb&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;select * from company where name =?&lt;/sql&gt;
+                    &lt;parameter expression="//m0:getQuote/m0:request/m0:symbol"
+                               xmlns:m0="http://services.samples/xsd" type="VARCHAR"/&gt;
+                    &lt;result name="company_id" column="id"/&gt;
+                &lt;/statement&gt;
+            &lt;/dblookup&gt;
+
+            &lt;switch source="get-property('company_id')"&gt;
+                &lt;case regex="c1"&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text"
+                                  expression="fn:concat('Company ID - ',get-property('company_id'))"/&gt;
+                    &lt;/log&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/case&gt;
+                &lt;case regex="c2"&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text"
+                                  expression="fn:concat('Company ID - ',get-property('company_id'))"/&gt;
+                    &lt;/log&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/case&gt;
+                &lt;case regex="c3"&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text"
+                                  expression="fn:concat('Company ID - ',get-property('company_id'))"/&gt;
+                    &lt;/log&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/case&gt;
+                &lt;default&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text" value="** Unrecognized Company ID **"/&gt;
+                    &lt;/log&gt;
+                    &lt;makefault&gt;
+                        &lt;code value="tns:Receiver"
+                              xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+                        &lt;reason value="** Unrecognized Company ID **"/&gt;
+                    &lt;/makefault&gt;
+                    &lt;property name="RESPONSE" value="true"/&gt;
+                    &lt;header name="To" action="remove"/&gt;
+                    &lt;send/&gt;
+                    &lt;drop/&gt;
+                &lt;/default&gt;
+            &lt;/switch&gt;
+            &lt;drop/&gt;
+        &lt;/in&gt;
+
+        &lt;out&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective:Introduction to the dblookup mediator</strong> </p>
+
+<p><strong>Prerequisites:</strong> Setting up Derby database as explained
+above. </p>
+
+<p>Start the Synapse configuration numbered 360: i.e. wso2esb-samples -sn 360
+</p>
+
+<p>Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>This sample demonstrates simple database read operations through ESB. When a
+message arrives at dblookup mediator, it opens a connection to the database and
+executes the SQL query. The SQL query use '?' character for attributes that
+will be filled at runtime. The parameters define how to calculate the value of
+those attributes at runtime. In this sample a dblookup mediator has been used
+to extract 'id' of the company from the company database using the symbol which
+is evaluated using an xpath against the SOAP envelope. Then 'id' base switching
+will be done by a switch mediator. </p>
+
+<p>When the IBM stock quote is requested, </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dsymbol=IBM</pre>
+
+<p>ESB console shows </p>
+<pre xml:space="preserve">INFO LogMediator text = ** Looking up from the Database **INFO LogMediator text = Company ID ? c1<br /></pre>
+
+<p>For the SUN stock quote, </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dsymbol=SUN</pre>
+
+<p>ESB console shows </p>
+<pre xml:space="preserve">INFO LogMediator text = ** Looking up from the Database **INFO LogMediator text = Company ID ? c2<br /></pre>
+
+<p>and for the MSFT stock quote, </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dsymbol=MSFT</pre>
+<pre xml:space="preserve">INFO LogMediator text = ** Looking up from the Database **<br />INFO LogMediator text = Company ID ? c2</pre>
+
+<p>For any other symbols, ESB console shows </p>
+<pre xml:space="preserve">INFO LogMediator text = ** Unrecognized Company ID **</pre>
+
+<p>and the client gets a response which has following message. </p>
+<pre xml:space="preserve">** Unrecognized Company ID **</pre>
+
+<div>
+</div>
+
+<h2><a name="Sample361">Sample 361: Introduction to dbreport mediator</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="main"&gt;
+        &lt;in&gt;
+            &lt;send&gt;
+                &lt;endpoint&gt;
+                    &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                &lt;/endpoint&gt;
+            &lt;/send&gt;
+        &lt;/in&gt;
+
+        &lt;out&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          value="** Reporting to the Database **"/&gt;
+            &lt;/log&gt;
+            &lt;dbreport xmlns="http://ws.apache.org/ns/synapse"&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;driver&gt;org.apache.derby.jdbc.ClientDriver&lt;/driver&gt;
+                        &lt;url&gt;jdbc:derby://localhost:1527/esbdb;create=false&lt;/url&gt;
+                        &lt;user&gt;esb&lt;/user&gt;
+                        &lt;password&gt;esb&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;update company set price=? where name =?&lt;/sql&gt;
+                    &lt;parameter expression="//m0:return/m1:last/child::text()"
+                               xmlns:m0="http://services.samples" xmlns:m1="http://services.samples/xsd" type="DOUBLE"/&gt;
+                    &lt;parameter expression="//m0:return/m1:symbol/child::text()"
+                               xmlns:m0="http://services.samples" xmlns:m1="http://services.samples/xsd" type="VARCHAR"/&gt;
+                &lt;/statement&gt;
+            &lt;/dbreport&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+
+<div>
+<p><strong>Objective: Introduction to the dbreport mediator</strong> </p>
+
+<p><strong>Prerequisites:</strong> Setting up Derby database as above. </p>
+
+<p>Start the Synapse configuration numbered 361: i.e. wso2esb-samples -sn 361
+</p>
+
+<p>Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+</div>
+
+<p>This sample demonstrate simple database write operations. The dbreport
+mediator writes (i.e. inserts one row) to a table using the message details. It
+works the same as the dblookup mediator. In this sample , dbreport mediator is
+used for updating the stock price of the company using the last quote value
+which is calculated by evaluating an XPath against the response message. After
+running this sample, user can check the company table using the Derby client
+tool. It will show the inserted value by the dbreport mediator. </p>
+
+<p>Run the client using, </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dsymbol=IBM</pre>
+
+<p>and then execute the following query using database client tool against
+synapsedb. </p>
+<pre xml:space="preserve">select price from company where name='IBM';</pre>
+
+<p>It will show some value as follows. </p>
+<pre xml:space="preserve">96.39535981018865</pre>
+
+<div>
+</div>
+
+<h2><a name="Sample362">Sample 362: Action of dbreport and dblookup mediators
+together</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="main"&gt;
+        &lt;in&gt;
+            &lt;send&gt;
+                &lt;endpoint&gt;
+                    &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                &lt;/endpoint&gt;
+            &lt;/send&gt;
+        &lt;/in&gt;
+
+        &lt;out&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          value="** Reporting to the Database **"/&gt;
+            &lt;/log&gt;
+
+            &lt;dbreport xmlns="http://ws.apache.org/ns/synapse"&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;driver&gt;org.apache.derby.jdbc.ClientDriver&lt;/driver&gt;
+                        &lt;url&gt;jdbc:derby://localhost:1527/esbdb;create=false&lt;/url&gt;
+                        &lt;user&gt;esb&lt;/user&gt;
+                        &lt;password&gt;esb&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;update company set price=? where name =?&lt;/sql&gt;
+                    &lt;parameter expression="//m0:return/m1:last/child::text()"
+                               xmlns:m0="http://services.samples" xmlns:m1="http://services.samples/xsd" type="DOUBLE"/&gt;
+                    &lt;parameter expression="//m0:return/m1:symbol/child::text()"
+                               xmlns:m0="http://services.samples" xmlns:m1="http://services.samples/xsd" type="VARCHAR"/&gt;
+                &lt;/statement&gt;
+            &lt;/dbreport&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          value="** Looking up from the Database **"/&gt;
+            &lt;/log&gt;
+            &lt;dblookup xmlns="http://ws.apache.org/ns/synapse"&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;driver&gt;org.apache.derby.jdbc.ClientDriver&lt;/driver&gt;
+                        &lt;url&gt;jdbc:derby://localhost:1527/esbdb;create=false&lt;/url&gt;
+                        &lt;user&gt;esb&lt;/user&gt;
+                        &lt;password&gt;esb&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;select * from company where name =?&lt;/sql&gt;
+                    &lt;parameter expression="//m0:return/m1:symbol/child::text()"
+                               xmlns:m0="http://services.samples" xmlns:m1="http://services.samples/xsd" type="VARCHAR"/&gt;
+                    &lt;result name="stock_price" column="price"/&gt;
+                &lt;/statement&gt;
+            &lt;/dblookup&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          expression="fn:concat('Stock price - ',get-property('stock_price'))"/&gt;
+            &lt;/log&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the use of dbreport and dblookup
+mediators</strong> </p>
+
+<p><strong>Prerequisites:</strong> Setting up Derby database as above. </p>
+
+<p>Start the Synapse configuration numbered 362: i.e. wso2esb-samples -sn 362
+</p>
+
+<p>Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done </p>
+
+<p>In this sample ,the dbreport mediator works the same as the above sample. It
+updates the price for the given company using the response messages content.
+Then the dblookup mediator reads the last updated value from the company
+database and logs it. </p>
+
+<p>When running client, </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dsymbol=IBM</pre>
+
+<p>ESB console shows, </p>
+<pre xml:space="preserve">INFO LogMediator text = ** Reporting to the Database **<br /><br />...<br /><br />INFO LogMediator text = ** Looking up from the Database **<br /><br />...<br /><br />INFO LogMediator text = Stock price - 153.47886496064808</pre>
+
+<h2><a name="Sample363">Sample 363: Reusable database connection pools</a> </h2>
+<pre>&lt;!-- Reusable database connection pool --&gt;
+&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="myFaultHandler"&gt;
+        &lt;makefault&gt;
+            &lt;code value="tns:Receiver" xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+            &lt;reason expression="get-property('ERROR_MESSAGE')"/&gt;
+        &lt;/makefault&gt;
+
+        &lt;property name="RESPONSE" value="true"/&gt;
+        &lt;header name="To" expression="get-property('ReplyTo')"/&gt;
+        &lt;send/&gt;
+        &lt;drop/&gt;
+    &lt;/sequence&gt;
+
+    &lt;sequence name="main" onError="myFaultHandler"&gt;
+        &lt;in&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          value="** Looking up from the Database **"/&gt;
+            &lt;/log&gt;
+            &lt;dblookup&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;dsName&gt;lookupdb&lt;/dsName&gt;
+                        &lt;icClass&gt;com.sun.jndi.rmi.registry.RegistryContextFactory&lt;/icClass&gt;
+                        &lt;url&gt;rmi://localhost:2199&lt;/url&gt;
+                        &lt;user&gt;esb&lt;/user&gt;
+                        &lt;password&gt;esb&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;select * from company where name =?&lt;/sql&gt;
+                    &lt;parameter expression="//m0:getQuote/m0:request/m0:symbol"
+                               xmlns:m0="http://services.samples/xsd" type="VARCHAR"/&gt;
+                    &lt;result name="company_id" column="id"/&gt;
+                &lt;/statement&gt;
+            &lt;/dblookup&gt;
+
+            &lt;switch source="get-property('company_id')"&gt;
+                &lt;case regex="c1"&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text"
+                                  expression="fn:concat('Company ID - ',get-property('company_id'))"/&gt;
+                    &lt;/log&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/case&gt;
+                &lt;case regex="c2"&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text"
+                                  expression="fn:concat('Company ID - ',get-property('company_id'))"/&gt;
+                    &lt;/log&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/case&gt;
+                &lt;case regex="c3"&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text"
+                                  expression="fn:concat('Company ID - ',get-property('company_id'))"/&gt;
+                    &lt;/log&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/case&gt;
+                &lt;default&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text" value="** Unrecognized Company ID **"/&gt;
+                    &lt;/log&gt;
+                    &lt;makefault&gt;
+                        &lt;code value="tns:Receiver"
+                              xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+                        &lt;reason value="** Unrecognized Company ID **"/&gt;
+                    &lt;/makefault&gt;
+                    &lt;property name="RESPONSE" value="true"/&gt;
+                    &lt;header name="To" action="remove"/&gt;
+                    &lt;send/&gt;
+                    &lt;drop/&gt;
+                &lt;/default&gt;
+            &lt;/switch&gt;
+            &lt;drop/&gt;
+        &lt;/in&gt;
+
+        &lt;out&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          value="** Reporting to the Database **"/&gt;
+            &lt;/log&gt;
+            &lt;dbreport&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;dsName&gt;reportdb&lt;/dsName&gt;
+                        &lt;icClass&gt;com.sun.jndi.rmi.registry.RegistryContextFactory&lt;/icClass&gt;
+                        &lt;url&gt;rmi://localhost:2199&lt;/url&gt;
+                        &lt;user&gt;esb&lt;/user&gt;
+                        &lt;password&gt;esb&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;update company set price=? where name =?&lt;/sql&gt;
+                    &lt;parameter expression="//m0:return/m1:last/child::text()"
+                               xmlns:m0="http://services.samples" xmlns:m1="http://services.samples/xsd" type="DOUBLE"/&gt;
+                    &lt;parameter expression="//m0:return/m1:symbol/child::text()"
+                               xmlns:m0="http://services.samples" xmlns:m1="http://services.samples/xsd" type="VARCHAR"/&gt;
+                &lt;/statement&gt;
+            &lt;/dbreport&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          value="** Looking up from the Database **"/&gt;
+            &lt;/log&gt;
+            &lt;dblookup&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;dsName&gt;reportdb&lt;/dsName&gt;
+                        &lt;icClass&gt;com.sun.jndi.rmi.registry.RegistryContextFactory&lt;/icClass&gt;
+                        &lt;url&gt;rmi://localhost:2199&lt;/url&gt;
+                        &lt;user&gt;esb&lt;/user&gt;
+                        &lt;password&gt;esb&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;select * from company where name =?&lt;/sql&gt;
+                    &lt;parameter expression="//m0:return/m1:symbol/child::text()"
+                               xmlns:m0="http://services.samples" xmlns:m1="http://services.samples/xsd" type="VARCHAR"/&gt;
+                    &lt;result name="stock_price" column="price"/&gt;
+                &lt;/statement&gt;
+            &lt;/dblookup&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text"
+                          expression="fn:concat('Stock price - ',get-property('stock_price'))"/&gt;
+            &lt;/log&gt;
+            &lt;send/&gt;
+
+        &lt;/out&gt;
+
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective:</strong> Demonstrate the use of reusable database
+connection pools</p>
+
+<p><strong>Prerequisites:</strong> Setting up DataBase and DataSources
+according to the sample setup guide.</p>
+
+<p>Start the Synapse configuration numbered 363: i.e. wso2esb-samples -sn
+363</p>
+
+<p>Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done</p>
+
+<p>Runs the client as follows</p>
+<pre>ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/</pre>
+
+<p>Then the console output</p>
+<pre> INFO LogMediator text = ** Looking up from the Database **
+    ...
+ INFO LogMediator text = Company ID - c1
+    ...
+ INFO LogMediator text = ** Reporting to the Database **
+    ...
+ INFO LogMediator text = ** Looking up from the Database **
+    ...
+ INFO LogMediator text = Stock price - 183.3635460215262</pre>
+
+
+
+<h2><a name="Sample364">Sample 364: Executing database Stored Procedures</a> </h2>
+<pre>&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://ws.apache.org/ns/synapse http://synapse.apache.org/ns/2010/04/configuration/synapse_config.xsd&quot;&gt;
+
+    &lt;sequence name=&quot;main&quot;&gt;
+        &lt;in&gt;
+            &lt;send&gt;
+                &lt;endpoint&gt;
+                    &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+                &lt;/endpoint&gt;
+            &lt;/send&gt;
+        &lt;/in&gt;
+
+        &lt;out&gt;
+            &lt;log level=&quot;custom&quot;&gt;
+                &lt;property name=&quot;text&quot; value=&quot;** Reporting to the Database **&quot;/&gt;
+            &lt;/log&gt;
+
+            &lt;dbreport&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;driver&gt;com.mysql.jdbc.Driver&lt;/driver&gt;
+                        &lt;url&gt;jdbc:mysql://localhost:3306/synapsedb&lt;/url&gt;
+                        &lt;user&gt;user&lt;/user&gt;
+                        &lt;password&gt;password&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;call updateCompany(?,?)&lt;/sql&gt;
+                    &lt;parameter xmlns:m0=&quot;http://services.samples&quot;
+                               xmlns:m1=&quot;http://services.samples/xsd&quot;
+                               expression=&quot;//m0:return/m1:last/child::text()&quot; type=&quot;DOUBLE&quot;/&gt;
+                    &lt;parameter xmlns:m0=&quot;http://services.samples&quot;
+                               xmlns:m1=&quot;http://services.samples/xsd&quot;
+                               expression=&quot;//m0:return/m1:symbol/child::text()&quot; type=&quot;VARCHAR&quot;/&gt;
+                &lt;/statement&gt;
+            &lt;/dbreport&gt;
+            &lt;log level=&quot;custom&quot;&gt;
+                &lt;property name=&quot;text&quot; value=&quot;** Looking up from the Database **&quot;/&gt;
+            &lt;/log&gt;
+            &lt;dblookup&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;driver&gt;com.mysql.jdbc.Driver&lt;/driver&gt;
+                        &lt;url&gt;jdbc:mysql://localhost:3306/synapsedb&lt;/url&gt;
+                        &lt;user&gt;user&lt;/user&gt;
+                        &lt;password&gt;password&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;call getCompany(?)&lt;/sql&gt;
+                    &lt;parameter xmlns:m0=&quot;http://services.samples&quot;
+                               xmlns:m1=&quot;http://services.samples/xsd&quot;
+                               expression=&quot;//m0:return/m1:symbol/child::text()&quot; type=&quot;VARCHAR&quot;/&gt;
+                    &lt;result name=&quot;stock_prize&quot; column=&quot;price&quot;/&gt;
+                &lt;/statement&gt;
+            &lt;/dblookup&gt;
+            &lt;log level=&quot;custom&quot;&gt;
+                &lt;property name=&quot;text&quot;
+                          expression=&quot;fn:concat(&#39;Stock Prize - &#39;,get-property(&#39;stock_prize&#39;))&quot;/&gt;
+            &lt;/log&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective:</strong> Demonstrate the use of dblookup and dbreport mediators to execute a database Stored Procedures</p>
+
+<p><strong>Prerequisites:</strong> Set up MySQL database server according to the sample setup guide.</p>
+
+<p>Start the Synapse configuration numbered 364: i.e. wso2esb-samples -sn
+364</p>
+
+<p>Start the Axis2 server and deploy the SimpleStockQuoteService if not already
+done</p>
+
+<p>Runs the client as follows</p>
+<pre>ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dsymbol=IBM</pre>
+
+<p>Then you will get the following console output</p>
+<pre>INFO LogMediator text = ** Looking up from the Database ** ...
+INFO LogMediator text = Company ID - c1 ...
+INFO LogMediator text = Stock price - 183.3635460215262
+</pre>
+
+
+
+
+<h2><a name="Throttle"></a></h2>
+
+<h2><a name="Throttle1">Throttling messages (Throttle Mediator)</a> </h2>
+
+<h2><a name="Sample370">Sample 370: Introduction to throttle mediator and
+concurrency throttling</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;sequence name="main"&gt;
+        &lt;in&gt;
+            &lt;throttle id="A"&gt;
+                &lt;policy&gt;
+                    &lt;!-- define throttle policy --&gt;
+                    &lt;wsp:Policy xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+                                xmlns:throttle="http://www.wso2.org/products/wso2commons/throttle"&gt;
+                        &lt;throttle:ThrottleAssertion&gt;
+                            &lt;throttle:MaximumConcurrentAccess&gt;10&lt;/throttle:MaximumConcurrentAccess&gt;
+                        &lt;/throttle:ThrottleAssertion&gt;
+                    &lt;/wsp:Policy&gt;
+                &lt;/policy&gt;
+                &lt;onAccept&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text" value="**Access Accept**"/&gt;
+                    &lt;/log&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/onAccept&gt;
+                &lt;onReject&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text" value="**Access Denied**"/&gt;
+                    &lt;/log&gt;
+                    &lt;makefault&gt;
+                        &lt;code value="tns:Receiver"
+                              xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+                        &lt;reason value="**Access Denied**"/&gt;
+                    &lt;/makefault&gt;
+                    &lt;property name="RESPONSE" value="true"/&gt;
+                    &lt;header name="To" action="remove"/&gt;
+                    &lt;send/&gt;
+                    &lt;drop/&gt;
+                &lt;/onReject&gt;
+            &lt;/throttle&gt;
+        &lt;/in&gt;
+        &lt;out&gt;
+            &lt;throttle id="A"/&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: </strong>Demonstrate the use of throttle mediator for
+concurrency throttling</p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Deploy the SimpleStockQuoteService in sample Axis2 server and start it on
+port 9000. </p>
+
+<p>Start ESB with the sample configuration 370 (i.e. wso2esb-samples -sn 370).
+</p>
+
+<p>Above configuration specifies a throttle mediator inside the in mediator.
+Therefore, all request messages directed to the main sequence will be subjected
+to throttling. Throttle mediator has 'policy', 'onAccept' and 'onReject' tags
+at top level. The 'policy' tag specifies the throttling policy for throttling
+messages. This sample policy only contains a component called
+"MaximumConcurrentAccess" .This indicates the maximum number of concurrent
+requests that can pass through Synapse on a single unit of time. To test
+concurrency throttling, it is required to send concurrent requests to Synapse.
+If Synapse with above configuration, receives 20 requests concurrently from
+clients, then approximately half of those will succeed while the others being
+throttled. The client command to try this is as follows.</p>
+<pre xml:space="preserve">ant stockquote -Dsymbol=IBM -Dmode=quote -Daddurl=http://localhost:8280/</pre>
+
+<h2><a name="Sample371">Sample 371: Restricting requests based on policies </a>
+</h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;sequence name="main"&gt;
+        &lt;in&gt;
+            &lt;throttle id="A"&gt;
+                &lt;policy&gt;
+                    &lt;!-- define throttle policy --&gt;
+                    &lt;wsp:Policy xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+                                xmlns:throttle="http://www.wso2.org/products/wso2commons/throttle"&gt;
+                        &lt;throttle:MediatorThrottleAssertion&gt;
+                            &lt;wsp:Policy&gt;
+                                &lt;throttle:ID throttle:type="IP"&gt;other&lt;/throttle:ID&gt;
+                                &lt;wsp:Policy&gt;
+                                    &lt;throttle:Control&gt;
+                                        &lt;wsp:Policy&gt;
+                                            &lt;throttle:MaximumCount&gt;4&lt;/throttle:MaximumCount&gt;
+                                            &lt;throttle:UnitTime&gt;800000&lt;/throttle:UnitTime&gt;
+                                            &lt;throttle:ProhibitTimePeriod wsp:Optional="true"&gt;1000
+                                            &lt;/throttle:ProhibitTimePeriod&gt;
+                                        &lt;/wsp:Policy&gt;
+                                    &lt;/throttle:Control&gt;
+                                &lt;/wsp:Policy&gt;
+                            &lt;/wsp:Policy&gt;
+                            &lt;wsp:Policy&gt;
+                                &lt;throttle:ID throttle:type="IP"&gt;10.100.1.160 - 10.100.1.165&lt;/throttle:ID&gt;
+                                &lt;wsp:Policy&gt;
+                                    &lt;throttle:Control&gt;
+                                        &lt;wsp:Policy&gt;
+                                            &lt;throttle:MaximumCount&gt;5&lt;/throttle:MaximumCount&gt;
+                                            &lt;throttle:UnitTime&gt;800000&lt;/throttle:UnitTime&gt;
+                                            &lt;throttle:ProhibitTimePeriod wsp:Optional="true"&gt;100000
+                                            &lt;/throttle:ProhibitTimePeriod&gt;
+                                        &lt;/wsp:Policy&gt;
+                                    &lt;/throttle:Control&gt;
+                                &lt;/wsp:Policy&gt;
+                            &lt;/wsp:Policy&gt;
+                        &lt;/throttle:MediatorThrottleAssertion&gt;
+                    &lt;/wsp:Policy&gt;
+                &lt;/policy&gt;
+                &lt;onAccept&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text" value="**Access Accept**"/&gt;
+                    &lt;/log&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/onAccept&gt;
+                &lt;onReject&gt;
+                    &lt;log level="custom"&gt;
+                        &lt;property name="text" value="**Access Denied**"/&gt;
+                    &lt;/log&gt;
+                    &lt;makefault&gt;
+                        &lt;code value="tns:Receiver"
+                              xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+                        &lt;reason value="**Access Denied**"/&gt;
+                    &lt;/makefault&gt;
+                    &lt;property name="RESPONSE" value="true"/&gt;
+                    &lt;header name="To" action="remove"/&gt;
+                    &lt;send/&gt;
+                    &lt;drop/&gt;
+                &lt;/onReject&gt;
+            &lt;/throttle&gt;
+        &lt;/in&gt;
+        &lt;out&gt;
+            &lt;throttle id="A"/&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the use of throttle mediator for restricting
+request counts</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Deploy the SimpleStockQuoteService in sample Axis2 server and start it on
+port 9000. </p>
+
+<p>Start ESB with the sample configuration 371 (i.e. wso2esb-samples -sn 371).
+</p>
+
+<p>Above configuration specifies a throttle mediator inside the in mediator.
+Therefore, all request messages directed to the main sequence will be subjected
+to throttling. Throttle mediator has policy, onAccept and onReject tags at the
+top level. Policy tag specifies the throttling policy to be applied for
+messages. It contains some IP address ranges and the maximum number of messages
+to be allowed for those ranges within a time period given in "UnitTime" tag.
+"ProhibitTimePeriod" tag specifies the time period to prohibit further requests
+after the received request count exceeds the specified time. Now run the client
+5 times repetitively using the following command to see how throttling works.
+</p>
+<pre xml:space="preserve">ant stockquote -Dsymbol=IBM -Dmode=quote -Daddurl=http://localhost:8280/</pre>
+
+<p>For the first four requests you will get the quote prices for IBM as
+follows. </p>
+<pre xml:space="preserve">[java] Standard :: Stock price = $177.20143371883802</pre>
+
+<p>You will receive the following response for the fifth request. </p>
+<pre xml:space="preserve">[java] org.apache.axis2.AxisFault: **Access Denied**</pre>
+
+<p>Maximum number of requests within 800000 milliseconds is specified as 4 for
+any server (including localhost) other than the explicitly specified ones.
+Therefore, our fifth request is denied by the throttle mediator. You can verify
+this by looking at the ESB console. </p>
+<pre xml:space="preserve">[HttpServerWorker-1] INFO  LogMediator - text = **Access Accept**
+[HttpServerWorker-2] INFO  LogMediator - text = **Access Accept**
+[HttpServerWorker-3] INFO  LogMediator - text = **Access Accept**
+[HttpServerWorker-4] INFO  LogMediator - text = **Access Accept**
+[HttpServerWorker-5] INFO  LogMediator - text = **Access Denied** </pre>
+
+<h2><a name="Sample372">Sample 372: Use of both concurrency throttling and
+request rate based throttling </a> </h2>
+<pre xml:space="preserve">&lt;!-- Use of both concurrency throttling and request rate based throttling --&gt;
+&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;registry provider="org.wso2.carbon.mediation.registry.ESBRegistry"&gt;
+        &lt;!-- the root property of the simple URL registry helps resolve a resource URL as root + key --&gt;
+        &lt;parameter name="root"&gt;file:repository/&lt;/parameter&gt;
+        &lt;!-- all resources loaded from the URL registry would be cached for this number of milli seconds --&gt;
+        &lt;parameter name="cachableDuration"&gt;150000&lt;/parameter&gt;
+    &lt;/registry&gt;
+
+    &lt;sequence name="onAcceptSequence"&gt;
+        &lt;log level="custom"&gt;
+            &lt;property name="text" value="**Access Accept**"/&gt;
+        &lt;/log&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/sequence&gt;
+    &lt;sequence name="onRejectSequence" trace="enable"&gt;
+        &lt;log level="custom"&gt;
+            &lt;property name="text" value="**Access Denied**"/&gt;
+        &lt;/log&gt;
+        &lt;makefault&gt;
+            &lt;code value="tns:Receiver"
+                  xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+            &lt;reason value="**Access Denied**"/&gt;
+        &lt;/makefault&gt;
+        &lt;property name="RESPONSE" value="true"/&gt;
+        &lt;header name="To" action="remove"/&gt;
+        &lt;send/&gt;
+        &lt;drop/&gt;
+    &lt;/sequence&gt;
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+             &lt;inSequence&gt;
+                &lt;throttle onReject="onRejectSequence" onAccept="onAcceptSequence" id="A"&gt;
+                    &lt;policy key="repository/samples/resources/policy/throttle_policy.xml"/&gt;
+                &lt;/throttle&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;throttle id="A"/&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<div>
+</div>
+
+<p><strong>Objective: Use of both concurrency throttling and request rate based
+throttling </strong> </p>
+
+<p><strong>Prerequisites:</strong> Deploy the SimpleStockQuoteService in sample
+Axis2 server and start it on port 9000. </p>
+
+<p>Start ESB with the sample configuration 372 (i.e. wso2esb-samples -sn 372).
+</p>
+
+<p>Throttle policy is loaded from the ?throttle_policy.xml? .That policy
+contains merging policy from sample 370 and 371. To check the functionality ,
+it is need to run load test.The all enabled request from the concurrency
+throttling will be controlled by the access rate base throttling according to
+the policy. </p>
+
+<p>Run the client as follows </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy</pre>
+
+<div>
+<p>You will get results same as sample 371.if you run the load test, results
+will be different due to affect of concurrency throttling. </p>
+</div>
+
+<h2><a name="Class">Extending the mediation in java (Class Mediator)</a> </h2>
+
+<p>Class mediator can be used to write your own custom mediation in Java and
+you have access to the SynapseMessageContext and to the full Synapse API in
+there. This is a useful extension mechanism within ESB to extend its
+functionality. This class can contain fields for which you can assign values at
+runtime through the configuration. </p>
+
+<h2><a name="Sample380">Sample 380: Writing your own custom mediation in
+Java</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="fault"&gt;
+        &lt;makefault&gt;
+            &lt;code value="tns:Receiver" xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+            &lt;reason value="Mediation failed."/&gt;
+        &lt;/makefault&gt;
+        &lt;send/&gt;
+    &lt;/sequence&gt;
+
+    &lt;sequence name="main" onError="fault"&gt;
+        &lt;in&gt;
+            &lt;send&gt;
+                &lt;endpoint name="stockquote"&gt;
+                    &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                &lt;/endpoint&gt;
+            &lt;/send&gt;
+        &lt;/in&gt;
+        &lt;out&gt;
+            &lt;class name="samples.mediators.DiscountQuoteMediator"&gt;
+                &lt;property name="discountFactor" value="10"/&gt;
+                &lt;property name="bonusFor" value="5"/&gt;
+            &lt;/class&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the use of Class mediator to extend the
+mediation functionality</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Make sure the synapse-samples-1.0.jar is in your class path (by default this
+jar is placed in the lib directory when installing ESB). </p>
+
+<p>Start ESB with the sample configuration 380 (i.e. wso2esb-samples -sn 380)
+</p>
+
+<p>Start the sample Axis2 server and deploy the SimpleStockQuoteService. </p>
+
+<p>In this configuration, ESB hands over the request message to the specified
+endpoint, which sends it to the Axis2 server running on port 9000. </p>
+
+<p>But the response message is passed through the class mediator before sending
+it back to the client. Two parameters named "discountFactor" </p>
+
+<p>and "bonusFor" are passed to the instance mediator implementation class
+(i.e. samples.mediators.DiscountQuoteMediator) before each </p>
+
+<p>invocation. Code of the mediator implementation class is shown below. </p>
+<pre xml:space="preserve">package samples.mediators;
+
+import org.apache.synapse.MessageContext;
+import org.apache.synapse.Mediator;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMFactory;
+import org.apache.axiom.soap.SOAPFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.xml.namespace.QName;
+
+public class DiscountQuoteMediator implements Mediator {
+
+    private static final Log log = LogFactory.getLog(DiscountQuoteMediator.class);
+
+    private String discountFactor="10";
+
+    private String bonusFor="10";
+
+    private int bonusCount=0;
+
+    public DiscountQuoteMediator(){}
+
+    public boolean mediate(MessageContext mc) {
+
+        String price= mc.getEnvelope().getBody().getFirstElement().getFirstElement().
+                getFirstChildWithName(new QName("http://services.samples/xsd","last")).getText();
+
+        //converting String properties into integers
+        int discount=Integer.parseInt(discountFactor);
+        int bonusNo=Integer.parseInt(bonusFor);
+        double currentPrice=Double.parseDouble(price);
+
+        //discounting factor is deducted from current price form every response
+        Double lastPrice = new Double(currentPrice - currentPrice * discount / 100);
+
+        //Special discount of 5% offers for the first responses as set in the bonusFor property
+        if (bonusCount &lt;= bonusNo) {
+            lastPrice = new Double(lastPrice.doubleValue() - lastPrice.doubleValue() * 0.05);
+            bonusCount++;
+        }
+
+        String discountedPrice = lastPrice.toString();
+
+        mc.getEnvelope().getBody().getFirstElement().getFirstElement().getFirstChildWithName
+                (new QName("http://services.samples/xsd","last")).setText(discountedPrice);
+
+        System.out.println("Quote value discounted.");
+        System.out.println("Original price: " + price);
+        System.out.println("Discounted price: " + discountedPrice);
+
+        return true;
+    }
+
+    public String getType() {
+        return null;
+    }
+
+    public void setTraceState(int traceState) {
+        traceState = 0;
+    }
+
+    public int getTraceState() {
+        return 0;
+    }
+
+    public void setDiscountFactor(String discount) {
+        discountFactor=discount;
+    }
+
+    public String getDiscountFactor() {
+        return discountFactor;
+    }
+
+    public void setBonusFor(String bonus){
+        bonusFor=bonus;
+    }
+
+    public String getBonusFor(){
+        return bonusFor;
+    }
+}</pre>
+
+<p>All classes developed for class mediation should implement the Mediator
+interface, which contains the mediate(...) method. mediate(...) method of the
+above class is invoked for each response message mediated through the main
+sequence, with the message context of the current message as the parameter. All
+the details of the message including the SOAP headers, SOAP body and properties
+of the context hierarchy can be accessed from the message context. In this
+sample, the body of the message is retrieved and the discount percentage is
+subtracted from the quote price. If the quote request number is less than the
+number specified in the "bonusFor" property in the configuration, a special
+discount is given. </p>
+
+<p>Now run the client using the following command. </p>
+<pre xml:space="preserve">ant stockquote -Dsymbol=IBM -Dmode=quote -Daddurl=http://localhost:8280</pre>
+
+<p>You will see the below output in the client console with the discounted
+quote value. </p>
+<pre xml:space="preserve">[java] Standard :: Stock price = $138.77458254967408</pre>
+
+<p>Now check the console running Synapse. You will see the original value and
+the discounted value for the requested quote as follows. </p>
+<pre xml:space="preserve">Quote value discounted.
+Original price: 162.30945327447262
+Discounted price: 138.77458254967408</pre>
+
+
+
+<h2><a name="Sample381">Sample 381: Class mediator to CBR binary message</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://ws.apache.org/ns/synapse http://synapse.apache.org/ns/2010/04/configuration/synapse_config.xsd&quot;&gt;
+
+    &lt;proxy name=&quot;JMSBinaryProxy&quot; transports=&quot;jms&quot;&gt;
+        &lt;target inSequence=&quot;BINARY_CBR_SEQ&quot;/&gt;
+    &lt;/proxy&gt;
+
+    &lt;sequence name=&quot;BINARY_CBR_SEQ&quot;&gt;
+        &lt;in&gt;
+            &lt;log level=&quot;full&quot;/&gt;
+            &lt;property action=&quot;set&quot; name=&quot;OUT_ONLY&quot; value=&quot;true&quot;/&gt;
+            &lt;class name=&quot;samples.mediators.BinaryExtractMediator&quot;&gt;
+                &lt;property name=&quot;offset&quot; value=&quot;11&quot;/&gt;
+                &lt;property name=&quot;length&quot; value=&quot;4&quot;/&gt;
+                &lt;property name=&quot;variableName&quot; value=&quot;symbol&quot;/&gt;
+                &lt;property name=&quot;binaryEncoding&quot; value=&quot;utf-8&quot;/&gt;
+            &lt;/class&gt;
+            &lt;log level=&quot;custom&quot;&gt;
+                &lt;property name=&quot;symbol&quot; expression=&quot;get-property(&#39;symbol&#39;)&quot;/&gt;
+            &lt;/log&gt;
+            &lt;switch source=&quot;get-property(&#39;symbol&#39;)&quot;&gt;
+                &lt;case regex=&quot;GOOG&quot;&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address
+                                    uri=&quot;jms:/dynamicTopics/mdd.GOOG?transport.jms.ConnectionFactoryJNDIName=TopicConnectionFactory&amp;java.naming.factory.initial=org.apache.activemq.jndi.ActiveMQInitialContextFactory&amp;java.naming.provider.url=tcp://localhost:61616&amp;transport.jms.DestinationType=topic&quot;/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/case&gt;
+                &lt;case regex=&quot;MSFT&quot;&gt;
+                    &lt;send&gt;
+                        &lt;endpoint&gt;
+                            &lt;address
+                                    uri=&quot;jms:/dynamicTopics/mdd.MSFT?transport.jms.ConnectionFactoryJNDIName=TopicConnectionFactory&amp;java.naming.factory.initial=org.apache.activemq.jndi.ActiveMQInitialContextFactory&amp;java.naming.provider.url=tcp://localhost:61616&amp;transport.jms.DestinationType=topic&quot;/&gt;
+                        &lt;/endpoint&gt;
+                    &lt;/send&gt;
+                &lt;/case&gt;
+                &lt;default/&gt;
+            &lt;/switch&gt;
+        &lt;/in&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate on CBR a message with binary payload</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Make sure the synapse-samples-1.0.jar is in your class path (by default this jar is placed in the lib directory when installing Synapse)</p>
+
+<p>
+Configure JMS transport using ActiveMQ (refer <a href="../samples_setup_guide.html#Setting">Sample Configuration Guide</a>) 
+</p>
+
+<p>Start ESB with the sample configuration 381 (i.e. wso2esb-samples -sn 381)
+</p>
+
+<p>Start the sample Axis2 server and deploy the SimpleStockQuoteService. </p>
+
+<p>In this configuration, a proxy has configured to accept incoming JMS messages. JMS messages
+    contains a binary payload. User configure the offset, length, binary encoding of the text
+    literal that it need to use for CBR. And a variable name to set the decoded value as a property.
+    Configuration simply route the messages based on the text to different endpoints.
+    <br/>A JMS producer and two instances of a consumer used to demonstrate the CBR functionality.</p>
+
+    <p><br/>Now run the first consumer using the following command.</p>
+    <pre xml:space="preserve">ant mddconsumer -Djms_topic=mdd.MSFT</pre>
+
+    <p>Now run the second consumer using the following command.</p>
+    <pre xml:space="preserve">ant mddconsumer -Djms_topic=mdd.GOOG</pre>
+
+	<p> So, now both consumers are ready to listen the topic</p>
+    <p>Now run the market data producer to genenrate market data for symbol 'MSFT' using the following command.</p>
+    <pre xml:space="preserve">ant mddproducer -Dsymbol=MSFT</pre>
+
+    <p>Now run the market data producer to genenrate market data for symbol 'GOOG' using the following command.</p>
+    <pre xml:space="preserve">ant mddproducer -Dsymbol=GOOG</pre>
+
+    <p>You will see the below output in the client console(s) based on the symbol.</p>
+    <pre xml:space="preserve">mddconsumer:
+[java]  Market data recived for symbol : topic://mdd.MSFT
+[java]  Market data recived for symbol : topic://mdd.MSFT
+    </pre>
+
+
+<h2><a name="XQuery">Evaluating XQuery for mediation (XQuery Mediator)</a> </h2>
+
+<h2><a name="Sample390">Sample 390: Introduction to the XQuery mediator</a>
+</h2>
+<pre xml:space="preserve">  &lt;!-- Introduction to the XQuery mediator --&gt;
+&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;!-- the SimpleURLRegistry allows access to a URL based registry (e.g. file:/// or http://) --&gt;
+    &lt;registry provider="org.wso2.esb.registry.ESBRegistry"&gt;
+        &lt;!-- the root property of the simple URL registry helps resolve a resource URL as root + key --&gt;
+        &lt;parameter name="root"&gt;file:repository/samples/resources/&lt;/parameter&gt;
+        &lt;!-- all resources loaded from the URL registry would be cached for this number of milli seconds --&gt;
+        &lt;parameter name="cachableDuration"&gt;15000&lt;/parameter&gt;
+    &lt;/registry&gt;
+
+    &lt;localEntry key="xquery-key-req"
+                src="file:repository/samples/resources/xquery/xquery_req.xq"/&gt;
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;xquery key="xquery-key-req"&gt;
+                    &lt;variable name="payload" type="ELEMENT"/&gt;
+                &lt;/xquery&gt;
+                &lt;send&gt;
+                    &lt;endpoint&gt;
+                        &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;out&gt;
+                    &lt;xquery key="xquery/xquery_res.xq"&gt;
+                        &lt;variable name="payload" type="ELEMENT"/&gt;
+                        &lt;variable name="code" type="STRING"
+                                  expression="self::node()//m0:return/m0:symbol/child::text()"
+                                  xmlns:m0="http://services.samples/xsd"/&gt;
+                        &lt;variable name="price" type="DOUBLE"
+                                  expression="self::node()//m0:return/m0:last/child::text()"
+                                  xmlns:m0="http://services.samples/xsd"/&gt;
+                    &lt;/xquery&gt;
+                    &lt;send/&gt;
+                &lt;/out&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt; </pre>
+
+<p>This example uses the XQuery mediator to perform transformations. This
+sample behaves the same as sample number 8 and the only difference is that this
+sample uses XQuery instead of XSLT for transformation. </p>
+
+<p>Execute the custom quote client as 'ant stockquote -Dmode=customquote ...'
+</p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy -Dmode=customquote </pre>
+
+<h2><a name="Sample391">Sample 391: How to use data from an external XML
+document with in XQuery </a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;!-- the SimpleURLRegistry allows access to  URL based registry (e.g. file:/// or http://) --&gt;
+    &lt;registry provider="org.wso2.carbon.mediation.registry.ESBRegistry"&gt;
+        &lt;!-- the root property of the simple URL registry helps resolve a resource URL as root + key --&gt;
+        &lt;parameter name="root"&gt;file:repository/samples/resources/&lt;/parameter&gt;
+        &lt;!-- all resources loaded from the URL registry would be cached for this number of milli seconds --&gt;
+        &lt;parameter name="cachableDuration"&gt;15000&lt;/parameter&gt;
+    &lt;/registry&gt;
+
+    &lt;proxy name="StockQuoteProxy"&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;send&gt;
+                    &lt;endpoint&gt;
+                        &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;out&gt;
+                    &lt;xquery key="xquery/xquery_commisson.xq"&gt;
+                        &lt;variable name="payload" type="ELEMENT"&gt;&lt;/variable&gt;
+                            &lt;variable name="commission" type="ELEMENT" key="misc/commission.xml"&gt;&lt;/variable&gt;
+                    &lt;/xquery&gt;
+                    &lt;send/&gt;
+                &lt;/out&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri="file:repository/samples/resources/proxy/sample_proxy_1.wsdl"/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the use of XQuery mediator to import external
+XML documents to the XQuery engine</strong></p>
+
+<p><strong>Prerequisites:</strong>Deploy the SimpleStockQuoteService in sample
+Axis2 server and start it on port 9000. </p>
+
+<p>Start ESB with the sample configuration 391 (i.e. wso2esb-samples -sn 391).
+</p>
+
+<p>In this sample, data from commission.xml document is used inside XQUERY
+document. The stock quote price from the response and commission from the
+commission.xml document will be added and given as a new price . </p>
+
+<p>Invoke the client as follows. </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy</pre>
+
+<h2><a name="Splitter">Splitting messages in to parts and process in parallel
+(Iterate / Clone)</a> </h2>
+
+<h2><a name="Sample400">Sample 400: Message splitting and aggregating the
+responses</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;proxy name="SplitAggregateProxy"&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;iterate expression="//m0:getQuote/m0:request" preservePayload="true"
+                         attachPath="//m0:getQuote"
+                         xmlns:m0="http://services.samples"&gt;
+                    &lt;target&gt;
+                        &lt;sequence&gt;
+                            &lt;send&gt;
+                                &lt;endpoint&gt;
+                                    &lt;address
+                                        uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                                &lt;/endpoint&gt;
+                            &lt;/send&gt;
+                        &lt;/sequence&gt;
+                    &lt;/target&gt;
+                &lt;/iterate&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;aggregate&gt;
+                    &lt;onComplete expression="//m0:getQuoteResponse"
+                                xmlns:m0="http://services.samples"&gt;
+                        &lt;send/&gt;
+                    &lt;/onComplete&gt;
+                &lt;/aggregate&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the use of Iterate mediator to split the
+messages in to parts and process them asynchronously and then aggregate the
+responses coming in to ESB</strong></p>
+
+<p><strong>Prerequisites:</strong>Deploy the SimpleStockQuoteService in sample
+Axis2 server and start it on port 9000. </p>
+
+<p>Start ESB with the sample configuration 400 (i.e. wso2esb-samples -sn 400).
+</p>
+
+<p>In this sample, the message sent to ESB has embedded with a number of
+elements of the same type in one message. When ESB received this message it
+will iterate through those elements and then sent to the specified endpoint.
+When all the responses appear in to ESB then those messages will be aggregated
+to form the resultant response and sent back to the client. </p>
+
+<p>Invoke the client as follows. </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/SplitAggregateProxy -Ditr=4</pre>
+
+<h2><a name="Cache">Caching the responses over the requests (Cache
+Mediator)</a> </h2>
+
+<p>Cache mediator can be used to utilize the network bandwidth, to protect the
+backend service from being loaded with the same type of requests like browser
+refresh actions and also to speed up the execution of the web service. This
+mediator should be used with sence, because it is not applicable for each and
+every service (for example services with dynamic responses for a particular
+release) </p>
+
+<h2><a name="Sample420">Sample 420: Simple cache implemented on ESB for the
+actual service</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;in&gt;
+        &lt;cache timeout="20" scope="per-host" collector="false"
+               hashGenerator="org.wso2.caching.digest.DOMHASHGenerator"&gt;
+            &lt;implementation type="memory" maxSize="100"/&gt;
+        &lt;/cache&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;cache collector="true"/&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the use of Cache mediator in order to cache
+the response and use that cached response as the response for an identical xml
+request</strong></p>
+
+<p><strong>Prerequisites:</strong>Deploy the SimpleStockQuoteService in sample
+Axis2 server and start it on port 9000. </p>
+
+<p>Start ESB with the sample configuration 420 (i.e. wso2esb-samples -sn 420).
+</p>
+
+<p>In this sample, the message sent to ESB is checked for an existing cached
+response by calculating the hash value of the request. If there is a cache hit
+in ESB then this request will not be forwarded to the actual service, rather
+ESB respond to the client with the cached response. In case of a cache miss
+that particular message will be forwarded to the actual service and cached that
+response in the out path for the use of consecutive requests of the same type.
+</p>
+
+<p>To observe this behaviour, invoke the client as follows. </p>
+<pre xml:space="preserve">ant stockquote -Dtrpurl=http://localhost:8280/</pre>
+
+<p>You could notice that if you send more than one requests within 20 seconds
+only the first request is forwarded to the actual service, and the rest of the
+requests will be served by the cache inside ESB. You could observe this by
+looking at the printed line of the axis2 server, as well as by observing a
+constant rate as the response to the client instead of the random rate, which
+changes by each and every 20 seconds.<br />
+</p>
+
+<h2><a name="Callout">Synchronize web service invocation with Callout mediator
+</a> </h2>
+
+<p>The Callout mediator calls the given service URL with the request message
+which is given by the source attribute, waits for the response and attaches the
+received response to the destination which is given by the target attribute.
+Both the source and the target can be a key or an XPath. In the case of the
+source, this key refers to either a message context property or to a local
+entry. For the target, this key refers to a message context property only.</p>
+
+<h2><a name="Sample430">Sample 430: Simple Callout Mediator for synchronizing
+web service invocation</a> </h2>
+<pre xml:space="preserve">    &lt;!-- Simple callout  mediator --&gt;
+&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;callout serviceURL="http://localhost:9000/services/SimpleStockQuoteService"
+             action="urn:getQuote"&gt;
+        &lt;source xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/"
+                xmlns:s12="http://www.w3.org/2003/05/soap-envelope"
+                xpath="s11:Body/child::*[fn:position()=1] | s12:Body/child::*[fn:position()=1]"/&gt;
+        &lt;target xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/"
+                xmlns:s12="http://www.w3.org/2003/05/soap-envelope"
+                xpath="s11:Body/child::*[fn:position()=1] | s12:Body/child::*[fn:position()=1]"/&gt;
+    &lt;/callout&gt;
+    &lt;property name="RESPONSE" value="true"/&gt;
+    &lt;header name="To" action="remove"/&gt;
+    &lt;send/&gt;
+    &lt;drop/&gt;
+&lt;/definitions&gt; </pre>
+
+<div>
+<p><strong>Objective:</strong> Demonstrate the use of the Callout mediator for
+the synchronized web service invocation </p>
+</div>
+
+<p><strong>Prerequisites:</strong> Deploy the SimpleStockQuoteService in sample
+Axis2 server and start it on port 9000. </p>
+
+<p>Start Synapse with the sample configuration 430 (i.e. wso2esb-samples -sn
+430). </p>
+
+<p>In this sample, Callout mediator does the direct service invocation to the
+StockQuoteService using the client request, get the response and set it as the
+first child of the SOAP message body. Then using the send mediator, the message
+is sent back to the client. </p>
+
+<p>Invoke the client as follows. </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/</pre>
+
+
+
+<h2><a name="JSON">Mediating JSON Messages</a> </h2>
+
+<p>Supporting JSON messages in ESB</p>
+
+<h2><a name="Sample440">Sample 440: Exposing a SOAP Service Over JSON</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://ws.apache.org/ns/synapse http://synapse.apache.org/ns/2010/04/configuration/synapse_config.xsd&quot;&gt;
+
+    &lt;proxy name=&quot;JSONProxy&quot; transports=&quot;http https&quot;&gt;
+        &lt;target&gt;
+            &lt;endpoint&gt;
+                &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+            &lt;/endpoint&gt;
+            &lt;inSequence&gt;
+                &lt;log level=&quot;full&quot;/&gt;
+                &lt;xslt key=&quot;in_transform&quot;/&gt;
+                &lt;property name=&quot;messageType&quot; scope=&quot;axis2&quot; value=&quot;text/xml&quot;/&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;log level=&quot;full&quot;/&gt;
+                &lt;xslt key=&quot;out_transform&quot;/&gt;
+                &lt;property name=&quot;messageType&quot; scope=&quot;axis2&quot; value=&quot;application/json&quot;/&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+    &lt;/proxy&gt;
+
+    &lt;localEntry key=&quot;in_transform&quot;&gt;
+        &lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+                        xmlns:fn=&quot;http://www.w3.org/2005/02/xpath-functions&quot;
+                        xmlns:m0=&quot;http://services.samples&quot; version=&quot;2.0&quot; exclude-result-prefixes=&quot;m0 fn&quot;&gt;
+            &lt;xsl:output method=&quot;xml&quot; omit-xml-declaration=&quot;yes&quot; indent=&quot;yes&quot;/&gt;
+            &lt;xsl:template match=&quot;*&quot;&gt;
+                &lt;xsl:element name=&quot;{local-name()}&quot; namespace=&quot;http://services.samples&quot;&gt;
+                    &lt;xsl:copy-of select=&quot;attribute::*&quot;/&gt;
+                    &lt;xsl:apply-templates/&gt;
+                &lt;/xsl:element&gt;
+            &lt;/xsl:template&gt;
+        &lt;/xsl:stylesheet&gt;
+    &lt;/localEntry&gt;
+
+    &lt;localEntry key=&quot;out_transform&quot;&gt;
+        &lt;xsl:stylesheet xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; version=&quot;1.0&quot;&gt;
+            &lt;xsl:output method=&quot;xml&quot; version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;/&gt;
+            &lt;xsl:template match=&quot;*&quot;&gt;
+                &lt;xsl:element name=&quot;{local-name()}&quot;&gt;
+                    &lt;xsl:apply-templates/&gt;
+                &lt;/xsl:element&gt;
+            &lt;/xsl:template&gt;
+        &lt;/xsl:stylesheet&gt;
+    &lt;/localEntry&gt;
+
+&lt;/definitions&gt;</pre>
+
+<div>
+<p><strong>Objective:</strong> Demonstrate the ability to switch between JSON and XML/SOAP content interchange formats</p>
+</div>
+
+<p><strong>Prerequisites:</strong> Deploy the SimpleStockQuoteService in sample
+Axis2 server and start it on port 9000. </p>
+
+<p>Start Synapse with the sample configuration 440 (i.e. wso2esb-samples -sn
+440).</p>
+<p>Setup Synapse and the sample Axis2 client for JSON (Refer Synapse Samples Setup Guide for details) </p>
+
+<p>Invoke the client as follows. </p>
+<pre xml:space="preserve">ant jsonclient -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/services/JSONProxy</pre>
+<p>JSON client will send a stockquote request to Synapse using the JSON content interchange format.
+    Synapse will trnasform it into a SOAP request and forward to the Axis2 server.
+    The SOAP response from the Axis2 server will be converted into a JSON message and sent back to
+    the JSON client.</p>
+
+<p>You may use a tool like TCPMon to monitor the JSON requests sent over the wire. A sample JSON request and response is shown below:</p>
+<pre xml:space="preserve">{"getQuote":{"request":{"symbol":"IBM"}}}</pre>
+<pre xml:space="preserve">{"getQuoteResponse":{"return":{"change":3.853593376681722,"earnings":12.802850763714854,"high":67.92488310190126,"last":66.14619264746406,"lastTradeTimestamp":"Mon Aug 23 16:48:40 IST 2010","low":-66.04000424423522,"marketCap":-9334516.42324327,"name":"IBM Company","open":-64.61950137150009,"peRatio":-19.78600441437058,"percentageChange":5.411779328273005,"prevClose":71.2075112994578,"symbol":"IBM","volume":16842}}}
+</pre>
+
+<h2><a name="Rewrite">Modifying URLs with URL Rewrite Mediator</a></h2>
+<p>
+    URL rewrite mediator enables modifying URL values in the message. The input URL could be taken
+    from the 'To' header of the message or from a property available on the message. Once the input
+    URL is selected, a series of user defined rewrite rules will be evaluated on the message. Depending
+    on the outcome of these rule evaluations, the URL will be modified and set on the message.
+</p>
+<p>
+    URL rewrite mediator breaks the URL down to seven segments.
+</p>
+<ul>
+    <li>Protocol</li>
+    <li>User information</li>
+    <li>Hostname</li>
+    <li>Port</li>
+    <li>Path</li>
+    <li>Query</li>
+    <li>Reference parameter</li>
+</ul>
+<p>
+    Note that this breakdown is inline with the URI specification (RFC2396). URL rewrite mediator
+    enables rewriting each of the above segments separately and finally combining them to get
+    the final URL value. It also supports rewriting the entire URL string at once.
+</p>
+
+<h2><a name="Sample450">Sample 450: Introduction to the URL Rewrite Mediator</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="main"&gt;
+        &lt;in&gt;
+            &lt;rewrite&gt;
+                &lt;rewriterule&gt;
+                    &lt;action type="replace" regex="soap" value="services" fragment="path"/&gt;
+                &lt;/rewriterule&gt;
+            &lt;/rewrite&gt;
+            &lt;send/&gt;
+        &lt;/in&gt;
+        &lt;out&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+<div>
+    <p>
+        <strong>Objective: </strong> Demonstrate the basic functions of the URL rewrite mediator
+    </p>
+    <p>
+        <strong>Prerequisites:</strong> Deploy the SimpleStockQuoteService in sample Axis2 server
+        and start it on port 9000.
+    </p>
+    <p>
+        Start ESB with the sample configuration 450 (i.e. wso2esb-samples -sn 450).
+    </p>
+    <p>
+        Invoke the client as follows.
+    </p>
+    <pre xml:space="preserve">ant stockquote -Dtrpurl=http://localhost:8280 -Daddurl=http://localhost:9000/soap/SimpleStockQuoteService</pre>
+    <p>
+        Note that the address URL of the client request contains the context 'soap'. But in the
+        Axis2 server all the services are deployed under a context named 'services' by default.
+        ESB will rewrite the To header of the request by replacing the 'soap' context with 'services.
+        Hence the request will be delivered to the Axis2 server and the Axis2 client will receive a
+        valid response.
+    </p>
+</div>
+
+<h2><a name="Sample451">Sample 451: Conditional URL Rewriting</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="main"&gt;
+        &lt;in&gt;
+            &lt;rewrite&gt;
+                &lt;rewriterule&gt;
+                    &lt;condition&gt;
+                        &lt;and&gt;
+                            &lt;equal type="url" source="host" value="localhost"/&gt;
+                            &lt;not&gt;
+                                &lt;equal type="url" source="protocol" value="https"/&gt;
+                            &lt;/not&gt;
+                        &lt;/and&gt;
+                    &lt;/condition&gt;
+                    &lt;action fragment="protocol" value="https"/&gt;
+                    &lt;action fragment="port" value="9002"/&gt;
+                &lt;/rewriterule&gt;
+            &lt;/rewrite&gt;
+            &lt;send/&gt;
+        &lt;/in&gt;
+        &lt;out&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+<div>
+    <p>
+        <strong>Objective: </strong> Demonstrate the ability of the URL rewrite mediator to evaluate conditions on messages and perform rewrites based on the results.
+    </p>
+    <p>
+        <strong>Prerequisites:</strong> Deploy the SimpleStockQuoteService in sample Axis2 server
+        and start it on port 9000.
+    </p>
+    <p>
+        Start ESB with the sample configuration 451 (i.e. wso2esb-samples -sn 451).
+    </p>
+    <p>
+        Invoke the Axis2 client and send some requests to ESB with different address URL values.
+        If the address URL value contains localhost as the hostname and https as the protocol
+        prefix, ESB will route the message as it is. But if the hostname is localhost and the
+        protocol is not https, Synapse will rewrite the URL by setting https as the protocol. The
+        port number will also be set to the HTTPS port of the Axis2 server.
+    </p>
+    <p>
+        The condition evaluation feature is provided by the Synapse evaluator framework. Currently
+        one can evaluate expressions on URL values, query parameters, transport headers, properties
+        and SOAP envelope content using this framework. Hence URL rewriting can be done based on
+        any of these aspects.
+    </p>
+</div>
+
+<h2><a name="Sample452">Sample 452: Conditional URL Rewriting with Multiple Rules</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="main"&gt;
+        &lt;in&gt;
+            &lt;property name="http.port" value="9000"/&gt;
+            &lt;property name="https.port" value="9002"/&gt;
+            &lt;rewrite&gt;
+                &lt;rewriterule&gt;
+                    &lt;action fragment="host" value="localhost"/&gt;
+                    &lt;action fragment="path" type="prepend" value="/services"/&gt;
+                &lt;/rewriterule&gt;
+                &lt;rewriterule&gt;
+                    &lt;condition&gt;
+                        &lt;equal type="url" source="protocol" value="http"/&gt;
+                    &lt;/condition&gt;
+                    &lt;action fragment="port" xpath="get-property('http.port')"/&gt;
+                &lt;/rewriterule&gt;
+                &lt;rewriterule&gt;
+                    &lt;condition&gt;
+                        &lt;equal type="url" source="protocol" value="https"/&gt;
+                    &lt;/condition&gt;
+                    &lt;action fragment="port" xpath="get-property('https.port')"/&gt;
+                &lt;/rewriterule&gt;
+            &lt;/rewrite&gt;
+            &lt;log level="full"/&gt;
+            &lt;send/&gt;
+        &lt;/in&gt;
+        &lt;out&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+<div>
+    <p>
+        <strong>Objective: </strong> Demonstrate the ability of the URL rewrite mediator to perform rewrites based on multiple rules.
+    </p>
+    <p>
+        <strong>Prerequisites:</strong> Deploy the SimpleStockQuoteService in sample Axis2 server
+        and start it on port 9000.
+    </p>
+    <p>
+        Start ESB with the sample configuration 452 (i.e. wso2esb-samples -sn 452).
+    </p>
+    <p>
+        Invoke the Axis2 client as follows.
+    </p>
+    <pre xml:space="preserve">ant stockquote -Dtrpurl=http://localhost:8280 -Daddurl=http://test.com/SimpleStockQuoteService</pre>
+    <p>
+        The provided address URL does not contain a port number and the context. The URL rewrite
+        mediator will replace the hostname to be 'localhost' and add the context '/services' to the
+        path. Then it will add the appropriate port number to the URL by looking at the protocol
+        prefix. Ultimately the service request will be routed the sample Axis2 server and the
+        client will receive a valid response. Note that the Synapse configuration does not specify
+        any endpoints explicitly. So the messages are sent to the rewritten To header.
+    </p>
+    <p>
+        Another important aspect shown by this sample is the ability of the URL rewrite mediator to
+        obtain the necessary values by executing XPath expressions. The port numbers are calculated
+        by executing an XPath on the messages.
+    </p>
+</div>
+
+<h2><a name="Event">Publishing Events to Topics Using the Event Mediator</a></h2>
+<p>
+    WSO2 ESB can be used as an event broker. It comes with a built-in eventing implementation and
+    a lightweight event broker based on Apache Qpid. You can use the ESB management console to
+    create event topics and clients can subscribe to those topics by sending WS-Eventing
+    subscription requests. The management console also allows creating static subscription.
+</p>
+<p>
+    WSO2 ESB is also equipped with an event mediator which can be used to publish messages to
+    predefined topics. With this mediator it is possible for a sequence or a proxy service to
+    directly publish a received request or a response to a topic as an event.
+</p>
+
+<h2><a name="Sample460">Sample 460: Introduction to Eventing and Event Mediator</a></h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;sequence name="main"&gt;
+        &lt;log/&gt;
+        &lt;event topic="stockquote"/&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+<div>
+    <p>
+        <strong>Objective: </strong> Demonstrate the usage of the event mediator to publish messages to event topics
+    </p>
+    <p>
+        <strong>Prerequisites:</strong> Deploy the SimpleStockQuoteService in sample Axis2 server
+        and start it on port 9000.
+    </p>
+    <p>
+        Start ESB with the sample configuration 460 (i.e. wso2esb-samples -sn 460).
+    </p>
+    <p>
+        Now sign in to the ESB management console can select 'Topics > Add' option from the 'Manage'
+        menu. Enter the name 'stockquote' for the topic and click 'Add Topic'. This will create an
+        event topic named 'stockquote' and you will be directed to the 'Topic Browser' tree view. The
+        newly created topic will be shown on the tree. Click on this topic and select the 'Subscribe'
+        option to create a static subscription. Enter the value 'http://localhost:9000/services/SimpleStockQuoteService'
+        in the 'Event Sink URL' field and click 'Subscribe'.
+    </p>
+    <p>
+        Now run the sample client as follows to send a request to the main sequence.
+    </p>
+    <pre xml:space="preserve">ant stockquote -Dtrpurl=http://localhost:8280 -Dmode=placeorder</pre>
+    <p>
+        The request will be published to the 'stockquote' topic by the event mediator and as a result
+        the subscriber (Axis2 server in this case) will receive a copy of the message. You will see a
+        log entry in the Axis2 server console indicating the receipt of the place order request.
+    </p>
+    <p>
+        Note that the provided ESB configuration does not explicitly specify the endpoint of the Axis2
+        server. Also we don't set the actual EPR of the service on the request when sending the message
+        from the client either. Therefore the only reason that Axis2 receives the message is because
+        it is subscribed to the 'stockquote' event topic.
+    </p>
+</div>
+
+<h2><a name="Spring">Spring</a></h2>
+<h2><a name="Sample470">Sample 470: How to initialize and use a Spring Bean as a Mediator</a></h2>
+<pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://ws.apache.org/ns/synapse http://synapse.apache.org/ns/2010/04/configuration/synapse_config.xsd&quot;&gt;
+
+    &lt;registry provider=&quot;org.apache.synapse.registry.url.SimpleURLRegistry&quot;&gt;
+        &lt;parameter name=&quot;root&quot;&gt;file:repository/conf/sample/resources/&lt;/parameter&gt;
+        &lt;parameter name=&quot;cachableDuration&quot;&gt;15000&lt;/parameter&gt;
+    &lt;/registry&gt;
+
+    &lt;sequence name=&quot;main&quot;&gt;
+        &lt;!--Setting the Spring Mediator and its Spring Beans xml file location --&gt;
+        &lt;!--Note that springtest is the bean id used in springCustomLogger.xml --&gt;
+        &lt;spring bean=&quot;springtest&quot; key=&quot;spring/springCustomLogger.xml&quot;/&gt;
+        &lt;send/&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+
+<p>springCustomLogger.xml file<br/></p>
+<pre xml:space="preserve">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE beans PUBLIC  &quot;-//SPRING//DTD BEAN//EN&quot;
+    &quot;http://www.springframework.org/dtd/spring-beans.dtd&quot;&gt;
+
+&lt;beans&gt;
+
+   &lt;bean id=&quot;springtest&quot; class=&quot;samples.mediators.extensions.SpringCustomLogger&quot; singleton=&quot;false&quot;&gt;
+	   &lt;property name=&quot;userName&quot;&gt;&lt;value&gt;&quot;Synapse User&quot;&lt;/value&gt;&lt;/property&gt;
+	   &lt;property name=&quot;email&quot;&gt;&lt;value&gt;&quot;usr@synapse.org&quot;&lt;/value&gt;&lt;/property&gt;
+   &lt;/bean&gt;
+
+&lt;/beans&gt;
+</pre>
+
+<div>
+    <p>
+        <strong>Objective: </strong> Demonstrate How to initialize and use a SpringBean as a mediator
+    </p>
+    <p>
+        <strong>Prerequisites:</strong> Deploy the SimpleStockQuoteService in sample Axis2 server
+        and start it on port 9000.
+    </p>
+    <p>
+        Start ESB with the sample configuration 470 (i.e. wso2esb-samples -sn 470).
+    </p>
+    <p>
+       In this sample, the Spring Bean, SpringCustomLogger get initialized using
+        springCustomLogger.xml file and then it log the message Id.
+    </p>
+    <p>
+        Invoke the client as follows.
+    </p>
+    <pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/</pre>
+    <p>If you have enabled logging for the samples.mediators package you will see an
+        output similar to the following on the console:</p>
+    <pre xml:space="preserve">
+    2010-09-26 20:46:57,946 [-] [HttpServerWorker-1]  INFO SpringCustomLogger Starting Spring Meditor
+    2010-09-26 20:46:57,946 [-] [HttpServerWorker-1]  INFO SpringCustomLogger Bean in Initialized with User:["Synapse User"]
+    2010-09-26 20:46:57,946 [-] [HttpServerWorker-1]  INFO SpringCustomLogger E-MAIL:["usr@synapse.org"]
+    2010-09-26 20:46:57,946 [-] [HttpServerWorker-1]  INFO SpringCustomLogger Massage Id:  urn:uuid:383FA8B27D7CC549D91285514217720
+    2010-09-26 20:46:57,946 [-] [HttpServerWorker-1]  INFO SpringCustomLogger Logged....</pre>
+
+</div>
+</body>
+</html>

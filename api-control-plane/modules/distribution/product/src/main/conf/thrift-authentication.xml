@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<Server xmlns="http://wso2.org/projects/carbon/carbon.xml">
+
+
+    <JDBCPersistenceManager>
+        <DataSource>
+            <!-- Include a data source name (jndiConfigName) from the set of data sources defined in master-datasources.xml -->
+            <Name>jdbc/WSO2AM_DB</Name>
+        </DataSource>
+        <!-- If the identity database is created from another place and if it is required to skip schema initialization during the server start up, set the following
+           property to "true". -->
+        <!--<SkipDBSchemaCreation>true</SkipDBSchemaCreation>-->
+    </JDBCPersistenceManager>
+
+    <ThriftSessionDAO>org.wso2.carbon.identity.thrift.authentication.dao.DBThriftSessionDAO</ThriftSessionDAO>
+    <!--<ThriftSessionDAO>org.wso2.carbon.identity.thrift.authentication.dao.InMemoryThriftSessionDAO</ThriftSessionDAO>-->
+
+    <ClientTimeout>30000</ClientTimeout>
+
+    <!--<Hostname>localhost</Hostname>-->
+    <Port>10711</Port>
+
+    <!--30 min-->
+    <ThriftSessionTimeout>1800000</ThriftSessionTimeout>
+
+</Server>

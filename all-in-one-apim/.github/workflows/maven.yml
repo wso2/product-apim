@@ -1,0 +1,109 @@
+name: APIM builder
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+    branches:
+      - master
+concurrency:
+  group: ${{ github.event.number }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - id: 1
+            segment: group1
+          - id: 2
+            segment: group2
+          - id: 3
+            segment: group3
+          - id: 4
+            segment: group4
+      fail-fast: false
+    steps:
+    - name: Run hostname
+      run: hostname
+    - name: Fix host entry
+      run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+    - name: Show hosts
+      run: cat /etc/hosts
+    - name: Checkout master
+      uses: actions/checkout@v3
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2
+        restore-keys: ${{ runner.os }}-m2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: 11.0.16+8
+        distribution: 'temurin'
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '10.x'
+    - name: Build product-apim with Test.
+      run: mvn clean install --file pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
+      env:
+        PRODUCT_APIM_TEST_GROUPS: ${{ matrix.segment }}
+    - name: Prepare upload testng report
+      if: always()
+      run: mv modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
+    - name: Archive testng report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: TEST-TestSuite_${{ matrix.id }}
+        path: |
+          TEST-TestSuite_${{ matrix.id }}.xml
+        if-no-files-found: warn
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        flags: integration_tests
+  run-benchmark-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run hostname
+        run: hostname
+      - name: Fix host entry
+        run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+      - name: Show hosts
+        run: cat /etc/hosts
+      - name: Checkout master
+        uses: actions/checkout@v3
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2
+          restore-keys: ${{ runner.os }}-m2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11.0.16+8
+          distribution: 'temurin'
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '10.x'
+      - name: Build product-apim with Test.
+        run: mvn clean install --file pom.xml -DskipIntegrationTests=true
+  show-report:
+    if: ${{ always() && !cancelled() }}
+    needs: build
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          path: reports
+      - name: Publish Test Report
+        if: always()
+        uses: malinthaprasan/action-surefire-report@v1
+        with:
+          report_paths: 'reports/**/TEST-*.xml'

@@ -1,0 +1,65 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/salary/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "allowMultiple": false,
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "5KPerMin",
+        "x-scope": "new_scope",
+        "security": [
+          {
+            "default": [
+              "new_scope"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Salary_details_API",
+    "version": "1.0.0"
+  },
+  "x-wso2-security": {
+    "apim": {
+      "x-wso2-scopes": [
+        {
+          "name": "New Scope",
+          "description": "",
+          "key": "new_scope",
+          "roles": "admin"
+        }
+      ]
+    }
+  },
+  "securityDefinitions": {
+    "default": {
+      "type": "oauth2",
+      "authorizationUrl": "https://localhost:8243/authorize",
+      "flow": "implicit",
+      "scopes": {
+        "new_scope": "New Scope"
+      }
+    }
+  },
+  "basePath": "/salary/1.0.0",
+  "host": "localhost:8243",
+  "schemes": [
+    "https",
+    "http"
+  ]
+}

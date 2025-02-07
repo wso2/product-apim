@@ -1,0 +1,27 @@
+{
+  "category": "Mediation",
+  "name": "changeHTTPMethod",
+  "version": "v1",
+  "displayName": "Change HTTP Method",
+  "description": "This policy allows you to change the HTTP Method",
+  "policyAttributes": [
+    {
+      "name": "httpMethod",
+      "displayName": "HTTP Method",
+      "description": "Method of the HTTP request",
+      "validationRegex": "^(GET|PUT|POST|PATCH|DELETE|HEAD|OPTIONS)$",
+      "type": "Enum",
+      "allowedValues" : ["GET","PUT","POST","PATCH","DELETE","HEAD","OPTIONS"],
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
