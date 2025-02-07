@@ -211,6 +211,7 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
         List<OperationPolicyDTO> policyList = new ArrayList<>();
         OperationPolicyDTO policyDTO = new OperationPolicyDTO();
         policyDTO.setPolicyName(policyName);
+        policyDTO.setPolicyType("common");
         policyDTO.setPolicyId(policyMap.get(policyName));
         policyDTO.setParameters(attributeMap);
         policyList.add(policyDTO);
