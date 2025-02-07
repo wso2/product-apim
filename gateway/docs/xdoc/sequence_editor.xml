@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+  ~  Copyright (c) 2005-2008, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  ~
+  -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Sequence Editor </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body xml:lang="en">
+<h2>Sequence Editor</h2>
+
+<p>A sequence is the basis of message mediation. A sequence is a collection of
+mediators. Sequence editor allows creation of sequences from the UI. Sequences
+can be created as named sequences and refer later from other parts of ESB
+configuration. Some configurations expects sequences to be defined in the place
+they are used. We call this type of sequences inline sequences. Sequence editor
+is used in both these cases for creating a sequence. </p>
+
+<p>Sequence List </p>
+
+<p>Use the <span style="font-style: italic; font-weight: bold;">Mediation
+Sequences</span> page to add new sequences or edit existing sequences. As shown
+in Figure,1 the sequence management section displays a list of existing
+sequences. </p>
+
+<p></p>
+
+<p><img src="sequences/docs/images/sequence-list.png" alt="" /> </p>
+
+<p>Figure 1: Mediation sequence management</p>
+
+<p></p>
+
+<p>In the navigator, under Manage/Mediation, click <span
+style="font-weight: bold;">Sequences</span>. The <em><span
+style="font-weight: bold; font-style: italic;">Mediation Sequences</span></em>
+page appears. </p>
+<ul>
+  <li>Enable Statistics 
+    <ul>
+      <li>Click <span style="font-weight: bold;">Enable Statistics</span> to
+        gather information relating to a particular sequence. </li>
+    </ul>
+  </li>
+  <li>Enable Tracing 
+    <ul>
+      <li>Click <span style="font-weight: bold;">Enable Tracing</span> to turn
+        on all trace messages for the corresponding sequence </li>
+    </ul>
+  </li>
+</ul>
+
+<p>The above options are turned off by default because they cause a severe
+performance degradation. Use these options only in a situation where you have
+to debug a particular problem. </p>
+<ul>
+  <li>Edit 
+    <ul>
+      <li>Click <span style="font-weight: bold;">Edit</span> to open the
+        sequence in the design view for editing purposes. </li>
+    </ul>
+  </li>
+  <li>Delete 
+    <ul>
+      <li>Click <span style="font-weight: bold;">Delete</span> to remove a
+        particular sequence from the system. </li>
+    </ul>
+  </li>
+</ul>
+
+<p></p>
+
+<h3>Adding a Sequence</h3>
+<ol>
+  <li style="color: black;">On the <span
+    style="font-weight: bold; font-style: italic;">Mediation Sequences</span>
+    page, click <span style="font-weight: bold;">Add Sequence</span>. The <span
+    style="font-style: italic; font-weight: bold;">Design Sequence</span> page
+    appears. </li>
+  <li style="color: black;">Enter a sequence name.</li>
+  <li><span style="color: black;">Click </span> <span
+    style="font-weight: bold; color: black;">Add Child</span> <span
+    style="color: black;">, and select the required nodes for your
+    sequence.</span> </li>
+</ol>
+
+<p><img src="sequences/docs/images/add-sequence.png" alt="" /> </p>
+
+<p>Figure 2: Add sequence design view</p>
+
+<h3>Editing a sequence</h3>
+<ol>
+  <li>On the <span style="font-weight: bold; font-style: italic;">Mediation
+    Sequences</span> page, click <span style="font-weight: bold;">Edit.</span>
+    The <span style="font-style: italic; font-weight: bold;">Design
+    Sequence</span> page appears, displaying the selected sequence. </li>
+  <li><span style="color: black;">Click on the node you want edit. The
+    properties for that node will be displayed below. </span> </li>
+</ol>
+
+<p><img src="sequences/docs/images/edit-sequence.png" alt="" /> </p>
+
+<p>Figure 3: Editing a sequence</p>
+
+<p><img src="sequences/docs/images/node-editor.png" alt="" /> </p>
+
+<p>Figure 4: Editing node specific properties</p>
+<ul>
+  <li>You can edit the node specific attributes displayed in the Design view.
+  </li>
+  <li>You can add a sibling node, in the Design view..</li>
+  <li>You can add only siblings to some nodes, while you can also add a child
+    node to others. </li>
+  <li>You can move the selected node up or down using the arrow icons.</li>
+  <li>You can also delete the node.</li>
+</ul>
+
+<p>Click <span style="font-weight: bold;">switch to source view</span> to view
+the XML of the particular sequence. If you're familiar with the Synapse
+configuration language you can edit the XML directly. After editing you can
+save the sequences by clicking the save button. If you click on <strong>swith
+to design view</strong> source will be saved before going to the graphical
+view.</p>
+
+<p></p>
+
+<p><img src="sequences/docs/images/sequence-source.png" alt="Sequence source view" /> </p>
+
+<p>Figure 5: Source view of the sequence editor </p>
+</body>
+</html>

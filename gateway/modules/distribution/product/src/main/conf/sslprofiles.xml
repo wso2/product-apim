@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<parameter name="customSSLProfiles">
+    <profile>
+        <servers>*</servers>
+        <KeyStore>
+            <Location>repository/resources/security/wso2carbon.jks</Location>
+            <Type>JKS</Type>
+            <Password>wso2carbon</Password>
+            <KeyPassword>wso2carbon</KeyPassword>
+        </KeyStore>
+        <TrustStore>
+            <Location>repository/resources/security/client-truststore.jks</Location>
+            <Type>JKS</Type>
+            <Password>wso2carbon</Password>
+        </TrustStore>
+    </profile>
+</parameter>

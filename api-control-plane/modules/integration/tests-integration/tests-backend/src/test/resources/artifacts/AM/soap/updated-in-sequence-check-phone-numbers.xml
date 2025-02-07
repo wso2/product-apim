@@ -1,0 +1,39 @@
+<header description="SOAPAction" name="SOAPAction" scope="transport" value="http://ws.cdyne.com/PhoneVerify/query/CheckPhoneNumbers"/>
+<property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
+<property expression="json-eval($.CheckPhoneNumbers.LicenseKey)" name="req.var.CheckPhoneNumbers.LicenseKey"/>
+<property name="updated-property" scope="axis2" action="remove"/>
+
+
+<property name="JSONPayload" expression="json-eval($.)"/>
+<script language="js">
+    var payload =  mc.getProperty("JSONPayload");
+    var payloadObj = JSON.parse(payload);
+    var results = payloadObj.CheckPhoneNumbers.PhoneNumbers; 
+   var response = "";
+   for (i = 0; i &lt; results.length; i++) {
+       var elem = results[i];
+       response += "&lt;web:string xmlns:web='http://ws.cdyne.com/PhoneVerify/query'&gt;" + elem + "&lt;/web:string&gt;";
+   } 
+   var propertyName = "req.var.CheckPhoneNumbers.PhoneNumbers.string";
+   mc.setProperty(propertyName, response.toString());
+ </script>
+<payloadFactory description="transform" media-type="xml">
+  <format>
+  <soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
+  <soapenv:Header/>
+  <soapenv:Body>
+  	<web:CheckPhoneNumbers xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
+  <web:PhoneNumbers>$1</web:PhoneNumbers>
+  <web:LicenseKey>$2</web:LicenseKey>
+</web:CheckPhoneNumbers>
+
+  </soapenv:Body>
+  </soapenv:Envelope>
+  </format>
+  <args>
+ 	<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.PhoneNumbers.string')"/>
+<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.LicenseKey')"/>
+
+  </args>
+</payloadFactory>
+<property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>

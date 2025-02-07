@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{% if apim.event_hub.event_duplicate_url is defined || apim.throttling.event_duplicate_url is defined %}
+        <eventPublisher name="tokenRevocationJMSPublisher2" statistics="disable"
+{% else %}
+        <eventPublisher name="tokenRevocationJMSPublisher2" statistics="disable" processing="disable"
+{% endif %}
+                trace="disable" xmlns="http://wso2.org/carbon/eventpublisher">
+  <from streamName="org.wso2.apimgt.token.revocation.stream" version="1.0.0"/>
+  <mapping customMapping="disable" type="json"/>
+  <to eventAdapterType="jms">
+    <property name="java.naming.factory.initial">org.wso2.andes.jndi.PropertiesFileInitialContextFactory</property>
+    <property name="java.naming.provider.url">repository/conf/jndi2-cp.properties</property>
+    <property name="transport.jms.DestinationType">topic</property>
+    <property name="transport.jms.Destination">tokenRevocation</property>
+    <property name="transport.jms.ConcurrentPublishers">allow</property>
+    <property name="transport.jms.ConnectionFactoryJNDIName">TopicConnectionFactory</property>
+  </to>
+</eventPublisher>

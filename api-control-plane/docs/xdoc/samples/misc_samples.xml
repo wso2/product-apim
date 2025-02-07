@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
+  <title>WSO2 ESB - Miscellaneous Samples </title>
+</head>
+
+<body>
+
+    <h2>
+      <a name="Sample650">Sample 650: File hierarchy based configuration builder</a>
+    </h2>
+    <p>
+      &#xa0;
+    </p>
+    <pre xml:space="preserve">
+      synapse_sample_650.xml
+         |-- endpoints
+         |   `-- foo.xml
+         |-- events
+         |   `-- event1.xml
+         |-- local-entries
+         |   `-- bar.xml
+         |-- proxy-services
+         |   |-- proxy1.xml
+         |   |-- proxy2.xml
+         |   `-- proxy3.xml
+         |-- registry.xml
+         |-- sequences
+         |   |-- custom-logger.xml
+         |   |-- fault.xml
+         |   `-- main.xml
+         |-- synapse.xml
+         `-- tasks
+             `-- task1.xml
+
+    </pre>
+    <div>
+      <p>
+        <strong>Objective:</strong> Demonstrate the ability to construct the Synapse configuration from a file hierarchy
+      </p>
+      <p>
+        <strong>Prerequisites:</strong> Deploy the
+        SimpleStockQuoteService in sample Axis2 server and start it on port
+        9000.
+      </p>
+      <p>
+        Start ESB with the sample configuration 650 (i.e. wso2esb-samples.sh -sn 650).
+      </p>
+      <p>
+         Go to the repository/samples directory and locate the subdirectory named synapse_sample_650.xml
+         within it. When ESB is started with the sample configuration 650, ESB will load the configuration from
+         this directory. You will find a number of subdirectories and a set of XML files in each of those directories.
+         Synapse will parse all the XML files in this file hierarchy and construct the full Synapse configuration at startup.
+         As a result when this sample is executed Synapse will start with four proxy services, several sequences, a task, an event
+         source and some endpoint and local entry definitions.
+      </p>
+      <p>
+         The names of the subdirectories (eg: proxy-services, sequences, endpoints) are fixed and hence cannot be changed.
+         Also the registry definition should go into a file named registry.xml which resides at the top level of the file
+         hierarchy. It can also be specified in the synapse.xml file at top level. This synapse.xml file can include
+         any item that can be normally defined in a synapse.xml file. The files which define proxy services, sequences,
+         endpoints etc can have any name. These configuration files must have the .xml extension at the end of the name. Synapse
+         will ignore any files which do not have the .xml extension.
+      </p>
+      <p>
+         None of the directories and files in the sample file hierachy are mandatory. You can leave entire directories out if
+         you do not need them. For example if your configuration does not contain any proxy services you can leave the
+         subdirectory named proxy-services out.
+      </p>
+      <p>
+         To use this feature you should simply pass a path to an existing directory when starting the Synapse server. The
+         SynapseServer class which is responsible for starting the server accepts a file path as an argument from where to
+         load the configuration. Generally we pass the path to the synapse.xml file as the value of this argument. If you
+         pass a directory path instead, Synapse configuration will be loaded from the specified directory. Note the following
+         line on the console when Synapse is loading the configuration from a file hierarchy.
+      </p>
+      <pre>2009-08-04 14:14:42,489 [-] [main]  INFO SynapseConfigurationBuilder Loaded Synapse configuration from the directory hierarchy at : /home/synapse/repository/conf/sample/synapse_sample_650.xml</pre>
+      <p>
+         This feature comes in handy when managing large Synapse configurations. It is easier to maintain a well structured
+         file hierarchy than managing one large flat XML file.
+      </p>
+    </div>
+    <h2>
+      <a name="Sample651">Sample 651: Using Synapse observers</a>
+    </h2>
+    <div>
+      <p>
+        <strong>Objective:</strong> Demonstrate the ability to monitor the Synapse configuration at runtime using the
+          SynapseObserver interface
+      </p>
+      <p>
+        Open the synapse.properties file in the ESB_HOME/webapps/ROOT/WEB-INF/classes directory using a text editor and add the following
+          line to the synapse.properties file. This entry defines the simple logging Synapse observer.
+      </p>
+      <pre xml:space="preserve">synapse.observers=samples.userguide.SimpleLoggingObserver</pre>
+      <p>
+        Open the log4j.properties file in the ESB_HOME/lib directory and add the followin line which sets the INFO log
+        level to the samples.userguide package.
+      </p>
+      <pre xml:space="preserve">log4j.category.samples.userguide=INFO</pre>
+      <p>
+        Start Synapse using any of the sample configurations. The SimpleLoggingObserver will capture events that occur
+        while constructing the Synapse configuration and log them on the console as follows.
+      </p>
+      <pre xml:space="preserve">
+  2009-08-06 14:30:24,578 [-] [main]  INFO SimpleLoggingObserver Simple logging observer initialized...Capturing Synapse events...
+  2009-08-06 14:30:24,604 [-] [main]  INFO SimpleLoggingObserver Endpoint : a3 was added to the Synapse configuration successfully
+  2009-08-06 14:30:24,605 [-] [main]  INFO SimpleLoggingObserver Endpoint : a2 was added to the Synapse configuration successfully
+  2009-08-06 14:30:24,606 [-] [main]  INFO SimpleLoggingObserver Endpoint : null was added to the Synapse configuration successfully
+  2009-08-06 14:30:24,611 [-] [main]  INFO SimpleLoggingObserver Local entry : a1 was added to the Synapse configuration successfully
+  2009-08-06 14:30:24,649 [-] [main]  INFO SimpleLoggingObserver Proxy service : StockQuoteProxy2 was added to the Synapse configuration successfully
+  2009-08-06 14:30:24,661 [-] [main]  INFO SimpleLoggingObserver Proxy service : StockQuoteProxy1 was added to the Synapse configuration successfully
+  2009-08-06 14:30:24,664 [-] [main]  INFO SimpleLoggingObserver Sequence : main was added to the Synapse configuration successfully
+  2009-08-06 14:30:24,701 [-] [main]  INFO SimpleLoggingObserver Sequence : fault was added to the Synapse configuration successfully</pre>
+
+      <p>
+        The SimpleLoggingObserver is implemented as follows. It does not override any of the event handler implementations
+        in the AbstractSynapseObserver class. The AbstractSynapseObserver logs all the received events by default.
+      </p>
+      <pre xml:space="preserve">
+ package samples.userguide;
+
+ import org.apache.synapse.config.AbstractSynapseObserver;
+
+ public class SimpleLoggingObserver extends AbstractSynapseObserver {
+
+     public SimpleLoggingObserver() {
+         super();
+         log.info("Simple logging observer initialized...Capturing Synapse events...");
+     }
+ }</pre>      
+    </div>
+
+ <h2>
+         <a name="Sample652">Sample 652: Priority Based Message Mediation</a>
+       </h2>
+       <p>
+         &#xa0;
+       </p>
+   <pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+    &lt;priority-executor name=&quot;exec&quot;&gt;
+        &lt;queues&gt;
+            &lt;queue size=&quot;100&quot; priority=&quot;1&quot;/&gt;
+            &lt;queue size=&quot;100&quot; priority=&quot;10&quot;/&gt;
+        &lt;/queues&gt;
+    &lt;/priority-executor&gt;
+    &lt;proxy name=&quot;StockQuoteProxy&quot;&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;filter source=&quot;$trp:priority&quot; regex=&quot;1&quot;&gt;
+                    &lt;then&gt;
+                        &lt;enqueue priority=&quot;1&quot; sequence=&quot;priority_sequence&quot; executor=&quot;exec&quot;/&gt;
+                    &lt;/then&gt;
+                    &lt;else&gt;
+                        &lt;enqueue priority=&quot;10&quot; sequence=&quot;priority_sequence&quot; executor=&quot;exec&quot;/&gt;
+                    &lt;/else&gt;
+                &lt;/filter&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri=&quot;file:repository/samples/resources/proxy/sample_proxy_1.wsdl&quot;/&gt;
+    &lt;/proxy&gt;
+    &lt;sequence name=&quot;priority_sequence&quot;&gt;
+        &lt;log level=&quot;full&quot;/&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;
+                &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/sequence&gt;
+&lt;/definitions&gt;</pre>
+       <div>
+         <p>
+           <strong>Objective:</strong> Demonstrate the priority based mediation capability of ESB.
+         </p>
+         <p>
+           <strong>Prerequisites:</strong> Deploy the
+           SimpleStockQuoteService in sample Axis2 server and start it on port
+           9000. Priority is applied only when ESB is loaded with enough messages to consume its core number of threads.
+             So to observe the priority based mediation, it is required to use a load testing tool like JMeter, SOAP UI or Apache bench.
+         </p>
+         <p>
+           Start ESB with the sample configuration 652 (i.e. wso2esb-samples.sh -sn 652).
+         </p>
+         <p>
+           In this sample, client should send a HTTP header that specifies the priority of the message.This header name is priority.
+             This header is retrieved in the ESB configuration using the $trp:priority XPath expression. Then it is matched against
+             the value 1. If it has the value 1, message is executed with priority 1. Otherwise the message is executed with priority 10.
+         </p>
+           <p>
+               Here are two sample XML files that can be used to invoke the service using a tool like JMeter, or Ab. For SOAP UI,
+               user can use the WSDL repository/samples/resources/proxy/sample_proxy_1.wsdl to create the request. The only
+               difference between the two demonstrated requests here is the symbol. One has the symbol as IBM and other has MSFT. For one type of
+               request set the priority header to 1 and for the next set the priority header to 10. Then load ESB with high
+               volume of traffic from both types of requests using the load testing tool. In the back end server it prints the
+               symbol of the incoming requests. User should be able to see more of high priority symbol.
+           </p>
+           <pre xml:space="preserve">
+&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;
+     &lt;soapenv:Header xmlns:wsa=&quot;http://www.w3.org/2005/08/addressing&quot;&gt;
+        &lt;wsa:To&gt;http://localhost:8281/services/SimpleStockQuoteService&lt;/wsa:To&gt;
+        &lt;wsa:MessageID&gt;urn:uuid:1B57D0B0BF770678DE1261165228620&lt;/wsa:MessageID&gt;
+        &lt;wsa:Action&gt;urn:getQuote&lt;/wsa:Action&gt;
+     &lt;/soapenv:Header&gt;
+     &lt;soapenv:Body&gt;
+        &lt;m0:getQuote xmlns:m0=&quot;http://services.samples&quot;&gt;
+           &lt;m0:request&gt;
+              &lt;m0:symbol&gt;IBM&lt;/m0:symbol&gt;
+           &lt;/m0:request&gt;
+        &lt;/m0:getQuote&gt;
+     &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+           </pre>
+           <pre xml:space="preserve">
+&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;
+     &lt;soapenv:Header xmlns:wsa=&quot;http://www.w3.org/2005/08/addressing&quot;&gt;
+        &lt;wsa:To&gt;http://localhost:8281/services/SimpleStockQuoteService&lt;/wsa:To&gt;
+        &lt;wsa:MessageID&gt;urn:uuid:1B57D0B0BF770678DE1261165228620&lt;/wsa:MessageID&gt;
+        &lt;wsa:Action&gt;urn:getQuote&lt;/wsa:Action&gt;
+     &lt;/soapenv:Header&gt;
+     &lt;soapenv:Body&gt;
+        &lt;m0:getQuote xmlns:m0=&quot;http://services.samples&quot;&gt;
+           &lt;m0:request&gt;
+              &lt;m0:symbol&gt;MSFT&lt;/m0:symbol&gt;
+           &lt;/m0:request&gt;
+        &lt;/m0:getQuote&gt;
+     &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+           </pre>
+       </div>
+
+    <h2>
+         <a name="Sample653">Sample 653: NHTTP Transport Priority Based Dispatching</a>
+       </h2>
+       <p>
+         &#xa0;
+       </p>
+    <p>
+        Here is the priority configuration file used by the NHTTP transport to determine the priority based on HTTP level properties.
+    </p>
+   <pre xml:space="preserve">&lt;priorityConfiguration&gt;
+    &lt;priority-executor&gt;
+        &lt;!-- two priorities specified with priority 10 and 1. Both priority messages has a queue depth of 100 --&gt;
+        &lt;queues isFixedCapacity=&quot;true&quot; nextQueue=&quot;org.apache.synapse.commons.executors.PRRNextQueueAlgorithm&quot;&gt;
+            &lt;queue size=&quot;100&quot; priority=&quot;10&quot;/&gt;
+            &lt;queue size=&quot;100&quot; priority=&quot;1&quot;/&gt;
+        &lt;/queues&gt;
+        &lt;!-- these are the default values, values are put here to show their availability --&gt;
+        &lt;threads core=&quot;20&quot; max=&quot;100&quot; keep-alive=&quot;5&quot;/&gt;
+    &lt;/priority-executor&gt;
+
+    &lt;!-- if a message comes that we cannot determine priority, we set a default priority of 1 --&gt;
+    &lt;conditions defaultPriority=&quot;1&quot;&gt;
+        &lt;condition priority=&quot;10&quot;&gt;
+            &lt;!-- check for the header named priority --&gt;
+            &lt;equal type=&quot;header&quot; source=&quot;priority&quot; value=&quot;5&quot;/&gt;
+        &lt;/condition&gt;
+        &lt;condition priority=&quot;1&quot;&gt;
+            &lt;equal type=&quot;header&quot; source=&quot;priority&quot; value=&quot;1&quot;/&gt;
+        &lt;/condition&gt;
+    &lt;/conditions&gt;
+&lt;/priorityConfiguration&gt;</pre>
+       <div>
+         <p>
+           <strong>Objective:</strong> Demonstrate the priority based dispatching of NHTTP transport.
+         </p>
+         <p>
+           <strong>Prerequisites:</strong> Deploy the
+           SimpleStockQuoteService in sample Axis2 server and start it on port
+           9000. Priority is applied only when ESB is loaded with enough messages to consume its core number of threads.
+             So to observe the priority based dispatching, it is required to use a load testing tool like JMeter, SOAP UI or Apache bench.
+         </p>
+         <p>
+             Open axis2.xml in repository/conf directory and uncomment the following parameter to the configuration.
+             <strong>priorityConfigFile</strong>. Set the value to repository/samples/resources/priority/priority-configuration.xml
+         </p>
+         <p>
+          We'll use the sample number 150. Start ESB with the sample configuration 150 (i.e. wso2esb-samples.sh -sn 150).
+         </p>
+         <p>
+           In this sample, client should send a HTTP header that specifies the priority of the message.This header name is priority.
+             This header is retrieved in the prioirty configuration. Then it is matched against
+             the value 1 and 10. Depending on this value message is executed with priority 1 or 10.
+         </p>
+           <p>
+               Here are two sample XML files that can be used to invoke the service using a tool like JMeter, or Apache Ab. For SOAP UI,
+               user can use the WSDL repository/conf/sample/resources/proxy/sample_proxy_1.wsdl to create the request. The only
+               difference between the two demonstrated requests here is the symbol. One has the symbol as IBM and other has MSFT. For one type of
+               request set the priority header to 1 and for the next set the priority header to 10. Then load ESB with high
+               volume of traffic from both types of requests using the load testing tool. In the back end server it prints the
+               symbol of the incoming requests. User should be able to see more of high priority symbol.
+           </p>
+           <pre xml:space="preserve">
+&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;
+     &lt;soapenv:Header xmlns:wsa=&quot;http://www.w3.org/2005/08/addressing&quot;&gt;
+        &lt;wsa:To&gt;http://localhost:8281/services/SimpleStockQuoteService&lt;/wsa:To&gt;
+        &lt;wsa:MessageID&gt;urn:uuid:1B57D0B0BF770678DE1261165228620&lt;/wsa:MessageID&gt;
+        &lt;wsa:Action&gt;urn:getQuote&lt;/wsa:Action&gt;
+     &lt;/soapenv:Header&gt;
+     &lt;soapenv:Body&gt;
+        &lt;m0:getQuote xmlns:m0=&quot;http://services.samples&quot;&gt;
+           &lt;m0:request&gt;
+              &lt;m0:symbol&gt;IBM&lt;/m0:symbol&gt;
+           &lt;/m0:request&gt;
+        &lt;/m0:getQuote&gt;
+     &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+           </pre>
+           <pre xml:space="preserve">
+&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;
+     &lt;soapenv:Header xmlns:wsa=&quot;http://www.w3.org/2005/08/addressing&quot;&gt;
+        &lt;wsa:To&gt;http://localhost:8281/services/SimpleStockQuoteService&lt;/wsa:To&gt;
+        &lt;wsa:MessageID&gt;urn:uuid:1B57D0B0BF770678DE1261165228620&lt;/wsa:MessageID&gt;
+        &lt;wsa:Action&gt;urn:getQuote&lt;/wsa:Action&gt;
+     &lt;/soapenv:Header&gt;
+     &lt;soapenv:Body&gt;
+        &lt;m0:getQuote xmlns:m0=&quot;http://services.samples&quot;&gt;
+           &lt;m0:request&gt;
+              &lt;m0:symbol&gt;MSFT&lt;/m0:symbol&gt;
+           &lt;/m0:request&gt;
+        &lt;/m0:getQuote&gt;
+     &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+           </pre>
+       </div>
+    <h2>
+         <a name="Sample654">Sample 654: Smooks Mediator</a>
+       </h2>
+       <p>
+         &#xa0;
+       </p>
+    <p>
+        Here is the sample with smooks mediator.
+    </p>
+   <pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+    &lt;localEntry key=&quot;transform-xslt-key&quot;
+                src=&quot;file:repository/samples/resources/smooks/transform.xslt&quot;/&gt;
+    &lt;localEntry key=&quot;smooks-key&quot; src=&quot;file:repository/samples/resources/smooks/smooks-config.xml&quot;/&gt;
+    &lt;proxy name=&quot;StockQuoteProxy&quot; transports=&quot;vfs&quot;&gt;
+        &lt;parameter name=&quot;transport.vfs.ContentType&quot;&gt;text/plain&lt;/parameter&gt;
+        &lt;!--CHANGE--&gt;
+        &lt;parameter name=&quot;transport.vfs.ContentType&quot;&gt;text/plain&lt;/parameter&gt;
+       &lt;parameter name=&quot;transport.vfs.FileURI&quot;&gt;file:///home/user/dev/test/smooks/in&lt;/parameter&gt;
+       &lt;parameter name=&quot;transport.vfs.FileNamePattern&quot;&gt;.*\.txt&lt;/parameter&gt;
+        &lt;parameter name=&quot;transport.PollInterval&quot;&gt;5&lt;/parameter&gt;
+        &lt;!--CHANGE--&gt;
+        &lt;parameter name=&quot;transport.vfs.MoveAfterProcess&quot;&gt;file:///home/user/dev/test/smooks/original&lt;/parameter&gt;
+        &lt;!--CHANGE--&gt;
+        &lt;parameter name=&quot;transport.vfs.MoveAfterFailure&quot;&gt;file:///home/user/dev/test/smooks/original&lt;/parameter&gt;
+        &lt;parameter name=&quot;transport.vfs.ActionAfterProcess&quot;&gt;MOVE&lt;/parameter&gt;
+        &lt;parameter name=&quot;transport.vfs.ActionAfterFailure&quot;&gt;MOVE&lt;/parameter&gt;
+        &lt;parameter name=&quot;Operation&quot;&gt;urn:placeOrder&lt;/parameter&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;smooks config-key=&quot;smooks-key&quot;/&gt;
+                &lt;xslt key=&quot;transform-xslt-key&quot;/&gt;
+                &lt;iterate expression=&quot;//m0:placeOrder/m0:order&quot; preservePayload=&quot;true&quot;
+                         attachPath=&quot;//m0:placeOrder&quot; xmlns:m0=&quot;http://services.samples&quot;&gt;
+                    &lt;target&gt;
+                        &lt;sequence&gt;
+                            &lt;header name=&quot;Action&quot; value=&quot;urn:placeOrder&quot;/&gt;
+                            &lt;property action=&quot;set&quot; name=&quot;OUT_ONLY&quot; value=&quot;true&quot;/&gt;
+                            &lt;send&gt;
+                                &lt;endpoint&gt;
+                                    &lt;address format=&quot;soap11&quot;
+                                            uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+                                &lt;/endpoint&gt;
+                            &lt;/send&gt;
+                        &lt;/sequence&gt;
+                    &lt;/target&gt;
+                &lt;/iterate&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence/&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri=&quot;file:repository/samples/resources/smooks/PlaceStockOrder.wsdl&quot;/&gt;
+    &lt;/proxy&gt;
+&lt;/definitions&gt;</pre>
+       <div>
+         <p>
+           <strong>Objective:</strong>Demonstrate the smooks mediatot EDI message processing.
+         </p>
+         <p>
+           <strong>Prerequisites:</strong> Deploy the
+           SimpleStockQuoteService in sample Axis2 server and start it on port 9000. Then add the
+             plain text builder to the messageBuilders section of the axis2.xml found in the
+             repository/conf directory. Here is the sample configuration.
+         </p>
+           <pre xml:space="preserve">&lt;messageBuilder contentType=&quot;text/plain&quot; class=&quot;org.apache.axis2.format.PlainTextBuilder&quot;/&gt;</pre>
+         <p>Enable the vfs transport in axis2.xml by uncomenting the vfs transport sender and receiver configurations in the axis2.xml.</p>
+         <p>User has to edit the synapse_sample_654.xml found in the repository/samples directory. These are the configuration parameters that needs to be edited.</p>
+           <ul>
+               <li>transport.vfs.FileURI</li>
+               <li>transport.vfs.MoveAfterProcess</li>
+               <li>transport.vfs.ActionAfterFailure</li>
+           </ul>
+         <p>
+           Start ESB with the sample configuration 654 (i.e. wso2esb-samples.sh -sn 654).
+         </p>
+         <p>Drop the edi.txt file found in the repository/samples/resources/smooks directory to the transport.vfs.FileURI parameter specified directory.</p>
+       </div>
+
+   <h2>
+         <a name="Sample655">Sample 655: Message Relay - Basics</a>
+       </h2>
+       <p>
+         &#xa0;
+       </p>
+    <p>
+        This sample is similar to sample 150 except we have added two log mediators to show the actual message going through the ESB.
+    </p>
+   <pre xml:space="preserve">&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+    &lt;proxy name=&quot;StockQuoteProxy&quot; startOnLoad=&quot;true&quot;&gt;
+        &lt;target&gt;
+            &lt;inSequence&gt;
+                &lt;log level=&quot;full&quot;/&gt;
+                &lt;send&gt;
+                    &lt;endpoint name=&quot;epr&quot;&gt;
+                        &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/inSequence&gt;
+            &lt;outSequence&gt;
+                &lt;log level=&quot;full&quot;/&gt;
+                &lt;send/&gt;
+            &lt;/outSequence&gt;
+        &lt;/target&gt;
+        &lt;publishWSDL uri=&quot;file:repository/samples/resources/proxy/sample_proxy_1.wsdl&quot;/&gt;
+    &lt;/proxy&gt;
+    &lt;sequence name=&quot;fault&quot;&gt;
+        &lt;log level=&quot;full&quot;&gt;
+            &lt;property name=&quot;MESSAGE&quot; value=&quot;Executing default &amp;quot;fault&amp;quot; sequence&quot;/&gt;
+            &lt;property name=&quot;ERROR_CODE&quot; expression=&quot;get-property(&#39;ERROR_CODE&#39;)&quot;/&gt;
+            &lt;property name=&quot;ERROR_MESSAGE&quot; expression=&quot;get-property(&#39;ERROR_MESSAGE&#39;)&quot;/&gt;
+        &lt;/log&gt;
+        &lt;drop/&gt;
+    &lt;/sequence&gt;
+    &lt;sequence name=&quot;main&quot;&gt;
+        &lt;log/&gt;
+        &lt;drop/&gt;
+    &lt;/sequence&gt;
+&lt;/definitions&gt;</pre>
+       <div>
+         <p>
+           <strong>Objective:</strong>Demonstrate the Message Relay.
+         </p>
+         <p>
+           <strong>Prerequisites:</strong> Deploy the
+           SimpleStockQuoteService in sample Axis2 server and start it on port 9000. Then uncomment the Message Relay's Message Builder and Message Formatter in the axis2.xml.
+             These configurations can be found in the messageFormatters and messageBuilders section of the axis2.xml.
+             A message formatter or builder is defined for a content type. So make sure you comment
+             out the normla builders and formatters for a content type when uncomenting the message
+             relay builders and formatters.
+         </p>
+           <p>Here are the Message Relay Formatter and Builder classes. You need to uncomment the entries containing the following builder and formatter.</p>
+           <pre xml:space="preserve">org.wso2.carbon.relay.ExpandingMessageFormatter</pre>
+           <pre xml:space="preserve">org.wso2.carbon.relay.BinaryRelayBuilder</pre>
+         <p>Send a message to the sample using the sample axis2 client.</p>
+         <pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy</pre>
+         <p>You can see the messages going through the proxy by looking at the console because we have two log mediators in this sample. The actual message is not built and printed as a Base64 encoded string.</p>
+       </div>
+
+     <h2>
+         <a name="Sample656">Sample 656: Message Relay - Builder Mediator</a>
+       </h2>
+       <p>
+         &#xa0;
+       </p>
+    <p>
+        This sample is similar to sample 655. We have added the builder mediator to build the actual message before logging it.
+    </p>
+   <pre xml:space="preserve">
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+  &lt;proxy name=&quot;StockQuoteProxy&quot; startOnLoad=&quot;true&quot;&gt;
+    &lt;target&gt;
+      &lt;inSequence&gt;
+        &lt;builder/&gt;
+        &lt;log level=&quot;full&quot;/&gt;
+        &lt;send&gt;
+          &lt;endpoint name=&quot;epr&quot;&gt;
+            &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+          &lt;/endpoint&gt;
+        &lt;/send&gt;
+      &lt;/inSequence&gt;
+      &lt;outSequence&gt;
+        &lt;builder/&gt;
+        &lt;log level=&quot;full&quot;/&gt;
+        &lt;send/&gt;
+      &lt;/outSequence&gt;
+    &lt;/target&gt;
+    &lt;publishWSDL uri=&quot;file:repository/samples/resources/proxy/sample_proxy_1.wsdl&quot;/&gt;
+  &lt;/proxy&gt;
+  &lt;sequence name=&quot;fault&quot;&gt;
+    &lt;log level=&quot;full&quot;&gt;
+      &lt;property name=&quot;MESSAGE&quot; value=&quot;Executing default &amp;quot;fault&amp;quot; sequence&quot;/&gt;
+      &lt;property name=&quot;ERROR_CODE&quot; expression=&quot;get-property(&#39;ERROR_CODE&#39;)&quot;/&gt;
+      &lt;property name=&quot;ERROR_MESSAGE&quot; expression=&quot;get-property(&#39;ERROR_MESSAGE&#39;)&quot;/&gt;
+    &lt;/log&gt;
+    &lt;drop/&gt;
+  &lt;/sequence&gt;
+  &lt;sequence name=&quot;main&quot;&gt;
+    &lt;log/&gt;
+    &lt;drop/&gt;
+  &lt;/sequence&gt;
+&lt;/definitions&gt;</pre>
+       <div>
+         <p>
+           <strong>Objective:</strong>Demonstrate the Message Relay with Builder mediator.
+         </p>
+         <p>
+           <strong>Prerequisites:</strong>Set up is same as sample 655.</p>
+
+         <pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:8280/services/StockQuoteProxy</pre>
+         <p>You can see the actual messages going through the proxy by looking at the console because we have
+             two log mediators in this sample. Becuase we have the builder mediator in place, unlike in sample 655 we have the actual message printed.</p> 
+       </div>
+
+<h2>
+         <a name="Sample657">Sample 657: Distributed transaction management</a>
+       </h2>
+       <p>
+         &#xa0;
+       </p>
+    <p>
+        This sample is similar to sample 655. We have added the builder mediator to build the actual message before logging it.
+    </p>
+   <pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;
+             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+             xsi:schemaLocation=&quot;http://ws.apache.org/ns/synapse http://synapse.apache.org/ns/2010/04/configuration/synapse_config.xsd&quot;&gt;
+
+    &lt;sequence name=&quot;myFaultHandler&quot;&gt;
+        &lt;log level=&quot;custom&quot;&gt;
+            &lt;property name=&quot;text&quot; value=&quot;** Rollback Transaction**&quot;/&gt;
+        &lt;/log&gt;
+        &lt;transaction action=&quot;rollback&quot;/&gt;
+        &lt;send/&gt;
+    &lt;/sequence&gt;
+
+    &lt;sequence name=&quot;main&quot; onError=&quot;myFaultHandler&quot;&gt;
+        &lt;in&gt;
+            &lt;send&gt;
+                &lt;endpoint&gt;
+                    &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+                &lt;/endpoint&gt;
+            &lt;/send&gt;
+        &lt;/in&gt;
+
+        &lt;out&gt;
+            &lt;transaction action=&quot;new&quot;/&gt;
+
+            &lt;log level=&quot;custom&quot;&gt;
+                &lt;property name=&quot;text&quot; value=&quot;** Reporting to the Database esbdb**&quot;/&gt;
+            &lt;/log&gt;
+            &lt;dbreport useTransaction=&quot;true&quot; xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;dsName&gt;java:jdbc/XADerbyDS&lt;/dsName&gt;
+                        &lt;icClass&gt;org.jnp.interfaces.NamingContextFactory&lt;/icClass&gt;
+                        &lt;url&gt;localhost:1099&lt;/url&gt;
+                        &lt;user&gt;synapse&lt;/user&gt;
+                        &lt;password&gt;synapse&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;delete from company where name =?&lt;/sql&gt;
+                    &lt;parameter expression=&quot;//m0:return/m1:symbol/child::text()&quot;
+                               xmlns:m0=&quot;http://services.samples&quot;
+                               xmlns:m1=&quot;http://services.samples/xsd&quot;
+                               type=&quot;VARCHAR&quot;/&gt;
+                &lt;/statement&gt;
+            &lt;/dbreport&gt;
+
+            &lt;log level=&quot;custom&quot;&gt;
+                &lt;property name=&quot;text&quot; value=&quot;** Reporting to the Database esbdb1**&quot;/&gt;
+            &lt;/log&gt;
+            &lt;dbreport useTransaction=&quot;true&quot; xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+                &lt;connection&gt;
+                    &lt;pool&gt;
+                        &lt;dsName&gt;java:jdbc/XADerbyDS1&lt;/dsName&gt;
+                        &lt;icClass&gt;org.jnp.interfaces.NamingContextFactory&lt;/icClass&gt;
+                        &lt;url&gt;localhost:1099&lt;/url&gt;
+                        &lt;user&gt;synapse&lt;/user&gt;
+                        &lt;password&gt;synapse&lt;/password&gt;
+                    &lt;/pool&gt;
+                &lt;/connection&gt;
+                &lt;statement&gt;
+                    &lt;sql&gt;INSERT into company values (&#39;IBM&#39;,&#39;c4&#39;,12.0)&lt;/sql&gt;
+                &lt;/statement&gt;
+            &lt;/dbreport&gt;
+            &lt;transaction action=&quot;commit&quot;/&gt;
+            &lt;send/&gt;
+        &lt;/out&gt;
+    &lt;/sequence&gt;
+
+&lt;/definitions&gt;</pre>
+       <div>
+         <p>
+           <strong>Objective:</strong>Demonstrate the use of the transaction mediator in a distributed transaction
+         </p>
+       </div>
+
+        <p><strong>Prerequisites:</strong><br />
+        Start the Synapse configuration numbered 267: i.e. wso2esb-samples -sn 267<br />
+        Start the Axis2 server and deploy the SimpleStockQuoteService if not already done</p>
+        <p>
+            To run this sample it is required to deploy synpase on JBoss application server(This is only tested with JBoss application sever),
+            you can use the war distribution to deploy synapse on JBoss application server. Use the
+            synpase_sample_652.xml as the synapse confiuration file and start JBoss with that synpase
+            configuration file. Also you need to define two XA datasources for above two datasources.
+            You'll need to refer JBoss documentation to see how to do this.<br/>It also required to have two database instances,
+            this will be used by the two XA datasources. Refer the Sample Setup Guide to see how
+            you can set up the derby database server.<br/>In this sample a record is delete from one database
+            and it is added into the second database. If either of the operations(deleting from the
+            1st database and adding into the second database) fails everything will be roll backed.
+            The records will be untouched.   <br/>
+        </p>
+          <p>Invoke the client as follows.</p>
+         <pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280/ -Dsymbol=SUN/</pre>
+
+</body>
+</html>

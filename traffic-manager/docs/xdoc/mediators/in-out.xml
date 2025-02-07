@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - In/Out Mediators </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>In/Out Mediators</h2>
+
+<p>These mediators act as predefined filters. Messages which are in the in path
+of the ESB will traverse through the child mediators of the in mediator.
+Messages which are in the out path of ESB will traverse through the child
+mediators of out mediator.</p>
+
+<h3>Syntax</h3>
+
+<p>In</p>
+<pre xml:space="preserve">  &lt;in&gt;
+      mediator+
+  &lt;/in&gt;
+  </pre>
+
+<p>Out</p>
+<pre xml:space="preserve">  &lt;out&gt;
+      mediator+
+  &lt;/out&gt;
+  </pre>
+
+<h3>UI Configuration</h3>
+
+<p>None.</p>
+
+<h3>Usage Scenario</h3>
+<pre xml:space="preserve">  &lt;syn:sequence name="main" xmlns:syn="http://ws.apache.org/ns/synapse"&gt;
+      &lt;syn:in&gt;
+          &lt;syn:log level="full"/&gt;
+          &lt;syn:filter source="get-property('To')" regex="http://localhost:9000.*"&gt;
+              &lt;syn:send/&gt;
+          &lt;/syn:filter&gt;
+      &lt;/syn:in&gt;
+      &lt;syn:out&gt;
+          &lt;syn:send/&gt;
+      &lt;/syn:out&gt;
+  &lt;/syn:sequence&gt;</pre>
+
+<p>Main sequence with in and out mediators. Messages coming to the ESB will be
+sent using wsa:to address and responses will be sent back to the requester. </p>
+
+<h3>Remarks</h3>
+
+<p>These mediators are pointless to be used in proxy service sequences. Proxy
+services has predefined sequences for in messages and out message. </p>
+</body>
+</html>

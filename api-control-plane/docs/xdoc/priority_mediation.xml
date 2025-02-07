@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+        <title>
+            WSO2 ESB - Priority Mediation
+        </title>
+        <link href="css/esb-docs.css" rel="stylesheet"/>
+        <link href="styles/dist-docs.css" rel="stylesheet" type="text/css" media="all"/>
+    </head>
+    <body xml:lang="en">
+        [ <a href="docs_index.html"> Documentation Index </a> ]
+        <h1>WSO2 Enterprise Service Bus (ESB) Priority Mediation</h1>
+        <h2>Contents</h2>
+        <div class="toc">
+            <ol>
+                <li>
+                    <a href="#intro">Introduction</a>
+                </li>
+                <li>
+                    <a href="#executor">Priority Executors</a>
+                </li>
+                <li>
+                    <a href="#h3">HTTP Level Configuration</a>
+                </li>
+                <li>
+                    <a href="#med">Mediation level Configurations</a>
+                </li>
+            </ol>
+        </div>
+        <h2 id="intro" >Introduction</h2>
+        <p>
+            An ESB can be deployed as a front end for various services with a very high load passing through it. The traffic passing through it may be of different priorities and can have different load charasterisitcs. Also in some situations load of different types of messages can vary dramatically over time.</p>
+        <p>
+            The goal is to serve high priority traffic when there are resources available in the system regardless of the low priority traffic. The serving of different priority messages should be independent as much as possible. For example an ESB can be bombarded with very high volume of low priority traffic. Even in this case ESB should obey its contract to serve high priority traffic. </p>
+        <p>Usually a person deploying an ESB expects a certain guarantee of message deliverance from the ESB. ESB should be able to honor that.</p>
+        <p>
+            Here is a possible scenario with a high volume of traffic.</p>
+        <p>
+            Lets assume ESB is configured to serve two types of messages with different priorities. Message type m1 has the priority p1 and message type m2 has priority p2. p1 is about ten times the priority of p2. In a very high volume traffic scenario the services can afford to loose some amount of m2 messages. But it cannot afford to loose any of m1 messages.</p>
+        <p>
+            In normal operation mode, volume of m2 is about twice as m1. But in some situations m1 can be higher and m2 can be low.</p>
+        <p>
+            The expectation is to serve the m1 traffic no matter what the volume of m2 traffic is.</p>
+        <h2>Priority Based Mediation Configuration Model</h2>
+
+        <p>Priority based mediation can be configured at two levels.</p>
+        <ul>
+            <li>HTTP transport level</li>
+            <li>Mediation level</li>
+        </ul>
+        <p>
+        At both configuration levels priority-executor configuration is present.</p>
+        <h2 id="executor">Priority Executor</h2>
+        <pre xml:space="preserve">&lt;priority-executor name=&quot;priority-executor&quot;&gt;
+    &lt;queues isFixed=&quot;true|false&quot; nextQueue=&quot;class implementing NextQueueAlgorithm&quot;&gt;
+        &lt;queue [size=&quot;size of the queue&quot;] priority=&quot;priority of the messages put in to this queue&quot;/&gt;*
+    &lt;/queues&gt;
+    &lt;threads core=&quot;core number of threads&quot; max=&quot;max number of threads&#39; keep-alive=&quot;keep alive time&quot;/&gt;
+&lt;/priority-executor&gt;
+       </pre>
+        <p>
+            An executor is a Thread Pool Executor with separate queues for different priorities.
+        </p>
+        <p>
+            The queues can have a fixed depths or they can be un-bounded queues. This is controlled by the isFixed attribute.</p>
+        <p>
+            A executor should have at least two or more queues. If only one queue is used there is no point in using a priority executor. It only adds some overhead.</p>
+        <p>
+            A Queue can have a size and a priority. If the queues has unlimited length, no more than core threads will be used.</p>
+        <p>
+            A Priority Executor has a core number of threads. When ESB is started with the priority executor, this number of threads will be created. Max is the maximum number of threads this executor will have. If the number of threads in the executor exceeds the core threads, they will be in active for the keep-alive time only. After the keep-alive time those threads will be be removed from the system.
+        </p>
+        <h2 id="h3">HTTP Level Configuration</h2>
+        <p>
+        HTTP level configuration is done by using a separate xml configuration file.</p>
+        <p>
+        This configuration file should be referred from the Nhttp transport receiver configuration in the axis2.xml.</p>
+        <pre xml:space="preserve">&lt;parameter name=&quot;priorityConfigFile&quot;&gt;file path&lt;/parameter&gt;</pre>
+        <p>Here is the syntax of the priority configuration at the HTTP level.</p>
+        <pre xml:space="preserve">&lt;Priority-Configuration&gt;
+    &lt;priority-executor name=&quot;priority-executor&quot;&gt;
+        &lt;queues isFixed=&quot;true|false&quot;&gt;
+            &lt;queue [size=&quot;&quot;] priority=&quot;&quot;/&gt;*
+        &lt;/queues&gt;
+        &lt;threads core=&quot;core number of threads&quot; max=&quot;max number of threads&#39; keep-alive=&quot;keep alive time&quot;/&gt;
+    &lt;/priority-executor&gt;
+
+    &lt;!-- conditions for calculating the priorities based on HTTP message --&gt;
+    &lt;conditions defaultPriority=&quot;default priority as an integer&quot;&gt;
+        &lt;condition priority=&quot;priority value as an integer&quot;&gt;
+            one evaluator, this evaluator can contain other evaluators
+        &lt;/condition&gt;
+    &lt;/conditions&gt;
+&lt;/Priority-Configuration&gt;</pre>
+        <p>
+        Priority executor configuration is explained in the previous section.</p>
+        <p>
+        A priority configuration can have multiple conditions. A condition is evaluated over a HTTP message. A condition return true or false. If a condition evaluates to true, message will be executed with the priority associated with the condition.</p>
+        <p>
+        A condition can have a single boolean expression. Here are the supported boolean operators and expressions.</p>
+        <ul>
+            <li>equal</li>
+            <li>match</li>
+            <li>not</li>
+            <li>and</li>
+            <li>or</li>
+        </ul>
+        <p>
+        eqaul and match are leaf level expressions. 'not', 'and' and 'or' can contain other expressions.</p>
+        <h3>equal</h3>
+        <pre xml:space="preserve">&lt;equal type=&quot;header | param | url&quot; source=&quot;&quot; value=&quot;&quot;/&gt;</pre>
+        <p>Equal fetch the value specified by the source from a HTTP header, parameter. Then it equals it against the value attribute. For example</p>
+        <pre xml:space="preserve">&lt;eqaul type=&quot;header&quot; source=&quot;priority&quot; value=&quot;10&quot;/&gt;</pre>
+        <p>
+        This gets the HTTP header named priority and equals it to 10. If the values are equal it return true.</p>
+        <h3>match</h3>
+        <pre xml:space="preserve">&lt;match type=&quot;header | param | url&quot; source=&quot;&quot; regex=&quot;&quot;/&gt;</pre>
+        <p>Match is similar to equal. Only difference is instead of just trying to see weather the two values are equal, it uses a regular expression to match the source. If the regular expression matches the source it will return true</p>
+        <h3>not</h3>
+        <pre xml:space="preserve">&lt;not&gt;
+    any boolean operator or boolean expression
+&lt;/not&gt;
+</pre>
+        <p>Not can have another boolean expression inside of it. Not negates the boolean value returned by the boolean expression inside.</p>
+        <h3>and</h3>
+        <pre xml:space="preserve">&lt;and&gt;
+    two or more boolean boolean expressions
+&lt;/and&gt;</pre>
+        <p>And can have two or more boolean expressions. It does the boolean and for the enclosing expressions.</p>
+        <h3>or</h3>
+        <pre xml:space="preserve">&lt;or&gt;
+    any boolean operator or boolean expression
+&lt;/or&gt;
+        </pre>
+        <p>"or" is same as "and" configuration except it gets the boolean 'or' for the enclosing expressions.</p>
+        <h2 id="med">Mediation level Configurations</h2>
+        <p>
+        At mediation level multiple priority executors can be defined at the top level of the sypase configuration. These executors should have a unique name.</p>
+        <pre xml:space="preserve">&lt;priority-executor name=&quot;priority-executor&quot;&gt;
+     &lt;queues isFixed=&quot;true|false&quot;&gt;
+        &lt;queue [size=&quot;&quot;] priority=&quot;&quot;/&gt;*
+     &lt;/queues&gt;
+    &lt;threads core=&quot;core number of threads&quot; max=&quot;max number of threads&#39; keep-alive=&quot;keep alive time&quot;/&gt;
+&lt;/priority-executor&gt;
+        </pre>
+        <p>Executor configuration is same as the one described earlier.</p>
+        <p>
+            To execute a sequence using a priority-executor enqueue mediator should be used. Here is the syntax of the enqueue mediator.</p>
+        <h3>Enqueue Mediator</h3>
+        <pre xml:space="preserve">&lt;enqueue priority=&quot;priority as an integer&quot; executor=&quot;executor name to submit the responses&quot; sequence=&quot;sequence name to be executed with the given priority&quot;/&gt;
+        </pre>
+        <p>Enqueue mediator should be pointing to an priority-executor. Message coming in to the enqueue mediator will be executed using this priority-executor. Also it specifies a priority. This priority is applied to the messages. sequence attribute specifies the sequence to be executed with the given priority.</p>
+    </body>
+</html>

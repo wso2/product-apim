@@ -1,0 +1,202 @@
+<!--
+ ~ Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context" binds-to="WebhookServer, SecureWebhookServer, default">
+    <resource methods="POST" url-mapping="/webhooks_events_receiver_resource" binds-to="WebhookServer, SecureWebhookServer">
+        <inSequence>
+            #if($isSecurityEnabled)
+            <property name="generated_signature" expression="fn:concat('$signingAlgorithm', hmac-generate($ctx:ORIGINAL_PAYLOAD, '$secret', '$hmacSignatureGenerationAlgorithm'))"/>
+            <property name="received_signature" expression="$trp:$signatureHeader"/>
+            <filter xpath="get-property('received_signature') = get-property('generated_signature')">
+                <then>
+            #end
+                    <clone>
+                        <target>
+                            <sequence>
+                                <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN" />
+                                <respond/>
+                            </sequence>
+                        </target>
+                        <target>
+                            <sequence>
+                                <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersLoader"/>
+                                <clone iterations="{get-property('SUBSCRIBERS_COUNT')}" continueParent="true">
+                                    <target>
+                                        <sequence onError="webhooksFaultSequence">
+                                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscriberInfoLoader"/>
+                                            <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
+                                            <property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
+                                            <property name="link" expression="$ctx:SUBSCRIBER_LINK_HEADER" scope="transport"/>
+                                            <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
+                                            <filter source="boolean($ctx:SUBSCRIBER_SECRET)" regex="true">
+                                                <then>
+                                                    <property name="X-Hub-Signature"
+                                                              expression="fn:concat('sha1=', hmac-generate($ctx:ORIGINAL_PAYLOAD, $ctx:SUBSCRIBER_SECRET))"
+                                                              scope="transport"/>
+                                                </then>
+                                                <else/>
+                                            </filter>
+                                            <call blocking="true">
+                                                <endpoint>
+                                                    <default>
+                                                        <timeout>
+                                                            <duration>60000</duration>
+                                                        </timeout>
+                                                        <markForSuspension>
+                                                            <errorCodes>-1</errorCodes>
+                                                            <retriesBeforeSuspension>3</retriesBeforeSuspension>
+                                                            <retryDelay>1</retryDelay>
+                                                        </markForSuspension>
+                                                        <suspendOnFailure>
+                                                            <initialDuration>1000</initialDuration>
+                                                            <progressionFactor>2</progressionFactor>
+                                                            <maximumDuration>64000</maximumDuration>
+                                                        </suspendOnFailure>
+                                                    </default>
+                                                </endpoint>
+                                            </call>
+                                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryStatusUpdater"/>
+                                        </sequence>
+                                    </target>
+                                </clone>
+                            </sequence>
+                        </target>
+                    </clone>
+            #if($isSecurityEnabled)
+                </then>
+                <else>
+                    <log level="custom">
+                        <property name="ERROR" value="The signature validation failed"/>
+                    </log>
+                    <drop/>
+                </else>
+            </filter>
+            #end
+        </inSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/*" binds-to="default">
+        <inSequence>
+            <filter source="fn:contains(fn:lower-case($trp:Content-Type), 'application/x-www-form-urlencoded')" regex="true">
+                <then>
+                    <property name="FORCE_SC_ACCEPTED" value="true" scope="axis2"/>
+                    <property name="SUBSCRIBER_MODE" expression="//xformValues//hub.mode"/>
+                    <property name="SUBSCRIBER_TOPIC" expression="//xformValues//hub.topic"/>
+                    <property name="SUBSCRIBER_CALLBACK" expression="//xformValues//hub.callback"/>
+                    <property name="SUBSCRIBER_LEASE_SECONDS" expression="//xformValues//hub.lease_seconds"/>
+                    <property name="HUB_CHALLENGE" expression="get-property('MessageID')"/>
+                    <property name="QUERY_PARAMS"
+                              expression="fn:concat('hub.mode=', $ctx:SUBSCRIBER_MODE, '&amp;','hub.topic=',$ctx:SUBSCRIBER_TOPIC, '&amp;','hub.challenge=', $ctx:HUB_CHALLENGE, '&amp;','hub.lease_seconds=', $ctx:SUBSCRIBER_LEASE_SECONDS)"
+                              scope="default" type="STRING"/>
+                    <property name="SUBSCRIBER_APPLICATION_ID" expression="$ctx:api.ut.application.id"/>
+
+                    <filter source="fn:contains($ctx:SUBSCRIBER_CALLBACK, '?')" regex="true">
+                        <then>
+                            <property name="uri.var.callback"
+                                      expression="fn:concat($ctx:SUBSCRIBER_CALLBACK,'&amp;', $ctx:QUERY_PARAMS)"
+                                      scope="default" type="STRING"/>
+                        </then>
+                        <else>
+                            <property name="uri.var.callback"
+                                      expression="fn:concat($ctx:SUBSCRIBER_CALLBACK,'?', $ctx:QUERY_PARAMS)"
+                                      scope="default" type="STRING"/>
+                        </else>
+                    </filter>
+                    <property name="messageType" value="application/xml" scope="axis2"/>
+
+                    <call>
+                        <endpoint>
+                            <http method="GET" uri-template="{uri.var.callback}"/>
+                        </endpoint>
+                    </call>
+                    <property name="VERIFICATION_SC" expression="$axis2:HTTP_SC"/>
+
+                    #if($enableSubscriberVerification)
+                    <property name="ECHO_CHALLENGE" expression="json-eval($.text)"/>
+                    <filter source="get-property('HUB_CHALLENGE') = get-property('ECHO_CHALLENGE')" regex="true">
+                        <then>
+                            <log level="custom">
+                                <property name="SUBSCRIBER VERIFICATION STATUS" expression="fn:concat('Passed. ', $ctx:SUBSCRIBER_CALLBACK, ' successfully verified the challenge')"/>
+                            </log>
+                            #end
+                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
+                            <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
+                                <then>
+                                    <property name="HTTP_SC" expression="$ctx:VERIFICATION_SC" scope="axis2"/>
+                                    <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryStatusUpdater"/>
+                                </then>
+                                <else/>
+                            </filter>
+                            #if($enableSubscriberVerification)
+                        </then>
+                        <else>
+                            <log level="custom">
+                                <property name="SUBSCRIBER VERIFICATION STATUS" expression="fn:concat('Failed. ', $ctx:SUBSCRIBER_CALLBACK, ' failed to verify the challenge')"/>
+                            </log>
+                        </else>
+                    </filter>
+                    #end
+                    <drop/>
+                </then>
+                <else>
+                    <property name="STOP_TARGET_EXECUTION_ON_FAILURE" value="true"/>
+                    <clone sequential="true">
+                        <target>
+                            <sequence>
+                                <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
+                                <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN"/>
+                                <respond/>
+                            </sequence>
+                        </target>
+                        <target>
+                            <sequence onError="webhooksFaultSequence">
+                                <filter source="fn:lower-case($url:hub.mode)" regex="subscribe">
+                                    <then>
+                                        <property name="SUBSCRIBER_CALLBACK" expression="$url:hub.callback"/>
+                                        <property name="SUBSCRIBER_TOPIC" expression="$url:hub.topic"/>
+                                        <property name="SUBSCRIBER_APPLICATION_ID"
+                                                  expression="$ctx:api.ut.application.id"/>
+                                        <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
+                                        <call>
+                                            <endpoint>
+                                                <default/>
+                                            </endpoint>
+                                        </call>
+                                        <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryStatusUpdater"/>
+                                    </then>
+                                    <else/>
+                                </filter>
+                                <drop/>
+                            </sequence>
+                        </target>
+                    </clone>
+                </else>
+            </filter>
+        </inSequence>
+    </resource>
+    <handlers>
+        #foreach($handler in $handlers)
+        <handler class="$handler.className">
+            #if($handler.hasProperties())
+            #set ($map = $handler.getProperties() )
+            #foreach($property in $map.entrySet())
+            <property name="$!property.key" value="$!property.value"/>
+            #end
+            #end
+        </handler>
+        #end
+    </handlers>
+</api>

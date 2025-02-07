@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+        <title>
+            WSO2 ESB - Message Stores
+        </title>
+        <link href="css/esb-docs.css" rel="stylesheet"/>
+        <link href="styles/dist-docs.css" rel="stylesheet" type="text/css" media="all"/>
+    </head>
+    <body xml:lang="en">
+        [ <a href="docs_index.html"> Documentation Index </a> ]
+        <h1>WSO2 ESB Message Stores</h1>
+        <h2>Contents</h2>
+        <div class="toc">
+            <ol>
+                <li>
+                    <a href="#intro">Introduction</a>
+                </li>
+                <li>
+                    <a href="#configuration">Message Store Configuration</a>
+                </li>
+                <li>
+                    <a href="#operations">Message Store operations</a>
+                </li>
+                <li>
+                    <a href="#inmemory">In Memory Message Store</a>
+                </li>
+                <li>
+                    <a href="#jms">JMS Message Store</a>
+                </li>
+            </ol>
+        </div>
+        <h2 id="intro" >Introduction</h2>
+        <p>
+            An ESB can be used to implement different kind of messaging and integration patterns. To support these patters sometimes we need a storage to store messages. </p>
+        <p>
+            Message Store is the storage for ESB messages.
+            </p>
+        <p>For Example In a scenario where we have a back end service that can only accept messages at a given rate and incoming traffic to ESB will have
+            different message rates.
+            So to serve that traffic utilizing the backend services there should be a temporary storage for messages.
+
+            Message Store can be used as this temporary storage.</p>
+        <p>
+            Incoming message traffic can be stored using the store mediator.
+            And Message processors associated with message store can be used to deliver messages to the backend services at a give rate.</p>
+
+
+        <p>Users can implement their own message store by implementing the MessageStore interface and plug them using the configuration.ESB ships two message store implementations.</p>
+        <ol>
+            <li>
+              <a href="#inmemory">In-Memory Message Store</a>
+            </li>
+            <li>
+              <a href="#jms">JMS Message Store</a>
+            </li>
+        </ol>
+        <h2 id="configuration">Message Store Configuration</h2>
+        <pre xml:space="preserve">
+            &lt;messageStore name=&quot;string&quot; class=&quot;classname&quot; &gt;
+                &lt;parameter name=&quot;string&quot; &gt; &quot;string&quot; &lt;/parameter&gt;*
+            &lt;/messageStore&gt;
+        </pre>
+        <p>
+            Message Store is a top level ESB configuration element where it should have a unique name.
+        </p>
+        <p>
+           class attribute value is the fully qualified class name of the underlying message store implementation.</p>
+        <p>
+            There can be many message store implementations.Users can write their own message store implementation and use it.</p>
+        <p>
+            Parameters section is used to configure the parameters that is needed by underlying message store implementation </p>
+
+        <h2 id="operations">Message Store Operations</h2>
+        <ol>
+            <li>When you click on Message Store section of Manage/Service Bus.It will direct you to
+                a page
+                where Listed
+                Messages appears. You can view and delete messages from that page.
+            </li>
+
+
+            <div class="image">
+                <a name="3">
+                    <img alt="" src="message_store/docs/images/store_list.png"/>
+                </a>
+
+                <p>Figure 1: Messages List</p>
+            </div>
+
+            <div class="image">
+                <a name="5">
+                    <img alt="" src="message_store/docs/images/view_message.png"/>
+                </a>
+
+                <p>Figure 2: View Message</p>
+            </div>
+        </ol>
+        <h2 id="inmemory">In Memory Message Store</h2>
+        <p>This is the default Message Store that will be created if user does not specify any implementation from the configuration.
+        Messages will be stored in an In-memory queue.So in case of a ESB restart all the messages stored will be lost.</p>
+        <p>In Memory message store is lot more faster than any persistence message store implementations.</p>
+        <p>So it can be used as a temporary storage of messages for  use cases such as implementation of
+            high speed store and forwarded patterns where message persistence is not a requirement.</p>
+
+        <h2 id="jms">JMS Message Store</h2>
+        <p>JMS Message Store can be configured using configuration by giving class value as org.wso2.carbon.message.store.persistence.jms.JMSMessageStore
+        and messages will be stored in a configured JMS queue in the underlying JMS Broker</p>
+        <p>Since this will persistent messages in a JMS queue in a ordered way, JMS message store can be used to implement store and forward patters that have QoS parameters like in order delivery and reliability</p>
+        <p>Configuration to connect to a broker is provided as parameter values</p>
+        <h3>JMS Message Store parameters</h3>
+        <table border="2" cellspacing="0" cellpadding="0" class="styledLeft">
+            <thead>
+                <tr>
+                    <td>Parameter Name</td>
+                    <td>Value</td>
+                    <td>Required</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>java.naming.factory.initial</td>
+                    <td>Initial Context Factory to use to connect to the JMS broker</td>
+                    <td>YES</td>
+                </tr>
+                <tr>
+                    <td>java.naming.provider.url</td>
+                    <td>Url of the naming provider to be used by the context factory</td>
+                    <td>YES</td>
+                </tr>
+                <tr>
+                    <td>store.jms.destination</td>
+                    <td>JNDI Name of the Queue Name that message store is connecting</td>
+                    <td>NO but for some JMS clients this will be needed</td>
+                </tr>
+                <tr>
+                    <td>store.jms.connection.factory</td>
+                    <td>JNDI name of the Connection factory which is used to create jms connections</td>
+                    <td>NO but for some JMS clients this will be needed</td>
+                </tr>
+                <tr>
+                    <td>store.jms.username</td>
+                    <td>User Name that is used to create the connection with the broker</td>
+                    <td>NO</td>
+                </tr>
+                <tr>
+                    <td>store.jms.password</td>
+                    <td>Password that is used to create the connection with the broker</td>
+                    <td>NO</td>
+                </tr>
+                <tr>
+                    <td>store.jms.JMSSpecVersion</td>
+                    <td>1.1 or 1.0 JMS API specification to be used (Default 1.1)</td>
+                    <td>NO</td>
+                </tr>
+                <tr>
+                    <td>store.jms.cache.connection</td>
+                    <td>true/false Enable Connection caching</td>
+                    <td>NO</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

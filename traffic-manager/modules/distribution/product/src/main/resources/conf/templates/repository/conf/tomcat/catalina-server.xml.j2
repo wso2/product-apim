@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<Server port="8005" shutdown="SHUTDOWN" xmlns:svns="http://org.wso2.securevault/configuration">
+
+    <Service className="org.wso2.carbon.tomcat.ext.service.ExtendedStandardService" name="Catalina">
+
+        <!--
+        optional attributes:
+
+        proxyPort="80"
+        -->
+        <Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
+        {% for property_name,property_value in transport.http.properties.items() %}
+                   {{property_name}}="{{property_value}}"
+                           {% endfor %}
+        >
+        </Connector>
+
+        <!--
+        optional attributes:
+
+        proxyPort="443"
+        Added sslEnabledProtocols="TLSv1,TLSv1.1,TLSv1.2" for poodle vulnerability fix
+        -->
+        <Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
+        {% for property_name,property_value in transport.https.properties.items() %}
+                   {{property_name}}="{{property_value}}"
+                   {% endfor %}
+        >
+            <SSLHostConfig
+                    {% for property_name,property_value in transport.https.sslHostConfig.properties.items() %}
+                                       {{property_name}}="{{property_value}}"
+                                       {% endfor %}
+                                       >
+                <Certificate
+                {% for property_name,property_value in transport.https.sslHostConfig.certificate.properties.items() %}
+                                                       {{property_name}}="{{property_value}}"
+                                                       {% endfor %}
+                             />
+            </SSLHostConfig>
+        </Connector>
+
+        <Engine name="Catalina" defaultHost="localhost">
+
+            <Realm className="org.wso2.carbon.tomcat.ext.realms.CarbonTomcatRealm"/>
+
+            <Host name="localhost" unpackWARs="true" deployOnStartup="false" autoDeploy="false"
+                  appBase="${carbon.home}/repository/deployment/server/webapps/">
+                {% if catalinaValves.remoteIpValve.enable is sameas true %}
+                <!-- This should be defined before the AuthenticationValve to get the real client IP addresses via request headers. -->
+                <Valve
+                    className="org.apache.catalina.valves.RemoteIpValve"
+                    internalProxies="{{catalinaValves.remoteIpValve.internalProxies}}"
+                    remoteIpHeader="{{catalinaValves.remoteIpValve.remoteIpHeader}}"
+                    protocolHeader="{{catalinaValves.remoteIpValve.protocolHeader}}"
+                    proxiesHeader="{{catalinaValves.remoteIpValve.proxiesHeader}}"
+                    trustedProxies="{{catalinaValves.remoteIpValve.trustedProxies}}"
+                    {% for property,value in catalinaValves.remoteIpValve.properties.items() %}
+                    {{property}}="{{value}}"
+                    {% endfor %}
+                />
+                {% endif %}
+                <Valve className="org.wso2.carbon.tomcat.ext.valves.RequestCorrelationIdValve"
+                       headerToCorrelationIdMapping="{'activityid':'Correlation-ID'}" queryToCorrelationIdMapping="{'RelayState':'Correlation-ID'}"/>
+                <Valve className="org.wso2.carbon.identity.organization.management.tomcat.ext.tenant.resolver.CarbonContextCreatorValve"/>
+                {% if http_access_log.useLogger is sameas true %}
+                <Valve className="org.wso2.carbon.tomcat.ext.valves.ConfigurableLoggerAccessLogValve"
+                        pattern="{{http_access_log.pattern}}"/>
+                {% else %}
+                <Valve className="org.apache.catalina.valves.AccessLogValve" directory="{{http_access_log.directory}}"
+                       prefix="{{http_access_log.prefix}}" suffix="{{http_access_log.suffix}}" pattern="{{http_access_log.pattern}}"
+                       maxDays="{{http_access_log.maxDays}}" enabled="{{http_access_log.enabled}}"/>
+                {% endif %}
+                <Valve className="org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve" threshold="600"/>
+                <Valve className="org.wso2.carbon.tomcat.ext.valves.CompositeValve"/>
+
+		<!-- Authentication and Authorization valve for the rest apis and we can configure context for this in identity.xml  -->
+                <Valve className="org.wso2.carbon.identity.auth.valve.AuthenticationValve"/>
+                <Valve className="org.wso2.carbon.identity.authz.valve.AuthorizationValve"/>
+                <Valve className="org.wso2.carbon.tomcat.ext.valves.SameSiteCookieValve"/>
+                <Valve className="org.wso2.carbon.identity.context.rewrite.valve.OrganizationContextRewriteValve"/>
+                <Valve className="org.wso2.carbon.identity.context.rewrite.valve.TenantContextRewriteValve"/>
+                <!--Error pages -->
+                <Valve className="org.apache.catalina.valves.ErrorReportValve" showServerInfo="false" showReport="false"/>
+                {% for valve in catalina.valves %}
+                <Valve
+                    {% for property,value in valve.properties.items() %}
+                        {{property}}="{{value}}"
+                    {% endfor %}
+                />
+                {% endfor %}
+            </Host>
+        </Engine>
+    </Service>
+</Server>
+

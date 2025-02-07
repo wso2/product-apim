@@ -1,0 +1,13 @@
+{
+  "policyName": "WebSocketTestThrottlingPolicy",
+  "policyDescription": "WebSocket Test Throttling Policy",
+  "conditionalGroups": [],
+  "defaultLimit": {
+    "type": "REQUESTCOUNTLIMIT",
+    "requestCount": {
+      "requestCount": 2,
+      "timeUnit": "min",
+      "unitTime": 1
+    }
+  }
+}

@@ -1,0 +1,277 @@
+[server]
+hostname = "localhost"
+#offset=0
+base_path = "localhost:9443"
+server_role = "default"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[user_store]
+type = "database_unique_id"
+
+[database.apim_db]
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
+username = "wso2carbon"
+password = "wso2carbon"
+
+[database.shared_db]
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
+username = "wso2carbon"
+password = "wso2carbon"
+
+[keystore.tls]
+file_name =  "wso2carbon.jks"
+type =  "JKS"
+password =  "wso2carbon"
+alias =  "wso2carbon"
+key_password =  "wso2carbon"
+
+[[apim.gateway.environment]]
+name = "Default"
+type = "hybrid"
+provider = "wso2"
+display_in_api_console = true
+description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:9443/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9098"
+http_endpoint = "http://localhost:8280"
+https_endpoint = "https://localhost:8243"
+
+[[apim.gateway.environment]]
+name = "Production"
+type = "production"
+provider = "wso2"
+display_in_api_console = false
+description = "This is a production gateway that handles production token traffic."
+show_as_token_endpoint_url = false
+service_url = "https://localhost:9444/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:8281"
+https_endpoint = "https://localhost:8244"
+
+[apim.cache.gateway_token]
+enable = true
+expiry_time = "20m"
+
+[apim.cache.resource]
+enable = true
+
+[apim.cache.km_token]
+enable = true
+expiry_time = "20m"
+
+[apim.cache.recent_apis]
+enable = true
+
+[apim.cache.scopes]
+enable = true
+
+[apim.cache.publisher_roles]
+enable = true
+
+[apim.cache.jwt_claim]
+enable = true
+expiry_time = "20m"
+
+[apim.cache.tags]
+expiry_time = "3m"
+
+[apim.analytics]
+enable = true
+store_api_url = "https://analytics.com:7444"
+username = "analytics.user"
+password = "analytics.pass"
+event_publisher_type = "default"
+#event_publisher_type = "custom"
+#event_publisher_impl = "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher"
+publish_response_size = true
+
+[[apim.analytics.url_group]]
+analytics_url =["tcp://analytics1:7611","tcp://analytics2:7611"]
+analytics_auth_url =["ssl://analytics1:7711","ssl://analytics2:7711"]
+type = "loadbalance"
+
+[[apim.analytics.url_group]]
+analytics_url =["tcp://analytics1:7612","tcp://analytics2:7612"]
+analytics_auth_url =["ssl://analytics1:7712","ssl://analytics2:7712"]
+type = "failover"
+
+
+[apim.key_manager]
+service_url = "https://localhost:9443/services/"
+username = "km.user"
+password = "km.pass"
+pool.init_idle_capacity = 51
+pool.max_idle = 101
+key_validation_handler_type = "default"
+#key_validation_handler_type = "custom"
+#key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
+
+[apim.jwt]
+enable = true
+encoding = "base64" # base64,base64url
+#generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+claim_dialect = "http://wso2.org/claims_custom"
+header = "X-JWT-Assertion_CUSTOM"
+signing_algorithm = "SHA256withRSA_CUSTOM"
+enable_user_claims = true
+#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+
+[apim.oauth_config]
+enable_outbound_auth_header = true
+default_app_scope = "am_custom_application_scope"
+allowed_scopes = ["^device_.*","openid","custom_device"]
+auth_header = "X-Authorization"
+revoke_endpoint = "https://localhost:8243/revoke"
+enable_token_encryption = true
+enable_token_hashing = true
+
+[apim.devportal]
+login_username_case_insensitive = false
+url = "https://localhost:9443/devportal"
+enable_application_sharing = true
+#if application_sharing_type, application_sharing_impl both defined priority goes to application_sharing_impl
+application_sharing_type = "default" #changed type, saml, default #todo: check the new config for rest api
+#application_sharing_impl = "org.wso2.carbon.apimgt.impl.SAMLGroupIDExtractorImpl"
+display_multiple_versions = true
+display_deprecated_apis = true
+enable_comments = false
+enable_ratings = false
+enable_forum = false
+
+[[apim.devportal.application_attributes]]
+name = "External Reference Id"
+description = "Sample description of the attribute"
+required = true
+[[apim.devportal.application_attributes]]
+name = "Internal Reference Id"
+description = "Sample description of the internal attribute"
+required = false
+
+[apim.publisher]
+enable_api_doc_visibility = true
+
+[apim.cors]
+enable = true
+allow_origins = ["origin1","origin2"]
+allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","X-custom"]
+allow_credentials = true
+
+
+#
+[apim.throttling]
+enable_advanced_throttling = "true"
+event_type = "Binary"
+username = "tm.user"
+password = "tm.pass"
+enable_data_publishing = true
+
+enable_policy_deploy = true
+enable_blacklist_condition = true
+
+service_url = "https://localhost:9443/services/"
+enable_decision_connection = true
+decision_connection_type = "andes"
+throttle_decision_endpoints = ["tcp://tm1:5672","tcp://tm2:5673"]
+#
+#enable_persistence = true
+enable_unlimited_tier = true
+enable_header_based_throttling = true
+enable_jwt_claim_based_throttling = true
+enable_query_param_based_throttling = true
+
+[apim.throttling.blacklist_condition]
+start_delay = "5m"
+period = "1h"
+
+[apim.throttling.jms]
+destination = "throttleData"
+start_delay = "5m"
+conn_jndi_name = "TopicConnectionFactory"
+destination_type = "topic"
+
+#[apim.throttling.event_sync]
+#hostName = "0.0.0.0"
+#port = 11224
+#
+#[apim.throttling.event_management]
+#hostName = "0.0.0.0"
+#port = 10005
+
+[[apim.throttling.url_group]]
+traffic_manager_urls = ["tcp://tm1:9611","tcp://tm2:9612"]
+traffic_manager_auth_urls = ["ssl://tm1:9711","ssl://tm2:9712"]
+type = "loadbalance"
+
+[[apim.throttling.url_group]]
+traffic_manager_urls = ["tcp://tm1:9611","tcp://tm2:9612"]
+traffic_manager_auth_urls = ["ssl://tm1:9711","ssl://tm2:9712"]
+type = "failover"
+
+[apim.throttling.publisher]
+max_idle = 1001
+init_idle_size = 101
+pool_size = 201
+max_pool_size = 1002
+keep_alive_time = 202
+
+[apim.workflow]
+enable = true
+service_url = "https://localhost:9445/bpmn"
+wf_engine_user = "wf.user"
+wf_engine_pass = "wf.pass"
+callback_endpoint = "https://localhost:9443/api/am/publisher/v0.16/workflows/update-workflow-status"
+token_endpoint = "https://localhost:8243/token"
+client_registration_endpoint = "https://localhost:9443/client-registration/v0.17/register"
+client_registration_username = "wf.user"
+client_registration_password = "wf.pass"
+
+[apim.sdk]
+group_id = "org.wso2.group"
+artifact_id = "org.wso2.artifact"
+model_package = "org.wso2.package.model"
+api_package = "org.wso2.package.api"
+supported_languages = "android,java,scala"
+
+[apim.open_tracer.remote_tracer]
+enable = true
+name = "zipkin1"
+properties.hostname = "wso2.org"
+properties.port = "9412"
+
+[apim.open_tracer.log_tracer]
+enable = true
+
+#data bridge config
+#[transport.receiver]
+#type = "binary"
+#worker_threads = 10
+#session_timeout = "30m"
+#keystore.file_name = "$ref{keystore.tls.file_name}"
+#keystore.password = "$ref{keystore.tls.password}"
+#tcp_port = 9611
+#ssl_port = 9711
+#ssl_receiver_thread_pool_size = 100
+#tcp_receiver_thread_pool_size = 100
+#ssl_enabled_protocols = ["TLSv1","TLSv1.1","TLSv1.2"]
+#ciphers = ["SSL_RSA_WITH_RC4_128_MD5","SSL_RSA_WITH_RC4_128_SHA"]
+
+#[apim.notification]
+#from_address = "APIM.com"
+#username = "APIM"
+#password = "APIM+123"
+#hostname = "localhost"
+#port = 3025
+#enable_start_tls = false
+#enable_authentication = true

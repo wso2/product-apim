@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://ws.apache.org/ns/synapse">
+    <api xmlns="http://ws.apache.org/ns/synapse"
+         name="admin--ScriptMediatorAPI" context="/script/1.0" version="1.0" version-type="context">
+        <resource methods="GET" url-mapping="/test" faultSequence="fault">
+            <inSequence>
+                <script language="js">
+                    mc.setProperty('CONTENT_TYPE', 'application/json');
+                    var response=new Object();response.name="testName";
+                    response.checkNull=null;
+                    mc.setPayloadJSON(response);
+                </script>
+                <filter source="boolean(get-property('CONTENT_TYPE'))" regex="false">
+                    <then>
+                        <property name="messageType" value="application/xml" scope="axis2"/>
+                    </then>
+                    <else>
+                        <property name="messageType"
+                                  expression="get-property('CONTENT_TYPE')"
+                                  scope="axis2"/>
+                    </else>
+                </filter>
+                <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+                <respond/>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
+</definitions>
+

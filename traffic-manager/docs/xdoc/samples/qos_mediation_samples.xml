@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+  <title>WSO2 ESB - QoS Samples </title>
+</head>
+
+<body>
+<h1>Running the QoS addition and deduction samples with WSO2 ESB</h1>
+
+<h2><a name="Sample100">Sample 100: Using WS-Security for outgoing messages</a>
+</h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;localEntry key="sec_policy" src="file:repository/samples/resources/policy/policy_3.xml"/&gt;
+
+    &lt;in&gt;
+        &lt;send&gt;
+            &lt;endpoint name="secure"&gt;
+                &lt;address uri="http://localhost:9000/services/SecureStockQuoteService"&gt;
+                    &lt;enableSec policy="sec_policy"/&gt;
+                    &lt;enableAddressing/&gt;
+                &lt;/address&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;header name="wsse:Security" action="remove"
+                xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"/&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Connecting to endpoints with WS-Security for outgoing
+messages</strong> </p>
+
+<p><strong>Prerequisites:</strong><br />
+</p>
+
+<p>You may also need to download and install the unlimited strength policy
+files for your JDK before using Apache Rampart (e.g. see
+<a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">http://java.sun.com/javase/downloads/index_jdk5.jsp</a>) </p>
+
+<p>Start the Synapse configuration numbered 100: i.e. wso2esb-samples -sn 100<br
+/>
+Start the Axis2 server and deploy the SecureStockQuoteService if not already
+done </p>
+
+<p>Use the stock quote client to send a request without WS-Security. ESB is
+configured to enable WS-Security as per the policy specified by
+'policy_3.xml' for the outgoing messages to the SecureStockQuoteService
+endpoint hosted on the Axis2 instance. The debug log messages on ESB shows
+the encrypted message flowing to the service and the encrypted response being
+received by ESB. The wsse:Security header is then removed from the decrypted
+message and the response is delivered back to the client, as expected. You
+may execute the client as follows: </p>
+<pre xml:space="preserve">ant stockquote -Dtrpurl=http://localhost:8280/</pre>
+
+<p>The message sent by ESB to the secure service can be seen as follows, when
+TCPMon is used. </p>
+<pre xml:space="preserve">POST http://localhost:9001/services/SecureStockQuoteService HTTP/1.1
+Host: 127.0.0.1
+SOAPAction: urn:getQuote
+Content-Type: text/xml; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: Keep-Alive
+User-Agent: Synapse-HttpComponents-NIO
+
+800
+&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+   &lt;soapenv:Envelope xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:wsa="http://www.w3.org/2005/08/addressing" ..&gt;
+      &lt;soapenv:Header&gt;
+         &lt;wsse:Security ..&gt;
+            &lt;wsu:Timestamp ..&gt;
+               ...
+            &lt;/wsu:Timestamp&gt;
+            &lt;xenc:EncryptedKey..&gt;
+               ...
+            &lt;/xenc:EncryptedKey&gt;
+            &lt;wsse:BinarySecurityToken ...&gt;
+               &lt;ds:SignedInfo&gt;
+               ...
+               &lt;/ds:SignedInfo&gt;
+               &lt;ds:SignatureValue&gt;
+               ...
+               &lt;/ds:SignatureValue&gt;
+               &lt;ds:KeyInfo Id="KeyId-29551621"&gt;
+                  ...
+               &lt;/ds:KeyInfo&gt;
+            &lt;/ds:Signature&gt;
+         &lt;/wsse:Security&gt;
+         &lt;wsa:To&gt;http://localhost:9001/services/SecureStockQuoteService&lt;/wsa:To&gt;
+         &lt;wsa:MessageID&gt;urn:uuid:1C4CE88B8A1A9C09D91177500753443&lt;/wsa:MessageID&gt;
+         &lt;wsa:Action&gt;urn:getQuote&lt;/wsa:Action&gt;
+      &lt;/soapenv:Header&gt;
+      &lt;soapenv:Body xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" wsu:Id="Id-3789605"&gt;
+         &lt;xenc:EncryptedData Id="EncDataId-3789605" Type="http://www.w3.org/2001/04/xmlenc#Content"&gt;
+            &lt;xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc" /&gt;
+            &lt;xenc:CipherData&gt;
+                &lt;xenc:CipherValue&gt;Layg0xQcnH....6UKm5nKU6Qqr&lt;/xenc:CipherValue&gt;
+            &lt;/xenc:CipherData&gt;
+         &lt;/xenc:EncryptedData&gt;
+      &lt;/soapenv:Body&gt;
+   &lt;/soapenv:Envelope&gt;0</pre>
+
+<h2><a name="Sample101">Sample 101: Reliable message exchange between ESB and
+the back-end server using WS-ReliableMessaging</a> </h2>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;
+
+    &lt;in&gt;
+        &lt;RMSequence single="true" version="1.0"/&gt;
+        &lt;send&gt;
+           &lt;endpoint name="reliable"&gt;
+              &lt;address uri="http://localhost:9000/services/ReliableStockQuoteService"&gt;
+                 &lt;enableRM/&gt;
+                 &lt;enableAddressing/&gt;
+              &lt;/address&gt;
+           &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;header name="wsrm:SequenceAcknowledgement" action="remove"
+                xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"/&gt;
+        &lt;header name="wsrm:Sequence" action="remove"
+                xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"/&gt;
+        &lt;header name="wsrm:AckRequested" action="remove"
+                xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"/&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the message exchange between ESB and the
+server using WS-ReliableMessaging (WS-RM)</strong> </p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Deploy the ReliableStockQuoteService in the sample Axis2 server by
+switching to the samples/axis2Server/src/ReliableStockQuoteService directory
+and running ant. </p>
+
+<p>Start the sample Axis2 server on port 9000. </p>
+
+<p>Start ESB with the sample configuration 101 (i.e. wso2esb-samples -sn 101).
+</p>
+
+<p>In the above configuration, WS-RM is engaged to the endpoint using the
+&lt;enableRM/&gt; tag. It is possible to engage WS-RM to both Address and
+WSDL endpoints using this tag. In addition to the RM enabled endpoint,
+RMSequence mediator is specified before the send mediator. This mediator is
+used to specify the set of messages to be sent using a single RM sequence. In
+this sample it is specified as single message per sequence. It also specifies
+the version of the WS-RM to be used. Refer to the <a href="../configuration_language.html">ESB configuration language</a>
+documentation for more information about the RMSequence mediator. RM related
+SOAP headers are removed from the message in the out mediator as WS-RM
+message exchange happens only between the ESB and the server. Now run the
+sample client using the following command. </p>
+<pre xml:space="preserve">ant stockquote -Dsymbol=IBM -Dmode=quote -Daddurl=http://localhost:8280</pre>
+
+<p>You can observe the client output displaying the quote price for IBM as
+follows: </p>
+<pre xml:space="preserve">[java] Standard :: Stock price = $189.2521262517493</pre>
+
+<p>There is no difference to be observed between the normal message exchange
+and WS-RM enabled message exchange as far as client and server outputs are
+considered. But if you look at the wire level messages, you would observe
+additional WS-RM messages and WS-RM elements. ESB, the initiator of the RM
+sequence, first try to create a sequence by sending a message with
+CreateSequence element. </p>
+<pre xml:space="preserve">...
+&lt;soapenv:Body&gt;
+   &lt;wsrm:CreateSequence xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"&gt;
+      &lt;wsrm:AcksTo&gt;
+         &lt;wsa:Address&gt;http://www.w3.org/2005/08/addressing/anonymous&lt;/wsa:Address&gt;
+      &lt;/wsrm:AcksTo&gt;
+      &lt;wsrm:Offer&gt;
+         &lt;wsrm:Identifier&gt;urn:uuid:546F6F33FB7D8BBE351179807372769&lt;/wsrm:Identifier&gt;
+      &lt;/wsrm:Offer&gt;
+   &lt;/wsrm:CreateSequence&gt;
+&lt;/soapenv:Body&gt;
+...</pre>
+
+<p>Sample Axis2 server responds to CreateSequence request with the following
+message: </p>
+<pre xml:space="preserve">...
+&lt;soapenv:Body&gt;
+   &lt;wsrm:CreateSequenceResponse xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"&gt;
+      &lt;wsrm:Identifier&gt;urn:uuid:879853A6871A66641C1179807373270&lt;/wsrm:Identifier&gt;
+      &lt;wsrm:Accept&gt;
+         &lt;wsrm:AcksTo&gt;
+            &lt;wsa:Address&gt;http://localhost:9000/services/ReliableStockQuoteService&lt;/wsa:Address&gt;
+         &lt;/wsrm:AcksTo&gt;
+      &lt;/wsrm:Accept&gt;
+   &lt;/wsrm:CreateSequenceResponse&gt;
+&lt;/soapenv:Body&gt;
+...</pre>
+
+<p>Once the sequence is established, ESB sends the request to the server with
+the pre-negotiated sequence ID. </p>
+<pre xml:space="preserve">&lt;soapenv:Envelope xmlns:wsa="http://www.w3.org/2005/08/addressing"
+                  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;
+    &lt;soapenv:Header&gt;
+        &lt;wsa:To&gt;http://localhost:9000/services/ReliableStockQuoteService&lt;/wsa:To&gt;
+        &lt;wsa:MessageID&gt;urn:uuid:DB9A5257B637DDA38B1179807372560712002-1515891720&lt;/wsa:MessageID&gt;
+        &lt;wsa:Action&gt;urn:getQuote&lt;/wsa:Action&gt;
+        &lt;wsrm:Sequence xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"
+                       soapenv:mustUnderstand="1"&gt;
+            &lt;wsrm:Identifier&gt;urn:uuid:879853A6871A66641C1179807373270&lt;/wsrm:Identifier&gt;
+            &lt;wsrm:MessageNumber&gt;1&lt;/wsrm:MessageNumber&gt;
+            &lt;wsrm:LastMessage/&gt;
+        &lt;/wsrm:Sequence&gt;
+    &lt;/soapenv:Header&gt;
+    &lt;soapenv:Body&gt;
+        &lt;m0:getQuote xmlns:m0="http://services.samples/xsd"&gt;
+            &lt;m0:request&gt;
+                &lt;m0:symbol&gt;IBM&lt;/m0:symbol&gt;
+            &lt;/m0:request&gt;
+        &lt;/m0:getQuote&gt;
+    &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</pre>
+
+<p>ESB keeps on sending above message till the server responds with a valid
+response message with 200 OK HTTP header. If the server is not ready with a
+response, it will respond with 202 Accepted HTTP header for all requests.
+Once the server is ready with a response it will send the response message
+with sequence ID as follows. </p>
+<pre xml:space="preserve">&lt;soapenv:Envelope xmlns:wsa="http://www.w3.org/2005/08/addressing"
+                  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;
+    &lt;soapenv:Header&gt;
+        &lt;wsa:MessageID&gt;urn:uuid:879853A6871A66641C1179807373804&lt;/wsa:MessageID&gt;
+        &lt;wsa:Action&gt;http://services.samples/ReliableStockQuoteServicePortType/getQuoteResponse
+        &lt;/wsa:Action&gt;
+        &lt;wsa:RelatesTo&gt;urn:uuid:DB9A5257B637DDA38B1179807372560712002-1515891720&lt;/wsa:RelatesTo&gt;
+        &lt;wsrm:Sequence xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"
+                       soapenv:mustUnderstand="1"&gt;
+            &lt;wsrm:Identifier&gt;urn:uuid:546F6F33FB7D8BBE351179807372769&lt;/wsrm:Identifier&gt;
+            &lt;wsrm:MessageNumber&gt;1&lt;/wsrm:MessageNumber&gt;
+            &lt;wsrm:LastMessage/&gt;
+        &lt;/wsrm:Sequence&gt;
+        &lt;wsrm:SequenceAcknowledgement xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"
+                                      soapenv:mustUnderstand="1"&gt;
+            &lt;wsrm:Identifier&gt;urn:uuid:879853A6871A66641C1179807373270&lt;/wsrm:Identifier&gt;
+            &lt;wsrm:AcknowledgementRange Lower="1" Upper="1"/&gt;
+        &lt;/wsrm:SequenceAcknowledgement&gt;
+    &lt;/soapenv:Header&gt;
+    &lt;soapenv:Body&gt;
+        &lt;ns:getQuoteResponse xmlns:ns="http://services.samples/xsd"&gt;
+...</pre>
+
+<p>Now both ESB and the server are done with the actual message exchange.
+Then ESB sends a request to terminate the sequence as follows: </p>
+<pre xml:space="preserve">&lt;soapenv:Envelope xmlns:wsa="http://www.w3.org/2005/08/addressing"
+                  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;
+    &lt;soapenv:Header&gt;
+        &lt;wsa:To&gt;http://localhost:9000/services/ReliableStockQuoteService&lt;/wsa:To&gt;
+        &lt;wsa:MessageID&gt;urn:uuid:546F6F33FB7D8BBE351179807379591&lt;/wsa:MessageID&gt;
+        &lt;wsa:Action&gt;http://schemas.xmlsoap.org/ws/2005/02/rm/TerminateSequence&lt;/wsa:Action&gt;
+        &lt;wsrm:SequenceAcknowledgement xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"
+                                      soapenv:mustUnderstand="1"&gt;
+            &lt;wsrm:Identifier&gt;urn:uuid:546F6F33FB7D8BBE351179807372769&lt;/wsrm:Identifier&gt;
+            &lt;wsrm:AcknowledgementRange Lower="1" Upper="1"/&gt;
+        &lt;/wsrm:SequenceAcknowledgement&gt;
+    &lt;/soapenv:Header&gt;
+    &lt;soapenv:Body&gt;
+        &lt;wsrm:TerminateSequence xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"&gt;
+            &lt;wsrm:Identifier&gt;urn:uuid:879853A6871A66641C1179807373270&lt;/wsrm:Identifier&gt;
+        &lt;/wsrm:TerminateSequence&gt;
+    &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</pre>
+
+<p>Server responds to the sequence termination message, accepting to
+terminate the sequence as follows. </p>
+<pre xml:space="preserve">&lt;soapenv:Envelope xmlns:wsa="http://www.w3.org/2005/08/addressing"
+                  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;
+    &lt;soapenv:Header&gt;
+        &lt;wsa:ReplyTo&gt;
+            &lt;wsa:Address&gt;http://localhost:9000/services/ReliableStockQuoteService&lt;/wsa:Address&gt;
+        &lt;/wsa:ReplyTo&gt;
+        &lt;wsa:MessageID&gt;urn:uuid:879853A6871A66641C1179807380190&lt;/wsa:MessageID&gt;
+        &lt;wsa:Action&gt;http://schemas.xmlsoap.org/ws/2005/02/rm/TerminateSequence&lt;/wsa:Action&gt;
+    &lt;/soapenv:Header&gt;
+    &lt;soapenv:Body&gt;
+        &lt;wsrm:TerminateSequence xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm"&gt;
+            &lt;wsrm:Identifier&gt;urn:uuid:546F6F33FB7D8BBE351179807372769&lt;/wsrm:Identifier&gt;
+        &lt;/wsrm:TerminateSequence&gt;
+    &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</pre>
+
+<p>Note that although each of above messages are separate SOAP messages, in
+most cases they will be exchanged in a single socket connection as HTTP
+Keep-Alive header is used. </p>
+
+<h2><a name="Sample102">Sample 102: Reliable message exchange between ESB and
+the back-end server using WS-ReliableMessaging 1.1</a> </h2>
+    <pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+    &lt;in&gt;
+        &lt;RMSequence single=&quot;true&quot; version=&quot;1.1&quot;/&gt;
+        &lt;send&gt;
+            &lt;endpoint name=&quot;reliable&quot;&gt;
+    		&lt;address uri=&quot;http://localhost:9000/services/ReliableStockQuoteService&quot;&gt;
+	   	    &lt;enableRM/&gt;
+		    &lt;enableAddressing/&gt;
+                &lt;/address&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+    &lt;/in&gt;
+    &lt;out&gt;
+        &lt;header name=&quot;wsrm:SequenceAcknowledgement&quot; action=&quot;remove&quot;
+                xmlns:wsrm=&quot;http://docs.oasis-open.org/ws-rx/wsrm/200702&quot;/&gt;
+        &lt;header name=&quot;wsrm:Sequence&quot; action=&quot;remove&quot;
+                xmlns:wsrm=&quot;http://docs.oasis-open.org/ws-rx/wsrm/200702&quot;/&gt;
+        &lt;header name=&quot;wsrm:AckRequested&quot; action=&quot;remove&quot;
+                xmlns:wsrm=&quot;http://docs.oasis-open.org/ws-rx/wsrm/200702&quot;/&gt;
+        &lt;send/&gt;
+    &lt;/out&gt;
+&lt;/definitions&gt;</pre>
+
+<p><strong>Objective: Demonstrate the message exchange between ESB and the
+server using WS-ReliableMessaging 1.1 Specification (WS-RM).</strong>This sample is similar
+    to sample 101 except it uses the RM 1.1 for the communication.</p>
+
+<p><strong>Prerequisites:</strong> </p>
+
+<p>Deploy the ReliableStockQuoteService in the sample Axis2 server by
+switching to the samples/axis2Server/src/ReliableStockQuoteService directory
+and running ant. </p>
+
+<p>Start the sample Axis2 server on port 9000. </p>
+
+<p>Start ESB with the sample configuration 102 (i.e. wso2esb-samples -sn 102).
+</p>
+
+<p>In the above configuration, WS-RM is engaged to the endpoint using the
+&lt;enableRM/&gt; tag. It is possible to engage WS-RM to both Address and
+WSDL endpoints using this tag. In addition to the RM enabled endpoint,
+RMSequence mediator is specified before the send mediator. This mediator is
+used to specify the set of messages to be sent using a single RM sequence. Also it specifies the RM version. In
+this sample it is specified as single message per sequence. It also specifies
+the version of the WS-RM to be used. Refer to the <a href="../configuration_language.html">ESB configuration language</a>
+documentation for more information about the RMSequence mediator. RM related
+SOAP headers are removed from the message in the out mediator as WS-RM
+message exchange happens only between the ESB and the server. Now run the
+sample client using the following command. </p>
+<pre xml:space="preserve">ant stockquote -Dsymbol=IBM -Dmode=quote -Daddurl=http://localhost:8280</pre>
+
+<p>You can observe the client output displaying the quote price for IBM as
+follows: </p>
+<pre xml:space="preserve">[java] Standard :: Stock price = $189.2521262517493</pre>
+<p>You can observer the set of messages exchnaged between ESB and back end service using a tool like TCPMon</p>
+
+</body>
+</html>
