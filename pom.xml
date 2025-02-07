@@ -1313,11 +1313,11 @@
         <carbon.mediation.version>4.7.228</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.719</carbon.identity.version>
+        <carbon.identity.version>5.25.721</carbon.identity.version>
         <carbon.identity.governance.version>1.8.108</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.19</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.25</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.7.5</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.9.10</carbon.identity-inbound-auth-openid.version>
@@ -1337,7 +1337,7 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.11.17</carbon.deployment.version>
+        <carbon.deployment.version>4.11.18</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.9.31</carbon.multitenancy.version>
@@ -1387,8 +1387,8 @@
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
-        <opensaml2.wso2.version>3.3.1.wso2v11</opensaml2.wso2.version>
-        <transport.http.netty.version>6.3.51</transport.http.netty.version>
+        <opensaml2.wso2.version>3.3.1.wso2v14</opensaml2.wso2.version>
+        <transport.http.netty.version>6.3.52</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
@@ -1397,7 +1397,7 @@
         <carbon.automation.version>4.4.10</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <testng.version>6.11</testng.version>
-        <org.apache.cxf.version>3.6.4</org.apache.cxf.version>
+        <org.apache.cxf.version>3.6.5</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v66</org.apache.axis2.transport.version> <!-- not used -->
         <org.springframework.version>5.1.13.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.96</org.apache.tomcat>
