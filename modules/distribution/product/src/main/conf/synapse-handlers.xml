@@ -1,3 +1,0 @@
-<handlers>
-    <handler name="externalCallLogger" class="org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"/>
-</handlers>

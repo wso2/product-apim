@@ -1,5 +1,0 @@
-	<property name="messageType" 
-		value="application/json" 
-		scope="axis2" 
-		type="STRING"
-		description="message"/>
