@@ -397,6 +397,9 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.publisher.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.governance.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.service.catalog.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -874,6 +877,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.registry.resource.properties.feature.group</id>
                                     <version>${carbon.registry.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.governance.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
