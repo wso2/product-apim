@@ -1,7 +1,0 @@
-# Lines starting with '#' are comments.
-# Each line is a file pattern followed by one or more owners.
-
-# See: https://help.github.com/articles/about-codeowners/
-
-# These owners will be the default owners for everything in the repo.
-*   @tharindu1st @AnuGayan @chamilaadhi @Arshardh
