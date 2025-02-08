@@ -392,6 +392,26 @@
       {
         "Name": "apim:llm_provider_read",
         "Roles": "admin,Internal/publisher,Internal/creator"
+      },
+      {
+        "Name": "apim:gov_rule_manage",
+        "Roles": "admin"
+      },
+      {
+        "Name":"apim:gov_rule_read",
+        "Roles":"admin,Internal/publisher,Internal/creator"
+      },
+      {
+        "Name": "apim:gov_result_read",
+        "Roles": "admin,Internal/publisher,Internal/creator"
+      },
+      {
+        "Name": "apim:gov_policy_manage",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:gov_policy_read",
+        "Roles": "admin,Internal/publisher,Internal/creator"
       }
     ]
   },
