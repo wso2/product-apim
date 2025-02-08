@@ -426,6 +426,16 @@
 
         <fileSet>
             <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/default-rulesets
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/governance/default-rulesets</outputDirectory>
+            <includes>
+                <include>**/**.yaml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/api_definitions
             </directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/api_definitions</outputDirectory>
@@ -693,6 +703,16 @@
             </outputDirectory>
             <includes>
                 <include>api#am#admin.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#am#governance.war</include>
             </includes>
         </fileSet>
         <fileSet>
