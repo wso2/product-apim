@@ -1399,7 +1399,7 @@
         <testng.version>6.11</testng.version>
         <org.apache.cxf.version>3.6.5</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v66</org.apache.axis2.transport.version> <!-- not used -->
-        <org.springframework.version>5.1.13.RELEASE</org.springframework.version>
+        <org.springframework.version>6.1.14</org.springframework.version>
         <org.apache.tomcat>7.0.96</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.13</org.codehaus.jackson.version>
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
