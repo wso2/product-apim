@@ -56,7 +56,7 @@ jobs:
         PRODUCT_APIM_TEST_GROUPS: ${{ matrix.segment }}
     - name: Prepare upload testng report
       if: always()
-      run: mv modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
+      run: mv all-in-one-apim/modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
     - name: Archive testng report
       if: always()
       uses: actions/upload-artifact@v4
