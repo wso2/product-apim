@@ -1,0 +1,1 @@
+wso2apim-is-plugin-${product.version}

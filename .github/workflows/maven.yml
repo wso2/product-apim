@@ -49,12 +49,12 @@ jobs:
       with:
         node-version: '10.x'
     - name: Build product-apim with Test.
-      run: mvn clean install --file pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
+      run: mvn clean install --file all-in-one-apim/pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
       env:
         PRODUCT_APIM_TEST_GROUPS: ${{ matrix.segment }}
     - name: Prepare upload testng report
       if: always()
-      run: mv modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
+      run: mv all-in-one-apim/modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
     - name: Archive testng report
       if: always()
       uses: actions/upload-artifact@v4
@@ -93,7 +93,7 @@ jobs:
         with:
           node-version: '10.x'
       - name: Build product-apim with Test.
-        run: mvn clean install --file pom.xml -DskipIntegrationTests=true
+        run: mvn clean install --file all-in-one-apim/pom.xml -DskipIntegrationTests=true
   show-report:
     if: ${{ always() && !cancelled() }}
     needs: build

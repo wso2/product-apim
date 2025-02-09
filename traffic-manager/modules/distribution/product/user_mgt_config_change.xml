@@ -1,0 +1,9 @@
+<processor>
+   <remove>
+        <name>//UserManager/Realm/Configuration/Property[@name='initializeNewClaimManager']</name>
+   </remove>		
+   <add> 
+      <after>//UserManager/Realm/Configuration/Property[@name='isCascadeDeleteEnabled']</after>
+      <value><![CDATA[<Property name="initializeNewClaimManager">true</Property>]]></value>
+   </add>
+</processor>

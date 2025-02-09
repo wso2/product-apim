@@ -1,0 +1,850 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2017-2022, WSO2 LLC (http://wso2.com) All Rights Reserved.
+  ~
+  ~  WSO2 LLC licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>org.wso2.am.gw</groupId>
+        <artifactId>am-gw-distribution-parent</artifactId>
+        <version>4.5.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>wso2am-gw</artifactId>
+    <packaging>pom</packaging>
+    <name>WSO2 API Gateway - Distribution </name>
+    <url>http://www.wso2.org/projects/am/java</url>
+    <description>WSO2 API Gateway Distribution</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.andes.wso2</groupId>
+            <artifactId>andes-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.orbit.org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jms_1.1_spec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-digester.wso2</groupId>
+            <artifactId>commons-digester</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database.wso2</groupId>
+            <artifactId>h2-database-engine</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.osgi</groupId>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.orbit.com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.runtime.diagnostics</groupId>
+            <artifactId>runtime-diagnostics-tool</artifactId>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>unpack-wso2carbon</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon</groupId>
+                                    <artifactId>wso2carbon-core</artifactId>
+                                    <version>${carbon.kernel.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.runtime.diagnostics</groupId>
+                                    <artifactId>runtime-diagnostics-tool</artifactId>
+                                    <version>${diagnostics.tool.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                    <destFileName>diagnostics-tool</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-rest-gateway</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.rest.api.gateway.feature</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-cxf-cors</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf</groupId>
+                                    <artifactId>cxf-rt-rs-security-cors</artifactId>
+                                    <version>${org.apache.cxf.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes/cxf3</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-charon-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.charon</groupId>
+                                    <artifactId>org.wso2.charon3.core</artifactId>
+                                    <version>${charon3.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/apim-is-plugin-resources/dropins</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>extract-docs-from-components</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <property name="tempdir" value="target/docs-temp" />
+                                <property name="hideMenu" value="&lt;/Security&gt;${line.separator} ${line.separator} &lt;!--Hide unnecessary menu Items--&gt; ${line.separator} &lt;HideMenuItemIds&gt; ${line.separator} &lt;HideMenuItemId&gt;claim_mgt_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;HideMenuItemId&gt;identity_mgt_emailtemplate_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;HideMenuItemId&gt;identity_security_questions_menu&lt;/HideMenuItemId&gt; ${line.separator} &lt;/HideMenuItemIds&gt;" />
+                                <property name="hideMenuTemplate" value="&lt;/Security&gt;${line.separator}&lt;HideMenuItemIds&gt;${line.separator}{% for item in server.hide_menu_items %}${line.separator}&lt;HideMenuItemId&gt;{{item}}&lt;/HideMenuItemId&gt;${line.separator}{% endfor %}${line.separator}&lt;/HideMenuItemIds&gt;" />
+
+                                <mkdir dir="${tempdir}" />
+                                <unzip dest="${tempdir}">
+                                    <fileset dir="target">
+                                        <include name="wso2am-gw-${project.version}.zip" />
+                                    </fileset>
+                                </unzip>
+                                <replace file="target/wso2carbon-core-${carbon.kernel.version}/repository/conf/carbon.xml" token="&lt;/Security&gt;" value="${hideMenu}" />
+                                <replace file="target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/carbon.xml.j2" token="&lt;/Security&gt;" value="${hideMenuTemplate}" />
+                                <copy todir="target/wso2carbon-core-${carbon.kernel.version}/repository/components/" overwrite="false">
+                                    <fileset dir="${tempdir}/wso2am-gw-${project.version}/repository/components/">
+                                    </fileset>
+                                </copy>
+                                <delete file="target/wso2am-gw-${project.version}.zip" />
+                                <delete dir="${tempdir}" />
+                                <mkdir dir="${tempdir}" />
+                                <unzip dest="${tempdir}">
+                                    <fileset dir="target/wso2carbon-core-${carbon.kernel.version}/repository/components/plugins/">
+                                        <include name="*.ui*.jar" />
+                                    </fileset>
+                                </unzip>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>modify_entitlement_properties</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace token="PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" value="#PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="entitlement.properties" />
+                                </replace>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify_identity_properties</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace token="Captcha.Verification.Internally.Managed=true" value="Captcha.Verification.Internally.Managed=false" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="identity-mgt.properties" />
+                                </replace>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify_identity_properties_saas</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace token="UserInfoRecovery.SaaSEnable=false" value="UserInfoRecovery.SaaSEnable=true" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="identity-mgt.properties" />
+                                </replace>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify_application_authenticaton</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace token="&lt;AuthorizationHandler&gt;" value="&lt;!--AuthorizationHandler&gt;" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="application-authentication.xml" />
+                                </replace>
+                                <replace token="&lt;/AuthorizationHandler&gt;" value="&lt;/AuthorizationHandler--&gt;" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="application-authentication.xml" />
+                                </replace>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>clean_target</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <tasks>
+                                <delete dir="target/archive-tmp" />
+                                <delete dir="target/dependency-maven-plugin-markers" />
+                                <delete dir="target/maven-archiver" />
+                                <delete dir="target/wso2carbon-core-${carbon.kernel.version}" />
+                                <delete dir="target/sources" />
+                                <delete dir="target/site" />
+                                <delete dir="src/site" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify-scope-validators-product</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;ScopeValidator class=&quot;org.wso2.carbon.identity.oauth2.validators.XACMLScopeValidator&quot;/&gt;" value="" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify-identity-oAuth-token-generator</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;!--&lt;IdentityOAuthTokenGenerator&gt;org.wso2.carbon.identity.oauth2.token.JWTTokenIssuer&lt;/IdentityOAuthTokenGenerator&gt;--&gt;" value="&lt;IdentityOAuthTokenGenerator&gt;org.wso2.carbon.apimgt.keymgt.issuers.APIMTokenIssuer&lt;/IdentityOAuthTokenGenerator&gt;" />
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;IDTokenIssuerID&gt;${carbon.protocol}://${carbon.host}:${carbon.management.port}/oauth2/token&lt;/IDTokenIssuerID&gt;" value="&lt;IDTokenIssuerID&gt;https://localhost:9443/oauth2/token&lt;/IDTokenIssuerID&gt;" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify-persist-access-token-alias</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml" token="&lt;!--&lt;PersistAccessTokenAlias&gt;false&lt;/PersistAccessTokenAlias&gt;--&gt;" value="&lt;PersistAccessTokenAlias&gt;true&lt;/PersistAccessTokenAlias&gt;" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify-resource-authentication-identity</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2" token="&lt;ResourceAccessControl default-access=&quot;deny&quot;&gt;" value="&lt;ResourceAccessControl default-access=&quot;allow&quot;&gt;" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>modify-identity-j2</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2" token="&lt;GrantTypeName&gt;iwa:ntlm&lt;/GrantTypeName&gt;" value="&lt;GrantTypeName&gt;iwa:ntlm&lt;/GrantTypeName&gt;&lt;GrantTypeValidatorImplClass&gt;{{oauth.grant_type.iwa_ntlm.grant_validator}}&lt;/GrantTypeValidatorImplClass&gt;" />
+                                <!--Need to remove after GA-->
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2" token="&lt;/OpenIDConnect&gt;" value="&lt;/OpenIDConnect&gt;&#xD;&#xD;&#x9;&#x9;{% if oauth.show_display_name_in_consent_page is defined %}&#xD;&#x9;&#x9;&#x9;&lt;ShowDisplayNameInConsentPage&gt;{{oauth.show_display_name_in_consent_page}}&lt;/ShowDisplayNameInConsentPage&gt;&#xD;&#x9;&#x9;{% endif %}" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>add-token-exchange-grant-config</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <property name="tab.separator" value="&#x9;" />
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2" token="{% for grant_type in oauth.custom_grant_type %}" value="{% if oauth.grant_type.token_exchange.enable is sameas true %}${line.separator}${tab.separator}&lt;SupportedGrantType&gt;${line.separator}${tab.separator}${tab.separator}&lt;GrantTypeName&gt;urn:ietf:params:oauth:grant-type:token-exchange&lt;/GrantTypeName&gt;${line.separator}${tab.separator}${tab.separator}&lt;GrantTypeHandlerImplClass&gt;{{oauth.grant_type.token_exchange.grant_handler}}&lt;/GrantTypeHandlerImplClass&gt;${line.separator}${tab.separator}${tab.separator}&lt;GrantTypeValidatorImplClass&gt;{{oauth.grant_type.token_exchange.grant_validator}}&lt;/GrantTypeValidatorImplClass&gt;${line.separator}${tab.separator}${tab.separator}&lt;IsRefreshTokenAllowed&gt;{{oauth.grant_type.token_exchange.allow_refresh_tokens}}&lt;/IsRefreshTokenAllowed&gt;${line.separator}${tab.separator}${tab.separator}&lt;IATValidityPeriod&gt;{{oauth.grant_type.token_exchange.iat_validity_period}}&lt;/IATValidityPeriod&gt;${line.separator}${tab.separator}&lt;/SupportedGrantType&gt;${line.separator}${tab.separator}{% endif %}${line.separator}${tab.separator}{% for grant_type in oauth.custom_grant_type %}" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>move-rest-api-util-jar</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <target>
+                                <copy todir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes/cxf3/">
+                                    <fileset dir="../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/plugins/">
+                                        <include name="org.wso2.carbon.apimgt.rest.api.util_*.jar" />
+                                    </fileset>
+                                </copy>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-project-info-reports-plugin</artifactId>
+                            <version>2.4</version>
+                            <reportSets>
+                                <reportSet>
+                                    <reports>
+                                        <report>index</report>
+                                    </reports>
+                                </reportSet>
+                            </reportSets>
+                        </plugin>
+                    </reportPlugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <id>--------create-documentation-module----</id>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>pre_dist</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <filters>
+                                <filter>${basedir}/src/main/assembly/filter.properties</filter>
+                            </filters>
+                            <descriptors>
+                                <descriptor>src/main/assembly/dist.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <filters>
+                                <filter>${basedir}/src/main/assembly/filter.properties</filter>
+                            </filters>
+                            <descriptors>
+                                <descriptor>src/main/assembly/bin.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>docs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>${basedir}/src/main/assembly/filter.properties</filter>
+                            </filters>
+                            <descriptors>
+                                <descriptor>src/main/assembly/docs.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.2</version>
+                <executions>
+            	    <!-- Replace Datasource, Scope mpl classes and OAuth callback class in identity.xml -->
+                    <execution>
+                        <id>replace-for-identity</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</file>
+                            <replacements>
+
+                                <replacement>
+                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
+                                    <token>(jdbc/WSO2IdentityDB)</token>
+                                    <value>jdbc/WSO2AM_DB</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.AuthorizationCodeGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedAuthorizationCodeGrantHandler</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.PasswordGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.ClientCredentialsGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedClientCredentialsGrantHandler</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandler)</token>
+                                    <value>org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/OAuthCallbackHandlers</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.grant.jwt.JWTBearerGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.token.ExtendedJWTBearerGrantHandler</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/Server/ResourceAccessControl/@default-access</xpath>
+                                    <token>(deny)</token>
+                                    <value>allow</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                    <!-- Replace Datasource, Scope mpl classes and OAuth callback class in identity.xml -->
+                    <!-- Disable MQTT as it's not needed -->
+                    <execution>
+                        <id>replace-for-broker</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/broker.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/broker/transports/mqtt/@enabled</xpath>
+                                    <token>(true)</token>
+                                    <value>false</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/broker/performanceTuning/slots/windowSize</xpath>
+                                    <token>(1000)</token>
+                                    <value>50</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/broker/performanceTuning/slots/messageAccumulationTimeout</xpath>
+                                    <token>(2000)</token>
+                                    <value>50</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/broker/performanceTuning/slots/timerPeriod</xpath>
+                                    <token>(1000)</token>
+                                    <value>40</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/broker/deployment/mode</xpath>
+                                    <token>(default)</token>
+                                    <value>standalone</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                    <!-- End disabling MQTT -->
+
+                    <!-- Replace the Datasource in the thrift-authentication.xml file -->
+                    <execution>
+                        <id>replace-for-thrift</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/thrift-authentication.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
+                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <value>jdbc/WSO2AM_DB</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+
+                    <!-- Replace the Datasource in the consent-mgt-config.xml file -->
+                    <execution>
+                        <id>replace-for-consent-mgt</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/consent-mgt-config.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/ConsentManager/DataSource/Name</xpath>
+                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <value>jdbc/WSO2AM_DB</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Add the scope validator to the identity.xml file -->
+            <plugin>
+                <groupId>com.google.code.maven-config-processor-plugin</groupId>
+                <artifactId>config-processor-maven-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>add-scope-validator</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <failOnMissingXpath>false</failOnMissingXpath>
+                            <transformations>
+                                <transformation>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml
+                                    </input>
+                                    <output>
+                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml
+                                    </output>
+                                    <config>identity_config_change.xml</config>
+                                </transformation>
+                            </transformations>
+                            <namespaceContexts>
+                                <s>http://wso2.org/projects/carbon/carbon.xml</s>
+                            </namespaceContexts>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>init-claim-manager</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <failOnMissingXpath>false</failOnMissingXpath>
+                            <transformations>
+                                <transformation>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
+                                    </input>
+                                    <output>
+                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
+                                    </output>
+                                    <config>user_mgt_config_change.xml</config>
+                                </transformation>
+                            </transformations>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-mime-types</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <failOnMissingXpath>false</failOnMissingXpath>
+                            <transformations>
+                                <transformation>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
+                                    </input>
+                                    <output>
+                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
+                                    </output>
+                                    <config>tomcat_web_xml_change.xml</config>
+                                </transformation>
+                            </transformations>
+                            <namespaceContexts>
+                                <tom>http://java.sun.com/xml/ns/javaee</tom>
+                            </namespaceContexts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Skip deploying the product zip to nexus -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                       <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.wso2.maven</groupId>
+                <artifactId>wso2-maven-json-merge-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/default.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.apimgt.core.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.databridge.agent.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.databridge.core.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.processor.manager.core.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.output.adapter.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.consent.mgt.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.application.authentication.framework.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.event.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.xacml.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.captcha.server.feature.default.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.tenant.common.server.default.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/default.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/infer.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.infer.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.event.server.feature.infer.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/infer.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/validator.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/validator.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.validator.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.captcha.server.feature.validator.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/validator.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/key-mappings.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/key-mappings.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.application.authentication.framework.server.feature.key-mappings.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.key-mappings.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.event.server.feature.key-mapping.json
+                                        </param>
+
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/key-mappings.json
+                                    </target>
+                                </task>
+                                <task>
+                                    <base>${basedir}/src/main/resources/conf/unit-resolve.json</base>
+                                    <include>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.apimgt.core.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.event.output.adapter.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.core.server.feature.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.event.server.feature.unit-resolve.json
+                                        </param>
+                                        <param>
+                                            ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/org.wso2.carbon.identity.xacml.server.feature.unit-resolve.json
+                                        </param>
+                                    </include>
+                                    <target>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/unit-resolve.json
+                                    </target>
+                                    <mergeChildren>true</mergeChildren>
+                                </task>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

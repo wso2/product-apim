@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+  ~  Copyright (c) 2005-2008, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  ~
+  -->
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+  <title>
+      WSO2 ESB - Feature Guide
+  </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body xml:lang="en">
+    [ <a href="docs_index.html"> Documentation Index </a> ]
+<h1>WSO2 Enterprise Service Bus (ESB) - Feature Guide</h1>
+    <p>WSO2 Carbon is an OSGi-based component framework allows the complete set of products to leverage
+        shared components, ensuring a consistent set of features between products, a consistent user
+        experience, and reusing of identical components.WSO2 Carbon provides the core capabilities
+        for security, clustering, logging,statistics, and management, and through a technology
+        called OSGi, higher level capabilities can be readily added as components to this core.
+        WSO2 ESB can be considered as WSO2 Carbon and bunch of features related to ESB.
+        With the power of componentized architecture of WSO2 Platform, user can add/remove various
+        features from all WSO2 product.</p>
+
+
+<h2 id="Intro">Introduction</h2>
+<p>This documentation provides guideline on feature management related to WSO2 ESB.</p>
+
+<h2 id="OtherFeatures">Installing various features in WSO2 ESB?</h2>
+
+<p>Using the Feature Manager (Configure > Feature in the tabbed pane) you can install any feature
+available in the feature repository(p2-repo). Please refer
+<a href="http://wso2.org/project/carbon/3.2.0/docs/component-mgt/docs/userguide.html">Feature Manager Documentation.</a></p>
+<p>
+  <img alt="BPEL Feature installed on ESB" src="images/bpel_feature_esb.png"/>
+    <br/>
+</p>
+
+<h2 id="ESBFeatureOnCarbonServer">Installing ESB features on other WSO2 Products</h2>
+    <p>
+        Also there can be cases where we need to install the ESB related features inside other WSO2 Products.
+        For instance, we might have to install the ESB Features on raw Carbon Server. For such cases, ESB provides
+        a single feature which install all the ESB Related features. Using the Feature Manager
+        (Configure > Feature in the tabbed pane) you can install 'ESB Mediation' feature to get the functionality
+        of ESB in to any other WSO2 Product.
+    </p>
+    <p>
+        <br/>
+        <img alt="Installing ESB Mediation Feature in Carbon Server" src="images/esb_mediation_feature.png"/>
+        <br/>
+        <img alt="ESB Mediation Feature installed on Carbon Server" src="images/carbon_server_with_esb.png"/><br/>
+    </p>
+
+    <p>In addition to that you have to modify some configuration files to get the complete functionality of the
+        ESB.</p>
+    <ul>
+        <li>Replace $CARBON_HOME/repository/conf/axis2.xml with <a href="http://svn.wso2.org/repos/wso2/branches/carbon/3.2.0/products/esb/4.0.0/modules/distribution/product/src/main/conf/axis2.xml">axis2.xml file for ESB.</a> </li>
+        <li>Copy <a href="https://svn.wso2.org/repos/wso2/branches/carbon/3.2.0/products/esb/4.0.0/modules/distribution/product/src/main/conf/synapse.properties">synapse.properties</a> to $CARBON_HOMElib/core/WEB-INF/classes/</li>
+        <li>Replace $CARBON_HOME/lib/log4j.properties with ESB <a href="https://svn.wso2.org/repos/wso2/branches/carbon/3.2.0/products/esb/4.0.0/modules/distribution/product/src/main/conf/log4j.properties">log4j.properties.</a> </li>
+    </ul>
+    <p>After applying above changes, we have to restart the Carbon Server.</p>
+</body>
+</html>

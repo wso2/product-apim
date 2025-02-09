@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+        <title>
+            WSO2 ESB - Source Repository
+        </title>
+    </head>
+    <body>
+        [ <a href="docs_index.html"> Documentation Index </a> ]
+        <h1>WSO2 Enterprise Service Bus (ESB) Source Repository</h1>
+        WSO2 ESB is developed on top of the revolutionary WSO2 Carbon platform. You might need the
+        source of the Carbon platform as well apart from the ESB source code. Please note that both
+        ESB and the Carbon platform is open source and the code is available under the Apache
+        Software License v2.0.
+
+        <h2>Overview</h2>
+        <p>This project uses <a href="http://subversion.tigris.org/">Subversion</a>
+        to manage its source code. Instructions on Subversion use can be found at
+            <a href="http://svnbook.red-bean.com/">http://svnbook.red-bean.com/</a>.</p>
+
+        <h2>Source code of the ESB 4.0.0 release</h2>
+        <p>The following is a link to the online source tag of the WSO2 ESB 4.0.0 release.</p>
+        <div class="source">
+            <pre><a href="http://svn.wso2.org/repos/wso2/tags/esb/java/4.0.0/">http://svn.wso2.org/repos/wso2/tags/esb/java/4.0.0/</a></pre>
+        </div>
+        <p>The complete source including the carbon platform can be checked out anonymously from
+            SVN with this command:</p>
+        <div class="source">
+            <pre>$ svn checkout http://svn.wso2.org/repos/wso2/tags/esb/java/4.0.0 wso2esb</pre>
+        </div>
+
+        <p>This code base contains the ESB product source code inside the directory "product" and
+        it also contains the source for the platform under the directory "carbon-pltform". Further
+        there will be a "build.sh" script to build the ESB with the platform.</p>
+
+        <p>This script accepts any of the maven related system properties, but the property to skip
+         the tests has been shortned to "-ts", for example to build the ESB with the platform on
+         skipping tests the command is;</p>
+
+        <div class="source">
+            <pre>$ ./build.sh -ts</pre>
+        </div>
+
+        <p>To build off-line with this build script you can pass in the "-o" option. If you just
+        need to build either the product or a specific part of the platform (for example Synapse)
+        you just need to traverse to that directory and use maven to build any of the projects.</p>
+
+        <h2>Source code of the WSO2 ESB trunk</h2>
+        <p>Everyone can access the Subversion repository via HTTPS, but Committers must checkout
+            the Subversion repository via HTTPS.
+        </p>
+        <div class="source">
+            <pre>$ svn checkout https://svn.wso2.org/repos/wso2/trunk/esb/java wso2esb</pre>
+        </div>
+
+        <p>The Carbon framework related source code can be checked out from the
+            following commands.</p>
+
+        <div class="source">
+            <pre>$ svn checkout https://svn.wso2.org/repos/wso2/trunk/carbon carbon</pre>
+        </div>
+
+        <div class="source">
+            <pre>$ svn checkout https://svn.wso2.org/repos/wso2/trunk/carbon-components carbon-components</pre>
+        </div>
+
+        <p>The Carbon project is the root project of the OSGi platform on whcih all the Java
+            product stack is built on top of, and the carbon-components contains all the components
+            not just ESB specific components. So you obviously need to build just the set of
+            components required by the ESB, which can be achieved through;
+        </p>
+
+        <div class="source">
+            <pre>$ mvn clean install -Dproduct=esb</pre>
+        </div>
+
+        <p>To commit changes to the repository, execute the following command (svn will prompt
+            you for your password)
+        </p>
+        <div class="source">
+            <pre>$ svn commit --username your-username -m "A message"</pre>
+        </div>
+
+        <h2>Access from behind a firewall</h2>
+        <p>For those users who are stuck behind a corporate firewall which is blocking http access
+            to the Subversion repository, you can try to access it via the developer connection:
+        </p>
+        <div class="source">
+            <pre>$ svn checkout https://svn.wso2.org/repos/wso2/trunk/esb/java wso2esb</pre>
+        </div>
+        <h2>Access through a proxy</h2>
+        <p>The Subversion client can go through a proxy, if you configure it to do so.
+            First, edit your "servers" configuration file to indicate which proxy to use. The
+            files location depends on your operating system. On Linux or Unix it is
+            located in the directory "~/.subversion". On Windows it is in "%APPDATA%\Subversion".
+            (Try "echo %APPDATA%", note this is a hidden directory.)
+        </p>
+        <p>There are comments in the file explaining what to do. If you don't have that file, get
+            the latest Subversion client and run any command; this will cause the configuration
+            directory and template files to be created.
+        </p>
+        <p>Example : Edit the 'servers' file and add something like :</p>
+        <div class="source">
+            <pre>[global]
+http-proxy-host = your.proxy.name
+http-proxy-port = 3128
+            </pre>
+        </div>
+    </body>
+</html>
+      

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Aggregate Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Aggregate Mediator</h2>
+
+<p>The aggregate mediator implements the Message Aggregator EIP and will
+aggregate the messages or responses for splitted messages using either the
+clone or iterate mediators. At the same time it can aggregate messages on the
+presence of matching elements specified by the correlateOn XPATH expression.
+Aggregate will collect the messages coming into it until the messages collected
+on the aggregation satisfies the complete condition. The completion condition
+can specify a minimum or maximum number of messages to be collected, or a
+timeout value in seconds, after which the aggregation terminates. On completion
+of the aggregation it will merge all of the collected messages and invoke the
+onComplete sequence on it. The merged message would be created using the XPath
+expression specified by the attribute 'expression' on the 'onComplete' element.
+</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;aggregate [id="id"]&gt;
+   &lt;correlateOn expression="xpath"/&gt;?
+   &lt;completeCondition [timeout="time-in-seconds"]&gt;
+     &lt;messageCount min="int-min" max="int-max"/&gt;?
+   &lt;/completeCondition&gt;?
+   &lt;onComplete expression="xpath" [sequence="sequence-ref"]&gt;
+     (mediator +)?
+   &lt;/onComplete&gt;
+ &lt;/aggregate&gt;</pre>
+
+<h3>UI Configuration</h3>
+
+<div class="image">
+<img src="../aggregate-mediator/docs/images/aggregator-options.png" alt="" />
+
+<p>Aggregator specific options </p>
+</div>
+
+<p>Aggregate mediator field descriptions,</p>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <td style="font-weight: bold;">Field name</td>
+      <td style="font-weight: bold;">Description</td>
+    </tr>
+    <tr>
+      <td>Aggregate ID</td>
+      <td>This optional attribute can be used to aggregate only responses for splitted messages that
+        are created by a specific clone/iterate mediator. Aggregate ID should be same as the ID of the
+        corresponding clone/iterate mediator that creates splitted messages. This is particularly useful
+        when aggregating responses of messages that are created using nested clone/iterate mediators.
+      </td>
+    </tr>
+    <tr>
+      <td>Aggregation Expression</td>
+      <td>An XPath expression specifying based on which elements to aggregate.
+        Set of messages that's taken for aggregation is determined through
+        <span style="font-weight: bold;">Correlation Expression </span>. </td>
+    </tr>
+    <tr>
+      <td>Completion Timeout</td>
+      <td>Time that the aggregator waits for messages.</td>
+    </tr>
+    <tr>
+      <td>Completion Max-messages</td>
+      <td>Maximum number of messages that can exist in an aggregation. </td>
+    </tr>
+    <tr>
+      <td>Completion Min-messages</td>
+      <td>Minimum number of messages required for the aggregation to complete.
+      </td>
+    </tr>
+    <tr>
+      <td>Correlation Expression </td>
+      <td>An XPath expression specifying the pattern messages will be collected
+        for aggregation. Specific aggregation condition will be set through
+        <span style="font-weight: bold;">Aggregation Expression </span>. </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Example</h3>
+<pre xml:space="preserve">
+&lt;outSequence&gt;
+    &lt;aggregate&gt;
+        &lt;onComplete expression="//m0:getQuoteResponse"
+                xmlns:m0="http://services.samples"&gt;
+            &lt;send/&gt;
+        &lt;/onComplete&gt;
+    &lt;/aggregate&gt;
+&lt;/outSequence&gt;
+</pre>
+
+<p>In this scenario the mediator aggregates the responses coming in to ESB and on completion it sends the
+    aggregated message through the send mediator. </p>
+</body>
+</html>

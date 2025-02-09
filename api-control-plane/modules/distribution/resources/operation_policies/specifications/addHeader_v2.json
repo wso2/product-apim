@@ -1,0 +1,36 @@
+{
+  "category": "Mediation",
+  "name": "addHeader",
+  "version": "v2",
+  "displayName": "Add Header",
+  "description": "This policy allows you to add a new header to the request",
+  "policyAttributes": [
+    {
+      "name": "headerName",
+      "displayName": "Header Name",
+      "description": "Name of the header to be added",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "headerValue",
+      "displayName": "Header Value",
+      "description": "Value of the header",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request",
+    "response",
+    "fault"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
