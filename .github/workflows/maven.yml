@@ -48,10 +48,8 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '10.x'
-    - name: Move into all-in-one-apim folder.
-      run: cd all-in-one-apim
     - name: Build product-apim with Test.
-      run: mvn clean install --file pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
+      run: mvn clean install --file all-in-one-apim/pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
       env:
         PRODUCT_APIM_TEST_GROUPS: ${{ matrix.segment }}
     - name: Prepare upload testng report
@@ -94,10 +92,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '10.x'
-      - name: Move into all-in-one-apim folder.
-        run: cd all-in-one-apim
       - name: Build product-apim with Test.
-        run: mvn clean install --file pom.xml -DskipIntegrationTests=true
+        run: mvn clean install --file all-in-one-apim/pom.xml -DskipIntegrationTests=true
   show-report:
     if: ${{ always() && !cancelled() }}
     needs: build
