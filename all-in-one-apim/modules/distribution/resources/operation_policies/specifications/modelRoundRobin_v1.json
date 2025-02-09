@@ -1,0 +1,26 @@
+{
+  "category": "Mediation",
+  "name": "modelRoundRobin",
+  "version": "v1",
+  "displayName": "Model Round Robin",
+  "description": "This policy allows you to route traffic to different models within the same AI/LLM vendor in a round robin fashion",
+  "policyAttributes": [
+    {
+      "name": "roundRobinConfigs",
+      "displayName": "Round Robin Configurations",
+      "description": "Configurations for the round robin policy",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
