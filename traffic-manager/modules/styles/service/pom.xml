@@ -25,7 +25,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.stratos.apimgt.styles</artifactId>
+    <artifactId>org.wso2.am.tm.stratos.apimgt.styles</artifactId>
     <packaging>bundle</packaging>
     <name>WSO2 Traffic Manager - UI Styles</name>
     <url>http://wso2.org</url>
@@ -40,7 +40,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
-                        <Private-Package>org.wso2.stratos.apimgt.styles.internal</Private-Package>
+                        <Private-Package>org.wso2.am.tm.stratos.apimgt.styles.internal</Private-Package>
                         <Import-Package>
                             org.osgi.framework,
                             org.osgi.service.http,

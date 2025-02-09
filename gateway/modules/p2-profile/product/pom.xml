@@ -56,6 +56,47 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>download_clientauth_mutualtls_jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.extension.identity.oauth.addons</groupId>
+                                    <artifactId>org.wso2.carbon.identity.oauth2.token.handler.clientauth.mutualtls</artifactId>
+                                    <version>${identity.oauth.addons.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/localauthenticatorCopied/jar
+                                    </outputDirectory>
+                                    <includes>**/*.jar</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download_jwtgrant_jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.extension.identity.oauth2.grantType.jwt</groupId>
+                                    <artifactId>org.wso2.carbon.identity.oauth2.grant.jwt</artifactId>
+                                    <version>${carbon.extension.identity.oauth2.grantType.jwt.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/oauth2GrantCopied/jar</outputDirectory>
+                                    <includes>**/*.jar</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -232,7 +273,7 @@
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediators.server.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
 
-                                <featureArtifactDef>org.wso2.am:org.wso2.am.styles.feature:${apimserver.version}
+                                <featureArtifactDef>org.wso2.am.gw:org.wso2.am.gw.styles.feature:${apimserver.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.gateway.feature:${carbon.apimgt.version}
@@ -273,13 +314,13 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am:org.wso2.am.multitenancy.dashboard.ui.feature:${apimserver.version}
+                                    org.wso2.am.gw:org.wso2.am.gw.multitenancy.dashboard.ui.feature:${apimserver.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am:org.wso2.am.security.feature:${apimserver.version}
+                                    org.wso2.am.gw:org.wso2.am.gw.security.feature:${apimserver.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am:org.wso2.carbon.identity.local.auth.api.endpoint.feature:${apimserver.version}
+                                    org.wso2.am.gw:org.wso2.am.gw.carbon.identity.local.auth.api.endpoint.feature:${apimserver.version}
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
@@ -903,11 +944,11 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.am.styles.feature.group</id>
+                                    <id>org.wso2.am.gw.styles.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <id>org.wso2.am.gw.multitenancy.dashboard.ui.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -1155,7 +1196,7 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.am.security.feature.group</id>
+                                    <id>org.wso2.am.gw.security.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>

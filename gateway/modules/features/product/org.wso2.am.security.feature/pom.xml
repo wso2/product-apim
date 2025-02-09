@@ -25,7 +25,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>org.wso2.am.security.feature</artifactId>
+    <artifactId>org.wso2.am.gw.security.feature</artifactId>
 
     <name>WSO2 API Gateway - Secutity Aggregated Feature</name>
     <url>http://wso2.org</url>
@@ -54,7 +54,7 @@
                             <goal>p2-feature-gen</goal>
                         </goals>
                         <configuration>
-                            <id>org.wso2.am.security</id>
+                            <id>org.wso2.am.gw.security</id>
                             <propertiesFile>../etc/feature.properties</propertiesFile>
                             <adviceFile>
                                 <properties>

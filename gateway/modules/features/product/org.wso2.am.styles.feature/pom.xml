@@ -27,15 +27,16 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.am.styles.feature</artifactId>
+    <artifactId>org.wso2.am.gw.styles.feature</artifactId>
     <packaging>pom</packaging>
     <name>WSO2 API Gateway - Styles Features</name>
     <url>http://www.wso2.org</url>
 
     <dependencies>
         <dependency>
-            <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.am.styles</artifactId>
+            <groupId>org.wso2.am.gw</groupId>
+            <artifactId>org.wso2.am.gw.styles</artifactId>
+            <version>${apimserver.version}</version>
         </dependency>
     </dependencies>
 
@@ -52,7 +53,7 @@
                             <goal>p2-feature-gen</goal>
                         </goals>
                         <configuration>
-                            <id>org.wso2.am.styles</id>
+                            <id>org.wso2.am.gw.styles</id>
                             <propertiesFile>../etc/feature.properties</propertiesFile>
                             <adviceFile>
                                 <properties>
@@ -60,7 +61,7 @@
                                 </properties>
                             </adviceFile>
                             <bundles>
-                                <bundleDef>org.wso2.am:org.wso2.am.styles</bundleDef>
+                                <bundleDef>org.wso2.am.gw:org.wso2.am.gw.styles</bundleDef>
                             </bundles>
                             <importFeatures>
                                 <importFeatureDef>org.wso2.carbon.core.ui:${carbon.kernel.version}</importFeatureDef>
