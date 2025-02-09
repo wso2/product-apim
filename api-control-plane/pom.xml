@@ -46,8 +46,6 @@
         <module>modules/org.wso2.am.multitenancy.dashboard.ui</module>
         <module>modules/features</module>
         <module>modules/p2-profile</module>
-        <module>modules/oauth2-grant-types</module>
-        <module>modules/local-authenticators</module>
         <module>modules/distribution</module>
     </modules>
 
