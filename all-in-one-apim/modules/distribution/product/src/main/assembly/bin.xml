@@ -436,6 +436,16 @@
 
         <fileSet>
             <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/default-policies
+            </directory>
+            <outputDirectory>wso2am-acp-${pom.version}/repository/resources/governance/default-policies</outputDirectory>
+            <includes>
+                <include>**/**.yaml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/api_definitions
             </directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/api_definitions</outputDirectory>
