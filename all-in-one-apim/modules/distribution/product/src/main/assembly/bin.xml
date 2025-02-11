@@ -426,9 +426,9 @@
 
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/default-rulesets
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/default-policies
             </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/governance/default-rulesets</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/governance/default-policies</outputDirectory>
             <includes>
                 <include>**/**.yaml</include>
             </includes>
