@@ -29,7 +29,7 @@
         "jest": "^24.8.0",
         "jest-puppeteer": "^4.2.0",
         "puppeteer": "^1.17.0",
-        "webpack": "v4.28.4",
+        "webpack": "v5.97.1",
         "webpack-cli": "^3.3.2"
     }
 }
