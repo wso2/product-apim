@@ -21,6 +21,9 @@
     "Synapse"
   ],
   "supportedApiTypes": [
-    "HTTP"
+    {
+      "apiType": "HTTP",
+      "subType": "AI"
+    }
   ]
 }
