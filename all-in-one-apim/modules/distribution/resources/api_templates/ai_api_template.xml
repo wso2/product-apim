@@ -149,12 +149,10 @@
                 #draw_endpoint("sandbox", $defaultSandboxEndpoint)
             </case>
             <case regex="REJECT">
-                <log level="full"/>
-                <property name="HTTP_SC" value="503" scope="axis2"/>
-                <property name="RESPONSE" value="true"/>
-                <property name="NO_ENTITY_BODY" value="false"/>
-                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
-                <respond/>
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
             </case>
         </switch>
         #end
@@ -170,12 +168,10 @@
                 #draw_endpoint("production", $defaultProductionEndpoint)
             </case>
             <case regex="REJECT">
-                <log level="full"/>
-                <property name="HTTP_SC" value="503" scope="axis2"/>
-                <property name="RESPONSE" value="true"/>
-                <property name="NO_ENTITY_BODY" value="false"/>
-                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
-                <respond/>
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
             </case>
         </switch>
         #end
@@ -195,12 +191,10 @@
                 #draw_endpoint("sandbox", $defaultSandboxEndpoint)
             </case>
             <case regex="REJECT">
-                <log level="full"/>
-                <property name="HTTP_SC" value="503" scope="axis2"/>
-                <property name="RESPONSE" value="true"/>
-                <property name="NO_ENTITY_BODY" value="false"/>
-                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
-                <respond/>
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
             </case>
         </switch>
         #end
@@ -235,12 +229,10 @@
                 #draw_endpoint("sandbox", $defaultSandboxEndpoint)
             </case>
             <case regex="REJECT">
-                <log level="full"/>
-                <property name="HTTP_SC" value="503" scope="axis2"/>
-                <property name="RESPONSE" value="true"/>
-                <property name="NO_ENTITY_BODY" value="false"/>
-                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
-                <respond/>
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
             </case>
         </switch>
         #elseif( $defaultProductionEndpoint )
@@ -257,17 +249,10 @@
                 #draw_endpoint("sandbox", $defaultSandboxEndpoint)
             </case>>
             <case regex="REJECT">
-                <log level="full"/>
-                <property name="HTTP_SC" value="503" scope="axis2"/>
-                <property name="RESPONSE" value="true"/>
-                <property name="NO_ENTITY_BODY" value="false"/>  <!-- Ensure response body is sent -->
-                <payloadFactory>
-                    <format>
-                        {"error": "Service Unavailable", "message": "The service is temporarily unavailable."}
-                    </format>
-                </payloadFactory>
-                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
-                <respond/>
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
             </case>
         </switch>
         #else
