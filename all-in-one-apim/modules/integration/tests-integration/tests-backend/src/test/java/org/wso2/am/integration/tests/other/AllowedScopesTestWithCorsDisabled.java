@@ -1,19 +1,21 @@
 /*
- *Copyright (c) 2024, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
- *WSO2 Inc. licenses this file to you under the Apache License,
- *Version 2.0 (the "License"); you may not use this file except
- *in compliance with the License.
- *You may obtain a copy of the License at
+ * Copyright (c) 2025 WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- *http://www.apache.org/licenses/LICENSE-2.0
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *Unless required by applicable law or agreed to in writing,
- *software distributed under the License is distributed on an
- *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *KIND, either express or implied.  See the License for the
- *specific language governing permissions and limitations
- *under the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
  */
 package org.wso2.am.integration.tests.other;
 
@@ -198,10 +200,10 @@ public class AllowedScopesTestWithCorsDisabled extends APIManagerLifecycleBaseTe
 
     private void importApiDefinitionAndDeploy() throws Exception {
         String context = determineApiContext();
-        JSONObject additionalProperties = loadApiAdditionalProperties(context);
+        String additionalProperties = loadApiAdditionalProperties(context);
 
         File definitionFile = getTempFileWithContent(loadApiDefinition());
-        APIDTO apidtoOAS = restAPIPublisher.importOASDefinition(definitionFile, additionalProperties.toString());
+        APIDTO apidtoOAS = restAPIPublisher.importOASDefinition(definitionFile, additionalProperties);
         apiImportId = apidtoOAS.getId();
 
         createAPIRevisionAndDeployUsingRest(apiImportId, restAPIPublisher);
@@ -220,7 +222,7 @@ public class AllowedScopesTestWithCorsDisabled extends APIManagerLifecycleBaseTe
         return context;
     }
 
-    private JSONObject loadApiAdditionalProperties(String context) throws IOException, JSONException {
+    private String loadApiAdditionalProperties(String context) throws IOException, JSONException {
 
         String resourcePath = "oas/v3/scope-validation";
         String additionalPropertiesJson =
@@ -229,7 +231,7 @@ public class AllowedScopesTestWithCorsDisabled extends APIManagerLifecycleBaseTe
         JSONObject additionalPropertiesObj = new JSONObject(additionalPropertiesJson);
         additionalPropertiesObj.put("provider", user.getUserName());
         additionalPropertiesObj.put("context", context);
-        return additionalPropertiesObj;
+        return additionalPropertiesObj.toString();
     }
 
     private String loadApiDefinition() throws IOException {
