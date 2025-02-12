@@ -23,7 +23,7 @@
   "supportedApiTypes": [
     {
       "apiType": "HTTP",
-      "subType": "AI"
+      "subType": "AIAPI"
     }
   ]
 }
