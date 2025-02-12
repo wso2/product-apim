@@ -1464,7 +1464,7 @@
         <identity.outbound.auth.oidc.version>5.11.34</identity.outbound.auth.oidc.version>
         <swagger-parser-version>2.0.14</swagger-parser-version>
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
-        <json-smart.version>2.5.0</json-smart.version>
+        <json-smart.version>2.5.2</json-smart.version>
 
         <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
 
