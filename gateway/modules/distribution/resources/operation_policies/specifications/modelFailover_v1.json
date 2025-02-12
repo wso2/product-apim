@@ -1,0 +1,26 @@
+{
+  "category": "Mediation",
+  "name": "modelFailover",
+  "version": "v1",
+  "displayName": "Model Failover",
+  "description": "This policy allows you to route traffic to a different model(s) when the primary model fails",
+  "policyAttributes": [
+    {
+      "name": "failoverConfigs",
+      "displayName": "Failover Configurations",
+      "description": "Configurations for the failover policy",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
