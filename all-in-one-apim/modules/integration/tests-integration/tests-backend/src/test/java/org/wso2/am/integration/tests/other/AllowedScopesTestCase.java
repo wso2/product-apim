@@ -18,7 +18,6 @@
 package org.wso2.am.integration.tests.other;
 
 import com.google.gson.Gson;
-import org.apache.axis2.AxisFault;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
@@ -32,7 +31,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.*;
-import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -386,26 +384,12 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
         serverConfigurationManager.restoreToLastConfiguration();
     }
 
-    private void initializeServerConfiguration() throws Exception {
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-        File configFile = new File(getAMResourceLocation() +
-                "/configFiles/allowedScopesWithCorsDisabled/deployment.toml");
-        serverConfigurationManager.applyConfiguration(configFile);
-    }
-
-    private void initializeUserManagementClient() throws AxisFault, XPathExpressionException {
-        String backEndUrl = keyManagerContext.getContextUrls().getBackEndUrl();
-        String username = keyManagerContext.getContextTenant().getTenantAdmin().getUserName();
-        String password = keyManagerContext.getContextTenant().getTenantAdmin().getPassword();
-        userManagementClient = new UserManagementClient(backEndUrl, username, password);
-    }
-
     private void importApiDefinitionAndDeploy() throws Exception {
         String context = determineApiContext();
-        JSONObject additionalProperties = loadApiAdditionalProperties(context);
+        String additionalProperties = loadApiAdditionalProperties(context);
 
         File definitionFile = getTempFileWithContent(loadApiDefinition());
-        APIDTO apidtoOAS = restAPIPublisher.importOASDefinition(definitionFile, additionalProperties.toString());
+        APIDTO apidtoOAS = restAPIPublisher.importOASDefinition(definitionFile, additionalProperties);
         apiImportId = apidtoOAS.getId();
 
         createAPIRevisionAndDeployUsingRest(apiImportId, restAPIPublisher);
@@ -424,7 +408,7 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
         return context;
     }
 
-    private JSONObject loadApiAdditionalProperties(String context) throws IOException, JSONException {
+    private String loadApiAdditionalProperties(String context) throws IOException, JSONException {
 
         String resourcePath = "oas/v3/scope-validation";
         String additionalPropertiesJson =
@@ -433,7 +417,7 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
         JSONObject additionalPropertiesObj = new JSONObject(additionalPropertiesJson);
         additionalPropertiesObj.put("provider", user.getUserName());
         additionalPropertiesObj.put("context", context);
-        return additionalPropertiesObj;
+        return additionalPropertiesObj.toString();
     }
 
     private String loadApiDefinition() throws IOException {
