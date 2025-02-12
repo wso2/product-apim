@@ -1,0 +1,300 @@
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+        #####################  Define the macros ######################
+
+        #macro ( print_string_if_exist $field $default)
+        #if($field && "$field" !="")
+        "$field"
+        #else
+        "$default"
+        #end
+        #end
+
+        #macro ( draw_endpoint $type $endpoint )
+        #if($endpoint.endpointSecurityEnabled)
+<class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
+    <property name="apiKeyIdentifier" value="${endpoint.apiKeyIdentifier}" type="STRING"/>
+    <property name="apiKeyIdentifierType" value="${endpoint.apiKeyIdentifierType}" type="STRING"/>
+    <property name="apiKeyValue" value="${endpoint.apiKeyValue}" type="STRING"/>
+</class>
+        #end
+
+        #if( $endpoint && $endpoint.endpointUuid )
+            #set( $ep_key = "${endpointKey}_API_LLMEndpoint_${endpoint.endpointUuid}" )
+        #else
+            #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #end
+<call>
+    <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
+</call>
+<loopback/>
+        #end
+
+        ######################## End of Macros ######################################
+
+
+<api xmlns="http://ws.apache.org/ns/synapse"
+     name="$!apiName"
+     context="$!apiContext"
+     version="$!apiVersion"
+     transports="$!transport"
+     version-type="context"
+>
+#set( $originalEndPointConfig = $endpoint_config )
+#if( $apiIsBlocked )
+## if API is blocked send the API Block message
+<resource methods="GET POST PUT DELETE PATCH" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
+<inSequence>
+    <payloadFactory>
+        <format>
+            <am:fault xmlns:am="http://wso2.org/apimanager">
+                <am:code>700700</am:code>
+                <am:message>API blocked</am:message>
+                <am:description>This API has been blocked temporarily. Please try again later or contact the system administrators.</am:description>
+            </am:fault>
+        </format>
+    </payloadFactory>
+    <property name="HTTP_SC" value="503" scope="axis2"/>
+    <property name="RESPONSE" value="true"/>
+    <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+    <header name="To" action="remove"/>
+    <send/>
+</inSequence>
+</resource>
+        #else
+        ## api not blocked
+        #set ( $resourceNo = 0 )
+        #foreach( $resource in $resources )
+        #set( $isGQLWSResource = false )
+        #set( $endpoint_config = $originalEndPointConfig )
+
+<resource xmlns="http://ws.apache.org/ns/synapse"
+        #if( $resource.getUriTemplate().contains("{") ||
+        ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")) )
+        uri-template="$util.escapeXml($resource.getUriTemplate())"
+        #set( $topic= "$util.escapeXml($resource.getUriTemplate())" )
+        #else
+        url-mapping="$resource.getUriTemplate()"
+        #set( $topic= "$resource.getUriTemplate()" )
+        #end
+
+        #if( $isSubscriptionAvailable )
+        binds-to="default"
+        #set( $isGQLWSResource = false )
+        #end
+        methods="$resource.getMethodsAsString()"
+
+        faultSequence=#print_string_if_exist($faultSequence "fault")>
+<inSequence>
+<property name="llmProviderId" value="$util.escapeXml($!llmProviderId)" scope="default" type="STRING"/>
+<sequence key="_ai_api_request_seq_"/>
+<property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
+##############  define the filter based on environment type production only, sandbox only , hybrid ############
+
+#if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
+&& !$endpoint_config.get("production_endpoints")) )
+#set( $filterRegex = "SANDBOX" )
+#else
+#set( $filterRegex = "PRODUCTION" )
+#end
+#if( $endpoint_config.get("endpoint_type") == 'sequence_backend' )
+#if( $endpoint_config.get("sandbox"))
+#set( $sequenceKey = $endpoint_config.get("sandbox") )
+<filter source="$ctx:AM_KEY_TYPE" regex="SANDBOX">
+    <then>
+        <sequence key="$sequenceKey"/>
+        <loopback/>
+    </then>
+    <else/>
+</filter>
+#end
+#if( $endpoint_config.get("production"))
+#set( $sequenceKey = $endpoint_config.get("production") )
+<filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
+    <then>
+        <sequence key="$sequenceKey"/>
+        <loopback/>
+    </then>
+    <else/>
+</filter>
+#end
+#else
+<filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
+    <then>
+        #if( ($environmentType == 'sandbox') || ($environmentType == 'hybrid' && !$defaultProductionEndpoint)) )
+        #if( $defaultSandboxEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>
+            <case regex="REJECT">
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
+            </case>
+        </switch>
+        #end
+        #else
+        #if( $defaultProductionEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!productionEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("production", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("production", $defaultProductionEndpoint)
+            </case>
+            <case regex="REJECT">
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
+            </case>
+        </switch>
+        #end
+        #end
+    </then>
+    <else>
+        #if( $environmentType !='hybrid' )
+        #if( $resource.getAuthType() == 'None' && $environmentType == 'sandbox' && $defaultSandboxEndpoint)) )
+        #if( $defaultSandboxEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>
+            <case regex="REJECT">
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
+            </case>
+        </switch>
+        #end
+        #else
+        <payloadFactory>
+            <format>
+                <error xmlns="">
+                    #if( $environmentType == 'production' )
+                    <message>Sandbox Key Provided for Production Gateway</message>
+                    #elseif( $environmentType == 'sandbox' )
+                    <message>Production Key Provided for Sandbox Gateway</message>
+                    #end
+                </error>
+            </format>
+        </payloadFactory>
+        <property name="ContentType" value="application/xml" scope="axis2"/>
+        <property name="RESPONSE" value="true"/>
+        <header name="To" action="remove"/>
+        <property name="HTTP_SC" value="401" scope="axis2"/>
+        <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+        <send/>
+        #end
+        #else
+        #if( $defaultSandboxEndpoint && $defaultProductionEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>
+            <case regex="REJECT">
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
+            </case>
+        </switch>
+        #elseif( $defaultProductionEndpoint )
+        <sequence key="_sandbox_key_error_"/>
+        #elseif( $defaultSandboxEndpoint )
+        #if( $resource.getAuthType() == 'None' )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>>
+            <case regex="REJECT">
+                <property name="ERROR_CODE" value="900808"/>
+                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+                <property name="CUSTOM_HTTP_SC" value="503"/>
+                <sequence key="fault"/>
+            </case>
+        </switch>
+        #else
+        <sequence key="_production_key_error_"/>
+        #end
+        #end
+        #end
+    </else>
+</filter>
+#end
+</inSequence>
+<outSequence>
+<sequence key="_ai_api_response_seq_"/>
+<send/>
+</outSequence>
+        </resource>
+        #set ($resourceNo = $resourceNo + 1 )
+        #end  ## end of resource iterator
+        ## print the handlers
+        #if( $handlers.size() > 0 )
+<handlers xmlns="http://ws.apache.org/ns/synapse">
+#foreach( $handler in $handlers )
+<handler xmlns="http://ws.apache.org/ns/synapse" class="$handler.className">
+    #if($handler.hasProperties())
+    #set ($map = $handler.getProperties() )
+    #foreach($property in $map.entrySet())
+    <property name="$!property.key" value="$!property.value"/>
+    #end
+    #end
+</handler>
+#end
+## check and set enable schema validation
+#if($enableSchemaValidation)
+<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.SchemaValidator"/>
+#end
+</handlers>
+        #end
+        #end
+        ## end of apiIsBlocked check
+<handlers>
+<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
+    <property name="inline" value="INLINE"/>
+</handler>
+</handlers>
+        </api>

@@ -202,6 +202,10 @@ optimize="$advance_ep.get("optimize")"
         #set( $endpoints = $endpoint_config.get("${type}_endpoints") )
         #set( $ep_key = "${endpointKey}_API${type}Endpoint" )
 
+        #if($endpointUuid && "$endpointUuid" != "")
+            #set( $ep_key = "${endpointKey}_API_LLMEndpoint_${endpointUuid}" )
+        #end
+
         #if( $endpointClass == "http" )
             #http_endpoint( $ep_key $endpoints )
         #elseif( $endpointClass == "ws" )
