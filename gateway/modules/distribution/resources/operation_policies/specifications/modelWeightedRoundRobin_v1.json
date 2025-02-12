@@ -1,0 +1,26 @@
+{
+  "category": "Mediation",
+  "name": "modelWeightedRoundRobin",
+  "version": "v1",
+  "displayName": "Model Weighted Round Robin",
+  "description": "This policy allows you to route traffic to different models within the same AI/LLM vendor in a weighted round robin fashion",
+  "policyAttributes": [
+    {
+      "name": "weightedRoundRobinConfigs",
+      "displayName": "Weighted Round Robin Configurations",
+      "description": "Configurations for the weighted round robin policy",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
