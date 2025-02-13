@@ -508,36 +508,67 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         //Publish GWPermissionTestAPI API
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
-        //Create the environment DTO with APISubscriberRole
-        String gatewayName = "gateway-permission";
-        String displayName = "GW Permission Check";
-        String description = "Gateway environment deployed in Asia region";
-        String provider = Constants.WSO2_GATEWAY_ENVIRONMENT;
-        List<VHostDTO> vHostDTOList = new ArrayList<>();
-        vHostDTOList.add(DtoFactory.createVhostDTO("localhost", "localhost",
+        //Create the environment DTO with APISubscriberRole and ALLOW permission
+        String gatewayName1 = "gateway-permission-allow";
+        String displayName1 = "GW Permission Allow Check";
+        String description1 = "Gateway environment deployed in Asia region";
+        String provider1 = Constants.WSO2_GATEWAY_ENVIRONMENT;
+        List<VHostDTO> vHostDTOList1 = new ArrayList<>();
+        vHostDTOList1.add(DtoFactory.createVhostDTO("localhost", "localhost",
                 8280, 8243, null, null));
-        List<String> rolesList = new ArrayList<>();
-        rolesList.add(API_SUBSCRIBER);
-        environmentDTO = DtoFactory.createEnvironmentDTO(gatewayName, displayName, description, provider,
-                false, vHostDTOList, null);
-        EnvironmentPermissionsDTO environmentPermissionsDTO = new EnvironmentPermissionsDTO();
-        environmentPermissionsDTO.setPermissionType(EnvironmentPermissionsDTO.PermissionTypeEnum.DENY);
-        environmentPermissionsDTO.setRoles(rolesList);
-        environmentDTO.setPermissions(environmentPermissionsDTO);
+        List<String> rolesList1 = new ArrayList<>();
+        rolesList1.add(API_SUBSCRIBER);
+        environmentDTO = DtoFactory.createEnvironmentDTO(gatewayName1, displayName1, description1, provider1,
+                false, vHostDTOList1, null);
+        EnvironmentPermissionsDTO environmentPermissionsDTO1 = new EnvironmentPermissionsDTO();
+        environmentPermissionsDTO1.setPermissionType(EnvironmentPermissionsDTO.PermissionTypeEnum.ALLOW);
+        environmentPermissionsDTO1.setRoles(rolesList1);
+        environmentDTO.setPermissions(environmentPermissionsDTO1);
         //Add the GW environment with permissions
-        ApiResponse<EnvironmentDTO> addedEnvironments = restAPIAdmin.addEnvironment(environmentDTO);
-        Assert.assertEquals(addedEnvironments.getStatusCode(), HttpStatus.SC_CREATED);
-        EnvironmentDTO addedEnvironmentDTO = addedEnvironments.getData();
-        String environmentId = addedEnvironmentDTO.getId();
+        ApiResponse<EnvironmentDTO> addedEnvironments1 = restAPIAdmin.addEnvironment(environmentDTO);
+        Assert.assertEquals(addedEnvironments1.getStatusCode(), HttpStatus.SC_CREATED);
+        EnvironmentDTO addedEnvironmentDTO1 = addedEnvironments1.getData();
+        String environmentId1 = addedEnvironmentDTO1.getId();
 
         //Assert the status code and GW ID
-        Assert.assertNotNull(environmentId, "The Environment ID cannot be null or empty");
-        environmentDTO.setId(environmentId);
+        Assert.assertNotNull(environmentId1, "The Environment ID cannot be null or empty");
+        environmentDTO.setId(environmentId1);
         //Verify the created Environment DTO
-        adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, addedEnvironmentDTO);
+        adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, addedEnvironmentDTO1);
 
-        //Deploy GWPermissionTestAPI API to gateway-permission environment
-        createAPIRevisionAndDeployToGatewayUsingRest(apiId, restAPIPublisher, gatewayName);
+        //Create the environment DTO with APISubscriberRole and DENY permission
+        String gatewayName2 = "gateway-permission-deny";
+        String displayName2 = "GW Permission Deny Check";
+        String description2 = "Gateway environment deployed in Asia region";
+        String provider2 = Constants.WSO2_GATEWAY_ENVIRONMENT;
+        List<VHostDTO> vHostDTOList2 = new ArrayList<>();
+        vHostDTOList2.add(DtoFactory.createVhostDTO("localhost", "localhost",
+                8280, 8243, null, null));
+        List<String> rolesList2 = new ArrayList<>();
+        rolesList2.add(API_SUBSCRIBER);
+        environmentDTO = DtoFactory.createEnvironmentDTO(gatewayName2, displayName2, description2, provider2,
+                false, vHostDTOList2, null);
+        EnvironmentPermissionsDTO environmentPermissionsDTO2 = new EnvironmentPermissionsDTO();
+        environmentPermissionsDTO2.setPermissionType(EnvironmentPermissionsDTO.PermissionTypeEnum.DENY);
+        environmentPermissionsDTO2.setRoles(rolesList2);
+        environmentDTO.setPermissions(environmentPermissionsDTO2);
+        //Add the GW environment with permissions
+        ApiResponse<EnvironmentDTO> addedEnvironments2 = restAPIAdmin.addEnvironment(environmentDTO);
+        Assert.assertEquals(addedEnvironments2.getStatusCode(), HttpStatus.SC_CREATED);
+        EnvironmentDTO addedEnvironmentDTO2 = addedEnvironments2.getData();
+        String environmentId2 = addedEnvironmentDTO2.getId();
+
+        //Assert the status code and GW ID
+        Assert.assertNotNull(environmentId2, "The Environment ID cannot be null or empty");
+        environmentDTO.setId(environmentId2);
+        //Verify the created Environment DTO
+        adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, addedEnvironmentDTO2);
+
+        //Deploy GWPermissionTestAPI API to gateway-permission-allow environment
+        createAPIRevisionAndDeployToGatewayUsingRest(apiId, restAPIPublisher, gatewayName1);
+        waitForAPIDeployment();
+        //Deploy GWPermissionTestAPI API to gateway-permission-deny environment
+        createAPIRevisionAndDeployToGatewayUsingRest(apiId, restAPIPublisher, gatewayName2);
         waitForAPIDeployment();
         //Deploy GWPermissionTestAPI API to Default environment
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
@@ -548,8 +579,10 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponse = restAPIStore.getAPI(apiId);
         List<APIEndpointURLsDTO> apiEndpointURLsDTOs = apiResponse.getEndpointURLs();
         Assert.assertNotNull(apiEndpointURLsDTOs);
-        Assert.assertTrue(!apiEndpointURLsDTOs.contains("gateway-permission"), "Environment list should not contain the gateway-permission environment for the user test.");
-        restAPIAdmin.deleteEnvironment(environmentId);
+        Assert.assertTrue(!apiEndpointURLsDTOs.contains("gateway-permission-allow"), "Environment list should contain the gateway-permission-allow environment for the user test.");
+        Assert.assertTrue(!apiEndpointURLsDTOs.contains("gateway-permission-deny"), "Environment list should not contain the gateway-permission-deny environment for the user test.");
+        restAPIAdmin.deleteEnvironment(environmentId1);
+        restAPIAdmin.deleteEnvironment(environmentId2);
     }
 
     @AfterClass(alwaysRun = true)
