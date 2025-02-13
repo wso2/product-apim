@@ -887,6 +887,56 @@ public class APIMIntegrationBaseTest {
         }
     }
 
+    /**
+     * Create API Revision and Deploy to given gateway using REST API.
+     *
+     * @param apiId          - API UUID
+     * @param restAPIPublisher -  Instance of APIPublisherRestClient
+     * @param gatewayEnvironment - Gateway environment name
+     */
+    protected String createAPIRevisionAndDeployToGatewayUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher, String gatewayEnvironment)
+            throws ApiException, JSONException, APIManagerIntegrationTestException {
+        int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
+        int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
+        int HTTP_RESPONSE_CODE_BAD_REQUEST = Response.Status.BAD_REQUEST.getStatusCode();
+        int HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+        String revisionUUID = null;
+        //Add the API Revision using the API publisher.
+        APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
+        apiRevisionRequest.setApiUUID(apiId);
+        apiRevisionRequest.setDescription("Test Revision 1");
+
+        HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
+        int responseCode = apiRevisionResponse.getResponseCode();
+        if (responseCode != HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR && responseCode
+                != HTTP_RESPONSE_CODE_BAD_REQUEST) {
+            assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                    "Create API Response Code is invalid." + apiRevisionResponse.getData());
+            JSONObject jsonObject = new JSONObject(apiRevisionResponse.getData());
+            revisionUUID = jsonObject.getString("id");
+
+            // Deploy Revision to gateway
+            List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+            APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+            if (gatewayEnvironment.isEmpty() || gatewayEnvironment == null) {
+                apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+            } else {
+                apiRevisionDeployRequest.setName(gatewayEnvironment);
+            }
+            apiRevisionDeployRequest.setVhost("localhost");
+            apiRevisionDeployRequest.setDisplayOnDevportal(true);
+            apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+            HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                    apiRevisionDeployRequestList, "API");
+            assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                    "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
+            return  revisionUUID;
+        } else {
+            JSONObject jsonObject = new JSONObject(apiRevisionResponse.getData());
+            throw new ApiException(jsonObject.getString("description"));
+        }
+    }
+
 
     /**
      * Undeploy and Delete API Revisions using REST API.
