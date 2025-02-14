@@ -25,14 +25,14 @@
     <fileSets>
         <fileSet>
             <directory>target/sources</directory>
-            <outputDirectory>wso2am-gw-${pom.version}-src</outputDirectory>
+            <outputDirectory>wso2am-universal-gw-${pom.version}-src</outputDirectory>
             <includes>
                 <include>**/*</include>
             </includes>
         </fileSet>
         <fileSet>
             <directory>../../..</directory>
-            <outputDirectory>wso2am-gw-${pom.version}-src</outputDirectory>
+            <outputDirectory>wso2am-universal-gw-${pom.version}-src</outputDirectory>
             <includes>
                 <include>modules/**/*</include>
                 <include>**/pom.xml</include>
@@ -56,17 +56,17 @@
     <files>
         <file>
             <source>../../../LICENSE.txt</source>
-            <outputDirectory> wso2am-gw-${pom.version}-src</outputDirectory>
+            <outputDirectory> wso2am-universal-gw-${pom.version}-src</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
             <source>../../../README.txt</source>
-            <outputDirectory> wso2am-gw-${pom.version}-src</outputDirectory>
+            <outputDirectory> wso2am-universal-gw-${pom.version}-src</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
             <source>../../../INSTALL.txt</source>
-            <outputDirectory> wso2am-gw-${pom.version}-src</outputDirectory>
+            <outputDirectory> wso2am-universal-gw-${pom.version}-src</outputDirectory>
             <filtered>true</filtered>
         </file>
     </files>

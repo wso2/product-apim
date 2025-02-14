@@ -10,7 +10,7 @@
 
     <artifactId>org.wso2.am.gw.multitenancy.dashboard.ui</artifactId>
     <packaging>bundle</packaging>
-    <name>WSO2 API Gateway - Multi Tenant Dashboard</name>
+    <name>WSO2 Universal Gateway - Multi Tenant Dashboard</name>
     <build>
 
         <plugins>

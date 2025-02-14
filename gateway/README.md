@@ -1,4 +1,4 @@
-# WSO2 API Gateway
+# WSO2 Universal Gateway
         
 
 ---
@@ -11,18 +11,18 @@
 
 ---
 
-WSO2 API Gateway (WSO2 API-GW) is a powerful platform for creating, managing, consuming, and
+WSO2 Universal Gateway is a powerful platform for creating, managing, consuming, and
 monitoring web APIs. It combines tried and tested SOA best practices with modern
 day API management principles to solve a wide range of enterprise challenges
 associated with API provisioning, governance, and integration.
 
-WSO2 API Gateway provides powerful tools to secure and control the load on individual APIs.
+WSO2 Universal Gateway provides powerful tools to secure and control the load on individual APIs.
 
-WSO2 API Gateway is based on the revolutionary WSO2 Carbon [Middleware a' la carte]
+WSO2 Universal Gateway is based on the revolutionary WSO2 Carbon [Middleware a' la carte]
 framework. All the major features have been developed as reusable Carbon
 components.
 
-To learn more about WSO2 API Gateway please visit http://wso2.com/products/api-manager.
+To learn more about WSO2 Universal Gateway please visit http://wso2.com/products/api-manager.
 
 Key Features
 =============
@@ -50,14 +50,14 @@ System Requirements
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
-5. To build WSO2 API Gateway from the source distribution, it is necessary that you have
+5. To build WSO2 Universal Gateway from the source distribution, it is necessary that you have
    JDK 11 and Maven 3.0.4 or later.
 
 Installation & Running
 ==================================
 
-1. Extract the wso2am-gw-4.5.0.zip and go to the 'bin' directory
-2. Run the api-gateway.sh or api-gateway.bat script based on you operating system.
+1. Extract the wso2am-universal-gw-4.5.0.zip and go to the 'bin' directory
+2. Run the gateway.sh or gateway.bat script based on you operating system.
 3. Access the respective WSO2 API-GW interfaces
     * Management Console running at - https://localhost:9443/carbon \
   You may sign in using the default administrator credentials (username: admin, password: admin).

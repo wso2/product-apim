@@ -278,31 +278,34 @@ public class RestAPIAdminImpl {
      * @param description   A brief description of the LLM provider.
      * @param configuration Configuration details for the LLM provider.
      * @param apiDefinition The API definition file for the LLM provider.
+     * @param modelList     The list of models for the LLM provider.
      * @return ApiResponse containing LLMProviderResponseDTO with the updated details of the LLM provider.
      * @throws ApiException if there is an error during the API call.
      */
     public ApiResponse<LLMProviderResponseDTO> addLLMProvider(String name, String apiVersion, String description,
-                                                              String configuration, File apiDefinition) throws ApiException {
+            String configuration, File apiDefinition, String modelList) throws ApiException {
 
-        return llmProvidersApi.llmProvidersPostWithHttpInfo(name, apiVersion, description, configuration,
-                apiDefinition);
+        return llmProvidersApi.llmProvidersPostWithHttpInfo(name, apiVersion, description, configuration, apiDefinition,
+                modelList);
     }
 
     /**
      * Updates the details of a specific LLM Provider by its ID.
      *
      * @param llmProviderId The unique identifier of the LLM provider.
-     * @param name The new name of the LLM provider.
-     * @param apiVersion The API version of the LLM provider.
-     * @param description A brief description of the LLM provider.
+     * @param name          The new name of the LLM provider.
+     * @param apiVersion    The API version of the LLM provider.
+     * @param description   A brief description of the LLM provider.
      * @param configuration Configuration details for the LLM provider.
      * @param apiDefinition The API definition file for the LLM provider.
+     * @param modelList     The list of models for the LLM provider.
      * @return ApiResponse containing LLMProviderResponseDTO with the updated details of the LLM provider.
      * @throws ApiException if there is an error during the API call.
      */
-    public ApiResponse<LLMProviderResponseDTO> updateLLMProvider(String llmProviderId, String name, String apiVersion, String description,
-                                                                 String configuration, File apiDefinition) throws ApiException {
-        return llmProviderApi.llmProvidersLlmProviderIdPutWithHttpInfo(llmProviderId, name, apiVersion, description, configuration, apiDefinition);
+    public ApiResponse<LLMProviderResponseDTO> updateLLMProvider(String llmProviderId, String name, String apiVersion,
+            String description, String configuration, File apiDefinition, String modelList) throws ApiException {
+        return llmProviderApi.llmProvidersLlmProviderIdPutWithHttpInfo(llmProviderId, name, apiVersion, description,
+                configuration, apiDefinition, modelList);
     }
 
     /**

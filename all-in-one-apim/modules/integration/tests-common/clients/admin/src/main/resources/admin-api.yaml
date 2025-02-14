@@ -5515,6 +5515,9 @@ components:
           type: string
           description: OpenAPI specification
           format: binary
+        modelList:
+          type: string
+          description: List of models supported by the LLM Provider as a stringified JSON array
     LLMProviderResponse:
       title: LLMProviderResponse
       type: object
@@ -5546,6 +5549,11 @@ components:
         apiDefinition:
           type: string
           description: OpenAPI specification
+        modelList:
+          type: array
+          items:
+            type: string
+          description: List of models supported by the LLM Provider
     LLMProviderSummaryResponse:
       title: LLMProviderSummaryResponse
       type: object

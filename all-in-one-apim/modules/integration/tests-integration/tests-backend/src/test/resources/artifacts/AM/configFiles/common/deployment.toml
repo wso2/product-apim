@@ -35,6 +35,9 @@ password =  "wso2carbon"
 alias =  "wso2carbon"
 key_password =  "wso2carbon"
 
+[apim]
+gateway_type = "Regular,APK,AWS"
+
 [[apim.gateway.environment]]
 name = "Default"
 type = "hybrid"
