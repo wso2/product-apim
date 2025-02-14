@@ -139,6 +139,7 @@
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingTestCase"/>
             <class name="org.wso2.am.integration.tests.comments.DevPortalCommentTest"/>
+            <class name="org.wso2.am.integration.tests.search.DevPortalSearchTest"/>
             <class name="org.wso2.am.integration.tests.comments.PublisherCommentTest"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
