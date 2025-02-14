@@ -466,7 +466,7 @@
         </fileSet>
 
         <fileSet>
-            <directory>../../local-authenticators/target/localauthenticatorCopied/jar</directory>
+            <directory>../../p2-profile/product/target/localauthenticatorCopied/jar</directory>
             <outputDirectory>wso2am-gw-${pom.version}/repository/components/dropins</outputDirectory>
         </fileSet>
 
@@ -661,7 +661,7 @@
 
         <!--copy the oauth2 grant type extensions -->
         <fileSet>
-            <directory>../../oauth2-grant-types/target/oauth2GrantCopied/jar</directory>
+            <directory>../../p2-profile/product/target/oauth2GrantCopied/jar</directory>
             <outputDirectory>wso2am-gw-${pom.version}/repository/components/dropins</outputDirectory>
             <includes>
                 <include>**/*.jar</include>
