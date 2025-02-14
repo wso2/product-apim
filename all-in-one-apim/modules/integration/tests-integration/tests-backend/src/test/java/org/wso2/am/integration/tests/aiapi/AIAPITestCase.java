@@ -101,6 +101,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     private final String llmProviderApiVersion = "1.0.0";
 
     private final String llmProviderDescription = "This is a copy of MistralAI service";
+    private final String modelList = "[\"model-1\", \"model-2\"]";
 
     private final String incorrectLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
             "\"metadata\":[{\"attributeName\":\"model\"," +
@@ -193,7 +194,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         File file = getTempFileWithContent(originalDefinition);
 
         ApiResponse<LLMProviderResponseDTO> createProviderResponse = restAPIAdmin.addLLMProvider(llmProviderName,
-                llmProviderApiVersion, llmProviderDescription, incorrectLlmProviderConfigurations, file);
+                llmProviderApiVersion, llmProviderDescription, incorrectLlmProviderConfigurations, file, modelList);
 
         assertEquals(Response.Status.CREATED.getStatusCode(),
                 createProviderResponse.getStatusCode(), "Failed to add a LLM provider");
@@ -230,7 +231,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         ApiResponse<LLMProviderResponseDTO> updateProviderResponse = restAPIAdmin.updateLLMProvider(llmProviderId,
                 llmProviderName, llmProviderApiVersion, llmProviderDescription,
-                correctLlmProviderConfigurations, file);
+                correctLlmProviderConfigurations, file, modelList);
 
         assertEquals(Response.Status.OK.getStatusCode(),
                 updateProviderResponse.getStatusCode(), "Failed to update LLM provider");
@@ -310,7 +311,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         HttpResponse serviceResponse = HTTPSClientUtils.
                 doPost(invokeURL, requestHeaders, mistralPayload);
 
-        assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Failed to invoke Mistral AI API");
+        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
         assertEquals(mistralResponse, serviceResponse.getData(), "Mistral AI API response mismatch");
     }
 
