@@ -23,6 +23,8 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * LLMProviderResponseDTO
@@ -56,6 +58,10 @@ public class LLMProviderResponseDTO {
         public static final String SERIALIZED_NAME_API_DEFINITION = "apiDefinition";
         @SerializedName(SERIALIZED_NAME_API_DEFINITION)
             private String apiDefinition;
+
+        public static final String SERIALIZED_NAME_MODEL_LIST = "modelList";
+        @SerializedName(SERIALIZED_NAME_MODEL_LIST)
+            private List<String> modelList = null;
 
 
         public LLMProviderResponseDTO id(String id) {
@@ -219,6 +225,29 @@ public class LLMProviderResponseDTO {
     }
 
 
+        public LLMProviderResponseDTO modelList(List<String> modelList) {
+        
+        this.modelList = modelList;
+        return this;
+        }
+
+    /**
+        * List of models supported by the LLM Provider
+    * @return modelList
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "List of models supported by the LLM Provider")
+    
+    public List<String> getModelList() {
+        return modelList;
+    }
+
+
+    public void setModelList(List<String> modelList) {
+        this.modelList = modelList;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -234,12 +263,13 @@ public class LLMProviderResponseDTO {
             Objects.equals(this.builtInSupport, llMProviderResponse.builtInSupport) &&
             Objects.equals(this.description, llMProviderResponse.description) &&
             Objects.equals(this.configurations, llMProviderResponse.configurations) &&
-            Objects.equals(this.apiDefinition, llMProviderResponse.apiDefinition);
+            Objects.equals(this.apiDefinition, llMProviderResponse.apiDefinition) &&
+            Objects.equals(this.modelList, llMProviderResponse.modelList);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, apiVersion, builtInSupport, description, configurations, apiDefinition);
+        return Objects.hash(id, name, apiVersion, builtInSupport, description, configurations, apiDefinition, modelList);
     }
 
 
@@ -254,6 +284,7 @@ sb.append("class LLMProviderResponseDTO {\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    configurations: ").append(toIndentedString(configurations)).append("\n");
     sb.append("    apiDefinition: ").append(toIndentedString(apiDefinition)).append("\n");
+    sb.append("    modelList: ").append(toIndentedString(modelList)).append("\n");
 sb.append("}");
 return sb.toString();
 }

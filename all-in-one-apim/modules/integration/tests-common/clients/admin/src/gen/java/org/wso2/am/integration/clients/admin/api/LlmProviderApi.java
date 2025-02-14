@@ -286,6 +286,7 @@ public class LlmProviderApi {
      * @param description  (optional)
      * @param configurations LLM Provider configurations (optional)
      * @param apiDefinition OpenAPI specification (optional)
+     * @param modelList List of models supported by the LLM Provider as a stringified JSON array (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -297,7 +298,7 @@ public class LlmProviderApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call llmProvidersLlmProviderIdPutCall(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call llmProvidersLlmProviderIdPutCall(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition, String modelList, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -329,6 +330,10 @@ public class LlmProviderApi {
             localVarFormParams.put("apiDefinition", apiDefinition);
         }
 
+        if (modelList != null) {
+            localVarFormParams.put("modelList", modelList);
+        }
+
         final String[] localVarAccepts = {
             "application/json"
         };
@@ -348,7 +353,7 @@ public class LlmProviderApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call llmProvidersLlmProviderIdPutValidateBeforeCall(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call llmProvidersLlmProviderIdPutValidateBeforeCall(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition, String modelList, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'llmProviderId' is set
         if (llmProviderId == null) {
@@ -356,7 +361,7 @@ public class LlmProviderApi {
         }
         
 
-        okhttp3.Call localVarCall = llmProvidersLlmProviderIdPutCall(llmProviderId, name, apiVersion, description, configurations, apiDefinition, _callback);
+        okhttp3.Call localVarCall = llmProvidersLlmProviderIdPutCall(llmProviderId, name, apiVersion, description, configurations, apiDefinition, modelList, _callback);
         return localVarCall;
 
     }
@@ -370,6 +375,7 @@ public class LlmProviderApi {
      * @param description  (optional)
      * @param configurations LLM Provider configurations (optional)
      * @param apiDefinition OpenAPI specification (optional)
+     * @param modelList List of models supported by the LLM Provider as a stringified JSON array (optional)
      * @return LLMProviderResponseDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -380,8 +386,8 @@ public class LlmProviderApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public LLMProviderResponseDTO llmProvidersLlmProviderIdPut(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition) throws ApiException {
-        ApiResponse<LLMProviderResponseDTO> localVarResp = llmProvidersLlmProviderIdPutWithHttpInfo(llmProviderId, name, apiVersion, description, configurations, apiDefinition);
+    public LLMProviderResponseDTO llmProvidersLlmProviderIdPut(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition, String modelList) throws ApiException {
+        ApiResponse<LLMProviderResponseDTO> localVarResp = llmProvidersLlmProviderIdPutWithHttpInfo(llmProviderId, name, apiVersion, description, configurations, apiDefinition, modelList);
         return localVarResp.getData();
     }
 
@@ -394,6 +400,7 @@ public class LlmProviderApi {
      * @param description  (optional)
      * @param configurations LLM Provider configurations (optional)
      * @param apiDefinition OpenAPI specification (optional)
+     * @param modelList List of models supported by the LLM Provider as a stringified JSON array (optional)
      * @return ApiResponse&lt;LLMProviderResponseDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -404,8 +411,8 @@ public class LlmProviderApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<LLMProviderResponseDTO> llmProvidersLlmProviderIdPutWithHttpInfo(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition) throws ApiException {
-        okhttp3.Call localVarCall = llmProvidersLlmProviderIdPutValidateBeforeCall(llmProviderId, name, apiVersion, description, configurations, apiDefinition, null);
+    public ApiResponse<LLMProviderResponseDTO> llmProvidersLlmProviderIdPutWithHttpInfo(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition, String modelList) throws ApiException {
+        okhttp3.Call localVarCall = llmProvidersLlmProviderIdPutValidateBeforeCall(llmProviderId, name, apiVersion, description, configurations, apiDefinition, modelList, null);
         Type localVarReturnType = new TypeToken<LLMProviderResponseDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -419,6 +426,7 @@ public class LlmProviderApi {
      * @param description  (optional)
      * @param configurations LLM Provider configurations (optional)
      * @param apiDefinition OpenAPI specification (optional)
+     * @param modelList List of models supported by the LLM Provider as a stringified JSON array (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -430,9 +438,9 @@ public class LlmProviderApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call llmProvidersLlmProviderIdPutAsync(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition, final ApiCallback<LLMProviderResponseDTO> _callback) throws ApiException {
+    public okhttp3.Call llmProvidersLlmProviderIdPutAsync(String llmProviderId, String name, String apiVersion, String description, String configurations, File apiDefinition, String modelList, final ApiCallback<LLMProviderResponseDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = llmProvidersLlmProviderIdPutValidateBeforeCall(llmProviderId, name, apiVersion, description, configurations, apiDefinition, _callback);
+        okhttp3.Call localVarCall = llmProvidersLlmProviderIdPutValidateBeforeCall(llmProviderId, name, apiVersion, description, configurations, apiDefinition, modelList, _callback);
         Type localVarReturnType = new TypeToken<LLMProviderResponseDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
