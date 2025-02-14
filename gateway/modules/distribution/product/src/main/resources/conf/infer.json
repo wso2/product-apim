@@ -1,54 +1,15 @@
 {
   "server.server_role": {
-    "gateway-worker": {
+    "default": {
+      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
       "apim.throttling.enable_policy_deploy": false,
       "apim.throttling.enable_data_publishing": true,
       "apim.throttling.enable_decision_connection": true,
       "apim.throttling.enable_blacklist_condition": true,
       "indexing.enable": false,
-      "system.parameter.profile": "gateway-worker",
       "apim.key_manager.enable_registration": false,
       "oauth.grant_type.token_exchange.enable": false,
       "apim.ai.llm_provider_events_enabled": false
-    },
-    "api-key-manager-deprecated": {
-      "apim.throttling.enable_policy_deploy": false,
-      "apim.throttling.enable_data_publishing": false,
-      "apim.throttling.enable_decision_connection": false,
-      "apim.throttling.enable_blacklist_condition": false,
-      "transport.ws.sender.enable": false,
-      "transport.wss.sender.enable": false,
-      "indexing.enable": false,
-      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
-      "system.parameter.profile": "api-key-manager-deprecated",
-      "apim.key_manager.enable_registration": false,
-      "apim.key_manager.enable_retriever": false
-    },
-    "traffic-manager": {
-      "system.parameter.profile": "traffic-manager",
-      "apim.key_manager.enable_registration": true,
-      "apim.key_manager.enable_retriever": false,
-      "apim.throttling.enable_policy_deploy": false,
-      "apim.throttling.enable_data_publishing": false,
-      "apim.throttling.enable_decision_connection": false,
-      "apim.throttling.enable_blacklist_condition": false,
-      "oauth.grant_type.token_exchange.enable": false,
-      "apim.ai.llm_provider_events_enabled": false
-    },
-    "control-plane": {
-      "system.parameter.profile": "control-plane",
-      "apim.key_manager.enable_retriever": true,
-      "apim.key_manager.enable_registration": true,
-      "apim.throttling.enable_data_publishing": false,
-      "apim.throttling.enable_decision_connection": false,
-      "apim.throttling.enable_blacklist_condition": false,
-      "transport.ws.sender.enable": false,
-      "transport.wss.sender.enable": false,
-      "apim.sync_runtime_artifacts.gateway.enable": "false",
-      "apim.ai.llm_provider_events_enabled": true
-    },
-    "default": {
-      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl"
     }
   },
   "apim.jwt.encoding": {

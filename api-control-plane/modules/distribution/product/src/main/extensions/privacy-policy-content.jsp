@@ -33,8 +33,8 @@
                 <div>
                 <%-- Customizable content. Due to this nature, i18n is not implemented for this section --%>
                 <div id="privacyPolicy" class="padding-double">
-                    <h4><a href="https://wso2.com/api-management/"><strong>About WSO2 API Manager</strong></a></h4>
-                    <p>WSO2 API Manager (referred hereafter as &ldquo;API-M &rdquo;) is an open source enterprise-class solution that supports API publishing, lifecycle management, application development, access control, rate limiting, and analytics in one cleanly integrated system.</p>
+                    <h4><a href="https://wso2.com/api-management/"><strong>About WSO2 API Control Plane</strong></a></h4>
+                    <p>WSO2 API Manager (referred hereafter as &ldquo;API-M &rdquo;) is an open source enterprise-class solution that supports API publishing, lifecycle management, application development, access control, rate limiting, and analytics in one cleanly integrated system. The control plane component of it is WSO2 API Control plane (ACP).</p>
                     <div class="margin-bottom-double"></div>
                     <h2 id="privacy-policy"><strong>Privacy Policy</strong></h2>
                     <p>This section explains how API-M captures your personal information, purpose of capturing, and the retention of your personal information.</p>
@@ -124,7 +124,7 @@
                     <p>The organization running API-M may revise the Privacy Policy from time to time. You can find the most recent governing policy with the respective link provided by the organization running API-M. The organization will notify any changes to the privacy policy over our official public channels.</p>
                     <div class="margin-bottom"></div>
                     <h3 id="your-choices">Your choices</h3>
-                    <p>If you already have an account with API Manager; you have the right to deactivate your account if you find that this privacy policy is unacceptable for you.</p>
+                    <p>If you already have an account with API Control Plane; you have the right to deactivate your account if you find that this privacy policy is unacceptable for you.</p>
                     <p>If you do not have an account, you can choose not to subscribe if you do not agree with our privacy policy.</p>
                     <div class="margin-bottom"></div>
                     <h3 id="contact-us">Contact us</h3>

@@ -1,6 +1,6 @@
 [server]
-hostname = "gw.wso2.com"
-server_role = "gateway-worker"
+#hostname = "gw.wso2.com"
+server_role = "default"
 
 [user_store]
 type = "database_unique_id"

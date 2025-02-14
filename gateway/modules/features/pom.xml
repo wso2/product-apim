@@ -29,9 +29,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>am-gw-features-parent</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Gateway - Features Parent</name>
+    <name>WSO2 Universal Gateway - Features Parent</name>
     <url>http://wso2.com/products/api-manager</url>
-    <description>WSO2 API Gateway Features Parent</description>
+    <description>WSO2 Universal Gateway Features Parent</description>
 
     <licenses>
         <license>

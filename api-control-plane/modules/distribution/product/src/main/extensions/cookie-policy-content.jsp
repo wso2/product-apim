@@ -33,8 +33,8 @@
                 <div>
                     <%-- Customizable content. Due to this nature, i18n is not implemented for this section --%>
                     <div id="cookiePolicy">
-                    	<h4><a href="https://wso2.com/api-management/"><strong>About WSO2 API Manager</strong></a></h4>
-                        <p>WSO2 API Manager (referred hereafter as &ldquo;API-M &rdquo;) is an open source enterprise-class solution that supports API publishing, lifecycle management, application development, access control, rate limiting and analytics in one cleanly integrated system.</p>
+                    	<h4><a href="https://wso2.com/api-management/"><strong>About WSO2 API Control Plane</strong></a></h4>
+                        <p>WSO2 API Manager (referred hereafter as &ldquo;API-M &rdquo;) is an open source enterprise-class solution that supports API publishing, lifecycle management, application development, access control, rate limiting and analytics in one cleanly integrated system. The control plane component of it is WSO2 API Control plane (ACP).</p>
                         <div class="margin-bottom-double"></div>
                         <h2 id="cookie-policy"><strong>Cookie Policy</strong></h2>
                         <p>API-M uses cookies to provide you with the best user experience, and to securely identify you. You might not be able to access some of the services if you disable cookies.</p>
