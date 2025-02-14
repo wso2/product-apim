@@ -46,6 +46,9 @@ key_password =  "wso2carbon"
 #alias =  "wso2carbon"
 #key_password =  "wso2carbon"
 
+[apim]
+gateway_type = "Regular,APK,AWS"
+
 [[apim.gateway.environment]]
 name = "Default"
 type = "hybrid"
@@ -61,7 +64,6 @@ ws_endpoint = "ws://localhost:9099"
 wss_endpoint = "wss://localhost:8099"
 http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
-
 
 #[apim.cache.gateway_token]
 #enable = true

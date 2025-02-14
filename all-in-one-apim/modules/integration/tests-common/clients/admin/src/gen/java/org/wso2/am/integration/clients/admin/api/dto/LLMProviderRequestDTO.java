@@ -50,6 +50,10 @@ public class LLMProviderRequestDTO {
         @SerializedName(SERIALIZED_NAME_API_DEFINITION)
             private File apiDefinition;
 
+        public static final String SERIALIZED_NAME_MODEL_LIST = "modelList";
+        @SerializedName(SERIALIZED_NAME_MODEL_LIST)
+            private String modelList;
+
 
         public LLMProviderRequestDTO name(String name) {
         
@@ -166,6 +170,29 @@ public class LLMProviderRequestDTO {
     }
 
 
+        public LLMProviderRequestDTO modelList(String modelList) {
+        
+        this.modelList = modelList;
+        return this;
+        }
+
+    /**
+        * List of models supported by the LLM Provider as a stringified JSON array
+    * @return modelList
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "List of models supported by the LLM Provider as a stringified JSON array")
+    
+    public String getModelList() {
+        return modelList;
+    }
+
+
+    public void setModelList(String modelList) {
+        this.modelList = modelList;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -179,12 +206,13 @@ public class LLMProviderRequestDTO {
             Objects.equals(this.apiVersion, llMProviderRequest.apiVersion) &&
             Objects.equals(this.description, llMProviderRequest.description) &&
             Objects.equals(this.configurations, llMProviderRequest.configurations) &&
-            Objects.equals(this.apiDefinition, llMProviderRequest.apiDefinition);
+            Objects.equals(this.apiDefinition, llMProviderRequest.apiDefinition) &&
+            Objects.equals(this.modelList, llMProviderRequest.modelList);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, apiVersion, description, configurations, apiDefinition);
+        return Objects.hash(name, apiVersion, description, configurations, apiDefinition, modelList);
     }
 
 
@@ -197,6 +225,7 @@ sb.append("class LLMProviderRequestDTO {\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    configurations: ").append(toIndentedString(configurations)).append("\n");
     sb.append("    apiDefinition: ").append(toIndentedString(apiDefinition)).append("\n");
+    sb.append("    modelList: ").append(toIndentedString(modelList)).append("\n");
 sb.append("}");
 return sb.toString();
 }

@@ -1280,11 +1280,11 @@
         <carbon.analytics.common.version>5.3.15</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.2.15</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.2.21</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
 
-        <carbon.apimgt.version>9.31.14</carbon.apimgt.version>
+        <carbon.apimgt.version>9.31.26</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1297,7 +1297,7 @@
         <carbon.governance.version>4.8.34</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.9.27</carbon.kernel.version>
+        <carbon.kernel.version>4.9.28-alpha</carbon.kernel.version>
         <apimserver.version>4.5.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.26</cipher.tool.version>
@@ -1336,7 +1336,7 @@
         <carbon.deployment.version>4.11.18</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.9.31</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.9.32</carbon.multitenancy.version>
 
         <siddhi.version>3.2.13</siddhi.version>
 
