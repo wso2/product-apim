@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gw-p2-profile</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Gateway - P2 Profile Generation - API Gateway Distribution</name>
+    <name>WSO2 Universal Gateway - P2 Profile Generation - Universal Gateway Distribution</name>
     <url>http://www.wso2.org</url>
 
     <build>

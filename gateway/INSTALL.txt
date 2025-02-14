@@ -1,8 +1,8 @@
-Installing  WSO2 API Gateway (API-GW)
+Installing  WSO2 Universal Gateway
 =================================
 
 
-Running WSO2 API Gateway
+Running WSO2 Universal Gateway
 ===========================================
 1. The directory containing this INSTALL.txt file will be the root and it will be
    treated as Carbon home directory and let it be <API_GW_HOME>.

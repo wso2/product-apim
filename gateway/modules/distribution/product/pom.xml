@@ -27,11 +27,11 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>wso2am-gw</artifactId>
+    <artifactId>wso2am-universal-gw</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Gateway - Distribution </name>
+    <name>WSO2 Universal Gateway - Distribution </name>
     <url>http://www.wso2.org/projects/am/java</url>
-    <description>WSO2 API Gateway Distribution</description>
+    <description>WSO2 Universal Gateway Distribution</description>
 
     <dependencies>
         <dependency>
@@ -191,16 +191,16 @@
                                 <mkdir dir="${tempdir}" />
                                 <unzip dest="${tempdir}">
                                     <fileset dir="target">
-                                        <include name="wso2am-gw-${project.version}.zip" />
+                                        <include name="wso2am-universal-gw-${project.version}.zip" />
                                     </fileset>
                                 </unzip>
                                 <replace file="target/wso2carbon-core-${carbon.kernel.version}/repository/conf/carbon.xml" token="&lt;/Security&gt;" value="${hideMenu}" />
                                 <replace file="target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/carbon.xml.j2" token="&lt;/Security&gt;" value="${hideMenuTemplate}" />
                                 <copy todir="target/wso2carbon-core-${carbon.kernel.version}/repository/components/" overwrite="false">
-                                    <fileset dir="${tempdir}/wso2am-gw-${project.version}/repository/components/">
+                                    <fileset dir="${tempdir}/wso2am-universal-gw-${project.version}/repository/components/">
                                     </fileset>
                                 </copy>
-                                <delete file="target/wso2am-gw-${project.version}.zip" />
+                                <delete file="target/wso2am-universal-gw-${project.version}.zip" />
                                 <delete dir="${tempdir}" />
                                 <mkdir dir="${tempdir}" />
                                 <unzip dest="${tempdir}">
