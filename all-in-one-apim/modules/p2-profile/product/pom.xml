@@ -690,7 +690,7 @@
 
                                 <!-- AWS Gateway Agent Feature -->
                                 <featureArtifactDef>
-                                    org.wso2.gw.ext.aws:aws.gw.manager.feature:${aws.gwmanager.feature.version}
+                                    org.wso2.gw.ext:aws.gw.manager.feature:${aws.gwmanager.feature.version}
                                 </featureArtifactDef>
 
                             </featureArtifacts>
