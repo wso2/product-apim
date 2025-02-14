@@ -986,14 +986,14 @@
         </file>
 
         <file>
-            <source>src/main/startup-scripts/api-gateway.sh</source>
+            <source>src/main/startup-scripts/gateway.sh</source>
             <outputDirectory>wso2am-universal-gw-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
 
         <file>
-            <source>src/main/startup-scripts/api-gateway.bat</source>
+            <source>src/main/startup-scripts/gateway.bat</source>
             <outputDirectory>wso2am-universal-gw-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>

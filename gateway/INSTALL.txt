@@ -9,14 +9,14 @@ Running WSO2 Universal Gateway
 
 2. All the shell scripts and .bat files are available in <API_GW_HOME>/bin folder.
 
-3. To start WSO2 API-GW one can use either api-gateway.sh in all Unix
-   systems & api-gateway.bat file on Windows operating systems.
+3. To start WSO2 API-GW one can use either gateway.sh in all Unix
+   systems & gateway.bat file on Windows operating systems.
 
 4. Either of the following commands can be used to start API-GW
-      i)  ./api-gateway.sh {console|start|stop|restart|version}
-     ii)  api-gateway.bat {start|stop|version}
+      i)  ./gateway.sh {console|start|stop|restart|version}
+     ii)  gateway.bat {start|stop|version}
 
-        Usage: api-gateway.sh [command] [options] [system-properties]
+        Usage: gateway.sh [command] [options] [system-properties]
 
             command:               
                 --start		    Start APIM as a Unix daemon in the background

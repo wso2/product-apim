@@ -57,7 +57,7 @@ Installation & Running
 ==================================
 
 1. Extract the wso2am-universal-gw-4.5.0.zip and go to the 'bin' directory
-2. Run the api-gateway.sh or api-gateway.bat script based on you operating system.
+2. Run the gateway.sh or gateway.bat script based on you operating system.
 3. Access the respective WSO2 API-GW interfaces
     * Management Console running at - https://localhost:9443/carbon \
   You may sign in using the default administrator credentials (username: admin, password: admin).
