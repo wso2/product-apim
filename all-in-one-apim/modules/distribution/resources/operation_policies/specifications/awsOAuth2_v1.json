@@ -1,0 +1,34 @@
+{
+  "category": "Security",
+  "name": "awsOAuth2",
+  "version": "v1",
+  "displayName": "Set AWS OAuth",
+  "description": "This policy allows the user to configure OAuth2 for an AWS API",
+  "policyAttributes": [
+    {
+      "name": "lambdaARN",
+      "displayName": "Lambda ARN",
+      "description": "Lambda ARN for function validating OAuth2 tokens",
+      "validationRegex": "(.*?)",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "invokeRoleArn",
+      "displayName": "AWS Lambda Invoke Role ARN",
+      "description": "Role to execute Authorizer Lambda",
+      "validationRegex": "(.*?)",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "AWS"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

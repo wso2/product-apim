@@ -1497,6 +1497,9 @@
 
         <!-- Identity Branding Preference Management Versions -->
         <identity.branding.preference.management.version>1.0.17</identity.branding.preference.management.version>
+
+        <!-- External Gateway Agent Versions -->
+        <aws.gwmanager.feature.version>0.9.0</aws.gwmanager.feature.version>
     </properties>
 
 </project>

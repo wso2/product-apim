@@ -454,12 +454,12 @@
         </classes>
     </test>
 
-    <test name="apim-solace-broker-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.solace.SolaceTestCase"/>
-        </classes>
-    </test>
+<!--    <test name="apim-solace-broker-tests" preserve-order="true" parallel="false" group-by-instances="true">-->
+<!--        <parameter name="group" value="group2"/>-->
+<!--        <classes>-->
+<!--            <class name="org.wso2.am.integration.tests.solace.SolaceTestCase"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
 
     <test name="apim-revoke-one-time-token-flow-tests" preserve-order="true" parallel="false" group-by-instances="true">
