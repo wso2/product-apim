@@ -700,6 +700,25 @@ public class RestAPIStoreImpl {
     }
 
     /**
+     * Get APIs for the given limit, offset values and query
+     *
+     * @param offset starting position
+     * @param limit  maximum number of APIs to return
+     * @param tenantDomain tenant domain
+     * @param query search query
+     * @return APIs for the given limit and offset values
+     * @throws ApiException
+     */
+    public APIListDTO getAPIs(int offset, int limit, String tenantDomain, String query) throws ApiException {
+
+        setActivityID();
+        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(limit, offset,
+                tenantDomain, query, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
+    }
+
+    /**
      * Get application by ID
      *
      * @return - http response of get of application
