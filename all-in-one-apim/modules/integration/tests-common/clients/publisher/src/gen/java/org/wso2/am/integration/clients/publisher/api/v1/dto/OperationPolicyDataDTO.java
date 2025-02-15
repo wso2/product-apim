@@ -66,7 +66,7 @@ public class OperationPolicyDataDTO {
 
         public static final String SERIALIZED_NAME_SUPPORTED_API_TYPES = "supportedApiTypes";
         @SerializedName(SERIALIZED_NAME_SUPPORTED_API_TYPES)
-            private List<String> supportedApiTypes = null;
+            private List<Object> supportedApiTypes = null;
 
         public static final String SERIALIZED_NAME_IS_A_P_I_SPECIFIC = "isAPISpecific";
         @SerializedName(SERIALIZED_NAME_IS_A_P_I_SPECIFIC)
@@ -265,25 +265,25 @@ public class OperationPolicyDataDTO {
     }
 
 
-        public OperationPolicyDataDTO supportedApiTypes(List<String> supportedApiTypes) {
+        public OperationPolicyDataDTO supportedApiTypes(List<Object> supportedApiTypes) {
         
         this.supportedApiTypes = supportedApiTypes;
         return this;
         }
 
     /**
-        * Get supportedApiTypes
+        * Supported API types as an array of strings, or an array of maps [HTTP, SOAP]  [{apiType: HTTP, subType: AI}, {apiType: SOAP}]
     * @return supportedApiTypes
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+      @ApiModelProperty(example = "[\"HTTP\",\"SOAP\"]", value = "Supported API types as an array of strings, or an array of maps [HTTP, SOAP]  [{apiType: HTTP, subType: AI}, {apiType: SOAP}] ")
     
-    public List<String> getSupportedApiTypes() {
+    public List<Object> getSupportedApiTypes() {
         return supportedApiTypes;
     }
 
 
-    public void setSupportedApiTypes(List<String> supportedApiTypes) {
+    public void setSupportedApiTypes(List<Object> supportedApiTypes) {
         this.supportedApiTypes = supportedApiTypes;
     }
 
