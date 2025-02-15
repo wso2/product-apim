@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -115,6 +116,20 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 "Create API Response Code is invalid." + apiRevisionResponse.getData());
         JSONObject revisionResponseData = new JSONObject(apiRevisionResponse.getData());
         revisionUUID = revisionResponseData.getString("id");
+
+        // Add a new revision with additional details
+        APIDTO apiToUpdate = restAPIPublisher.getAPIByID(apiId);
+        List<String> securitySchemes = apiToUpdate.getSecurityScheme();
+        securitySchemes.add("basic_auth");
+        apiToUpdate.setSecurityScheme(securitySchemes);
+        restAPIPublisher.updateAPI(apiToUpdate);
+
+        APIRevisionRequest apiRevisionRequest2 = new APIRevisionRequest();
+        apiRevisionRequest2.setApiUUID(apiId);
+        apiRevisionRequest2.setDescription("Test Revision 2");
+        HttpResponse apiRevisionResponse2 = restAPIPublisher.addAPIRevision(apiRevisionRequest2);
+        assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Create API Response Code is invalid." + apiRevisionResponse2.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "API Revision create with invalid API UUID",
@@ -326,9 +341,20 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test restoring API using created API Revision",
             dependsOnMethods = "testUnDeployAPIRevisionWithInvalidDeploymentInfo")
     public void testRestoreAPIRevision() throws Exception {
+        APIDTO api = restAPIPublisher.getAPIByID(apiId);
+        List<String> securitySchemes = api.getSecurityScheme();
+        // Validate the security schemes in the Current API
+        Assert.assertNotNull(securitySchemes);
+        Assert.assertTrue(securitySchemes.contains("basic_auth"), "Basic auth security scheme not found in the API");
         HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to restore API Revisions:" + apiRevisionsRestoreResponse.getData());
+        api = restAPIPublisher.getAPIByID(apiId);
+        securitySchemes = api.getSecurityScheme();
+        // Validate the security schemes in the Restored API
+        Assert.assertNotNull(securitySchemes);
+        Assert.assertFalse(securitySchemes.contains("basic_auth"),
+                "Basic auth security scheme found in the API after restoring to the original revision");
     }
 
     @Test(groups = {"wso2.am"}, description = "Test restoring API Revision with invalid API UUID",
