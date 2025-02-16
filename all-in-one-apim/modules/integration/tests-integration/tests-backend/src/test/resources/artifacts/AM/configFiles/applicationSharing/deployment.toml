@@ -35,11 +35,11 @@ password =  "wso2carbon"
 alias =  "wso2carbon"
 key_password =  "wso2carbon"
 
-[apim.key_manager]
-enable_lightweight_apikey_generation = false
-
 [apim]
 gateway_type = "Regular,APK,AWS"
+
+[apim.key_manager]
+enable_lightweight_apikey_generation = false
 
 [[apim.gateway.environment]]
 name = "Default"
