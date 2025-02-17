@@ -550,5 +550,10 @@
     }
   ],
   "service_provider.use_username_as_sub_claim": false,
-  "apim.ai.llm_provider_events_enabled": true
+  "apim.ai.llm_provider_events_enabled": true,
+  "apim.governance.datasource.name": "jdbc/WSO2AM_DB",
+  "apim.governance.scheduler.thread_pool_size": "20",
+  "apim.governance.scheduler.queue_size": "20",
+  "apim.governance.scheduler.task_check_interval_minutes": "2",
+  "apim.governance.scheduler.task_cleanup_interval_minutes": "30"
 }
