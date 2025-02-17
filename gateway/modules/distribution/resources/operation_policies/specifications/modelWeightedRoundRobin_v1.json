@@ -18,7 +18,8 @@
     "request"
   ],
   "supportedGateways": [
-    "Synapse"
+    "Synapse",
+    "ChoreoConnect"
   ],
   "supportedApiTypes": [
     {
