@@ -1306,7 +1306,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.228</carbon.mediation.version>
+        <carbon.mediation.version>4.7.244</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.25.722</carbon.identity.version>
@@ -1350,7 +1350,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.0.0-wso2v186</synapse.version>
+        <synapse.version>4.0.0-wso2v216</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v102</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v29</axiom.wso2.version>
@@ -1384,7 +1384,7 @@
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
         <opensaml2.wso2.version>3.3.1.wso2v14</opensaml2.wso2.version>
-        <transport.http.netty.version>6.3.52</transport.http.netty.version>
+        <transport.http.netty.version>6.3.53</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
