@@ -1419,7 +1419,7 @@
         <!-- MB Features -->
 
         <carbon.messaging.version>3.3.35</carbon.messaging.version>
-        <carbon.event-processing.version>2.3.12</carbon.event-processing.version>
+        <carbon.event-processing.version>2.3.14</carbon.event-processing.version>
         <andes.version>3.3.33</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
