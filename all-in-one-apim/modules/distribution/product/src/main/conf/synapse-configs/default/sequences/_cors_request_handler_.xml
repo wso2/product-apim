@@ -6,12 +6,12 @@
                <property name="Access-Control-Allow-Origin" expression="$ctx:Access-Control-Allow-Origin"  scope="transport" type="STRING"/>
             </then>
          </filter>
-         <filter source="boolean($trp:Access-Control-Allow-Methods)" regex="false">
+         <filter source="boolean($trp:Access-Control-Allow-Methods) = false and $ctx:api.ut.HTTP_METHOD = 'OPTIONS'" regex="true">
             <then>
                <property name="Access-Control-Allow-Methods" expression="$ctx:Access-Control-Allow-Methods" scope="transport" type="STRING"/>
             </then>
          </filter>
-         <filter source="boolean($trp:Access-Control-Allow-Headers)" regex="false">
+         <filter source="boolean($trp:Access-Control-Allow-Headers) = false and $ctx:api.ut.HTTP_METHOD = 'OPTIONS'" regex="true">
             <then>
                <property name="Access-Control-Allow-Headers" expression="$ctx:Access-Control-Allow-Headers" scope="transport" type="STRING"/>
             </then>
@@ -25,7 +25,7 @@
                </filter>
             </then>
          </filter>
-         <filter source="boolean($trp:Access-Control-Expose-Headers)" regex="false">
+         <filter source="boolean($trp:Access-Control-Expose-Headers) = false and $ctx:api.ut.HTTP_METHOD = 'OPTIONS'" regex="true">
             <then>
                <property name="Access-Control-Expose-Headers" expression="$ctx:Access-Control-Expose-Headers" scope="transport" type="STRING"/>
             </then>

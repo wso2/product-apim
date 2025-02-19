@@ -205,16 +205,6 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
 
-        header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_METHODS_HEADER);
-        assertNotNull(header, ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
-             assertTrue(ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE.contains(header.getValue()),
-                     ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header value mismatch.");
-
-        header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER);
-        assertNotNull(header, ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header is not available in the response.");
-        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE,
-                     ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header value mismatch.");
-
         assertNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
                    "but it should not be.");
