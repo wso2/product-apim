@@ -38,7 +38,6 @@
                                     <target>
                                         <sequence onError="webhooksFaultSequence">
                                             <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscriberInfoLoader"/>
-                                            <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
                                             <property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
                                             <property name="link" expression="$ctx:SUBSCRIBER_LINK_HEADER" scope="transport"/>
                                             <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
