@@ -1281,7 +1281,7 @@
 
         <project.scm.id>scm-server</project.scm.id>
 
-        <carbon.analytics.common.version>5.3.16</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.3.17</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
         <carbon.apimgt.ui.version>9.2.31</carbon.apimgt.ui.version>
