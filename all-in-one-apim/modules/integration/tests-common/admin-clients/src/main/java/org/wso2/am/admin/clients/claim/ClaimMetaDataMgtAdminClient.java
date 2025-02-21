@@ -21,10 +21,15 @@ import org.apache.axis2.AxisFault;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
 import org.wso2.carbon.identity.claim.metadata.mgt.stub.ClaimMetadataManagementServiceClaimMetadataException;
 import org.wso2.carbon.identity.claim.metadata.mgt.stub.ClaimMetadataManagementServiceStub;
+import org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.AttributeMappingDTO;
 import org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.ClaimDialectDTO;
+import org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.ClaimPropertyDTO;
 import org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.ExternalClaimDTO;
+import org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.LocalClaimDTO;
 
 import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClaimMetaDataMgtAdminClient {
 
@@ -88,4 +93,32 @@ public class ClaimMetaDataMgtAdminClient {
         claimMetadataManagementServiceStub.removeExternalClaim(externalClaimDialectUri, externalClaim);
     }
 
+    public void addOrganizationLocalClaim() throws RemoteException, ClaimMetadataManagementServiceClaimMetadataException {
+        LocalClaimDTO localClaim = new LocalClaimDTO();
+        
+        AttributeMappingDTO attributeMapping = new AttributeMappingDTO();
+        attributeMapping.setAttributeName("organizationId");
+        attributeMapping.setUserStoreDomain("PRIMARY");
+        localClaim.addAttributeMappings(attributeMapping);
+        
+        localClaim.setLocalClaimURI("http://wso2.org/claims/organizationId");
+        
+        Map<String, String> claimProperties = new HashMap<String, String>();
+        
+        claimProperties.put("SupportedByDefault", "true");
+        claimProperties.put("DisplayName", "Organization Id");
+        claimProperties.put("Description", "Organization Id");
+
+        ClaimPropertyDTO[] claimPropertiesDto =  new ClaimPropertyDTO[claimProperties.size()];
+        int i = 0;
+        for (Map.Entry<String, String> entry : claimProperties.entrySet()) {
+            ClaimPropertyDTO claimPropertyDto = new ClaimPropertyDTO();
+            claimPropertyDto.setPropertyName(entry.getKey());
+            claimPropertyDto.setPropertyValue(entry.getValue());
+            claimPropertiesDto[i++] = claimPropertyDto;
+        }
+        localClaim.setClaimProperties(claimPropertiesDto);
+
+        claimMetadataManagementServiceStub.addLocalClaim(localClaim);
+    }
 }
