@@ -1301,7 +1301,7 @@
         <carbon.governance.version>4.8.34</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.9.28-alpha</carbon.kernel.version>
+        <carbon.kernel.version>4.9.28-beta</carbon.kernel.version>
         <apimserver.version>4.5.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.26</cipher.tool.version>
@@ -1340,7 +1340,7 @@
         <carbon.deployment.version>4.11.18</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.9.32</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.9.33</carbon.multitenancy.version>
 
         <siddhi.version>3.2.13</siddhi.version>
 
