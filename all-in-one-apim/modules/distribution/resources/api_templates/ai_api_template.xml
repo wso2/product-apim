@@ -26,26 +26,6 @@
         #end
         #end
 
-        #macro ( draw_endpoint $type $endpoint )
-        #if($endpoint.endpointSecurityEnabled)
-<class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
-    <property name="apiKeyIdentifier" value="${endpoint.apiKeyIdentifier}" type="STRING"/>
-    <property name="apiKeyIdentifierType" value="${endpoint.apiKeyIdentifierType}" type="STRING"/>
-    <property name="apiKeyValue" value="${endpoint.apiKeyValue}" type="STRING"/>
-</class>
-        #end
-
-        #if( $endpoint && $endpoint.endpointUuid )
-            #set( $ep_key = "${endpointKey}_API_LLMEndpoint_${endpoint.endpointUuid}" )
-        #else
-            #set( $ep_key = "${endpointKey}_API${type}Endpoint")
-        #end
-<call>
-    <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
-</call>
-<loopback/>
-        #end
-
         ######################## End of Macros ######################################
 
 
@@ -102,8 +82,13 @@
 
         faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
+<header name="Accept-Encoding" scope="transport" action="remove"/>
 <property name="llmProviderId" value="$util.escapeXml($!llmProviderId)" scope="default" type="STRING"/>
-<sequence key="_ai_api_request_seq_"/>
+<class name="org.wso2.carbon.apimgt.gateway.mediators.AIAPIMediator">
+    <property name="llmProviderId" expression="get-property('default','llmProviderId')" type="STRING"/>
+    <property name="direction" value="IN" type="STRING"/>
+</class>
+<property name="retryCount" value="0" scope="default"/>
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
 
@@ -139,41 +124,11 @@
     <then>
         #if( ($environmentType == 'sandbox') || ($environmentType == 'hybrid' && !$defaultProductionEndpoint)) )
         #if( $defaultSandboxEndpoint )
-        <switch source="get-property('targetEndpoint')">
-            #foreach( $endpoint in $!sandboxEndpoints )
-            <case regex="$endpoint.endpointUuid">
-                #draw_endpoint("sandbox", $endpoint)
-            </case>
-            #end
-            <case regex="DEFAULT">
-                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
-            </case>
-            <case regex="REJECT">
-                <property name="ERROR_CODE" value="900808"/>
-                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
-                <property name="CUSTOM_HTTP_SC" value="503"/>
-                <sequence key="fault"/>
-            </case>
-        </switch>
+        <sequence key="${endpointKey}_EndpointsSeqSANDBOX" />
         #end
         #else
         #if( $defaultProductionEndpoint )
-        <switch source="get-property('targetEndpoint')">
-            #foreach( $endpoint in $!productionEndpoints )
-            <case regex="$endpoint.endpointUuid">
-                #draw_endpoint("production", $endpoint)
-            </case>
-            #end
-            <case regex="DEFAULT">
-                #draw_endpoint("production", $defaultProductionEndpoint)
-            </case>
-            <case regex="REJECT">
-                <property name="ERROR_CODE" value="900808"/>
-                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
-                <property name="CUSTOM_HTTP_SC" value="503"/>
-                <sequence key="fault"/>
-            </case>
-        </switch>
+        <sequence key="${endpointKey}_EndpointsSeqPRODUCTION" />
         #end
         #end
     </then>
@@ -181,22 +136,7 @@
         #if( $environmentType !='hybrid' )
         #if( $resource.getAuthType() == 'None' && $environmentType == 'sandbox' && $defaultSandboxEndpoint)) )
         #if( $defaultSandboxEndpoint )
-        <switch source="get-property('targetEndpoint')">
-            #foreach( $endpoint in $!sandboxEndpoints )
-            <case regex="$endpoint.endpointUuid">
-                #draw_endpoint("sandbox", $endpoint)
-            </case>
-            #end
-            <case regex="DEFAULT">
-                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
-            </case>
-            <case regex="REJECT">
-                <property name="ERROR_CODE" value="900808"/>
-                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
-                <property name="CUSTOM_HTTP_SC" value="503"/>
-                <sequence key="fault"/>
-            </case>
-        </switch>
+        <sequence key="${endpointKey}_EndpointsSeqSANDBOX" />
         #end
         #else
         <payloadFactory>
@@ -219,42 +159,12 @@
         #end
         #else
         #if( $defaultSandboxEndpoint && $defaultProductionEndpoint )
-        <switch source="get-property('targetEndpoint')">
-            #foreach( $endpoint in $!sandboxEndpoints )
-            <case regex="$endpoint.endpointUuid">
-                #draw_endpoint("sandbox", $endpoint)
-            </case>
-            #end
-            <case regex="DEFAULT">
-                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
-            </case>
-            <case regex="REJECT">
-                <property name="ERROR_CODE" value="900808"/>
-                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
-                <property name="CUSTOM_HTTP_SC" value="503"/>
-                <sequence key="fault"/>
-            </case>
-        </switch>
+        <sequence key="${endpointKey}_EndpointsSeqSANDBOX" />
         #elseif( $defaultProductionEndpoint )
         <sequence key="_sandbox_key_error_"/>
         #elseif( $defaultSandboxEndpoint )
         #if( $resource.getAuthType() == 'None' )
-        <switch source="get-property('targetEndpoint')">
-            #foreach( $endpoint in $!sandboxEndpoints )
-            <case regex="$endpoint.endpointUuid">
-                #draw_endpoint("sandbox", $endpoint)
-            </case>
-            #end
-            <case regex="DEFAULT">
-                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
-            </case>>
-            <case regex="REJECT">
-                <property name="ERROR_CODE" value="900808"/>
-                <property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
-                <property name="CUSTOM_HTTP_SC" value="503"/>
-                <sequence key="fault"/>
-            </case>
-        </switch>
+        <sequence key="${endpointKey}_EndpointsSeqSANDBOX" />
         #else
         <sequence key="_production_key_error_"/>
         #end
@@ -265,7 +175,6 @@
 #end
 </inSequence>
 <outSequence>
-<sequence key="_ai_api_response_seq_"/>
 <send/>
 </outSequence>
         </resource>
