@@ -1277,19 +1277,19 @@
 
         <project.scm.id>scm-server</project.scm.id>
 
-        <carbon.analytics.common.version>5.3.15</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.3.17</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.2.31</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.2.39</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
 
-        <carbon.apimgt.version>9.31.35</carbon.apimgt.version>
+        <carbon.apimgt.version>9.31.44</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.8.41</carbon.registry.version>
+        <carbon.registry.version>4.8.43</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
@@ -1297,7 +1297,7 @@
         <carbon.governance.version>4.8.34</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.9.28-alpha</carbon.kernel.version>
+        <carbon.kernel.version>4.9.28-beta</carbon.kernel.version>
         <apimserver.version>4.5.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.26</cipher.tool.version>
@@ -1309,7 +1309,7 @@
         <carbon.mediation.version>4.7.228</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.721</carbon.identity.version>
+        <carbon.identity.version>5.25.722</carbon.identity.version>
         <carbon.identity.governance.version>1.8.108</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
@@ -1336,7 +1336,7 @@
         <carbon.deployment.version>4.11.18</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.9.32</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.9.33</carbon.multitenancy.version>
 
         <siddhi.version>3.2.13</siddhi.version>
 
@@ -1478,7 +1478,7 @@
         <auth0.keymanager.feature.version>1.0.7</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.1.5</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.2.21</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.2.22</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
         <charon3.version>4.0.23</charon3.version>
