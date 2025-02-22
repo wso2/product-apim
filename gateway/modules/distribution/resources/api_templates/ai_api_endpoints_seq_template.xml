@@ -1,0 +1,87 @@
+<!--
+ ~ Copyright (c) 2025, WSO2 LLC (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 LLC licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+        #####################  Define the macros ######################
+
+        #macro ( print_string_if_exist $field $default)
+        #if($field && "$field" !="")
+        "$field"
+        #else
+        "$default"
+        #end
+        #end
+
+        #macro ( draw_endpoint $type $endpoint )
+        #if($endpoint.endpointSecurityEnabled)
+<class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
+    <property name="apiKeyIdentifier" value="${endpoint.apiKeyIdentifier}" type="STRING"/>
+    <property name="apiKeyIdentifierType" value="${endpoint.apiKeyIdentifierType}" type="STRING"/>
+    <property name="apiKeyValue" value="${endpoint.apiKeyValue}" type="STRING"/>
+</class>
+        #end
+
+        #if( $endpoint && $endpoint.endpointUuid )
+        #set( $ep_key = "${endpointKey}_API_LLMEndpoint_${endpoint.endpointUuid}" )
+        #else
+        #set( $ep_key = "${endpointKey}_API${deploymentStage}Endpoint")
+        #end
+<call>
+<endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
+</call>
+        #end
+
+        #macro ( fail_scenario )
+<property name="ERROR_CODE" value="900808"/>
+<property name="ERROR_MESSAGE" value="No active endpoints available. Please try again later."/>
+<property name="CUSTOM_HTTP_SC" value="503"/>
+<sequence key="fault"/>
+        #end
+
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="${endpointKey}_EndpointsSeq${deploymentStage}">
+#if( $defaultEndpoint )
+<filter xpath="$ctx:retryCount > 10">
+    <then>
+        #fail_scenario
+    </then>
+    <else>
+        <property name="retryCount" expression="get-property('default','retryCount') + 1" scope="default"/>
+        <switch source="get-property('TARGET_ENDPOINT')">
+            #foreach( $endpoint in $!endpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint($type, $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint($type, $defaultEndpoint)
+            </case>
+            <case regex="REJECT">
+                #fail_scenario
+            </case>
+            <case regex="EXIT">
+                <loopback/>
+            </case>
+        </switch>
+        <property name="retryCount" expression="get-property('default','retryCount') + 1" scope="default" action="set"/>
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.AIAPIMediator">
+            <property name="llmProviderId" expression="get-property('default','llmProviderId')" type="STRING"/>
+            <property name="direction" value="OUT" type="STRING"/>
+        </class>
+        <sequence key="${endpointKey}_EndpointsSeq${deploymentStage}" />
+    </else>
+</filter>
+#end
+</sequence>

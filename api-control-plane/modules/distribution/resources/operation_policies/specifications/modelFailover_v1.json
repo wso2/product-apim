@@ -3,7 +3,7 @@
   "name": "modelFailover",
   "version": "v1",
   "displayName": "Model Failover",
-  "description": "This policy allows you to route traffic to a different model(s) when the primary model fails",
+  "description": "This policy enables traffic rerouting to one or more fallback models if the target model fails, ensuring continued availability",
   "policyAttributes": [
     {
       "name": "failoverConfigs",

@@ -272,11 +272,11 @@ public class OperationPolicyDataDTO {
         }
 
     /**
-        * Supported API types as an array of strings, or an array of maps [HTTP, SOAP]  [{apiType: HTTP, subType: AI}, {apiType: SOAP}]
+        * Supported API types as an array of strings, or an array of maps [HTTP, SOAP] [{apiType: HTTP, subType: AI}, {apiType: SOAP}] 
     * @return supportedApiTypes
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "[\"HTTP\",\"SOAP\"]", value = "Supported API types as an array of strings, or an array of maps [HTTP, SOAP]  [{apiType: HTTP, subType: AI}, {apiType: SOAP}] ")
+      @ApiModelProperty(example = "[\"HTTP\",\"SOAP\"]", value = "Supported API types as an array of strings, or an array of maps [HTTP, SOAP] [{apiType: HTTP, subType: AI}, {apiType: SOAP}] ")
     
     public List<Object> getSupportedApiTypes() {
         return supportedApiTypes;
