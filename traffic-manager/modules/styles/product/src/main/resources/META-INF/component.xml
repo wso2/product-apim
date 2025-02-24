@@ -18,17 +18,5 @@
 <component xmlns="http://products.wso2.org/carbon">
 
     <contexts>
-<!--        <context>-->
-<!--            <context-id>default-context</context-id>-->
-<!--            <context-name>publisher</context-name>-->
-<!--            <protocol>https</protocol>-->
-<!--            <description>API Publisher Default Context</description>-->
-<!--        </context>-->
-<!--        <context>-->
-<!--            <context-id>default-additional-context</context-id>-->
-<!--            <context-name>devportal</context-name>-->
-<!--            <protocol>https</protocol>-->
-<!--            <description>API Developer Portal Default Context</description>-->
-<!--        </context>-->
     </contexts>
 </component>
