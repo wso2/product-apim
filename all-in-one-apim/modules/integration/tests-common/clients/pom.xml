@@ -32,5 +32,6 @@
         <module>gateway</module>
         <module>internal-api</module>
         <module>service-catalog</module>
+        <module>apim-governance</module>
     </modules>
 </project>

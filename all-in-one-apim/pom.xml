@@ -984,6 +984,11 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.integration.clients.governance.api</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.samples.utils</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
