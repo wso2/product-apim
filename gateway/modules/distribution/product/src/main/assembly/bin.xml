@@ -862,7 +862,12 @@
             <destName>pax-logging.properties</destName>
             <filtered>true</filtered>
         </file>
-
+        <file>
+            <source>src/main/conf/sequence-observers.xml</source>
+            <outputDirectory>wso2am-universal-gw-${pom.version}/repository/conf</outputDirectory>
+            <destName>sequence-observers.xml</destName>
+            <filtered>true</filtered>
+        </file>
         <file>
             <source>src/main/conf/synapse.properties</source>
             <outputDirectory>wso2am-universal-gw-${pom.version}/repository/conf</outputDirectory>
