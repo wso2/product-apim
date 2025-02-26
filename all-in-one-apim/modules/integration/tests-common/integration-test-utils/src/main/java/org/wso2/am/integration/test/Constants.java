@@ -63,4 +63,25 @@ public class Constants {
     public static final String BANDWIDTH_TYPE = "bandwidthVolume";
     public static final String REQUEST_COUNT_TYPE = "requestCount";
     public static final String EVENT_COUNT_TYPE = "eventCount";
+
+    public static class APIMGovernanceTestConstants {
+        public static final String DEFAULT_RULESET_WSO2_API = "WSO2 API Management Guidelines";
+        public static final String DEFAULT_RULESET_WSO2_REST = "WSO2 REST API Design Guidelines";
+        public static final String DEFAULT_RULESET_OWASP = "OWASP Top 10";
+        public static final String DEFAULT_POLICY_NAME = "WSO2 API Management Best Practices";
+
+        public static final String REST_API_ARTIFACT_TYPE = "REST_API";
+        public static final String API_DEFINITION_RULE_TYPE = "API_DEFINITION";
+        public static final String SPECTRAL_RULE_CATEGORY  = "SPECTRAL";
+        public static final String ADMIN_PROVIDER = "admin";
+
+        public static final String SIMPLE_SPECTRAL_RULESET_FILE_NAME = "simple-spectral-ruleset.yaml";
+        public static final String SIMPLE_SPECTRAL_RULESET_NAME = "Simple Spectral Ruleset";
+        public static final String SIMPLE_SPECTRAL_RULESET_DESCRIPTION = "This is a sample ruleset description";
+        public static final String RULESET_DOCUMENTATION_LINK = "https://wso2.com";
+        public static final String TEST_RESOURCE_DIRECTORY = "apim-governance";
+
+        public static final String TEST_POLICY_NAME = "TestPolicy";
+        public static final String TEST_POLICY_DESCRIPTION = "Test Policy Description";
+    }
 }

@@ -63,6 +63,7 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.apimGovernance.RulesetMgtTestCase"/>
+            <class name="org.wso2.am.integration.tests.apimGovernance.PolicyMgtTestCase"/>
         </classes>
     </test>
 

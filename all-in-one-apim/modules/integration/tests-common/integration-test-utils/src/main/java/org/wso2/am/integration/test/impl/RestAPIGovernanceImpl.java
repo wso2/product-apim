@@ -27,6 +27,7 @@ import org.wso2.am.integration.clients.governance.api.GovernancePoliciesApi;
 import org.wso2.am.integration.clients.governance.api.PolicyAdherenceApi;
 import org.wso2.am.integration.clients.governance.api.RulesetsApi;
 import org.wso2.am.integration.clients.governance.api.dto.APIMGovernancePolicyDTO;
+import org.wso2.am.integration.clients.governance.api.dto.APIMGovernancePolicyListDTO;
 import org.wso2.am.integration.clients.governance.api.dto.ArtifactComplianceDetailsDTO;
 import org.wso2.am.integration.clients.governance.api.dto.PolicyAdherenceDetailsDTO;
 import org.wso2.am.integration.clients.governance.api.dto.RulesetInfoDTO;
@@ -213,6 +214,19 @@ public class RestAPIGovernanceImpl {
      */
     public ApiResponse<APIMGovernancePolicyDTO> getPolicy(String policyId) throws ApiException {
         return policiesApi.getGovernancePolicyByIdWithHttpInfo(policyId);
+    }
+
+    /**
+     * Get all governance policies
+     *
+     * @param limit Limit of the policies
+     * @param offset Offset of the policies
+     * @param query Query to search for policies
+     * @return APIMGovernancePolicyListDTO
+     * @throws ApiException If there is an issue with the API request
+     */
+    public ApiResponse<APIMGovernancePolicyListDTO> getPolicies(Integer limit, Integer offset, String query) throws ApiException {
+        return policiesApi.getGovernancePoliciesWithHttpInfo(limit, offset, query);
     }
 
     /**
