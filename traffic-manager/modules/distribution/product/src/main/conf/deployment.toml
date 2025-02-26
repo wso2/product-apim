@@ -1,5 +1,5 @@
 [server]
-#hostname = "tm.wso2.com"
+hostname = "localhost"
 server_role = "default"
 
 [user_store]
@@ -10,21 +10,17 @@ username = "admin"
 password = "admin"
 create_admin_account = true
 
-[database.shared_db]
-type = "mysql"
-hostname = "shared_db.mysql"
-name = "shared_db"
-port = "3306"
-username = "shareduser"
-password = "shareduser"
-
 [database.apim_db]
-type = "mysql"
-hostname = "apim.mysql"
-name = "apimgt_db"
-port = "3306"
-username = "apimuser"
-password = "apimuser"
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
+username = "wso2carbon"
+password = "wso2carbon"
+
+[database.shared_db]
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE"
+username = "wso2carbon"
+password = "wso2carbon"
 
 [keystore.tls]
 file_name =  "wso2carbon.jks"
@@ -38,11 +34,10 @@ file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
 
-# key manager implementation
-[apim.key_manager]
-service_url = "https://km.wso2.com:443/services/"
-
-[apim.oauth_config]
-revoke_endpoint = "https://km.wso2.com:9443/oauth2/revoke"
-enable_token_encryption = false
-enable_token_hashing = false
+# Event Hub configurations
+#[apim.event_hub]
+#enable = true
+#username = "$ref{super_admin.username}"
+#password = "$ref{super_admin.password}"
+#service_url = "https://localhost:9443/services/"
+#event_listening_endpoints = ["tcp://localhost:5672"]
