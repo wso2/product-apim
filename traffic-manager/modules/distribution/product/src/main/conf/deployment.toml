@@ -36,9 +36,9 @@ type = "JKS"
 password = "wso2carbon"
 
 # Event Hub configurations
-[apim.event_hub]
-enable = true
-username = "$ref{super_admin.username}"
-password = "$ref{super_admin.password}"
-service_url = "https://localhost:9443/services/"
-event_listening_endpoints = ["tcp://localhost:5672"]
+#[apim.event_hub]
+#enable = true
+#username = "$ref{super_admin.username}"
+#password = "$ref{super_admin.password}"
+#service_url = "https://localhost:9443/services/"
+#event_listening_endpoints = ["tcp://localhost:5672"]

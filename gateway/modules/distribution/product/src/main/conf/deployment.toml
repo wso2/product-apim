@@ -30,39 +30,39 @@ type = "JKS"
 password = "wso2carbon"
 
 # key manager implementation
-[apim.key_manager]
-service_url = "https://localhost:9443/services/"
-username= "$ref{super_admin.username}"
-password= "$ref{super_admin.password}"
+#[apim.key_manager]
+#service_url = "https://localhost:9443/services/"
+#username= "$ref{super_admin.username}"
+#password= "$ref{super_admin.password}"
 
 # Event Hub configurations
-[apim.event_hub]
-enable = true
-username = "$ref{super_admin.username}"
-password = "$ref{super_admin.password}"
-service_url = "https://localhost:9443/services/"
-event_listening_endpoints = ["tcp://localhost:5672"]
+#[apim.event_hub]
+#enable = true
+#username = "$ref{super_admin.username}"
+#password = "$ref{super_admin.password}"
+#service_url = "https://localhost:9443/services/"
+#event_listening_endpoints = ["tcp://localhost:5672"]
 
 # JWT Generation
-[apim.jwt]
-enable = true
-encoding = "base64" # base64,base64url
+#[apim.jwt]
+#enable = true
+#encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
-claim_dialect = "http://wso2.org/claims"
-header = "X-JWT-Assertion"
-signing_algorithm = "SHA256withRSA"
+#claim_dialect = "http://wso2.org/claims"
+#header = "X-JWT-Assertion"
+#signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
 [apim.sync_runtime_artifacts.gateway]
 gateway_labels =["Default"]
 
-[apim.throttling]
-throttle_decision_endpoints = ["tcp://localhost:5674"]
+#[apim.throttling]
+#throttle_decision_endpoints = ["tcp://localhost:5674"]
 
-[[apim.throttling.url_group]]
-traffic_manager_urls = ["tcp://localhost:9613"]
-traffic_manager_auth_urls = ["ssl://localhost:9713"]
+#[[apim.throttling.url_group]]
+#traffic_manager_urls = ["tcp://localhost:9613"]
+#traffic_manager_auth_urls = ["ssl://localhost:9713"]
 
 [apim.analytics]
 enable = false
