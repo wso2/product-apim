@@ -1,7 +1,6 @@
 [server]
 hostname = "localhost"
 server_role = "default"
-offset = 2
 
 [user_store]
 type = "database_unique_id"

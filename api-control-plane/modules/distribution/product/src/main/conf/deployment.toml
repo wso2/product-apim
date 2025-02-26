@@ -57,13 +57,13 @@ gateway_type = "Regular,APK,AWS"
 #display_in_api_console = true
 #description = "This is a hybrid gateway that handles both production and sandbox token traffic."
 #show_as_token_endpoint_url = true
-#service_url = "https://localhost:9444/services/"
+#service_url = "https://localhost:${mgt.transport.https.port}/services/"
 #username= "${admin.username}"
 #password= "${admin.password}"
-#ws_endpoint = "ws://localhost:9100"
-#wss_endpoint = "wss://localhost:8100"
-#http_endpoint = "http://localhost:8281"
-#https_endpoint = "https://localhost:8244"
+#ws_endpoint = "ws://localhost:9099"
+#wss_endpoint = "wss://localhost:8099"
+#http_endpoint = "http://localhost:${http.nio.port}"
+#https_endpoint = "https://localhost:${https.nio.port}"
 
 #[apim.cache.gateway_token]
 #enable = true

@@ -1,7 +1,6 @@
 [server]
 hostname = "localhost"
 server_role = "default"
-offset = 1
 
 [user_store]
 type = "database_unique_id"
@@ -58,11 +57,11 @@ password = "wso2carbon"
 gateway_labels =["Default"]
 
 #[apim.throttling]
-#throttle_decision_endpoints = ["tcp://localhost:5674"]
+#throttle_decision_endpoints = ["tcp://localhost:5672"]
 
 #[[apim.throttling.url_group]]
-#traffic_manager_urls = ["tcp://localhost:9613"]
-#traffic_manager_auth_urls = ["ssl://localhost:9713"]
+#traffic_manager_urls = ["tcp://localhost:9611"]
+#traffic_manager_auth_urls = ["ssl://localhost:9711"]
 
 [apim.analytics]
 enable = false
