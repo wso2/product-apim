@@ -18,7 +18,7 @@
 
 package org.wso2.am.integration.tests.apimGovernance;
 
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -99,10 +99,11 @@ public class PolicyMgtTestCase extends APIMIntegrationBaseTest {
         policyDTO.setDescription(APIMGovernanceTestConstants.TEST_POLICY_DESCRIPTION);
         policyDTO.setRulesets(rulesetIds);
         policyDTO.setGovernableStates(Collections.singletonList(APIMGovernancePolicyDTO.GovernableStatesEnum.API_UPDATE));
+        policyDTO.setLabels(Collections.singletonList(APIMGovernanceTestConstants.GLOBAL_LABEL));
 
         ApiResponse<APIMGovernancePolicyDTO> createdPolicyResp = restAPIGovernance.createPolicy(policyDTO);
 
-        assertEquals(Response.Status.CREATED.getStatusCode(), createdPolicyResp.getStatusCode(),
+        assertEquals(createdPolicyResp.getStatusCode(), Response.Status.CREATED.getStatusCode(),
                 "Error in creating global governance policy");
 
         createdPolicyId = createdPolicyResp.getData().getId();
@@ -128,10 +129,11 @@ public class PolicyMgtTestCase extends APIMIntegrationBaseTest {
         policyDTO.setDescription(APIMGovernanceTestConstants.TEST_POLICY_DESCRIPTION);
         policyDTO.setRulesets(rulesetIds);
         policyDTO.setGovernableStates(Collections.singletonList(APIMGovernancePolicyDTO.GovernableStatesEnum.API_UPDATE));
+        policyDTO.setLabels(Collections.singletonList(APIMGovernanceTestConstants.GLOBAL_LABEL));
 
         ApiResponse<APIMGovernancePolicyDTO> updatedPolicyResp = restAPIGovernance.updatePolicy(createdPolicyId, policyDTO);
 
-        assertEquals(Response.Status.OK.getStatusCode(), updatedPolicyResp.getStatusCode(),
+        assertEquals(updatedPolicyResp.getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Error in updating global governance policy");
     }
 
@@ -144,11 +146,11 @@ public class PolicyMgtTestCase extends APIMIntegrationBaseTest {
     public void testValidGlobalPolicyDeletion() throws Exception {
         ApiResponse<Void> deletedPolicyResp = restAPIGovernance.deletePolicy(createdPolicyId);
 
-        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), deletedPolicyResp.getStatusCode(),
+        assertEquals(deletedPolicyResp.getStatusCode(), Response.Status.NO_CONTENT.getStatusCode(),
                 "Error in deleting global governance policy");
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
     }

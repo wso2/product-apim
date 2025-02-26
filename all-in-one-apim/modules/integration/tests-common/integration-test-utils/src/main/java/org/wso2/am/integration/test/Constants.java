@@ -83,5 +83,6 @@ public class Constants {
 
         public static final String TEST_POLICY_NAME = "TestPolicy";
         public static final String TEST_POLICY_DESCRIPTION = "Test Policy Description";
+        public static final String GLOBAL_LABEL = "global";
     }
 }

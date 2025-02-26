@@ -18,7 +18,7 @@
 
 package org.wso2.am.integration.tests.apimGovernance;
 
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -92,7 +92,7 @@ public class RulesetMgtTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test retrieval of default rulesets")
     public void testDefaultRulesetRetrieval() throws Exception {
         ApiResponse<RulesetListDTO> rulesets = restAPIGovernance.getRulesets(10,0,"");
-        assertEquals(Response.Status.OK.getStatusCode(), rulesets.getStatusCode(),
+        assertEquals(rulesets.getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Error in retrieving default APIM governance rulesets");
         List<RulesetInfoDTO> obtainedRulesets = rulesets.getData().getList();
         assertNotNull(obtainedRulesets, "No default APIM governance rulesets found");
@@ -122,7 +122,7 @@ public class RulesetMgtTestCase extends APIMIntegrationBaseTest {
                         APIMGovernanceTestConstants.SPECTRAL_RULE_CATEGORY,
                         APIMGovernanceTestConstants.RULESET_DOCUMENTATION_LINK,
                         APIMGovernanceTestConstants.ADMIN_PROVIDER);
-        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatusCode(),
+        assertEquals(response.getStatusCode(), Response.Status.CREATED.getStatusCode(),
                 "Error while creating new APIM governance ruleset");
         createdRulesetId = response.getData().getId();
         assertNotNull(createdRulesetId, "Error while creating new APIM governance ruleset");
@@ -148,7 +148,7 @@ public class RulesetMgtTestCase extends APIMIntegrationBaseTest {
                         APIMGovernanceTestConstants.SPECTRAL_RULE_CATEGORY,
                         APIMGovernanceTestConstants.RULESET_DOCUMENTATION_LINK,
                         APIMGovernanceTestConstants.ADMIN_PROVIDER);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode(),
+        assertEquals(response.getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Error while updating APIM governance ruleset");
     }
 
@@ -164,7 +164,7 @@ public class RulesetMgtTestCase extends APIMIntegrationBaseTest {
                 "Error while deleting APIM governance ruleset");
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
     }
