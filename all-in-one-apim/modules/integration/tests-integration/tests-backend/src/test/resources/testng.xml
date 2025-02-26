@@ -475,6 +475,12 @@
             <class name="org.wso2.am.integration.tests.schemaValidation.SchemaValidationTestCase"/>
         </classes>
     </test>
+    <test name="apim-integration-b2b" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.organization.ConsumerOrganizationVisibilityTestCase"/>
+        </classes>
+    </test>
     <test name="apim-tenant-validation" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.other.TenantDomainValidationTestCase"/>

@@ -3070,7 +3070,192 @@ paths:
         - lang: Shell
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+  ######################################################
+  # The "Organizations" resource API
+  ######################################################
+  /organizations:
+    get:
+      tags:
+        - Organizations
+      summary: Get all registered Organizations
+      description: |
+        Get all Registered Organizations
+      responses:
+        200:
+          description: |
+            OK.
+            Organizations returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationList'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:organization_read
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/organizations"'
 
+    post:
+      tags:
+        - Organizations
+      summary: Add an Organizations
+      description: |
+        Add a new organization
+      requestBody:
+        description: |
+          Organization object that should to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created organization as entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        400:
+          $ref: '#/components/responses/BadRequest'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:organization_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/organizations"'
+
+  ######################################################
+  # The "Individual Environment" resource APIs
+  ######################################################
+  /organizations/{organizationId}:
+    get:
+      tags:
+        - Organizations
+      summary: Get an Organization
+      description: |
+        Get an organization by organization Id
+      parameters:
+        - $ref: '#/components/parameters/organizationId'
+      responses:
+        200:
+          description: |
+            OK.
+            Organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:organization_read
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+    put:
+      tags:
+        - Organizations
+      summary: Update an Organization
+      description: |
+        Update an organization by organization Id
+      parameters:
+        - $ref: '#/components/parameters/organizationId'
+      requestBody:
+        description: |
+          Organization object with updated information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Organization updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:organization_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+
+    delete:
+      tags:
+        - Organizations
+      summary: Delete an Organization
+      description: |
+        Delete an organization by organization Id
+      parameters:
+        - $ref: '#/components/parameters/organizationId'
+      responses:
+        200:
+          description: |
+            OK.
+            Organization successfully deleted.
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:organization_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+ 
+  /me/organization-information:
+    get:
+      tags:
+        - Users
+      summary: Get the Organization information of the user
+      description: |
+        Using this operation, logged-in user can get their organization information.
+      operationId: organizationInformation
+      responses:
+        200:
+          description: |
+            OK.
+            Key Manager list returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationInfo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:admin_settings
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/publisher/v4/me/organization"'
+  
   ######################################################
   # The Bot Detection Data API resources
   ######################################################
@@ -5490,6 +5675,51 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Environment'
+    Organization:
+      title: Organization
+      required:
+        - externalOrganizationId
+      type: object
+      properties:
+        organizationId:
+          type: string
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          description: |
+            UUID of the organization.
+        externalOrganizationId:
+          type: string
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          description: |
+            External id of the organization.
+        parentOrganizationId:
+          type: string
+          readOnly: true
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          description: |
+            UUID of the parent organization if there is any.
+        displayName:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: My Organization
+        description:
+          maxLength: 1023
+          type: string
+          example: My Organization Description
+    OrganizationList:
+      title: Organization List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Organizationa returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
     LLMProviderRequest:
       title: LLMProvider
       type: object
@@ -6034,6 +6264,10 @@ components:
             - EXCHANGED
             - DIRECT
             - BOTH
+        allowedOrganizations:
+          type: array
+          items:
+            type: string
     KeyManagerInfo:
       title: Key Manager Info
       required:
@@ -6354,6 +6588,16 @@ components:
           type: string
           description: The IP of the client
           example: 127.0.0.1
+    OrganizationInfo:
+      title: Organization Info
+      type: object
+      properties:
+        organizationId:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          type: string
+          example: My Organization  
     RoleAliasList:
       title: Role alias list
       type: object
@@ -6594,6 +6838,14 @@ components:
       required: true
       schema:
         type: string
+    organizationId:
+      name: organizationId
+      in: path
+      description: |
+        Organization UUID
+      required: true
+      schema:
+        type: string
     llmProviderId:
       name: llmProviderId
       in: path
@@ -6782,3 +7034,5 @@ components:
             apim:api_workflow_view: Retrive workflow requests
             apim:scope_manage: Manage system scopes
             apim:llm_provider_manage: Manage LLM Providers
+            apim:organization_manage: Manage Organizations
+            apim:organization_read: Read Organizations

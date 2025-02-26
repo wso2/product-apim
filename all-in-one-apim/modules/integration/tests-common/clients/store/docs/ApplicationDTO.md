@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **subscriptionScopes** | [**List&lt;ScopeInfoDTO&gt;**](ScopeInfoDTO.md) |  |  [optional]
 **owner** | **String** | Application created user  |  [optional] [readonly]
 **hashEnabled** | **Boolean** |  |  [optional] [readonly]
+**visibility** | [**VisibilityEnum**](#VisibilityEnum) |  |  [optional]
 
 
 
@@ -28,6 +29,15 @@ Name | Value
 ---- | -----
 OAUTH | &quot;OAUTH&quot;
 JWT | &quot;JWT&quot;
+
+
+
+## Enum: VisibilityEnum
+
+Name | Value
+---- | -----
+PRIVATE | &quot;PRIVATE&quot;
+SHARED_WITH_ORG | &quot;SHARED_WITH_ORG&quot;
 
 
 

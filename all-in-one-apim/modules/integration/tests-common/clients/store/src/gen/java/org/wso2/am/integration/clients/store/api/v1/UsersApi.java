@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.OrganizationInfoDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -163,6 +164,111 @@ public class UsersApi {
 
         okhttp3.Call localVarCall = changeUserPasswordValidateBeforeCall(currentAndNewPasswordsDTO, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for organizationInformation
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Key Manager list returned  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call organizationInformationCall(final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/me/organization-information";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call organizationInformationValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = organizationInformationCall(_callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get the Organization information of the user
+     * Using this operation, logged-in user can get their organization information. 
+     * @return OrganizationInfoDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Key Manager list returned  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public OrganizationInfoDTO organizationInformation() throws ApiException {
+        ApiResponse<OrganizationInfoDTO> localVarResp = organizationInformationWithHttpInfo();
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get the Organization information of the user
+     * Using this operation, logged-in user can get their organization information. 
+     * @return ApiResponse&lt;OrganizationInfoDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Key Manager list returned  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<OrganizationInfoDTO> organizationInformationWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = organizationInformationValidateBeforeCall(null);
+        Type localVarReturnType = new TypeToken<OrganizationInfoDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get the Organization information of the user (asynchronously)
+     * Using this operation, logged-in user can get their organization information. 
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Key Manager list returned  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call organizationInformationAsync(final ApiCallback<OrganizationInfoDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = organizationInformationValidateBeforeCall(_callback);
+        Type localVarReturnType = new TypeToken<OrganizationInfoDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
 }

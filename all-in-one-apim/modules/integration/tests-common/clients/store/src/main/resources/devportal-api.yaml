@@ -3459,7 +3459,33 @@ paths:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/me/change-password"'
-
+  /me/organization-information:
+    get:
+      tags:
+        - Users
+      summary: Get the Organization information of the user
+      description: |
+        Using this operation, logged-in user can get their organization information.
+      operationId: organizationInformation
+      responses:
+        200:
+          description: |
+            OK.
+            Key Manager list returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationInfo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+      security:
+        - OAuth2Security:
+            - apim:subscribe
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/me/organization"'
+          
 components:
   schemas:
     APIList:
@@ -3925,6 +3951,11 @@ components:
           type: boolean
           readOnly: true
           example: false
+        visibility:
+          type: string
+          enum:
+            - PRIVATE
+            - SHARED_WITH_ORG
     ApplicationInfo:
       title: Application info object with basic application details
       type: object
@@ -5201,6 +5232,16 @@ components:
           type: string
           description: Average rating of the API
           example: "4.5"
+    OrganizationInfo:
+      title: Organization Info
+      type: object
+      properties:
+        organizationId:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          type: string
+          example: My Organization
     KeyManagerInfo:
       title: Key Manager Info
       required:

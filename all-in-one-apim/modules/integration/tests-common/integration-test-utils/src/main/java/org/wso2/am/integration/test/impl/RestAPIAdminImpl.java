@@ -68,6 +68,7 @@ public class RestAPIAdminImpl {
     private EnvironmentCollectionApi environmentCollectionApi = new EnvironmentCollectionApi();
     private TenantConfigApi tenantConfigApi = new TenantConfigApi();
     private TenantConfigSchemaApi tenantConfigSchemaApi = new TenantConfigSchemaApi();
+    private OrganizationsApi organizationApi = new OrganizationsApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -158,6 +159,7 @@ public class RestAPIAdminImpl {
         tenantConfigApi.setApiClient(apiAdminClient);
         tenantConfigSchemaApi.setApiClient(apiAdminClient);
         apiProviderChangeApi.setApiClient(apiAdminClient);
+        organizationApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -933,5 +935,36 @@ public class RestAPIAdminImpl {
 
     public WorkflowListDTO getWorkflowsByWorkflowType(String workflowType) throws ApiException {
         return workflowCollectionApi.workflowsGet(null, null, null, null, workflowType);
+    }
+    
+    /***
+     * This method is used to add an Organization.
+     *
+     * @param organizationDto organization
+     * @return created organization
+     * @throws ApiException Throws if an error occurred while adding the new organization.
+     */
+    public ApiResponse<OrganizationDTO> addOrganization(OrganizationDTO organizationDto) throws ApiException {
+        return organizationApi.organizationsPostWithHttpInfo(organizationDto);
+    }
+    
+    /***
+     * This method is used to add get Organization.
+     *
+     * @param organizationDto organization
+     * @return created organization
+     * @throws ApiException Throws if an error occurred while adding the new organization.
+     */
+    public OrganizationListDTO getOrganizations() throws ApiException {
+        return organizationApi.organizationsGet();
+    }
+    
+    /**
+     * This method is used to delete organizatoin
+     * @param organizationId id of the organization to delete
+     * @throws ApiException
+     */
+    public void deleteOrganization(String organizationId)throws ApiException {
+        organizationApi.organizationsOrganizationIdDelete(organizationId);
     }
 }

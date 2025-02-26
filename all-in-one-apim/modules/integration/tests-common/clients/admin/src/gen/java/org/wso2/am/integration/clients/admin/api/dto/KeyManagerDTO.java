@@ -216,6 +216,10 @@ public static TokenTypeEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_TOKEN_TYPE)
             private TokenTypeEnum tokenType = TokenTypeEnum.DIRECT;
 
+        public static final String SERIALIZED_NAME_ALLOWED_ORGANIZATIONS = "allowedOrganizations";
+        @SerializedName(SERIALIZED_NAME_ALLOWED_ORGANIZATIONS)
+            private List<String> allowedOrganizations = null;
+
 
         public KeyManagerDTO id(String id) {
         
@@ -974,6 +978,29 @@ public static TokenTypeEnum fromValue(String value) {
     }
 
 
+        public KeyManagerDTO allowedOrganizations(List<String> allowedOrganizations) {
+        
+        this.allowedOrganizations = allowedOrganizations;
+        return this;
+        }
+
+    /**
+        * Get allowedOrganizations
+    * @return allowedOrganizations
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<String> getAllowedOrganizations() {
+        return allowedOrganizations;
+    }
+
+
+    public void setAllowedOrganizations(List<String> allowedOrganizations) {
+        this.allowedOrganizations = allowedOrganizations;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -1015,12 +1042,13 @@ public static TokenTypeEnum fromValue(String value) {
             Objects.equals(this.enabled, keyManager.enabled) &&
             Objects.equals(this.additionalProperties, keyManager.additionalProperties) &&
             Objects.equals(this.permissions, keyManager.permissions) &&
-            Objects.equals(this.tokenType, keyManager.tokenType);
+            Objects.equals(this.tokenType, keyManager.tokenType) &&
+            Objects.equals(this.allowedOrganizations, keyManager.allowedOrganizations);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, displayName, type, description, wellKnownEndpoint, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, displayTokenEndpoint, revokeEndpoint, displayRevokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, alias, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties, permissions, tokenType);
+        return Objects.hash(id, name, displayName, type, description, wellKnownEndpoint, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, displayTokenEndpoint, revokeEndpoint, displayRevokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, alias, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties, permissions, tokenType, allowedOrganizations);
     }
 
 
@@ -1061,6 +1089,7 @@ sb.append("class KeyManagerDTO {\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("    permissions: ").append(toIndentedString(permissions)).append("\n");
     sb.append("    tokenType: ").append(toIndentedString(tokenType)).append("\n");
+    sb.append("    allowedOrganizations: ").append(toIndentedString(allowedOrganizations)).append("\n");
 sb.append("}");
 return sb.toString();
 }
