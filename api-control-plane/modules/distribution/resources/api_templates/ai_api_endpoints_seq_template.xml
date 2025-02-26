@@ -53,7 +53,7 @@
 
 <sequence xmlns="http://ws.apache.org/ns/synapse" name="${endpointKey}_EndpointsSeq${deploymentStage}">
 #if( $defaultEndpoint )
-<filter xpath="$ctx:retryCount > 10">
+<filter xpath="$ctx:retryCount > $retryCount">
     <then>
         #fail_scenario
     </then>

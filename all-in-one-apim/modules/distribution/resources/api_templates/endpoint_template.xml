@@ -45,7 +45,7 @@
         #end
 
 
-        #macro ( timeout $config)
+        #macro ( timeout $config $dynamicTimeout)
         #if( $config.get("actionSelect") == "neverTimeout" )
         ## print nothing.
         #elseif($config.get("actionDuration")|| $config.get("actionSelect"))
@@ -56,6 +56,9 @@
 #elseif( $endpointClass != "ws" )
         ##add default timeout config for non WS endpoints
 <timeout>
+    #if( $dynamicTimeout )
+    <duration>{get-property('REQUEST_TIMEOUT')}</duration>
+    #end
      <responseAction>fault</responseAction>
 </timeout>
         #end
@@ -86,10 +89,10 @@
 #end
 
         ##macro for http_endpoints in failover and load balance types
-        #macro ( http_endpoint $name $ep )
+        #macro ( http_endpoint $name $ep $dynamicTimeout)
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
 <http uri-template="$util.escapeXml($ep.get("url"))">
-#timeout( $ep.get('config') )
+#timeout( $ep.get('config') $dynamicTimeout)
 #if($enableRetryCallWithNewOauthToken)
     #set( $endpointSecurity = $endpoint_security.get($type) )
     #if($endpointSecurity.type == "oauth" || $endpointSecurity.type == "OAUTH")
@@ -157,7 +160,7 @@
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="${name}_${websocketResourceKey}">
 <property name="OUT_ONLY" value="true"/>
 <http uri-template="$util.escapeXml($endpointUrl)">
-#timeout( $ep.get('config') )
+#timeout( $ep.get('config') false)
 </http>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpointUrl)"/>
 </endpoint>
@@ -175,7 +178,7 @@ format="$advance_ep.get("format")"
 optimize="$advance_ep.get("optimize")"
 #end
 >
-#timeout( $ep.get('config') )
+#timeout( $ep.get('config') false)
 </address>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
         </endpoint>
@@ -204,10 +207,9 @@ optimize="$advance_ep.get("optimize")"
 
         #if($endpointUuid && "$endpointUuid" != "")
             #set( $ep_key = "${endpointKey}_API_LLMEndpoint_${endpointUuid}" )
-        #end
-
-        #if( $endpointClass == "http" )
-            #http_endpoint( $ep_key $endpoints )
+            #http_endpoint( $ep_key $endpoints true)
+        #elseif( $endpointClass == "http" )
+            #http_endpoint( $ep_key $endpoints false)
         #elseif( $endpointClass == "ws" )
             #websocket_endpoint( $ep_key )
         #elseif( $endpointClass == "address" )
@@ -219,14 +221,14 @@ optimize="$advance_ep.get("optimize")"
     #if($endpoints.get("endpoint_type") == "address")
     #address_endpoint("${ep_key}_0" $endpoints)
     #else
-    #http_endpoint("${ep_key}_0" $endpoints)
+    #http_endpoint("${ep_key}_0" $endpoints false)
     #end
     #set( $i = 1)
     #foreach($endpoint in $failover_endpoints)
     #if($endpoint.get("endpoint_type") == "address")
     #address_endpoint("${ep_key}_$i" $endpoint)
     #else
-    #http_endpoint("${ep_key}_$i" $endpoint)
+    #http_endpoint("${ep_key}_$i" $endpoint false)
     #end
     #set( $i = $i + 1)
     #end
@@ -250,7 +252,7 @@ optimize="$advance_ep.get("optimize")"
         #if($endpoint.get("endpoint_type") == "address")
         #address_endpoint("${ep_key}_$i" $endpoint)
         #else
-        #http_endpoint("${ep_key}_$i" $endpoint)
+        #http_endpoint("${ep_key}_$i" $endpoint false)
         #end
         #set( $i = $i + 1)
         #end
@@ -259,7 +261,7 @@ optimize="$advance_ep.get("optimize")"
         #elseif ($endpointClass == "default")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
 <default>
-    #timeout( $endpoints.get('config') )
+    #timeout( $endpoints.get('config') false)
 </default>
 </endpoint>
         #end
