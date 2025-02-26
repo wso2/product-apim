@@ -1284,7 +1284,7 @@
         <carbon.analytics.common.version>5.3.19</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.2.40</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.2.44</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
 
