@@ -1,0 +1,2264 @@
+openapi: 3.0.1
+info:
+  contact:
+    email: architecture@wso2.com
+    name: WSO2
+    url: http://wso2.com/products/api-manager/
+  description: |
+    This document specifies a **RESTful API** for WSO2 **API Manager** - Governance.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: WSO2 API Manager - Governance
+  version: v1.1
+servers:
+- url: https://apis.wso2.com/api/am/governance/v1
+tags:
+- description: for managing rulesets.
+  name: Rulesets
+- description: for managing governance policies.
+  name: Governance Policies
+- description: for accessing artifact compliance.
+  name: Artifact Compliance
+- description: for accessing policy adherence.
+  name: Policy Adherence
+- description: resources that are deprecated.
+  name: Deprecated
+paths:
+  /rulesets:
+    get:
+      description: Returns a list of all rulesets associated with the requested organization.
+      operationId: getRulesets
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          You can search for rulesets using the following format:
+
+            - "query=name:{NAME}" searches rulesets by name.
+            - "query=artifactType:{ARTIFACT_TYPE}" searches rulesets by artifact type.
+            - "query=ruleType:{RULE_TYPE}" searches rulesets by rule type.
+
+          You can combine multiple attributes to search for rulesets:
+            - "query=name:{NAME} artifactType:{ARTIFACT_TYPE} ruleType:{RULE_TYPE}" searches rulesets by name, artifact type, and rule type.
+
+          Remember to use URL encoding if your client does not support it (e.g., curl).
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          example: name:WSO2 Security Practices artifactType:REST_API ruleType:API_DEFINITION
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesetList'
+          description: OK. Successful response with a list of rulesets.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_rule_read
+      summary: Retrieves a list of rulesets.
+      tags:
+      - Rulesets
+      x-accepts: application/json
+    post:
+      description: Creates a new ruleset in the user's organization.
+      operationId: createRuleset
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RulesetInput'
+        description: JSON object containing the details of the new ruleset.
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesetInfo'
+          description: OK. Ruleset created successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_rule_manage
+      summary: Create a new ruleset.
+      tags:
+      - Rulesets
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /rulesets/{rulesetId}:
+    delete:
+      description: Deletes an existing ruleset identified by the rulesetId.
+      operationId: deleteRuleset
+      parameters:
+      - description: |
+          **UUID** of the Ruleset.
+        explode: false
+        in: path
+        name: rulesetId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK. Ruleset deleted successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_rule_manage
+      summary: Deletes a specific ruleset.
+      tags:
+      - Rulesets
+      x-accepts: application/json
+    get:
+      description: Retrieves details of the ruleset identified by the rulesetId.
+      operationId: getRulesetById
+      parameters:
+      - description: |
+          **UUID** of the Ruleset.
+        explode: false
+        in: path
+        name: rulesetId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesetInfo'
+          description: OK. Ruleset details retrieved successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_rule_read
+      summary: Retrieves details of a specific ruleset.
+      tags:
+      - Rulesets
+      x-accepts: application/json
+    put:
+      description: Updates the details of the ruleset identified by the `rulesetId`.
+      operationId: updateRulesetById
+      parameters:
+      - description: |
+          **UUID** of the Ruleset.
+        explode: false
+        in: path
+        name: rulesetId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RulesetInput'
+        description: JSON object containing the updated ruleset details.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesetInfo'
+          description: OK. Ruleset updated successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_rule_manage
+      summary: Updates a specific ruleset.
+      tags:
+      - Rulesets
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /rulesets/{rulesetId}/content:
+    get:
+      description: Retrieves the content of the ruleset identified by the rulesetId.
+      operationId: getRulesetContent
+      parameters:
+      - description: |
+          **UUID** of the Ruleset.
+        explode: false
+        in: path
+        name: rulesetId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+          description: OK. Ruleset content retrieved successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_rule_read
+      summary: Retrieves the content of a specific ruleset.
+      tags:
+      - Rulesets
+      x-accepts: application/json
+  /rulesets/{rulesetId}/usage:
+    get:
+      description: Retrieves the list of policies using the ruleset identified by
+        the rulesetId.
+      operationId: getRulesetUsage
+      parameters:
+      - description: |
+          **UUID** of the Ruleset.
+        explode: false
+        in: path
+        name: rulesetId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                description: List of artifacts using the ruleset.
+                items:
+                  example: 123e4567-e89b-12d3-a456-426614174000
+                  type: string
+                type: array
+          description: OK. Ruleset usage retrieved successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_rule_read
+      summary: Retrieves the policy usage of a specific ruleset.
+      tags:
+      - Rulesets
+      x-accepts: application/json
+  /policies:
+    get:
+      description: Retrieves a list of governance policies for the user's organization.
+      operationId: getGovernancePolicies
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          You can search for governance policies using following format.
+
+            - "query=name:{NAME}" searches policies by name.
+            - "query=state:{STATE} " searches policies by state.
+
+          You can also use multiple attributes to search for policies.
+            - "query=name:{NAME} state:{STATE}" searches policies by name, state, and label.
+
+          Remember to use URL encoding if your client doesn't support it (e.g., curl).
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          example: name:WSO2 Best Practices state:API_CREATE label:GLOBAL
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIMGovernancePolicyList'
+          description: OK. Successful response with a list of governance policies.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_policy_read
+      summary: Retrieves a list of all governance policies.
+      tags:
+      - Governance Policies
+      x-accepts: application/json
+    post:
+      description: Creates a new governance policy for the user's organization.
+      operationId: createGovernancePolicy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIMGovernancePolicy'
+        description: JSON object containing the details of the new governance policy.
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIMGovernancePolicy'
+          description: OK. Governance policy created successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_policy_manage
+      summary: Creates a new governance policy.
+      tags:
+      - Governance Policies
+      x-contentType: application/json
+      x-accepts: application/json
+  /policies/{policyId}:
+    delete:
+      description: Deletes an existing governance policy identified by the policyId.
+      operationId: deleteGovernancePolicy
+      parameters:
+      - description: |
+          **UUID** of the Policy.
+        explode: false
+        in: path
+        name: policyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK. Governance policy deleted successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_policy_manage
+      summary: Delete a specific governance policy
+      tags:
+      - Governance Policies
+      x-accepts: application/json
+    get:
+      description: Retrieves details of a specific governance policy identified by
+        the policyId.
+      operationId: getGovernancePolicyById
+      parameters:
+      - description: |
+          **UUID** of the Policy.
+        explode: false
+        in: path
+        name: policyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIMGovernancePolicy'
+          description: OK. Governance policy details retrieved successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_policy_read
+      summary: Get a specific governance policy
+      tags:
+      - Governance Policies
+      x-accepts: application/json
+    put:
+      description: Updates the details of an existing governance policy identified
+        by the policyId.
+      operationId: updateGovernancePolicyById
+      parameters:
+      - description: |
+          **UUID** of the Policy.
+        explode: false
+        in: path
+        name: policyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIMGovernancePolicy'
+        description: JSON object containing the updated governance policy details.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIMGovernancePolicy'
+          description: OK. Governance policy updated successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_policy_manage
+      summary: Update a specific governance policy
+      tags:
+      - Governance Policies
+      x-contentType: application/json
+      x-accepts: application/json
+  /artifact-compliance/api:
+    get:
+      description: Retrieves compliance of all API artifacts within the organization
+        visible to logged-in user.
+      operationId: getComplianceStatusListOfAPIs
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactComplianceList'
+          description: OK. Successful response with API compliance results.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_result_read
+      summary: Retrieves compliance of all API artifacts
+      tags:
+      - Artifact Compliance
+      x-accepts: application/json
+  /artifact-compliance/api/summary:
+    get:
+      description: Retrieves the summary of compliance of all API artifacts within
+        the organization visible to logged-in user.
+      operationId: getComplianceSummaryForAPIs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactComplianceSummary'
+          description: OK. Successful response with compliance summary.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_result_read
+      summary: Retrieves the summary of compliance of all API artifacts
+      tags:
+      - Artifact Compliance
+      x-accepts: application/json
+  /artifact-compliance/api/{apiId}:
+    get:
+      description: Retrieve compliance details associated with a specific API using
+        its unique UUID.
+      operationId: getComplianceByAPIId
+      parameters:
+      - description: |
+          **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactComplianceDetails'
+          description: Successful response with compliance details for the specified
+            artifact.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_result_read
+      summary: Retrieve compliance details for a specific API
+      tags:
+      - Artifact Compliance
+      x-accepts: application/json
+  /artifact-compliance/api/{apiId}/ruleset-validation-results/{rulesetId}:
+    get:
+      description: Retrieve ruleset validation results associated with a specific
+        API using its unique UUID.
+      operationId: getRulesetValidationResultsByAPIId
+      parameters:
+      - description: |
+          **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **UUID** of the Ruleset.
+        explode: false
+        in: path
+        name: rulesetId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesetValidationResult'
+          description: Successful response with ruleset validation results for the
+            specified API.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_result_read
+      summary: Retrieve ruleset validation results for a specific API
+      tags:
+      - Artifact Compliance
+      x-accepts: application/json
+  /policy-adherence:
+    get:
+      description: Retrieve adherence status of all governance policies within the
+        organization.
+      operationId: getPolicyAdherenceForAllPolicies
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAdherenceList'
+          description: Ok. Successful response with adherence details for all policies.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_result_read
+      summary: Retrieve adherence status for all policies
+      tags:
+      - Policy Adherence
+      x-accepts: application/json
+  /policy-adherence/summary:
+    get:
+      description: Retrieves the summary of adherence for all governance policies
+        within the organization.
+      operationId: getPolicyAdherenceSummary
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAdherenceSummary'
+          description: OK. Successful response with adherence summary.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_result_read
+      summary: Retrieves the summary of adherence for all policies
+      tags:
+      - Policy Adherence
+      x-accepts: application/json
+  /policy-adherence/{policyId}:
+    get:
+      description: Retrieve adherence details associated with a specific governance
+        policy within the organization using its unique ID. The list of artifacts
+        under the policy will only contain the artifacts visible to user
+      operationId: getPolicyAdherenceByPolicyId
+      parameters:
+      - description: |
+          **UUID** of the Policy.
+        explode: false
+        in: path
+        name: policyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAdherenceDetails'
+          description: Ok. Successful response with adherence details for the specified
+            policy.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - OAuth2Security:
+        - apim:gov_result_read
+      summary: Retrieve adherence details for a specific policy
+      tags:
+      - Policy Adherence
+      x-accepts: application/json
+components:
+  parameters:
+    artifactId:
+      description: |
+        **UUID** of the Artifact.
+      explode: false
+      in: path
+      name: artifactId
+      required: true
+      schema:
+        type: string
+      style: simple
+    apiId:
+      description: |
+        **UUID** of the API.
+      explode: false
+      in: path
+      name: apiId
+      required: true
+      schema:
+        type: string
+      style: simple
+    artifactType:
+      description: |
+        Type of the artifact.
+      explode: true
+      in: query
+      name: artifactType
+      required: false
+      schema:
+        default: API
+        enum:
+        - API
+        example: API
+        type: string
+      style: form
+    rulesetId:
+      description: |
+        **UUID** of the Ruleset.
+      explode: false
+      in: path
+      name: rulesetId
+      required: true
+      schema:
+        type: string
+      style: simple
+    policyId:
+      description: |
+        **UUID** of the Policy.
+      explode: false
+      in: path
+      name: policyId
+      required: true
+      schema:
+        type: string
+      style: simple
+    limit:
+      description: |
+        Maximum size of resource array to return.
+      explode: true
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 25
+        type: integer
+      style: form
+    offset:
+      description: |
+        Starting point within the complete list of items qualified.
+      explode: true
+      in: query
+      name: offset
+      required: false
+      schema:
+        default: 0
+        type: integer
+      style: form
+  schemas:
+    Pagination:
+      example:
+        next: next
+        total: 10
+        offset: 0
+        previous: previous
+        limit: 1
+      properties:
+        offset:
+          example: 0
+          type: integer
+        limit:
+          example: 1
+          type: integer
+        total:
+          example: 10
+          type: integer
+        next:
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+          type: string
+        previous:
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
+          type: string
+      title: Pagination
+      type: object
+    Error:
+      properties:
+        code:
+          format: int64
+          type: integer
+        message:
+          description: Error message.
+          type: string
+        description:
+          description: |
+            A detail description about the error message.
+          type: string
+      required:
+      - code
+      - message
+      title: Error object returned with 4XX HTTP Status
+    RulesetList:
+      description: A list of rulesets.
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 2
+        list:
+        - updatedTime: 2024-08-02T12:00:00Z
+          artifactType: REST_API
+          ruleCategory: SPECTRAL
+          updatedBy: admin@gmail.com
+          provider: TechWave
+          createdBy: admin@gmail.com
+          ruleType: API_DEFINITION
+          name: API Security Ruleset
+          description: A ruleset designed to enforce security standards for APIs.
+          createdTime: 2024-08-01T12:00:00Z
+          documentationLink: https://example.com/docs/api-security-ruleset
+          id: 123e4567-e89b-12d3-a456-426614174000
+        - updatedTime: 2024-08-02T12:00:00Z
+          artifactType: REST_API
+          ruleCategory: SPECTRAL
+          updatedBy: admin@gmail.com
+          provider: TechWave
+          createdBy: admin@gmail.com
+          ruleType: API_DEFINITION
+          name: API Security Ruleset
+          description: A ruleset designed to enforce security standards for APIs.
+          createdTime: 2024-08-01T12:00:00Z
+          documentationLink: https://example.com/docs/api-security-ruleset
+          id: 123e4567-e89b-12d3-a456-426614174000
+      properties:
+        count:
+          description: Number of rulesets returned.
+          example: 2
+          type: integer
+        list:
+          description: List of rulesets.
+          items:
+            $ref: '#/components/schemas/RulesetInfo'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    RulesetInput:
+      description: Detailed information about a ruleset.
+      properties:
+        name:
+          description: Name of the ruleset.
+          example: API Security Ruleset
+          maxLength: 256
+          type: string
+        description:
+          description: A brief description of the ruleset.
+          example: A ruleset designed to enforce security standards for APIs.
+          maxLength: 1024
+          type: string
+        rulesetContent:
+          description: The content of the ruleset file (YAML or JSON).
+          format: binary
+          type: string
+        ruleCategory:
+          default: SPECTRAL
+          description: Category the rules included in ruleset.
+          enum:
+          - SPECTRAL
+          example: SPECTRAL
+          type: string
+        ruleType:
+          description: Context or area to which the ruleset applies.
+          enum:
+          - API_METADATA
+          - API_DEFINITION
+          - API_DOCUMENTATION
+          example: API_DEFINITION
+          type: string
+          x-enum-varnames:
+          - API_METADATA
+          - API_DEFINITION
+          - API_DOCUMENTATION
+        artifactType:
+          description: The type of artifact that the ruleset validates.
+          enum:
+          - REST_API
+          - ASYNC_API
+          example: REST_API
+          type: string
+        documentationLink:
+          description: URL to the documentation related to the ruleset.
+          example: https://example.com/docs/api-security-ruleset
+          type: string
+        provider:
+          description: Entity or individual providing the ruleset.
+          example: TechWave
+          type: string
+      required:
+      - artifactType
+      - name
+      - ruleType
+      - rulesetContent
+      type: object
+    RulesetInfo:
+      description: Detailed information about a ruleset.
+      example:
+        updatedTime: 2024-08-02T12:00:00Z
+        artifactType: REST_API
+        ruleCategory: SPECTRAL
+        updatedBy: admin@gmail.com
+        provider: TechWave
+        createdBy: admin@gmail.com
+        ruleType: API_DEFINITION
+        name: API Security Ruleset
+        description: A ruleset designed to enforce security standards for APIs.
+        createdTime: 2024-08-01T12:00:00Z
+        documentationLink: https://example.com/docs/api-security-ruleset
+        id: 123e4567-e89b-12d3-a456-426614174000
+      properties:
+        id:
+          description: UUID of the ruleset.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          readOnly: true
+          type: string
+        name:
+          description: Name of the ruleset.
+          example: API Security Ruleset
+          type: string
+        description:
+          description: A brief description of the ruleset.
+          example: A ruleset designed to enforce security standards for APIs.
+          type: string
+        ruleCategory:
+          description: Category the rules included in ruleset.
+          enum:
+          - SPECTRAL
+          example: SPECTRAL
+          type: string
+        ruleType:
+          description: Context or area to which the ruleset applies.
+          enum:
+          - API_METADATA
+          - API_DEFINITION
+          - API_DOCUMENTATION
+          example: API_DEFINITION
+          type: string
+          x-enum-varnames:
+          - API_METADATA
+          - API_DEFINITION
+          - API_DOCUMENTATION
+        artifactType:
+          description: The type of artifact that the ruleset validates.
+          enum:
+          - REST_API
+          - ASYNC_API
+          example: REST_API
+          type: string
+        documentationLink:
+          description: URL to the documentation related to the ruleset.
+          example: https://example.com/docs/api-security-ruleset
+          type: string
+        provider:
+          description: Entity or individual providing the ruleset.
+          example: TechWave
+          type: string
+        createdBy:
+          description: Identifier of the user who created the ruleset.
+          example: admin@gmail.com
+          readOnly: true
+          type: string
+        createdTime:
+          description: Timestamp when the ruleset was created.
+          example: 2024-08-01T12:00:00Z
+          readOnly: true
+          type: string
+        updatedBy:
+          description: Identifier of the user who last updated the ruleset.
+          example: admin@gmail.com
+          readOnly: true
+          type: string
+        updatedTime:
+          description: Timestamp when the ruleset was last updated.
+          example: 2024-08-02T12:00:00Z
+          readOnly: true
+          type: string
+      required:
+      - artifactType
+      - name
+      - provider
+      - ruleType
+      type: object
+    APIMGovernancePolicy:
+      description: Detailed information about a governance policy.
+      example:
+        updatedTime: 2024-08-02T12:00:00Z
+        governableStates:
+        - API_DEPLOY
+        - API_DEPLOY
+        rulesets:
+        - 94566543-d21b-34d5-b678-912345678900
+        - 94566543-d21b-34d5-b678-912345678900
+        updatedBy: admin@wso2.com
+        createdBy: admin@wso2.com
+        name: API Security Policy
+        description: Policy for enforcing security standards across all APIs.
+        createdTime: 2024-08-01T12:00:00Z
+        id: 987e6543-d21b-34d5-b678-912345678900
+        actions:
+        - state: API_DEPLOY
+          type: BLOCK
+          ruleSeverity: ERROR
+        - state: API_DEPLOY
+          type: BLOCK
+          ruleSeverity: ERROR
+        labels:
+        - 54d5833a-ca86-44bb-bcda-5b9fcdacd79d
+      properties:
+        id:
+          description: UUID of the governance policy.
+          example: 987e6543-d21b-34d5-b678-912345678900
+          readOnly: true
+          type: string
+        name:
+          description: Name of the governance policy.
+          example: API Security Policy
+          maxLength: 256
+          type: string
+        description:
+          description: A brief description of the governance policy.
+          example: Policy for enforcing security standards across all APIs.
+          maxLength: 1024
+          type: string
+        governableStates:
+          description: List of states at which the governance policy should be enforced.
+          items:
+            description: The state at which an governance policy should be enforced.
+            enum:
+            - API_CREATE
+            - API_UPDATE
+            - API_DEPLOY
+            - API_PUBLISH
+            example: API_DEPLOY
+            type: string
+            x-enum-varnames:
+            - API_CREATE
+            - API_UPDATE
+            - API_DEPLOY
+            - API_PUBLISH
+          type: array
+        actions:
+          description: List of actions taken when the governance policy is violated.
+            An action is defined by the state and rule severity. If an action is not
+            specified to each state and rule severity, the default action is `NOTIFY`.
+          items:
+            $ref: '#/components/schemas/Action'
+          type: array
+        rulesets:
+          description: List of rulesets associated with the governance policy.
+          items:
+            example: 94566543-d21b-34d5-b678-912345678900
+            type: string
+          type: array
+        labels:
+          description: List of labels IDs associated with the governance policy.
+          example:
+          - 54d5833a-ca86-44bb-bcda-5b9fcdacd79d
+          items:
+            type: string
+          type: array
+        createdBy:
+          description: Identifier of the user who created the governance policy.
+          example: admin@wso2.com
+          readOnly: true
+          type: string
+        createdTime:
+          description: Timestamp when the governance policy was created.
+          example: 2024-08-01T12:00:00Z
+          readOnly: true
+          type: string
+        updatedBy:
+          description: Identifier of the user who last updated the governance policy.
+          example: admin@wso2.com
+          readOnly: true
+          type: string
+        updatedTime:
+          description: Timestamp when the governance policy was last updated.
+          example: 2024-08-02T12:00:00Z
+          readOnly: true
+          type: string
+      required:
+      - actions
+      - governableStates
+      - labels
+      - name
+      - rulesets
+      type: object
+    Action:
+      description: Action to be taken when a governance policy is violated.
+      example:
+        state: API_DEPLOY
+        type: BLOCK
+        ruleSeverity: ERROR
+      properties:
+        state:
+          description: The state of the artifact to which the action is linked to.
+          enum:
+          - API_CREATE
+          - API_UPDATE
+          - API_DEPLOY
+          - API_PUBLISH
+          example: API_DEPLOY
+          type: string
+          x-enum-varnames:
+          - API_CREATE
+          - API_UPDATE
+          - API_DEPLOY
+          - API_PUBLISH
+        ruleSeverity:
+          description: The severity of the rule to which the action is linked to.
+          enum:
+          - ERROR
+          - WARN
+          - INFO
+          example: ERROR
+          type: string
+        type:
+          description: The type of action to be taken when a governance policy is
+            violated in the given state withe given rule severity.
+          enum:
+          - BLOCK
+          - NOTIFY
+          example: BLOCK
+          type: string
+      type: object
+    APIMGovernancePolicyList:
+      description: A list of governance policies.
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 10
+        list:
+        - updatedTime: 2024-08-02T12:00:00Z
+          governableStates:
+          - API_DEPLOY
+          - API_DEPLOY
+          rulesets:
+          - 94566543-d21b-34d5-b678-912345678900
+          - 94566543-d21b-34d5-b678-912345678900
+          updatedBy: admin@wso2.com
+          createdBy: admin@wso2.com
+          name: API Security Policy
+          description: Policy for enforcing security standards across all APIs.
+          createdTime: 2024-08-01T12:00:00Z
+          id: 987e6543-d21b-34d5-b678-912345678900
+          actions:
+          - state: API_DEPLOY
+            type: BLOCK
+            ruleSeverity: ERROR
+          - state: API_DEPLOY
+            type: BLOCK
+            ruleSeverity: ERROR
+          labels:
+          - 54d5833a-ca86-44bb-bcda-5b9fcdacd79d
+        - updatedTime: 2024-08-02T12:00:00Z
+          governableStates:
+          - API_DEPLOY
+          - API_DEPLOY
+          rulesets:
+          - 94566543-d21b-34d5-b678-912345678900
+          - 94566543-d21b-34d5-b678-912345678900
+          updatedBy: admin@wso2.com
+          createdBy: admin@wso2.com
+          name: API Security Policy
+          description: Policy for enforcing security standards across all APIs.
+          createdTime: 2024-08-01T12:00:00Z
+          id: 987e6543-d21b-34d5-b678-912345678900
+          actions:
+          - state: API_DEPLOY
+            type: BLOCK
+            ruleSeverity: ERROR
+          - state: API_DEPLOY
+            type: BLOCK
+            ruleSeverity: ERROR
+          labels:
+          - 54d5833a-ca86-44bb-bcda-5b9fcdacd79d
+      properties:
+        count:
+          description: Number of governance policies returned.
+          example: 10
+          type: integer
+        list:
+          description: List of governance policies.
+          items:
+            $ref: '#/components/schemas/APIMGovernancePolicy'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    ArtifactComplianceSummary:
+      description: Summary of compliance of certain artifact in the organization.
+      example:
+        total: 10
+        pending: 0
+        compliant: 6
+        notApplicable: 0
+        nonCompliant: 4
+      properties:
+        total:
+          description: Total number of artifacts.
+          example: 10
+          type: integer
+        compliant:
+          description: Number of compliant artifacts.
+          example: 6
+          type: integer
+        nonCompliant:
+          description: Number of non-compliant artifacts.
+          example: 4
+          type: integer
+        pending:
+          description: Number of artifacts pending for compliance.
+          example: 0
+          type: integer
+        notApplicable:
+          description: Number of artifacts not applicable for compliance yet.
+          example: 0
+          type: integer
+      type: object
+    PolicyAdherenceSummary:
+      description: Summary of governance policy adherence in the organization.
+      example:
+        violated: 4
+        total: 10
+        unApplied: 0
+        followed: 6
+      properties:
+        total:
+          description: Total number of policies.
+          example: 10
+          type: integer
+        followed:
+          description: Number of policies followed to.
+          example: 6
+          type: integer
+        violated:
+          description: Number of policies violated.
+          example: 4
+          type: integer
+        unApplied:
+          description: Number of policies unApplied.
+          example: 0
+          type: integer
+      type: object
+    ArtifactComplianceList:
+      description: Compliance status of a list of artifacts.
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 10
+        list:
+        - policyAdherenceSummary:
+            violated: 4
+            total: 10
+            unApplied: 0
+            followed: 6
+          severityBasedRuleViolationSummary:
+          - severity: WARN
+            violatedRulesCount: 1
+          - severity: WARN
+            violatedRulesCount: 1
+          id: 123e4567-e89b-12d3-a456-426614174000
+          status: COMPLIANT
+          info:
+            owner: admin
+            name: Test API
+            type: API
+            version: 1.0.0
+        - policyAdherenceSummary:
+            violated: 4
+            total: 10
+            unApplied: 0
+            followed: 6
+          severityBasedRuleViolationSummary:
+          - severity: WARN
+            violatedRulesCount: 1
+          - severity: WARN
+            violatedRulesCount: 1
+          id: 123e4567-e89b-12d3-a456-426614174000
+          status: COMPLIANT
+          info:
+            owner: admin
+            name: Test API
+            type: API
+            version: 1.0.0
+      properties:
+        count:
+          description: Number of artifact returned.
+          example: 10
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/ArtifactComplianceStatus'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    PolicyAdherenceList:
+      description: Policy adherence status of a list of policies.
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 10
+        list:
+        - name: Policy1
+          artifactComplianceSummary:
+            compliant: 6
+            nonCompliant: 4
+          id: 123e4567-e89b-12d3-a456-426614174000
+          status: FOLLOWED
+        - name: Policy1
+          artifactComplianceSummary:
+            compliant: 6
+            nonCompliant: 4
+          id: 123e4567-e89b-12d3-a456-426614174000
+          status: FOLLOWED
+      properties:
+        count:
+          description: Number of policies returned.
+          example: 10
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/PolicyAdherenceStatus'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    ArtifactComplianceStatus:
+      description: Provides compliance status of an artifact.
+      example:
+        policyAdherenceSummary:
+          violated: 4
+          total: 10
+          unApplied: 0
+          followed: 6
+        severityBasedRuleViolationSummary:
+        - severity: WARN
+          violatedRulesCount: 1
+        - severity: WARN
+          violatedRulesCount: 1
+        id: 123e4567-e89b-12d3-a456-426614174000
+        status: COMPLIANT
+        info:
+          owner: admin
+          name: Test API
+          type: API
+          version: 1.0.0
+      properties:
+        id:
+          description: UUID of the API.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        status:
+          description: Status of the API's governance compliance.
+          enum:
+          - COMPLIANT
+          - NON-COMPLIANT
+          - NOT-APPLICABLE
+          - PENDING
+          example: COMPLIANT
+          type: string
+        info:
+          $ref: '#/components/schemas/ArtifactInfo'
+        policyAdherenceSummary:
+          $ref: '#/components/schemas/PolicyAdherenceSummary'
+        severityBasedRuleViolationSummary:
+          description: Summary of severity based rule violations.
+          items:
+            $ref: '#/components/schemas/SeverityBasedRuleViolationCount'
+          type: array
+      type: object
+    PolicyAdherenceStatus:
+      description: Provides adherence status of a policy.
+      example:
+        name: Policy1
+        artifactComplianceSummary:
+          compliant: 6
+          nonCompliant: 4
+        id: 123e4567-e89b-12d3-a456-426614174000
+        status: FOLLOWED
+      properties:
+        id:
+          description: UUID of the policy.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        name:
+          description: Name of the policy.
+          example: Policy1
+          type: string
+        status:
+          description: Status of the policy's governance compliance.
+          enum:
+          - FOLLOWED
+          - VIOLATED
+          - UNAPPLIED
+          example: FOLLOWED
+          type: string
+        artifactComplianceSummary:
+          $ref: '#/components/schemas/ArtifactComplianceSummaryForPolicy'
+      type: object
+    ArtifactComplianceSummaryForPolicy:
+      description: Summary of compliance of artifacts evaluated against a specific
+        policy.
+      example:
+        compliant: 6
+        nonCompliant: 4
+      properties:
+        compliant:
+          description: Number of compliant artifacts.
+          example: 6
+          type: integer
+        nonCompliant:
+          description: Number of non-compliant artifacts.
+          example: 4
+          type: integer
+      type: object
+    ArtifactComplianceDetails:
+      description: Provides compliance details of an artifact.
+      example:
+        governedPolicies:
+        - rulesetValidationResults:
+          - ruleType: API_DEFINITION
+            name: API Security Ruleset
+            id: 123e4567-e89b-12d3-a456-426614174000
+            status: PASSED
+          - ruleType: API_DEFINITION
+            name: API Security Ruleset
+            id: 123e4567-e89b-12d3-a456-426614174000
+            status: PASSED
+          name: Policy1
+          id: 123e4567-e89b-12d3-a456-426614174000
+          status: FOLLOWED
+        - rulesetValidationResults:
+          - ruleType: API_DEFINITION
+            name: API Security Ruleset
+            id: 123e4567-e89b-12d3-a456-426614174000
+            status: PASSED
+          - ruleType: API_DEFINITION
+            name: API Security Ruleset
+            id: 123e4567-e89b-12d3-a456-426614174000
+            status: PASSED
+          name: Policy1
+          id: 123e4567-e89b-12d3-a456-426614174000
+          status: FOLLOWED
+        id: 123e4567-e89b-12d3-a456-426614174000
+        status: COMPLIANT
+        info:
+          owner: admin
+          name: Test API
+          type: API
+          version: 1.0.0
+      properties:
+        id:
+          description: UUID of the artifact.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        status:
+          description: Status of the artifact's governance compliance.
+          enum:
+          - COMPLIANT
+          - NON-COMPLIANT
+          - NOT-APPLICABLE
+          - PENDING
+          example: COMPLIANT
+          type: string
+        info:
+          $ref: '#/components/schemas/ArtifactInfo'
+        governedPolicies:
+          description: List of policies under which the artifact was governed.
+          items:
+            $ref: '#/components/schemas/PolicyAdherenceWithRulesets'
+          type: array
+      type: object
+    PolicyAdherenceDetails:
+      description: Provides adherence details of a policy.
+      example:
+        name: Policy1
+        id: 123e4567-e89b-12d3-a456-426614174000
+        evaluatedArtifacts:
+        - id: 123e4567-e89b-12d3-a456-426614174000
+          status: COMPLIANT
+          info:
+            owner: admin
+            name: Test API
+            type: API
+            version: 1.0.0
+        - id: 123e4567-e89b-12d3-a456-426614174000
+          status: COMPLIANT
+          info:
+            owner: admin
+            name: Test API
+            type: API
+            version: 1.0.0
+        status: FOLLOWED
+      properties:
+        id:
+          description: UUID of the policy.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        name:
+          description: Name of the policy.
+          example: Policy1
+          type: string
+        status:
+          description: Status of the policy's governance compliance.
+          enum:
+          - FOLLOWED
+          - VIOLATED
+          - UNAPPLIED
+          example: FOLLOWED
+          type: string
+        evaluatedArtifacts:
+          description: Compliance status of the artifacts evaluated against the policy.
+          items:
+            $ref: '#/components/schemas/ArtifactComplianceForPolicy'
+          type: array
+      type: object
+    PolicyAdherenceWithRulesets:
+      description: Adherence status of a policy with ruleset details.
+      example:
+        rulesetValidationResults:
+        - ruleType: API_DEFINITION
+          name: API Security Ruleset
+          id: 123e4567-e89b-12d3-a456-426614174000
+          status: PASSED
+        - ruleType: API_DEFINITION
+          name: API Security Ruleset
+          id: 123e4567-e89b-12d3-a456-426614174000
+          status: PASSED
+        name: Policy1
+        id: 123e4567-e89b-12d3-a456-426614174000
+        status: FOLLOWED
+      properties:
+        id:
+          description: UUID of the policy.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        name:
+          description: Name of the policy.
+          example: Policy1
+          type: string
+        status:
+          description: Status of the policy's governance compliance.
+          enum:
+          - FOLLOWED
+          - VIOLATED
+          - UNAPPLIED
+          - PENDING
+          example: FOLLOWED
+          type: string
+        rulesetValidationResults:
+          description: List of ruleset validation information.
+          items:
+            $ref: '#/components/schemas/RulesetValidationResultWithoutRules'
+          type: array
+      type: object
+    ArtifactComplianceForPolicy:
+      description: Compliance status of an artifact for a specific policy.
+      example:
+        id: 123e4567-e89b-12d3-a456-426614174000
+        status: COMPLIANT
+        info:
+          owner: admin
+          name: Test API
+          type: API
+          version: 1.0.0
+      properties:
+        id:
+          description: UUID of the artifact.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        status:
+          description: Status of the artifact's compliance to the policy.
+          enum:
+          - COMPLIANT
+          - NON-COMPLIANT
+          - NOT-APPLICABLE
+          example: COMPLIANT
+          type: string
+        info:
+          $ref: '#/components/schemas/ArtifactInfo'
+      type: object
+    RulesetValidationResult:
+      description: Result of the ruleset validation.
+      example:
+        violatedRules:
+        - severity: WARN
+          name: API Name Rule
+          description: API name should be between 5 to 50 characters
+          id: 123e4567-e89b-12d3-a456-426614174000
+          violatedPath:
+            path: info.title
+            description: API name
+          message: API name can not be too long or short
+          status: FAILED
+        - severity: WARN
+          name: API Name Rule
+          description: API name should be between 5 to 50 characters
+          id: 123e4567-e89b-12d3-a456-426614174000
+          violatedPath:
+            path: info.title
+            description: API name
+          message: API name can not be too long or short
+          status: FAILED
+        name: API Security Ruleset
+        followedRules:
+        - severity: WARN
+          name: API Name Rule
+          description: API name should be between 5 to 50 characters
+          id: 123e4567-e89b-12d3-a456-426614174000
+          violatedPath:
+            path: info.title
+            description: API name
+          message: API name can not be too long or short
+          status: FAILED
+        - severity: WARN
+          name: API Name Rule
+          description: API name should be between 5 to 50 characters
+          id: 123e4567-e89b-12d3-a456-426614174000
+          violatedPath:
+            path: info.title
+            description: API name
+          message: API name can not be too long or short
+          status: FAILED
+        id: 123e4567-e89b-12d3-a456-426614174000
+        status: PASSED
+      properties:
+        id:
+          description: UUID of the ruleset.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        name:
+          description: Name of the ruleset.
+          example: API Security Ruleset
+          type: string
+        status:
+          description: Status of the ruleset validation.
+          enum:
+          - PASSED
+          - FAILED
+          - UNAPPLIED
+          example: PASSED
+          type: string
+        violatedRules:
+          description: List of violated rules.
+          items:
+            $ref: '#/components/schemas/RuleValidationResult'
+          type: array
+        followedRules:
+          description: List of followed rules.
+          items:
+            $ref: '#/components/schemas/RuleValidationResult'
+          type: array
+      type: object
+    RulesetValidationResultWithoutRules:
+      description: Result of the ruleset validation.
+      example:
+        ruleType: API_DEFINITION
+        name: API Security Ruleset
+        id: 123e4567-e89b-12d3-a456-426614174000
+        status: PASSED
+      properties:
+        id:
+          description: UUID of the ruleset.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        name:
+          description: Name of the ruleset.
+          example: API Security Ruleset
+          type: string
+        ruleType:
+          description: Context or area to which the ruleset applies.
+          enum:
+          - API_METADATA
+          - API_DEFINITION
+          - API_DOCUMENTATION
+          example: API_DEFINITION
+          type: string
+          x-enum-varnames:
+          - API_METADATA
+          - API_DEFINITION
+          - API_DOCUMENTATION
+        status:
+          description: Status of the ruleset validation.
+          enum:
+          - PASSED
+          - FAILED
+          - UNAPPLIED
+          example: PASSED
+          type: string
+      type: object
+    RuleValidationResult:
+      description: Result of the rule validation.
+      example:
+        severity: WARN
+        name: API Name Rule
+        description: API name should be between 5 to 50 characters
+        id: 123e4567-e89b-12d3-a456-426614174000
+        violatedPath:
+          path: info.title
+          description: API name
+        message: API name can not be too long or short
+        status: FAILED
+      properties:
+        id:
+          description: UUID of the rule.
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        name:
+          description: Name of the rule.
+          example: API Name Rule
+          type: string
+        status:
+          description: Status of the rule validation.
+          enum:
+          - PASSED
+          - FAILED
+          example: FAILED
+          type: string
+        severity:
+          description: Severity level of the rule violation.
+          enum:
+          - ERROR
+          - WARN
+          - INFO
+          example: WARN
+          type: string
+        violatedPath:
+          $ref: '#/components/schemas/RuleValidationResult_violatedPath'
+        message:
+          description: Message to be displayed when the rule is violated.
+          example: API name can not be too long or short
+          type: string
+        description:
+          description: Description of the rule.
+          example: API name should be between 5 to 50 characters
+          type: string
+      type: object
+    SeverityBasedRuleViolationCount:
+      description: List of rules violated by the artifact under each severity.
+      example:
+        severity: WARN
+        violatedRulesCount: 1
+      properties:
+        severity:
+          description: Severity level of the rule violation.
+          enum:
+          - ERROR
+          - WARN
+          - INFO
+          example: WARN
+          type: string
+        violatedRulesCount:
+          description: Number of rules violated by the artifact under each severity.
+          example: 1
+          type: integer
+      type: object
+    ArtifactInfo:
+      description: Detailed information about an artifact.
+      example:
+        owner: admin
+        name: Test API
+        type: API
+        version: 1.0.0
+      properties:
+        name:
+          description: Name of the artifact.
+          example: Test API
+          type: string
+        type:
+          description: Type of the artifact.
+          enum:
+          - API
+          example: API
+          type: string
+        version:
+          description: Version of the artifact.
+          example: 1.0.0
+          type: string
+        owner:
+          description: Owner of the artifact.
+          example: admin
+          type: string
+      type: object
+    RuleValidationResult_violatedPath:
+      description: Path in the artifact where the rule is violated.
+      example:
+        path: info.title
+        description: API name
+      properties:
+        path:
+          description: Path in the artifact where the rule is violated.
+          example: info.title
+          type: string
+        description:
+          description: Description of the path.
+          example: API name
+          type: string
+  securitySchemes:
+    OAuth2Security:
+      flows:
+        password:
+          scopes:
+            openid: Authorize access to user details
+            apim:gov_rule_read: Read governance rulesets
+            apim:gov_rule_manage: Manage governance rulesets
+            apim:gov_policy_read: Read governance policies
+            apim:gov_policy_manage: Manage governance policies
+            apim:gov_result_read: Read governance results
+          tokenUrl: https://localhost:9443/oauth2/token
+      type: oauth2
+

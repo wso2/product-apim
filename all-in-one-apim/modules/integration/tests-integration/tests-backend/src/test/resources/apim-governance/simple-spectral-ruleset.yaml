@@ -1,0 +1,32 @@
+rules:
+  info-contact-required:
+    description: "The 'info' object must have a 'contact' field."
+    severity: error
+    given: "$.info"
+    then:
+      field: contact
+      function: truthy
+
+  operation-summary-required:
+    description: "Each operation must have a 'summary' field."
+    severity: error
+    given: "$.paths[*][*]"
+    then:
+      field: summary
+      function: truthy
+
+  operation-description-length:
+    description: "Each operation should have a description of at least 10 characters."
+    severity: warn
+    given: "$.paths[*][*].description"
+    then:
+      function: length
+      functionOptions:
+        min: 10
+
+  no-empty-parameters:
+    description: "Parameters must not be empty."
+    severity: error
+    given: "$.paths[*][*].parameters[*]"
+    then:
+      function: truthy

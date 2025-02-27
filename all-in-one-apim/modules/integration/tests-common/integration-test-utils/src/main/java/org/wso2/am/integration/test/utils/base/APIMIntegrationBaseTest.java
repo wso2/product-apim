@@ -47,6 +47,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.RestAPIInternalImpl;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
+import org.wso2.am.integration.test.impl.RestAPIGovernanceImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIServiceCatalogImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -117,6 +118,7 @@ public class APIMIntegrationBaseTest {
     protected RestAPIServiceCatalogImpl restAPIServiceCatalog;
     protected RestAPIStoreImpl restAPIStore;
     protected RestAPIAdminImpl restAPIAdmin;
+    protected RestAPIGovernanceImpl restAPIGovernance;
     protected UserManagementClient userManagementClient;
     protected RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     protected ClaimMetaDataMgtAdminClient remoteClaimMetaDataMgtAdminClient;
@@ -232,6 +234,9 @@ public class APIMIntegrationBaseTest {
                             storeContext.getContextTenant().getContextUser().getPassword(),
                             storeContext.getContextTenant().getDomain(), storeURLHttps);
             restAPIAdmin = new RestAPIAdminImpl(publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
+                    publisherContext.getContextTenant().getContextUser().getPassword(),
+                    publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+            restAPIGovernance = new RestAPIGovernanceImpl(publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
                     publisherContext.getContextTenant().getDomain(), publisherURLHttps);
             try {
