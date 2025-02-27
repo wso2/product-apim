@@ -63,6 +63,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDT
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLQueryComplexityInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.KeyManagerListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.OrganizationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
@@ -249,9 +250,36 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public HttpResponse createApplicationWithOrganizationSharing(String appName, String description, String throttleTier,
+            ApplicationDTO.TokenTypeEnum tokenType, ApplicationDTO.VisibilityEnum orgVisibility)
+            throws APIManagerIntegrationTestException {
+
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setVisibility(orgVisibility);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsPost(application);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                // waitUntilApplicationAvailableInGateway(createdApp);
+                response = new HttpResponse(createdApp.getApplicationId(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
+    }
+    
     public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
-                                                             ApplicationDTO.TokenTypeEnum tokenType, Map<String,
-            String> attribute) throws APIManagerIntegrationTestException {
+            ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute)
+            throws APIManagerIntegrationTestException {
 
         try {
             ApplicationDTO application = new ApplicationDTO();
@@ -320,6 +348,32 @@ public class RestAPIStoreImpl {
             application.setDescription(description);
             application.setThrottlingPolicy(throttleTier);
             application.setTokenType(tokenType);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.toString(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
+    }
+    
+    public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
+            String throttleTier,
+            ApplicationDTO.TokenTypeEnum tokenType, ApplicationDTO.VisibilityEnum orgVisibility) {
+
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setVisibility(orgVisibility);
 
             ApplicationDTO createdApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
             HttpResponse response = null;
@@ -748,7 +802,7 @@ public class RestAPIStoreImpl {
             return new HttpResponse(gson.toJson(applicationDTOApiResponse.getData()), applicationDTOApiResponse.getStatusCode());
         } catch (ApiException e) {
             HttpResponse response = null;
-            if (HttpStatus.SC_NOT_FOUND == e.getCode()) {
+            if (HttpStatus.SC_NOT_FOUND == e.getCode() || HttpStatus.SC_FORBIDDEN == e.getCode()) {
                 response = new HttpResponse(applicationId, e.getCode());
             }
             return response;
@@ -1777,6 +1831,25 @@ public class RestAPIStoreImpl {
         waitUntilSubscriptionAvailableInGateway(subscriptionResponse.getData());
         return subscriptionResponse.getData();
     }
+    
+    public HttpResponse subscribeToAPIWithResponse(String apiID, String appID, String tier)
+            throws ApiException, APIManagerIntegrationTestException {
+        setActivityID();
+        SubscriptionDTO subscription = new SubscriptionDTO();
+        subscription.setApplicationId(appID);
+        subscription.setApiId(apiID);
+        subscription.setThrottlingPolicy(tier);
+        HttpResponse response = null;
+        try {
+            SubscriptionDTO dto = subscriptionIndividualApi.subscriptionsPost(subscription, this.tenantDomain);
+            response = new HttpResponse(dto.getSubscriptionId(), 201);
+        } catch (ApiException e) {
+            if (HttpStatus.SC_FORBIDDEN == e.getCode()) {
+                response = new HttpResponse("Forbidden", e.getCode());
+            }
+        }
+        return response;
+    }
 
     /**
      * Update subscription to an API of a specific tenant
@@ -2276,5 +2349,9 @@ public class RestAPIStoreImpl {
 
     public ApplicationListDTO getApplications(String applicationName) throws ApiException {
         return applicationsApi.applicationsGet(null, applicationName, "name", "asc", 10, 0, null);
+    }
+    
+    public OrganizationInfoDTO getUserOrganization() throws ApiException {
+        return usersApi.organizationInformation();
     }
 }

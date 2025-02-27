@@ -134,6 +134,57 @@ public static TokenTypeEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_HASH_ENABLED)
             private Boolean hashEnabled;
 
+            /**
+* Gets or Sets visibility
+*/
+    @JsonAdapter(VisibilityEnum.Adapter.class)
+public enum VisibilityEnum {
+        PRIVATE("PRIVATE"),
+        
+        SHARED_WITH_ORG("SHARED_WITH_ORG");
+
+private String value;
+
+VisibilityEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static VisibilityEnum fromValue(String value) {
+    for (VisibilityEnum b : VisibilityEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<VisibilityEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final VisibilityEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public VisibilityEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return VisibilityEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_VISIBILITY = "visibility";
+        @SerializedName(SERIALIZED_NAME_VISIBILITY)
+            private VisibilityEnum visibility;
+
 
         public ApplicationDTO applicationId(String applicationId) {
         
@@ -432,6 +483,29 @@ public static TokenTypeEnum fromValue(String value) {
     }
 
 
+        public ApplicationDTO visibility(VisibilityEnum visibility) {
+        
+        this.visibility = visibility;
+        return this;
+        }
+
+    /**
+        * Get visibility
+    * @return visibility
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public VisibilityEnum getVisibility() {
+        return visibility;
+    }
+
+
+    public void setVisibility(VisibilityEnum visibility) {
+        this.visibility = visibility;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -453,12 +527,13 @@ public static TokenTypeEnum fromValue(String value) {
             Objects.equals(this.attributes, application.attributes) &&
             Objects.equals(this.subscriptionScopes, application.subscriptionScopes) &&
             Objects.equals(this.owner, application.owner) &&
-            Objects.equals(this.hashEnabled, application.hashEnabled);
+            Objects.equals(this.hashEnabled, application.hashEnabled) &&
+            Objects.equals(this.visibility, application.visibility);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(applicationId, name, throttlingPolicy, description, tokenType, status, groups, subscriptionCount, keys, attributes, subscriptionScopes, owner, hashEnabled);
+        return Objects.hash(applicationId, name, throttlingPolicy, description, tokenType, status, groups, subscriptionCount, keys, attributes, subscriptionScopes, owner, hashEnabled, visibility);
     }
 
 
@@ -479,6 +554,7 @@ sb.append("class ApplicationDTO {\n");
     sb.append("    subscriptionScopes: ").append(toIndentedString(subscriptionScopes)).append("\n");
     sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
     sb.append("    hashEnabled: ").append(toIndentedString(hashEnabled)).append("\n");
+    sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");
 sb.append("}");
 return sb.toString();
 }

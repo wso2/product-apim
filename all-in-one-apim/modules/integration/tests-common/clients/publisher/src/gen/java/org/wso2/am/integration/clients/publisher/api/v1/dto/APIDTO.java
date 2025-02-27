@@ -40,6 +40,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIServiceInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIThreatProtectionPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AdvertiseInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OrganizationPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WebsubSubscriptionConfigurationDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -252,6 +253,10 @@ public static AudienceEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_POLICIES)
             private List<String> policies = null;
 
+        public static final String SERIALIZED_NAME_ORGANIZATION_POLICIES = "organizationPolicies";
+        @SerializedName(SERIALIZED_NAME_ORGANIZATION_POLICIES)
+            private List<OrganizationPoliciesDTO> organizationPolicies = null;
+
         public static final String SERIALIZED_NAME_API_THROTTLING_POLICY = "apiThrottlingPolicy";
         @SerializedName(SERIALIZED_NAME_API_THROTTLING_POLICY)
             private String apiThrottlingPolicy;
@@ -332,6 +337,10 @@ public static VisibilityEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_VISIBLE_TENANTS = "visibleTenants";
         @SerializedName(SERIALIZED_NAME_VISIBLE_TENANTS)
             private List<String> visibleTenants = null;
+
+        public static final String SERIALIZED_NAME_VISIBLE_ORGANIZATIONS = "visibleOrganizations";
+        @SerializedName(SERIALIZED_NAME_VISIBLE_ORGANIZATIONS)
+            private List<String> visibleOrganizations = null;
 
         public static final String SERIALIZED_NAME_MEDIATION_POLICIES = "mediationPolicies";
         @SerializedName(SERIALIZED_NAME_MEDIATION_POLICIES)
@@ -1140,6 +1149,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO organizationPolicies(List<OrganizationPoliciesDTO> organizationPolicies) {
+        
+        this.organizationPolicies = organizationPolicies;
+        return this;
+        }
+
+    /**
+        * Get organizationPolicies
+    * @return organizationPolicies
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<OrganizationPoliciesDTO> getOrganizationPolicies() {
+        return organizationPolicies;
+    }
+
+
+    public void setOrganizationPolicies(List<OrganizationPoliciesDTO> organizationPolicies) {
+        this.organizationPolicies = organizationPolicies;
+    }
+
+
         public APIDTO apiThrottlingPolicy(String apiThrottlingPolicy) {
         
         this.apiThrottlingPolicy = apiThrottlingPolicy;
@@ -1321,6 +1353,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setVisibleTenants(List<String> visibleTenants) {
         this.visibleTenants = visibleTenants;
+    }
+
+
+        public APIDTO visibleOrganizations(List<String> visibleOrganizations) {
+        
+        this.visibleOrganizations = visibleOrganizations;
+        return this;
+        }
+
+    /**
+        * The organizations that are able to access the API in Developer Portal
+    * @return visibleOrganizations
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[]", value = "The organizations that are able to access the API in Developer Portal")
+    
+    public List<String> getVisibleOrganizations() {
+        return visibleOrganizations;
+    }
+
+
+    public void setVisibleOrganizations(List<String> visibleOrganizations) {
+        this.visibleOrganizations = visibleOrganizations;
     }
 
 
@@ -2001,6 +2056,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.transport, API.transport) &&
             Objects.equals(this.tags, API.tags) &&
             Objects.equals(this.policies, API.policies) &&
+            Objects.equals(this.organizationPolicies, API.organizationPolicies) &&
             Objects.equals(this.apiThrottlingPolicy, API.apiThrottlingPolicy) &&
             Objects.equals(this.authorizationHeader, API.authorizationHeader) &&
             Objects.equals(this.apiKeyHeader, API.apiKeyHeader) &&
@@ -2009,6 +2065,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.visibility, API.visibility) &&
             Objects.equals(this.visibleRoles, API.visibleRoles) &&
             Objects.equals(this.visibleTenants, API.visibleTenants) &&
+            Objects.equals(this.visibleOrganizations, API.visibleOrganizations) &&
             Objects.equals(this.mediationPolicies, API.mediationPolicies) &&
             Objects.equals(this.apiPolicies, API.apiPolicies) &&
             Objects.equals(this.subscriptionAvailability, API.subscriptionAvailability) &&
@@ -2041,7 +2098,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, audiences, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, gatewayType, asyncTransportProtocols);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, audiences, transport, tags, policies, organizationPolicies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, visibleOrganizations, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, gatewayType, asyncTransportProtocols);
     }
 
 
@@ -2073,6 +2130,7 @@ sb.append("class APIDTO {\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");
+    sb.append("    organizationPolicies: ").append(toIndentedString(organizationPolicies)).append("\n");
     sb.append("    apiThrottlingPolicy: ").append(toIndentedString(apiThrottlingPolicy)).append("\n");
     sb.append("    authorizationHeader: ").append(toIndentedString(authorizationHeader)).append("\n");
     sb.append("    apiKeyHeader: ").append(toIndentedString(apiKeyHeader)).append("\n");
@@ -2081,6 +2139,7 @@ sb.append("class APIDTO {\n");
     sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");
     sb.append("    visibleRoles: ").append(toIndentedString(visibleRoles)).append("\n");
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
+    sb.append("    visibleOrganizations: ").append(toIndentedString(visibleOrganizations)).append("\n");
     sb.append("    mediationPolicies: ").append(toIndentedString(mediationPolicies)).append("\n");
     sb.append("    apiPolicies: ").append(toIndentedString(apiPolicies)).append("\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");
