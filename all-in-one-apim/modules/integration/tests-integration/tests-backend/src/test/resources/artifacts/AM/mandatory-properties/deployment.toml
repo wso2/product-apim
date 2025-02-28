@@ -61,7 +61,7 @@ auth_token = ""
 
 [apim.ai]
 enable = true
-token = ""
+key = ""
 
 [apim.key_manager]
 enable_apikey_subscription_validation = true
