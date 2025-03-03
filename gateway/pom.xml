@@ -1325,7 +1325,7 @@
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.4</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.8.7</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.8.41</carbon.identity.auth.version>
-        <identity.apps.version>1.6.378</identity.apps.version>
+        <identity.apps.version>1.6.379</identity.apps.version>
         <identity.oauth.addons.version>2.4.38</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
@@ -1340,7 +1340,7 @@
 
         <siddhi.version>3.2.13</siddhi.version>
 
-        <axis2-transport-mail.wso2.version>2.0.0-wso2v70</axis2-transport-mail.wso2.version>
+        <axis2-transport-mail.wso2.version>2.0.0-wso2v71</axis2-transport-mail.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.17</log4j.version>
@@ -1470,7 +1470,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.7.11</wso2is.km.version>
+        <wso2is.km.version>1.7.12</wso2is.km.version>
         <wso2is7.km.version>2.0.4</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.11</azure.keymanager.feature.version>
