@@ -120,7 +120,8 @@ public class ConsumerOrganizationVisibilityTestCase extends APIManagerLifecycleB
     @DataProvider
     public static Object[][] userModeDataProvider() {
 
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN } };
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN } };
     }
     
     @BeforeClass(alwaysRun = true)
@@ -138,7 +139,8 @@ public class ConsumerOrganizationVisibilityTestCase extends APIManagerLifecycleB
         // Suborg 2 user
         addUser(subOrg2DevUser, subOrg2Id, subOrg2Name, new String[] {"Internal/subscriber"});
         
-        restAPIAdminClient = new RestAPIAdminImpl(orgAdmin, enduserPassword, "carbon.super", adminURLHttps);
+        restAPIAdminClient = new RestAPIAdminImpl(orgAdmin, enduserPassword,
+                publisherContext.getContextTenant().getDomain(), adminURLHttps);
         restAPIPublisher = new RestAPIPublisherImpl(orgPublisher, enduserPassword,
                 publisherContext.getContextTenant().getDomain(), publisherURLHttps);
         restAPIStore = new RestAPIStoreImpl(orgDevUser, enduserPassword, storeContext.getContextTenant().getDomain(),
