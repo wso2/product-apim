@@ -18,14 +18,18 @@
 
 package org.wso2.am.integration.tests.apimGovernance;
 
+import com.google.gson.Gson;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.governance.ApiException;
 import org.wso2.am.integration.clients.governance.ApiResponse;
 import org.wso2.am.integration.clients.governance.api.dto.RulesetInfoDTO;
 import org.wso2.am.integration.clients.governance.api.dto.RulesetListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
 import org.wso2.am.integration.test.Constants.APIMGovernanceTestConstants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -47,6 +51,7 @@ import javax.ws.rs.core.Response;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 /**
  * This class contains the test cases for the Ruleset Management API.
@@ -104,11 +109,41 @@ public class RulesetMgtTestCase extends APIMIntegrationBaseTest {
         }
     }
 
+
+    /**
+     * This tests the creation of an invalid ruleset.
+     * @throws Exception If an error occurs while creating the ruleset.
+     */
+    @Test(groups = {"wso2.am"}, description = "Test invalid ruleset creation",
+            dependsOnMethods = "testDefaultRulesetRetrieval")
+    public void testInvalidRulesetCreation() throws Exception {
+        File rulesetContentFile = readYamlFileIntoTempFile(resourcePath +
+                APIMGovernanceTestConstants.INVALID_SPECTRAL_RULESET_FILE_NAME);
+
+        try{
+            restAPIGovernance.createRuleset(APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_NAME,
+                    rulesetContentFile, APIMGovernanceTestConstants.API_DEFINITION_RULE_TYPE,
+                    APIMGovernanceTestConstants.REST_API_ARTIFACT_TYPE,
+                    APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_DESCRIPTION,
+                    APIMGovernanceTestConstants.SPECTRAL_RULE_CATEGORY,
+                    APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_DOCUMENTATION_LINK,
+                    APIMGovernanceTestConstants.ADMIN_PROVIDER);
+            fail("Invalid ruleset creation should have failed");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode(),
+                    "Invalid ruleset creation should have failed with a 400 error");
+            ErrorDTO errorDTO = new Gson().fromJson(e.getResponseBody(), ErrorDTO.class);
+            Assert.assertEquals(errorDTO.getCode().longValue(), 990120, "Invalid error code " +
+                    "for invalid ruleset creation");
+        }
+    }
+
     /**
      * This tests the creation of a new valid ruleset.
      * @throws Exception If an error occurs while creating the ruleset.
      */
-    @Test(groups = {"wso2.am"}, description = "Test valid ruleset creation")
+    @Test(groups = {"wso2.am"}, description = "Test valid ruleset creation",
+            dependsOnMethods = "testInvalidRulesetCreation")
     public void testValidRulesetCreation() throws Exception {
 
         File rulesetContentFile = readYamlFileIntoTempFile(resourcePath +
@@ -120,7 +155,7 @@ public class RulesetMgtTestCase extends APIMIntegrationBaseTest {
                         APIMGovernanceTestConstants.REST_API_ARTIFACT_TYPE,
                         APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_DESCRIPTION,
                         APIMGovernanceTestConstants.SPECTRAL_RULE_CATEGORY,
-                        APIMGovernanceTestConstants.RULESET_DOCUMENTATION_LINK,
+                        APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_DOCUMENTATION_LINK,
                         APIMGovernanceTestConstants.ADMIN_PROVIDER);
         assertEquals(response.getStatusCode(), Response.Status.CREATED.getStatusCode(),
                 "Error while creating new APIM governance ruleset");
@@ -129,27 +164,65 @@ public class RulesetMgtTestCase extends APIMIntegrationBaseTest {
     }
 
     /**
+     * This tests the update of an existing ruleset with invalid content.
+     * @throws Exception If an error occurs while updating the ruleset.
+     */
+    @Test(groups = {"wso2.am"}, description = "Test invalid ruleset update", dependsOnMethods =
+            "testValidRulesetCreation")
+    public void testInvalidValidRulesetUpdate() throws Exception {
+        File rulesetContentFile = readYamlFileIntoTempFile(resourcePath +
+                APIMGovernanceTestConstants.INVALID_SPECTRAL_RULESET_FILE_NAME);
+
+        try{
+            restAPIGovernance.updateRuleset(createdRulesetId,
+                    APIMGovernanceTestConstants.UPDATED_SIMPLE_SPECTRAL_RULESET_NAME,
+                    rulesetContentFile,
+                    APIMGovernanceTestConstants.API_DEFINITION_RULE_TYPE,
+                    APIMGovernanceTestConstants.REST_API_ARTIFACT_TYPE,
+                    APIMGovernanceTestConstants.UPDATED_SIMPLE_SPECTRAL_RULESET_DESCRIPTION,
+                    APIMGovernanceTestConstants.SPECTRAL_RULE_CATEGORY,
+                    APIMGovernanceTestConstants.UPDATED_SIMPLE_SPECTRAL_RULESET_DOCUMENTATION_LINK,
+                    APIMGovernanceTestConstants.ADMIN_PROVIDER);
+            fail("Invalid ruleset update should have failed");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode(),
+                    "Invalid ruleset update should have failed with a 400 error");
+            ErrorDTO errorDTO = new Gson().fromJson(e.getResponseBody(), ErrorDTO.class);
+            Assert.assertEquals(errorDTO.getCode().longValue(), 990120, "Invalid error code " +
+                    "for invalid ruleset update");
+        }
+    }
+
+    /**
      * This tests the update of an existing ruleset.
      * @throws Exception If an error occurs while updating the ruleset.
      */
     @Test(groups = {"wso2.am"}, description = "Test valid ruleset update", dependsOnMethods =
-            "testValidRulesetCreation")
+            "testInvalidValidRulesetUpdate")
     public void testValidRulesetUpdate() throws Exception{
         File rulesetContentFile = readYamlFileIntoTempFile(resourcePath +
                 APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_FILE_NAME);
 
         ApiResponse<RulesetInfoDTO> response = restAPIGovernance
                 .updateRuleset(createdRulesetId,
-                        APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_NAME,
+                        APIMGovernanceTestConstants.UPDATED_SIMPLE_SPECTRAL_RULESET_NAME,
                         rulesetContentFile,
                         APIMGovernanceTestConstants.API_DEFINITION_RULE_TYPE,
                         APIMGovernanceTestConstants.REST_API_ARTIFACT_TYPE,
-                        APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_DESCRIPTION,
+                        APIMGovernanceTestConstants.UPDATED_SIMPLE_SPECTRAL_RULESET_DESCRIPTION,
                         APIMGovernanceTestConstants.SPECTRAL_RULE_CATEGORY,
-                        APIMGovernanceTestConstants.RULESET_DOCUMENTATION_LINK,
+                        APIMGovernanceTestConstants.UPDATED_SIMPLE_SPECTRAL_RULESET_DOCUMENTATION_LINK,
                         APIMGovernanceTestConstants.ADMIN_PROVIDER);
         assertEquals(response.getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Error while updating APIM governance ruleset");
+        assertEquals(response.getData().getName(), APIMGovernanceTestConstants.UPDATED_SIMPLE_SPECTRAL_RULESET_NAME,
+                "Error while updating APIM governance ruleset name");
+        assertEquals(response.getData().getDescription(), APIMGovernanceTestConstants
+                        .UPDATED_SIMPLE_SPECTRAL_RULESET_DESCRIPTION,
+                "Error while updating APIM governance ruleset description");
+        assertEquals(response.getData().getDocumentationLink(), APIMGovernanceTestConstants
+                        .UPDATED_SIMPLE_SPECTRAL_RULESET_DOCUMENTATION_LINK,
+                "Error while updating APIM governance ruleset documentation link");
     }
 
     /**
@@ -162,6 +235,64 @@ public class RulesetMgtTestCase extends APIMIntegrationBaseTest {
         ApiResponse<Void> response = restAPIGovernance.deleteRuleset(createdRulesetId);
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatusCode(),
                 "Error while deleting APIM governance ruleset");
+    }
+
+
+    /**
+     * This tests the creation of a new valid ruleset with JSON content.
+     * @throws Exception If an error occurs while creating the ruleset.
+     */
+    @Test(groups = {"wso2.am"}, description = "Test valid ruleset creation with JSON content", dependsOnMethods =
+            "testValidRulesetDeletion")
+    public void testValidRulesetCreationWithJsonContent() throws Exception {
+        File rulesetContentFile = new File(resourcePath + APIMGovernanceTestConstants
+                .SIMPLE_SPECTRAL_RULESET_JSON_FILE_NAME);
+        ApiResponse<RulesetInfoDTO> response = restAPIGovernance
+                .createRuleset(APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_NAME, rulesetContentFile,
+                        APIMGovernanceTestConstants.API_DEFINITION_RULE_TYPE,
+                        APIMGovernanceTestConstants.REST_API_ARTIFACT_TYPE,
+                        APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_DESCRIPTION,
+                        APIMGovernanceTestConstants.SPECTRAL_RULE_CATEGORY,
+                        APIMGovernanceTestConstants.SIMPLE_SPECTRAL_RULESET_DOCUMENTATION_LINK,
+                        APIMGovernanceTestConstants.ADMIN_PROVIDER);
+        assertEquals(response.getStatusCode(), Response.Status.CREATED.getStatusCode(),
+                "Error while creating new APIM governance ruleset with JSON content");
+        createdRulesetId = response.getData().getId();
+        assertNotNull(createdRulesetId, "Error while creating new APIM governance ruleset with JSON content");
+
+        ApiResponse<Void> delResponse = restAPIGovernance.deleteRuleset(createdRulesetId);
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), delResponse.getStatusCode(),
+                "Error while deleting APIM governance ruleset with JSON content");
+    }
+
+
+    /**
+     * This tests the behavior when a ruleset associated with a policy is deleted.
+     * @throws Exception If an error occurs while deleting the ruleset.
+     */
+    @Test(groups = {"wso2.am"}, description = "Test invalid ruleset deletion", dependsOnMethods =
+            "testValidRulesetCreationWithJsonContent")
+    public void testInvalidRulesetDelAttachedToPolicy() throws Exception {
+        // Create a test policy with default rulesets and a blocking action for deployt
+        ApiResponse<RulesetListDTO> allRulesets = restAPIGovernance.getRulesets(10, 0, "");
+        assertNotNull(allRulesets.getData().getList(), "Failed to retrieve rulesets in the organization");
+
+        List<String> defaultRulesetIds = allRulesets.getData().getList().stream()
+                .filter(ruleset -> defaultRulesets.contains(ruleset.getName()))
+                .map(RulesetInfoDTO::getId).collect(Collectors.toList());
+
+        String defaultRulesetId = defaultRulesetIds.get(0);
+
+        try {
+            restAPIGovernance.deleteRuleset(defaultRulesetId);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), Response.Status.CONFLICT.getStatusCode(),
+                    "Invalid ruleset deletion should have failed with a 409 error");
+            ErrorDTO errorDTO = new Gson().fromJson(e.getResponseBody(), ErrorDTO.class);
+            Assert.assertEquals(errorDTO.getCode().longValue(), 990101, "Invalid error code " +
+                    "for invalid ruleset deletion");
+        }
+
     }
 
     @AfterClass(alwaysRun = true)

@@ -70,19 +70,29 @@ public class Constants {
         public static final String DEFAULT_RULESET_OWASP = "OWASP Top 10";
         public static final String DEFAULT_POLICY_NAME = "WSO2 API Management Best Practices";
 
+        public static final String TEST_RESOURCE_DIRECTORY = "apim-governance";
         public static final String REST_API_ARTIFACT_TYPE = "REST_API";
+        public static final String ASYNC_API_ARTIFACT_TYPE = "ASYNC_API";
         public static final String API_DEFINITION_RULE_TYPE = "API_DEFINITION";
         public static final String SPECTRAL_RULE_CATEGORY  = "SPECTRAL";
         public static final String ADMIN_PROVIDER = "admin";
 
         public static final String SIMPLE_SPECTRAL_RULESET_FILE_NAME = "simple-spectral-ruleset.yaml";
+        public static final String SIMPLE_SPECTRAL_RULESET_JSON_FILE_NAME = "simple-spectral-ruleset.json";
+        public static final String INVALID_SPECTRAL_RULESET_FILE_NAME = "invalid-spectral-ruleset.yaml";
         public static final String SIMPLE_SPECTRAL_RULESET_NAME = "Simple Spectral Ruleset";
         public static final String SIMPLE_SPECTRAL_RULESET_DESCRIPTION = "This is a sample ruleset description";
-        public static final String RULESET_DOCUMENTATION_LINK = "https://wso2.com";
-        public static final String TEST_RESOURCE_DIRECTORY = "apim-governance";
+        public static final String SIMPLE_SPECTRAL_RULESET_DOCUMENTATION_LINK = "https://wso2.com";
+
+        public static final String UPDATED_SIMPLE_SPECTRAL_RULESET_FILE_NAME = "simple-spectral-ruleset.yaml";
+        public static final String UPDATED_SIMPLE_SPECTRAL_RULESET_NAME = "Simple Spectral Ruleset";
+        public static final String UPDATED_SIMPLE_SPECTRAL_RULESET_DESCRIPTION = "This is a sample ruleset description";
+        public static final String UPDATED_SIMPLE_SPECTRAL_RULESET_DOCUMENTATION_LINK = "https://am.wso2.com";
 
         public static final String TEST_POLICY_NAME = "TestPolicy";
         public static final String TEST_POLICY_DESCRIPTION = "Test Policy Description";
+        public static final String UPDATED_TEST_POLICY_NAME = "UpdatedTestPolicy";
+        public static final String UPDATED_TEST_POLICY_DESCRIPTION = "Updated Test Policy Description";
         public static final String GLOBAL_LABEL = "global";
     }
 }

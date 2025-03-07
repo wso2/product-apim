@@ -6,6 +6,8 @@ rules:
     then:
       field: contact
       function: truthy
+      functionOptions:
+        min: 10
 
   operation-summary-required:
     description: "Each operation must have a 'summary' field."
@@ -17,6 +19,7 @@ rules:
 
   operation-description-length:
     description: "Each operation should have a description of at least 10 characters."
+    severity: warn
     given: "$.paths[*][*].description"
     then:
       function: length
