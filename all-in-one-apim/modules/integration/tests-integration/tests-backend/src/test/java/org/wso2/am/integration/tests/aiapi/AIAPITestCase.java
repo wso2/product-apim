@@ -20,9 +20,12 @@ package org.wso2.am.integration.tests.aiapi;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
+import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tools.ant.taskdefs.condition.Http;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -35,6 +38,8 @@ import org.wso2.am.integration.clients.admin.api.dto.LLMProviderResponseDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LLMProviderSummaryResponseDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LLMProviderSummaryResponseListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -61,6 +66,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.testng.Assert.assertEquals;
@@ -81,12 +88,17 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     private static final String mistralAPIEndpoint = "/mistral";
     private static final String mistralAPIResource = "/v1/chat/completions";
     private String mistralAPIId;
+    private String mistralPayload;
     private String mistralResponse;
+    private String model1Response;
+    private String model2Response;
+    private String model3Response;
 
     // Application and API related common details
     private static final String apiProvider = "admin";
     private static final String applicationName = "AI-API-Application";
     private String applicationId;
+    private String apiKey;
 
     // Other variables
     private String resourcePath;
@@ -101,25 +113,39 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     private final String llmProviderApiVersion = "1.0.0";
 
     private final String llmProviderDescription = "This is a copy of MistralAI service";
-    private final String modelList = "[\"model-1\", \"model-2\"]";
+    private final String model1 = "mistral-small-latest";
+    private final String model2 = "mistral-medium-latest";
+    private final String model3 = "mistral-large-latest";
+    private final String modelList = String.format("[\"%s\", \"%s\", \"%s\"]", model1, model2, model3);
+    private final String productionEndpointName = "Prod Endpoint";
+    private final String productionDeploymentStage = "PRODUCTION";
+    private Map<String, String> policyMap;
 
-    private final String incorrectLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
-            "\"metadata\":[{\"attributeName\":\"model\"," +
-            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.model\"}," +
-            "{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$" +
-            ".usage.prompt_tokens\"},{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.usage.completion_tokens\"},{\"attributeName\":\"totalTokenCount\"," +
-            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.total_tokens\"}]," +
-            "\"authHeader\":\"Authorization\"}";
+    private final String customLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
+            "\"authHeader\":\"api-key\",\"metadata\":[{\"attributeName\":\"requestModel\"," +
+            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\",\"required\":false}," +
+            "{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\"," +
+            "\"required\":true},{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
+            "{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.usage.completion_tokens\",\"required\":true}," +
+            "{\"attributeName\":\"totalTokenCount\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.usage.total_tokens\",\"required\":true}," +
+            "{\"attributeName\":\"remainingTokenCount\",\"inputSource\":\"header\"," +
+            "\"attributeIdentifier\":\"x-ratelimit-remaining-tokens\",\"required\":false}]}";
 
-    private final String correctLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
-            "\"metadata\":[{\"attributeName\":\"model\"," +
-            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.model\"}," +
-            "{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$" +
-            ".usage.prompt_tokens\"},{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.usage.completion_tokens\"},{\"attributeName\":\"totalTokenCount\"," +
-            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.total_tokens\"}]," +
-            "\"authHeader\":\"Authorization\"}";
+    private final String updatedCustomLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
+            "\"authHeader\":\"Authorization\",\"metadata\":[{\"attributeName\":\"requestModel\"," +
+            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\",\"required\":false}," +
+            "{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\"," +
+            "\"required\":true},{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
+            "{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.usage.completion_tokens\",\"required\":true}," +
+            "{\"attributeName\":\"totalTokenCount\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.usage.total_tokens\",\"required\":true}," +
+            "{\"attributeName\":\"remainingTokenCount\",\"inputSource\":\"header\"," +
+            "\"attributeIdentifier\":\"x-ratelimit-remaining-tokens\",\"required\":false}]}";
 
     private List<String> defaultLlmProviders = new ArrayList<>();
 
@@ -149,6 +175,8 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         defaultLlmProviders.add("OpenAI");
         defaultLlmProviders.add("AzureOpenAI");
 
+        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
+
         // Add application
         ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationName,
                 APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
@@ -157,6 +185,11 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         resourcePath = TestConfigurationProvider.getResourceLocation() + "ai-api" + File.separator;
         mistralResponse = readFile(resourcePath + mistralResponseFileName);
+        model1Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", model1);
+        model2Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", model2);
+        model3Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", model3);
+
+        mistralPayload = readFile(resourcePath + "mistral-payload.json");
 
         // Start WireMock server
         startWiremockServer();
@@ -194,7 +227,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         File file = getTempFileWithContent(originalDefinition);
 
         ApiResponse<LLMProviderResponseDTO> createProviderResponse = restAPIAdmin.addLLMProvider(llmProviderName,
-                llmProviderApiVersion, llmProviderDescription, incorrectLlmProviderConfigurations, file, modelList);
+                llmProviderApiVersion, llmProviderDescription, customLlmProviderConfigurations, file, "[]");
 
         assertEquals(Response.Status.CREATED.getStatusCode(),
                 createProviderResponse.getStatusCode(), "Failed to add a LLM provider");
@@ -212,8 +245,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         ApiResponse<LLMProviderResponseDTO> getProviderResponse = restAPIAdmin.getLLMProvider(llmProviderId);
         assertEquals(Response.Status.OK.getStatusCode(),
                 getProviderResponse.getStatusCode(), "Failed to retrieve LLM provider");
-        assertEquals(getProviderResponse.getData().getName(), llmProviderName, "LLM provider name does not " +
-                "match");
+        assertEquals(getProviderResponse.getData().getName(), llmProviderName, "LLM provider name does not match");
         assertEquals(getProviderResponse.getData().getApiVersion(),
                 llmProviderApiVersion, "LLM provider API version does not match");
     }
@@ -231,7 +263,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         ApiResponse<LLMProviderResponseDTO> updateProviderResponse = restAPIAdmin.updateLLMProvider(llmProviderId,
                 llmProviderName, llmProviderApiVersion, llmProviderDescription,
-                correctLlmProviderConfigurations, file, modelList);
+                updatedCustomLlmProviderConfigurations, file, modelList);
 
         assertEquals(Response.Status.OK.getStatusCode(),
                 updateProviderResponse.getStatusCode(), "Failed to update LLM provider");
@@ -239,8 +271,8 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         ApiResponse<LLMProviderResponseDTO> getProviderResponse = restAPIAdmin.getLLMProvider(llmProviderId);
         assertEquals(Response.Status.OK.getStatusCode(),
                 getProviderResponse.getStatusCode(), "Failed to retrieve LLM provider");
-        assertEquals(getProviderResponse.getData().getConfigurations(),
-                correctLlmProviderConfigurations, "Failed to update LLM provider configurations");
+        assertEquals(getProviderResponse.getData().getConfigurations(), updatedCustomLlmProviderConfigurations,
+                "Failed to update LLM provider configurations");
     }
 
     /**
@@ -300,20 +332,91 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
                         -1, null, null);
         assertNotNull(apiKeyDTO, "Mistral AI API Key generation failed");
-        String apiKey = apiKeyDTO.getApikey();
+        apiKey = apiKeyDTO.getApikey();
 
         // Invoke API
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
-        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) +
-                mistralAPIResource;
-        String mistralPayload = readFile(resourcePath + "mistral-payload.json");
-        HttpResponse serviceResponse = HTTPSClientUtils.
-                doPost(invokeURL, requestHeaders, mistralPayload);
+        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
         assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
-        assertEquals(mistralResponse, serviceResponse.getData(), "Mistral AI API response mismatch");
+        assertEquals(model1Response, serviceResponse.getData(), "Mistral AI API response mismatch");
     }
+
+    /**
+     * Test endpoint addition to Mistral AI API
+     */
+    @Test(groups = {"wso2.am"}, description = "Test endpoint addition to AI API",
+            dependsOnMethods = "testMistralAIApiInvocation")
+    public void testMistralAIApiEndpointAddition() throws Exception {
+        // Add production endpoint
+        String prodEndpointConfig = readFile(resourcePath + "prod-endpoint-add-endpoint-config.json");
+        JSONObject prodEndpointConfigObj = new JSONObject(prodEndpointConfig);
+        JSONObject productionEndpoints = new JSONObject();
+        productionEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint);
+        prodEndpointConfigObj.put("production_endpoints", productionEndpoints);
+
+        HttpResponse addApiEndpointResponse = restAPIPublisher.addApiEndpoint(mistralAPIId, productionEndpointName,
+                productionDeploymentStage, prodEndpointConfigObj);
+        Assert.assertEquals(HttpStatus.SC_CREATED, addApiEndpointResponse.getResponseCode(),
+                "Failed to add production endpoint to API: " + mistralAPIId);
+    }
+
+    /**
+     * Test Mistral AI API invocation after adding model round-robin policy
+     */
+    @Test(groups = {"wso2.am"}, description = "Test AI API invocation after adding model round-robin policy",
+            dependsOnMethods = "testMistralAIApiEndpointAddition")
+    public void testMistralAIApiInvocationAfterAddingModelRoundRobinPolicy() throws Exception {
+        // Retrieve endpoints
+        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
+        Assert.assertEquals(HttpStatus.SC_OK, getEndpointsResponse.getResponseCode(),
+                "Failed to retrieve endpoints of API: " + mistralAPIId);
+
+        // Retrieve model list
+        HttpResponse getModelListResponse = restAPIPublisher.getLLMProviderModelList(llmProviderId);
+        Assert.assertEquals(HttpStatus.SC_OK, getModelListResponse.getResponseCode(),
+                "Failed to retrieve model list of LLM provider: " + llmProviderId);
+
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(mistralAPIId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        // Add model round-robin policy
+        String policyName = "modelRoundRobin";
+        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
+
+        Map<String, Object> attributeMap = new HashMap<>();
+        attributeMap.put("roundRobinConfigs", "");
+
+        List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
+        OperationPolicyDTO roundRobinPolicyDTO = new OperationPolicyDTO();
+        roundRobinPolicyDTO.setPolicyName(policyName);
+        roundRobinPolicyDTO.setPolicyType("common");
+        roundRobinPolicyDTO.setPolicyId(policyMap.get(policyName));
+        roundRobinPolicyDTO.setParameters(attributeMap);
+        requestPolicyList.add(roundRobinPolicyDTO);
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(requestPolicyList);
+        apidto.setApiPolicies(apiOperationPoliciesDTO);
+        restAPIPublisher.updateAPI(apidto);
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Invoke API
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("ApiKey", apiKey);
+        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
+
+        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
+        assertEquals(model1Response, serviceResponse.getData(), "Mistral AI API response mismatch");
+    }
+
+//    testCreateNewVersionAfterAddingModelRoundRobinPolicy
 
     /**
      * Deletes a specified LLM provider after removing API subscriptions and applications.
@@ -360,14 +463,20 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         return temp;
     }
 
-    private void startWiremockServer() throws Exception {
+    private void startWiremockServer() {
 
         endpointPort = getAvailablePort();
-        wireMockServer = new WireMockServer(options().port(endpointPort));
+        wireMockServer = new WireMockServer(options()
+                .port(endpointPort)
+                .extensions(new ResponseTemplateTransformer(true)));
 
         wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + mistralAPIResource))
-                .willReturn(aResponse().withStatus(200).
-                        withHeader("Content-Type", "application/json").withBody(mistralResponse)));
+                .withRequestBody(matchingJsonPath("$.model", equalTo(model1)))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(mistralResponse)
+                        .withTransformers("response-template")));
 
         wireMockServer.start();
         log.info("Wiremock server started on port " + endpointPort);
@@ -390,7 +499,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Check whether give port is available
+     * Check whether given port is available
      *
      * @param port Port Number
      * @return status
