@@ -31,35 +31,11 @@ import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiOperationPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GatewayPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
-import org.wso2.am.integration.clients.publisher.api.v1.LinterCustomRulesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+import org.wso2.am.integration.clients.publisher.api.v1.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -166,6 +142,8 @@ public class RestAPIPublisherImpl {
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
     private GatewayPoliciesApi gatewayPoliciesApi = new GatewayPoliciesApi();
+    private ApiEndpointsApi apiEndpointsApi = new ApiEndpointsApi();
+    private LlmProviderApi llmProviderApi = new LlmProviderApi();
 
     private ImportExportApi importExportApi = new ImportExportApi();
 
@@ -229,6 +207,7 @@ public class RestAPIPublisherImpl {
         importExportApi.setApiClient(apiPublisherClient);
         linterCustomRulesApi.setApiClient(apiPublisherClient);
         gatewayPoliciesApi.setApiClient(apiPublisherClient);
+        apiEndpointsApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -2829,5 +2808,77 @@ public class RestAPIPublisherImpl {
      */
     public void changeSubscriptionBusinessPlan(String subscriptionId, String businessPlan, String ifMatch) throws ApiException {
         subscriptionsApi.changeSubscriptionBusinessPlan(subscriptionId, businessPlan, ifMatch);
+    }
+
+    /**
+     * This method is used to add an API Endpoint.
+     *
+     * @param apiId           API UUID
+     * @param name            API endpoint name
+     * @param deploymentStage Deployment stage: Production or Sandbox
+     * @param endpointConfig  Endpoint configuration object
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when creating the API Endpoint
+     */
+    public HttpResponse addApiEndpoint(String apiId, String name, String deploymentStage, Object endpointConfig)
+            throws ApiException {
+
+        APIEndpointDTO apiEndpointDTO = new APIEndpointDTO();
+        apiEndpointDTO.setName(name);
+        apiEndpointDTO.setDeploymentStage(deploymentStage);
+        apiEndpointDTO.setEndpointConfig(endpointConfig);
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointDTO> addedApiEndpoint = apiEndpointsApi.addApiEndpointWithHttpInfo(apiId,
+                    apiEndpointDTO);
+            apiEndpointDTO = addedApiEndpoint.getData();
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_CREATED);
+        }
+        return response;
+    }
+
+    /**
+     * Get API endpoints for a given API UUID.
+     *
+     * @param apiId API UUID
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when retrieving the API endpoints
+     */
+    public HttpResponse getApiEndpoints(String apiId) {
+        APIEndpointListDTO apiEndpointListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointListDTO> apiResponse = apiEndpointsApi.getApiEndpointsWithHttpInfo(apiId, null, 0);
+            apiEndpointListDTO = apiResponse.getData();
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (apiEndpointListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(apiEndpointListDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Get model list registered under the LLM Provider.
+     *
+     * @param llmProviderId LLM Provider ID
+     * @return HttpResponse
+     */
+    public HttpResponse getLLMProviderModelList(String llmProviderId) {
+        Gson gson = new Gson();
+        try {
+            ApiResponse<List<String>> modelListResponse = llmProviderApi.getLLMProviderModelsWithHttpInfo(
+                    llmProviderId);
+            return new HttpResponse(gson.toJson(modelListResponse.getData()), modelListResponse.getStatusCode());
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
     }
 }
