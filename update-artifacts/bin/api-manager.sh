@@ -256,16 +256,28 @@ fi
 for f in "$CARBON_HOME"/bin/*.jar
 do
     if [ "$f" != "$CARBON_HOME/bin/*.jar" ];then
-        CARBON_CLASSPATH="$CARBON_CLASSPATH":$f
+        if [ -n "$CARBON_CLASSPATH" ]; then
+            CARBON_CLASSPATH="$CARBON_CLASSPATH:$f"
+        else
+            CARBON_CLASSPATH="$f"
+        fi
     fi
 done
 for t in "$CARBON_HOME"/lib/*.jar
 do
-    CARBON_CLASSPATH="$CARBON_CLASSPATH":$t
+    if [ -n "$CARBON_CLASSPATH" ]; then
+        CARBON_CLASSPATH="$CARBON_CLASSPATH:$t"
+    else
+        CARBON_CLASSPATH="$t"
+    fi
 done
 for t in "$CARBON_HOME"/lib/endorsed/*.jar
 do
-    CARBON_CLASSPATH="$CARBON_CLASSPATH":$t
+    if [ -n "$CARBON_CLASSPATH" ]; then
+        CARBON_CLASSPATH="$CARBON_CLASSPATH:$t"
+    else
+        CARBON_CLASSPATH="$t"
+    fi
 done
 
 
