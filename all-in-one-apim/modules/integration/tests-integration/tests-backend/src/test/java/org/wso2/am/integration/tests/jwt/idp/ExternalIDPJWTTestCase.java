@@ -19,6 +19,7 @@
 package org.wso2.am.integration.tests.jwt.idp;
 
 import com.google.gson.Gson;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,12 +58,16 @@ import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.identity.application.common.model.idp.xsd.IdentityProvider;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,6 +84,11 @@ import static org.testng.AssertJUnit.assertTrue;
 public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(ExternalIDPJWTTestCase.class);
+    private final String jwtAudience ="https://default";
+    private final String jwtIssuer = "https://test6.apim.integration";
+    private final String keystoreFileValid = "extidpjwt.jks";
+    private final String keystoreFileValidPass = "extidpjwt";
+    private final String keystoreFileValidAlias = "extidpjwt";
     private static final String KEY_MANAGER_1 = "KeyManager-1";
     private static final String KEY_MANAGER_2 = "KeyManager-2";
     private static final String KEY_MANAGER_3 = "KeyManager-3";
@@ -128,6 +138,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         jwtApplicationId = applicationDTO.getData();
         keyManager1Id = createKeyManager1(restAPIAdmin);
         keyManager2Id = createKeyManager2(restAPIAdmin);
+        addValidIdentityProvider();
         tokenEndpointURLString = getKeyManagerURLHttps() + "/oauth2/token";
         tokenEndpointURL = new URL(tokenEndpointURLString);
         apiId = createAPI(apiName, apiContext, Arrays.asList(ALL_KEY_MANAGER));
@@ -722,6 +733,39 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
         KeyManagerDTO retrievedData = keyManagerDTOApiResponse.getData();
         return retrievedData.getId();
+    }
+
+    private void addValidIdentityProvider() throws Exception {
+        addIdentityProvider(jwtAudience, jwtIssuer, keystoreFileValid, keystoreFileValidPass, keystoreFileValidAlias);
+    }
+
+    /**
+     * To add the identity provider.
+     *
+     * @throws Exception Exception.
+     */
+    private void addIdentityProvider(String alias, String issuer, String keystoreFile, String pwd, String certAlias)
+            throws Exception {
+        File keyStoreFile = Paths.get(getAMResourceLocation(), "configFiles", "jwtgrant", keystoreFile).toFile();
+
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        FileInputStream fileInputStream = new FileInputStream(keyStoreFile);
+        keyStore.load(fileInputStream, pwd.toCharArray());
+        Certificate publicCert = keyStore.getCertificate("extidpjwt");
+        byte[] encoded = Base64.encodeBase64(publicCert.getEncoded());
+
+        IdentityProvider identityProvider = new IdentityProvider();
+        identityProvider.setEnable(true);
+        identityProvider.setAlias(alias);
+        identityProvider.setDisplayName("disp_name");
+        identityProvider.setCertificate(new String(encoded));
+        identityProvider.setIdentityProviderName(issuer);
+        identityProviderMgtServiceClient.addIdP(identityProvider);
+
+        final String idpAddFailureError = "Identity provider was not added correctly";
+        IdentityProvider addedIdp = identityProviderMgtServiceClient.getIdPByName(jwtIssuer);
+        Assert.assertNotNull(addedIdp, idpAddFailureError);
+        Assert.assertEquals(addedIdp.getIdentityProviderName(), jwtIssuer, idpAddFailureError);
     }
 
     @Test(description = "test Generate consumer Keys when oauth app creation disable")
