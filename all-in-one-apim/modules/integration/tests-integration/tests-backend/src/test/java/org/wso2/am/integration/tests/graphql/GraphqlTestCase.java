@@ -20,6 +20,8 @@
 package org.wso2.am.integration.tests.graphql;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -58,13 +60,20 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.net.Socket;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.testng.Assert.assertEquals;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
@@ -78,6 +87,9 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
     private final String RESPONSE_DATA = "[{\"name\":\"Afrikaans\",\"code\":\"af\"},{\"name\":\"Amharic\",\"code\":\"am\"}," +
             "{\"name\":\"Arabic\",\"code\":\"ar\"},{\"name\":\"Aymara\",\"code\":\"ay\"},{\"name\":\"Azerbaijani\"," +
             "\"code\":\"az\"},{\"name\":\"Belarusian\",\"code\":\"be\"}]";
+    private static final String mockgraphQLAPIEndpoint = "/mock_graphql";
+    private static final String mockgraphQLAPIIntrospectionResource = "/introspection";
+    private static final String mockgraphQLAPISDLResource = "/sdl";
     private static final String GRAPHQL_TEST_USER = "graphqluser";
     private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlUser";
     private static final String GRAPHQL_ROLE = "graphqlrole";
@@ -85,10 +97,18 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
 
     private String schemaDefinition;
     private String graphqlAPIId;
+    private String graphqlAPISDLId;
+    private String graphqlAPIEndpointId;
     private String testAppId1;
     private String testAppId2;
     private String testAppId3;
     private String testAppId4;
+
+    private WireMockServer wireMockServer;
+    private int endpointPort;
+    private String endpointHost = "http://localhost";
+    private int lowerPortLimit = 9950;
+    private int upperPortLimit = 9999;
 
     @Factory(dataProvider = "userModeDataProvider")
     public GraphqlTestCase(TestUserMode userMode) {
@@ -143,6 +163,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.changeAPILifeCycleStatus(graphqlAPIId, Constants.PUBLISHED);
         waitForAPIDeploymentSync(user.getUserName(), GRAPHQL_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
+        startWiremockServer();
     }
 
     @Test(groups = {"wso2.am"}, description = "Create and publish GraphQL APIs by providing GraphQL schema with " +
@@ -225,6 +246,82 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         response = restAPIPublisher.importGraphqlSchemaDefinitionWithInvalidContext(file, additionalPropertiesObj.toString());
         Assert.assertNotNull(response, "Response cannot be null");
         Assert.assertEquals(response.getResponseCode(), 400, "Response Code miss matched when creating the API");
+    }
+
+    @Test(groups = { "wso2.am" }, description =
+            "Test GraphQL API creation using SDL URL")
+    public void testCreateGraphQLAPIUsingSDLURL() throws Exception {
+        String graphQLUrl = endpointHost + ":" + endpointPort + mockgraphQLAPIEndpoint + mockgraphQLAPISDLResource;
+        GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinitionByURL(graphQLUrl, false);
+        GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = responseApiDto.getGraphQLInfo();
+        String arrayToJson = new ObjectMapper().writeValueAsString(graphQLInfo.getOperations());
+        JSONArray operations = new JSONArray(arrayToJson);
+
+        ArrayList<String> environment = new ArrayList<String>();
+        environment.add(Constants.GATEWAY_ENVIRONMENT);
+
+        ArrayList<String> policies = new ArrayList<String>();
+        policies.add("Unlimited");
+
+        JSONObject additionalPropertiesObj = new JSONObject();
+        additionalPropertiesObj.put("name", GRAPHQL_API_NAME + "withSDL");
+        additionalPropertiesObj.put("context", API_CONTEXT + "_sdl");
+        additionalPropertiesObj.put("version", API_VERSION_1_0_0);
+
+        JSONObject url = new JSONObject();
+        url.put("url", END_POINT_URL);
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("sandbox_endpoints", url);
+        endpointConfig.put("production_endpoints", url);
+        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+        additionalPropertiesObj.put("policies", policies);
+        additionalPropertiesObj.put("operations", operations);
+
+        // create Graphql API
+        APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinitionByURL(graphQLUrl, additionalPropertiesObj.toString());
+        graphqlAPISDLId = apidto.getId();
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPISDLId);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
+                GRAPHQL_API_NAME + "withSDL" + " API creation is failed");
+    }
+
+    @Test(groups = { "wso2.am" }, description =
+            "Test GraphQL API creation using Endpoint")
+    public void testCreateGraphQLAPIUsingEndpoint() throws Exception {
+        String graphQLEndpointURL = endpointHost + ":" + endpointPort + mockgraphQLAPIEndpoint + mockgraphQLAPIIntrospectionResource;
+        GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinitionByURL(graphQLEndpointURL, true);
+        GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = responseApiDto.getGraphQLInfo();
+        String arrayToJson = new ObjectMapper().writeValueAsString(graphQLInfo.getOperations());
+        JSONArray operations = new JSONArray(arrayToJson);
+
+        ArrayList<String> environment = new ArrayList<String>();
+        environment.add(Constants.GATEWAY_ENVIRONMENT);
+
+        ArrayList<String> policies = new ArrayList<String>();
+        policies.add("Unlimited");
+
+        JSONObject additionalPropertiesObj = new JSONObject();
+        additionalPropertiesObj.put("name", GRAPHQL_API_NAME + "withEndpoint");
+        additionalPropertiesObj.put("context", API_CONTEXT + "_endpoint");
+        additionalPropertiesObj.put("version", API_VERSION_1_0_0);
+
+        JSONObject url = new JSONObject();
+        url.put("url", graphQLEndpointURL);
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("sandbox_endpoints", url);
+        endpointConfig.put("production_endpoints", url);
+        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+        additionalPropertiesObj.put("policies", policies);
+        additionalPropertiesObj.put("operations", operations);
+
+        // create Graphql API
+        APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinitionByURL(null, additionalPropertiesObj.toString());
+        graphqlAPIEndpointId = apidto.getId();
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPIEndpointId);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
+                GRAPHQL_API_NAME + "withEndpoint" + " API creation is failed");
     }
 
     @Test(groups = {"wso2.am"}, description = "test retrieve schemaDefinition at publisher")
@@ -483,6 +580,83 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         };
     }
 
+    private void startWiremockServer() throws Exception {
+
+        if (wireMockServer == null) {
+            String urlResponse;
+            String introspectionResponse;
+
+            ClassLoader classLoader = getClass().getClassLoader();
+            urlResponse = new String(Files.readAllBytes(Paths.get(classLoader.getResource("graphql/schema.graphql").toURI())));
+            introspectionResponse = new String(Files.readAllBytes(Paths.get(classLoader.getResource("graphql/schemaResponseFromIntrospection.json").toURI())));
+
+            endpointPort = getAvailablePort();
+            wireMockServer = new WireMockServer(options().port(endpointPort));
+
+            // SDL URL
+            wireMockServer.stubFor(WireMock.get(urlEqualTo(mockgraphQLAPIEndpoint + mockgraphQLAPISDLResource))
+                    .willReturn(aResponse().withStatus(200)
+                            .withHeader("Content-Type", "application/json").withBody(urlResponse)));
+
+            // Introspection endpoint
+            wireMockServer.stubFor(WireMock.post(urlEqualTo(mockgraphQLAPIEndpoint + mockgraphQLAPIIntrospectionResource))
+                    .willReturn(aResponse().withStatus(200)
+                            .withHeader("Content-Type", "application/json").withBody(introspectionResponse)));
+
+            wireMockServer.start();
+            log.info("Wiremock server started on port " + endpointPort);
+        }
+    }
+
+    private void stopWireMockServer() throws Exception {
+        if (wireMockServer != null) {
+            wireMockServer.stop();
+        }
+    }
+
+    /**
+     * Find a free port to start backend WebSocket server in given port range
+     *
+     * @return Available Port Number
+     */
+    private int getAvailablePort() {
+
+        while (lowerPortLimit < upperPortLimit) {
+            if (isPortFree(lowerPortLimit)) {
+                return lowerPortLimit;
+            }
+            lowerPortLimit++;
+        }
+        return -1;
+    }
+
+    /**
+     * Check whether give port is available
+     *
+     * @param port Port Number
+     * @return status
+     */
+    private boolean isPortFree(int port) {
+
+        Socket s = null;
+        try {
+            s = new Socket(endpointHost, port);
+            // something is using the port and has responded.
+            return false;
+        } catch (IOException e) {
+            // port available
+            return true;
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to close connection ", e);
+                }
+            }
+        }
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         userManagementClient.deleteRole(GRAPHQL_ROLE);
@@ -493,6 +667,9 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(testAppId4);
         undeployAndDeleteAPIRevisionsUsingRest(graphqlAPIId, restAPIPublisher);
         restAPIPublisher.deleteAPI(graphqlAPIId);
+        restAPIPublisher.deleteAPI(graphqlAPISDLId);
+        restAPIPublisher.deleteAPI(graphqlAPIEndpointId);
+        stopWireMockServer();
         super.cleanUp();
     }
 }
