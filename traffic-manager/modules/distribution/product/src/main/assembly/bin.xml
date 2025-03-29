@@ -130,7 +130,7 @@
                 <exclude>**/repository/components/plugins/org.objectweb.asm_5.2.0.jar</exclude>
                 <exclude>**/repository/components/plugins/httpcore_4.4.14.wso2v1.jar</exclude>
                 <!--This jar is not used in apim-->
-                <exclude>**/repository/components/plugins/swagger-parser_2.0.20.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/swagger-parser_2.1.22.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/libthrift_0.9.2.wso2v1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/org.wso2.carbon.tenant.redirector.servlet*.jar</exclude>-->
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
