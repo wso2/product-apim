@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.admin.api.dto.AdditionalPropertyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EnvironmentPermissionsDTO;
 import org.wso2.am.integration.clients.admin.api.dto.GatewayEnvironmentProtocolURIDTO;
 import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -73,6 +74,10 @@ public class EnvironmentDTO {
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
             private List<AdditionalPropertyDTO> additionalProperties = null;
+
+        public static final String SERIALIZED_NAME_PERMISSIONS = "permissions";
+        @SerializedName(SERIALIZED_NAME_PERMISSIONS)
+            private EnvironmentPermissionsDTO permissions;
 
 
         public EnvironmentDTO id(String id) {
@@ -303,6 +308,29 @@ public class EnvironmentDTO {
     }
 
 
+        public EnvironmentDTO permissions(EnvironmentPermissionsDTO permissions) {
+        
+        this.permissions = permissions;
+        return this;
+        }
+
+    /**
+        * Get permissions
+    * @return permissions
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public EnvironmentPermissionsDTO getPermissions() {
+        return permissions;
+    }
+
+
+    public void setPermissions(EnvironmentPermissionsDTO permissions) {
+        this.permissions = permissions;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -321,12 +349,13 @@ public class EnvironmentDTO {
             Objects.equals(this.isReadOnly, environment.isReadOnly) &&
             Objects.equals(this.vhosts, environment.vhosts) &&
             Objects.equals(this.endpointURIs, environment.endpointURIs) &&
-            Objects.equals(this.additionalProperties, environment.additionalProperties);
+            Objects.equals(this.additionalProperties, environment.additionalProperties) &&
+            Objects.equals(this.permissions, environment.permissions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, displayName, description, provider, gatewayType, isReadOnly, vhosts, endpointURIs, additionalProperties);
+        return Objects.hash(id, name, displayName, description, provider, gatewayType, isReadOnly, vhosts, endpointURIs, additionalProperties, permissions);
     }
 
 
@@ -344,6 +373,7 @@ sb.append("class EnvironmentDTO {\n");
     sb.append("    vhosts: ").append(toIndentedString(vhosts)).append("\n");
     sb.append("    endpointURIs: ").append(toIndentedString(endpointURIs)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    permissions: ").append(toIndentedString(permissions)).append("\n");
 sb.append("}");
 return sb.toString();
 }
