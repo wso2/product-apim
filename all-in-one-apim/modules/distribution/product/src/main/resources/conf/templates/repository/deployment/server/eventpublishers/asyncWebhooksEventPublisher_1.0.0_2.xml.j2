@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-{% if apim.throttling.event_duplicate_url is defined %}
+{% if apim.event_hub.event_duplicate_url is defined || apim.throttling.event_duplicate_url is defined %}
         <eventPublisher name="asyncWebhooksEventPublisher-1.0.0-2" statistics="disable"
 {% else %}
         <eventPublisher name="asyncWebhooksEventPublisher-1.0.0-2" statistics="disable" processing="disable"
