@@ -1,0 +1,291 @@
+{
+  "id": "d595ebf1-6cba-426d-b219-2de8a5ca53f0",
+  "name": "ExampleAPI",
+  "description": "API with meaningful resources following the specified template.",
+  "context": "/exampleapi",
+  "version": "1.0.0",
+  "provider": "admin",
+  "lifeCycleStatus": "CREATED",
+  "wsdlInfo": null,
+  "wsdlUrl": null,
+  "responseCachingEnabled": false,
+  "cacheTimeout": 300,
+  "hasThumbnail": false,
+  "isDefaultVersion": false,
+  "isRevision": false,
+  "revisionedApiId": null,
+  "revisionId": 0,
+  "enableSchemaValidation": false,
+  "enableSubscriberVerification": false,
+  "type": "HTTP",
+  "audience": null,
+  "transport": [
+    "http",
+    "https"
+  ],
+  "tags": [],
+  "policies": [
+    "Unlimited"
+  ],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": "Authorization",
+  "securityScheme": [
+    "oauth2",
+    "oauth_basic_auth_api_key_mandatory"
+  ],
+  "maxTps": null,
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "visibleTenants": [],
+  "mediationPolicies": [],
+  "apiPolicies": null,
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "subscriptionAvailableTenants": [],
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "monetization": null,
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "businessInformation": {
+    "businessOwner": null,
+    "businessOwnerEmail": null,
+    "technicalOwner": null,
+    "technicalOwnerEmail": null
+  },
+  "corsConfiguration": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": [
+      "*"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "Internal-Key"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  },
+  "websubSubscriptionConfiguration": {
+    "enable": false,
+    "secret": "",
+    "signingAlgorithm": "SHA1",
+    "signatureHeader": "x-hub-signature"
+  },
+  "workflowStatus": null,
+  "createdTime": "1732096780841",
+  "lastUpdatedTimestamp": "1732257477566",
+  "lastUpdatedTime": "2024-11-22 12:07:57.566",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "config": null,
+      "url": "http://localhost"
+    },
+    "production_endpoints": {
+      "config": null,
+      "url": "http://localhost"
+    }
+  },
+  "endpointImplementationType": "INLINE",
+  "scopes": [
+    {
+      "scope": {
+        "id": null,
+        "name": "ScopeA",
+        "displayName": "ScopeA",
+        "description": "",
+        "bindings": [
+          "admin"
+        ],
+        "usageCount": null
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "id": null,
+        "name": "ScopeB",
+        "displayName": "ScopeB",
+        "description": "",
+        "bindings": [
+          "admin"
+        ],
+        "usageCount": null
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "id": null,
+        "name": "ScopeC",
+        "displayName": "ScopeC",
+        "description": "",
+        "bindings": [
+          "admin"
+        ],
+        "usageCount": null
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "id": null,
+        "name": "ScopeD",
+        "displayName": "ScopeD",
+        "description": "",
+        "bindings": [
+          "admin"
+        ],
+        "usageCount": null
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "id": null,
+        "name": "ScopeE",
+        "displayName": "ScopeE",
+        "description": "",
+        "bindings": [
+          "admin"
+        ],
+        "usageCount": null
+      },
+      "shared": false
+    }
+  ],
+  "operations": [
+    {
+      "id": "",
+      "target": "/products/catalog/{categoryId}",
+      "verb": "GET",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeA"
+      ],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "/products/popular",
+      "verb": "GET",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeB"
+      ],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "/products/*",
+      "verb": "GET",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeC"
+      ],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "/orders",
+      "verb": "GET",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeD"
+      ],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "/*",
+      "verb": "GET",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeE"
+      ],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "threatProtectionPolicies": null,
+  "categories": [],
+  "keyManagers": [
+    "all"
+  ],
+  "serviceInfo": null,
+  "advertiseInfo": {
+    "advertised": false,
+    "apiExternalProductionEndpoint": null,
+    "apiExternalSandboxEndpoint": null,
+    "originalDevPortalUrl": null,
+    "apiOwner": "admin",
+    "vendor": "WSO2"
+  },
+  "gatewayVendor": "wso2",
+  "gatewayType": "wso2/synapse",
+  "asyncTransportProtocols": []
+}
