@@ -72,18 +72,22 @@ import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
@@ -121,13 +125,15 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private final String DESCRIPTION = "This is test API create by API manager integration test";
     private final String UPDATED_DESCRIPTION = "This is the updated version of API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
+    private final String API_VERSION_V2 = "2.0.0";
     private final String APP_NAME = "APIImportExportTestCaseApp";
     private final String NEW_APP_NAME = "newAPIImportExportTestCaseApp";
     private RestAPIStoreImpl allowedStoreUser;
     private String allowedUser = "allowedUser";
     private String publisherUser = "importExportPublisher";
     private String publisherURLHttps;
-    private File zipTempDir, apiZip, apiWithThumbZip, newApiZip, preservePublisherApiZip, notPreservePublisherApiZip;
+    private File zipTempDir, apiZip, apiWithThumbZip, newApiZip, preservePublisherApiZip, notPreservePublisherApiZip,
+            notPreservePublisherApiV2Zip;
     private String importUrl;
     private String exportUrl;
     private APICreationRequestBean apiCreationRequestBean;
@@ -760,6 +766,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         notPreservePublisherApiId = apiObj.getId();
         provider = apiObj.getProvider();
         assertEquals(provider, publisherUser, "Provider is not as expected when 'preserveProvider'=false");
+        HttpResponse deleteServiceResponse = restAPIPublisher.deleteAPI(notPreservePublisherApiId);
+        assertEquals(deleteServiceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
     }
 
     @Test(groups = {"wso2.am"}, description = "Export restricted API from user with restricted role",
@@ -888,6 +896,83 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         apiWithThumbId = apiObjWithThumb.getId();
     }
 
+    @Test(groups = { "wso2.am" }, description = "Change API version in exported artifact and re-import",
+            dependsOnMethods = "testAPIImportWithThumb")
+    public void testChangeVersionAndReImportWithPreserveProviderOptions() throws Exception {
+
+        // Import the exported zip without changing the version
+        importArtifact(importUrl, notPreservePublisherApiZip, user.getUserName(), user.getPassword().toCharArray());
+        waitForAPIDeployment();
+        APIDTO apiDto = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
+        notPreservePublisherApiId = apiDto.getId();
+        Assert.assertEquals(apiDto.getVersion(), API_VERSION,
+                "API version mismatch when importing the original API");
+        Assert.assertEquals(apiDto.getProvider(), user.getUserName(),
+                "Provider mismatch when importing the original API");
+
+        // Extract exported API ZIP
+        File extractedDir = new File(notPreservePublisherApiZip.getParent(),
+                NOT_PRESERVE_PUBLISHER_API_NAME + "-" + API_VERSION);
+        try {
+            ZipFile zipFile = new ZipFile(notPreservePublisherApiZip);
+            zipFile.extractAll(notPreservePublisherApiZip.getParent());
+        } catch (ZipException e) {
+            throw new APIManagerIntegrationTestException("Error extracting exported API zip", e);
+        }
+
+        // Read and modify api.json content to change the version to 2.0.0
+        String apiJsonPath = extractedDir.getAbsolutePath() + File.separator + "api.json";
+        String content = new String(java.nio.file.Files.readAllBytes(Paths.get(apiJsonPath)), StandardCharsets.UTF_8);
+        JSONParser parser = new JSONParser();
+        JSONObject apiJson = (JSONObject) parser.parse(content);
+        JSONObject dataObject = (JSONObject) apiJson.get("data");
+        dataObject.put("version", API_VERSION_V2);
+
+        // Write updated json back
+        try (FileWriter writer = new FileWriter(apiJsonPath)) {
+            writer.write(apiJson.toJSONString());
+        }
+
+        // Re-zip into new file
+        notPreservePublisherApiV2Zip = new File(notPreservePublisherApiZip.getParent()
+                + File.separator + NOT_PRESERVE_PUBLISHER_API_NAME + "-v2.zip");
+        Path parentDir = extractedDir.getParentFile().toPath();
+        Path folderToZip = extractedDir.toPath();
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(notPreservePublisherApiV2Zip))) {
+            java.nio.file.Files.walk(folderToZip).filter(path -> !java.nio.file.Files.isDirectory(path))
+                    .forEach(path -> {
+                        try {
+                            String zipEntryName = parentDir.relativize(path).toString();
+                            zos.putNextEntry(new ZipEntry(zipEntryName));
+                            java.nio.file.Files.copy(path, zos);
+                            zos.closeEntry();
+                        } catch (IOException e) {
+                            throw new RuntimeException("Error while creating new zip", e);
+                        }
+                    });
+        }
+        FileUtils.deleteDirectory(extractedDir);
+
+        // Import new API version with preserveProvider=true with admin user
+        importArtifact(importUrl + "?preserveProvider=true", notPreservePublisherApiV2Zip, user.getUserName(),
+                user.getPassword().toCharArray());
+        waitForAPIDeployment();
+        apiDto = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION_V2, user.getUserName());
+        Assert.assertEquals(apiDto.getProvider(), user.getUserName(),
+                "Provider mismatch when preserveProvider=true");
+        HttpResponse deleteServiceResponse = restAPIPublisher.deleteAPI(apiDto.getId());
+        assertEquals(deleteServiceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
+
+        // Import new API version with preserveProvider=false using publisher user
+        importArtifact(importUrl + "?preserveProvider=false", notPreservePublisherApiV2Zip, publisherUser,
+                PUBLISHER_USER_PASS);
+        waitForAPIDeployment();
+        apiDto = getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION_V2, publisherUser);
+        Assert.assertEquals(apiDto.getProvider(), publisherUser, "Provider mismatch when preserveProvider=false");
+        deleteServiceResponse = restAPIPublisher.deleteAPI(apiDto.getId());
+        assertEquals(deleteServiceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         allowedStoreUser.deleteApplication(applicationId);
@@ -908,6 +993,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         deleteStatus = preservePublisherApiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = notPreservePublisherApiZip.delete();
+        Assert.assertTrue(deleteStatus, "temp file delete not successful");
+        deleteStatus = notPreservePublisherApiV2Zip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         FileUtils.deleteDirectory(zipTempDir);
         Assert.assertTrue(deleteStatus, "temp directory delete not successful");
