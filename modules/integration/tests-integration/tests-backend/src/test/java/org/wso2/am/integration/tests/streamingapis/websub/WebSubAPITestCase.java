@@ -35,6 +35,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.internal.api.dto.WebhooksSubscriptionsListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WebsubSubscriptionConfigurationDTO;
@@ -286,6 +287,82 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(sent, received, "Callback server did not receive all the content distribution requests");
     }
 
+    @Test(description = "Test invoke WebSub API with multiple subscriptions and check subscription count",
+            dependsOnMethods = "testInvokeWebSubApi")
+    public void testMultipleSubscriptions() throws Exception {
+        String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        int initialSubscriptionCount = restAPIInternal.retrieveWebhooksSubscriptions().getList().size();
+
+        // Create 3 applications and subscribe to the API and subscribe to the topic
+        String application1Name = applicationName + "1";
+        HttpResponse application1Response = restAPIStore.createApplication(application1Name,
+                "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        String app1Id = application1Response.getData();
+        restAPIStore.subscribeToAPI(apiId, app1Id,
+                APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
+        ApplicationKeyDTO application1KeyDTO = restAPIStore.generateKeys(app1Id, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                null, grantTypes);
+        String accessToken1 = application1KeyDTO.getToken().getAccessToken();
+        handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl,
+                DEFAULT_TOPIC, topicSecret, "50000000",
+                accessToken1);
+        Thread.sleep(5000);
+
+        String application2Name = applicationName + "2";
+        HttpResponse application2Response = restAPIStore.createApplication(application2Name,
+                "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        String app2Id = application2Response.getData();
+        restAPIStore.subscribeToAPI(apiId, app2Id,
+                APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
+        ApplicationKeyDTO application2KeyDTO = restAPIStore.generateKeys(app2Id, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                null, grantTypes);
+        String accessToken2 = application2KeyDTO.getToken().getAccessToken();
+        handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl,
+                DEFAULT_TOPIC, topicSecret, "50000000",
+                accessToken2);
+        Thread.sleep(5000);
+
+        String application3Name = applicationName + "3";
+        HttpResponse application3Response = restAPIStore.createApplication(application3Name,
+                "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        String app3Id = application3Response.getData();
+        restAPIStore.subscribeToAPI(apiId, app3Id,
+                APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
+        ApplicationKeyDTO application3KeyDTO = restAPIStore.generateKeys(app3Id, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                null, grantTypes);
+        String accessToken3 = application3KeyDTO.getToken().getAccessToken();
+        // Subscribe to topic with infinite expiry time
+        handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl,
+                DEFAULT_TOPIC, topicSecret, accessToken3);
+        Thread.sleep(5000);
+
+        WebhooksSubscriptionsListDTO webhooksSubscriptionsListDTO = restAPIInternal.retrieveWebhooksSubscriptions();
+        Assert.assertEquals(webhooksSubscriptionsListDTO.getList().size(), initialSubscriptionCount + 3,
+                "Expected number of subscriptions not found in the database");
+
+        // Unsubscribe from the topic
+        HttpResponse unSubResponse1 = handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl,
+                DEFAULT_TOPIC, topicSecret,
+                "50000000", accessToken1);
+        HttpResponse unSubResponse2 = handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl,
+                DEFAULT_TOPIC, topicSecret,
+                "50000000", accessToken2);
+        HttpResponse unSubResponse3 = handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl,
+                DEFAULT_TOPIC, topicSecret, accessToken3);
+        Thread.sleep(5000);
+        WebhooksSubscriptionsListDTO webhooksSubscriptionsListDTOAfterUnsubscribing = restAPIInternal.retrieveWebhooksSubscriptions();
+        Assert.assertEquals(webhooksSubscriptionsListDTOAfterUnsubscribing.getList().size(), initialSubscriptionCount,
+                "Expected number of subscriptions not found in the database");
+    }
+
     @Test(description = "Check availability of mandatory parameters",
             dependsOnMethods = "testInvokeWebSubApi")
     public void testMandatoryParameters() throws Exception {
@@ -429,6 +506,21 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
         String body = "hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" + hubSecret
                 + "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
+        Map<String, String> headers = new HashMap<>();
+        headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
+        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        return HttpRequestUtil.doPost(new URL(url), body, headers);
+    }
+
+    // Subscribe to topic without an expiry time (infinite expiry time)
+    private static HttpResponse handleCallbackSubscriptionWithFormUrlEncoded(String hubMode, String url,
+                                                                             String callbackUrl, String hubTopic,
+                                                                             String hubSecret,
+                                                                             String bearerToken)
+            throws UnsupportedEncodingException, MalformedURLException, AutomationFrameworkException {
+        String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
+        String body = "hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" + hubSecret
+                + "&hub.topic=" + hubTopic;
         Map<String, String> headers = new HashMap<>();
         headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
