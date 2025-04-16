@@ -120,6 +120,25 @@
                         <clientSecret>$util.escapeXml($endpointSecurity.clientSecret)</clientSecret>
                     #end
                     <tokenUrl>$util.escapeXml($endpointSecurity.tokenUrl)</tokenUrl>
+                    #if($endpointSecurity.connectionTimeoutConfigType)
+                    #if($endpointSecurity.connectionTimeoutConfigType == "ENDPOINT_SPECIFIC")
+                    <connectionTimeout>$util.escapeXml($endpointSecurity.connectionTimeoutDuration)</connectionTimeout>
+                    <connectionRequestTimeout>$util.escapeXml($endpointSecurity.connectionRequestTimeoutDuration)</connectionRequestTimeout>
+                    <socketTimeout>$util.escapeXml($endpointSecurity.socketTimeoutDuration)</socketTimeout>
+                    #elseif($endpointSecurity.connectionTimeoutConfigType == "NONE")
+                    <useGlobalConnectionTimeoutConfigs>false</useGlobalConnectionTimeoutConfigs>
+                    #else
+                    <useGlobalConnectionTimeoutConfigs>true</useGlobalConnectionTimeoutConfigs>
+                    #end
+                    #else
+                    #if($endpointSecurity.connectionTimeoutDuration != -1 || $endpointSecurity.connectionRequestTimeoutDuration != -1 || $endpointSecurity.socketTimeoutDuration != -1)
+                    <connectionTimeout>$endpointSecurity.connectionTimeoutDuration</connectionTimeout>
+                    <connectionRequestTimeout>$endpointSecurity.connectionRequestTimeoutDuration</connectionRequestTimeout>
+                    <socketTimeout>$endpointSecurity.socketTimeoutDuration</socketTimeout>
+                    #else
+                    <useGlobalConnectionTimeoutConfigs>true</useGlobalConnectionTimeoutConfigs>
+                    #end
+                    #end
                     #if($endpointSecurity.proxyConfigs && $endpointSecurity.proxyConfigs.proxyEnabled == true)
                     <proxyConfigs>
                         <proxyHost>$util.escapeXml($endpointSecurity.proxyConfigs.proxyHost)</proxyHost>
@@ -132,10 +151,13 @@
                         #end
                         <proxyProtocol>$util.escapeXml($endpointSecurity.proxyConfigs.proxyProtocol)</proxyProtocol>
                     </proxyConfigs>
+                    #else
+                    #if($endpointSecurity.proxyConfigType && $endpointSecurity.proxyConfigType == "NONE")
+                    <useGlobalProxyConfigs>false</useGlobalProxyConfigs>
+                    #else
+                    <useGlobalProxyConfigs>true</useGlobalProxyConfigs>
                     #end
-                    <connectionTimeout>$util.escapeXml($endpointSecurity.connectionTimeoutDuration)</connectionTimeout>
-                    <connectionRequestTimeout>$util.escapeXml($endpointSecurity.connectionRequestTimeoutDuration)</connectionRequestTimeout>
-                    <socketTimeout>$util.escapeXml($endpointSecurity.socketTimeoutDuration)</socketTimeout>
+                    #end
                     #set($requestParametersMap = $util.jsonStringToMap($endpointSecurity.customParameters))
                     #if($requestParametersMap.size() > 0)
                         <requestParameters>
