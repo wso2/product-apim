@@ -106,6 +106,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.UpdateAPINullPointerTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
         </classes>
     </test>
 
@@ -129,7 +130,6 @@
             <class name="org.wso2.am.integration.tests.operationPolicy.OperationPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICreationForTenantsTestCase" />
             <class name="org.wso2.am.integration.tests.operationPolicy.JWTClaimBasedAccessValidatorPolicyTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
         </classes>
     </test>
 
