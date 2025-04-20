@@ -252,7 +252,8 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
             "Test GraphQL API creation using SDL URL")
     public void testCreateGraphQLAPIUsingSDLURL() throws Exception {
         String graphQLUrl = endpointHost + ":" + endpointPort + mockgraphQLAPIEndpoint + mockgraphQLAPISDLResource;
-        GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinitionByURL(graphQLUrl, false);
+        GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinitionByURL(graphQLUrl,
+            false);
         GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = responseApiDto.getGraphQLInfo();
         String arrayToJson = new ObjectMapper().writeValueAsString(graphQLInfo.getOperations());
         JSONArray operations = new JSONArray(arrayToJson);
@@ -264,33 +265,35 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         policies.add("Unlimited");
 
         JSONObject additionalPropertiesObj = new JSONObject();
-        additionalPropertiesObj.put("name", GRAPHQL_API_NAME + "withSDL");
-        additionalPropertiesObj.put("context", API_CONTEXT + "_sdl");
-        additionalPropertiesObj.put("version", API_VERSION_1_0_0);
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_NAME, GRAPHQL_API_NAME + "withSDL");
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_CONTEXT, API_CONTEXT + "_sdl");
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_VERSION, API_VERSION_1_0_0);
 
         JSONObject url = new JSONObject();
-        url.put("url", END_POINT_URL);
+        url.put(APIMIntegrationConstants.URL, END_POINT_URL);
         JSONObject endpointConfig = new JSONObject();
-        endpointConfig.put("endpoint_type", "http");
-        endpointConfig.put("sandbox_endpoints", url);
-        endpointConfig.put("production_endpoints", url);
-        additionalPropertiesObj.put("endpointConfig", endpointConfig);
-        additionalPropertiesObj.put("policies", policies);
-        additionalPropertiesObj.put("operations", operations);
+        endpointConfig.put(APIMIntegrationConstants.ENDPOINT_TYPE, "http");
+        endpointConfig.put(APIMIntegrationConstants.SANDBOX_ENDPOINTS, url);
+        endpointConfig.put(APIMIntegrationConstants.PRODUCTION_ENDPOINTS, url);
+        additionalPropertiesObj.put(APIMIntegrationConstants.ENDPOINT_CONFIG, endpointConfig);
+        additionalPropertiesObj.put(APIMIntegrationConstants.POLICIES, policies);
+        additionalPropertiesObj.put(APIMIntegrationConstants.OPERATIONS, operations);
 
         // create Graphql API
-        APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinitionByURL(graphQLUrl, additionalPropertiesObj.toString());
+        APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinitionByURL(graphQLUrl,
+            additionalPropertiesObj.toString());
         graphqlAPISDLId = apidto.getId();
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPISDLId);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
                 GRAPHQL_API_NAME + "withSDL" + " API creation is failed");
     }
 
-    @Test(groups = { "wso2.am" }, description =
-            "Test GraphQL API creation using Endpoint")
+    @Test(groups = { "wso2.am" }, description = "Test GraphQL API creation using Endpoint")
     public void testCreateGraphQLAPIUsingEndpoint() throws Exception {
-        String graphQLEndpointURL = endpointHost + ":" + endpointPort + mockgraphQLAPIEndpoint + mockgraphQLAPIIntrospectionResource;
-        GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinitionByURL(graphQLEndpointURL, true);
+        String graphQLEndpointURL = endpointHost + ":" + endpointPort
+            + mockgraphQLAPIEndpoint + mockgraphQLAPIIntrospectionResource;
+        GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinitionByURL(
+            graphQLEndpointURL, true);
         GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = responseApiDto.getGraphQLInfo();
         String arrayToJson = new ObjectMapper().writeValueAsString(graphQLInfo.getOperations());
         JSONArray operations = new JSONArray(arrayToJson);
@@ -302,26 +305,26 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         policies.add("Unlimited");
 
         JSONObject additionalPropertiesObj = new JSONObject();
-        additionalPropertiesObj.put("name", GRAPHQL_API_NAME + "withEndpoint");
-        additionalPropertiesObj.put("context", API_CONTEXT + "_endpoint");
-        additionalPropertiesObj.put("version", API_VERSION_1_0_0);
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_NAME, GRAPHQL_API_NAME + "withEndpoint");
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_CONTEXT, API_CONTEXT + "_endpoint");
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_VERSION, API_VERSION_1_0_0);
 
         JSONObject url = new JSONObject();
-        url.put("url", graphQLEndpointURL);
+        url.put(APIMIntegrationConstants.URL, graphQLEndpointURL);
         JSONObject endpointConfig = new JSONObject();
-        endpointConfig.put("endpoint_type", "http");
-        endpointConfig.put("sandbox_endpoints", url);
-        endpointConfig.put("production_endpoints", url);
-        additionalPropertiesObj.put("endpointConfig", endpointConfig);
-        additionalPropertiesObj.put("policies", policies);
-        additionalPropertiesObj.put("operations", operations);
+        endpointConfig.put(APIMIntegrationConstants.ENDPOINT_TYPE, "http");
+        endpointConfig.put(APIMIntegrationConstants.SANDBOX_ENDPOINTS, url);
+        endpointConfig.put(APIMIntegrationConstants.PRODUCTION_ENDPOINTS, url);
+        additionalPropertiesObj.put(APIMIntegrationConstants.ENDPOINT_CONFIG, endpointConfig);
+        additionalPropertiesObj.put(APIMIntegrationConstants.POLICIES, policies);
+        additionalPropertiesObj.put(APIMIntegrationConstants.OPERATIONS, operations);
 
         // create Graphql API
         APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinitionByURL(null, additionalPropertiesObj.toString());
         graphqlAPIEndpointId = apidto.getId();
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPIEndpointId);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
-                GRAPHQL_API_NAME + "withEndpoint" + " API creation is failed");
+            GRAPHQL_API_NAME + "withEndpoint" + " API creation is failed");
     }
 
     @Test(groups = {"wso2.am"}, description = "test retrieve schemaDefinition at publisher")
@@ -587,21 +590,24 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
             String introspectionResponse;
 
             ClassLoader classLoader = getClass().getClassLoader();
-            urlResponse = new String(Files.readAllBytes(Paths.get(classLoader.getResource("graphql/schema.graphql").toURI())));
-            introspectionResponse = new String(Files.readAllBytes(Paths.get(classLoader.getResource("graphql/schemaResponseFromIntrospection.json").toURI())));
+            urlResponse = new String(
+                Files.readAllBytes(Paths.get(classLoader.getResource("graphql/schema.graphql").toURI())));
+            introspectionResponse = new String(Files.readAllBytes(
+                Paths.get(classLoader.getResource("graphql/schemaResponseFromIntrospection.json").toURI())));
 
             endpointPort = getAvailablePort();
             wireMockServer = new WireMockServer(options().port(endpointPort));
 
             // SDL URL
             wireMockServer.stubFor(WireMock.get(urlEqualTo(mockgraphQLAPIEndpoint + mockgraphQLAPISDLResource))
-                    .willReturn(aResponse().withStatus(200)
-                            .withHeader("Content-Type", "application/json").withBody(urlResponse)));
+                .willReturn(
+                    aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(urlResponse)));
 
             // Introspection endpoint
-            wireMockServer.stubFor(WireMock.post(urlEqualTo(mockgraphQLAPIEndpoint + mockgraphQLAPIIntrospectionResource))
-                    .willReturn(aResponse().withStatus(200)
-                            .withHeader("Content-Type", "application/json").withBody(introspectionResponse)));
+            wireMockServer.stubFor(
+                WireMock.post(urlEqualTo(mockgraphQLAPIEndpoint + mockgraphQLAPIIntrospectionResource)).willReturn(
+                    aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                        .withBody(introspectionResponse)));
 
             wireMockServer.start();
             log.info("Wiremock server started on port " + endpointPort);
