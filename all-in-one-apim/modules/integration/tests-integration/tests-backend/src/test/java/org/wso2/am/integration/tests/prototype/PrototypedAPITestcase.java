@@ -45,6 +45,7 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GenerateMockScriptsRequestDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -290,13 +291,17 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         // Create an api by importing OAS3 file
         APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
         String apiImportId = apidto.getId();
+        GenerateMockScriptsRequestDTO mockConfig = new GenerateMockScriptsRequestDTO();
 
         // Change the lifecycle status to Prototype
         restAPIPublisher.changeAPILifeCycleStatus(apiImportId, Constants.DEPLOY_AS_PROTOTYPE);
 
         // Generate mock Script for Prototype Implementation
-        HttpResponse mockgenResponse = restAPIPublisher.generateMockScript(apiImportId);
+        HttpResponse mockgenResponse = restAPIPublisher.generateMockScript(apiImportId, mockConfig);
         Assert.assertEquals(mockgenResponse.getResponseCode(), 200);
+
+        // Update the swagger with Mock scripts
+        restAPIPublisher.updateSwagger(apiImportId, mockgenResponse.getData());
 
         // Retrieve and validate the generated mock script
         HttpResponse mockedGetResponse = restAPIPublisher.getGenerateMockScript(apiImportId);
@@ -355,12 +360,17 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
         String apiImportId = apidto.getId();
 
+        GenerateMockScriptsRequestDTO mockConfig = new GenerateMockScriptsRequestDTO();
+
         // Change the lifecycle status to Prototype
         restAPIPublisher.changeAPILifeCycleStatus(apiImportId, Constants.DEPLOY_AS_PROTOTYPE);
 
         // Generate mock Script for Prototype Implementation
-        HttpResponse mockgenResponse = restAPIPublisher.generateMockScript(apiImportId);
+        HttpResponse mockgenResponse = restAPIPublisher.generateMockScript(apiImportId, mockConfig);
         Assert.assertEquals(mockgenResponse.getResponseCode(), 200);
+
+        // Update the swagger with Mock scripts
+        restAPIPublisher.updateSwagger(apiImportId, mockgenResponse.getData());
 
         // Retrieve and validate the generated mock script
         HttpResponse mockedGetResponse = restAPIPublisher.getGenerateMockScript(apiImportId);
