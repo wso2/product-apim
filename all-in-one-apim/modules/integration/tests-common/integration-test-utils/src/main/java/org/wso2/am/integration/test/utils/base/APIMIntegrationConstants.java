@@ -51,6 +51,7 @@ public class APIMIntegrationConstants {
     public static final String ENDPOINT_CONFIG = "endpointConfig";
     public static final String POLICIES = "policies";
     public static final String OPERATIONS = "operations";
+    public static final String URL = "url";
     public static final String API_CONTEXT_MALFORMED_ERROR = "The API context is malformed";
     public static final String API_PRODUCT_CONTEXT_MALFORMED_ERROR = "The API Product context is malformed";
 
