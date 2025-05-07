@@ -855,6 +855,11 @@ paths:
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/If-None-Match'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateMockScriptsRequest'
       responses:
         200:
           description: |
@@ -11810,6 +11815,22 @@ components:
           example: ["Silver", "Gold", "Unlimited"]
           items:
             type: string
+    GenerateMockScriptsRequest:
+      title: Generate Mock Payload
+      type: object
+      properties:
+        generateWithAI:
+          type: boolean
+          description: |
+            Generate mock payload with AI
+          example: true
+          default: false
+        config:
+          type: object
+          description: |
+            Config to generate mock scripts and db properties. Can contain any key-value pairs.
+          additionalProperties: true
+          example: {}
     ScopeList:
       title: Scope List
       type: object

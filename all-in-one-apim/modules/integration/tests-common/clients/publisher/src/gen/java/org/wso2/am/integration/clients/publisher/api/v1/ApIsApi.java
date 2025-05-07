@@ -30,8 +30,10 @@ import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import java.io.File;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GenerateMockScriptsRequestDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePathListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SequenceBackendListDTO;
@@ -1160,6 +1162,7 @@ public class ApIsApi {
      * Build call for generateMockScripts
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param generateMockScriptsRequestDTO  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1172,8 +1175,8 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call generateMockScriptsCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
+    public okhttp3.Call generateMockScriptsCall(String apiId, String ifNoneMatch, GenerateMockScriptsRequestDTO generateMockScriptsRequestDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = generateMockScriptsRequestDTO;
 
         // create path and map variables
         String localVarPath = "/apis/{apiId}/generate-mock-scripts"
@@ -1197,7 +1200,7 @@ public class ApIsApi {
         }
 
         final String[] localVarContentTypes = {
-            
+            "application/json"
         };
         final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -1207,7 +1210,7 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call generateMockScriptsValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call generateMockScriptsValidateBeforeCall(String apiId, String ifNoneMatch, GenerateMockScriptsRequestDTO generateMockScriptsRequestDTO, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
@@ -1215,7 +1218,7 @@ public class ApIsApi {
         }
         
 
-        okhttp3.Call localVarCall = generateMockScriptsCall(apiId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = generateMockScriptsCall(apiId, ifNoneMatch, generateMockScriptsRequestDTO, _callback);
         return localVarCall;
 
     }
@@ -1225,6 +1228,7 @@ public class ApIsApi {
      * This operation can be used to generate mock responses from examples of swagger definition of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param generateMockScriptsRequestDTO  (optional)
      * @return String
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1236,8 +1240,8 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public String generateMockScripts(String apiId, String ifNoneMatch) throws ApiException {
-        ApiResponse<String> localVarResp = generateMockScriptsWithHttpInfo(apiId, ifNoneMatch);
+    public String generateMockScripts(String apiId, String ifNoneMatch, GenerateMockScriptsRequestDTO generateMockScriptsRequestDTO) throws ApiException {
+        ApiResponse<String> localVarResp = generateMockScriptsWithHttpInfo(apiId, ifNoneMatch, generateMockScriptsRequestDTO);
         return localVarResp.getData();
     }
 
@@ -1246,6 +1250,7 @@ public class ApIsApi {
      * This operation can be used to generate mock responses from examples of swagger definition of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param generateMockScriptsRequestDTO  (optional)
      * @return ApiResponse&lt;String&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1257,8 +1262,8 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<String> generateMockScriptsWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = generateMockScriptsValidateBeforeCall(apiId, ifNoneMatch, null);
+    public ApiResponse<String> generateMockScriptsWithHttpInfo(String apiId, String ifNoneMatch, GenerateMockScriptsRequestDTO generateMockScriptsRequestDTO) throws ApiException {
+        okhttp3.Call localVarCall = generateMockScriptsValidateBeforeCall(apiId, ifNoneMatch, generateMockScriptsRequestDTO, null);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1268,6 +1273,7 @@ public class ApIsApi {
      * This operation can be used to generate mock responses from examples of swagger definition of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param generateMockScriptsRequestDTO  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1280,9 +1286,9 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call generateMockScriptsAsync(String apiId, String ifNoneMatch, final ApiCallback<String> _callback) throws ApiException {
+    public okhttp3.Call generateMockScriptsAsync(String apiId, String ifNoneMatch, GenerateMockScriptsRequestDTO generateMockScriptsRequestDTO, final ApiCallback<String> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = generateMockScriptsValidateBeforeCall(apiId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = generateMockScriptsValidateBeforeCall(apiId, ifNoneMatch, generateMockScriptsRequestDTO, _callback);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

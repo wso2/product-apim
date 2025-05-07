@@ -91,6 +91,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationRes
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GenerateMockScriptsRequestDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataListDTO;
@@ -742,11 +743,11 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
-    public HttpResponse generateMockScript(String apiId) throws ApiException {
-        ApiResponse<String> mockResponse = apIsApi.generateMockScriptsWithHttpInfo(apiId, null);
+    public HttpResponse generateMockScript(String apiId, GenerateMockScriptsRequestDTO mockConfig) throws ApiException {
+        ApiResponse<String> mockResponse = apIsApi.generateMockScriptsWithHttpInfo(apiId, null, mockConfig);
         HttpResponse response = null;
         if (mockResponse.getStatusCode() == 200) {
-            response = new HttpResponse("Successfully generated MockScript", 200);
+            response = new HttpResponse(mockResponse.getData(), 200);
         }
         return response;
     }
