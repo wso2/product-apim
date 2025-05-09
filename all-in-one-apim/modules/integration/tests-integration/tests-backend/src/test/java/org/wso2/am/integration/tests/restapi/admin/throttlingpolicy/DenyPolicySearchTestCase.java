@@ -192,6 +192,7 @@ public class DenyPolicySearchTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        
         restAPIAdmin.deleteDenyThrottlingPolicy(blockingCondition1ID);
         restAPIAdmin.deleteDenyThrottlingPolicy(blockingCondition2ID);
         restAPIPublisher.deleteAPI(api1Id);
