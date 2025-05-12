@@ -276,6 +276,9 @@
           as 'false' to completely disable JWTClaimCache.
          -->
         <EnableJWTClaimCache>{{apim.cache.jwt_claim.enable}}</EnableJWTClaimCache>
+        {% if apim.cache.jwt_claim.expiry_time is defined %}
+        <JWTClaimCacheExpiry>{{apim.cache.jwt_claim.expiry_time}}</JWTClaimCacheExpiry>
+        {% endif %}
     </CacheConfigurations>
 
     <!--
