@@ -5662,6 +5662,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdditionalProperty'
+        permissions:
+          type: object
+          properties:
+            permissionType:
+              type: string
+              example: ALLOW
+              default: PUBLIC
+              enum:
+                - PUBLIC
+                - ALLOW
+                - DENY
+            roles:
+              type: array
+              items:
+                type: string
+              example:
+                - Subscriber
+                - Internal/subscriber
     EnvironmentList:
       title: Environment List
       type: object

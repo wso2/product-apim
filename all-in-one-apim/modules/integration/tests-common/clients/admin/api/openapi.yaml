@@ -8567,6 +8567,11 @@ components:
         isReadOnly: false
         provider: wso2
         displayName: US Region
+        permissions:
+          permissionType: ALLOW
+          roles:
+          - Subscriber
+          - Internal/subscriber
         name: us-region
         description: Gateway environment in US Region
         id: ece92bdc-e1e6-325c-b6f4-656208a041e9
@@ -8632,6 +8637,8 @@ components:
           items:
             $ref: '#/components/schemas/AdditionalProperty'
           type: array
+        permissions:
+          $ref: '#/components/schemas/Environment_permissions'
       required:
       - name
       - vhosts
@@ -8650,6 +8657,11 @@ components:
           isReadOnly: false
           provider: wso2
           displayName: US Region
+          permissions:
+            permissionType: ALLOW
+            roles:
+            - Subscriber
+            - Internal/subscriber
           name: us-region
           description: Gateway environment in US Region
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
@@ -8680,6 +8692,11 @@ components:
           isReadOnly: false
           provider: wso2
           displayName: US Region
+          permissions:
+            permissionType: ALLOW
+            roles:
+            - Subscriber
+            - Internal/subscriber
           name: us-region
           description: Gateway environment in US Region
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
@@ -10066,6 +10083,28 @@ components:
           type: integer
       required:
       - eventCount
+    Environment_permissions:
+      example:
+        permissionType: ALLOW
+        roles:
+        - Subscriber
+        - Internal/subscriber
+      properties:
+        permissionType:
+          default: PUBLIC
+          enum:
+          - PUBLIC
+          - ALLOW
+          - DENY
+          example: ALLOW
+          type: string
+        roles:
+          example:
+          - Subscriber
+          - Internal/subscriber
+          items:
+            type: string
+          type: array
     CustomUrlInfo_devPortal:
       example:
         url: http://example.com
