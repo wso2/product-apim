@@ -1241,7 +1241,15 @@ public class RestAPIPublisherImpl {
     public GraphQLValidationResponseDTO validateGraphqlSchemaDefinition(File schemaDefinition) throws ApiException {
 
         ApiResponse<GraphQLValidationResponseDTO> response =
-                validationApi.validateGraphQLSchemaWithHttpInfo(schemaDefinition);
+                validationApi.validateGraphQLSchemaWithHttpInfo(false, schemaDefinition, null);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
+    public GraphQLValidationResponseDTO validateGraphqlSchemaDefinitionByURL(String url, Boolean useIntrospection) throws ApiException {
+
+        ApiResponse<GraphQLValidationResponseDTO> response =
+                validationApi.validateGraphQLSchemaWithHttpInfo(useIntrospection, null, url);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
@@ -1249,7 +1257,15 @@ public class RestAPIPublisherImpl {
     public APIDTO importGraphqlSchemaDefinition(File file, String properties) throws ApiException {
 
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
-                file, properties);
+                file, null, null, properties);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public APIDTO importGraphqlSchemaDefinitionByURL(String url, String properties) throws ApiException {
+
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
+                null, url, null, properties);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
@@ -1274,7 +1290,7 @@ public class RestAPIPublisherImpl {
         HttpResponse response = null;
         try {
             apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
-                    file, properties);
+                    file, null, null, properties);
             Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         } catch (ApiException e) {
             if (e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR)) {
