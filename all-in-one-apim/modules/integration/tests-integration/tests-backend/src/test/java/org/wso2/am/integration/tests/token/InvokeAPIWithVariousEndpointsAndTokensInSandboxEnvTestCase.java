@@ -86,7 +86,9 @@ public class InvokeAPIWithVariousEndpointsAndTokensInSandboxEnvTestCase extends 
 
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfiguration(new File(
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "apiInvokeCombinationsTest" + File.separator + "deployment.toml"));
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator +
+                "tokenTest" + File.separator + "apiInvokeCombinationsTest" + File.separator +
+                "deployment.toml"));
 
         // Create an application to subscribe to the APIs
         String applicationName = "InvokeAPIWithVariousEndpointsAndTokens";
