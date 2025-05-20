@@ -51,6 +51,7 @@
         <module>modules/local-authenticators</module>
         <module>modules/distribution</module>
         <module>modules/integration</module>
+        <module>modules/integration-v2</module>
     </modules>
 
     <scm>

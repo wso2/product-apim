@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.wso2.am</groupId>
+    <artifactId>integration-v2</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>tests-common</module>
+        <module>tests-integration</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <truststore.path>${user.dir}/truststore.jks</truststore.path>
+        <truststore.password>changeit</truststore.password>
+        <wso2.host>localhost</wso2.host>
+        <wso2.port>9443</wso2.port>
+        <skipCertificateFetch>false</skipCertificateFetch>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.11</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.20.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-tools</artifactId>
+            <version>4.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>4.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
+                        <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
+                        <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
+                        <module.dir>${project.basedir}</module.dir>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>exec-maven-plugin</artifactId>-->
+<!--                <version>3.1.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <phase>generate-resources</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>exec</goal>-->
+<!--                        </goals>-->
+
+<!--                        <configuration>-->
+<!--                            <skip>${skipCertificateFetch}</skip>-->
+<!--                            <executable>bash</executable>-->
+<!--                            <arguments>-->
+<!--                                <argument>-c</argument>-->
+<!--                                <argument>-->
+<!--                                    echo "Fetching certificate from ${wso2.host}:${wso2.port}" &amp;&amp; \-->
+<!--                                    mkdir -p ${project.build.directory} &amp;&amp; \-->
+<!--                                    openssl s_client -connect ${wso2.host}:${wso2.port} -showcerts &lt; /dev/null \-->
+<!--                                    | openssl x509 -outform PEM > ${project.build.directory}/wso2_cert.pem &amp;&amp; \-->
+<!--                                    if [ ! -s "${project.build.directory}/wso2_cert.pem" ]; then \-->
+<!--                                    echo "Failed to fetch certificate or output file is empty!" &amp;&amp; exit 1; \-->
+<!--                                    fi &amp;&amp; \-->
+<!--                                    yes | sudo keytool -delete -alias wso2-cert -keystore ${truststore.path} -storepass ${truststore.password} || echo "No existing alias to delete" &amp;&amp; \-->
+<!--                                    yes | keytool -import -trustcacerts -alias wso2-cert \-->
+<!--                                    -file ${project.build.directory}/wso2_cert.pem \-->
+<!--                                    -keystore ${truststore.path} \-->
+<!--                                    -storepass ${truststore.password} \-->
+<!--                                    || { echo "Failed to import certificate into truststore"; exit 1; }-->
+<!--                                </argument>-->
+<!--                            </arguments>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+
+
+        </plugins>
+    </build>
+
+
+</project>
