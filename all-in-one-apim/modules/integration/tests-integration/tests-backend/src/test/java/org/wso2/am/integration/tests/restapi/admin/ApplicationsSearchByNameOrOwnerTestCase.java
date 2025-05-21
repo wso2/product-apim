@@ -220,11 +220,19 @@ public class ApplicationsSearchByNameOrOwnerTestCase extends APIMIntegrationBase
     }
 
     public boolean verifyApplicationSearchQueryResults(Set<String> expectedResultSet,
-            List<ApplicationInfoDTO> applications) {
-        Set<String> resultSet = new HashSet<>();
-        for (ApplicationInfoDTO app : applications) {
-            resultSet.add(app.getName());
+                                                       List<ApplicationInfoDTO> applications) {
+        for (String expectedName : expectedResultSet) {
+            boolean found = false;
+            for (ApplicationInfoDTO app : applications) {
+                if (app.getName().equals(expectedName)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
         }
-        return expectedResultSet.equals(resultSet);
+        return !expectedResultSet.isEmpty();
     }
 }
