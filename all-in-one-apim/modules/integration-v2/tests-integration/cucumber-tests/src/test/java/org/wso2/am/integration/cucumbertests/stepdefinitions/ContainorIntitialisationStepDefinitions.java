@@ -86,12 +86,12 @@ public class ContainorIntitialisationStepDefinitions {
     public void initializeAPIMContainerWithDataTable(DataTable dataTable) {
         Map<String, String> config = dataTable.asMap(String.class, String.class);
 
-        String baseUrl = config.getOrDefault("baseUrl", "http://localhost:9443/");
-        context.set("baseUrl", baseUrl);
-        String baseGatewayUrl = config.getOrDefault("baseGatewayUrl", "https://localhost:8243");
-        context.set("baseGatewayUrl", baseGatewayUrl);
-        String serviceBaseUrl = config.getOrDefault("serviceBaseUrl", "http://nodebackend:8080/");
-        context.set("serviceBaseUrl", serviceBaseUrl);
+        String thisBaseUrl = config.getOrDefault("baseUrl", baseUrl);
+        context.set("baseUrl", thisBaseUrl);
+        String thisBaseGatewayUrl = config.getOrDefault("baseGatewayUrl", baseGatewayUrl);
+        context.set("baseGatewayUrl", thisBaseGatewayUrl);
+        String thisServiceBaseUrl = config.getOrDefault("serviceBaseUrl", serviceBaseUrl);
+        context.set("serviceBaseUrl", thisServiceBaseUrl);
         String label = config.getOrDefault("label", "local");
         context.set("label", label);
     }
