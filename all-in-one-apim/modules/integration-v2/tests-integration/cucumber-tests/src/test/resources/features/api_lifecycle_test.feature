@@ -3,7 +3,6 @@ Feature: Complete API Lifecycle Management
   Background:
     Given I have initialized the NodeApp server container
     And I have initialized the Default API Manager container
-#    Given I have initialized test instance
     And I initialize the Publisher REST API client with username "admin", password "admin" and tenant "carbon.super"
     And I initialize the Store REST API client with username "admin", password "admin" and tenant "carbon.super"
 

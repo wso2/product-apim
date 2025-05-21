@@ -5,8 +5,11 @@ import io.cucumber.java.en.Then;
 import org.wso2.am.integration.cucumbertests.TestContext;
 import org.wso2.am.integration.test.utils.ModulePathResolver;
 import org.wso2.am.testcontainers.*;
+import io.cucumber.datatable.DataTable;
+import java.util.Map;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class ContainorIntitialisationStepDefinitions {
     String baseUrl;
@@ -79,16 +82,18 @@ public class ContainorIntitialisationStepDefinitions {
 
     }
 
-    // DefaultAPIM step
-    @Given("I have initialized test instance")
-    public void initializeAPIMContainer() {
-        baseUrl = "http://localhost:9443/";
-        context.set("baseUrl",baseUrl);
-        baseGatewayUrl="https://localhost:8243";
-        context.set("baseGatewayUrl",baseGatewayUrl);
-        serviceBaseUrl = "http://nodebackend:8080/";
-        context.set("serviceBaseUrl",serviceBaseUrl);
-        context.set("label","local");
+    @Given("I have initialized test instance with the following configuration")
+    public void initializeAPIMContainerWithDataTable(DataTable dataTable) {
+        Map<String, String> config = dataTable.asMap(String.class, String.class);
+
+        String baseUrl = config.getOrDefault("baseUrl", "http://localhost:9443/");
+        context.set("baseUrl", baseUrl);
+        String baseGatewayUrl = config.getOrDefault("baseGatewayUrl", "https://localhost:8243");
+        context.set("baseGatewayUrl", baseGatewayUrl);
+        String serviceBaseUrl = config.getOrDefault("serviceBaseUrl", "http://nodebackend:8080/");
+        context.set("serviceBaseUrl", serviceBaseUrl);
+        String label = config.getOrDefault("label", "local");
+        context.set("label", label);
     }
 
     @Then("I clear the context")
