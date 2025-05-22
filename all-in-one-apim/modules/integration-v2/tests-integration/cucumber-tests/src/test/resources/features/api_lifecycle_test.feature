@@ -1,7 +1,9 @@
 Feature: Complete API Lifecycle Management
 
   Background:
-    Given I have initialized the NodeApp server container
+    Given The repository directory path is "/home/abisherk/Internship/APIM Repos/product-apim-forked"
+    And The zip file at relative location "/all-in-one-apim/modules/distribution/product/target/wso2am-4.5.0-SNAPSHOT.zip" is extracted to "/src/main/resources/apim"
+    And I have initialized the NodeApp server container
     And I have initialized the Default API Manager container
     And I initialize the Publisher REST API client with username "admin", password "admin" and tenant "carbon.super"
     And I initialize the Store REST API client with username "admin", password "admin" and tenant "carbon.super"

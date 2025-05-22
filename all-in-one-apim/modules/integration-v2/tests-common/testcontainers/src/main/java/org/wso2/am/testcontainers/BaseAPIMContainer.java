@@ -10,7 +10,7 @@ import java.time.Duration;
 public abstract class BaseAPIMContainer extends GenericContainer<BaseAPIMContainer> {
 
     private static final String DOCKER_IMAGE = "openjdk:11-jre-slim";
-    private static final String API_MANAGER_DIR = "/src/main/resources/apim/wso2am-4.5.0";
+    private static final String API_MANAGER_DIR = "/src/main/resources/apim/wso2am-4.5.0-SNAPSHOT";
     protected static final String TOML_PATH = "/opt/repository/conf/deployment.toml";
     private static final int HTTPS_PORT = 9443;
     private static final int HTTP_PORT = 9763;

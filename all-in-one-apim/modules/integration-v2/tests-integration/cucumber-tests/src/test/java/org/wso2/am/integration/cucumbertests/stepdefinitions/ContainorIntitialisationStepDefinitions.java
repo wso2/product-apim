@@ -3,6 +3,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.wso2.am.integration.cucumbertests.TestContext;
+import org.wso2.am.integration.cucumbertests.UnzipUtil;
 import org.wso2.am.integration.test.utils.ModulePathResolver;
 import org.wso2.am.testcontainers.*;
 import io.cucumber.datatable.DataTable;
@@ -94,6 +95,29 @@ public class ContainorIntitialisationStepDefinitions {
         context.set("serviceBaseUrl", thisServiceBaseUrl);
         String label = config.getOrDefault("label", "local");
         context.set("label", label);
+    }
+
+        @Given("The zip file at relative location {string} is extracted to {string}")
+        public void the_zip_file_is_extracted_to(String zipRelativePath, String extractRelativePath) throws IOException {
+//            String zipPath = projectRoot + File.separator + zipRelativePath;
+
+            String callerModuleDestDir = ModulePathResolver.getModuleDir(BaseAPIMContainer .class);
+            String extractTo = callerModuleDestDir  + extractRelativePath;
+            String zipDir = context.get("repoUrl").toString() + zipRelativePath;
+
+            // Unzip using the utility
+            try {
+//            UnzipUtil.unzip(zipPath, extractTo);
+                UnzipUtil.unzip(zipDir, extractTo);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    @Given("The repository directory path is {string}")
+    public void setRepositoryDirectoryPath(String repoPath) {
+               // Save to test context (assuming TestContext is your context manager)
+        context.set("repoUrl",repoPath);
     }
 
     @Then("I clear the context")
