@@ -214,6 +214,9 @@ methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($f
 <inSequence>
     #if(!$resource.getMediationScript().equalsIgnoreCase("null"))
     <property name="AcceptHeader" expression="$trp:Accept"/>
+    #if($apiObj.getSwaggerDefinition.contains("x-wso2-mock-dataset"))
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.MockDatasetPersistMediator" />
+    #end
     <script language="js">
         <![CDATA[
                         $resource.getMediationScript()
@@ -235,6 +238,9 @@ methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($f
             <property name="HTTP_SC" expression="get-property('HTTP_SC')" scope="axis2"/>
         </else>
     </filter>
+    #if($apiObj.getSwaggerDefinition.contains("x-wso2-mock-dataset"))
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.MockDatasetPersistMediator" />
+    #end
     #else
     <property name="HTTP_SC" value="501" scope="axis2"/>
     #end
