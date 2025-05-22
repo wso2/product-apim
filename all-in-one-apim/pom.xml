@@ -1293,7 +1293,7 @@
 
         <!-- APIM Component Version -->
 
-        <carbon.apimgt.version>9.31.86</carbon.apimgt.version>
+        <carbon.apimgt.version>9.31.110</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1359,7 +1359,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.0.0-wso2v218</synapse.version>
+        <synapse.version>4.0.0-wso2v221</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v102</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v29</axiom.wso2.version>
@@ -1486,7 +1486,7 @@
         <keycloak.keymanager.feature.version>2.1.1</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.7</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
-        <forgerock.keymanager.feature.version>1.1.5</forgerock.keymanager.feature.version>
+        <forgerock.keymanager.feature.version>1.1.6</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.2.23</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>

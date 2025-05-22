@@ -18,6 +18,14 @@
   -->
 <sequence xmlns="http://ws.apache.org/ns/synapse" name="webhooksFaultSequence">
     <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryStatusUpdater"/>
+    <log level="custom">
+        <property name="STATUS" value="Executing default 'webhooksFaultSequence' sequence"/>
+        <property name="CALLBACK" expression="$ctx:SUBSCRIBER_CALLBACK"/>
+        <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
+        <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
+        <property name="API_UUID" expression="get-property('apiUUID')"/>
+        <property name="API_NAME" expression="get-property('apiName')"/>
+    </log>
     <payloadFactory media-type="json">
         <format>{"error":"$1"}</format>
         <args>

@@ -40,10 +40,10 @@ import java.net.URL;
 
 public class DenyPolicySearchTestCase extends APIMIntegrationBaseTest {
 
-    private final String API1_NAME = "TestAPI1";
+    private final String API1_NAME = "DenyPolicyTestAPI1";
     private final String API1_CONTEXT = "test";
     private final String API1_VERSION = "1.0.0";
-    private final String API2_NAME = "TestAPI2";
+    private final String API2_NAME = "DenyPolicyTestAPI2";
     private final String API2_CONTEXT = "test/abc";
     private final String API2_VERSION = "2.0.0";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
