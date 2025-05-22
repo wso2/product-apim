@@ -1,0 +1,31 @@
+site_name: APIM Test Framework
+nav:
+  - Home: index.md
+  - For Test Writers:
+      - Getting Started: users/getting-started.md
+      - Writing Integration Tests:
+          - Steps Related to Container Initialsation: users/Writing-tests/container-init-steps.md
+          - Step Related to Publisher: users/Writing-tests/publisher-steps.md
+          - Step Related to Store: users/Writing-tests/store-steps.md 
+          - Step Related to API Invocation: users/Writing-tests/API-Invoc-steps.md
+  - For Framework Developers:
+      - Architecture Overview: devs/architecture.md
+      - Code Structure: devs/code-structure.md
+      - Using API Clients:
+          - Publisher Client: devs/clients/publisher/README.md
+          - Store Client: devs/clients/store/README.md
+          - Admin Client: devs/clients/admin/README.md
+          - Gateway Client: devs/clients/gateway/README.md
+      - Extending the Framework: devs/extending.md
+      - Contribution Guide: devs/contributing.md
+  - Changelog: changelog.md
+theme:
+  name: mkdocs
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - codehilite
+  - footnotes
+  - tables
+  - attr_list
