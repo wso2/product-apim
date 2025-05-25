@@ -489,64 +489,52 @@
   "apim.jwt.use_kid_property": true,
   "apim.jwt.use_sha256_hash": false,
   "apim.hashing.hashing_algorithm": "SHA-256",
-  "server_configuration": {
-    "diagnostic_tool_enabled": "true",
-    "deployment_toml_path": "../conf/deployment.toml",
-    "logs_directory": "../repository/logs",
-    "updates_config_path": "../updates/config.json",
-    "diagnostic_log_file_path": "logs/diagnostics.log",
-    "carbon_log_file_path": "../repository/logs/wso2-apigw-errors.log",
-    "process_id_path": "../wso2carbon.pid",
-    "server_name": "WSO2 API Manager",
-    "server_version": "4.5.0"
-  },
-  "cpu_watcher": {
-    "enabled": "true",
-    "threshold": "80",
-    "attempts": "2",
-    "interval": "5",
-    "action_executors": "ThreadDumper,MetricsSnapshot,ServerInfo"
-  },
-  "memory_watcher": {
-    "enabled": "true",
-    "threshold": "80",
-    "attempts": "2",
-    "interval": "5",
-    "action_executors": "ThreadDumper,MetricsSnapshot,ServerInfo"
-  },
-  "log_watcher": {
-    "enabled": "true",
-    "interval": 0.1
-  },
-  "traffic_analyzer": {
-    "last_second_requests_enabled": "false",
-    "last_second_requests_windows_size": "300",
-    "last_second_requests_delay": "60",
-    "last_second_requests_interval": "1",
-    "last_fifteen_seconds_requests_enabled": "true",
-    "last_fifteen_seconds_requests_window_size": "100",
-    "last_fifteen_seconds_requests_delay": "4",
-    "last_fifteen_seconds_requests_interval": "15",
-    "last_minutes_requests_enabled": "true",
-    "last_minutes_requests_window_size": "100",
-    "last_minutes_requests_delay": "1",
-    "last_minutes_requests_interval": "60",
-    "notify_interval": "60"
-  },
-  "zip_file_configuration": {
-    "output_directory": "data",
-    "max_count": "20"
-  },
-  "log_pattern.patterns": [
+  "diagnostic_tool.server_configuration.diagnostic_tool_enabled": "true",
+  "diagnostic_tool.server_configuration.deployment_toml_path": "../conf/deployment.toml",
+  "diagnostic_tool.server_configuration.logs_directory": "../repository/logs",
+  "diagnostic_tool.server_configuration.updates_config_path": "../updates/config.json",
+  "diagnostic_tool.server_configuration.diagnostic_log_file_path": "logs/diagnostics.log",
+  "diagnostic_tool.server_configuration.carbon_log_file_path": "../repository/logs/wso2-apigw-errors.log",
+  "diagnostic_tool.server_configuration.process_id_path": "../wso2carbon.pid",
+  "diagnostic_tool.server_configuration.server_name": "WSO2 API Manager",
+  "diagnostic_tool.server_configuration.server_version": "4.5.0",
+  "diagnostic_tool.cpu_watcher.enabled": "true",
+  "diagnostic_tool.cpu_watcher.threshold": "80",
+  "diagnostic_tool.cpu_watcher.attempts": "2",
+  "diagnostic_tool.cpu_watcher.interval": "5",
+  "diagnostic_tool.cpu_watcher.action_executors": "ThreadDumper,MetricsSnapshot,ServerInfo",
+  "diagnostic_tool.memory_watcher.enabled": "true",
+  "diagnostic_tool.memory_watcher.threshold": "80",
+  "diagnostic_tool.memory_watcher.attempts": "2",
+  "diagnostic_tool.memory_watcher.interval": "5",
+  "diagnostic_tool.memory_watcher.action_executors": "ThreadDumper,MetricsSnapshot,ServerInfo",
+  "diagnostic_tool.log_watcher.enabled": "true",
+  "diagnostic_tool.log_watcher.interval": 0.1,
+  "diagnostic_tool.traffic_analyzer.last_second_requests_enabled": "false",
+  "diagnostic_tool.traffic_analyzer.last_second_requests_windows_size": "300",
+  "diagnostic_tool.traffic_analyzer.last_second_requests_delay": "60",
+  "diagnostic_tool.traffic_analyzer.last_second_requests_interval": "1",
+  "diagnostic_tool.traffic_analyzer.last_fifteen_seconds_requests_enabled": "true",
+  "diagnostic_tool.traffic_analyzer.last_fifteen_seconds_requests_window_size": "100",
+  "diagnostic_tool.traffic_analyzer.last_fifteen_seconds_requests_delay": "4",
+  "diagnostic_tool.traffic_analyzer.last_fifteen_seconds_requests_interval": "15",
+  "diagnostic_tool.traffic_analyzer.last_minutes_requests_enabled": "true",
+  "diagnostic_tool.traffic_analyzer.last_minutes_requests_window_size": "100",
+  "diagnostic_tool.traffic_analyzer.last_minutes_requests_delay": "1",
+  "diagnostic_tool.traffic_analyzer.last_minutes_requests_interval": "60",
+  "diagnostic_tool.traffic_analyzer.notify_interval": "60",
+  "diagnostic_tool.zip_file_configuration.output_directory": "data",
+  "diagnostic_tool.zip_file_configuration.max_count": "20",
+  "diagnostic_tool.log_pattern": [
     {
-      "pattern.regex": "(.*)org.apache.synapse.transport.passthru(.*)",
-      "pattern.executors": "MetricsSnapshot,Netstat,OpenFileFinder,ThreadDumper,ServerInfo",
-      "pattern.reload_time": "30"
+      "regex": "(.*)org.apache.synapse.transport.passthru(.*)",
+      "executors": "MetricsSnapshot,Netstat,OpenFileFinder,ThreadDumper,ServerInfo",
+      "reload_time": "30"
     },
     {
-      "pattern.regex": "(.*)org.apache.synapse(.*)",
-      "pattern.executors": "ServerInfo",
-      "pattern.reload_time": "10"
+      "regex": "(.*)org.apache.synapse(.*)",
+      "executors": "ServerInfo",
+      "reload_time": "10"
     }
   ],
   "service_provider.use_username_as_sub_claim": false,
