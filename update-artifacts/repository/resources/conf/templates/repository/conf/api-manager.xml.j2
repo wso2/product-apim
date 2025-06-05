@@ -39,6 +39,7 @@
         <EnableJWKSApi>{{apim.jwt.enable_jwks_api}}</EnableJWKSApi>
         <!-- Name of the security context header to be added to the validated requests. -->
         <JWTHeader>{{apim.jwt.header}}</JWTHeader>
+        <JWTDecoding>{{apim.jwt.encoding}}</JWTDecoding>
 
         <!-- Fully qualified name of the class that will retrieve additional user claims
              to be appended to the JWT. If not specified no claims will be appended.If user wants to add all user claims in the
@@ -276,9 +277,6 @@
           as 'false' to completely disable JWTClaimCache.
          -->
         <EnableJWTClaimCache>{{apim.cache.jwt_claim.enable}}</EnableJWTClaimCache>
-        {% if apim.cache.jwt_claim.expiry_time is defined %}
-        <JWTClaimCacheExpiry>{{apim.cache.jwt_claim.expiry_time}}</JWTClaimCacheExpiry>
-        {% endif %}
     </CacheConfigurations>
 
     <!--
@@ -759,17 +757,6 @@
                 <HTTPMethods>GET</HTTPMethods>
             </AllowedURI>
         </AllowedURIs>
-        <BasicAuthBlockedURIs>
-        <!--Configure Basic Auth blocked URIs of REST API. URIs included cannot be invoked with basic auth-->
-        {% if apim.rest_api.basic_auth_blocked_uri is defined %}
-            {% for uri in apim.rest_api.basic_auth_blocked_uri %}
-                <BasicAuthBlockedURI>
-                    <URI>{{uri.uri_path}}</URI>
-                    <HTTPMethods>{{uri.http_method}}</HTTPMethods>
-                </BasicAuthBlockedURI>
-            {% endfor %}
-        {% endif %}
-        </BasicAuthBlockedURIs>
         <ETagSkipList>
             <ETagSkipURI>
                 <URI>/api/am/devportal/{version}/apis</URI>
@@ -1597,6 +1584,8 @@
         <OAuth>
         <!-- If the access token expires, the server should reply with the duration of time the access token is granted for. -->
                  <ExpiresIn>{{apim.mediator_config.oauth.expires_in}}</ExpiresIn>
+                 <!-- Enable/Disable retry API calls with new access token when the access token is invalid. Default is false. -->
+                 <EnableRetryCallWithNewToken>{{apim.mediator_config.oauth.enable_retry_call_with_new_token}}</EnableRetryCallWithNewToken>
              </OAuth>
           </MediatorConfigs>
       {% endif %}
