@@ -1109,6 +1109,9 @@
                {% endfor %}
             </AdditionalAttributes>
         {% endif %}
+        {% if apim.monetization.proxy_enabled is defined %}
+        	<ProxyEnabled>{{apim.monetization.proxy_enabled}}</ProxyEnabled>
+        {% endif %}
     </Monetization>
 
     {% if apim.devportal.recommendations is defined %}
