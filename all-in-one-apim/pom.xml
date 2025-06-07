@@ -1319,7 +1319,7 @@
 
         <!-- carbon identity -->
         <carbon.identity.version>5.25.724</carbon.identity.version>
-        <carbon.identity.governance.version>1.8.108</carbon.identity.governance.version>
+        <carbon.identity.governance.version>1.8.109</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
         <carbon.identity-inbound-auth-oauth.version>6.13.27</carbon.identity-inbound-auth-oauth.version>
@@ -1334,7 +1334,7 @@
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.4</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.8.8</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.8.41</carbon.identity.auth.version>
-        <identity.apps.version>1.6.379</identity.apps.version>
+        <identity.apps.version>1.6.382</identity.apps.version>
         <identity.oauth.addons.version>2.4.38</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
