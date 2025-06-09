@@ -148,12 +148,6 @@
             #end
             <proxyProtocol>$util.escapeXml($endpointSecurity.proxyConfigs.proxyProtocol)</proxyProtocol>
         </proxyConfigs>
-        #else
-        #if($endpointSecurity.proxyConfigType && $endpointSecurity.proxyConfigType == "NONE")
-        <useGlobalProxyConfigs>false</useGlobalProxyConfigs>
-        #else
-        <useGlobalProxyConfigs>true</useGlobalProxyConfigs>
-        #end
         #end
         #set($requestParametersMap = $util.jsonStringToMap($endpointSecurity.customParameters))
         #if($requestParametersMap.size() > 0)
