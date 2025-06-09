@@ -282,6 +282,8 @@
         <TimestampSkew>{{oauth.timestamp_skew}}</TimestampSkew>
         <!-- Enable renewal of refresh token for refresh_token grant -->
         <RenewRefreshTokenForRefreshGrant>{{oauth.token_renewal.renew_refresh_token}}</RenewRefreshTokenForRefreshGrant>
+        <!-- Enable the authenticated user validation config for refresh grant -->
+        <ValidateAuthenticatedUserForRefreshGrant>{{oauth.token_renewal.validate_authenticated_user_for_refresh_grant}}</ValidateAuthenticatedUserForRefreshGrant>
         <!-- Enable Extend renews refresh token expiry time -->
         <ExtendRenewedRefreshTokenExpiryTime>{{oauth.token_renewal.extend_refresh_token_expiry_time_on_renewal}}</ExtendRenewedRefreshTokenExpiryTime>
         <!-- Process the token before storing it in database, e.g. encrypting -->
@@ -953,10 +955,6 @@
         <JWTX5tHexifyingRequired>{{oauth.jwt_x5t_hexify_required}}</JWTX5tHexifyingRequired>
         {% else %}
         <JWTX5tHexifyingRequired>true</JWTX5tHexifyingRequired>
-        {% endif %}
-
-        {% if oauth.enable_typ_field_in_jwt_access_token_header is defined %}
-        <EnableTypFieldInJWTAccessTokenHeader>{{oauth.enable_typ_field_in_jwt_access_token_header}}</EnableTypFieldInJWTAccessTokenHeader>
         {% endif %}
 
     </OAuth>
@@ -3240,4 +3238,8 @@
     <ShowPendingUserInformation>{{show_pending_user_information.enable}}</ShowPendingUserInformation>
     {% endif %}
 
+    <!-- Configuration settings for the request parameters.  -->
+    <RequestParameters>
+        <AllowSensitiveDataInURL>{{request_parameters.allow_sensitive_data_in_url}}</AllowSensitiveDataInURL>
+    </RequestParameters>
 </Server>
