@@ -1212,7 +1212,7 @@
   "oauth.token_validation.user_access_token_validity": "1h",
   "oauth.timestamp_skew": "0m",
   "oauth.token_renewal.renew_refresh_token": true,
-  "oauth.token_renewal.validate_authenticated_user_for_refresh_grant": true,
+  "oauth.token_renewal.validate_authenticated_user_for_refresh_grant": false,
   "oauth.token_renewal.extend_refresh_token_expiry_time_on_renewal": true,
   "oauth.token_renewal.renew_access_token_per_request": false,
   "oauth.hash_tokens_and_secrets": false,
