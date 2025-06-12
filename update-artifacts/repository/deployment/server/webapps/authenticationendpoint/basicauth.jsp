@@ -267,7 +267,7 @@
             </div>
         </div>
     <% } else { %>
-        <input id="username" name="username" type="hidden" data-testid="login-page-username-input" value="<%=username%>">
+        <input id="username" name="username" type="hidden" data-testid="login-page-username-input" value="<%=Encode.forHtmlAttribute(username)%>">
     <% } %>
         <div class="field">
             <div class="ui fluid left icon input addon-wrapper">
