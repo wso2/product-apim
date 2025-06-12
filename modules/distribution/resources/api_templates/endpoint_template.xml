@@ -16,7 +16,7 @@
  ~ under the License.
  -->
 
-        #macro ( print_if_exist_only $tagname $field)
+#macro ( print_if_exist_only $tagname $field)
         #if($field && "$field" !="")
 <$tagname>$field</$tagname>
         #else
@@ -53,23 +53,23 @@
 #print_if_exist_only("duration" $config.get("actionDuration"))
 #print_if_exist_only("responseAction" $config.get("actionSelect"))
 </timeout>
-        #elseif( $endpointClass != "ws" )
+#elseif( $endpointClass != "ws" )
         ##add default timeout config for non WS endpoints
 <timeout>
-<responseAction>fault</responseAction>
+     <responseAction>fault</responseAction>
 </timeout>
         #end
 
         #if( $config.get("suspendDuration") == 0)
-<suspendOnFailure>
-<errorCodes>-1</errorCodes>
-<initialDuration>0</initialDuration>
-<progressionFactor>1.0</progressionFactor>
-<maximumDuration>0</maximumDuration>
-</suspendOnFailure>
-<markForSuspension>
-<errorCodes>-1</errorCodes>
-</markForSuspension>
+       <suspendOnFailure>
+           <errorCodes>-1</errorCodes>
+           <initialDuration>0</initialDuration>
+           <progressionFactor>1.0</progressionFactor>
+           <maximumDuration>0</maximumDuration>
+       </suspendOnFailure>
+       <markForSuspension>
+           <errorCodes>-1</errorCodes>
+       </markForSuspension>
         #else
 <suspendOnFailure>
 #print_list( "errorCodes" $config.get("suspendErrorCode"))
@@ -83,93 +83,14 @@
 <retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
 </markForSuspension>
         #end
-        #end
+#end
 
         ##macro for http_endpoints in failover and load balance types
         #macro ( http_endpoint $name $ep )
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
 <http uri-template="$util.escapeXml($ep.get("url"))">
 #timeout( $ep.get('config') )
-#if($enableRetryCallWithNewOauthToken)
-#set( $endpointSecurity = $endpoint_security.get($type) )
-#if($endpointSecurity.type == "oauth" || $endpointSecurity.type == "OAUTH")
-<authentication>
-    <oauth>
-        #if($endpointSecurity.grantType == "client_credentials" || $endpointSecurity.grantType == "CLIENT_CREDENTIALS")
-        #set($grantType = "clientCredentials")
-        #elseif($endpointSecurity.grantType == "password" || $endpointSecurity.grantType == "PASSWORD")
-        #set($grantType = "passwordCredentials")
-        #end
-
-        <$grantType>
-        #if($grantType == "passwordCredentials")
-        <username>$util.escapeXml($endpointSecurity.username)</username>
-        #if($isSecureVaultEnabled)
-        <password>{wso2:vault-lookup('$endpointSecurity.passwordAlias')}</password>
-        #else
-        <password>$util.escapeXml($endpointSecurity.password)</password>
-        #end
-        #end
-        <clientId>$util.escapeXml($endpointSecurity.clientId)</clientId>
-        #if($isSecureVaultEnabled)
-        <clientSecret>{wso2:vault-lookup('$endpointSecurity.clientSecretAlias')}</clientSecret>
-        #else
-        <clientSecret>$util.escapeXml($endpointSecurity.clientSecret)</clientSecret>
-        #end
-        <tokenUrl>$util.escapeXml($endpointSecurity.tokenUrl)</tokenUrl>
-        #if($endpointSecurity.connectionTimeoutConfigType)
-        #if($endpointSecurity.connectionTimeoutConfigType == "ENDPOINT_SPECIFIC")
-        <connectionTimeout>$util.escapeXml($endpointSecurity.connectionTimeoutDuration)</connectionTimeout>
-        <connectionRequestTimeout>$util.escapeXml($endpointSecurity.connectionRequestTimeoutDuration)</connectionRequestTimeout>
-        <socketTimeout>$util.escapeXml($endpointSecurity.socketTimeoutDuration)</socketTimeout>
-        #elseif($endpointSecurity.connectionTimeoutConfigType == "NONE")
-        <useGlobalConnectionTimeoutConfigs>false</useGlobalConnectionTimeoutConfigs>
-        #else
-        <useGlobalConnectionTimeoutConfigs>true</useGlobalConnectionTimeoutConfigs>
-        #end
-        #else
-        #if($endpointSecurity.connectionTimeoutDuration != -1 || $endpointSecurity.connectionRequestTimeoutDuration != -1 || $endpointSecurity.socketTimeoutDuration != -1)
-        <connectionTimeout>$endpointSecurity.connectionTimeoutDuration</connectionTimeout>
-        <connectionRequestTimeout>$endpointSecurity.connectionRequestTimeoutDuration</connectionRequestTimeout>
-        <socketTimeout>$endpointSecurity.socketTimeoutDuration</socketTimeout>
-        #else
-        <useGlobalConnectionTimeoutConfigs>true</useGlobalConnectionTimeoutConfigs>
-        #end
-        #end
-        #if($endpointSecurity.proxyConfigs && $endpointSecurity.proxyConfigs.proxyEnabled == true)
-        <proxyConfigs>
-            <proxyHost>$util.escapeXml($endpointSecurity.proxyConfigs.proxyHost)</proxyHost>
-            <proxyPort>$util.escapeXml($endpointSecurity.proxyConfigs.proxyPort)</proxyPort>
-            <proxyUsername>$util.escapeXml($endpointSecurity.proxyConfigs.proxyUsername)</proxyUsername>
-            #if($isSecureVaultEnabled)
-            <proxyPassword>{wso2:vault-lookup('$endpointSecurity.proxyConfigs.proxyPasswordAlias')}</proxyPassword>
-            #else
-            <proxyPassword>$util.escapeXml($endpointSecurity.proxyConfigs.proxyPassword)</proxyPassword>
-            #end
-            <proxyProtocol>$util.escapeXml($endpointSecurity.proxyConfigs.proxyProtocol)</proxyProtocol>
-        </proxyConfigs>
-        #else
-        #if($endpointSecurity.proxyConfigType && $endpointSecurity.proxyConfigType == "NONE")
-        <useGlobalProxyConfigs>false</useGlobalProxyConfigs>
-        #else
-        <useGlobalProxyConfigs>true</useGlobalProxyConfigs>
-        #end
-        #end
-        #set($requestParametersMap = $util.jsonStringToMap($endpointSecurity.customParameters))
-        #if($requestParametersMap.size() > 0)
-        <requestParameters>
-            #foreach($entry in $requestParametersMap.entrySet())
-            <parameter name="$util.escapeXml($entry.key)">$util.escapeXml($entry.value)</parameter>
-            #end
-        </requestParameters>
-        #end
-        <authMode/>
-    </$grantType>
-</oauth>
-</authentication>
-        #end
-        #end
-        </http>
+</http>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
         </endpoint>
         #end
@@ -179,7 +100,7 @@
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="${name}_${websocketResourceKey}">
 <property name="OUT_ONLY" value="true"/>
 <http uri-template="$util.escapeXml($endpointUrl)">
-    #timeout( $ep.get('config') )
+#timeout( $ep.get('config') )
 </http>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpointUrl)"/>
 </endpoint>
@@ -210,28 +131,28 @@ optimize="$advance_ep.get("optimize")"
 
         ##If graphql api
         #if( $endpointClass == "graphql" )
-        #if( $websocketResourceKey )
-        ##If websocketResourceKey present in context then this is the graphQL subscription endpoint
-        #set( $endpoint_config = $endpoint_config.get("ws") )
-        #set( $isGQLSubscription = "true" )
-        #else
-        ##Else GraphQL query mutation http endpoint
-        #set( $endpoint_config = $endpoint_config.get("http") )
-        #end
-        #set( $endpointClass = $endpoint_config.get("endpoint_type") )
+            #if( $websocketResourceKey )
+                ##If websocketResourceKey present in context then this is the graphQL subscription endpoint
+                #set( $endpoint_config = $endpoint_config.get("ws") )
+                #set( $isGQLSubscription = "true" )
+            #else
+                ##Else GraphQL query mutation http endpoint
+                #set( $endpoint_config = $endpoint_config.get("http") )
+            #end
+            #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #end
 
         #set( $endpoints = $endpoint_config.get("${type}_endpoints") )
         #set( $ep_key = "${endpointKey}_API${type}Endpoint" )
 
         #if( $endpointClass == "http" )
-        #http_endpoint( $ep_key $endpoints )
+            #http_endpoint( $ep_key $endpoints )
         #elseif( $endpointClass == "ws" )
-        #websocket_endpoint( $ep_key )
+            #websocket_endpoint( $ep_key )
         #elseif( $endpointClass == "address" )
-        #address_endpoint( $ep_key $endpoints )
+            #address_endpoint( $ep_key $endpoints )
         #elseif( $endpointClass == "failover" )
-        #set( $failover_endpoints = $endpoint_config.get("${type}_failovers") )
+            #set( $failover_endpoints = $endpoint_config.get("${type}_failovers") )
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
 <failover>
     #if($endpoints.get("endpoint_type") == "address")
@@ -286,7 +207,7 @@ optimize="$advance_ep.get("optimize")"
         ############################################### end of macros ##########################################################
 
         #if(${type} == "production_endpoints")
-        #draw_endpoint("production" $endpoint_config  )
+            #draw_endpoint("production" $endpoint_config  )
         #else
-        #draw_endpoint("sandbox" $endpoint_config )
+            #draw_endpoint("sandbox" $endpoint_config )
         #end
