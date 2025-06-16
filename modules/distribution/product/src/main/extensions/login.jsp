@@ -166,10 +166,10 @@
     String t = request.getParameter("t");
     String ut = request.getParameter("ut");
     if (StringUtils.isNotBlank(t)) {
-        loginContextRequestUrl += "&t=" + t;
+        loginContextRequestUrl += "&t=" + Encode.forUriComponent(t);
     }
     if (StringUtils.isNotBlank(ut)) {
-        loginContextRequestUrl += "&ut=" + ut;
+        loginContextRequestUrl += "&ut=" + Encode.forUriComponent(ut);
     }
 
     if (StringUtils.isNotBlank(usernameIdentifier)) {
@@ -237,7 +237,7 @@
                 <h3 class="ui header ellipsis">
                     <% if (isIdentifierFirstLogin(inputType)) { %>
                         <div class="display-inline"><%=AuthenticationEndpointUtil.i18n(resourceBundle, "welcome") + " "%></div>
-                        <div id="user-name-label" class="display-inline" data-position="top left" data-variation="inverted" data-content="<%=usernameIdentifier%>"><%=usernameIdentifier%></div>
+                        <div id="user-name-label" class="display-inline" data-position="top left" data-variation="inverted" data-content="<%=Encode.forHtmlAttribute(usernameIdentifier)%>"><%=Encode.forHtmlContent(usernameIdentifier)%></div>
                     <% } else { %>
                         <%=AuthenticationEndpointUtil.i18n(resourceBundle, "login")%>
                     <% } %>
@@ -501,9 +501,13 @@
     <script>
         function checkSessionKey() {
             var proxyPath = "<%=contextPath%>"
+            let loginRequestPath = "<%=loginContextRequestUrl%>"
+            if (proxyPath !== "") {
+                loginRequestPath = loginRequestPath.startsWith('../') ? loginRequestPath.substring(2, loginRequestPath.length) : loginRequestPath
+            }
             $.ajax({
                 type: "GET",
-                url: proxyPath + "<%=loginContextRequestUrl%>",
+                url: proxyPath + loginRequestPath,
                 xhrFields: { withCredentials: true },
                 success: function (data) {
                     if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
