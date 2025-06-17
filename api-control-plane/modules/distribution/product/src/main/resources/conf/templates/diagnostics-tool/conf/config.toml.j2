@@ -22,19 +22,83 @@
 #
 ##############################################
 
+{% macro get_server_configuration(key) %}
+{%- if server_configuration[key] is defined -%}
+{{ server_configuration[key] }}
+{%- elif diagnostic_tool['server_configuration'][key] is defined -%}
+{{ diagnostic_tool['server_configuration'][key] }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro get_cpu_watcher(key) %}
+{%- if cpu_watcher[key] is defined -%}
+{{ cpu_watcher[key] }}
+{%- elif diagnostic_tool['cpu_watcher'][key] is defined -%}
+{{ diagnostic_tool['cpu_watcher'][key] }}
+{%- endif -%}
+
+{% endmacro %}
+{% macro get_memory_watcher(key) %}
+{%- if memory_watcher[key] is defined -%}
+{{ memory_watcher[key] }}
+{%- elif diagnostic_tool['memory_watcher'][key] is defined -%}
+{{ diagnostic_tool['memory_watcher'][key] }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro get_log_watcher(key) %}
+{%- if log_watcher[key] is defined -%}
+{{ log_watcher[key] }}
+{%- elif diagnostic_tool['log_watcher'][key] is defined -%}
+{{ diagnostic_tool['log_watcher'][key] }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro get_traffic_analyzer(key) %}
+{%- if traffic_analyzer[key] is defined -%}
+{{ traffic_analyzer[key] }}
+{%- elif diagnostic_tool['traffic_analyzer'][key] is defined -%}
+{{ diagnostic_tool['traffic_analyzer'][key] }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro get_zip_file_configuration(key) %}
+{%- if zip_file_configuration[key] is defined -%}
+{{ zip_file_configuration[key] }}
+{%- elif diagnostic_tool['zip_file_configuration'][key] is defined -%}
+{{ diagnostic_tool['zip_file_configuration'][key] }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro get_ftp_uploader(key) %}
+{%- if ftp_uploader[key] is defined -%}
+{{ ftp_uploader[key] }}
+{%- elif diagnostic_tool['ftp_uploader'][key] is defined -%}
+{{ diagnostic_tool['ftp_uploader'][key] }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro get_sftp_uploader(key) %}
+{%- if sftp_uploader[key] is defined -%}
+{{ sftp_uploader[key] }}
+{%- elif diagnostic_tool['sftp_uploader'][key] is defined -%}
+{{ diagnostic_tool['sftp_uploader'][key] }}
+{%- endif -%}
+{% endmacro %}
+
 ## This file contains the configuration parameters used by the Diagnostic tool
 
 # Server Configurations
 [server_configuration]
-diagnostic_tool_enabled = "{{server_configuration.diagnostic_tool_enabled}}"
-deployment_toml_path = "{{server_configuration.deployment_toml_path}}"
-logs_directory = "{{server_configuration.logs_directory}}"
-updates_config_path = "{{server_configuration.updates_config_path}}"
-diagnostic_log_file_path = "{{server_configuration.diagnostic_log_file_path}}"
-carbon_log_file_path = "{{server_configuration.carbon_log_file_path}}"
-process_id_path = "{{server_configuration.process_id_path}}"
-server_name = "@product.name@"
-server_version = "@product.version@"
+diagnostic_tool_enabled = "{{ get_server_configuration('diagnostic_tool_enabled') }}"
+deployment_toml_path = "{{ get_server_configuration('deployment_toml_path') }}"
+logs_directory = "{{ get_server_configuration('logs_directory') }}"
+updates_config_path = "{{ get_server_configuration('updates_config_path') }}"
+diagnostic_log_file_path = "{{ get_server_configuration('diagnostic_log_file_path') }}"
+carbon_log_file_path = "{{ get_server_configuration('carbon_log_file_path') }}"
+process_id_path = "{{ get_server_configuration('process_id_path') }}"
+server_name = "WSO2 API Manager"
+server_version = "4.4.0"
 
 ## Action Executor Configurations
 
@@ -65,80 +129,108 @@ executor = "ServerInfo"
 [[action_executor_configuration]]
 executor = "MetricsSnapshot"
 
-{%for action in action_executor_configuration %}
+{% set actions = action_executor_configuration if action_executor_configuration is defined else [] %}
+{% set diagnostic_actions = diagnostic_tool['action_executor_configuration'] if diagnostic_tool['action_executor_configuration'] is defined else [] %}
+{% set all_actions = actions + diagnostic_actions %}
+{%for action in all_actions %}
 [[action_executor_configuration]]
 executor = "{{action.executor}}"
+{% if action.reload_time is defined %}
+reload_time = "{{action.reload_time}}"
+{% endif %}
+{% if action.count is defined %}
+count = "{{action.count}}"
+{% endif %}
+{% if action.delay is defined %}
+delay = "{{action.delay}}"
+{% endif %}
+{% if action.command is defined %}
+command = "{{action.command}}"
+{% endif %}
+
 {% endfor %}
 
 # Watcher Configurations
 [cpu_watcher]
-enabled = "{{cpu_watcher.enabled}}"
-threshold = "{{cpu_watcher.threshold}}"
-attempts = "{{cpu_watcher.attempts}}"
-interval = "{{cpu_watcher.interval}}"
-action_executors = "{{cpu_watcher.action_executors}}"
+enabled = "{{get_cpu_watcher('enabled')}}"
+threshold = "{{get_cpu_watcher('threshold')}}"
+attempts = "{{get_cpu_watcher('attempts')}}"
+interval = "{{get_cpu_watcher('interval')}}"
+action_executors = "{{get_cpu_watcher('action_executors')}}"
 
 [memory_watcher]
-enabled = "{{memory_watcher.enabled}}"
-threshold = "{{memory_watcher.threshold}}"
-attempts = "{{memory_watcher.attempts}}"
-interval = "{{memory_watcher.interval}}"
-action_executors = "{{memory_watcher.action_executors}}"
+enabled = "{{ get_memory_watcher('enabled') }}"
+threshold = "{{ get_memory_watcher('threshold') }}"
+attempts = "{{ get_memory_watcher('attempts') }}"
+interval = "{{ get_memory_watcher('interval') }}"
+action_executors = "{{ get_memory_watcher('action_executors') }}"
 
 [log_watcher]
-enabled = "{{log_watcher.enabled}}"
-interval = {{log_watcher.interval}}
+enabled = "{{ get_log_watcher('enabled') }}"
+interval = {{ get_log_watcher('interval') }}
 
 # Traffic Analyzer Configurations
 [traffic_analyzer]
-last_second_requests_enabled = "{{traffic_analyzer.last_second_requests_enabled}}"
-last_second_requests_windows_size = "{{traffic_analyzer.last_second_requests_windows_size}}"
-last_second_requests_delay = "{{traffic_analyzer.last_second_requests_delay}}"
-last_second_requests_interval = "{{traffic_analyzer.last_second_requests_interval}}"
-last_fifteen_seconds_requests_enabled = "{{traffic_analyzer.last_fifteen_seconds_requests_enabled}}"
-last_fifteen_seconds_requests_window_size = "{{traffic_analyzer.last_fifteen_seconds_requests_window_size}}"
-last_fifteen_seconds_requests_delay = "{{traffic_analyzer.last_fifteen_seconds_requests_delay}}"
-last_fifteen_seconds_requests_interval = "{{traffic_analyzer.last_fifteen_seconds_requests_interval}}"
-last_minutes_requests_enabled = "{{traffic_analyzer.last_minutes_requests_enabled}}"
-last_minutes_requests_window_size = "{{traffic_analyzer.last_minutes_requests_window_size}}"
-last_minutes_requests_delay = "{{traffic_analyzer.last_minutes_requests_delay}}"
-last_minutes_requests_interval = "{{traffic_analyzer.last_minutes_requests_interval}}"
-notify_interval = "{{traffic_analyzer.notify_interval}}"
+last_second_requests_enabled = "{{ get_traffic_analyzer('last_second_requests_enabled') }}"
+last_second_requests_windows_size = "{{ get_traffic_analyzer('last_second_requests_windows_size') }}"
+last_second_requests_delay = "{{ get_traffic_analyzer('last_second_requests_delay') }}"
+last_second_requests_interval = "{{ get_traffic_analyzer('last_second_requests_interval') }}"
+last_fifteen_seconds_requests_enabled = "{{ get_traffic_analyzer('last_fifteen_seconds_requests_enabled') }}"
+last_fifteen_seconds_requests_window_size = "{{ get_traffic_analyzer('last_fifteen_seconds_requests_window_size') }}"
+last_fifteen_seconds_requests_delay = "{{ get_traffic_analyzer('last_fifteen_seconds_requests_delay') }}"
+last_fifteen_seconds_requests_interval = "{{ get_traffic_analyzer('last_fifteen_seconds_requests_interval') }}"
+last_minutes_requests_enabled = "{{ get_traffic_analyzer('last_minutes_requests_enabled') }}"
+last_minutes_requests_window_size = "{{ get_traffic_analyzer('last_minutes_requests_window_size') }}"
+last_minutes_requests_delay = "{{ get_traffic_analyzer('last_minutes_requests_delay') }}"
+last_minutes_requests_interval = "{{ get_traffic_analyzer('last_minutes_requests_interval') }}"
+notify_interval = "{{ get_traffic_analyzer('notify_interval') }}"
 
 # Output data zip configurations
 [zip_file_configuration]
-output_directory = "{{zip_file_configuration.output_directory}}"
-max_count = "{{zip_file_configuration.max_count}}"
+output_directory = "{{ get_zip_file_configuration('output_directory') }}"
+max_count = "{{ get_zip_file_configuration('max_count') }}"
 
-# Error regex patterns and diagnosis
-{%for pattern in log_pattern.patterns %}
+{% set patterns = log_pattern if log_pattern is defined else [] %}
+{% set diagnostic_patterns = diagnostic_tool['log_pattern'] if diagnostic_tool['log_pattern'] is defined else [] %}
+{% set all_patterns = patterns + diagnostic_patterns %}
+{%for pattern in all_patterns %}
 [[log_pattern]]
-regex = "{{pattern.pattern.regex}}"
-executors = "{{pattern.pattern.executors}}"
-reload_time = "{{pattern.pattern.reload_time}}"
+{% if pattern.regex is defined %}
+regex = "{{pattern.regex}}"
+{% endif %}
+{% if pattern.executors is defined %}
+executors = "{{pattern.executors}}"
+{% endif %}
+{% if pattern.reload_time is defined %}
+reload_time = "{{pattern.reload_time}}"
+{% endif %}
 
 {% endfor %}
 
-{% if ftp_uploader is defined %}
+{% set uploaders = ftp_uploader if ftp_uploader is defined else [] %}
+{% set diagnostic_uploaders = diagnostic_tool['ftp_uploader'] if diagnostic_tool['ftp_uploader'] is defined else [] %}
+{% if uploaders or diagnostic_uploaders %}
 ## FTP Uploader configurations
 [ftp_uploader]
-enabled = "{{ftp_uploader.enabled}}"
-host = "{{ftp_uploader.host}}"
-port = "{{ftp_uploader.port}}"
-username = "{{ftp_uploader.username}}"
-password = "{{ftp_uploader.password}}"
-directory = "{{ftp_uploader.directory}}"
+enabled = "{{ get_ftp_uploader('enabled') }}"
+host = "{{ get_ftp_uploader('host') }}"
+port = "{{ get_ftp_uploader('port') }}"
+username = "{{ get_ftp_uploader('username') }}"
+password = "{{ get_ftp_uploader('password') }}"
+directory = "{{ get_ftp_uploader('directory') }}"
 {% endif %}
 
-{% if sftp_uploader is defined %}
+{% set uploaders = sftp_uploader if sftp_uploader is defined else [] %}
+{% set diagnostic_uploaders = diagnostic_tool['sftp_uploader'] if diagnostic_tool['sftp_uploader'] is defined else [] %}
+{% if uploaders or diagnostic_uploaders %}
 ## SFTP Uploader configurations
 [sftp_uploader]
-enabled = "{{sftp_uploader.enabled}}"
-host = "{{sftp_uploader.host}}"
-port = "{{sftp_uploader.port}}"
-username = "{{sftp_uploader.username}}"
-password = "{{sftp_uploader.password}}"
-directory = "{{sftp_uploader.directory}}"
-known_hosts_path = "{{sftp_uploader.known_hosts_path}}"
-strict_host_key_checking = "{{sftp_uploader.strict_host_key_checking}}"
+enabled = "{{ get_sftp_uploader('enabled') }}"
+host = "{{ get_sftp_uploader('host') }}"
+port = "{{ get_sftp_uploader('port') }}"
+username = "{{ get_sftp_uploader('username') }}"
+password = "{{ get_sftp_uploader('password') }}"
+directory = "{{ get_sftp_uploader('directory') }}"
+known_hosts_path = "{{ get_sftp_uploader('known_hosts_path') }}"
+strict_host_key_checking = "{{ get_sftp_uploader('strict_host_key_checking') }}"
 {% endif %}
