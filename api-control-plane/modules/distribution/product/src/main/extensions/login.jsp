@@ -226,7 +226,7 @@
                 <h3 class="ui header ellipsis">
                     <% if (isIdentifierFirstLogin(inputType)) { %>
                         <div class="display-inline"><%=AuthenticationEndpointUtil.i18n(resourceBundle, "welcome") + " "%></div>
-                        <div id="user-name-label" class="display-inline" data-position="top left" data-variation="inverted" data-content="<%=usernameIdentifier%>"><%=usernameIdentifier%></div>
+                        <div id="user-name-label" class="display-inline" data-position="top left" data-variation="inverted" data-content="<%=Encode.forHtmlAttribute(usernameIdentifier)%>"><%=Encode.forHtmlContent(usernameIdentifier)%></div>
                     <% } else { %>
                         <%=AuthenticationEndpointUtil.i18n(resourceBundle, "login")%>
                     <% } %>
