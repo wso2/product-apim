@@ -266,9 +266,12 @@
                             document.callbackForm.submit();
                             <%
                         } else {
+                            if (callback.contains("myaccount")) {
+                                callback = callback.replace("myaccount", "carbon");
+                            }
                             URIBuilder callbackUrlBuilder = new
                                     URIBuilder(IdentityManagementEndpointUtil.encodeURL(callback));
-                            URI callbackUri = callbackUrlBuilder.addParameter("passwordReset", "true").build();
+                            URI callbackUri = callbackUrlBuilder.build();
                             %>
                             location.href = "<%=callbackUri.toString()%>";
                             <%
