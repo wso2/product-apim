@@ -1,0 +1,275 @@
+<!--
+ ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+#macro ( print_if_exist_only $tagname $field)
+        #if($field && "$field" !="")
+<$tagname>$field</$tagname>
+        #else
+        ## print nothing.
+        #end
+        #end
+
+        #macro ( print_list $tagname $list)
+        #if($list && "$list" !="" && $list.size() > 0)
+<$tagname>
+        #foreach($item in $list)
+        $item #if( $foreach.hasNext ), #end
+        #end
+        </$tagname>
+        #else
+        ## print nothing.
+        #end
+        #end
+
+        #macro ( print_if_exist $field $default)
+        #if($field && "$field" !="")
+        $field
+        #else
+        $default
+        #end
+        #end
+
+
+        #macro ( timeout $config)
+        #if( $config.get("actionSelect") == "neverTimeout" )
+        ## print nothing.
+        #elseif($config.get("actionDuration")|| $config.get("actionSelect"))
+<timeout>
+#print_if_exist_only("duration" $config.get("actionDuration"))
+#print_if_exist_only("responseAction" $config.get("actionSelect"))
+</timeout>
+#elseif( $endpointClass != "ws" )
+        ##add default timeout config for non WS endpoints
+<timeout>
+     <responseAction>fault</responseAction>
+</timeout>
+        #end
+
+        #if( $config.get("suspendDuration") == 0)
+       <suspendOnFailure>
+           <errorCodes>-1</errorCodes>
+           <initialDuration>0</initialDuration>
+           <progressionFactor>1.0</progressionFactor>
+           <maximumDuration>0</maximumDuration>
+       </suspendOnFailure>
+       <markForSuspension>
+           <errorCodes>-1</errorCodes>
+       </markForSuspension>
+        #else
+<suspendOnFailure>
+#print_list( "errorCodes" $config.get("suspendErrorCode"))
+#print_if_exist_only("initialDuration" $config.get("suspendDuration"))
+#print_if_exist_only("maximumDuration" $config.get("suspendMaxDuration"))
+<progressionFactor>#print_if_exist( $config.get("factor") 1.0)</progressionFactor>
+</suspendOnFailure>
+<markForSuspension>
+#print_list("errorCodes" $config.get("retryErroCode"))
+<retriesBeforeSuspension>#print_if_exist( $config.get("retryTimeOut") 0)</retriesBeforeSuspension>
+<retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
+</markForSuspension>
+        #end
+#end
+
+        ##macro for http_endpoints in failover and load balance types
+        #macro ( http_endpoint $name $ep )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
+<http uri-template="$util.escapeXml($ep.get("url"))">
+#timeout( $ep.get('config') )
+#if($enableRetryCallWithNewOauthToken)
+    #set( $endpointSecurity = $endpoint_security.get($type) )
+    #if($endpointSecurity.type == "oauth" || $endpointSecurity.type == "OAUTH")
+        <authentication>
+            <oauth>
+                #if($endpointSecurity.grantType == "client_credentials" || $endpointSecurity.grantType == "CLIENT_CREDENTIALS")
+                    #set($grantType = "clientCredentials")
+                #elseif($endpointSecurity.grantType == "password" || $endpointSecurity.grantType == "PASSWORD")
+                    #set($grantType = "passwordCredentials")
+                #end
+
+                <$grantType>
+                    #if($grantType == "passwordCredentials")
+                        <username>$util.escapeXml($endpointSecurity.username)</username>
+                        #if($isSecureVaultEnabled)
+                            <password>{wso2:vault-lookup('$endpointSecurity.passwordAlias')}</password>
+                        #else
+                            <password>$util.escapeXml($endpointSecurity.password)</password>
+                        #end
+                    #end
+                    <clientId>$util.escapeXml($endpointSecurity.clientId)</clientId>
+                    #if($isSecureVaultEnabled)
+                        <clientSecret>{wso2:vault-lookup('$endpointSecurity.clientSecretAlias')}</clientSecret>
+                    #else
+                        <clientSecret>$util.escapeXml($endpointSecurity.clientSecret)</clientSecret>
+                    #end
+                    <tokenUrl>$util.escapeXml($endpointSecurity.tokenUrl)</tokenUrl>
+                    #if($endpointSecurity.proxyConfigs && $endpointSecurity.proxyConfigs.proxyEnabled == true)
+                    <proxyConfigs>
+                        <proxyHost>$util.escapeXml($endpointSecurity.proxyConfigs.proxyHost)</proxyHost>
+                        <proxyPort>$util.escapeXml($endpointSecurity.proxyConfigs.proxyPort)</proxyPort>
+                        <proxyUsername>$util.escapeXml($endpointSecurity.proxyConfigs.proxyUsername)</proxyUsername>
+                        #if($isSecureVaultEnabled)
+                        <proxyPassword>{wso2:vault-lookup('$endpointSecurity.proxyConfigs.proxyPasswordAlias')}</proxyPassword>
+                        #else
+                        <proxyPassword>$util.escapeXml($endpointSecurity.proxyConfigs.proxyPassword)</proxyPassword>
+                        #end
+                        <proxyProtocol>$util.escapeXml($endpointSecurity.proxyConfigs.proxyProtocol)</proxyProtocol>
+                    </proxyConfigs>
+                    #end
+                    #set($requestParametersMap = $util.jsonStringToMap($endpointSecurity.customParameters))
+                    #if($requestParametersMap.size() > 0)
+                        <requestParameters>
+                            #foreach($entry in $requestParametersMap.entrySet())
+                                <parameter name="$util.escapeXml($entry.key)">$util.escapeXml($entry.value)</parameter>
+                            #end
+                        </requestParameters>
+                    #end
+                    <authMode/>
+                </$grantType>
+            </oauth>
+        </authentication>
+    #end
+#end
+</http>
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
+        </endpoint>
+        #end
+
+        ##macro for websocket endpoints
+        #macro ( websocket_endpoint $name )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="${name}_${websocketResourceKey}">
+<property name="OUT_ONLY" value="true"/>
+<http uri-template="$util.escapeXml($endpointUrl)">
+#timeout( $ep.get('config') )
+</http>
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpointUrl)"/>
+</endpoint>
+        #end
+
+        ##macro for address endpoints in failover and load balance types
+        #macro ( address_endpoint $name $ep )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
+#set( $advance_ep = $ep.get("config") )
+<address uri="$util.escapeXml($ep.get("url"))"
+#if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
+format="$advance_ep.get("format")"
+#end
+#if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") != 'leave-as-is')
+optimize="$advance_ep.get("optimize")"
+#end
+>
+#timeout( $ep.get('config') )
+</address>
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
+        </endpoint>
+        #end
+
+
+        #macro( draw_endpoint $type $endpoint_config )
+
+        #set( $endpointClass = $endpoint_config.get("endpoint_type") )
+
+        ##If graphql api
+        #if( $endpointClass == "graphql" )
+            #if( $websocketResourceKey )
+                ##If websocketResourceKey present in context then this is the graphQL subscription endpoint
+                #set( $endpoint_config = $endpoint_config.get("ws") )
+                #set( $isGQLSubscription = "true" )
+            #else
+                ##Else GraphQL query mutation http endpoint
+                #set( $endpoint_config = $endpoint_config.get("http") )
+            #end
+            #set( $endpointClass = $endpoint_config.get("endpoint_type") )
+        #end
+
+        #set( $endpoints = $endpoint_config.get("${type}_endpoints") )
+        #set( $ep_key = "${endpointKey}_API${type}Endpoint" )
+
+        #if( $endpointClass == "http" )
+            #http_endpoint( $ep_key $endpoints )
+        #elseif( $endpointClass == "ws" )
+            #websocket_endpoint( $ep_key )
+        #elseif( $endpointClass == "address" )
+            #address_endpoint( $ep_key $endpoints )
+        #elseif( $endpointClass == "failover" )
+            #set( $failover_endpoints = $endpoint_config.get("${type}_failovers") )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
+<failover>
+    #if($endpoints.get("endpoint_type") == "address")
+    #address_endpoint("${ep_key}_0" $endpoints)
+    #else
+    #http_endpoint("${ep_key}_0" $endpoints)
+    #end
+    #set( $i = 1)
+    #foreach($endpoint in $failover_endpoints)
+    #if($endpoint.get("endpoint_type") == "address")
+    #address_endpoint("${ep_key}_$i" $endpoint)
+    #else
+    #http_endpoint("${ep_key}_$i" $endpoint)
+    #end
+    #set( $i = $i + 1)
+    #end
+</failover>
+</endpoint>
+        #elseif ( $endpointClass == "load_balance" )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
+#if($endpoint_config.get("sessionManagement") && $endpoint_config.get("sessionManagement") != "" && $endpoint_config.get("sessionManagement") != "none")
+<session type="$endpoint_config.get("sessionManagement")">
+#if($endpoint_config.get("sessionTimeOut") && $endpoint_config.get("sessionTimeOut") != "")
+<sessionTimeout>$endpoint_config.get("sessionTimeOut")</sessionTimeout>
+#end
+</session>
+        #end
+<loadbalance algorithm="$!endpoint_config.get("algoClassName")"
+        #if($endpoint_config.get("failOver") && $endpoint_config.get("failOver") != "" && $endpoint_config.get("failOver") == "False")
+        failover="false"
+        #end>
+        #set( $i = 0)
+        #foreach($endpoint in $endpoints)
+        #if($endpoint.get("endpoint_type") == "address")
+        #address_endpoint("${ep_key}_$i" $endpoint)
+        #else
+        #http_endpoint("${ep_key}_$i" $endpoint)
+        #end
+        #set( $i = $i + 1)
+        #end
+        </loadbalance>
+        </endpoint>
+        #elseif ($endpointClass == "default")
+        #if($websocketResourceKey)
+        #set($wsEndpointName = "${ep_key}_${websocketResourceKey}")
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$wsEndpointName">
+<property name="OUT_ONLY" value="true"/>
+<default/>
+</endpoint>
+        #else
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
+<default>
+    #timeout( $endpoints.get('config') )
+</default>
+</endpoint>
+        #end
+        #end
+        #end
+
+        ############################################### end of macros ##########################################################
+
+        #if(${type} == "production_endpoints")
+            #draw_endpoint("production" $endpoint_config  )
+        #else
+            #draw_endpoint("sandbox" $endpoint_config )
+        #end
