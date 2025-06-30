@@ -28,6 +28,8 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -91,6 +93,7 @@ import static org.testng.Assert.assertNotNull;
  */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
+    private static Log log = LogFactory.getLog(APISecurityTestCase.class);
 
     private final String mutualSSLOnlyAPIName = "mutualsslOnlyAPI";
     private final String mutualSSLWithOAuthAPI = "mutualSSLWithOAuthAPI";
@@ -1044,6 +1047,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                         .concat("randomPassword1").getBytes()));
         HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders1);
+        log.info("***** RESPONSE HERE ******\n" + response);
         Assert.assertEquals(response.getResponseCode(), 401);
         for (String user : users) {
             Map<String, String> requestHeaders = new HashMap<>();
