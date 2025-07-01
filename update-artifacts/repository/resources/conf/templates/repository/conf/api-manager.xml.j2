@@ -1589,11 +1589,6 @@
                  <ExpiresIn>{{apim.mediator_config.oauth.expires_in}}</ExpiresIn>
                  <!-- Enable/Disable retry API calls with new access token when the access token is invalid. Default is false. -->
                  <EnableRetryCallWithNewToken>{{apim.mediator_config.oauth.enable_retry_call_with_new_token}}</EnableRetryCallWithNewToken>
-                 <!-- Enable/Disable retry API calls with new access token when the access token is invalid. Default is false. -->
-                 <EnableRetryCallWithNewToken>{{apim.mediator_config.oauth.enable_retry_call_with_new_token}}</EnableRetryCallWithNewToken>
-                 <ConnectionTimeoutDuration>{{apim.mediator_config.oauth.connection_timeout_duration}}</ConnectionTimeoutDuration>
-                 <ConnectionRequestTimeoutDuration>{{apim.mediator_config.oauth.connection_request_timeout_duration}}</ConnectionRequestTimeoutDuration>
-                 <SocketTimeoutDuration>{{apim.mediator_config.oauth.socket_timeout_duration}}</SocketTimeoutDuration>
              </OAuth>
           </MediatorConfigs>
       {% endif %}
