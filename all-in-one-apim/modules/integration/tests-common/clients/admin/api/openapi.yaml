@@ -5194,7 +5194,7 @@ paths:
         style: simple
       - description: |
           We need to show the values of each workflow process separately .for that we use workflow type.
-          Workflow type can be AM_APPLICATION_CREATION, AM_SUBSCRIPTION_CREATION,   AM_USER_SIGNUP, AM_APPLICATION_REGISTRATION_PRODUCTION, AM_APPLICATION_REGISTRATION_SANDBOX.
+          Workflow type can be AM_APPLICATION_CREATION, AM_SUBSCRIPTION_CREATION,   AM_USER_SIGNUP, AM_APPLICATION_REGISTRATION_PRODUCTION, AM_APPLICATION_REGISTRATION_SANDBOX, AM_APPLICATION_UPDATE.
         explode: true
         in: query
         name: workflowType
@@ -5202,6 +5202,7 @@ paths:
         schema:
           enum:
           - AM_APPLICATION_CREATION
+          - AM_APPLICATION_UPDATE
           - AM_SUBSCRIPTION_CREATION
           - AM_USER_SIGNUP
           - AM_APPLICATION_REGISTRATION_PRODUCTION
