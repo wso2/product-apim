@@ -479,7 +479,6 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         approveUpdatePendingApplication(appName);
 
         ApplicationDTO appRetrieveAfterApproving = restAPIStore.getApplicationById(applicationID);
-
         assertEquals(appRetrieveAfterApproving.getStatus(), "APPROVED"
                 , "Application status should be APPROVED after the approval");
 
@@ -488,7 +487,6 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         assertEquals(appRetrieveAfterApproving.getDescription(), appDescriptionForApproval
                 , "Application description should be updated after the approval");
-
 
         //Update Application again to check the rejection flow
         HttpResponse updateAppResponseForRejectionCheck = restAPIStore.updateApplicationByID(applicationResponse.getData(),
@@ -502,7 +500,6 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         rejectUpdatePendingApplication(appNameForApproval);
 
         ApplicationDTO appRetrieveAfterRejecting = restAPIStore.getApplicationById(applicationID);
-
         assertEquals(appRetrieveAfterRejecting.getStatus(), "UPDATE_REJECTED"
                 , "Application status should be UPDATE_REJECTED after the rejection");
 
@@ -517,10 +514,12 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     }
 
     private void approveUpdatePendingApplication(String applicationName) throws ApiException, JSONException {
-        log.info("Triggering approveUpdatePendingApplication");
+
         final String appUpdateWorkflowType = "AM_APPLICATION_UPDATE";
-        org.wso2.am.integration.test.HttpResponse updateWorkflowsResponse = restAPIAdmin.getWorkflows("AM_APPLICATION_UPDATE");
-        assertEquals(updateWorkflowsResponse.getResponseCode(), 200, "Get Workflow Pending requests failed for User Admin");
+        org.wso2.am.integration.test.HttpResponse updateWorkflowsResponse =
+                restAPIAdmin.getWorkflows(appUpdateWorkflowType);
+        assertEquals(updateWorkflowsResponse.getResponseCode()
+                , 200, "Get Workflow Pending requests failed for User Admin");
 
         JSONObject updateWorkflowObject = new JSONObject(updateWorkflowsResponse.getData());
         String updateExternalWorkflowRef = null;
@@ -539,13 +538,14 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         updateWorkflowsResponse = restAPIAdmin.getWorkflowByExternalWorkflowReference(updateExternalWorkflowRef);
         assertEquals(updateWorkflowsResponse.getResponseCode(), 200,
                 "Get Workflow Pending request failed for User Admin");
-        org.wso2.am.integration.test.HttpResponse updateWorkflowResponse = restAPIAdmin.updateWorkflowStatus(updateExternalWorkflowRef);
+        org.wso2.am.integration.test.HttpResponse updateWorkflowResponse =
+                restAPIAdmin.updateWorkflowStatus(updateExternalWorkflowRef);
         assertEquals(updateWorkflowResponse.getResponseCode(), 200, "Workflow state update failed for user admin");
 
     }
 
     private void rejectUpdatePendingApplication(String applicationName) throws ApiException, JSONException {
-        log.info("Triggering rejectUpdatePendingApplication");
+
         final String appUpdateWorkflowType = "AM_APPLICATION_UPDATE";
         org.wso2.am.integration.test.HttpResponse updateWorkflowsResponse =
                 restAPIAdmin.getWorkflows(appUpdateWorkflowType);
@@ -573,8 +573,6 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 restAPIAdmin.rejectWorkflowStatus(updateExternalWorkflowRef);
         assertEquals(updateWorkflowResponse.getResponseCode(),
                 200, "Workflow state rejection failed for user admin");
-
-
     }
     @Test(groups = {"wso2.am"}, description = "Application workflow process check", dependsOnMethods =
             "testAPIWorkflowProcess", enabled = true)
