@@ -80,7 +80,7 @@
 #print_if_exist_only("maximumDuration" $config.get("suspendMaxDuration"))
 <progressionFactor>#print_if_exist( $config.get("factor") 1.0)</progressionFactor>
 </suspendOnFailure>
-## No timeout config for WS endpoints
+## No markForSuspension config for WS endpoints
 #if( $endpointClass != "ws" )
 <markForSuspension>
 #print_list("errorCodes" $config.get("retryErroCode"))
