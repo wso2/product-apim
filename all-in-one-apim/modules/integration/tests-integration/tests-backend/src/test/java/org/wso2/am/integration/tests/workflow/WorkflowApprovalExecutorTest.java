@@ -496,7 +496,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 ApplicationDTO.TokenTypeEnum.JWT);
         assertEquals(updateAppResponseForRejectionCheck.getResponseCode(), 200, "Application update approval workflow failure");
         assertEquals(applicationStatusAfterUpdate, "UPDATE_PENDING",
-                "Application state should remain as UPDATE_PENDING till approval. ");
+                "Application state should remain as UPDATE_PENDING till approval.");
 
         //Reject the pending changes for the application
         rejectUpdatePendingApplication(appNameForApproval);
@@ -512,7 +512,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertNotEquals(appRetrieveAfterRejecting.getDescription(), appDescriptionForRejection
                 , "Application description shouldn't be updated after the rejection");
 
-        //Delete the application after the test completed
+        //Delete the application after the test is completed
         restAPIStore.deleteApplication(applicationID);
     }
 
