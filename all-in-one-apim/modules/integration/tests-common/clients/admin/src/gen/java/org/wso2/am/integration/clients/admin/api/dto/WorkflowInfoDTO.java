@@ -36,6 +36,8 @@ public class WorkflowInfoDTO {
 public enum WorkflowTypeEnum {
         APPLICATION_CREATION("APPLICATION_CREATION"),
         
+        APPLICATION_UPDATE("APPLICATION_UPDATE"),
+        
         SUBSCRIPTION_CREATION("SUBSCRIPTION_CREATION"),
         
         USER_SIGNUP("USER_SIGNUP"),

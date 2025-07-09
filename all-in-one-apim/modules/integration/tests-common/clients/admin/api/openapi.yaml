@@ -4840,6 +4840,219 @@ paths:
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       x-contentType: application/json
       x-accepts: application/json
+  /llm-providers:
+    get:
+      description: |
+        Get all LLM providers
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMProviderSummaryResponseList'
+          description: |
+            OK.
+            LLM providers returned
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Get all LLM providers
+      tags:
+      - LLMProviders
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/llm-providers"'
+      x-accepts: application/json
+    post:
+      description: |
+        Add a new LLM provider
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LLMProviderRequest'
+        description: |
+          LLM provider object that should to be added
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMProviderResponse'
+          description: |
+            Created.
+            Successful response with the newly created LLM provider as entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Add a LLM provider
+      tags:
+      - LLMProviders
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/llm-providers"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /llm-providers/{llmProviderId}:
+    delete:
+      description: |
+        Delete a LLM Provider by llmProviderId
+      parameters:
+      - description: |
+          LLM Provider UUID
+        explode: false
+        in: path
+        name: llmProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            LLM provider successfully deleted.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Delete a LLM Provider
+      tags:
+      - LLMProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-accepts: application/json
+    get:
+      description: |
+        Get a LLM Provider
+      parameters:
+      - description: |
+          LLM Provider UUID
+        explode: false
+        in: path
+        name: llmProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMProviderResponse'
+          description: |
+            OK.
+            OpenAPI specification
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Get LLM Provider
+      tags:
+      - LLMProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-accepts: application/json
+    put:
+      description: |
+        Update a LLM provider by LLMProviderId
+      parameters:
+      - description: |
+          LLM Provider UUID
+        explode: false
+        in: path
+        name: llmProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LLMProviderRequest'
+        description: |
+          LLM Provider object with updated information
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMProviderResponse'
+          description: |
+            OK.
+            LLM Provider updated.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Update an LLM provider
+      tags:
+      - LLMProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
   /environments:
     get:
       description: |
@@ -5021,6 +5234,283 @@ paths:
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       x-contentType: application/json
       x-accepts: application/json
+  /organizations:
+    get:
+      description: |
+        Get all Registered Organizations
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationList'
+          description: |
+            OK.
+            Organizations returned
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:organization_read
+      summary: Get all registered Organizations
+      tags:
+      - Organizations
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/organizations"'
+      x-accepts: application/json
+    post:
+      description: |
+        Add a new organization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+        description: |
+          Organization object that should to be added
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: |
+            Created.
+            Successful response with the newly created organization as entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:organization_manage
+      summary: Add an Organizations
+      tags:
+      - Organizations
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/organizations"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /organizations/{organizationId}:
+    delete:
+      description: |
+        Delete an organization by organization Id
+      parameters:
+      - description: |
+          Organization UUID
+        explode: false
+        in: path
+        name: organizationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Organization successfully deleted.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:organization_manage
+      summary: Delete an Organization
+      tags:
+      - Organizations
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      x-accepts: application/json
+    get:
+      description: |
+        Get an organization by organization Id
+      parameters:
+      - description: |
+          Organization UUID
+        explode: false
+        in: path
+        name: organizationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: |
+            OK.
+            Organization.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:organization_read
+      summary: Get an Organization
+      tags:
+      - Organizations
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      x-accepts: application/json
+    put:
+      description: |
+        Update an organization by organization Id
+      parameters:
+      - description: |
+          Organization UUID
+        explode: false
+        in: path
+        name: organizationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+        description: |
+          Organization object with updated information
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: |
+            OK.
+            Organization updated.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:organization_manage
+      summary: Update an Organization
+      tags:
+      - Organizations
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /me/organization-information:
+    get:
+      description: |
+        Using this operation, logged-in user can get their organization information.
+      operationId: organizationInformation
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationInfo'
+          description: |
+            OK.
+            Key Manager list returned
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:admin_settings
+      summary: Get the Organization information of the user
+      tags:
+      - Users
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/publisher/v4/me/organization"'
+      x-accepts: application/json
   /bot-detection-data:
     get:
       description: |
@@ -5194,7 +5684,7 @@ paths:
         style: simple
       - description: |
           We need to show the values of each workflow process separately .for that we use workflow type.
-          Workflow type can be AM_APPLICATION_CREATION, AM_SUBSCRIPTION_CREATION,   AM_USER_SIGNUP, AM_APPLICATION_REGISTRATION_PRODUCTION, AM_APPLICATION_REGISTRATION_SANDBOX.
+          Workflow type can be AM_APPLICATION_CREATION, AM_SUBSCRIPTION_CREATION,   AM_USER_SIGNUP, AM_APPLICATION_REGISTRATION_PRODUCTION, AM_APPLICATION_REGISTRATION_SANDBOX, AM_APPLICATION_UPDATE.
         explode: true
         in: query
         name: workflowType
@@ -5203,6 +5693,7 @@ paths:
           enum:
           - AM_APPLICATION_CREATION
           - AM_SUBSCRIPTION_CREATION
+          - AM_APPLICATION_UPDATE
           - AM_USER_SIGNUP
           - AM_APPLICATION_REGISTRATION_PRODUCTION
           - AM_APPLICATION_REGISTRATION_SANDBOX
@@ -7349,6 +7840,26 @@ components:
       schema:
         type: string
       style: simple
+    organizationId:
+      description: |
+        Organization UUID
+      explode: false
+      in: path
+      name: organizationId
+      required: true
+      schema:
+        type: string
+      style: simple
+    llmProviderId:
+      description: |
+        LLM Provider UUID
+      explode: false
+      in: path
+      name: llmProviderId
+      required: true
+      schema:
+        type: string
+      style: simple
     policyId:
       description: |
         Thorttle policy UUID
@@ -8730,6 +9241,203 @@ components:
           type: array
       title: Environment List
       type: object
+    Organization:
+      example:
+        organizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        displayName: My Organization
+        description: My Organization Description
+        externalOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        parentOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        organizationId:
+          description: |
+            UUID of the organization.
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        externalOrganizationId:
+          description: |
+            External id of the organization.
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          type: string
+        parentOrganizationId:
+          description: |
+            UUID of the parent organization if there is any.
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        displayName:
+          example: My Organization
+          maxLength: 255
+          minLength: 1
+          type: string
+        description:
+          example: My Organization Description
+          maxLength: 1023
+          type: string
+      required:
+      - externalOrganizationId
+      title: Organization
+      type: object
+    OrganizationList:
+      example:
+        count: 1
+        list:
+        - organizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          displayName: My Organization
+          description: My Organization Description
+          externalOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          parentOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        - organizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          displayName: My Organization
+          description: My Organization Description
+          externalOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          parentOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        count:
+          description: |
+            Number of Organizationa returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/Organization'
+          type: array
+      title: Organization List
+      type: object
+    LLMProviderRequest:
+      properties:
+        name:
+          example: OpenAI
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        description:
+          example: OpenAI LLM
+          maxLength: 1023
+          type: string
+        configurations:
+          description: LLM Provider configurations
+          type: string
+        apiDefinition:
+          description: OpenAPI specification
+          format: binary
+          type: string
+        modelList:
+          description: List of models supported by the LLM Provider as a stringified
+            JSON array
+          type: string
+      title: LLMProvider
+      type: object
+    LLMProviderResponse:
+      example:
+        apiVersion: 1.0.0
+        modelList:
+        - modelList
+        - modelList
+        builtInSupport: true
+        configurations: configurations
+        name: OpenAI
+        description: OpenAI LLM
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        apiDefinition: apiDefinition
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: OpenAI
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        builtInSupport:
+          description: Is built-in support
+          type: boolean
+        description:
+          example: OpenAI LLM
+          maxLength: 1023
+          type: string
+        configurations:
+          description: LLM Provider configurations
+          type: string
+        apiDefinition:
+          description: OpenAPI specification
+          type: string
+        modelList:
+          description: List of models supported by the LLM Provider
+          items:
+            type: string
+          type: array
+      title: LLMProviderResponse
+      type: object
+    LLMProviderSummaryResponse:
+      example:
+        apiVersion: 1.0.0
+        builtInSupport: true
+        name: open-ai
+        description: OpenAI LLM Provider
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: open-ai
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        builtInSupport:
+          description: Is built-in support
+          type: boolean
+        description:
+          example: OpenAI LLM Provider
+          maxLength: 1023
+          type: string
+      title: LLMProviderSummaryResponse
+      type: object
+    LLMProviderSummaryResponseList:
+      example:
+        count: 1
+        list:
+        - apiVersion: 1.0.0
+          builtInSupport: true
+          name: open-ai
+          description: OpenAI LLM Provider
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        - apiVersion: 1.0.0
+          builtInSupport: true
+          name: open-ai
+          description: OpenAI LLM Provider
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        count:
+          description: |
+            Number of LLM Providers returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/LLMProviderSummaryResponse'
+          type: array
+      title: LLMProviderSummaryResponseList
+      type: object
     VHost:
       example:
         httpContext: pets
@@ -9124,6 +9832,9 @@ components:
           displayName: WSO2 Identity Server
           enableMapOAuthConsumerApps: false
           introspectionEndpoint: https://localhost:9444/oauth2/introspect
+          allowedOrganizations:
+          - allowedOrganizations
+          - allowedOrganizations
           scopeManagementEndpoint: https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes
           description: This is a key manager for Developers
           type: WSO2-IS
@@ -9191,6 +9902,9 @@ components:
         displayName: WSO2 Identity Server
         enableMapOAuthConsumerApps: false
         introspectionEndpoint: https://localhost:9444/oauth2/introspect
+        allowedOrganizations:
+        - allowedOrganizations
+        - allowedOrganizations
         scopeManagementEndpoint: https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes
         description: This is a key manager for Developers
         type: WSO2-IS
@@ -9374,6 +10088,10 @@ components:
           - BOTH
           example: EXCHANGED
           type: string
+        allowedOrganizations:
+          items:
+            type: string
+          type: array
       required:
       - name
       - type
@@ -9694,6 +10412,7 @@ components:
             Type of the Workflow Request. It shows which type of request is it.
           enum:
           - APPLICATION_CREATION
+          - APPLICATION_UPDATE
           - SUBSCRIPTION_CREATION
           - USER_SIGNUP
           - APPLICATION_REGISTRATION_PRODUCTION
@@ -9823,6 +10542,19 @@ components:
           example: 127.0.0.1
           type: string
       title: Bot Detection Data
+      type: object
+    OrganizationInfo:
+      example:
+        organizationId: 01234567-0123-0123-0123-012345678901
+        name: My Organization
+      properties:
+        organizationId:
+          example: 01234567-0123-0123-0123-012345678901
+          type: string
+        name:
+          example: My Organization
+          type: string
+      title: Organization Info
       type: object
     RoleAliasList:
       example:
@@ -10225,6 +10957,9 @@ components:
             apim:admin_alert_manage: Manage admin alerts
             apim:api_workflow_view: Retrive workflow requests
             apim:scope_manage: Manage system scopes
+            apim:llm_provider_manage: Manage LLM Providers
+            apim:organization_manage: Manage Organizations
+            apim:organization_read: Read Organizations
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 
