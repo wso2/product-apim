@@ -4,6 +4,8 @@
     <!--ApplicationCreation executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationCreationSimpleWorkflowExecutor"/-->
     <ApplicationCreation executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationCreationApprovalWorkflowExecutor"/>
     <!--ProductionApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationSimpleWorkflowExecutor"/-->
+    <!--ApplicationUpdate executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationUpdateSimpleWorkflowExecutor"/-->
+    <ApplicationUpdate executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationUpdateApprovalWorkflowExecutor"/>
     <ProductionApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationApprovalWorkflowExecutor"/>
     <!--SandboxApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationSimpleWorkflowExecutor"/-->
     <SandboxApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationApprovalWorkflowExecutor"/>
