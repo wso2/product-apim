@@ -362,6 +362,28 @@ public class RestAPIStoreImpl {
         }
         return null;
     }
+
+    public HttpResponse updateApplicationByID(String applicationId, String appName, String description, String throttleTier) {
+
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+
+            ApplicationDTO updatedApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(updatedApp.getApplicationId())) {
+                response = new HttpResponse(updatedApp.toString(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            String responseBody = e.getResponseBody();
+            int statusCode = e.getCode();
+            return new HttpResponse(responseBody, statusCode);
+        }
+
+    }
     
     public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
             String throttleTier,

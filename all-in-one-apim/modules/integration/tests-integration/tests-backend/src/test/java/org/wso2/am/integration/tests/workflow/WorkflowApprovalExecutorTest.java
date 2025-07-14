@@ -462,18 +462,23 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(status, "APPROVED",
                 "Application state should change after  approval. ");
 
-
         //Update Application to check the approval flow
-        HttpResponse updateResponseForApprovalCheck = restAPIStore.updateApplicationByID(applicationResponse.getData(),
-                appNameForApproval, appDescriptionForApproval, appTier,
-                ApplicationDTO.TokenTypeEnum.JWT);
+        HttpResponse updateResponseForApprovalCheck = restAPIStore.updateApplicationByID(applicationID,
+                appNameForApproval, appDescriptionForApproval, appTier);
         assertEquals(updateResponseForApprovalCheck.getResponseCode(), 200, "Application update approval workflow failure");
 
         //Application state should be UPDATE_PENDING
         ApplicationDTO updatePendingAppDTO = restAPIStore.getApplicationById(applicationID);
         String applicationStatusAfterUpdate = updatePendingAppDTO.getStatus();
         assertEquals(applicationStatusAfterUpdate, "UPDATE_PENDING",
-                "Application state should remain as UPDATE_PENDING till approval. ");
+                "Application state should remain as UPDATE_PENDING till approval.");
+
+        //Check re updating and UPDATE_PENDING application
+        HttpResponse reuUpdateResponseForPendingApp = restAPIStore.updateApplicationByID(applicationID,
+                appNameForApproval, appDescriptionForApproval, appTier);
+
+        assertEquals(reuUpdateResponseForPendingApp.getResponseCode(), 409,
+                "Update operation should be blocked for applications in UPDATE PENDING state.");
 
         //Approve the pending changes for the application
         approveUpdatePendingApplication(appName);
@@ -490,8 +495,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         //Update Application again to check the rejection flow
         HttpResponse updateAppResponseForRejectionCheck = restAPIStore.updateApplicationByID(applicationResponse.getData(),
-                appNameForRejection, appDescriptionForRejection, appTier,
-                ApplicationDTO.TokenTypeEnum.JWT);
+                appNameForRejection, appDescriptionForRejection, appTier);
         assertEquals(updateAppResponseForRejectionCheck.getResponseCode(), 200, "Application update approval workflow failure");
         assertEquals(applicationStatusAfterUpdate, "UPDATE_PENDING",
                 "Application state should remain as UPDATE_PENDING till approval.");
