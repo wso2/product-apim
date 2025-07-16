@@ -616,8 +616,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiLoggingLoggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis?log-level=full", apiLoggingHeader);
         Assert.assertEquals(apiLoggingLoggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + "apiloggingtest" + "/" + "1.0.0" + "\","
-                + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiLoggingApiId + "\",\"resourceMethod\":null,\"resourcePath\":null" +
-                "}]}");
+                + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiLoggingApiId + "\"}]}");
 
         ctx.setAttribute("apiLoggingApplicationId", apiLoggingApplicationId);
         /*
