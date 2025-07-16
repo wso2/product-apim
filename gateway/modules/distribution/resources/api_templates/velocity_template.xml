@@ -142,7 +142,13 @@
         #elseif ($endpointClass == "load_balance")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
         #elseif ($endpointClass == "default")
-<endpoint key="$ep_key"/>
+            #if($apiType == 'WS')
+            #set($resourceKey = $topicMappings.get("$topic").get("resourceKey"))
+            #set($wsEndpointName = "${ep_key}_${resourceKey}")
+        <endpoint key="$wsEndpointName"/>
+            #else
+        <endpoint key="$ep_key"/>
+            #end
         #end
         </send>
         #end
