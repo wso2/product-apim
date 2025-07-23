@@ -21,6 +21,7 @@
             #if($isSecurityEnabled)
             <property name="generated_signature" expression="fn:concat('$signingAlgorithm', hmac-generate($ctx:ORIGINAL_PAYLOAD, '$secret', '$hmacSignatureGenerationAlgorithm'))"/>
             <property name="received_signature" expression="$trp:$signatureHeader"/>
+            <property name="signature_header_name" expression="'$signatureHeader'"/>
             <filter xpath="get-property('received_signature') = get-property('generated_signature')">
                 <then>
             #end
