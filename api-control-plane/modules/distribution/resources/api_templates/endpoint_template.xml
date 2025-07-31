@@ -46,6 +46,8 @@
 
 
         #macro ( timeout $config $dynamicTimeout)
+        ## No timeout config for WS endpoints
+        #if( $endpointClass != "ws" )
         #if( $config.get("actionSelect") == "neverTimeout" )
         ## print nothing.
         #elseif($config.get("actionDuration")|| $config.get("actionSelect"))
@@ -53,7 +55,7 @@
 #print_if_exist_only("duration" $config.get("actionDuration"))
 #print_if_exist_only("responseAction" $config.get("actionSelect"))
 </timeout>
-#elseif( $endpointClass != "ws" )
+#else
         ##add default timeout config for non WS endpoints
 <timeout>
     #if( $dynamicTimeout )
@@ -61,6 +63,7 @@
     #end
      <responseAction>fault</responseAction>
 </timeout>
+        #end
         #end
 
         #if( $config.get("suspendDuration") == 0)
@@ -80,11 +83,14 @@
 #print_if_exist_only("maximumDuration" $config.get("suspendMaxDuration"))
 <progressionFactor>#print_if_exist( $config.get("factor") 1.0)</progressionFactor>
 </suspendOnFailure>
+## No markForSuspension config for WS endpoints
+#if( $endpointClass != "ws" )
 <markForSuspension>
 #print_list("errorCodes" $config.get("retryErroCode"))
 <retriesBeforeSuspension>#print_if_exist( $config.get("retryTimeOut") 0)</retriesBeforeSuspension>
 <retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
 </markForSuspension>
+#end
         #end
 #end
 
@@ -178,7 +184,7 @@
         #end
 
         ##macro for websocket endpoints
-        #macro ( websocket_endpoint $name )
+        #macro ( websocket_endpoint $name $ep )
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="${name}_${websocketResourceKey}">
 <property name="OUT_ONLY" value="true"/>
 <http uri-template="$util.escapeXml($endpointUrl)">
@@ -233,7 +239,7 @@ optimize="$advance_ep.get("optimize")"
         #elseif( $endpointClass == "http" )
             #http_endpoint( $ep_key $endpoints false)
         #elseif( $endpointClass == "ws" )
-            #websocket_endpoint( $ep_key )
+            #websocket_endpoint( $ep_key $endpoints )
         #elseif( $endpointClass == "address" )
             #address_endpoint( $ep_key $endpoints )
         #elseif( $endpointClass == "failover" )
