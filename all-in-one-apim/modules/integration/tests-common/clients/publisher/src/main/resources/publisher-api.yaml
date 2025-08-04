@@ -9587,6 +9587,11 @@ components:
           pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\[\]\/]*$)'
           type: string
           example: PizzaShackAPI
+        displayName:
+          description: Human-friendly name shown in UI. Length limited to DB column size.
+          minLength: 1
+          type: string
+          example: Pizza Shack API
         description:
           maxLength: 32766
           type: string
@@ -10068,6 +10073,14 @@ components:
             - https
           items:
             type: string
+        initiatedFromGateway:
+          type: boolean
+          description: |
+            Whether the API is initiated from the gateway or not. This is used to identify
+            whether the API is created from the publisher or discovered from the gateway.
+          example: false
+          default: false
+          readOnly: true
       x-scopes:
         - apim:api_create
         - apim:api_import_export

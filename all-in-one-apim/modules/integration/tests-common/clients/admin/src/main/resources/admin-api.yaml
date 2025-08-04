@@ -5649,6 +5649,16 @@ components:
           type: boolean
           readOnly: true
           example: false
+        isWriteOnly:
+          type: boolean
+          example: false
+          default: false
+        apiDiscoveryScheduledWindow:
+          type: integer
+          description: |
+            The time window in minutes to schedule the API discovery task.
+            This is used to discover APIs from the API Gateway and update the API list in the environment.
+          default: 60
         vhosts:
           type: array
           minItems: 1

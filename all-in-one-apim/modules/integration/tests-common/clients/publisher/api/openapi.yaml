@@ -4744,6 +4744,12 @@ paths:
                   description: Definition to uploads a file
                   format: binary
                   type: string
+                url:
+                  description: Definition url
+                  type: string
+                schema:
+                  description: Definition schema
+                  type: string
                 additionalProperties:
                   description: Additional attributes specified as a stringified JSON
                     with API's schema
@@ -5147,6 +5153,17 @@ paths:
       description: |
         This operation can be used to validate a graphQL definition and retrieve a summary.
       operationId: validateGraphQLSchema
+      parameters:
+      - description: |
+          Specify whether to use Introspection to obtain the GraphQL Schema
+        explode: true
+        in: query
+        name: useIntrospection
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       requestBody:
         content:
           multipart/form-data:
@@ -5156,8 +5173,9 @@ paths:
                   description: Definition to upload as a file
                   format: binary
                   type: string
-              required:
-              - file
+                url:
+                  description: Definition to upload using url
+                  type: string
         required: true
       responses:
         "200":
@@ -7202,6 +7220,34 @@ paths:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/resource-paths"'
+      x-accepts: application/json
+  /organizations:
+    get:
+      description: |
+        Get all Registered Organizations
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationList'
+          description: |
+            OK.
+            Organizations returned
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:api_import_export
+        - apim:api_product_import_export
+        - apim:publisher_organization_read
+      summary: Get all registered Organizations
+      tags:
+      - Organizations
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/organizations"'
       x-accepts: application/json
   /apis/{apiId}/auditapi:
     get:
@@ -17926,6 +17972,18 @@ components:
           name: name
           value: value
         lifeCycleStatus: CREATED
+        organizationPolicies:
+        - organizationID: 36c87e00-57f0-4000-9f97-b379acc4e577
+          policies:
+          - Silver
+          - Gold
+          - Unlimited
+        - organizationID: 36c87e00-57f0-4000-9f97-b379acc4e577
+          policies:
+          - Silver
+          - Gold
+          - Unlimited
+        visibleOrganizations: []
         accessControl: NONE
         apiPolicies:
           request:
@@ -17967,6 +18025,7 @@ components:
             policyType: policyType
             parameters:
               key: '{}'
+        displayName: Pizza Shack API
         monetization:
           enabled: true
           properties:
@@ -18030,6 +18089,7 @@ components:
             name: name
             value: value
         lastUpdatedTimestamp: lastUpdatedTimestamp
+        initiatedFromGateway: false
         wsdlInfo:
           type: WSDL
         hasThumbnail: false
@@ -18080,6 +18140,12 @@ components:
           maxLength: 60
           minLength: 1
           pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\[\]\/]*$)
+          type: string
+        displayName:
+          description: Human-friendly name shown in UI. Length limited to DB column
+            size.
+          example: Pizza Shack API
+          minLength: 1
           type: string
         description:
           example: This is a simple API for Pizza Shack online pizza delivery store.
@@ -18202,6 +18268,13 @@ components:
           x-otherScopes:
           - apim:api_publish
           - apim:api_manage
+        organizationPolicies:
+          items:
+            $ref: '#/components/schemas/OrganizationPolicies'
+          type: array
+          x-otherScopes:
+          - apim:api_publish
+          - apim:api_manage
         apiThrottlingPolicy:
           description: The API level throttling policy selected for the particular
             API
@@ -18258,6 +18331,13 @@ components:
           - apim:api_publish
           - apim:api_manage
         visibleTenants:
+          example: []
+          items:
+            type: string
+          type: array
+        visibleOrganizations:
+          description: The organizations that are able to access the API in Developer
+            Portal
           example: []
           items:
             type: string
@@ -18511,6 +18591,14 @@ components:
           items:
             type: string
           type: array
+        initiatedFromGateway:
+          default: false
+          description: |
+            Whether the API is initiated from the gateway or not. This is used to identify
+            whether the API is created from the publisher or discovered from the gateway.
+          example: false
+          readOnly: true
+          type: boolean
       required:
       - context
       - name
@@ -20429,6 +20517,70 @@ components:
           type: array
       title: Endpoint List
       type: object
+    Organization:
+      example:
+        organizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        displayName: My Organization
+        description: My Organization Description
+        externalOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        parentOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        organizationId:
+          description: |
+            UUID of the organization.
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        externalOrganizationId:
+          description: |
+            External id of the organization.
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          type: string
+        parentOrganizationId:
+          description: |
+            UUID of the parent organization if there is any.
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        displayName:
+          example: My Organization
+          maxLength: 255
+          minLength: 1
+          type: string
+        description:
+          example: My Organization Description
+          maxLength: 1023
+          type: string
+      required:
+      - organizationId
+      title: Organization
+      type: object
+    OrganizationList:
+      example:
+        count: 1
+        list:
+        - organizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          displayName: My Organization
+          description: My Organization Description
+          externalOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          parentOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        - organizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          displayName: My Organization
+          description: My Organization Description
+          externalOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          parentOrganizationId: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        count:
+          description: |
+            Number of Organizationa returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/Organization'
+          type: array
+      title: Organization List
+      type: object
     Scope:
       example:
         displayName: api_view
@@ -20699,6 +20851,29 @@ components:
         operationPolicies:
           $ref: '#/components/schemas/APIOperationPolicies'
       title: Operation
+      type: object
+    OrganizationPolicies:
+      example:
+        organizationID: 36c87e00-57f0-4000-9f97-b379acc4e577
+        policies:
+        - Silver
+        - Gold
+        - Unlimited
+      properties:
+        organizationID:
+          example: 36c87e00-57f0-4000-9f97-b379acc4e577
+          type: string
+        policies:
+          example:
+          - Silver
+          - Gold
+          - Unlimited
+          items:
+            type: string
+          type: array
+      required:
+      - organizationID
+      title: Organization based Subscription Policies
       type: object
     ScopeList:
       example:
@@ -22165,33 +22340,39 @@ components:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           response:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           fault:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
         displayName: item_type_setter
@@ -22361,8 +22542,8 @@ components:
         count: 1
         list:
         - supportedApiTypes:
-          - REST
-          - REST
+          - HTTP
+          - SOAP
           policyAttributes:
           - allowedValues:
             - '["GET","POST","PUT"]'
@@ -22399,8 +22580,8 @@ components:
           isAPISpecific: true
           md5: 121223q41-24141-124124124-12414
         - supportedApiTypes:
-          - REST
-          - REST
+          - HTTP
+          - SOAP
           policyAttributes:
           - allowedValues:
             - '["GET","POST","PUT"]'
@@ -22465,8 +22646,8 @@ components:
     OperationPolicyData:
       example:
         supportedApiTypes:
-        - REST
-        - REST
+        - HTTP
+        - SOAP
         policyAttributes:
         - allowedValues:
           - '["GET","POST","PUT"]'
@@ -22532,9 +22713,16 @@ components:
             type: string
           type: array
         supportedApiTypes:
+          description: |
+            Supported API types as an array of strings, or an array of maps
+            [HTTP, SOAP]
+            [{apiType: HTTP, subType: AI}, {apiType: SOAP}]
+          example:
+          - HTTP
+          - SOAP
           items:
-            example: REST
-            type: string
+            properties: {}
+            type: object
           type: array
         isAPISpecific:
           example: true
@@ -23269,6 +23457,7 @@ components:
             apim:api_list_view: View, Retrieve API list
             apim:api_definition_view: View, Retrieve API definition
             apim:policies_import_export: Export and import policies related operations
+            apim:publisher_organization_read: Read organization
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 
