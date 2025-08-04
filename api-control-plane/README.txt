@@ -163,7 +163,7 @@ System Requirements
 Installation & Running
 ==================================
 
-1. Extract the wso2am-acp-4.5.0.zip and go to the 'bin' directory
+1. Extract the wso2am-acp-4.6.0.zip and go to the 'bin' directory
 2. Run the api-cp.sh or api-cp.bat script based on you operating system.
 3. Access the respective WSO2 ACP interfaces
     * API Publisher web application is running at - https://localhost:9443/publisher

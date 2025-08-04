@@ -45,7 +45,7 @@ Refer to this page to consult pre-requisites based on your target architecture a
 
 1. This product requires a JDK to run. We support JDK from v17 through v21. Check our [supported JDKs](https://apim.docs.wso2.com/en/latest/install-and-setup/setup/reference/product-compatibility/#tested-operating-systems-and-jdks) documentation  for a complete list.
 2. Make sure you have set the `JAVA_HOME` environment variable to point to your JDK. See [this documentation](https://apim.docs.wso2.com/en/latest/install-and-setup/install/installing-the-product/installing-api-m-runtime/#setting-up-java_home) if you need help doing so.
-3. Extract the wso2am-4.5.0.zip and go to the 'bin' directory
+3. Extract the wso2am-4.6.0.zip and go to the 'bin' directory
 4. Run the api-manager.sh or api-manager.bat script based on your operating system.
 5. Access the respective WSO2 API-M interfaces
    * **API Publisher** web application is running at: https://localhost:9443/publisher.
