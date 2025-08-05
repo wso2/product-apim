@@ -168,7 +168,7 @@ is recommended.
 Installation & Running
 ==================================
 
-1. Extract the wso2am-4.5.0.zip and go to the 'bin' directory
+1. Extract the wso2am-4.6.0.zip and go to the 'bin' directory
 2. Run the api-manager.sh or api-manager.bat script based on you operating system.
 3. Access the respective WSO2 API-M interfaces
     * API Publisher web application is running at - https://localhost:9443/publisher
