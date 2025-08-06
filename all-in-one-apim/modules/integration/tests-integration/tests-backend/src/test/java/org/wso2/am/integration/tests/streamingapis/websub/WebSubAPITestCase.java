@@ -233,6 +233,21 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(accessToken, "Error occurred while generating the access token");
     }
 
+    @Test(description = "Test invoke WebSub API when the topic of the payload URL is invalid",
+    dependsOnMethods = "testInvokeWebSubApi")
+    public void testInvokeWebSubApiWithInvalidTopic() throws Exception {
+
+        callbackServerServlet.setCallbacksReceived(0);
+        String customTopic = "test";
+        initializeWebhookSenderWithTopic(topicSecret, customTopic);
+        Thread.sleep(5000);
+        int responseCode = webhookSender.send();
+        Thread.sleep(5000);
+        int sent = webhookSender.getWebhooksSent();
+        Assert.assertEquals(sent, 0, "Unexpected webhook was sent to an invalid topic.");
+        Assert.assertEquals(responseCode, 404, "Response code mismatched.");
+    }
+
     @Test(description = "Test invoke WebSub API when parameters are passed as query parameters",
             dependsOnMethods = "testInvokeWebSubApi")
     public void testInvokeWebSubApiWithQueryParameters() throws Exception {
@@ -479,8 +494,12 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
     }
 
     private void initializeWebhookSender(String secret) {
+        initializeWebhookSenderWithTopic(secret, DEFAULT_TOPIC);
+    }
+
+    private void initializeWebhookSenderWithTopic(String secret, String topic) {
         String payloadUrl = apiEndpoint.replaceAll(":([0-9]+)/", ":" + TOPIC_PORT + "/") +
-                "/webhooks_events_receiver_resource?topic=" + DEFAULT_TOPIC;
+                "/webhooks_events_receiver_resource?topic=" + topic;
         webhookSender = new WebhookSender(payloadUrl, secret);
         webhookSender.setWebhooksSent(0);
     }

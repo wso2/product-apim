@@ -58,7 +58,7 @@ public class WebhookSender {
         this.webhooksSent.set(webhooksSent);
     }
 
-    public void send() throws Exception {
+    public int send() throws Exception {
         String body = "{\"Hello\" : \"World\"}";
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
@@ -71,6 +71,7 @@ public class WebhookSender {
         } else {
             log.error("Webhook was not successfully sent");
         }
+        return response.getResponseCode();
     }
 
     private String generateXHubSignature(String body) throws InvalidKeyException, NoSuchAlgorithmException {
