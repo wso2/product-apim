@@ -385,12 +385,30 @@
                 <include>**/**.json</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>
+                ../../features/product/org.wso2.am.policies.feature/target
+            </directory>
+            <outputDirectory>wso2am-acp-${pom.version}/repository/resources/operation_policies/specifications</outputDirectory>
+            <includes>
+                <include>**/**.json</include>
+            </includes>
+        </fileSet>
         <!-- Operation policy definitions -->
         <fileSet>
             <directory>../resources/operation_policies/definitions</directory>
             <outputDirectory>wso2am-acp-${pom.version}/repository/resources/operation_policies/definitions</outputDirectory>
             <includes>
                 <include>**/**.gotmpl</include>
+                <include>**/**.j2</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../features/product/org.wso2.am.policies.feature/target
+            </directory>
+            <outputDirectory>wso2am-acp-${pom.version}/repository/resources/operation_policies/definitions</outputDirectory>
+            <includes>
                 <include>**/**.j2</include>
             </includes>
         </fileSet>
