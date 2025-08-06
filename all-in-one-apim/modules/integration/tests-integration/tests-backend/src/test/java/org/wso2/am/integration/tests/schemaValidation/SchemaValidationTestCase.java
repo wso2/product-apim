@@ -143,7 +143,7 @@ public class SchemaValidationTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/pets/123",
                 requestHeaders);
         //Schema validation fails as the response body does not match the defined schema
-        Assert.assertEquals(serviceResponse.getResponseCode(), 400);
+        Assert.assertEquals(serviceResponse.getResponseCode(), 500);
         Assert.assertEquals(serviceResponse.getData().contains("Schema validation failed in the Response:"), true);
         //Clean the custom request body
     }
