@@ -38,6 +38,7 @@
         <module>org.wso2.am.multitenancy.dashboard.ui.feature</module>
         <module>org.wso2.am.security.feature</module>
         <module>org.wso2.carbon.identity.local.auth.api.endpoint.feature</module>
+        <module>org.wso2.am.policies.feature</module>
     </modules>
 
 </project>
