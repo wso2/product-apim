@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | UUID of the api registry artifact  |  [optional] [readonly]
 **name** | **String** |  | 
+**displayName** | **String** | Human-friendly name shown in UI. Length limited to DB column size. |  [optional]
 **description** | **String** |  |  [optional]
 **context** | **String** |  | 
 **version** | **String** |  | 
@@ -68,6 +69,7 @@ Name | Type | Description | Notes
 **gatewayVendor** | **String** |  |  [optional]
 **gatewayType** | **String** | The gateway type selected for the API policies. Accepts one of the following. wso2/synapse, wso2/apk. |  [optional]
 **asyncTransportProtocols** | **List&lt;String&gt;** | Supported transports for the async API (http and/or https).  |  [optional]
+**initiatedFromGateway** | **Boolean** | Whether the API is initiated from the gateway or not. This is used to identify whether the API is created from the publisher or discovered from the gateway.  |  [optional] [readonly]
 
 
 

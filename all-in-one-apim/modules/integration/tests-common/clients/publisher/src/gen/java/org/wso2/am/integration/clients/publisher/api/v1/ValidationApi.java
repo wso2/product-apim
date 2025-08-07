@@ -451,7 +451,9 @@ public class ValidationApi {
     }
     /**
      * Build call for validateGraphQLSchema
-     * @param file Definition to upload as a file (required)
+     * @param useIntrospection Specify whether to use Introspection to obtain the GraphQL Schema  (optional, default to false)
+     * @param file Definition to upload as a file (optional)
+     * @param url Definition to upload using url (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -463,7 +465,7 @@ public class ValidationApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call validateGraphQLSchemaCall(File file, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call validateGraphQLSchemaCall(Boolean useIntrospection, File file, String url, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -471,11 +473,19 @@ public class ValidationApi {
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (useIntrospection != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("useIntrospection", useIntrospection));
+        }
+
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (file != null) {
             localVarFormParams.put("file", file);
+        }
+
+        if (url != null) {
+            localVarFormParams.put("url", url);
         }
 
         final String[] localVarAccepts = {
@@ -497,15 +507,10 @@ public class ValidationApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call validateGraphQLSchemaValidateBeforeCall(File file, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'file' is set
-        if (file == null) {
-            throw new ApiException("Missing the required parameter 'file' when calling validateGraphQLSchema(Async)");
-        }
+    private okhttp3.Call validateGraphQLSchemaValidateBeforeCall(Boolean useIntrospection, File file, String url, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = validateGraphQLSchemaCall(file, _callback);
+        okhttp3.Call localVarCall = validateGraphQLSchemaCall(useIntrospection, file, url, _callback);
         return localVarCall;
 
     }
@@ -513,7 +518,9 @@ public class ValidationApi {
     /**
      * Validate a GraphQL SDL
      * This operation can be used to validate a graphQL definition and retrieve a summary. 
-     * @param file Definition to upload as a file (required)
+     * @param useIntrospection Specify whether to use Introspection to obtain the GraphQL Schema  (optional, default to false)
+     * @param file Definition to upload as a file (optional)
+     * @param url Definition to upload using url (optional)
      * @return GraphQLValidationResponseDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -524,15 +531,17 @@ public class ValidationApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public GraphQLValidationResponseDTO validateGraphQLSchema(File file) throws ApiException {
-        ApiResponse<GraphQLValidationResponseDTO> localVarResp = validateGraphQLSchemaWithHttpInfo(file);
+    public GraphQLValidationResponseDTO validateGraphQLSchema(Boolean useIntrospection, File file, String url) throws ApiException {
+        ApiResponse<GraphQLValidationResponseDTO> localVarResp = validateGraphQLSchemaWithHttpInfo(useIntrospection, file, url);
         return localVarResp.getData();
     }
 
     /**
      * Validate a GraphQL SDL
      * This operation can be used to validate a graphQL definition and retrieve a summary. 
-     * @param file Definition to upload as a file (required)
+     * @param useIntrospection Specify whether to use Introspection to obtain the GraphQL Schema  (optional, default to false)
+     * @param file Definition to upload as a file (optional)
+     * @param url Definition to upload using url (optional)
      * @return ApiResponse&lt;GraphQLValidationResponseDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -543,8 +552,8 @@ public class ValidationApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<GraphQLValidationResponseDTO> validateGraphQLSchemaWithHttpInfo(File file) throws ApiException {
-        okhttp3.Call localVarCall = validateGraphQLSchemaValidateBeforeCall(file, null);
+    public ApiResponse<GraphQLValidationResponseDTO> validateGraphQLSchemaWithHttpInfo(Boolean useIntrospection, File file, String url) throws ApiException {
+        okhttp3.Call localVarCall = validateGraphQLSchemaValidateBeforeCall(useIntrospection, file, url, null);
         Type localVarReturnType = new TypeToken<GraphQLValidationResponseDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -552,7 +561,9 @@ public class ValidationApi {
     /**
      * Validate a GraphQL SDL (asynchronously)
      * This operation can be used to validate a graphQL definition and retrieve a summary. 
-     * @param file Definition to upload as a file (required)
+     * @param useIntrospection Specify whether to use Introspection to obtain the GraphQL Schema  (optional, default to false)
+     * @param file Definition to upload as a file (optional)
+     * @param url Definition to upload using url (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -564,9 +575,9 @@ public class ValidationApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call validateGraphQLSchemaAsync(File file, final ApiCallback<GraphQLValidationResponseDTO> _callback) throws ApiException {
+    public okhttp3.Call validateGraphQLSchemaAsync(Boolean useIntrospection, File file, String url, final ApiCallback<GraphQLValidationResponseDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = validateGraphQLSchemaValidateBeforeCall(file, _callback);
+        okhttp3.Call localVarCall = validateGraphQLSchemaValidateBeforeCall(useIntrospection, file, url, _callback);
         Type localVarReturnType = new TypeToken<GraphQLValidationResponseDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

@@ -228,7 +228,7 @@ Name | Type | Description  | Notes
 
 <a name="validateGraphQLSchema"></a>
 # **validateGraphQLSchema**
-> GraphQLValidationResponseDTO validateGraphQLSchema(file)
+> GraphQLValidationResponseDTO validateGraphQLSchema(useIntrospection, file, url)
 
 Validate a GraphQL SDL
 
@@ -254,9 +254,11 @@ public class Example {
     OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
     ValidationApi apiInstance = new ValidationApi(defaultClient);
+    Boolean useIntrospection = false; // Boolean | Specify whether to use Introspection to obtain the GraphQL Schema 
     File file = new File("/path/to/file"); // File | Definition to upload as a file
+    String url = "url_example"; // String | Definition to upload using url
     try {
-      GraphQLValidationResponseDTO result = apiInstance.validateGraphQLSchema(file);
+      GraphQLValidationResponseDTO result = apiInstance.validateGraphQLSchema(useIntrospection, file, url);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ValidationApi#validateGraphQLSchema");
@@ -273,7 +275,9 @@ public class Example {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **file** | **File**| Definition to upload as a file |
+ **useIntrospection** | **Boolean**| Specify whether to use Introspection to obtain the GraphQL Schema  | [optional] [default to false]
+ **file** | **File**| Definition to upload as a file | [optional]
+ **url** | **String**| Definition to upload using url | [optional]
 
 ### Return type
 

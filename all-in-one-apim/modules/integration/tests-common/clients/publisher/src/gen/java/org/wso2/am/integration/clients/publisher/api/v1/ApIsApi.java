@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import java.io.File;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
@@ -2906,6 +2907,8 @@ public class ApIsApi {
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param type Definition type to upload (optional)
      * @param file Definition to uploads a file (optional)
+     * @param url Definition url (optional)
+     * @param schema Definition schema (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -2918,7 +2921,7 @@ public class ApIsApi {
         <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call importGraphQLSchemaCall(String ifMatch, String type, File file, String additionalProperties, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call importGraphQLSchemaCall(String ifMatch, String type, File file, String url, String schema, String additionalProperties, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -2939,6 +2942,14 @@ public class ApIsApi {
 
         if (file != null) {
             localVarFormParams.put("file", file);
+        }
+
+        if (url != null) {
+            localVarFormParams.put("url", url);
+        }
+
+        if (schema != null) {
+            localVarFormParams.put("schema", schema);
         }
 
         if (additionalProperties != null) {
@@ -2964,10 +2975,10 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call importGraphQLSchemaValidateBeforeCall(String ifMatch, String type, File file, String additionalProperties, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call importGraphQLSchemaValidateBeforeCall(String ifMatch, String type, File file, String url, String schema, String additionalProperties, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = importGraphQLSchemaCall(ifMatch, type, file, additionalProperties, _callback);
+        okhttp3.Call localVarCall = importGraphQLSchemaCall(ifMatch, type, file, url, schema, additionalProperties, _callback);
         return localVarCall;
 
     }
@@ -2978,6 +2989,8 @@ public class ApIsApi {
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param type Definition type to upload (optional)
      * @param file Definition to uploads a file (optional)
+     * @param url Definition url (optional)
+     * @param schema Definition schema (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
      * @return APIDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -2989,8 +3002,8 @@ public class ApIsApi {
         <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public APIDTO importGraphQLSchema(String ifMatch, String type, File file, String additionalProperties) throws ApiException {
-        ApiResponse<APIDTO> localVarResp = importGraphQLSchemaWithHttpInfo(ifMatch, type, file, additionalProperties);
+    public APIDTO importGraphQLSchema(String ifMatch, String type, File file, String url, String schema, String additionalProperties) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = importGraphQLSchemaWithHttpInfo(ifMatch, type, file, url, schema, additionalProperties);
         return localVarResp.getData();
     }
 
@@ -3000,6 +3013,8 @@ public class ApIsApi {
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param type Definition type to upload (optional)
      * @param file Definition to uploads a file (optional)
+     * @param url Definition url (optional)
+     * @param schema Definition schema (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
      * @return ApiResponse&lt;APIDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -3011,8 +3026,8 @@ public class ApIsApi {
         <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIDTO> importGraphQLSchemaWithHttpInfo(String ifMatch, String type, File file, String additionalProperties) throws ApiException {
-        okhttp3.Call localVarCall = importGraphQLSchemaValidateBeforeCall(ifMatch, type, file, additionalProperties, null);
+    public ApiResponse<APIDTO> importGraphQLSchemaWithHttpInfo(String ifMatch, String type, File file, String url, String schema, String additionalProperties) throws ApiException {
+        okhttp3.Call localVarCall = importGraphQLSchemaValidateBeforeCall(ifMatch, type, file, url, schema, additionalProperties, null);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -3023,6 +3038,8 @@ public class ApIsApi {
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param type Definition type to upload (optional)
      * @param file Definition to uploads a file (optional)
+     * @param url Definition url (optional)
+     * @param schema Definition schema (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -3035,9 +3052,9 @@ public class ApIsApi {
         <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call importGraphQLSchemaAsync(String ifMatch, String type, File file, String additionalProperties, final ApiCallback<APIDTO> _callback) throws ApiException {
+    public okhttp3.Call importGraphQLSchemaAsync(String ifMatch, String type, File file, String url, String schema, String additionalProperties, final ApiCallback<APIDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = importGraphQLSchemaValidateBeforeCall(ifMatch, type, file, additionalProperties, _callback);
+        okhttp3.Call localVarCall = importGraphQLSchemaValidateBeforeCall(ifMatch, type, file, url, schema, additionalProperties, _callback);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
