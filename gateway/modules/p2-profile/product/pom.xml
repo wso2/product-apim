@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wso2.am.gw</groupId>
         <artifactId>am-gw-p2-profile-gen-parent</artifactId>
-        <version>4.5.0-SNAPSHOT</version>
+        <version>4.6.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -699,6 +699,11 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.branding.preference.management:org.wso2.carbon.identity.branding.preference.management.core.server.feature:${identity.branding.preference.management.version}
                                 </featureArtifactDef>
+
+                                <!-- AM Policies Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.am.gw:org.wso2.am.gw.policies.feature:${apimserver.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1251,6 +1256,12 @@
                                 <feature>
                                     <id>org.wso2.carbon.extension.identity.oauth2.token.exchange.feature.group</id>
                                     <version>${carbon.extension.identity.oauth2.grantType.token.exchange}</version>
+                                </feature>
+
+                                <!-- AM Policy Feature -->
+                                <feature>
+                                    <id>org.wso2.am.gw.policies.feature.group</id>
+                                    <version>${apimserver.version}</version>
                                 </feature>
                             </features>
                         </configuration>

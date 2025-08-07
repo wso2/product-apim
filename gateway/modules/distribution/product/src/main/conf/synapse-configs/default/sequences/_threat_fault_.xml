@@ -38,7 +38,14 @@
     <property name="Host" scope="transport" action="remove"/>
     <property name="Accept" scope="transport" action="remove"/>
     <property name="X-JWT-Assertion" scope="transport" action="remove"/>
-    <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+    <filter xpath="string-length(normalize-space(get-property('THREAT_CODE'))) > 0">
+        <then>
+            <property name="HTTP_SC" scope="axis2" type="STRING" expression="get-property('THREAT_CODE')"/>
+        </then>
+        <else>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+        </else>
+    </filter>
     <sequence key="_cors_request_handler_"/>
     <send/>
     <drop/>

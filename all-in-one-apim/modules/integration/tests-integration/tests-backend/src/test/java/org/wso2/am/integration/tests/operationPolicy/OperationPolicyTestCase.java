@@ -42,6 +42,7 @@ import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -54,6 +55,7 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import wiremock.com.google.common.io.Files;
 
@@ -476,15 +478,28 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
         apiOperationPoliciesDTO.setRequest(opList);
         apiOperationPoliciesDTO.setResponse(opList);
+        apiOperationPoliciesDTO.setFault(new ArrayList<>());
 
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+
+        List<APIOperationsDTO> operations = apidto.getOperations();
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("/resource/");
+        apiOperationsDTO.setAuthType("Application & Application User");
+        apiOperationsDTO.setThrottlingPolicy("Unlimited");
+        apiOperationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
+        operations.add(apiOperationsDTO);
+        apidto.operations(operations);
         restAPIPublisher.updateAPI(apidto);
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
 
         org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
+        org.apache.http.HttpResponse invokeAPIResponseResource = invokeAPI(API_VERSION_1_0_0 + "/resource/");
         assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
+        assertEquals(invokeAPIResponseResource.getHeaders("TestHeader")[0].getValue(), "TestValue");
     }
 
     @Test(groups = {"wso2.am"}, description = "Validate the common operation policy clone at the update",

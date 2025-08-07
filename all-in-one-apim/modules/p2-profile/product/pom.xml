@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-p2-profile-gen-parent</artifactId>
-        <version>4.5.0-SNAPSHOT</version>
+        <version>4.6.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -693,6 +693,10 @@
                                     org.wso2.gw.ext:aws.gw.manager.feature:${aws.gwmanager.feature.version}
                                 </featureArtifactDef>
 
+                                <!-- AM Policies Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.am:org.wso2.am.policies.feature:${apimserver.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1542,6 +1546,12 @@
                                 <feature>
                                     <id>aws.gw.manager.feature.group</id>
                                     <version>${aws.gwmanager.feature.version}</version>
+                                </feature>
+
+                                <!-- AM Policy Feature -->
+                                <feature>
+                                    <id>org.wso2.am.policies.feature.group</id>
+                                    <version>${apimserver.version}</version>
                                 </feature>
                             </features>
                         </configuration>
