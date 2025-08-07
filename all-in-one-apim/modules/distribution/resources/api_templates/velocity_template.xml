@@ -234,8 +234,9 @@
                 #end
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 #if( $apiType == 'MCP' )
-<property name="MCP_DIRECTION" value="IN"/>
-<class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator"/>
+<class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator">
+   <property name="mcpDirection" value="IN"/>
+</class>
 #end
 #if( $isSoapToRestMode )
 <property name="HTTP_METHOD" value="POST" scope="axis2" type="STRING"/>
@@ -257,9 +258,6 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #if($apiType == "MCP")
 <filter xpath="get-property('MCP_PROCESSED') = 'true'">
     <then>
-        <log level="custom">
-            <property name="Info" value="This is a response flow."/>
-        </log>
         <loopback/>
     </then>
     <else>
@@ -396,7 +394,9 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 <outSequence>
 #if( $apiType == 'MCP' )
 <property name="MCP_DIRECTION" value="OUT"/>
-<class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator"/>
+<class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator">
+    <property name="mcpDirection" value="OUT"/>
+</class>
 #end
                 #if( $isSoapToRestMode )
                     #foreach( $uri in $out_sequences.get("$resource.getUriTemplate()").keySet() )
@@ -429,9 +429,6 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
             ## print the handlers
             #if( $handlers.size() > 0 )
 <handlers xmlns="http://ws.apache.org/ns/synapse">
-#if($apiType == 'MCP')
-<handler class="org.wso2.carbon.apimgt.gateway.handlers.mcp.McpInitHandler"/>
-#end
 #foreach( $handler in $handlers )
 <handler xmlns="http://ws.apache.org/ns/synapse" class="$handler.className">
                     #if($handler.hasProperties())

@@ -239,6 +239,11 @@
 </cache>
                 #end
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
+#if( $apiType == 'MCP' )
+<class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator">
+    <property name="mcpDirection" value="IN"/>
+</class>
+#end
                 #if( $isSoapToRestMode )
 <property name="HTTP_METHOD" value="POST" scope="axis2" type="STRING"/>
                     #foreach( $uri in $in_sequences.get("$resource.getUriTemplate()").keySet() )
@@ -256,6 +261,13 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                     #end
                 #end
 
+#if($apiType == "MCP")
+<filter xpath="get-property('MCP_PROCESSED') = 'true'">
+    <then>
+        <loopback/>
+    </then>
+    <else>
+        #end
                 #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
                     && !$endpoint_config.get("production_endpoints")) )
                     #set( $filterRegex = "SANDBOX" )
@@ -377,11 +389,21 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                                 #end
                             #end
                         #end
+            </else>
+        </filter>
+        #end
+        #if( $apiType == "MCP" )
     </else>
 </filter>
                 #end
 </inSequence>
 <outSequence>
+#if( $apiType == 'MCP' )
+<property name="MCP_DIRECTION" value="OUT"/>
+<class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator">
+    <property name="mcpDirection" value="OUT"/>
+</class>
+#end
                 #if( $isSoapToRestMode )
                     #foreach( $uri in $out_sequences.get("$resource.getUriTemplate()").keySet() )
 $out_sequences.get("$resource.getUriTemplate()").get($uri)
