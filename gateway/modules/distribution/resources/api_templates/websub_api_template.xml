@@ -25,9 +25,24 @@
             <filter xpath="get-property('received_signature') = get-property('generated_signature')">
                 <then>
             #end
+
+            <filter source="$ctx:TOPIC_VALIDITY" regex="false">
+                <then>
+                    <property name="HTTP_SC" value="404" scope="axis2"/>
+                    <property name="RESPONSE" value="true"/>
+                    <payloadFactory media-type="json">
+                        <format>{"error": "Invalid or missing topic"}</format>
+                    </payloadFactory>
+                    <property name="messageType" value="application/json" scope="axis2"/>
+                    <respond/>
+                </then>
+                <else/>
+            </filter>
+
                     <clone>
                         <target>
                             <sequence>
+                                <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
                                 <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN" />
                                 <respond/>
                             </sequence>
