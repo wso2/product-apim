@@ -17,7 +17,11 @@
   ~  under the License.
 
 --><automation xmlns="automation_mapping.xsd">
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -25,7 +29,11 @@
     
     
     <!--  =================================================  -->
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -33,7 +41,11 @@
     
     
     <!--                   Parameters                        -->
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -41,7 +53,11 @@
     
     
     <!--  =================================================  -->
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -49,7 +65,11 @@
     
     
     <configurations>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -59,7 +79,11 @@
         <!--
          Change this to edit wait time for test artifact deployment
         -->
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -67,7 +91,11 @@
         
         
         <deploymentDelay>60000</deploymentDelay>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -77,7 +105,11 @@
         <!--
          Change this to product|platform/cloud to execute test on specific environment
         -->
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -85,7 +117,11 @@
         
         
         <executionEnvironment>standalone</executionEnvironment>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -95,7 +131,11 @@
         <!--
          Change this to user/tenant to execute test with user mode or tenant mode
         -->
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -105,7 +145,11 @@
         <!--
          Change this to true if you want to generate coverage statistics
         -->
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -113,7 +157,11 @@
         
         
         <coverage>false</coverage>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -123,7 +171,11 @@
         <!--
          Change this to true if you want to enable framework dashboard
         -->
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -131,7 +183,11 @@
         
         
         <frameworkDashboard>false</frameworkDashboard>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -141,7 +197,11 @@
         <!--
          Browser type with used by framework to execute UI test, supported types - chrome|firefox|opera|ie|htmlUnit
         -->
-                                                            
+                                                                                            
+    
+    
+    
+    
     
     
     
@@ -149,7 +209,11 @@
     
     
     </configurations>
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -157,7 +221,11 @@
     
     
     <tools>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -165,7 +233,11 @@
         
         
         <selenium>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -173,7 +245,11 @@
             
             
             <!-- Change to enable remote webDriver -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -181,7 +257,11 @@
             
             
             <!-- URL of remote webDriver server  -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -189,7 +269,11 @@
             
             
             <remoteDriverUrl enable="true">http://10.100.2.51:4444/wd/hub/</remoteDriverUrl>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -197,7 +281,11 @@
             
             
             <!-- Type of the browser selenium tests are running" -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -205,7 +293,11 @@
             
             
             <browser>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -213,7 +305,11 @@
                 
                 
                 <browserType>firefox</browserType>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -221,7 +317,11 @@
                 
                 
                 <!-- path to webDriver executable - required only for chrome-->
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -229,7 +329,11 @@
                 
                 
                 <webdriverPath enable="false">/home/test/name/webDriver</webdriverPath>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -237,7 +341,11 @@
             
             
             </browser>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -245,7 +353,11 @@
         
         
         </selenium>
-                                                            
+                                                                                            
+    
+    
+    
+    
     
     
     
@@ -253,7 +365,11 @@
     
     
     </tools>
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -264,7 +380,11 @@
     Database configuration to be used for data service testing. DB configuration in dbs files will be replaced with
                below configuration at test run time
     -->
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -272,7 +392,11 @@
     
     
     <datasources>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -280,7 +404,11 @@
         
         
         <datasource name="dataService">
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -288,7 +416,11 @@
             
             
             <url>jdbc:h2:testDB</url>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -296,7 +428,11 @@
             
             
             <username>wso2carbon</username>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -304,7 +440,11 @@
             
             
             <password>wso2carbon</password>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -312,7 +452,11 @@
             
             
             <driverClassName>org.h2.Driver</driverClassName>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -320,7 +464,11 @@
         
         
         </datasource>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -328,7 +476,11 @@
         
         
         <datasource name="dataService1">
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -336,7 +488,11 @@
             
             
             <url>jdbc:h2:testDB</url>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -344,7 +500,11 @@
             
             
             <username>wso2carbon</username>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -352,7 +512,11 @@
             
             
             <password>wso2carbon</password>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -360,7 +524,11 @@
             
             
             <driverClassName>org.h2.Driver</driverClassName>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -368,7 +536,11 @@
         
         
         </datasource>
-                                                            
+                                                                                            
+    
+    
+    
+    
     
     
     
@@ -376,7 +548,11 @@
     
     
     </datasources>
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -384,7 +560,11 @@
     
     
     <security>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -395,7 +575,11 @@
                     KeyStore which will be used for encrypting/decrypting passwords
                     and other sensitive information.
         -->
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -403,7 +587,11 @@
         
         
         <keystore name="wso2">
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -411,7 +599,11 @@
             
             
             <!--  Keystore file location -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -419,7 +611,11 @@
             
             
             <fileName>keystores/products/wso2carbon.jks</fileName>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -427,7 +623,11 @@
             
             
             <!--  Keystore type (JKS/PKCS12 etc.) -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -435,7 +635,11 @@
             
             
             <type>JKS</type>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -443,7 +647,11 @@
             
             
             <!--  Keystore password -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -451,7 +659,11 @@
             
             
             <password>wso2carbon</password>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -459,7 +671,11 @@
             
             
             <!--  Private Key alias -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -467,7 +683,11 @@
             
             
             <keyAlias>wso2carbon</keyAlias>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -475,7 +695,11 @@
             
             
             <!--  Private Key password -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -483,7 +707,11 @@
             
             
             <keyPassword>wso2carbon</keyPassword>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -491,7 +719,11 @@
         
         
         </keystore>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -502,7 +734,11 @@
                     System wide trust-store which is used to maintain the certificates of all
                     the trusted parties.
         -->
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -510,7 +746,11 @@
         
         
         <truststore name="wso2">
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -518,7 +758,11 @@
             
             
             <!--  trust-store file location  -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -526,7 +770,11 @@
             
             
             <fileName>keystores/products/client-truststore.jks</fileName>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -534,7 +782,11 @@
             
             
             <!--  trust-store type (JKS/PKCS12 etc.)  -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -542,7 +794,11 @@
             
             
             <type>JKS</type>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -550,7 +806,11 @@
             
             
             <!--  trust-store password  -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -558,7 +818,11 @@
             
             
             <password>wso2carbon</password>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -566,7 +830,11 @@
         
         
         </truststore>
-                                                            
+                                                                                            
+    
+    
+    
+    
     
     
     
@@ -574,7 +842,11 @@
     
     
     </security>
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -582,7 +854,11 @@
     
     
     <featureManagement>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -590,7 +866,11 @@
         
         
         <p2Repositories>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -598,7 +878,11 @@
             
             
             <repository name="localDefault">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -606,7 +890,11 @@
                 
                 
                 <repository repo-id="online-repository">https://wso2.org/repo</repository>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -614,7 +902,11 @@
                 
                 
                 <repository repo-id="file-repository">file:///home/krishantha/test</repository>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -622,7 +914,11 @@
             
             
             </repository>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -630,7 +926,11 @@
         
         
         </p2Repositories>
-                                                            
+                                                                                            
+    
+    
+    
+    
     
     
     
@@ -638,7 +938,11 @@
     
     
     </featureManagement>
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -648,7 +952,11 @@
     <!--
                System wide users who to be registered at the test initiation
     -->
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -656,7 +964,11 @@
     
     
     <userManagement>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -664,7 +976,11 @@
         
         
         <superTenant>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -672,7 +988,11 @@
             
             
             <tenant domain="carbon.super" key="superTenant">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -680,7 +1000,11 @@
                 
                 
                 <admin>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -688,7 +1012,11 @@
                     
                     
                     <user key="admin">
-                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                                
+                        
+                        
+                        
+                        
                         
                         
                         
@@ -696,7 +1024,11 @@
                         
                         
                         <userName>admin</userName>
-                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                                
+                        
+                        
+                        
+                        
                         
                         
                         
@@ -704,7 +1036,11 @@
                         
                         
                         <password>admin</password>
-                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -712,7 +1048,11 @@
                     
                     
                     </user>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -720,7 +1060,11 @@
                 
                 
                 </admin>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -728,7 +1072,11 @@
                 
                 
                 <users>
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -736,7 +1084,11 @@
                     
                     
                     <!--                    <user key="userKey1">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -744,7 +1096,11 @@
                     
                     
                     <!--                        <userName>testu1</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -752,7 +1108,11 @@
                     
                     
                     <!--                        <password>testu1pass</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -760,7 +1120,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -768,7 +1132,11 @@
                     
                     
                     <!--                    <user key="userKey2">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -776,7 +1144,11 @@
                     
                     
                     <!--                        <userName>testu2</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -784,7 +1156,11 @@
                     
                     
                     <!--                        <password>testu2pass</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -792,7 +1168,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -800,7 +1180,11 @@
                     
                     
                     <!--                    <user key="userKey3">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -808,7 +1192,11 @@
                     
                     
                     <!--                        <userName>testu3</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -816,7 +1204,11 @@
                     
                     
                     <!--                        <password>testu3pass</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -824,7 +1216,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -832,7 +1228,11 @@
                     
                     
                     <!--                    <user key="emailUser">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -840,7 +1240,11 @@
                     
                     
                     <!--                        <userName>test@gmail.com</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -848,7 +1252,11 @@
                     
                     
                     <!--                        <password>testuser31</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -856,7 +1264,11 @@
                     
                     
                     <!--                        <roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -864,7 +1276,11 @@
                     
                     
                     <!--                            <role>Internal/publisher</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -872,7 +1288,11 @@
                     
                     
                     <!--                            <role>Internal/creator</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -880,7 +1300,11 @@
                     
                     
                     <!--                            <role>Internal/subscriber</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -888,7 +1312,11 @@
                     
                     
                     <!--                            <role>admin</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -896,7 +1324,11 @@
                     
                     
                     <!--                        </roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -904,7 +1336,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -912,7 +1348,11 @@
                     
                     
                     <!--                    <user key="emailUser2">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -920,7 +1360,11 @@
                     
                     
                     <!--                        <userName>test2@gmail.com</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -928,7 +1372,11 @@
                     
                     
                     <!--                        <password>testuser31</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -936,7 +1384,11 @@
                     
                     
                     <!--                        <roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -944,7 +1396,11 @@
                     
                     
                     <!--                            <role>Internal/publisher</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -952,7 +1408,11 @@
                     
                     
                     <!--                            <role>Internal/creator</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -960,7 +1420,11 @@
                     
                     
                     <!--                            <role>Internal/subscriber</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -968,7 +1432,11 @@
                     
                     
                     <!--                        </roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -976,7 +1444,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -984,7 +1456,11 @@
                     
                     
                     <!--                    <user key="emailUser3">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -992,7 +1468,11 @@
                     
                     
                     <!--                        <userName>test3@gmail.com</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1000,7 +1480,11 @@
                     
                     
                     <!--                        <password>testuser31</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1008,7 +1492,11 @@
                     
                     
                     <!--                        <roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1016,7 +1504,11 @@
                     
                     
                     <!--                            <role>Internal/publisher</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1024,7 +1516,11 @@
                     
                     
                     <!--                            <role>Internal/creator</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1032,7 +1528,11 @@
                     
                     
                     <!--                            <role>Internal/subscriber</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1040,7 +1540,11 @@
                     
                     
                     <!--                        </roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1048,7 +1552,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1056,7 +1564,11 @@
                     
                     
                     <!--                    <user key="userStoreUser">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1064,7 +1576,11 @@
                     
                     
                     <!--                        <userName>secondary/secondaryuser</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1072,7 +1588,11 @@
                     
                     
                     <!--                        <password>testuser31</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1080,7 +1600,11 @@
                     
                     
                     <!--                        <roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1088,7 +1612,11 @@
                     
                     
                     <!--                            <role>Internal/publisher</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1096,7 +1624,11 @@
                     
                     
                     <!--                            <role>Internal/creator</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1104,7 +1636,11 @@
                     
                     
                     <!--                            <role>Internal/subscriber</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1112,7 +1648,11 @@
                     
                     
                     <!--                        </roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1120,7 +1660,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1128,7 +1672,11 @@
                 
                 
                 </users>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -1136,7 +1684,11 @@
             
             
             </tenant>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -1144,7 +1696,11 @@
         
         
         </superTenant>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -1152,7 +1708,11 @@
         
         
         <tenants>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -1160,7 +1720,11 @@
             
             
             <tenant domain="wso2.com" key="wso2.com">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1168,7 +1732,11 @@
                 
                 
                 <admin>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1176,7 +1744,11 @@
                     
                     
                     <user key="admin">
-                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                                
+                        
+                        
+                        
+                        
                         
                         
                         
@@ -1184,7 +1756,11 @@
                         
                         
                         <userName>admin</userName>
-                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                                    
+                        
+                        
+                        
+                        
                         
                         
                         
@@ -1192,7 +1768,11 @@
                         
                         
                         <password>admin</password>
-                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1200,7 +1780,11 @@
                     
                     
                     </user>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1208,7 +1792,11 @@
                 
                 
                 </admin>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1216,7 +1804,11 @@
                 
                 
                 <users>
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1224,7 +1816,11 @@
                     
                     
                     <!--                    <user key="user1">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1232,7 +1828,11 @@
                     
                     
                     <!--                        <userName>testuser11</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1240,7 +1840,11 @@
                     
                     
                     <!--                        <password>testuser11</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1248,7 +1852,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1256,7 +1864,11 @@
                     
                     
                     <!--                    <user key="user2">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1264,7 +1876,11 @@
                     
                     
                     <!--                        <userName>testuser21</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1272,7 +1888,11 @@
                     
                     
                     <!--                        <password>testuser21</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1280,7 +1900,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1288,7 +1912,11 @@
                     
                     
                     <!--                    <user key="emailUser">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1296,7 +1924,11 @@
                     
                     
                     <!--                        <userName>test@gmail.com</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1304,7 +1936,11 @@
                     
                     
                     <!--                        <password>testuser31</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1312,7 +1948,11 @@
                     
                     
                     <!--                        <roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1320,7 +1960,11 @@
                     
                     
                     <!--                            <role>Internal/publisher</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1328,7 +1972,11 @@
                     
                     
                     <!--                            <role>Internal/creator</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1336,7 +1984,11 @@
                     
                     
                     <!--                            <role>Internal/subscriber</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1344,7 +1996,11 @@
                     
                     
                     <!--                            <role>admin</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1352,7 +2008,11 @@
                     
                     
                     <!--                        </roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1360,7 +2020,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1368,7 +2032,11 @@
                     
                     
                     <!--                    <user key="emailUser2">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1376,7 +2044,11 @@
                     
                     
                     <!--                        <userName>test2@gmail.com</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1384,7 +2056,11 @@
                     
                     
                     <!--                        <password>testuser31</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1392,7 +2068,11 @@
                     
                     
                     <!--                        <roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1400,7 +2080,11 @@
                     
                     
                     <!--                            <role>Internal/publisher</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1408,7 +2092,11 @@
                     
                     
                     <!--                            <role>Internal/creator</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1416,7 +2104,11 @@
                     
                     
                     <!--                            <role>Internal/subscriber</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1424,7 +2116,11 @@
                     
                     
                     <!--                        </roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1432,7 +2128,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1440,7 +2140,11 @@
                     
                     
                     <!--                    <user key="emailUser3">-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1448,7 +2152,11 @@
                     
                     
                     <!--                        <userName>test3@gmail.com</userName>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1456,7 +2164,11 @@
                     
                     
                     <!--                        <password>testuser31</password>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1464,7 +2176,11 @@
                     
                     
                     <!--                        <roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1472,7 +2188,11 @@
                     
                     
                     <!--                            <role>Internal/publisher</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1480,7 +2200,11 @@
                     
                     
                     <!--                            <role>Internal/creator</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1488,7 +2212,11 @@
                     
                     
                     <!--                            <role>Internal/subscriber</role>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1496,7 +2224,11 @@
                     
                     
                     <!--                        </roles>-->
-                                                                                                                                            
+                                                                                                                                                                                                                            
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1504,7 +2236,11 @@
                     
                     
                     <!--                    </user>-->
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1512,7 +2248,11 @@
                 
                 
                 </users>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -1520,7 +2260,11 @@
             
             
             </tenant>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -1528,7 +2272,11 @@
         
         
         </tenants>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -1536,7 +2284,11 @@
         
         
         <roles>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -1544,7 +2296,11 @@
             
             
             <role name="role1">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1552,7 +2308,11 @@
                 
                 
                 <permissions>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1560,7 +2320,11 @@
                     
                     
                     <permission>/permission/admin/configure</permission>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1568,7 +2332,11 @@
                     
                     
                     <permission>/permission/admin/login</permission>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1576,7 +2344,11 @@
                     
                     
                     <permission>/permission/admin/manage</permission>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1584,7 +2356,11 @@
                     
                     
                     <permission>/permission/admin/monitor</permission>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1592,7 +2368,11 @@
                 
                 
                 </permissions>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -1600,7 +2380,11 @@
             
             
             </role>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -1608,7 +2392,11 @@
             
             
             <role name="role2">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1616,7 +2404,11 @@
                 
                 
                 <permissions>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1624,7 +2416,11 @@
                     
                     
                     <permission>/permission/admin/configure</permission>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1632,7 +2428,11 @@
                     
                     
                     <permission>/permission/admin/login</permission>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1640,7 +2440,11 @@
                 
                 
                 </permissions>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -1648,7 +2452,11 @@
             
             
             </role>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -1656,7 +2464,11 @@
         
         
         </roles>
-                                                            
+                                                                                            
+    
+    
+    
+    
     
     
     
@@ -1664,7 +2476,11 @@
     
     
     </userManagement>
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -1675,7 +2491,11 @@
    This section will initiate the initial deployment of the platform required by
    the test suites.
 -->
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -1683,7 +2503,11 @@
     
     
     <platform>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -1693,7 +2517,11 @@
         <!--
         cluster instance details to be used to platform test execution
         -->
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -1701,7 +2529,11 @@
         
         
         <productGroup name="APIM" clusteringEnabled="false" default="true">
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -1709,7 +2541,11 @@
             
             
             <!--configuration of APIM Store instance -->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -1717,7 +2553,11 @@
             
             
             <instance name="store-old" type="standalone" nonBlockingTransportEnabled="false">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1725,7 +2565,11 @@
                 
                 
                 <hosts>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1733,7 +2577,11 @@
                     
                     
                     <host type="default">localhost</host>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1741,7 +2589,11 @@
                 
                 
                 </hosts>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1749,7 +2601,11 @@
                 
                 
                 <ports>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1757,7 +2613,11 @@
                     
                     
                     <port type="http">10263</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1765,7 +2625,11 @@
                     
                     
                     <port type="https">9943</port>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1773,7 +2637,11 @@
                 
                 
                 </ports>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1782,7 +2650,11 @@
                 
                 <properties>
                 </properties>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -1790,7 +2662,11 @@
             
             
             </instance>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -1798,7 +2674,11 @@
             
             
             <instance name="publisher-old" type="standalone" nonBlockingTransportEnabled="false">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1806,7 +2686,11 @@
                 
                 
                 <hosts>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1814,7 +2698,11 @@
                     
                     
                     <host type="default">localhost</host>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1822,7 +2710,11 @@
                 
                 
                 </hosts>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1830,7 +2722,11 @@
                 
                 
                 <ports>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1838,7 +2734,11 @@
                     
                     
                     <port type="http">10263</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1846,7 +2746,11 @@
                     
                     
                     <port type="https">9943</port>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1854,7 +2758,11 @@
                 
                 
                 </ports>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1863,7 +2771,11 @@
                 
                 <properties>
                 </properties>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -1871,7 +2783,11 @@
             
             
             </instance>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -1879,7 +2795,11 @@
             
             
             <instance name="keyManager" type="standalone" nonBlockingTransportEnabled="false">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1887,7 +2807,11 @@
                 
                 
                 <hosts>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1895,7 +2819,11 @@
                     
                     
                     <host type="default">localhost</host>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1903,7 +2831,11 @@
                 
                 
                 </hosts>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1911,7 +2843,11 @@
                 
                 
                 <ports>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1919,7 +2855,11 @@
                     
                     
                     <port type="http">10263</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1927,7 +2867,11 @@
                     
                     
                     <port type="https">9943</port>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1935,7 +2879,11 @@
                 
                 
                 </ports>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1944,7 +2892,11 @@
                 
                 <properties>
                 </properties>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -1952,7 +2904,11 @@
             
             
             </instance>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -1960,7 +2916,11 @@
             
             
             <instance name="gateway-mgt" type="standalone" nonBlockingTransportEnabled="false">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1968,7 +2928,11 @@
                 
                 
                 <hosts>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -1976,7 +2940,11 @@
                     
                     
                     <host type="default">localhost</host>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -1984,7 +2952,11 @@
                 
                 
                 </hosts>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -1992,7 +2964,11 @@
                 
                 
                 <ports>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2000,7 +2976,11 @@
                     
                     
                     <port type="http">10263</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2008,7 +2988,11 @@
                     
                     
                     <port type="https">9943</port>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -2016,7 +3000,11 @@
                 
                 
                 </ports>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2025,7 +3013,11 @@
                 
                 <properties>
                 </properties>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -2033,7 +3025,11 @@
             
             
             </instance>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -2041,7 +3037,11 @@
             
             
             <instance name="gateway-wrk" type="standalone" nonBlockingTransportEnabled="true">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2049,7 +3049,11 @@
                 
                 
                 <hosts>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2057,7 +3061,11 @@
                     
                     
                     <host type="default">localhost</host>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -2065,7 +3073,11 @@
                 
                 
                 </hosts>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2073,7 +3085,11 @@
                 
                 
                 <ports>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2081,7 +3097,11 @@
                     
                     
                     <port type="http">10263</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2089,7 +3109,11 @@
                     
                     
                     <port type="https">9943</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2097,7 +3121,11 @@
                     
                     
                     <port type="nhttps">8743</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2105,7 +3133,11 @@
                     
                     
                     <port type="nhttp">8780</port>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -2113,7 +3145,11 @@
                 
                 
                 </ports>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2122,7 +3158,11 @@
                 
                 <properties>
                 </properties>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -2130,7 +3170,11 @@
             
             
             </instance>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -2138,7 +3182,11 @@
             
             
             <!--Backend server where the actual services deployed-->
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -2146,7 +3194,11 @@
             
             
             <instance name="backend-server" type="standalone" nonBlockingTransportEnabled="true">
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2154,7 +3206,11 @@
                 
                 
                 <hosts>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2162,7 +3218,11 @@
                     
                     
                     <host type="default">backend.wso2.org</host>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -2170,7 +3230,11 @@
                 
                 
                 </hosts>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2178,7 +3242,11 @@
                 
                 
                 <ports>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2186,7 +3254,11 @@
                     
                     
                     <port type="http">10263</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2194,7 +3266,11 @@
                     
                     
                     <port type="https">9943</port>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2202,7 +3278,11 @@
                     
                     
                     <!--<port type="nhttps">8780</port>-->
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2210,7 +3290,11 @@
                     
                     
                     <!--<port type="nhttp">8743</port>-->
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -2218,7 +3302,11 @@
                 
                 
                 </ports>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2227,7 +3315,11 @@
                 
                 <properties>
                 </properties>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -2235,7 +3327,11 @@
             
             
             </instance>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -2243,7 +3339,11 @@
         
         
         </productGroup>
-                                                            
+                                                                                            
+    
+    
+    
+    
     
     
     
@@ -2251,7 +3351,11 @@
     
     
     </platform>
-                                
+                                                
+    
+    
+    
+    
     
     
     
@@ -2259,7 +3363,11 @@
     
     
     <listenerExtensions>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -2267,7 +3375,11 @@
         
         
         <platformExecutionManager>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -2275,7 +3387,11 @@
             
             
             <extentionClasses>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2283,7 +3399,11 @@
                 
                 
                 <class>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2291,7 +3411,11 @@
                     
                     
                     <!--<name>org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerExtension</name>-->
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2299,7 +3423,11 @@
                     
                     
                     <name>org.wso2.am.integration.tests.util.APIMCarbonServerExtension</name>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2307,7 +3435,11 @@
                     
                     
                     <parameter name="-DportOffset" value="500"/>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2315,7 +3447,11 @@
                     
                     
                     <parameter name="-DenableCorrelationLogs" value="true"/>
-                                                                                                                                                           
+                                                                                                                                                                                                                                           
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2323,7 +3459,11 @@
                     
                     
                     <!--                    <parameter name="-Dsetup" value="true"/>-->
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2331,7 +3471,11 @@
                     
                     
                     <!--<parameter name="cmdArg" value="debug 5005"/>-->
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -2339,7 +3483,11 @@
                 
                 
                 </class>
-                                                                                                                                
+                                                                                                                                                                                                
+                
+                
+                
+                
                 
                 
                 
@@ -2347,7 +3495,11 @@
                 
                 
                 <class>
-                                                                                                                                                                
+                                                                                                                                                                                                                                                
+                    
+                    
+                    
+                    
                     
                     
                     
@@ -2355,7 +3507,11 @@
                     
                     
                     <name>org.wso2.carbon.integration.common.extensions.usermgt.UserPopulateExtension</name>
-                                                                                                                                                            
+                                                                                                                                                                                                                                            
+                
+                
+                
+                
                 
                 
                 
@@ -2363,7 +3519,11 @@
                 
                 
                 </class>
-                                                                                                                            
+                                                                                                                                                                                            
+            
+            
+            
+            
             
             
             
@@ -2371,7 +3531,11 @@
             
             
             </extentionClasses>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -2379,7 +3543,11 @@
         
         
         </platformExecutionManager>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -2387,7 +3555,11 @@
         
         
         <PlatformSuiteManager>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -2396,7 +3568,11 @@
             
             <extentionClasses>
             </extentionClasses>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -2404,7 +3580,11 @@
         
         
         </PlatformSuiteManager>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -2412,7 +3592,11 @@
         
         
         <PlatformAnnotationTransferManager>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -2421,7 +3605,11 @@
             
             <extentionClasses>
             </extentionClasses>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -2429,7 +3617,11 @@
         
         
         </PlatformAnnotationTransferManager>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -2437,7 +3629,11 @@
         
         
         <PlatformTestManager>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -2446,7 +3642,11 @@
             
             <extentionClasses>
             </extentionClasses>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -2454,7 +3654,11 @@
         
         
         </PlatformTestManager>
-                                                                
+                                                                                                
+        
+        
+        
+        
         
         
         
@@ -2462,7 +3666,11 @@
         
         
         <PlatformReportManager>
-                                                                                                
+                                                                                                                                                
+            
+            
+            
+            
             
             
             
@@ -2471,7 +3679,11 @@
             
             <extentionClasses>
             </extentionClasses>
-                                                                                            
+                                                                                                                                            
+        
+        
+        
+        
         
         
         
@@ -2479,7 +3691,11 @@
         
         
         </PlatformReportManager>
-                                                            
+                                                                                            
+    
+    
+    
+    
     
     
     
@@ -2487,7 +3703,11 @@
     
     
     </listenerExtensions>
-                            
+                                            
+
+
+
+
 
 
 

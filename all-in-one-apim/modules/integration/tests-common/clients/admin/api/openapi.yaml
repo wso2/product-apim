@@ -5692,8 +5692,8 @@ paths:
         schema:
           enum:
           - AM_APPLICATION_CREATION
-          - AM_APPLICATION_UPDATE
           - AM_SUBSCRIPTION_CREATION
+          - AM_APPLICATION_UPDATE
           - AM_USER_SIGNUP
           - AM_APPLICATION_REGISTRATION_PRODUCTION
           - AM_APPLICATION_REGISTRATION_SANDBOX
@@ -9069,24 +9069,23 @@ components:
       type: object
     Environment:
       example:
-        apiDiscoveryScheduledWindow: 0
-        displayName: US Region
-        description: Gateway environment in US Region
-        isWriteOnly: false
         endpointURIs:
         - protocol: default
           endpointURI: default
         - protocol: default
           endpointURI: default
+        apiDiscoveryScheduledWindow: 0
         gatewayType: Regular
         isReadOnly: false
         provider: wso2
+        displayName: US Region
         permissions:
           permissionType: ALLOW
           roles:
           - Subscriber
           - Internal/subscriber
         name: us-region
+        description: Gateway environment in US Region
         id: ece92bdc-e1e6-325c-b6f4-656208a041e9
         additionalProperties:
         - value: wso2
@@ -9137,10 +9136,6 @@ components:
           example: false
           readOnly: true
           type: boolean
-        isWriteOnly:
-          default: false
-          example: false
-          type: boolean
         apiDiscoveryScheduledWindow:
           default: 60
           description: |
@@ -9171,24 +9166,23 @@ components:
       example:
         count: 1
         list:
-        - apiDiscoveryScheduledWindow: 0
-          displayName: US Region
-          description: Gateway environment in US Region
-          isWriteOnly: false
-          endpointURIs:
+        - endpointURIs:
           - protocol: default
             endpointURI: default
           - protocol: default
             endpointURI: default
+          apiDiscoveryScheduledWindow: 0
           gatewayType: Regular
           isReadOnly: false
           provider: wso2
+          displayName: US Region
           permissions:
             permissionType: ALLOW
             roles:
             - Subscriber
             - Internal/subscriber
           name: us-region
+          description: Gateway environment in US Region
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
           additionalProperties:
           - value: wso2
@@ -9208,24 +9202,23 @@ components:
             wsPort: 9099
             host: mg.wso2.com
             httpsPort: 443
-        - apiDiscoveryScheduledWindow: 0
-          displayName: US Region
-          description: Gateway environment in US Region
-          isWriteOnly: false
-          endpointURIs:
+        - endpointURIs:
           - protocol: default
             endpointURI: default
           - protocol: default
             endpointURI: default
+          apiDiscoveryScheduledWindow: 0
           gatewayType: Regular
           isReadOnly: false
           provider: wso2
+          displayName: US Region
           permissions:
             permissionType: ALLOW
             roles:
             - Subscriber
             - Internal/subscriber
           name: us-region
+          description: Gateway environment in US Region
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
           additionalProperties:
           - value: wso2
@@ -10428,6 +10421,7 @@ components:
             Type of the Workflow Request. It shows which type of request is it.
           enum:
           - APPLICATION_CREATION
+          - APPLICATION_UPDATE
           - SUBSCRIPTION_CREATION
           - USER_SIGNUP
           - APPLICATION_REGISTRATION_PRODUCTION

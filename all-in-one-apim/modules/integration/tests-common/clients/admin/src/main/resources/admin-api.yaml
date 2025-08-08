@@ -5650,10 +5650,6 @@ components:
           type: boolean
           readOnly: true
           example: false
-        isWriteOnly:
-          type: boolean
-          example: false
-          default: false
         apiDiscoveryScheduledWindow:
           type: integer
           description: |
