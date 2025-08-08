@@ -672,6 +672,11 @@
                                 <featureArtifactDef>
                                     org.wso2.gw.ext:aws.gw.manager.feature:${aws.gwmanager.feature.version}
                                 </featureArtifactDef>
+
+                                <!-- Azure Gateway Agent Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.gw.ext:azure.gw.manager.feature:${azure.gwmanager.feature.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1379,6 +1384,10 @@
                                 <feature>
                                     <id>aws.gw.manager.feature.group</id>
                                     <version>${aws.gwmanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>azure.gw.manager.feature.group</id>
+                                    <version>${azure.gwmanager.feature.version}</version>
                                 </feature>
 
                             </features>
