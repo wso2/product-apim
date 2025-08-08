@@ -1508,7 +1508,7 @@
         <identity.branding.preference.management.version>1.0.17</identity.branding.preference.management.version>
 
         <!-- External Gateway Agent Versions -->
-        <aws.gwmanager.feature.version>1.0.1</aws.gwmanager.feature.version>
+        <aws.gwmanager.feature.version>1.1.0</aws.gwmanager.feature.version>
 
         <!-- AM Policy Bundle Versions -->
         <regex-guardrail.version>1.0.0</regex-guardrail.version>
