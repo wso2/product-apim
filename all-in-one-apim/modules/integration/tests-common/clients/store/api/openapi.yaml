@@ -6675,6 +6675,43 @@ paths:
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/me/change-password"'
       x-contentType: application/json
       x-accepts: application/json
+  /me/organization-information:
+    get:
+      description: |
+        Using this operation, logged-in user can get their organization information.
+      operationId: organizationInformation
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationInfo'
+          description: |
+            OK.
+            Key Manager list returned
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+      summary: Get the Organization information of the user
+      tags:
+      - Users
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/me/organization"'
+      x-accepts: application/json
 components:
   parameters:
     parentCommentID:
@@ -7579,6 +7616,7 @@ components:
     Application:
       example:
         owner: admin
+        visibility: PRIVATE
         keys: []
         subscriptionCount: 0
         description: Sample calculator application
@@ -7660,6 +7698,11 @@ components:
           example: false
           readOnly: true
           type: boolean
+        visibility:
+          enum:
+          - PRIVATE
+          - SHARED_WITH_ORG
+          type: string
       required:
       - name
       - throttlingPolicy
@@ -9471,6 +9514,19 @@ components:
           example: "4.5"
           type: string
       title: Recommended API
+      type: object
+    OrganizationInfo:
+      example:
+        organizationId: 01234567-0123-0123-0123-012345678901
+        name: My Organization
+      properties:
+        organizationId:
+          example: 01234567-0123-0123-0123-012345678901
+          type: string
+        name:
+          example: My Organization
+          type: string
+      title: Organization Info
       type: object
     KeyManagerInfo:
       example:

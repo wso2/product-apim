@@ -1289,11 +1289,11 @@
         <carbon.analytics.common.version>5.3.20</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.2.106</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.1</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
 
-        <carbon.apimgt.version>9.31.170</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.4</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1508,7 +1508,7 @@
         <identity.branding.preference.management.version>1.0.17</identity.branding.preference.management.version>
 
         <!-- External Gateway Agent Versions -->
-        <aws.gwmanager.feature.version>1.0.1</aws.gwmanager.feature.version>
+        <aws.gwmanager.feature.version>1.1.0</aws.gwmanager.feature.version>
         <azure.gwmanager.feature.version>0.1.0</azure.gwmanager.feature.version>
 
         <!-- AM Policy Bundle Versions -->

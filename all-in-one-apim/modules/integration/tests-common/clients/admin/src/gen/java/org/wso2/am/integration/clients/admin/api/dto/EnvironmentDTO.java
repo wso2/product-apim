@@ -63,6 +63,10 @@ public class EnvironmentDTO {
         @SerializedName(SERIALIZED_NAME_IS_READ_ONLY)
             private Boolean isReadOnly;
 
+        public static final String SERIALIZED_NAME_API_DISCOVERY_SCHEDULED_WINDOW = "apiDiscoveryScheduledWindow";
+        @SerializedName(SERIALIZED_NAME_API_DISCOVERY_SCHEDULED_WINDOW)
+            private Integer apiDiscoveryScheduledWindow = 60;
+
         public static final String SERIALIZED_NAME_VHOSTS = "vhosts";
         @SerializedName(SERIALIZED_NAME_VHOSTS)
             private List<VHostDTO> vhosts = new ArrayList<VHostDTO>();
@@ -240,6 +244,29 @@ public class EnvironmentDTO {
     }
 
 
+        public EnvironmentDTO apiDiscoveryScheduledWindow(Integer apiDiscoveryScheduledWindow) {
+        
+        this.apiDiscoveryScheduledWindow = apiDiscoveryScheduledWindow;
+        return this;
+        }
+
+    /**
+        * The time window in minutes to schedule the API discovery task. This is used to discover APIs from the API Gateway and update the API list in the environment. 
+    * @return apiDiscoveryScheduledWindow
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "The time window in minutes to schedule the API discovery task. This is used to discover APIs from the API Gateway and update the API list in the environment. ")
+    
+    public Integer getApiDiscoveryScheduledWindow() {
+        return apiDiscoveryScheduledWindow;
+    }
+
+
+    public void setApiDiscoveryScheduledWindow(Integer apiDiscoveryScheduledWindow) {
+        this.apiDiscoveryScheduledWindow = apiDiscoveryScheduledWindow;
+    }
+
+
         public EnvironmentDTO vhosts(List<VHostDTO> vhosts) {
         
         this.vhosts = vhosts;
@@ -347,6 +374,7 @@ public class EnvironmentDTO {
             Objects.equals(this.provider, environment.provider) &&
             Objects.equals(this.gatewayType, environment.gatewayType) &&
             Objects.equals(this.isReadOnly, environment.isReadOnly) &&
+            Objects.equals(this.apiDiscoveryScheduledWindow, environment.apiDiscoveryScheduledWindow) &&
             Objects.equals(this.vhosts, environment.vhosts) &&
             Objects.equals(this.endpointURIs, environment.endpointURIs) &&
             Objects.equals(this.additionalProperties, environment.additionalProperties) &&
@@ -355,7 +383,7 @@ public class EnvironmentDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, displayName, description, provider, gatewayType, isReadOnly, vhosts, endpointURIs, additionalProperties, permissions);
+        return Objects.hash(id, name, displayName, description, provider, gatewayType, isReadOnly, apiDiscoveryScheduledWindow, vhosts, endpointURIs, additionalProperties, permissions);
     }
 
 
@@ -370,6 +398,7 @@ sb.append("class EnvironmentDTO {\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    gatewayType: ").append(toIndentedString(gatewayType)).append("\n");
     sb.append("    isReadOnly: ").append(toIndentedString(isReadOnly)).append("\n");
+    sb.append("    apiDiscoveryScheduledWindow: ").append(toIndentedString(apiDiscoveryScheduledWindow)).append("\n");
     sb.append("    vhosts: ").append(toIndentedString(vhosts)).append("\n");
     sb.append("    endpointURIs: ").append(toIndentedString(endpointURIs)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");

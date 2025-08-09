@@ -160,6 +160,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.scxml.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.federated.gateway.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.analytics-common:org.wso2.carbon.databridge.datareceiver.feature:${carbon.analytics.common.version}
@@ -194,9 +197,6 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.role.mgt.core.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
-
-
-                           
 
                               
                                 <featureArtifactDef>
@@ -1209,7 +1209,11 @@
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
-
+                                    
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.federated.gateway.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
 
                                 <!--Identity Feature-->
                                 <feature>
@@ -1865,6 +1869,10 @@
                                     <version>${carbon.governance.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.federated.gateway.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
 
                                 <!--Identity Feature-->
                                 <feature>
@@ -3691,6 +3699,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.federated.gateway.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
 

@@ -57,6 +57,10 @@ public class APIDTO {
         @SerializedName(SERIALIZED_NAME_NAME)
             private String name;
 
+        public static final String SERIALIZED_NAME_DISPLAY_NAME = "displayName";
+        @SerializedName(SERIALIZED_NAME_DISPLAY_NAME)
+            private String displayName;
+
         public static final String SERIALIZED_NAME_DESCRIPTION = "description";
         @SerializedName(SERIALIZED_NAME_DESCRIPTION)
             private String description;
@@ -599,6 +603,10 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS)
             private List<String> asyncTransportProtocols = null;
 
+        public static final String SERIALIZED_NAME_INITIATED_FROM_GATEWAY = "initiatedFromGateway";
+        @SerializedName(SERIALIZED_NAME_INITIATED_FROM_GATEWAY)
+            private Boolean initiatedFromGateway = false;
+
 
         public APIDTO id(String id) {
         
@@ -642,6 +650,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+        public APIDTO displayName(String displayName) {
+        
+        this.displayName = displayName;
+        return this;
+        }
+
+    /**
+        * Human-friendly name shown in UI. Length limited to DB column size.
+    * @return displayName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Pizza Shack API", value = "Human-friendly name shown in UI. Length limited to DB column size.")
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
 
@@ -2023,6 +2054,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO initiatedFromGateway(Boolean initiatedFromGateway) {
+        
+        this.initiatedFromGateway = initiatedFromGateway;
+        return this;
+        }
+
+    /**
+        * Whether the API is initiated from the gateway or not. This is used to identify whether the API is created from the publisher or discovered from the gateway. 
+    * @return initiatedFromGateway
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "Whether the API is initiated from the gateway or not. This is used to identify whether the API is created from the publisher or discovered from the gateway. ")
+    
+    public Boolean isInitiatedFromGateway() {
+        return initiatedFromGateway;
+    }
+
+
+    public void setInitiatedFromGateway(Boolean initiatedFromGateway) {
+        this.initiatedFromGateway = initiatedFromGateway;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -2034,6 +2088,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             APIDTO API = (APIDTO) o;
             return Objects.equals(this.id, API.id) &&
             Objects.equals(this.name, API.name) &&
+            Objects.equals(this.displayName, API.displayName) &&
             Objects.equals(this.description, API.description) &&
             Objects.equals(this.context, API.context) &&
             Objects.equals(this.version, API.version) &&
@@ -2093,12 +2148,13 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.advertiseInfo, API.advertiseInfo) &&
             Objects.equals(this.gatewayVendor, API.gatewayVendor) &&
             Objects.equals(this.gatewayType, API.gatewayType) &&
-            Objects.equals(this.asyncTransportProtocols, API.asyncTransportProtocols);
+            Objects.equals(this.asyncTransportProtocols, API.asyncTransportProtocols) &&
+            Objects.equals(this.initiatedFromGateway, API.initiatedFromGateway);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, audiences, transport, tags, policies, organizationPolicies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, visibleOrganizations, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, gatewayType, asyncTransportProtocols);
+        return Objects.hash(id, name, displayName, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, audiences, transport, tags, policies, organizationPolicies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, visibleOrganizations, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, gatewayType, asyncTransportProtocols, initiatedFromGateway);
     }
 
 
@@ -2108,6 +2164,7 @@ StringBuilder sb = new StringBuilder();
 sb.append("class APIDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
@@ -2168,6 +2225,7 @@ sb.append("class APIDTO {\n");
     sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
     sb.append("    gatewayType: ").append(toIndentedString(gatewayType)).append("\n");
     sb.append("    asyncTransportProtocols: ").append(toIndentedString(asyncTransportProtocols)).append("\n");
+    sb.append("    initiatedFromGateway: ").append(toIndentedString(initiatedFromGateway)).append("\n");
 sb.append("}");
 return sb.toString();
 }
