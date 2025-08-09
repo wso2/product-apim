@@ -233,7 +233,12 @@
 </cache>
                 #end
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
-                #if( $isSoapToRestMode )
+#if( $apiType == 'MCP' )
+<class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator">
+   <property name="mcpDirection" value="IN"/>
+</class>
+#end
+#if( $isSoapToRestMode )
 <property name="HTTP_METHOD" value="POST" scope="axis2" type="STRING"/>
                     #foreach( $uri in $in_sequences.get("$resource.getUriTemplate()").keySet() )
 $in_sequences.get("$resource.getUriTemplate()").get($uri)
@@ -250,132 +255,149 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                     #end
                 #end
 
-                #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
-                    && !$endpoint_config.get("production_endpoints")) )
-                    #set( $filterRegex = "SANDBOX" )
-                #else
-                    #set( $filterRegex = "PRODUCTION" )
-                #end
-                #if( $endpoint_config.get("endpoint_type") == 'sequence_backend' )
-                    #if( $endpoint_config.get("sandbox"))
-                        #set( $sequenceKey = $endpoint_config.get("sandbox") )
-                        <filter source="$ctx:AM_KEY_TYPE" regex="SANDBOX">
-                            <then>
-                                <sequence key="$sequenceKey"/>
-                                <loopback/>
-                            </then>
-                            <else/>
-                        </filter>
-                    #end
-                    #if( $endpoint_config.get("production"))
-                        #set( $sequenceKey = $endpoint_config.get("production") )
-                        <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
-                            <then>
-                                <sequence key="$sequenceKey"/>
-                                <loopback/>
-                            </then>
-                            <else/>
-                        </filter>
-                    #end
-                ## AWS Lambda: start
-                #elseif( $endpoint_config.get("endpoint_type") == 'awslambda' )
-                    #set( $accessKey = $!{endpoint_config.get("amznAccessKey")} )
-                    #set( $secretKey = $!{endpoint_config.get("amznSecretKey")} )
-                    #set( $region = $!{endpoint_config.get("amznRegion")} )
-                    #set( $roleArn = $!{endpoint_config.get("amznRoleArn")} )
-                    #set( $roleSessionName = $!{endpoint_config.get("amznRoleSessionName")} )
-                    #set( $roleRegion = $!{endpoint_config.get("amznRoleRegion")} )
-                    #set( $resourceName = $!{resource.getAmznResourceName()} )
-                    #set( $resourceTimeout = $!{resource.getAmznResourceTimeout()} )
-                    #set( $isContentEncodingEnabled = $!{resource.isAmznResourceContentEncoded()} )
-<class name="org.wso2.carbon.apimgt.gateway.mediators.AWSLambdaMediator">
-                    #if( $accessKey != '' )
-    <property name="accessKey" value="$accessKey"/>
-                    #end
-                    #if( $isSecureVaultEnabled )
-    <property name="secretKey" expression="wso2:vault-lookup('$endpoint_config.get('awsAlias')')" type="STRING"/>
-                    #else
-                        #if( $secretKey != '' )
-    <property name="secretKey" value="$secretKey"/>
-                        #end
-                    #end
-                    #if( $region != '' )
-    <property name="region" value="$region"/>
-                    #end
-                    #if( $roleArn != '' )
-    <property name="roleArn" value="$roleArn"/>
-                    #end
-                    #if( $roleSessionName != '' )
-    <property name="roleSessionName" value="$roleSessionName"/>
-                    #end
-                    #if( $roleRegion != '' )
-    <property name="roleRegion" value="$roleRegion"/>
-                    #end
-                    #if( $resourceName != '' )
-    <property name="resourceName" value="$resourceName"/>
-                    #end
-                    #if( $resourceTimeout != '' )
-    <property name="resourceTimeout" value="$resourceTimeout"/>
-                    #end
-                    #if( $isContentEncodingEnabled != '' )
-    <property name="isContentEncodingEnabled" value="$isContentEncodingEnabled"/>
-                    #end
-</class>
-<loopback />
-                ## AWS Lambda: end
-                #else
-<filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
+#if($apiType == "MCP")
+<filter xpath="get-property('MCP_PROCESSED') = 'true'">
     <then>
-                    #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
-                        && ! $endpoint_config.get("production_endpoints")) )
-                        #draw_endpoint( "sandbox" $endpoint_config )
-                    #else
-                        #draw_endpoint( "production" $endpoint_config )
-                    #end
+        <loopback/>
     </then>
     <else>
-                        #if( $environmentType !='hybrid' )
-                            #if( $resource.getAuthType() == 'None' && $environmentType == 'sandbox'
-                                && $endpoint_config.get("sandbox_endpoints") )
-                                #draw_endpoint( "sandbox" $endpoint_config )
-                            #else
-        <payloadFactory>
-            <format>
-                <error xmlns="">
-                                #if( $environmentType == 'production' )
-                    <message>Sandbox Key Provided for Production Gateway</message>
-                                #elseif( $environmentType == 'sandbox' )
-                    <message>Production Key Provided for Sandbox Gateway</message>
-                                #end
-                </error>
-            </format>
-        </payloadFactory>
-        <property name="ContentType" value="application/xml" scope="axis2"/>
-        <property name="RESPONSE" value="true"/>
-        <header name="To" action="remove"/>
-        <property name="HTTP_SC" value="401" scope="axis2"/>
-        <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
-        <send/>
+        #end
+        #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
+        && !$endpoint_config.get("production_endpoints")) )
+        #set( $filterRegex = "SANDBOX" )
+        #else
+        #set( $filterRegex = "PRODUCTION" )
+        #end
+        #if( $endpoint_config.get("endpoint_type") == 'sequence_backend' )
+        #if( $endpoint_config.get("sandbox"))
+        #set( $sequenceKey = $endpoint_config.get("sandbox") )
+        <filter source="$ctx:AM_KEY_TYPE" regex="SANDBOX">
+            <then>
+                <sequence key="$sequenceKey"/>
+                <loopback/>
+            </then>
+            <else/>
+        </filter>
+        #end
+        #if( $endpoint_config.get("production"))
+        #set( $sequenceKey = $endpoint_config.get("production") )
+        <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
+            <then>
+                <sequence key="$sequenceKey"/>
+                <loopback/>
+            </then>
+            <else/>
+        </filter>
+        #end
+        ## AWS Lambda: start
+        #elseif( $endpoint_config.get("endpoint_type") == 'awslambda' )
+        #set( $accessKey = $!{endpoint_config.get("amznAccessKey")} )
+        #set( $secretKey = $!{endpoint_config.get("amznSecretKey")} )
+        #set( $region = $!{endpoint_config.get("amznRegion")} )
+        #set( $roleArn = $!{endpoint_config.get("amznRoleArn")} )
+        #set( $roleSessionName = $!{endpoint_config.get("amznRoleSessionName")} )
+        #set( $roleRegion = $!{endpoint_config.get("amznRoleRegion")} )
+        #set( $resourceName = $!{resource.getAmznResourceName()} )
+        #set( $resourceTimeout = $!{resource.getAmznResourceTimeout()} )
+        #set( $isContentEncodingEnabled = $!{resource.isAmznResourceContentEncoded()} )
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.AWSLambdaMediator">
+            #if( $accessKey != '' )
+            <property name="accessKey" value="$accessKey"/>
+            #end
+            #if( $isSecureVaultEnabled )
+            <property name="secretKey" expression="wso2:vault-lookup('$endpoint_config.get('awsAlias')')" type="STRING"/>
+            #else
+            #if( $secretKey != '' )
+            <property name="secretKey" value="$secretKey"/>
+            #end
+            #end
+            #if( $region != '' )
+            <property name="region" value="$region"/>
+            #end
+            #if( $roleArn != '' )
+            <property name="roleArn" value="$roleArn"/>
+            #end
+            #if( $roleSessionName != '' )
+            <property name="roleSessionName" value="$roleSessionName"/>
+            #end
+            #if( $roleRegion != '' )
+            <property name="roleRegion" value="$roleRegion"/>
+            #end
+            #if( $resourceName != '' )
+            <property name="resourceName" value="$resourceName"/>
+            #end
+            #if( $resourceTimeout != '' )
+            <property name="resourceTimeout" value="$resourceTimeout"/>
+            #end
+            #if( $isContentEncodingEnabled != '' )
+            <property name="isContentEncodingEnabled" value="$isContentEncodingEnabled"/>
+            #end
+        </class>
+        <loopback />
+        ## AWS Lambda: end
+        #else
+        <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
+            <then>
+                #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
+                && ! $endpoint_config.get("production_endpoints")) )
+                #draw_endpoint( "sandbox" $endpoint_config )
+                #else
+                #draw_endpoint( "production" $endpoint_config )
+                #end
+            </then>
+            <else>
+                #if( $environmentType !='hybrid' )
+                #if( $resource.getAuthType() == 'None' && $environmentType == 'sandbox'
+                && $endpoint_config.get("sandbox_endpoints") )
+                #draw_endpoint( "sandbox" $endpoint_config )
+                #else
+                <payloadFactory>
+                    <format>
+                        <error xmlns="">
+                            #if( $environmentType == 'production' )
+                            <message>Sandbox Key Provided for Production Gateway</message>
+                            #elseif( $environmentType == 'sandbox' )
+                            <message>Production Key Provided for Sandbox Gateway</message>
                             #end
-                        #else
-                            #if( $endpoint_config.get("production_endpoints")
-                                && $endpoint_config.get("sandbox_endpoints") )
-                                #draw_endpoint( "sandbox" $endpoint_config )
-                            #elseif( $endpoint_config.get("production_endpoints") )
-        <sequence key="_sandbox_key_error_"/>
-                            #elseif( $endpoint_config.get("sandbox_endpoints") )
-                                #if( $resource.getAuthType() == 'None' )
-                                    #draw_endpoint( "sandbox" $endpoint_config )
-                                #else
-        <sequence key="_production_key_error_"/>
-                                #end
-                            #end
-                        #end
+                        </error>
+                    </format>
+                </payloadFactory>
+                <property name="ContentType" value="application/xml" scope="axis2"/>
+                <property name="RESPONSE" value="true"/>
+                <header name="To" action="remove"/>
+                <property name="HTTP_SC" value="401" scope="axis2"/>
+                <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+                <send/>
+                #end
+                #else
+                #if( $endpoint_config.get("production_endpoints")
+                && $endpoint_config.get("sandbox_endpoints") )
+                #draw_endpoint( "sandbox" $endpoint_config )
+                #elseif( $endpoint_config.get("production_endpoints") )
+                <sequence key="_sandbox_key_error_"/>
+                #elseif( $endpoint_config.get("sandbox_endpoints") )
+                #if( $resource.getAuthType() == 'None' )
+                #draw_endpoint( "sandbox" $endpoint_config )
+                #else
+                <sequence key="_production_key_error_"/>
+                #end
+                #end
+                #end
+            </else>
+        </filter>
+        #end
+        #if( $apiType == "MCP" )
     </else>
 </filter>
-                #end
+#end
 </inSequence>
 <outSequence>
+#if( $apiType == 'MCP' )
+<property name="MCP_DIRECTION" value="OUT"/>
+<class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator">
+    <property name="mcpDirection" value="OUT"/>
+</class>
+#end
                 #if( $isSoapToRestMode )
                     #foreach( $uri in $out_sequences.get("$resource.getUriTemplate()").keySet() )
 $out_sequences.get("$resource.getUriTemplate()").get($uri)
@@ -407,7 +429,7 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
             ## print the handlers
             #if( $handlers.size() > 0 )
 <handlers xmlns="http://ws.apache.org/ns/synapse">
-                #foreach( $handler in $handlers )
+#foreach( $handler in $handlers )
 <handler xmlns="http://ws.apache.org/ns/synapse" class="$handler.className">
                     #if($handler.hasProperties())
                         #set ($map = $handler.getProperties() )
