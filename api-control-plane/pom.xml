@@ -806,6 +806,12 @@
                 <groupId>org.apache.synapse</groupId>
                 <artifactId>synapse-core</artifactId>
                 <version>${synapse.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wso2.orbit.io.swagger.v3</groupId>
+                        <artifactId>swagger-parser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jacoco</groupId>
@@ -1277,7 +1283,7 @@
 
         <project.scm.id>scm-server</project.scm.id>
 
-        <carbon.analytics.common.version>5.3.20</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.3.23</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
         <carbon.apimgt.ui.version>9.3.1</carbon.apimgt.ui.version>
@@ -1306,7 +1312,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.250</carbon.mediation.version>
+        <carbon.mediation.version>4.7.254</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.25.724</carbon.identity.version>
@@ -1461,7 +1467,7 @@
         <diagnostics.tool.version>1.0.17</diagnostics.tool.version>
 
         <!-- Authenticator Properties -->
-        <identity.outbound.auth.oidc.version>5.11.36</identity.outbound.auth.oidc.version>
+        <identity.outbound.auth.oidc.version>5.11.37</identity.outbound.auth.oidc.version>
         <swagger-parser-version>2.0.14</swagger-parser-version>
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
         <json-smart.version>2.5.2</json-smart.version>
@@ -1470,15 +1476,15 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.7.12</wso2is.km.version>
-        <wso2is7.km.version>2.0.4</wso2is7.km.version>
+        <wso2is.km.version>1.7.13</wso2is.km.version>
+        <wso2is7.km.version>2.0.7</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.11</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.1</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.7</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
-        <forgerock.keymanager.feature.version>1.1.6</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.2.23</apim.analytics.publisher.version>
+        <forgerock.keymanager.feature.version>1.1.8</forgerock.keymanager.feature.version>
+        <apim.analytics.publisher.version>1.2.24</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
         <charon3.version>4.0.23</charon3.version>
