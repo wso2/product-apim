@@ -810,6 +810,12 @@
                 <groupId>org.apache.synapse</groupId>
                 <artifactId>synapse-core</artifactId>
                 <version>${synapse.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wso2.orbit.io.swagger.v3</groupId>
+                        <artifactId>swagger-parser</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jacoco</groupId>
