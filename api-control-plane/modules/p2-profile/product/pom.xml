@@ -661,6 +661,9 @@
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.workflow.mgt.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.federated.gateway.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.user.store.configuration.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
                                 <!-- Identity Branding Preference Management feature -->
@@ -1022,6 +1025,11 @@
                                 <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>${carbon.governance.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.federated.gateway.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 
 
