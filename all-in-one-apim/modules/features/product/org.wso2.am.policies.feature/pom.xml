@@ -16,13 +16,11 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>am-features</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.6.0-m1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -269,89 +267,53 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.regex-guardrail-${regex-guardrail.version}-distribution.zip"
-                                       dest="${project.build.directory}/regex-guardrail"/>
-                                <move file="${project.build.directory}/regex-guardrail/artifact.j2"
-                                      tofile="${project.build.directory}/${regex-guardrail.name}_${regex-guardrail.policy.version}.j2" />
-                                <move file="${project.build.directory}/regex-guardrail/policy-definition.json"
-                                      tofile="${project.build.directory}/${regex-guardrail.name}_${regex-guardrail.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.regex-guardrail-${regex-guardrail.version}-distribution.zip" dest="${project.build.directory}/regex-guardrail" />
+                                <move file="${project.build.directory}/regex-guardrail/artifact.j2" tofile="${project.build.directory}/${regex-guardrail.name}_${regex-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/regex-guardrail/policy-definition.json" tofile="${project.build.directory}/${regex-guardrail.name}_${regex-guardrail.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.aws-bedrock-guardrail-${aws-bedrock-guardrail.version}-distribution.zip"
-                                       dest="${project.build.directory}/aws-bedrock-guardrail"/>
-                                <move file="${project.build.directory}/aws-bedrock-guardrail/artifact.j2"
-                                      tofile="${project.build.directory}/${aws-bedrock-guardrail.name}_${aws-bedrock-guardrail.policy.version}.j2" />
-                                <move file="${project.build.directory}/aws-bedrock-guardrail/policy-definition.json"
-                                      tofile="${project.build.directory}/${aws-bedrock-guardrail.name}_${aws-bedrock-guardrail.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.aws-bedrock-guardrail-${aws-bedrock-guardrail.version}-distribution.zip" dest="${project.build.directory}/aws-bedrock-guardrail" />
+                                <move file="${project.build.directory}/aws-bedrock-guardrail/artifact.j2" tofile="${project.build.directory}/${aws-bedrock-guardrail.name}_${aws-bedrock-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/aws-bedrock-guardrail/policy-definition.json" tofile="${project.build.directory}/${aws-bedrock-guardrail.name}_${aws-bedrock-guardrail.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.azure-content-safety-guardrail-${azure-content-safety-guardrail.version}-distribution.zip"
-                                       dest="${project.build.directory}/azure-content-safety-guardrail"/>
-                                <move file="${project.build.directory}/azure-content-safety-guardrail/content-moderation/artifact.j2"
-                                      tofile="${project.build.directory}/${azure-content-safety-guardrail.name}_${azure-content-safety-guardrail.policy.version}.j2" />
-                                <move file="${project.build.directory}/azure-content-safety-guardrail/content-moderation/policy-definition.json"
-                                      tofile="${project.build.directory}/${azure-content-safety-guardrail.name}_${azure-content-safety-guardrail.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.azure-content-safety-guardrail-${azure-content-safety-guardrail.version}-distribution.zip" dest="${project.build.directory}/azure-content-safety-guardrail" />
+                                <move file="${project.build.directory}/azure-content-safety-guardrail/content-moderation/artifact.j2" tofile="${project.build.directory}/${azure-content-safety-guardrail.name}_${azure-content-safety-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/azure-content-safety-guardrail/content-moderation/policy-definition.json" tofile="${project.build.directory}/${azure-content-safety-guardrail.name}_${azure-content-safety-guardrail.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.content-length-guardrail-${content-length-guardrail.version}-distribution.zip"
-                                       dest="${project.build.directory}/content-length-guardrail"/>
-                                <move file="${project.build.directory}/content-length-guardrail/artifact.j2"
-                                      tofile="${project.build.directory}/${content-length-guardrail.name}_${content-length-guardrail.policy.version}.j2" />
-                                <move file="${project.build.directory}/content-length-guardrail/policy-definition.json"
-                                      tofile="${project.build.directory}/${content-length-guardrail.name}_${content-length-guardrail.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.content-length-guardrail-${content-length-guardrail.version}-distribution.zip" dest="${project.build.directory}/content-length-guardrail" />
+                                <move file="${project.build.directory}/content-length-guardrail/artifact.j2" tofile="${project.build.directory}/${content-length-guardrail.name}_${content-length-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/content-length-guardrail/policy-definition.json" tofile="${project.build.directory}/${content-length-guardrail.name}_${content-length-guardrail.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.json-schema-guardrail-${json-schema-guardrail.version}-distribution.zip"
-                                       dest="${project.build.directory}/json-schema-guardrail"/>
-                                <move file="${project.build.directory}/json-schema-guardrail/artifact.j2"
-                                      tofile="${project.build.directory}/${json-schema-guardrail.name}_${json-schema-guardrail.policy.version}.j2" />
-                                <move file="${project.build.directory}/json-schema-guardrail/policy-definition.json"
-                                      tofile="${project.build.directory}/${json-schema-guardrail.name}_${json-schema-guardrail.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.json-schema-guardrail-${json-schema-guardrail.version}-distribution.zip" dest="${project.build.directory}/json-schema-guardrail" />
+                                <move file="${project.build.directory}/json-schema-guardrail/artifact.j2" tofile="${project.build.directory}/${json-schema-guardrail.name}_${json-schema-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/json-schema-guardrail/policy-definition.json" tofile="${project.build.directory}/${json-schema-guardrail.name}_${json-schema-guardrail.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.pii-masking-regex-${pii-masking-regex.version}-distribution.zip"
-                                       dest="${project.build.directory}/pii-masking-regex"/>
-                                <move file="${project.build.directory}/pii-masking-regex/artifact.j2"
-                                      tofile="${project.build.directory}/${pii-masking-regex.name}_${pii-masking-regex.policy.version}.j2" />
-                                <move file="${project.build.directory}/pii-masking-regex/policy-definition.json"
-                                      tofile="${project.build.directory}/${pii-masking-regex.name}_${pii-masking-regex.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.pii-masking-regex-${pii-masking-regex.version}-distribution.zip" dest="${project.build.directory}/pii-masking-regex" />
+                                <move file="${project.build.directory}/pii-masking-regex/artifact.j2" tofile="${project.build.directory}/${pii-masking-regex.name}_${pii-masking-regex.policy.version}.j2" />
+                                <move file="${project.build.directory}/pii-masking-regex/policy-definition.json" tofile="${project.build.directory}/${pii-masking-regex.name}_${pii-masking-regex.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.prompt-decorator-${prompt-decorator.version}-distribution.zip"
-                                       dest="${project.build.directory}/prompt-decorator"/>
-                                <move file="${project.build.directory}/prompt-decorator/artifact.j2"
-                                      tofile="${project.build.directory}/${prompt-decorator.name}_${prompt-decorator.policy.version}.j2" />
-                                <move file="${project.build.directory}/prompt-decorator/policy-definition.json"
-                                      tofile="${project.build.directory}/${prompt-decorator.name}_${prompt-decorator.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.prompt-decorator-${prompt-decorator.version}-distribution.zip" dest="${project.build.directory}/prompt-decorator" />
+                                <move file="${project.build.directory}/prompt-decorator/artifact.j2" tofile="${project.build.directory}/${prompt-decorator.name}_${prompt-decorator.policy.version}.j2" />
+                                <move file="${project.build.directory}/prompt-decorator/policy-definition.json" tofile="${project.build.directory}/${prompt-decorator.name}_${prompt-decorator.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.prompt-template-${prompt-template.version}-distribution.zip"
-                                       dest="${project.build.directory}/prompt-template"/>
-                                <move file="${project.build.directory}/prompt-template/artifact.j2"
-                                      tofile="${project.build.directory}/${prompt-template.name}_${prompt-template.policy.version}.j2" />
-                                <move file="${project.build.directory}/prompt-template/policy-definition.json"
-                                      tofile="${project.build.directory}/${prompt-template.name}_${prompt-template.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.prompt-template-${prompt-template.version}-distribution.zip" dest="${project.build.directory}/prompt-template" />
+                                <move file="${project.build.directory}/prompt-template/artifact.j2" tofile="${project.build.directory}/${prompt-template.name}_${prompt-template.policy.version}.j2" />
+                                <move file="${project.build.directory}/prompt-template/policy-definition.json" tofile="${project.build.directory}/${prompt-template.name}_${prompt-template.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-prompt-guard-${semantic-prompt-guard.version}-distribution.zip"
-                                       dest="${project.build.directory}/semantic-prompt-guard"/>
-                                <move file="${project.build.directory}/semantic-prompt-guard/artifact.j2"
-                                      tofile="${project.build.directory}/${semantic-prompt-guard.name}_${semantic-prompt-guard.policy.version}.j2" />
-                                <move file="${project.build.directory}/semantic-prompt-guard/policy-definition.json"
-                                      tofile="${project.build.directory}/${semantic-prompt-guard.name}_${semantic-prompt-guard.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-prompt-guard-${semantic-prompt-guard.version}-distribution.zip" dest="${project.build.directory}/semantic-prompt-guard" />
+                                <move file="${project.build.directory}/semantic-prompt-guard/artifact.j2" tofile="${project.build.directory}/${semantic-prompt-guard.name}_${semantic-prompt-guard.policy.version}.j2" />
+                                <move file="${project.build.directory}/semantic-prompt-guard/policy-definition.json" tofile="${project.build.directory}/${semantic-prompt-guard.name}_${semantic-prompt-guard.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.sentence-count-guardrail-${sentence-count-guardrail.version}-distribution.zip"
-                                       dest="${project.build.directory}/sentence-count-guardrail"/>
-                                <move file="${project.build.directory}/sentence-count-guardrail/artifact.j2"
-                                      tofile="${project.build.directory}/${sentence-count-guardrail.name}_${sentence-count-guardrail.policy.version}.j2" />
-                                <move file="${project.build.directory}/sentence-count-guardrail/policy-definition.json"
-                                      tofile="${project.build.directory}/${sentence-count-guardrail.name}_${sentence-count-guardrail.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.sentence-count-guardrail-${sentence-count-guardrail.version}-distribution.zip" dest="${project.build.directory}/sentence-count-guardrail" />
+                                <move file="${project.build.directory}/sentence-count-guardrail/artifact.j2" tofile="${project.build.directory}/${sentence-count-guardrail.name}_${sentence-count-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/sentence-count-guardrail/policy-definition.json" tofile="${project.build.directory}/${sentence-count-guardrail.name}_${sentence-count-guardrail.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.url-guardrail-${url-guardrail.version}-distribution.zip"
-                                       dest="${project.build.directory}/url-guardrail"/>
-                                <move file="${project.build.directory}/url-guardrail/artifact.j2"
-                                      tofile="${project.build.directory}/${url-guardrail.name}_${url-guardrail.policy.version}.j2" />
-                                <move file="${project.build.directory}/url-guardrail/policy-definition.json"
-                                      tofile="${project.build.directory}/${url-guardrail.name}_${url-guardrail.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.url-guardrail-${url-guardrail.version}-distribution.zip" dest="${project.build.directory}/url-guardrail" />
+                                <move file="${project.build.directory}/url-guardrail/artifact.j2" tofile="${project.build.directory}/${url-guardrail.name}_${url-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/url-guardrail/policy-definition.json" tofile="${project.build.directory}/${url-guardrail.name}_${url-guardrail.policy.version}.json" />
 
-                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.word-count-guardrail-${word-count-guardrail.version}-distribution.zip"
-                                       dest="${project.build.directory}/word-count-guardrail"/>
-                                <move file="${project.build.directory}/word-count-guardrail/artifact.j2"
-                                      tofile="${project.build.directory}/${word-count-guardrail.name}_${word-count-guardrail.policy.version}.j2" />
-                                <move file="${project.build.directory}/word-count-guardrail/policy-definition.json"
-                                      tofile="${project.build.directory}/${word-count-guardrail.name}_${word-count-guardrail.policy.version}.json" />
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.word-count-guardrail-${word-count-guardrail.version}-distribution.zip" dest="${project.build.directory}/word-count-guardrail" />
+                                <move file="${project.build.directory}/word-count-guardrail/artifact.j2" tofile="${project.build.directory}/${word-count-guardrail.name}_${word-count-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/word-count-guardrail/policy-definition.json" tofile="${project.build.directory}/${word-count-guardrail.name}_${word-count-guardrail.policy.version}.json" />
                             </target>
                         </configuration>
                         <goals><goal>run</goal></goals>
