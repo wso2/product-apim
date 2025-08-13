@@ -1530,6 +1530,7 @@
         <sentence-count-guardrail.version>1.0.0</sentence-count-guardrail.version>
         <url-guardrail.version>1.0.0</url-guardrail.version>
         <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
+        <semantic-cache.version>1.0.0</semantic-cache.version>
 
         <!-- AM Policy Names -->
         <regex-guardrail.name>RegexGuardrail</regex-guardrail.name>
@@ -1544,6 +1545,7 @@
         <sentence-count-guardrail.name>SentenceCountGuardrail</sentence-count-guardrail.name>
         <url-guardrail.name>URLGuardrail</url-guardrail.name>
         <word-count-guardrail.name>WordCountGuardrail</word-count-guardrail.name>
+        <semantic-cache.name>SemanticCache</semantic-cache.name>
 
         <!-- AM Policy Versions -->
         <regex-guardrail.policy.version>v1.0</regex-guardrail.policy.version>
@@ -1558,6 +1560,7 @@
         <sentence-count-guardrail.policy.version>v1.0</sentence-count-guardrail.policy.version>
         <url-guardrail.policy.version>v1.0</url-guardrail.policy.version>
         <word-count-guardrail.policy.version>v1.1</word-count-guardrail.policy.version>
+        <semantic-cache.policy.version>v1.0</semantic-cache.policy.version>
     </properties>
 
 </project>
