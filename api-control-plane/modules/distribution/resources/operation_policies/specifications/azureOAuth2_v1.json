@@ -1,0 +1,26 @@
+{
+  "category": "Security",
+  "name": "azureOAuth2",
+  "version": "v1",
+  "displayName": "Set Azure OAuth",
+  "description": "This policy allows the user to configure OAuth2 for an Azure API",
+  "policyAttributes": [
+    {
+      "name": "openIdURL",
+      "displayName": "OpenID URL",
+      "description": "OpenID URL for validating OAuth2 tokens",
+      "validationRegex": "(.*?)",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Azure"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
