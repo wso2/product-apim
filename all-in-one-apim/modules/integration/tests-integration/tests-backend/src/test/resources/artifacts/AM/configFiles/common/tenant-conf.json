@@ -396,6 +396,34 @@
       {
         "Name": "apim:gov_policy_read",
         "Roles": "admin,Internal/publisher,Internal/creator"
+      },
+      {
+        "Name": "apim:mcp_server_create",
+        "Roles": "admin,Internal/creator"
+      },
+      {
+        "Name": "apim:mcp_server_manage",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:mcp_server_view",
+        "Roles": "admin,Internal/publisher,Internal/creator,Internal/analytics,Internal/observer"
+      },
+      {
+        "Name": "apim:mcp_server_list_view",
+        "Roles": "admin,Internal/integration_dev"
+      },
+      {
+        "Name": "apim:mcp_server_import_export",
+        "Roles": "admin,Internal/devops"
+      },
+      {
+        "Name": "apim:mcp_server_publish",
+        "Roles": "admin,Internal/publisher"
+      },
+      {
+        "Name": "apim:mcp_server_delete",
+        "Roles": "admin,Internal/creator"
       }
     ]
   },
