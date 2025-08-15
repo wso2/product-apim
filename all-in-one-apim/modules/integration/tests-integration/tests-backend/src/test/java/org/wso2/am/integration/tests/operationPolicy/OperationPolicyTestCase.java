@@ -80,6 +80,7 @@ import javax.xml.xpath.XPathExpressionException;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
@@ -90,6 +91,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
     private final String API_CONTEXT = "AddNewPolicyAndInvokeAPI";
     private final String API_END_POINT_POSTFIX_URL = "xmlapi";
     private final String POLICY_TYPE_COMMON = "common";
+    private final String POLICY_WITH_SECRETS = "AddSecretHeaders";
 
     private final String TEST_POLICY_NAME = "customCommonLogPolicy";
 
@@ -109,6 +111,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
     private String applicationId;
     private String apiId;
     private String newVersionAPIId;
+    private String newVersionIdOfAPIWithSecretPolicy;
     private String accessToken;
     private Map<String, String> policyMap;
 
@@ -697,14 +700,186 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         policyMap.remove("customCommonLogPolicyYAML");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Add API specific operation policy with secret attributes",
+            dependsOnMethods = "testDeleteCommonOperationPolicyYAML")
+    public void testAddAPISpecificOperationPolicyWithSecrets() throws Exception {
+        HttpResponse addPolicyResponse = addPolicy(apiId, "addSecretHeadersPolicy.json", "addSecretHeadersPolicy.j2");
+        assertNotNull(addPolicyResponse, "Error adding operation policy addSecretHeadersPolicy");
+        assertEquals(addPolicyResponse.getResponseCode(), 201, "Response code mismatched");
+
+        OperationPolicyDataDTO policyDTO =
+                new Gson().fromJson(addPolicyResponse.getData(), OperationPolicyDataDTO.class);
+        String newPolicyId = policyDTO.getId();
+        assertNotNull(newPolicyId, "Policy Id is null");
+
+        Map<String, String> apiSpecificPolicyMap = restAPIPublisher.getAllAPISpecificOperationPolicies(apiId);
+        assertNotNull(apiSpecificPolicyMap.get(POLICY_WITH_SECRETS),
+                "Unable to find the newly added API specific policy with secrets");
+        policyMap.put(POLICY_WITH_SECRETS, newPolicyId);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test API before attaching secret policy",
+            dependsOnMethods = "testAddAPISpecificOperationPolicyWithSecrets")
+    public void testAPIBeforeAttachingPolicyWithSecretAttributes() throws Exception {
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
+        assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Invocation fails for GET request");
+        assertEquals(invokeAPIResponse.getHeaders("apiKey").length, 0);
+        assertEquals(invokeAPIResponse.getHeaders("token").length, 0);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test API after attaching policy with secret attributes",
+            dependsOnMethods = "testAPIBeforeAttachingPolicyWithSecretAttributes")
+    public void testAPIAfterAttachingPolicyWithSecretAttributes() throws Exception {
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        assertNotNull(policyMap.get(POLICY_WITH_SECRETS), "Unable to find policy with name " + POLICY_WITH_SECRETS);
+
+        Map<String, Object> attributeMap = new HashMap<>();
+        attributeMap.put("apiKey", "test-api-key-123"); // Set the mandatory secret value
+        attributeMap.put("token", ""); // Keeping the optional value empty
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(getPolicyList(POLICY_WITH_SECRETS, POLICY_TYPE_COMMON, policyMap, attributeMap));
+        apiOperationPoliciesDTO.setResponse(getPolicyList(POLICY_WITH_SECRETS, POLICY_TYPE_COMMON, policyMap, attributeMap));
+        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+
+        restAPIPublisher.updateAPI(apidto);
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
+        assertEquals(invokeAPIResponse.getHeaders("apiKey")[0].getValue(), "test-api-key-123");
+        assertEquals(invokeAPIResponse.getHeaders("token")[0].getValue(), "");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test secret policy attribute retrieval",
+            dependsOnMethods = "testAPIAfterAttachingPolicyWithSecretAttributes")
+    public void testRetrievePolicyWithSecretAttributes() throws Exception {
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        APIOperationPoliciesDTO policies = apidto.getOperations().get(0).getOperationPolicies();
+        Map<String, Object> parameters = policies.getRequest().get(0).getParameters();
+
+        // Verify that secret values are not returned
+        assertEquals(parameters.get("apiKey"), "");
+        assertNull(parameters.get("token"));
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test updating secret policy attributes with preserve option",
+            dependsOnMethods = "testRetrievePolicyWithSecretAttributes")
+    public void testUpdatePolicyWithSecretAttributes() throws Exception {
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        Map<String, Object> attributeMap = new HashMap<>();
+        attributeMap.put("apiKey", "");  // Empty value should preserve existing secret
+        attributeMap.put("token", "");
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(getPolicyList(POLICY_WITH_SECRETS, POLICY_TYPE_COMMON, policyMap, attributeMap));
+        apiOperationPoliciesDTO.setResponse(getPolicyList(POLICY_WITH_SECRETS, POLICY_TYPE_COMMON, policyMap, attributeMap));
+
+        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+        restAPIPublisher.updateAPI(apidto);
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Values should remain unchanged
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
+        assertEquals(invokeAPIResponse.getHeaders("apiKey")[0].getValue(), "test-api-key-123");
+        assertEquals(invokeAPIResponse.getHeaders("token")[0].getValue(), "");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test version creation with secret policy attributes",
+            dependsOnMethods = "testUpdatePolicyWithSecretAttributes")
+    public void testVersionCreationWithPolicyWithSecretAttributes() throws Exception {
+        String newVersion = "3.0.0";
+        HttpResponse newVersionResponse = restAPIPublisher.copyAPI(newVersion, apiId, null);
+        assertEquals(newVersionResponse.getResponseCode(), HttpStatus.SC_OK, "Response Code Mismatch");
+        newVersionIdOfAPIWithSecretPolicy = newVersionResponse.getData();
+
+        // Check if policies with secret attributes are preserved in the new version
+        HttpResponse getNewAPIResponse = restAPIPublisher.getAPI(newVersionIdOfAPIWithSecretPolicy);
+        APIDTO apidto = new Gson().fromJson(getNewAPIResponse.getData(), APIDTO.class);
+
+        Assert.assertNotNull(apidto.getOperations().get(0).getOperationPolicies(),
+                "Operation policies not found in the new version");
+        Assert.assertNotNull(apidto.getOperations().get(0).getOperationPolicies().getRequest(),
+                "Request operation policies not found in the new version");
+
+        // Deploy and publish API
+        createAPIRevisionAndDeployUsingRest(newVersionIdOfAPIWithSecretPolicy, restAPIPublisher);
+        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(
+                newVersionIdOfAPIWithSecretPolicy, APILifeCycleAction.PUBLISH.getAction(), null);
+        assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to publish new version " + newVersionIdOfAPIWithSecretPolicy);
+        waitForAPIDeployment();
+        subscribeToAPIUsingRest(newVersionIdOfAPIWithSecretPolicy, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
+
+        // Invoke the API to check if secret values are preserved
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(newVersion);
+        assertEquals(invokeAPIResponse.getHeaders("apiKey")[0].getValue(), "test-api-key-123");
+        assertEquals(invokeAPIResponse.getHeaders("token")[0].getValue(), "");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Delete API specific operation policy with secret attributes",
+            dependsOnMethods = "testVersionCreationWithPolicyWithSecretAttributes")
+    public void testDeleteAPISpecificOperationPolicyWithSecrets() throws Exception {
+        String secretPolicyId = policyMap.get(POLICY_WITH_SECRETS);
+        assertNotNull(secretPolicyId, "Secret policy ID not found");
+
+        // First, remove the policy from the API
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        // Clear the operation policies
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(new ArrayList<>());
+        apiOperationPoliciesDTO.setResponse(new ArrayList<>());
+
+        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+
+        // Update the API without the policy
+        restAPIPublisher.updateAPI(apidto);
+
+        // Create revision and deploy to apply changes
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Delete the policy
+        int responseCode = deleteOperationPolicy(secretPolicyId, apiId);
+        assertEquals(responseCode, 200, "Failed to delete API specific policy with secret attributes");
+
+        // Verify the policy is deleted
+        Map<String, String> updatedAPISpecificPolicyMap = restAPIPublisher.getAllAPISpecificOperationPolicies(apiId);
+        assertNull(updatedAPISpecificPolicyMap.get(POLICY_WITH_SECRETS),
+                "Secret header policy was not deleted successfully");
+        policyMap.remove(POLICY_WITH_SECRETS);
+
+        // Verify policy is no longer applied
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
+        assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Invocation fails for GET request");
+        assertEquals(invokeAPIResponse.getHeaders("apiKey").length, 0,
+                "apiKey header still exists after policy deletion");
+        assertEquals(invokeAPIResponse.getHeaders("token").length, 0,
+                "token header still exists after policy deletion");
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(newVersionAPIId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(newVersionIdOfAPIWithSecretPolicy, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newVersionAPIId);
+        restAPIPublisher.deleteAPI(newVersionIdOfAPIWithSecretPolicy);
     }
 
     public HttpResponse addPolicy(String apiId, String policySpecName, String policyDefinitionName)
