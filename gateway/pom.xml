@@ -1517,6 +1517,7 @@
         <sentence-count-guardrail.version>1.0.0</sentence-count-guardrail.version>
         <url-guardrail.version>1.0.0</url-guardrail.version>
         <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
+        <semantic-cache.version>1.0.0</semantic-cache.version>
     </properties>
 
 </project>

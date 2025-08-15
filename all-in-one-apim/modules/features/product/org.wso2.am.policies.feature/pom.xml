@@ -39,6 +39,12 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.semantic-cache</artifactId>
+            <version>${semantic-cache.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
             <artifactId>org.wso2.am.policies.mediation.ai.aws-bedrock-guardrail</artifactId>
             <version>${aws-bedrock-guardrail.version}</version>
             <type>jar</type>
@@ -138,6 +144,7 @@
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.sentence-count-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.url-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.word-count-guardrail</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-cache</bundleDef>
                             </bundles>
                         </configuration>
                     </execution>
@@ -252,6 +259,14 @@
                                     <classifier>distribution</classifier>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.semantic-cache</artifactId>
+                                    <version>${semantic-cache.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -314,6 +329,10 @@
                                 <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.word-count-guardrail-${word-count-guardrail.version}-distribution.zip" dest="${project.build.directory}/word-count-guardrail" />
                                 <move file="${project.build.directory}/word-count-guardrail/artifact.j2" tofile="${project.build.directory}/${word-count-guardrail.name}_${word-count-guardrail.policy.version}.j2" />
                                 <move file="${project.build.directory}/word-count-guardrail/policy-definition.json" tofile="${project.build.directory}/${word-count-guardrail.name}_${word-count-guardrail.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-cache-${semantic-cache.version}-distribution.zip" dest="${project.build.directory}/semantic-cache" />
+                                <move file="${project.build.directory}/semantic-cache/artifact.j2" tofile="${project.build.directory}/${semantic-cache.name}_${semantic-cache.policy.version}.j2" />
+                                <move file="${project.build.directory}/semantic-cache/policy-definition.json" tofile="${project.build.directory}/${semantic-cache.name}_${semantic-cache.policy.version}.json" />
                             </target>
                         </configuration>
                         <goals><goal>run</goal></goals>

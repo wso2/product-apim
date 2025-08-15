@@ -103,6 +103,12 @@
             <version>${word-count-guardrail.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.semantic-cache</artifactId>
+            <version>${semantic-cache.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -138,6 +144,7 @@
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.sentence-count-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.url-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.word-count-guardrail</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-cache</bundleDef>
                             </bundles>
                         </configuration>
                     </execution>
