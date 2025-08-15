@@ -1516,6 +1516,7 @@
         <!-- External Gateway Agent Versions -->
         <aws.gwmanager.feature.version>1.1.0</aws.gwmanager.feature.version>
         <azure.gwmanager.feature.version>0.1.0</azure.gwmanager.feature.version>
+        <kong.gwmanager.feature.version>0.1.0</kong.gwmanager.feature.version>
 
         <!-- AM Policy Bundle Versions -->
         <regex-guardrail.version>1.0.0</regex-guardrail.version>

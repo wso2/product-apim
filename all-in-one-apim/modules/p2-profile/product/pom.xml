@@ -698,6 +698,11 @@
                                     org.wso2.gw.ext:azure.gw.manager.feature:${azure.gwmanager.feature.version}
                                 </featureArtifactDef>
 
+                                <!-- Kong Gateway Agent Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.gw.ext:kong.gw.manager.feature:${kong.gwmanager.feature.version}
+                                </featureArtifactDef>
+
                                 <!-- AM Policies Feature -->
                                 <featureArtifactDef>
                                     org.wso2.am:org.wso2.am.policies.feature:${apimserver.version}
@@ -1558,6 +1563,11 @@
                                     <version>${azure.gwmanager.feature.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>kong.gw.manager.feature.group</id>
+                                    <version>${kong.gwmanager.feature.version}</version>
+                                </feature>
+
                                 <!-- AM Policy Feature -->
                                 <feature>
                                     <id>org.wso2.am.policies.feature.group</id>
@@ -2201,6 +2211,10 @@
                                 <feature>
                                     <id>azure.gw.manager.feature.group</id>
                                     <version>${azure.gwmanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>kong.gw.manager.feature.group</id>
+                                    <version>${kong.gwmanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>
