@@ -1514,7 +1514,7 @@
         <identity.branding.preference.management.version>1.0.17</identity.branding.preference.management.version>
 
         <!-- External Gateway Agent Versions -->
-        <aws.gwmanager.feature.version>1.1.0</aws.gwmanager.feature.version>
+        <aws.gwmanager.feature.version>1.2.1</aws.gwmanager.feature.version>
         <azure.gwmanager.feature.version>0.2.0</azure.gwmanager.feature.version>
         <kong.gwmanager.feature.version>0.2.0</kong.gwmanager.feature.version>
 
