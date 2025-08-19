@@ -27,11 +27,26 @@
 
         #macro ( draw_endpoint $type $endpoint )
         #if($endpoint.endpointSecurityEnabled)
-<class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
-    <property name="apiKeyIdentifier" value="${endpoint.apiKeyIdentifier}" type="STRING"/>
-    <property name="apiKeyIdentifierType" value="${endpoint.apiKeyIdentifierType}" type="STRING"/>
-    <property name="apiKeyValue" value="${endpoint.apiKeyValue}" type="STRING"/>
+        #if($endpoint.authenticationType == "aws" || $endpoint.authenticationType == "AWS")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.AWSSigV4Signer">
+    <property name="accessKey" value="$util.escapeXml($endpoint.accessKey)" type="STRING"/>
+    <property name="secretKey" value="$util.escapeXml($endpoint.secretKey)" type="STRING"/>
+    <property name="region" value="$util.escapeXml($endpoint.region)" type="STRING"/>
+    <property name="service" value="$util.escapeXml($endpoint.service)" type="STRING"/>
+    <property name="endpoint" value="$util.escapeXml($endpoint.endpoint)" type="STRING"/>
 </class>
+        #end
+        #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
+<!-- <property name="apiKeyIdentifier" value="$endpoint.apiKeyIdentifier" type="STRING"/> -->
+<property name="apiKeyIdentifierType" value="$util.escapeXml($endpoint.apiKeyIdentifierType)" type="STRING"/>
+#if($isSecureVaultEnabled)
+<property name="apiKeyValue" expression="wso2:vault-lookup('$endpoint.apiKeyValue')" type="STRING"/>
+#else
+<property name="apiKeyValue" value="$util.escapeXml($endpoint.apiKeyValue)" type="STRING"/>
+#end
+</class>
+        #end
         #end
 
         #if( $endpoint && $endpoint.endpointUuid )
@@ -54,34 +69,34 @@
 <sequence xmlns="http://ws.apache.org/ns/synapse" name="${endpointKey}_EndpointsSeq${deploymentStage}">
 #if( $defaultEndpoint )
 <filter xpath="$ctx:retryCount > $retryCount">
-<then>
-    #fail_scenario
-</then>
-<else>
-    <property name="retryCount" expression="get-property('default','retryCount') + 1" scope="default"/>
-<switch source="get-property('TARGET_ENDPOINT')">
-    #foreach( $endpoint in $!endpoints )
-    <case regex="$endpoint.endpointUuid">
-        #draw_endpoint($type, $endpoint)
-    </case>
-    #end
-    <case regex="DEFAULT">
-        #draw_endpoint($type, $defaultEndpoint)
-    </case>
-    <case regex="REJECT">
+    <then>
         #fail_scenario
-    </case>
-    <case regex="EXIT">
-        <loopback/>
-    </case>
-</switch>
-<property name="retryCount" expression="get-property('default','retryCount') + 1" scope="default" action="set"/>
-<class name="org.wso2.carbon.apimgt.gateway.mediators.AIAPIMediator">
-    <property name="llmProviderId" expression="get-property('default','llmProviderId')" type="STRING"/>
-    <property name="direction" value="OUT" type="STRING"/>
-</class>
-<sequence key="${endpointKey}_EndpointsSeq${deploymentStage}" />
-</else>
+    </then>
+    <else>
+        <property name="retryCount" expression="get-property('default','retryCount') + 1" scope="default"/>
+        <switch source="get-property('TARGET_ENDPOINT')">
+            #foreach( $endpoint in $!endpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint($type, $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint($type, $defaultEndpoint)
+            </case>
+            <case regex="REJECT">
+                #fail_scenario
+            </case>
+            <case regex="EXIT">
+                <loopback/>
+            </case>
+        </switch>
+        <property name="retryCount" expression="get-property('default','retryCount') + 1" scope="default" action="set"/>
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.AIAPIMediator">
+            <property name="llmProviderId" expression="get-property('default','llmProviderId')" type="STRING"/>
+            <property name="direction" value="OUT" type="STRING"/>
+        </class>
+        <sequence key="${endpointKey}_EndpointsSeq${deploymentStage}" />
+    </else>
 </filter>
 #end
 </sequence>
