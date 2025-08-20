@@ -38,7 +38,7 @@
         #end
         #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
-<!-- <property name="apiKeyIdentifier" value="$endpoint.apiKeyIdentifier" type="STRING"/> -->
+<property name="apiKeyIdentifier" value="$endpoint.apiKeyIdentifier" type="STRING"/>
 <property name="apiKeyIdentifierType" value="$util.escapeXml($endpoint.apiKeyIdentifierType)" type="STRING"/>
 #if($isSecureVaultEnabled)
 <property name="apiKeyValue" expression="wso2:vault-lookup('$endpoint.apiKeyValue')" type="STRING"/>
