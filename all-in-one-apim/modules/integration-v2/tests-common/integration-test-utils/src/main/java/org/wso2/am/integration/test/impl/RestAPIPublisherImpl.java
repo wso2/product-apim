@@ -699,11 +699,11 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
-    public APIDTO updateAPI(APIDTO apidto, String apiId) throws ApiException {
+    public ApiResponse<APIDTO> updateAPI(APIDTO apidto, String apiId) throws ApiException {
 
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.updateAPIWithHttpInfo(apiId, apidto, null);
-        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
-        return apiDtoApiResponse.getData();
+        return apIsApi.updateAPIWithHttpInfo(apiId, apidto, null);
+//        Assert.assertEquals(apiDtoApiResponse.getStatusCode(), HttpStatus.SC_OK);
+//        return apiDtoApiResponse.getData();
     }
 
     /**

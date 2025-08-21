@@ -1,0 +1,33 @@
+{
+  "name": "APIMTest4",
+  "context": "apiTestContext4",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "This is Test API Created by API Manager Integration Test",
+  "tags": "tag18-1, tag18-2, tag18-3",
+  "tiersCollection": "Gold,Bronze",
+  "tier": "Gold",
+  "businessOwner": "api18b",
+  "businessOwnerEmail": "api18b@ee.com",
+  "technicalOwner": "api18t",
+  "technicalOwnerEmail": "api18t@ww.com",
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}"
+    }
+  ],
+  "isDefaultVersion": true
+}

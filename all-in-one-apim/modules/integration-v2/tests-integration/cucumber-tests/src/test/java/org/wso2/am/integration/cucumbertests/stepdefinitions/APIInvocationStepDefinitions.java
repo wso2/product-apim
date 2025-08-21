@@ -1,14 +1,19 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.commons.io.IOUtils;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.cucumbertests.TestContext;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,9 +51,19 @@ public class APIInvocationStepDefinitions {
         headers.put("Content-Type", "text/xml");
 
         HttpResponse response = HTTPSClientUtils.doPost(apiUrl, headers, xmlBody);
-        context.set("invokeAPIResponse", response);
+        context.set("httpResponse", response);
     }
 
+    @When("I get the generated access token from file {string}")
+    public void i_get_the_generated_access_token_from_file(String accessTokenFilePath) throws Exception {
+        String jsonContent = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(accessTokenFilePath),
+                StandardCharsets.UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> accessTokensMap = objectMapper.readValue(jsonContent,
+                new TypeReference<>() {});
+        context.set("generatedAccessToken", accessTokensMap.get(System.getenv(Constants.API_MANAGER_DATABASE_TYPE)));
+
+    }
 
     @When("I invoke API of ID {string} with path {string} and method GET using access token {string}")
     public void i_invoke_api_with_accessToken(String apiId, String path, String accessToken) throws Exception {
@@ -64,7 +79,7 @@ public class APIInvocationStepDefinitions {
         headers.put("Authorization", "Bearer " + actualAccessToken);
 
         HttpResponse response = HTTPSClientUtils.doGet(apiUrl, headers);
-        context.set("invokeAPIResponse", response);
+        context.set("httpResponse", response);
     }
 
     @When("I invoke API of ID {string} with path {string} and method GET using access token {string} and header {string}")
@@ -81,7 +96,7 @@ public class APIInvocationStepDefinitions {
         headers.put(headerName, "Bearer " + token);
 
         HttpResponse response = HTTPSClientUtils.doGet(apiUrl, headers);
-        context.set("invokeAPIResponse", response);
+        context.set("httpResponse", response);
     }
 
     @When("I invoke API of ID {string} with path {string} and method GET using API key {string} and header {string}")
@@ -98,15 +113,9 @@ public class APIInvocationStepDefinitions {
         headers.put(headerName, key);
 
         HttpResponse response = HTTPSClientUtils.doGet(apiUrl, headers);
-        context.set("invokeAPIResponse", response);
+        context.set("httpResponse", response);
     }
 
-
-    @Then("the API response status should be {int}")
-    public void the_api_response_status_should_be(int expectedStatus) {
-        HttpResponse response = (HttpResponse) context.get("invokeAPIResponse");
-        Assert.assertEquals(response.getResponseCode(), expectedStatus, response.toString());
-    }
 
     private String resolveFromContext(String input) {
         if (input.startsWith("<") && input.endsWith(">")) {

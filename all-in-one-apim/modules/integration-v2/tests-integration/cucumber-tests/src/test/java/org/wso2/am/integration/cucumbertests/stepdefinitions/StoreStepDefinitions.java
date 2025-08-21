@@ -264,6 +264,12 @@ public class StoreStepDefinitions {
         store.deleteApplication(actualAppId);
     }
 
+    @When("I delete the subscription with id {string}")
+    public void i_delete_subscription(String subscriptionId) throws Exception {
+        String actualSubscriptionId = resolveFromContext(subscriptionId);
+        store.removeSubscriptionWithHttpInfo(actualSubscriptionId);
+    }
+
     private String resolveFromContext(String input) {
         if (input.startsWith("<") && input.endsWith(">")) {
             return (String) context.get(input.substring(1, input.length() - 1));

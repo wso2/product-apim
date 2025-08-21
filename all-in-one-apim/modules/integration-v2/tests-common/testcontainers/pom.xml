@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.wso2.am</groupId>
-        <artifactId>apim-test-framework-testcontainers</artifactId>
+        <artifactId>integration-v2</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
@@ -49,7 +49,7 @@
                                 <argument>build</argument>
                                 <argument>-t</argument>
                                 <argument>node-customer-service:latest</argument>
-                                <argument>${project.basedir}/src/main/resources/nodeapps/node-customer-service</argument>
+                                <argument>${project.basedir}/src/main/resources/nodeapps</argument>
                             </arguments>
                         </configuration>
                     </execution>

@@ -40,7 +40,7 @@ public class Constants {
     public static final String PROVIDER_ADMIN = "admin";
     public static final String PROTOCOL_HTTP = "http";
     public static final String PROTOCOL_HTTPS = "https";
-    public static final String GATEWAY_ENVIRONMENT = "Default";
+    public static final String GATEWAY_ENVIRONMENT = "Production and Sandbox"; //"Default";
     public static final String SOLACE_GATEWAY_ENVIRONMENT = "solace";
     public static final String WSO2_GATEWAY_ENVIRONMENT = "wso2";
     public static final String APPLICATION_JSON = "application/json";
@@ -63,4 +63,11 @@ public class Constants {
     public static final String BANDWIDTH_TYPE = "bandwidthVolume";
     public static final String REQUEST_COUNT_TYPE = "requestCount";
     public static final String EVENT_COUNT_TYPE = "eventCount";
+
+    public static final String REPOSITORY_ROOT =  "product-apim";
+    public static final String API_MANAGER_DATABASE_TYPE = "API_MANAGER_DATABASE_TYPE";
+    public static final String DOCKER_IMAGE = "openjdk:11-jre-slim";
+
+    public static final String API_MANAGER_DIR = "/src/main/resources/apim/wso2am-4.5.0";
+    public static final String TOML_PATH = "/opt/repository/conf/deployment.toml";
 }

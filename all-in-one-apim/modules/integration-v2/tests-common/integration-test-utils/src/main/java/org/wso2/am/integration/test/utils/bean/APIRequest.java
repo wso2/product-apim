@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.test.utils.bean;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -68,7 +69,10 @@ public class APIRequest extends AbstractRequest {
     private String roles = "";
     private String wsdl = "";
     private String default_version = "";
+
+    @JsonProperty("isDefaultVersion")
     private String default_version_checked = "";
+
     private String sandbox = "";
     private String provider = "admin";
     private JSONObject corsConfiguration;
@@ -85,6 +89,9 @@ public class APIRequest extends AbstractRequest {
     private List<String> keyManagers;
     private String subscriptionAvailability;
     private String gatewayType;
+
+    @JsonProperty("operations")
+    private List<APIOperationsDTO> operationsDTOS;
 
     public String getGatewayType() {
         return gatewayType;
@@ -132,8 +139,6 @@ public class APIRequest extends AbstractRequest {
         this.operationsDTOS = operationsDTOS;
     }
 
-    private List<APIOperationsDTO> operationsDTOS;
-
     public String getEnvironment() {
         return environment;
     }
@@ -174,6 +179,13 @@ public class APIRequest extends AbstractRequest {
     public void setKeyManagers(List<String> keyManagers) {
 
         this.keyManagers = keyManagers;
+    }
+
+    /**
+     * Default constructor for APIRequest.
+     * This constructor is required by Jackson for deserialization from JSON.
+     */
+    public APIRequest() {
     }
 
     /**
@@ -523,6 +535,10 @@ public class APIRequest extends AbstractRequest {
 
     public org.json.simple.JSONObject getEndpointConfig() {
         return endpoint;
+    }
+
+    public void setEndpointConfig(org.json.simple.JSONObject endpoint) {
+        this.endpoint = endpoint;
     }
 
     public String getContext() {
