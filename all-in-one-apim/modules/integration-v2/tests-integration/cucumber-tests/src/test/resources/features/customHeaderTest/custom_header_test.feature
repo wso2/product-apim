@@ -11,12 +11,12 @@ Feature: Custom Header Authorization and API Key Support
       | description      | Test app for scenarios |
 
     And I create an API with the following details
-      | name                | CustomerServiceAPI                                  |
-      | context             | /jaxrs                                              |
-      | version             | 1.0.0                                               |
-      | apiEndpointURL      | jaxrs_basic/services/customers/customerservice/     |
-      | tiersCollection     | Gold,Bronze,Unlimited                               |
-      | tier                | Gold                                                |
+      | name                | CustomerServiceAPI                                                          |
+      | context             | /jaxrs                                                                      |
+      | version             | 1.0.0                                                                       |
+      | apiEndpointURL      | http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/     |
+      | tiersCollection     | Gold,Bronze,Unlimited                                                       |
+      | tier                | Gold                                                                        |
 
     And I update API of id "<createdApiId>" with the following details
 
@@ -40,25 +40,25 @@ Feature: Custom Header Authorization and API Key Support
     When I generate client credentials for application id "<createdAppId>" with key type "PRODUCTION"
     And I request an access token using grant type "client_credentials" without any scope
     And I invoke API of ID "<createdApiId>" with path "/customers/123" and method GET using access token "<generatedAccessToken>" and header "Test-Custom-Header"
-    Then the API response status should be 200
+    Then The response status code should be 200
     When I invoke API of ID "<createdApiId>" with path "/customers/123" and method GET using access token "<generatedAccessToken>" and header "Authorization"
-    Then the API response status should be 401
+    Then The response status code should be 401
 
 #  Invoke API with default API Key header
     When I generate an API key for application "<createdAppId>"
     And I invoke API of ID "<createdApiId>" with path "/customers/123" and method GET using API key "<generatedApiKey>" and header "ApiKey"
-    Then the API response status should be 200
+    Then The response status code should be 200
     When I invoke API of ID "<createdApiId>" with path "/customers/123" and method GET using API key "<generatedApiKey>" and header "Custom-ApiKey-Header"
-    Then the API response status should be 401
+    Then The response status code should be 401
 
 #  Invoke API with custom API Key header
     When I update the API with id "<createdApiId>" to use API key header "Custom-ApiKey-Header"
     And I deploy a revision of the API with id "<createdApiId>"
     And I generate an API key for application "<createdAppId>"
     And I invoke API of ID "<createdApiId>" with path "/customers/123" and method GET using API key "<generatedApiKey>" and header "Custom-ApiKey-Header"
-    Then the API response status should be 200
+    Then The response status code should be 200
     When I invoke API of ID "<createdApiId>" with path "/customers/123" and method GET using API key "<generatedApiKey>" and header "ApiKey"
-    Then the API response status should be 401
+    Then The response status code should be 401
 
     Then I stop the Custom API Manager container
     Then I clear the context
