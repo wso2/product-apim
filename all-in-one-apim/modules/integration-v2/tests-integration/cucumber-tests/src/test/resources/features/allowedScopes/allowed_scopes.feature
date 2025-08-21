@@ -9,14 +9,27 @@
 #    And I initialize the Store REST API client with username "admin", password "admin" and tenant "carbon.super"
 #
 #  Scenario: Create an API with allowed scopes and invoke it based on scopes
-#    When I create an API with name "allowedScopesAPI", context "allowedScopesAPI" and version "1.0.0"
+##    When I create an API with name "allowedScopesAPI", context "allowedScopesAPI" and version "1.0.0"
+#    And I create an API with the following details
+#      | name         | allowedScopesAPI    |
+#      | context      | allowedScopesAPI    |
+#      | version      | 1.0.0               |
 #    And I create scope "some_random_scope" with roles "admin"
 #    And I create scope "scope2" with roles "admin"
-#    And I add scopes "some_random_scope,scope2" to the created API with id "<createdApiId>"
-#    And I add "/customers/{id}" operation with scopes "some_random_scope,scope2" to the created API with id "<createdApiId>"
+#    And I add scopes "some_random_scope, scope2" to the created API with id "<createdApiId>"
+#    Then the response status code should be 200
+#
+#      # Invoke API with scopes
+##    And I add "/customers/{id}" operation with scopes "some_random_scope,scope2" to the created API with id "<createdApiId>"
+##    And I deploy a revision of the API with id "<createdApiId>"
+#    And I update API of id "<createdApiId>" with the following details
+#      | operations          | [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited"}] |
 #    And I deploy a revision of the API with id "<createdApiId>"
 #    And I publish the API with id "<createdApiId>"
-#    And I create an application named "TestAppScope" with throttling tier "Unlimited"
+#    And I create an application with the following details
+#      | name             | TestAppScope            |
+#      | throttlingPolicy | Unlimited              |
+#    Then I should be able to retrieve the application with id "<createdAppId>"
 #    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with throttling policy "Gold"
 #    And I generate client credentials for application id "<createdAppId>" with key type "PRODUCTION"
 #
@@ -31,6 +44,7 @@
 #    Then the API response status should be 200
 #
 #    # Access Token with Scope 3 (not allowed)
+#   # todo: check why this is not working ( we get 200 instead of 403)
 #    And I request an access token using grant type "client_credentials" with scope "scope3"
 #    And I invoke API of ID "<createdApiId>" with path "/customers/123" and method GET using access token "<generatedAccessToken>"
 #    Then the API response status should be 403

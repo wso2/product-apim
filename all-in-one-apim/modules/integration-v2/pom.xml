@@ -17,8 +17,8 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <truststore.path>${user.dir}/truststore.jks</truststore.path>
-        <truststore.password>changeit</truststore.password>
+        <truststore.path>${user.dir}/client-truststore.jks</truststore.path>
+        <truststore.password>wso2carbon</truststore.password>
         <wso2.host>localhost</wso2.host>
         <wso2.port>9443</wso2.port>
         <skipCertificateFetch>false</skipCertificateFetch>
@@ -117,6 +117,20 @@
                         <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                         <module.dir>${project.basedir}</module.dir>
                     </systemPropertyVariables>
+                    <environmentVariables>
+                        <SHARED_DATABASE_TYPE>mysql</SHARED_DATABASE_TYPE>
+                        <SHARED_DATABASE_DRIVER>com.mysql.cj.jdbc.Driver</SHARED_DATABASE_DRIVER>
+                        <SHARED_DATABASE_URL>jdbc:mysql://host.docker.internal:3307/shared_db?allowPublicKeyRetrieval=true&amp;useSSL=false</SHARED_DATABASE_URL>
+                        <SHARED_DATABASE_USERNAME>shared_user</SHARED_DATABASE_USERNAME>
+                        <SHARED_DATABASE_PASSWORD>sharedpass</SHARED_DATABASE_PASSWORD>
+                        <SHARED_DATABASE_VALIDATION_QUERY>SELECT 1</SHARED_DATABASE_VALIDATION_QUERY>
+                        <API_MANAGER_DATABASE_TYPE>mysql</API_MANAGER_DATABASE_TYPE>
+                        <API_MANAGER_DATABASE_DRIVER>com.mysql.cj.jdbc.Driver</API_MANAGER_DATABASE_DRIVER>
+                        <API_MANAGER_DATABASE_URL>jdbc:mysql://host.docker.internal:3306/apim_db?allowPublicKeyRetrieval=true&amp;useSSL=false</API_MANAGER_DATABASE_URL>
+                        <API_MANAGER_DATABASE_USERNAME>apim_user</API_MANAGER_DATABASE_USERNAME>
+                        <API_MANAGER_DATABASE_PASSWORD>apimpass</API_MANAGER_DATABASE_PASSWORD>
+                        <API_MANAGER_DATABASE_VALIDATION_QUERY>SELECT 1</API_MANAGER_DATABASE_VALIDATION_QUERY>
+                    </environmentVariables>
                 </configuration>
             </plugin>
 
