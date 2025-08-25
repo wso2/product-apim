@@ -1,4 +1,4 @@
-<sequence name="_mcp_failure_handler" xmlns="http://ws.apache.org/ns/synapse">
+<sequence name="_mcp_failure_handler_" xmlns="http://ws.apache.org/ns/synapse">
     <payloadFactory media-type="json">
         <format>{"jsonrpc":"2.0","id":"$1","error":{"message" : "$2", "data" : "$2", "code": $3}}</format>
         <args>
