@@ -1,0 +1,19 @@
+<sequence name="_mcp_failure_handler_" xmlns="http://ws.apache.org/ns/synapse">
+    <payloadFactory media-type="json">
+        <format>{"jsonrpc":"2.0","id":"$1","error":{"message" : "$2", "data" : "$2", "code": $3}}</format>
+        <args>
+            <arg expression="$ctx:MCP_ID"/>
+            <arg expression="$ctx:ERROR_MESSAGE"/>
+            <arg expression="$ctx:MCP_ERROR_CODE"/>
+        </args>
+    </payloadFactory>
+    <property name="RESPONSE" value="true"/>
+    <header name="To" action="remove"/>
+    <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+    <property name="ContentType" scope="axis2" action="remove"/>
+    <property name="Authorization" scope="transport" action="remove"/>
+    <property name="Host" scope="transport" action="remove"/>
+    <property name="Accept" scope="transport" action="remove"/>
+    <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+    <sequence key="_cors_request_handler_"/>
+</sequence>
