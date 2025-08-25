@@ -10,7 +10,8 @@
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
       "apim.sync_runtime_artifacts.gateway.enable": "false",
-      "apim.ai.llm_provider_events_enabled": true
+      "apim.ai.llm_provider_events_enabled": true,
+      "apim.certificate_manager.events_enabled": true
     }
   },
   "apim.jwt.encoding": {
