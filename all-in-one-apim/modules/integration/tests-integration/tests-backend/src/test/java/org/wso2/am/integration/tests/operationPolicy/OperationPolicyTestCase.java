@@ -110,6 +110,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
 
     private String applicationId;
     private String apiId;
+    private String freshApiId;
     private String newVersionAPIId;
     private String newVersionIdOfAPIWithSecretPolicy;
     private String accessToken;
@@ -505,6 +506,68 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(invokeAPIResponseResource.getHeaders("TestHeader")[0].getValue(), "TestValue");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test fresh API with root path operation and operation policy")
+    public void testFreshAPIWithRootPathOperationAndOperationPolicy() throws Exception {
+
+        String freshApiName = "FreshAPIWithRootPath";
+        String freshApiContext = "freshAPIWithRootPath";
+        String freshApiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
+
+        APIRequest freshApiRequest = new APIRequest(freshApiName, freshApiContext, new URL(freshApiEndPointUrl));
+        freshApiRequest.setVersion(API_VERSION_1_0_0);
+        freshApiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        freshApiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        freshApiRequest.setTags(API_TAGS);
+
+        freshApiId = createPublishAndSubscribeToAPIUsingRest(freshApiRequest, restAPIPublisher, restAPIStore,
+                applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(freshApiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("/");
+        apiOperationsDTO.setAuthType("Application & Application User");
+        apiOperationsDTO.setThrottlingPolicy("Unlimited");
+
+        List<APIOperationsDTO> operations = new ArrayList<>();
+        operations.add(apiOperationsDTO);
+        apidto.setOperations(operations);
+
+        String policyName = "addHeader";
+        Map<String, Object> attributeMap = new HashMap<>();
+        attributeMap.put("headerName", "TestHeader");
+        attributeMap.put("headerValue", "TestValue");
+
+        List<OperationPolicyDTO> opList = getPolicyList(policyName, POLICY_TYPE_COMMON, policyMap, attributeMap);
+        opList.get(0).setPolicyVersion("v2");
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(opList);
+        apiOperationPoliciesDTO.setResponse(opList);
+        apiOperationPoliciesDTO.setFault(new ArrayList<>());
+
+        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+
+        restAPIPublisher.updateAPI(apidto);
+        createAPIRevisionAndDeployUsingRest(freshApiId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        subscribeToAPIUsingRest(freshApiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
+
+        HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
+        HttpGet request = new HttpGet(getAPIInvocationURLHttp(freshApiContext, API_VERSION_1_0_0) + "/");
+        request.setHeader("Authorization", "Bearer " + accessToken);
+        org.apache.http.HttpResponse invokeAPIResponse = client.execute(request);
+
+        assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Invocation fails for GET request to root path");
+        org.apache.http.Header[] testHeaders = invokeAPIResponse.getHeaders("TestHeader");
+        assertTrue(testHeaders.length > 0, "TestHeader not found in root path response");
+        assertEquals(testHeaders[0].getValue(), "TestValue", "TestHeader value mismatch");
+    }
+
     @Test(groups = {"wso2.am"}, description = "Validate the common operation policy clone at the update",
             dependsOnMethods = "testAPIInvocationAfterAddingNewOperationPolicy")
     public void testCommonOperationPolicyCloneToAPILevelWithUpdate() throws Exception {
@@ -877,6 +940,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(newVersionAPIId, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(newVersionIdOfAPIWithSecretPolicy, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(freshApiId, restAPIPublisher);
+        restAPIPublisher.deleteAPI(freshApiId);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newVersionAPIId);
         restAPIPublisher.deleteAPI(newVersionIdOfAPIWithSecretPolicy);
