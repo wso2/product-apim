@@ -562,6 +562,6 @@
   "apim.ai.llm_provider_events_enabled": true,
   "apim.basic_authenticator.max_idle": "100",
   "apim.basic_authenticator.init_idle_capacity": "50",
-  "apim.basic_authenticator.max_active": "200",
-  "apim.basic_authenticator.max_wait_millis": "60000"
+  "apim.basic_authenticator.max_active": "100",
+  "apim.basic_authenticator.max_wait_millis": "30000"
 }
