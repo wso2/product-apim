@@ -91,35 +91,13 @@
 <property name="retryCount" value="0" scope="default"/>
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
-
 #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
-&& !$endpoint_config.get("production_endpoints")) )
+&& !$defaultProductionEndpoint) )
 #set( $filterRegex = "SANDBOX" )
 #else
 #set( $filterRegex = "PRODUCTION" )
 #end
-#if( $endpoint_config.get("endpoint_type") == 'sequence_backend' )
-#if( $endpoint_config.get("sandbox"))
-#set( $sequenceKey = $endpoint_config.get("sandbox") )
-<filter source="$ctx:AM_KEY_TYPE" regex="SANDBOX">
-    <then>
-        <sequence key="$sequenceKey"/>
-        <loopback/>
-    </then>
-    <else/>
-</filter>
-#end
-#if( $endpoint_config.get("production"))
-#set( $sequenceKey = $endpoint_config.get("production") )
-<filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
-    <then>
-        <sequence key="$sequenceKey"/>
-        <loopback/>
-    </then>
-    <else/>
-</filter>
-#end
-#else
+#if( $endpoint_config.get("endpoint_type") == 'http' )
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #if( ($environmentType == 'sandbox') || ($environmentType == 'hybrid' && !$defaultProductionEndpoint)) )
