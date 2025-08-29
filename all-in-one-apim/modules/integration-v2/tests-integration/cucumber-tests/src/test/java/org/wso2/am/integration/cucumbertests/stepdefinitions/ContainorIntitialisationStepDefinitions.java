@@ -4,13 +4,16 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.wso2.am.integration.cucumbertests.TestContext;
 import org.wso2.am.integration.cucumbertests.UnzipUtil;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.ModulePathResolver;
 import org.wso2.am.testcontainers.*;
 import io.cucumber.datatable.DataTable;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class ContainorIntitialisationStepDefinitions {
     String baseUrl;
@@ -20,7 +23,6 @@ public class ContainorIntitialisationStepDefinitions {
     Integer HTTP_PORT=8280;
     CustomAPIMContainer customApimContainer;
     String callerModuleDir = ModulePathResolver.getModuleDir(ContainorIntitialisationStepDefinitions .class);
-
 
     private final TestContext context;
 
@@ -78,9 +80,6 @@ public class ContainorIntitialisationStepDefinitions {
     @Given("I have initialized the NodeApp server container")
     public void initializeNodeAppServerContainer() {
         NodeAppServer.getInstance();
-        serviceBaseUrl = "http://nodebackend:8080/";
-        context.set("serviceBaseUrl",serviceBaseUrl);
-
     }
 
     @Given("I have initialized test instance with the following configuration")
@@ -118,6 +117,20 @@ public class ContainorIntitialisationStepDefinitions {
     public void setRepositoryDirectoryPath(String repoPath) {
                // Save to test context (assuming TestContext is your context manager)
         context.set("repoUrl",repoPath);
+    }
+
+    @Given("The repository directory path is set to the test context")
+    public void setRepositoryDirectoryPath() {
+
+       Path repoRoot = Paths.get(System.getProperty("module.dir")).toAbsolutePath().normalize();
+
+        while (!repoRoot.endsWith(Constants.REPOSITORY_ROOT) && repoRoot.getParent() != null) {
+            repoRoot = repoRoot.getParent();
+        }
+        if (!repoRoot.endsWith(Constants.REPOSITORY_ROOT)) {
+            throw new RuntimeException("Repository root " + Constants.REPOSITORY_ROOT + " not found in path hierarchy");
+        }
+        context.set("repoUrl",repoRoot);
     }
 
     @Then("I clear the context")

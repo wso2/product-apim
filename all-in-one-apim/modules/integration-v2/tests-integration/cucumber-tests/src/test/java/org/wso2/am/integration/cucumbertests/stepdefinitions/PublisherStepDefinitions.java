@@ -6,35 +6,54 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.datatable.DataTable;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.testng.Assert;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.cucumbertests.TestContext;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PublisherStepDefinitions {
 
-    private String API_ENDPOINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_ENDPOINT_POSTFIX_URL = "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/";
 
     RestAPIPublisherImpl publisher;
     String createdDocId;
     String baseUrl;
-    String serviceBaseUrl;
 
     private final TestContext context;
 
     public PublisherStepDefinitions(TestContext testcontext) {
         this.context = testcontext;
         baseUrl = context.get("baseUrl").toString();
-        serviceBaseUrl= context.get("serviceBaseUrl").toString();
     }
 
     @When("I initialize the Publisher REST API client with username {string}, password {string} and tenant {string}")
@@ -50,15 +69,24 @@ public class PublisherStepDefinitions {
         String name = data.getOrDefault("name", "DefaultAPI");
         String contextPath = data.getOrDefault("context", "/defaultContext");
         String version = data.getOrDefault("version", "1.0.0");
-
-        String apiEndpointURL = data.getOrDefault("apiEndpointURL",API_ENDPOINT_POSTFIX_URL);
-        String apiProductionEndPointUrl = serviceBaseUrl + apiEndpointURL;
+        String apiProductionEndPointUrl = data.getOrDefault("apiEndpointURL", API_ENDPOINT_POSTFIX_URL);
         context.set("apiProductionEndPointUrl", apiProductionEndPointUrl);
 
         APIRequest apiRequest = new APIRequest(name, contextPath, new URL(apiProductionEndPointUrl));
+
         apiRequest.setVersion(version);
-        if (data.containsKey("tiersCollection")) {apiRequest.setTiersCollection(data.get("tiersCollection"));};
-        if (data.containsKey("tier")) {apiRequest.setTier(data.get("tier"));};
+        if (data.containsKey("description")) {
+            apiRequest.setDescription(data.get("description"));
+        }
+        if (data.containsKey("tags")) {
+            apiRequest.setTags(data.get("tags"));
+        }
+        if (data.containsKey("tiersCollection")) {
+            apiRequest.setTiersCollection(data.get("tiersCollection"));
+        }
+        if (data.containsKey("tier")) {
+            apiRequest.setTier(data.get("tier"));
+        }
 
         HttpResponse apiCreationResponse = publisher.addAPI(apiRequest);
 
@@ -66,8 +94,22 @@ public class PublisherStepDefinitions {
         this.context.set("createdApiId", apiId);
     }
 
+    @When("I create an API with the JSON payload from file {string}")
+    public void i_create_api_with_json_payload_from_file(String jsonFilePath) throws ApiException, IOException {
+
+        String jsonPayload = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(jsonFilePath),
+                "UTF-8");
+        ObjectMapper objectMapper = new ObjectMapper();
+        APIRequest apiRequest = objectMapper.readValue(jsonPayload, APIRequest.class);
+        HttpResponse apiCreationResponse = publisher.addAPI(apiRequest);
+        String apiId = apiCreationResponse.getData();
+        context.set("createdApiId", apiId);
+        context.set("httpResponse", apiCreationResponse);
+    }
+
+
     @When("I update API of id {string} with the following details")
-    public void i_update_api(String appId,DataTable dataTable) throws Exception {
+    public void i_update_api(String appId, DataTable dataTable) throws Exception {
         Map<String, String> data = dataTable.asMap(String.class, String.class);
         String actualApiId = resolveFromContext(appId);
         APIDTO apiDto = publisher.getAPIByID(actualApiId);
@@ -133,8 +175,42 @@ public class PublisherStepDefinitions {
             apiDto.setOperations(operationsDTOS);
         }
 
-        publisher.updateAPI(apiDto);
-        System.out.println(publisher.getAPIByID(actualApiId));
+        HttpResponse apiUpdateResponse = publisher.updateAPIWithHttpInfo(apiDto);
+        context.set("httpResponse", apiUpdateResponse);
+    }
+
+    @When("I update API of id {string} with the JSON payload from file {string}")
+    public void i_update_api_with_json_payload_from_file(String appId, String jsonFilePath) throws IOException, ApiException {
+
+        String jsonPayload = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(jsonFilePath),
+                "UTF-8");
+        ObjectMapper objectMapper = new ObjectMapper();
+        APIRequest apiRequest = objectMapper.readValue(jsonPayload, APIRequest.class);
+        String actualApiId = resolveFromContext(appId);
+        HttpResponse apiUpdateResponse = publisher.updateAPI(apiRequest, actualApiId);
+        context.set("httpResponse", apiUpdateResponse);
+    }
+
+
+    @Then("I verify the updated API with id {string} has the following api policies")
+    public void i_verify_updated_api_policies(String apiId, DataTable dataTable) throws Exception {
+
+        String actualApiId = resolveFromContext(apiId);
+        APIDTO apiDto = publisher.getAPIByID(actualApiId);
+        Map<String, String> expectedPolicies = dataTable.asMap(String.class, String.class);
+
+        APIOperationPoliciesDTO apiPolicies = apiDto.getApiPolicies();
+
+        if (apiPolicies != null){
+            validatePolicy("request", apiPolicies.getRequest(), expectedPolicies.get("request"));
+            validatePolicy("response", apiPolicies.getResponse(), expectedPolicies.get("response"));
+            validatePolicy("fault", apiPolicies.getFault(), expectedPolicies.get("fault"));
+        }
+
+        else {
+            Assert.fail("API policies are null for API with ID: " + actualApiId);
+        }
+
     }
 
     @When("I add an operation with the following details to the created API with id {string}")
@@ -186,6 +262,7 @@ public class PublisherStepDefinitions {
 
     @When("I add scopes {string} to the created API with id {string}")
     public void i_add_scopes_to_created_api(String scopesCsv, String apiId) throws Exception {
+
         String actualApiId = resolveFromContext(apiId);
         APIDTO apiDto= publisher.getAPIByID(actualApiId);
 
@@ -196,7 +273,8 @@ public class PublisherStepDefinitions {
             scopesList.add(apiScopeDTO);
         }
         apiDto.setScopes(scopesList);
-        publisher.updateAPI(apiDto, actualApiId);
+        ApiResponse<APIDTO> apiDtoUpdateApiResponse = publisher.updateAPI(apiDto, actualApiId);
+        context.set("ApiDtoApiResponse", apiDtoUpdateApiResponse);
     }
 
     @When("I deploy a revision of the API with id {string}")
@@ -210,7 +288,8 @@ public class PublisherStepDefinitions {
     @When("I delete the API with id {string}")
     public void i_delete_the_api(String apiId) throws Exception {
         String actualApiId = resolveFromContext(apiId);
-        publisher.deleteAPI(actualApiId);
+        HttpResponse apiDeleteResponse = publisher.deleteAPI(actualApiId);
+        context.set("httpResponse", apiDeleteResponse);
     }
 
     @When("I publish the API with id {string}")
@@ -237,24 +316,65 @@ public class PublisherStepDefinitions {
         publisher.createNewAPIVersion(newVersion, actualApiId, false);
     }
 
-    @Then("I should be able to retrieve the API with id {string}")
-    public void i_should_be_able_to_retrieve_the_api(String apiId) throws Exception {
+    @When("I retrieve the API with id {string}")
+    public void i_retrieve_the_api(String apiId) throws Exception {
         String actualApiId = resolveFromContext(apiId);
         HttpResponse response = publisher.getAPI(actualApiId);
-        Assert.assertEquals(response.getResponseCode(), 200);
+        context.set("httpResponse", response);
     }
+
+    @When("I retrieve all APIs created through the Publisher REST API")
+    public void i_retrieve_all_apis() throws APIManagerIntegrationTestException, ApiException {
+        APIListDTO response = publisher.getAllAPIs();
+        Gson gson = new Gson();
+        String json = gson.toJson(response);
+        JSONObject jsonObject = new JSONObject(json);
+        JSONArray jsonArray = jsonObject.getJSONArray("list");
+        Map<String, JSONObject> apiMap = new HashMap<>();
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject apiObj = jsonArray.getJSONObject(i);
+            String apiId = apiObj.getString("id");
+            apiMap.put(apiId, apiObj);
+        }
+        context.set("allApisMap", apiMap);
+    }
+
+
+    @Then("The API with id {string} should be in the list of all APIS")
+    public void the_api_should_be_in_the_list_of_all_apis(String apiId)  {
+        String actualApiId = resolveFromContext(apiId);
+        Map<String, JSONObject> apiMap = (Map<String, JSONObject>) context.get("allApisMap");
+        Assert.assertTrue(apiMap.containsKey(actualApiId),"API with ID " + actualApiId + " was not found.");
+    }
+
 
     @Then("The lifecycle status of API {string} should be {string}")
     public void the_lifecycle_status_should_be(String apiId, String status) throws Exception {
         String actualApiId = resolveFromContext(apiId);
         HttpResponse response = publisher.getLifecycleStatus(actualApiId);
-        Assert.assertEquals(response.getData(),status);
+        Assert.assertEquals(response.getData(), status);
     }
 
-    @Then("I search APIs with query {string}")
+    @When("I search APIs with query {string}")
     public void i_search_apis_with_query(String query) throws Exception {
-        publisher.searchAPIs(query);
+        SearchResultListDTO searchResults = publisher.searchAPIs(query);
+        System.out.println("Search results: " + searchResults);
+        context.set("searchResults", searchResults);
     }
+
+    @When("I find the apiUUID of the API created with the name {string} and version {string}")
+    public void find_api_uuid_using_name(String apiName, String apiVersion) throws Exception {
+
+        String searchQuery = String.format("name:%s version:%s", apiName, apiVersion);
+        SearchResultListDTO searchResults = publisher.searchAPIs(searchQuery);
+        Assert.assertTrue(searchResults != null && searchResults.getList() !=null &&
+                        ! searchResults.getList().isEmpty(), "No APIs found with the given name and version");
+
+        Map<String, Object> apiInfo = (Map<String, Object>) searchResults.getList().get(0);
+        context.set("selectedApiId", apiInfo.get("id"));
+    }
+
 
     @When("I add a document to API {string} with name {string}")
     public void i_add_document_to_api(String apiId, String docName) throws Exception {
@@ -358,4 +478,22 @@ public class PublisherStepDefinitions {
         }
         return input;
     }
+
+    /**
+     * Validates that the expected policy exists in the given list and has a non-empty ID.
+     *
+     * @param policies List of OperationPolicyDTO
+     * @param expectedPolicyName Expected policy name
+     * @param policyType Type of policy
+     */
+    private void validatePolicy(String policyType, List<OperationPolicyDTO> policies, String expectedPolicyName) {
+
+        boolean hasPolicy = policies != null && policies.stream()
+                .anyMatch(p -> expectedPolicyName.equals(p.getPolicyName()) && p.getPolicyId() != null
+                        && !p.getPolicyId().isEmpty());
+
+        Assert.assertTrue(hasPolicy, "Expected " + policyType + " policy '" + expectedPolicyName
+                + "' was not found.");
+    }
+
 }

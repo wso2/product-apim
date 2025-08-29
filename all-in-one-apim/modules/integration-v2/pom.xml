@@ -14,14 +14,27 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <truststore.path>${user.dir}/truststore.jks</truststore.path>
-        <truststore.password>changeit</truststore.password>
+        <truststore.path>${user.dir}/client-truststore.jks</truststore.path>
+        <truststore.password>wso2carbon</truststore.password>
         <wso2.host>localhost</wso2.host>
         <wso2.port>9443</wso2.port>
         <skipCertificateFetch>false</skipCertificateFetch>
+        <!-- Shared DB defaults -->
+        <shared.database.driver>com.mysql.cj.jdbc.Driver</shared.database.driver>
+        <shared.database.url>jdbc:mysql://host.docker.internal:3307/shared_db?allowPublicKeyRetrieval=true&amp;useSSL=false</shared.database.url>
+        <shared.database.username>shared_user</shared.database.username>
+        <shared.database.password>sharedpass</shared.database.password>
+        <shared.database.validationQuery>SELECT 1</shared.database.validationQuery>
+
+        <!-- APIM DB defaults -->
+        <apim.database.driver>com.mysql.cj.jdbc.Driver</apim.database.driver>
+        <apim.database.url>jdbc:mysql://host.docker.internal:3306/apim_db?allowPublicKeyRetrieval=true&amp;useSSL=false</apim.database.url>
+        <apim.database.username>apim_user</apim.database.username>
+        <apim.database.password>apimpass</apim.database.password>
+        <apim.database.validationQuery>SELECT 1</apim.database.validationQuery>
     </properties>
 
     <dependencies>
@@ -103,73 +116,112 @@
 
     </dependencies>
 
-    <build>
-        <plugins>
+    <profiles>
+        <profile>
+            <id>migration</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>migration</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
+                                <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
+                                <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
+                                <module.dir>${project.basedir}</module.dir>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <SHARED_DATABASE_TYPE>mysql</SHARED_DATABASE_TYPE>
+                                <SHARED_DATABASE_DRIVER>com.mysql.cj.jdbc.Driver</SHARED_DATABASE_DRIVER>
+                                <SHARED_DATABASE_URL>jdbc:mysql://host.docker.internal:3307/shared_db?allowPublicKeyRetrieval=true&amp;useSSL=false</SHARED_DATABASE_URL>
+                                <SHARED_DATABASE_USERNAME>shared_user</SHARED_DATABASE_USERNAME>
+                                <SHARED_DATABASE_PASSWORD>sharedpass</SHARED_DATABASE_PASSWORD>
+                                <SHARED_DATABASE_VALIDATION_QUERY>SELECT 1</SHARED_DATABASE_VALIDATION_QUERY>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
-                        <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
-                        <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
-                        <module.dir>${project.basedir}</module.dir>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
+                                <API_MANAGER_DATABASE_TYPE>mysql</API_MANAGER_DATABASE_TYPE>
+                                <API_MANAGER_DATABASE_DRIVER>com.mysql.cj.jdbc.Driver</API_MANAGER_DATABASE_DRIVER>
+                                <API_MANAGER_DATABASE_URL>jdbc:mysql://host.docker.internal:3306/apim_db?allowPublicKeyRetrieval=true&amp;useSSL=false</API_MANAGER_DATABASE_URL>
+                                <API_MANAGER_DATABASE_USERNAME>apim_user</API_MANAGER_DATABASE_USERNAME>
+                                <API_MANAGER_DATABASE_PASSWORD>apimpass</API_MANAGER_DATABASE_PASSWORD>
+                                <API_MANAGER_DATABASE_VALIDATION_QUERY>SELECT 1</API_MANAGER_DATABASE_VALIDATION_QUERY>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>default</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
+                                <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
+                                <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
+                                <module.dir>${project.basedir}</module.dir>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <SHARED_DATABASE_DRIVER>org.h2.Driver</SHARED_DATABASE_DRIVER>
+                                <SHARED_DATABASE_URL>
+                                    jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE
+                                </SHARED_DATABASE_URL>
+                                <SHARED_DATABASE_USERNAME>wso2carbon</SHARED_DATABASE_USERNAME>
+                                <SHARED_DATABASE_PASSWORD>wso2carbon</SHARED_DATABASE_PASSWORD>
+                                <SHARED_DATABASE_VALIDATION_QUERY>SELECT 1</SHARED_DATABASE_VALIDATION_QUERY>
 
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <artifactId>exec-maven-plugin</artifactId>-->
-<!--                <version>3.1.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>generate-resources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>exec</goal>-->
-<!--                        </goals>-->
+                                <API_MANAGER_DATABASE_DRIVER>org.h2.Driver</API_MANAGER_DATABASE_DRIVER>
+                                <API_MANAGER_DATABASE_URL>
+                                    jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE
+                                </API_MANAGER_DATABASE_URL>
+                                <API_MANAGER_DATABASE_USERNAME>wso2carbon</API_MANAGER_DATABASE_USERNAME>
+                                <API_MANAGER_DATABASE_PASSWORD>wso2carbon</API_MANAGER_DATABASE_PASSWORD>
+                                <API_MANAGER_DATABASE_VALIDATION_QUERY>SELECT 1</API_MANAGER_DATABASE_VALIDATION_QUERY>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
 
-<!--                        <configuration>-->
-<!--                            <skip>${skipCertificateFetch}</skip>-->
-<!--                            <executable>bash</executable>-->
-<!--                            <arguments>-->
-<!--                                <argument>-c</argument>-->
-<!--                                <argument>-->
-<!--                                    echo "Fetching certificate from ${wso2.host}:${wso2.port}" &amp;&amp; \-->
-<!--                                    mkdir -p ${project.build.directory} &amp;&amp; \-->
-<!--                                    openssl s_client -connect ${wso2.host}:${wso2.port} -showcerts &lt; /dev/null \-->
-<!--                                    | openssl x509 -outform PEM > ${project.build.directory}/wso2_cert.pem &amp;&amp; \-->
-<!--                                    if [ ! -s "${project.build.directory}/wso2_cert.pem" ]; then \-->
-<!--                                    echo "Failed to fetch certificate or output file is empty!" &amp;&amp; exit 1; \-->
-<!--                                    fi &amp;&amp; \-->
-<!--                                    yes | sudo keytool -delete -alias wso2-cert -keystore ${truststore.path} -storepass ${truststore.password} || echo "No existing alias to delete" &amp;&amp; \-->
-<!--                                    yes | keytool -import -trustcacerts -alias wso2-cert \-->
-<!--                                    -file ${project.build.directory}/wso2_cert.pem \-->
-<!--                                    -keystore ${truststore.path} \-->
-<!--                                    -storepass ${truststore.password} \-->
-<!--                                    || { echo "Failed to import certificate into truststore"; exit 1; }-->
-<!--                                </argument>-->
-<!--                            </arguments>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-
-
-        </plugins>
-    </build>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 
 </project>

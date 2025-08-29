@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.wso2.am</groupId>
-        <artifactId>apim-test-framework-testcontainers</artifactId>
+        <artifactId>integration-v2</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 

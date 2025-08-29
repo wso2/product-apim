@@ -27,6 +27,18 @@ router.get('/sec', (req, res) => {
   res.type('text/plain').send(authHeader || '');
 });
 
+// GET /check-header/
+router.get('/check-header', (req, res) => {
+  const headerValue = req.header('x-request-header');
+  console.log(`----invoking check-header, received: ${headerValue}`);
+
+  if (headerValue === 'x-req-value') {
+    res.status(200).json({ message: 'Valid header received' });
+  } else {
+    res.status(400).json({ error: 'Missing or invalid x-request-header' });
+  }
+});
+
 // GET /handler/
 router.get('/handler', (req, res) => {
   const header = req.header('Iwasat');
