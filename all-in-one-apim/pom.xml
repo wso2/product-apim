@@ -1486,7 +1486,7 @@
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.7.14</wso2is.km.version>
-        <wso2is7.km.version>2.0.7</wso2is7.km.version>
+        <wso2is7.km.version>2.0.8</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.11</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.1</keycloak.keymanager.feature.version>
