@@ -20,20 +20,6 @@
         "clientId": null,
         "clientSecret": null,
         "customParameters": "{}"
-      },
-      "sandbox": {
-        "enabled": true,
-        "type": "apikey",
-        "apiKeyIdentifier": "Authorization",
-        "apiKeyValue": "123",
-        "apiKeyIdentifierType": "HEADER",
-        "username": "",
-        "password": null,
-        "grantType": "",
-        "tokenUrl": "",
-        "clientId": null,
-        "clientSecret": null,
-        "customParameters": "{}"
       }
     }
   },

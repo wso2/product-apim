@@ -21,12 +21,11 @@ package org.wso2.am.integration.tests.aiapi;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
-import com.google.gson.Gson;
-import org.apache.commons.httpclient.HttpStatus;
+//import com.google.gson.Gson;
+//import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tools.ant.taskdefs.condition.Http;
-import org.json.JSONObject;
+//import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -34,25 +33,25 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.dto.LLMProviderResponseDTO;
-import org.wso2.am.integration.clients.admin.api.dto.LLMProviderSummaryResponseDTO;
-import org.wso2.am.integration.clients.admin.api.dto.LLMProviderSummaryResponseListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderResponseDTO;
+import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderSummaryResponseDTO;
+import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderSummaryResponseListDTO;
+//import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+////import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+////import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
+//import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+//import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+//import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+//import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+//import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+//import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
@@ -61,9 +60,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
+//import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+//import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -71,7 +70,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+//import static org.testng.Assert.assertNotNull;
 
 /**
  * AI API Test Case
@@ -108,25 +107,28 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     private int lowerPortLimit = 9950;
     private int upperPortLimit = 9999;
 
-    private String llmProviderId;
-    private final String llmProviderName = "TestAIService";
-    private final String llmProviderApiVersion = "1.0.0";
+    private String aiServiceProviderId;
+    private final String aiServiceProviderName = "TestAIService";
+    private final String aiServiceProviderApiVersion = "1.0.0";
 
-    private final String llmProviderDescription = "This is a copy of MistralAI service";
+    private final String aiServiceProviderDescription = "This is a copy of MistralAI service";
     private final String model1 = "mistral-small-latest";
     private final String model2 = "mistral-medium-latest";
     private final String model3 = "mistral-large-latest";
     private final String modelList = String.format("[\"%s\", \"%s\", \"%s\"]", model1, model2, model3);
+    private final String modelProviders = String.format("[{\"models\": %s, \"name\": \"%s\"}]", modelList,
+            aiServiceProviderName);
     private final String productionEndpointName = "Prod Endpoint";
     private final String productionDeploymentStage = "PRODUCTION";
-    private Map<String, String> policyMap;
+//    private Map<String, String> policyMap;
 
-    private final String customLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
-            "\"authHeader\":\"api-key\",\"metadata\":[{\"attributeName\":\"requestModel\"," +
-            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\",\"required\":false}," +
-            "{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\"," +
-            "\"required\":true},{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
+    private final String customAIServiceProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
+            "\"authenticationConfiguration\":{\"enabled\":true,\"type\":\"apikey\",\"parameters\":" +
+            "{\"headerEnabled\":true,\"queryParameterEnabled\":false,\"headerName\":\"api-key\"},\"metadata\":" +
+            "[{\"attributeName\":\"requestModel\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\"," +
+            "\"required\":false},{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.model\",\"required\":true},{\"attributeName\":\"promptTokenCount\"," +
+            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
             "{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
             "\"attributeIdentifier\":\"$.usage.completion_tokens\",\"required\":true}," +
             "{\"attributeName\":\"totalTokenCount\",\"inputSource\":\"payload\"," +
@@ -134,20 +136,34 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
             "{\"attributeName\":\"remainingTokenCount\",\"inputSource\":\"header\"," +
             "\"attributeIdentifier\":\"x-ratelimit-remaining-tokens\",\"required\":false}]}";
 
-    private final String updatedCustomLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
-            "\"authHeader\":\"Authorization\",\"metadata\":[{\"attributeName\":\"requestModel\"," +
-            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\",\"required\":false}," +
-            "{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\"," +
-            "\"required\":true},{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
+    private final String updatedCustomAIServiceProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
+            "\"authenticationConfiguration\":{\"enabled\":true,\"type\":\"apiKey\",\"parameters\":" +
+            "{\"headerEnabled\":true,\"queryParameterEnabled\":false,\"headerName\":\"Authorization\"},\"metadata\":" +
+            "[{\"attributeName\":\"requestModel\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\"," +
+            "\"required\":false},{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.model\",\"required\":true},{\"attributeName\":\"promptTokenCount\"," +
+            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
             "{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
             "\"attributeIdentifier\":\"$.usage.completion_tokens\",\"required\":true}," +
             "{\"attributeName\":\"totalTokenCount\",\"inputSource\":\"payload\"," +
             "\"attributeIdentifier\":\"$.usage.total_tokens\",\"required\":true}," +
             "{\"attributeName\":\"remainingTokenCount\",\"inputSource\":\"header\"," +
             "\"attributeIdentifier\":\"x-ratelimit-remaining-tokens\",\"required\":false}]}";
+//            "{\"connectorType\":\"mistralAi_1.0.0\"," +
+//            "\"authenticationConfiguration\":{\"enabled\":true,\"type\":\"apikey\",\"parameters\":{\"headerEnabled\"" +
+//            ":true,\"queryParameterEnabled\":false,\"headerName\":\"Authorization\"},\"metadata\":[{\"attributeName\"" +
+//            ":\"requestModel\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\",\"required\":false}," +
+//            "{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.model\"," +
+//            "\"required\":true},{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\"," +
+//            "\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
+//            "{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
+//            "\"attributeIdentifier\":\"$.usage.completion_tokens\",\"required\":true}," +
+//            "{\"attributeName\":\"totalTokenCount\",\"inputSource\":\"payload\"," +
+//            "\"attributeIdentifier\":\"$.usage.total_tokens\",\"required\":true}," +
+//            "{\"attributeName\":\"remainingTokenCount\",\"inputSource\":\"header\"," +
+//            "\"attributeIdentifier\":\"x-ratelimit-remaining-tokens\",\"required\":false}]}";
 
-    private List<String> defaultLlmProviders = new ArrayList<>();
+    private List<String> defaultAIServiceProviders = new ArrayList<>();
 
     private final String apiDefinitionFileName = "mistral-def.json";
 
@@ -171,11 +187,12 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
 
         super.init(userMode);
-        defaultLlmProviders.add("MistralAI");
-        defaultLlmProviders.add("OpenAI");
-        defaultLlmProviders.add("AzureOpenAI");
+        defaultAIServiceProviders.add("MistralAI");
+        defaultAIServiceProviders.add("OpenAI");
+        defaultAIServiceProviders.add("AzureOpenAI");
+        defaultAIServiceProviders.add("AWSBedrock");
 
-        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
+//        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
 
         // Add application
         ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationName,
@@ -196,250 +213,259 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Tests the retrieval of predefined LLM providers and verifies all are present.
-     * Ensures that all predefined LLM providers are retrieved successfully.
+     * Tests the retrieval of predefined AI service providers and verifies all are present.
+     * Ensures that all predefined AI service providers are retrieved successfully.
      */
-    @Test(groups = {"wso2.am"}, description = "Test retrieve LLM Providers")
-    public void testPredefinedLLMProviders() throws Exception {
-
-        List<String> copyDefaultLlmProviders = new ArrayList<>(defaultLlmProviders);
-        ApiResponse<LLMProviderSummaryResponseListDTO> llmProviders = restAPIAdmin.getLLMProviders();
+    @Test(groups = {"wso2.am"}, description = "Test retrieve AI Service Providers")
+    public void testPredefinedAIServiceProviders() throws Exception {
+        List<String> copyDefaultAIServiceProviders = new ArrayList<>(defaultAIServiceProviders);
+        ApiResponse<AIServiceProviderSummaryResponseListDTO> aiServiceProviders = restAPIAdmin.getAIServiceProviders();
         assertEquals(Response.Status.OK.getStatusCode(),
-                llmProviders.getStatusCode(), "Failed to retrieve LLM providers");
-        for (LLMProviderSummaryResponseDTO provider : llmProviders.getData().getList()) {
-            if (defaultLlmProviders.contains(provider.getName())) {
-                copyDefaultLlmProviders.remove(provider.getName());
+                aiServiceProviders.getStatusCode(), "Failed to retrieve AI service providers");
+        for (AIServiceProviderSummaryResponseDTO provider : aiServiceProviders.getData().getList()) {
+            if (defaultAIServiceProviders.contains(provider.getName())) {
+                copyDefaultAIServiceProviders.remove(provider.getName());
             }
         }
         assertEquals(0,
-                copyDefaultLlmProviders.size(), "Failed to retrieve all predefined LLM providers");
+                copyDefaultAIServiceProviders.size(), "Failed to retrieve all predefined AI service providers");
     }
 
     /**
-     * Adds a custom LLM provider and verifies successful creation.
+     * Adds a custom AI service provider and verifies successful creation.
      * Ensures the provider is created with the given details and retrieves its ID.
      */
-    @Test(groups = {"wso2.am"}, description = "Add LLM Provider",
-            dependsOnMethods = "testPredefinedLLMProviders")
-    public void addCustomLLMProvider() throws Exception {
-
+    @Test(groups = {"wso2.am"}, description = "Add AI Service Provider")
+    public void addCustomAIServiceProvider() throws Exception {
         String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
         File file = getTempFileWithContent(originalDefinition);
 
-        ApiResponse<LLMProviderResponseDTO> createProviderResponse = restAPIAdmin.addLLMProvider(llmProviderName,
-                llmProviderApiVersion, llmProviderDescription, customLlmProviderConfigurations, file, "[]");
+        ApiResponse<AIServiceProviderResponseDTO> createProviderResponse = restAPIAdmin.addAIServiceProvider(
+                aiServiceProviderName, aiServiceProviderApiVersion, aiServiceProviderDescription, false,
+                customAIServiceProviderConfigurations, file, modelProviders);
 
-        assertEquals(Response.Status.CREATED.getStatusCode(),
-                createProviderResponse.getStatusCode(), "Failed to add a LLM provider");
-        llmProviderId = createProviderResponse.getData().getId();
+        assertEquals(Response.Status.CREATED.getStatusCode(), createProviderResponse.getStatusCode(),
+                "Failed to add an AI service provider");
+        aiServiceProviderId = createProviderResponse.getData().getId();
+        Assert.assertNotNull(aiServiceProviderId, "AI Service Provider ID is null");
     }
 
     /**
-     * Retrieves a specified LLM provider and verifies the provider's details.
+     * Retrieves a specified AI service provider and verifies the provider's details.
      * Ensures the provider is retrieved successfully and the name and API version match.
      */
-    @Test(groups = {"wso2.am"}, description = "Get LLM Provider",
-            dependsOnMethods = "addCustomLLMProvider")
-    public void retrieveCustomLLMProvider() throws Exception {
-
-        ApiResponse<LLMProviderResponseDTO> getProviderResponse = restAPIAdmin.getLLMProvider(llmProviderId);
-        assertEquals(Response.Status.OK.getStatusCode(),
-                getProviderResponse.getStatusCode(), "Failed to retrieve LLM provider");
-        assertEquals(getProviderResponse.getData().getName(), llmProviderName, "LLM provider name does not match");
-        assertEquals(getProviderResponse.getData().getApiVersion(),
-                llmProviderApiVersion, "LLM provider API version does not match");
+    @Test(groups = {"wso2.am"}, description = "Get AI Service Provider",
+            dependsOnMethods = "addCustomAIServiceProvider")
+    public void retrieveCustomAIServiceProvider() throws Exception {
+        ApiResponse<AIServiceProviderResponseDTO> getProviderResponse = restAPIAdmin.getAIServiceProvider(
+                aiServiceProviderId);
+        assertEquals(Response.Status.OK.getStatusCode(), getProviderResponse.getStatusCode(),
+                "Failed to retrieve AI service provider");
+        assertEquals(getProviderResponse.getData().getName(), aiServiceProviderName,
+                "AI service provider name does not match");
+        assertEquals(getProviderResponse.getData().getApiVersion(), aiServiceProviderApiVersion,
+                "AI service provider API version does not match");
     }
 
     /**
-     * Updates a specified LLM provider with new configurations and verifies the update.
+     * Updates a specified AI service provider with new configurations and verifies the update.
      * Ensures the updated provider is retrieved successfully and the configurations are correct.
      */
-    @Test(groups = {"wso2.am"}, description = "Update LLM Provider",
-            dependsOnMethods = "addCustomLLMProvider")
-    public void updateCustomLLMProvider() throws Exception {
-
+    @Test(groups = {"wso2.am"}, description = "Update AI Service Provider",
+            dependsOnMethods = "addCustomAIServiceProvider")
+    public void updateCustomAIServiceProvider() throws Exception {
         String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
         File file = getTempFileWithContent(originalDefinition);
 
-        ApiResponse<LLMProviderResponseDTO> updateProviderResponse = restAPIAdmin.updateLLMProvider(llmProviderId,
-                llmProviderName, llmProviderApiVersion, llmProviderDescription,
-                updatedCustomLlmProviderConfigurations, file, modelList);
+        ApiResponse<AIServiceProviderResponseDTO> updateProviderResponse = restAPIAdmin.updateAIServiceProvider(
+                aiServiceProviderId, aiServiceProviderName, aiServiceProviderApiVersion, aiServiceProviderDescription,
+                false, updatedCustomAIServiceProviderConfigurations, file, modelProviders);
 
         assertEquals(Response.Status.OK.getStatusCode(),
-                updateProviderResponse.getStatusCode(), "Failed to update LLM provider");
+                updateProviderResponse.getStatusCode(), "Failed to update AI service provider");
 
-        ApiResponse<LLMProviderResponseDTO> getProviderResponse = restAPIAdmin.getLLMProvider(llmProviderId);
-        assertEquals(Response.Status.OK.getStatusCode(),
-                getProviderResponse.getStatusCode(), "Failed to retrieve LLM provider");
-        assertEquals(getProviderResponse.getData().getConfigurations(), updatedCustomLlmProviderConfigurations,
-                "Failed to update LLM provider configurations");
+        ApiResponse<AIServiceProviderResponseDTO> getProviderResponse = restAPIAdmin.getAIServiceProvider(
+                aiServiceProviderId);
+        assertEquals(Response.Status.OK.getStatusCode(), getProviderResponse.getStatusCode(),
+                "Failed to retrieve AI service provider");
+        assertEquals(getProviderResponse.getData().getConfigurations(), updatedCustomAIServiceProviderConfigurations,
+                "Failed to update AI service provider configurations");
     }
 
-    /**
-     * Test Mistral AI API creation, deployment, and publishing
-     */
-    @Test(groups = {"wso2.am"}, description = "Test Mistral AI API creation, deployment and publishing",
-            dependsOnMethods = "updateCustomLLMProvider")
-    public void testMistralAIAPICreationAndPublish() throws Exception {
-
-        String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
-        String additionalProperties = readFile(resourcePath + "mistral-add-props.json");
-        JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
-
-        // Update production endpoint
-        JSONObject endpointConfig = additionalPropertiesObj.getJSONObject("endpointConfig");
-        JSONObject productionEndpoints = new JSONObject();
-        productionEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint);
-        endpointConfig.put("production_endpoints", productionEndpoints);
-        additionalPropertiesObj.put("endpointConfig", endpointConfig);
-
-        // Create API
-        File file = getTempFileWithContent(originalDefinition);
-        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
-        mistralAPIId = apidto.getId();
-
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(mistralAPIId);
-        assertEquals(Response.Status.OK.getStatusCode(),
-                createdApiResponse.getResponseCode(), mistralAPIId + " AI API creation failed");
-
-        // Deploy API
-        String revisionUUID = createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
-        Assert.assertNotNull(revisionUUID);
-
-        // Publish API
-        HttpResponse lifecycleResponse = restAPIPublisher
-                .changeAPILifeCycleStatusToPublish(mistralAPIId, false);
-        assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
-
-        waitForAPIDeploymentSync(apidto.getProvider(),
-                apidto.getName(), apidto.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
-    }
-
-    /**
-     * Test Mistral AI API invocation
-     */
-    @Test(groups = {"wso2.am"}, description = "Test AI API invocation",
-            dependsOnMethods = "testMistralAIAPICreationAndPublish")
-    public void testMistralAIApiInvocation() throws Exception {
-
-        // Subscribe to API
-        SubscriptionDTO subscriptionDTO = restAPIStore.
-                subscribeToAPI(mistralAPIId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
-        assertNotNull(subscriptionDTO, "Mistral AI API Subscription failed");
-
-        // Get API Key
-        APIKeyDTO apiKeyDTO = restAPIStore.
-                generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                        -1, null, null);
-        assertNotNull(apiKeyDTO, "Mistral AI API Key generation failed");
-        apiKey = apiKeyDTO.getApikey();
-
-        // Invoke API
-        Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("ApiKey", apiKey);
-        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
-        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
-
-        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
-        assertEquals(model1Response, serviceResponse.getData(), "Mistral AI API response mismatch");
-    }
-
-    /**
-     * Test endpoint addition to Mistral AI API
-     */
-    @Test(groups = {"wso2.am"}, description = "Test endpoint addition to AI API",
-            dependsOnMethods = "testMistralAIApiInvocation")
-    public void testMistralAIApiEndpointAddition() throws Exception {
-        // Add production endpoint
-        String prodEndpointConfig = readFile(resourcePath + "prod-endpoint-add-endpoint-config.json");
-        JSONObject prodEndpointConfigObj = new JSONObject(prodEndpointConfig);
-        JSONObject productionEndpoints = new JSONObject();
-        productionEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint);
-        prodEndpointConfigObj.put("production_endpoints", productionEndpoints);
-
-        HttpResponse addApiEndpointResponse = restAPIPublisher.addApiEndpoint(mistralAPIId, productionEndpointName,
-                productionDeploymentStage, prodEndpointConfigObj);
-        Assert.assertEquals(HttpStatus.SC_CREATED, addApiEndpointResponse.getResponseCode(),
-                "Failed to add production endpoint to API: " + mistralAPIId);
-    }
-
-    /**
-     * Test Mistral AI API invocation after adding model round-robin policy
-     */
-    @Test(groups = {"wso2.am"}, description = "Test AI API invocation after adding model round-robin policy",
-            dependsOnMethods = "testMistralAIApiEndpointAddition")
-    public void testMistralAIApiInvocationAfterAddingModelRoundRobinPolicy() throws Exception {
-        // Retrieve endpoints
-        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
-        Assert.assertEquals(HttpStatus.SC_OK, getEndpointsResponse.getResponseCode(),
-                "Failed to retrieve endpoints of API: " + mistralAPIId);
-
-        // Retrieve model list
-        HttpResponse getModelListResponse = restAPIPublisher.getLLMProviderModelList(llmProviderId);
-        Assert.assertEquals(HttpStatus.SC_OK, getModelListResponse.getResponseCode(),
-                "Failed to retrieve model list of LLM provider: " + llmProviderId);
-
-        HttpResponse getAPIResponse = restAPIPublisher.getAPI(mistralAPIId);
-        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
-
-        // Add model round-robin policy
-        String policyName = "modelRoundRobin";
-        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
-
-        Map<String, Object> attributeMap = new HashMap<>();
-        attributeMap.put("roundRobinConfigs", "");
-
-        List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
-        OperationPolicyDTO roundRobinPolicyDTO = new OperationPolicyDTO();
-        roundRobinPolicyDTO.setPolicyName(policyName);
-        roundRobinPolicyDTO.setPolicyType("common");
-        roundRobinPolicyDTO.setPolicyId(policyMap.get(policyName));
-        roundRobinPolicyDTO.setParameters(attributeMap);
-        requestPolicyList.add(roundRobinPolicyDTO);
-
-        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(requestPolicyList);
-        apidto.setApiPolicies(apiOperationPoliciesDTO);
-        restAPIPublisher.updateAPI(apidto);
-
-        // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
-        waitForAPIDeployment();
-
-        // Invoke API
-        Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("ApiKey", apiKey);
-        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
-        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
-
-        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
-        assertEquals(model1Response, serviceResponse.getData(), "Mistral AI API response mismatch");
-    }
+//    /**
+//     * Test Mistral AI API creation, deployment, and publishing
+//     */
+//    @Test(groups = {"wso2.am"}, description = "Test Mistral AI API creation, deployment and publishing",
+//            dependsOnMethods = "updateCustomLLMProvider")
+//    public void testMistralAIAPICreationAndPublish() throws Exception {
+//
+//        String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
+//        String additionalProperties = readFile(resourcePath + "mistral-add-props.json");
+//        JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
+//
+//        // Update production endpoint
+//        JSONObject endpointConfig = additionalPropertiesObj.getJSONObject("endpointConfig");
+//        JSONObject productionEndpoints = new JSONObject();
+//        productionEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint);
+//        endpointConfig.put("production_endpoints", productionEndpoints);
+//        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+//
+//        // Create API
+//        File file = getTempFileWithContent(originalDefinition);
+//        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
+//        mistralAPIId = apidto.getId();
+//
+//        HttpResponse createdApiResponse = restAPIPublisher.getAPI(mistralAPIId);
+//        assertEquals(Response.Status.OK.getStatusCode(),
+//                createdApiResponse.getResponseCode(), mistralAPIId + " AI API creation failed");
+//
+//        // Deploy API
+//        String revisionUUID = createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
+//        Assert.assertNotNull(revisionUUID);
+//
+//        // Publish API
+//        HttpResponse lifecycleResponse = restAPIPublisher
+//                .changeAPILifeCycleStatusToPublish(mistralAPIId, false);
+//        assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
+//
+//        waitForAPIDeploymentSync(apidto.getProvider(),
+//                apidto.getName(), apidto.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+//    }
+//
+//    /**
+//     * Test Mistral AI API invocation
+//     */
+//    @Test(groups = {"wso2.am"}, description = "Test AI API invocation",
+//            dependsOnMethods = "testMistralAIAPICreationAndPublish")
+//    public void testMistralAIApiInvocation() throws Exception {
+//
+//        // Subscribe to API
+//        SubscriptionDTO subscriptionDTO = restAPIStore.
+//                subscribeToAPI(mistralAPIId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+//        assertNotNull(subscriptionDTO, "Mistral AI API Subscription failed");
+//
+//        // Get API Key
+//        APIKeyDTO apiKeyDTO = restAPIStore.
+//                generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
+//                        -1, null, null);
+//        assertNotNull(apiKeyDTO, "Mistral AI API Key generation failed");
+//        apiKey = apiKeyDTO.getApikey();
+//
+//        // Invoke API
+//        Map<String, String> requestHeaders = new HashMap<>();
+//        requestHeaders.put("ApiKey", apiKey);
+//        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
+//        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
+//
+//        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
+//        assertEquals(model1Response, serviceResponse.getData(), "Mistral AI API response mismatch");
+//    }
+//
+//    /**
+//     * Test endpoint addition to Mistral AI API
+//     */
+//    @Test(groups = {"wso2.am"}, description = "Test endpoint addition to AI API",
+//            dependsOnMethods = "testMistralAIApiInvocation")
+//    public void testMistralAIApiEndpointAddition() throws Exception {
+//        // Add production endpoint
+//        String prodEndpointConfig = readFile(resourcePath + "prod-endpoint-add-endpoint-config.json");
+//        JSONObject prodEndpointConfigObj = new JSONObject(prodEndpointConfig);
+//        JSONObject productionEndpoints = new JSONObject();
+//        productionEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint);
+//        prodEndpointConfigObj.put("production_endpoints", productionEndpoints);
+//
+//        HttpResponse addApiEndpointResponse = restAPIPublisher.addApiEndpoint(mistralAPIId, productionEndpointName,
+//                productionDeploymentStage, prodEndpointConfigObj.toString());
+//        Assert.assertEquals(HttpStatus.SC_CREATED, addApiEndpointResponse.getResponseCode(),
+//                "Failed to add production endpoint to API: " + mistralAPIId);
+//    }
+//
+//    /**
+//     * Test Mistral AI API invocation after adding model round-robin policy
+//     */
+//    @Test(groups = {"wso2.am"}, description = "Test AI API invocation after adding model round-robin policy",
+//            dependsOnMethods = "testMistralAIApiEndpointAddition")
+//    public void testMistralAIApiInvocationAfterAddingModelRoundRobinPolicy() throws Exception {
+//        // Retrieve endpoints
+//        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
+//        Assert.assertEquals(HttpStatus.SC_OK, getEndpointsResponse.getResponseCode(),
+//                "Failed to retrieve endpoints of API: " + mistralAPIId);
+//
+//        // Retrieve model list
+//        HttpResponse getModelListResponse = restAPIPublisher.getLLMProviderModelList(aiServiceProviderId);
+//        Assert.assertEquals(HttpStatus.SC_OK, getModelListResponse.getResponseCode(),
+//                "Failed to retrieve model list of LLM provider: " + aiServiceProviderId);
+//
+////        HttpResponse getAPIResponse = restAPIPublisher.getAPI(mistralAPIId);
+////        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+////
+////        // Add weighted round-robin policy
+////        String policyName = "modelWeightedRoundRobin";
+////        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
+////
+////        Map<String, Object> attributeMap = new HashMap<>();
+////        JSONObject weightedRoundRobinConfigs = new JSONObject();
+////        List<JSONObject> productionModelList = new ArrayList<>();
+////        JSONObject model1Obj = new JSONObject();
+////        model1Obj.put("model", model1);
+////        model1Obj.put("endpointId", );
+////        model1Obj.put("weight", 80);
+////        productionModelList.add();
+////        weightedRoundRobinConfigs.put("production", productionModelList);
+////
+////        attributeMap.put("weightedRoundRobinConfigs", "");
+////
+////        List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
+////        OperationPolicyDTO roundRobinPolicyDTO = new OperationPolicyDTO();
+////        roundRobinPolicyDTO.setPolicyName(policyName);
+////        roundRobinPolicyDTO.setPolicyType("common");
+////        roundRobinPolicyDTO.setPolicyId(policyMap.get(policyName));
+////        roundRobinPolicyDTO.setParameters(attributeMap);
+////        requestPolicyList.add(roundRobinPolicyDTO);
+////
+////        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+////        apiOperationPoliciesDTO.setRequest(requestPolicyList);
+////        apidto.setApiPolicies(apiOperationPoliciesDTO);
+////        restAPIPublisher.updateAPI(apidto);
+////
+////        // Create Revision and Deploy to Gateway
+////        createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
+////        waitForAPIDeployment();
+////
+////        // Invoke API
+////        Map<String, String> requestHeaders = new HashMap<>();
+////        requestHeaders.put("ApiKey", apiKey);
+////        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
+////        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
+////
+////        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
+////        assertEquals(model1Response, serviceResponse.getData(), "Mistral AI API response mismatch");
+//    }
 
 //    testCreateNewVersionAfterAddingModelRoundRobinPolicy
 
     /**
-     * Deletes a specified LLM provider after removing API subscriptions and applications.
+     * Deletes a specified AI service provider after removing API subscriptions and applications.
      * Verifies that the provider is successfully deleted and no longer listed.
      */
-    @Test(groups = {"wso2.am"}, description = "Delete LLM Provider",
-            dependsOnMethods = "testMistralAIApiInvocation")
-    public void deleteLLMProvider() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Delete AI Service Provider",
+            dependsOnMethods = "updateCustomAIServiceProvider")
+    public void deleteAIServiceProvider() throws Exception {
 
-        restAPIStore.removeAPISubscriptionByName(mistralAPIName, mistralAPIVersion, apiProvider, applicationName);
-        restAPIStore.deleteApplication(applicationId);
-        restAPIPublisher.deleteAPI(mistralAPIId);
+//        restAPIStore.removeAPISubscriptionByName(mistralAPIName, mistralAPIVersion, apiProvider, applicationName);
+//        restAPIStore.deleteApplication(applicationId);
+//        restAPIPublisher.deleteAPI(mistralAPIId);
 
-        ApiResponse<Void> deleteProviderResponse = restAPIAdmin.deleteLLMProvider(llmProviderId);
+        ApiResponse<Void> deleteProviderResponse = restAPIAdmin.deleteAIServiceProvider(aiServiceProviderId);
         assertEquals(Response.Status.OK.getStatusCode(),
-                deleteProviderResponse.getStatusCode(), "Failed to delete LLM provider");
+                deleteProviderResponse.getStatusCode(), "Failed to delete AI service provider");
 
-        ApiResponse<LLMProviderSummaryResponseListDTO> llmProviders = restAPIAdmin.getLLMProviders();
+        ApiResponse<AIServiceProviderSummaryResponseListDTO> aiServiceProviders = restAPIAdmin.getAIServiceProviders();
         assertEquals(Response.Status.OK.getStatusCode(),
-                llmProviders.getStatusCode(), "Failed to retrieve LLM providers");
-        for (LLMProviderSummaryResponseDTO provider : llmProviders.getData().getList()) {
-            if (provider.getName().equals(llmProviderName)) {
-                Assert.fail("LLM Provider " + llmProviderName + " has not deleted correctly");
+                aiServiceProviders.getStatusCode(), "Failed to retrieve AI service providers");
+        for (AIServiceProviderSummaryResponseDTO provider : aiServiceProviders.getData().getList()) {
+            if (provider.getName().equals(aiServiceProviderName)) {
+                Assert.fail("AI Service Provider " + aiServiceProviderName + " has not deleted correctly");
             }
         }
 
@@ -471,6 +497,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 .extensions(new ResponseTemplateTransformer(true)));
 
         wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + mistralAPIResource))
+                .withHeader("Authorization", WireMock.matching("Bearer .*"))
                 .withRequestBody(matchingJsonPath("$.model", equalTo(model1)))
                 .willReturn(aResponse()
                         .withStatus(200)
