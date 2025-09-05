@@ -55,11 +55,11 @@ Refer to this page to consult pre-requisites based on your target architecture a
 
 ### Exposing your first API
 
-Follow our [Quick Start guide ](https://apim.docs.wso2.com/en/latest/get-started/api-manager-quick-start-guide/) to expose and test your first API while getting familiar with our API publisher and developer portal interfaces.
+Follow our [Quick Start guide ](https://apim.docs.wso2.com/en/latest/get-started/quick-start-guide/) to expose and test your first API while getting familiar with our API publisher and developer portal interfaces.
 
 ## Reporting product issues
 
-All known issues of WSO2 API Manager are filed at: https://github.com/wso2/api-manager/issues. Please check this list before opening a new issue.
+All known issues of WSO2 API Manager are filed at: https://github.com/wso2/product-apim/issues. Please check this list before opening a new issue.
 
 ### Opening an issue
 
@@ -80,7 +80,8 @@ Please **do not** report security issues via GitHub issues. Instead, follow the 
 
 If you are planning on contributing to the development efforts of WSO2 API Manager, you can do so by checking out the latest development version. The master branch holds the latest unreleased source code.
 
-Please follow the detailed instructions available here: https://wso2.github.io
+Please follow the detailed instructions available here: https://apim.docs.wso2.com/en/latest/get-started/contributing-to-docs/
+
 
 ## Commercial support
 
