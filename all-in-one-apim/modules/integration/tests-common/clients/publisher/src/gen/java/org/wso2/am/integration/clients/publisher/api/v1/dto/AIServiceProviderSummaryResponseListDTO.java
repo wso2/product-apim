@@ -23,64 +23,67 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AIServiceProviderSummaryResponseDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* LLMProviderEndpointConfigurationDTO
+* AIServiceProviderSummaryResponseListDTO
 */
 
-public class LLMProviderEndpointConfigurationDTO {
-        public static final String SERIALIZED_NAME_AUTH_HEADER = "authHeader";
-        @SerializedName(SERIALIZED_NAME_AUTH_HEADER)
-            private String authHeader;
+public class AIServiceProviderSummaryResponseListDTO {
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
-        public static final String SERIALIZED_NAME_AUTH_QUERY_PARAMETER = "authQueryParameter";
-        @SerializedName(SERIALIZED_NAME_AUTH_QUERY_PARAMETER)
-            private String authQueryParameter;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<AIServiceProviderSummaryResponseDTO> list = null;
 
 
-        public LLMProviderEndpointConfigurationDTO authHeader(String authHeader) {
+        public AIServiceProviderSummaryResponseListDTO count(Integer count) {
         
-        this.authHeader = authHeader;
+        this.count = count;
         return this;
         }
 
     /**
-        * Get authHeader
-    * @return authHeader
+        * Number of LLM Providers returned. 
+    * @return count
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "Authorization", value = "")
+      @ApiModelProperty(example = "1", value = "Number of LLM Providers returned. ")
     
-    public String getAuthHeader() {
-        return authHeader;
+    public Integer getCount() {
+        return count;
     }
 
 
-    public void setAuthHeader(String authHeader) {
-        this.authHeader = authHeader;
+    public void setCount(Integer count) {
+        this.count = count;
     }
 
 
-        public LLMProviderEndpointConfigurationDTO authQueryParameter(String authQueryParameter) {
+        public AIServiceProviderSummaryResponseListDTO list(List<AIServiceProviderSummaryResponseDTO> list) {
         
-        this.authQueryParameter = authQueryParameter;
+        this.list = list;
         return this;
         }
 
     /**
-        * Get authQueryParameter
-    * @return authQueryParameter
+        * Get list
+    * @return list
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "ApiKey", value = "")
+      @ApiModelProperty(value = "")
     
-    public String getAuthQueryParameter() {
-        return authQueryParameter;
+    public List<AIServiceProviderSummaryResponseDTO> getList() {
+        return list;
     }
 
 
-    public void setAuthQueryParameter(String authQueryParameter) {
-        this.authQueryParameter = authQueryParameter;
+    public void setList(List<AIServiceProviderSummaryResponseDTO> list) {
+        this.list = list;
     }
 
 
@@ -92,23 +95,23 @@ public class LLMProviderEndpointConfigurationDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            LLMProviderEndpointConfigurationDTO llMProviderEndpointConfiguration = (LLMProviderEndpointConfigurationDTO) o;
-            return Objects.equals(this.authHeader, llMProviderEndpointConfiguration.authHeader) &&
-            Objects.equals(this.authQueryParameter, llMProviderEndpointConfiguration.authQueryParameter);
+            AIServiceProviderSummaryResponseListDTO aiServiceProviderSummaryResponseList = (AIServiceProviderSummaryResponseListDTO) o;
+            return Objects.equals(this.count, aiServiceProviderSummaryResponseList.count) &&
+            Objects.equals(this.list, aiServiceProviderSummaryResponseList.list);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(authHeader, authQueryParameter);
+        return Objects.hash(count, list);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class LLMProviderEndpointConfigurationDTO {\n");
-    sb.append("    authHeader: ").append(toIndentedString(authHeader)).append("\n");
-    sb.append("    authQueryParameter: ").append(toIndentedString(authQueryParameter)).append("\n");
+sb.append("class AIServiceProviderSummaryResponseListDTO {\n");
+    sb.append("    count: ").append(toIndentedString(count)).append("\n");
+    sb.append("    list: ").append(toIndentedString(list)).append("\n");
 sb.append("}");
 return sb.toString();
 }

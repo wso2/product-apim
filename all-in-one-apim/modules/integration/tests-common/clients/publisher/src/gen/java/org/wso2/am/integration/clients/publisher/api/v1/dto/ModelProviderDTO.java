@@ -25,65 +25,64 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LLMProviderSummaryResponseDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* LLMProviderSummaryResponseListDTO
+* ModelProviderDTO
 */
 
-public class LLMProviderSummaryResponseListDTO {
-        public static final String SERIALIZED_NAME_COUNT = "count";
-        @SerializedName(SERIALIZED_NAME_COUNT)
-            private Integer count;
+public class ModelProviderDTO {
+        public static final String SERIALIZED_NAME_MODELS = "models";
+        @SerializedName(SERIALIZED_NAME_MODELS)
+            private List<String> models = null;
 
-        public static final String SERIALIZED_NAME_LIST = "list";
-        @SerializedName(SERIALIZED_NAME_LIST)
-            private List<LLMProviderSummaryResponseDTO> list = null;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
 
-        public LLMProviderSummaryResponseListDTO count(Integer count) {
+        public ModelProviderDTO models(List<String> models) {
         
-        this.count = count;
+        this.models = models;
         return this;
         }
 
     /**
-        * Number of LLM Providers returned. 
-    * @return count
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "1", value = "Number of LLM Providers returned. ")
-    
-    public Integer getCount() {
-        return count;
-    }
-
-
-    public void setCount(Integer count) {
-        this.count = count;
-    }
-
-
-        public LLMProviderSummaryResponseListDTO list(List<LLMProviderSummaryResponseDTO> list) {
-        
-        this.list = list;
-        return this;
-        }
-
-    /**
-        * Get list
-    * @return list
+        * Get models
+    * @return models
     **/
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public List<LLMProviderSummaryResponseDTO> getList() {
-        return list;
+    public List<String> getModels() {
+        return models;
     }
 
 
-    public void setList(List<LLMProviderSummaryResponseDTO> list) {
-        this.list = list;
+    public void setModels(List<String> models) {
+        this.models = models;
+    }
+
+
+        public ModelProviderDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * Get name
+    * @return name
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "OpenAI", value = "")
+    
+    public String getName() {
+        return name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 
@@ -95,23 +94,23 @@ public class LLMProviderSummaryResponseListDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            LLMProviderSummaryResponseListDTO llMProviderSummaryResponseList = (LLMProviderSummaryResponseListDTO) o;
-            return Objects.equals(this.count, llMProviderSummaryResponseList.count) &&
-            Objects.equals(this.list, llMProviderSummaryResponseList.list);
+            ModelProviderDTO modelProvider = (ModelProviderDTO) o;
+            return Objects.equals(this.models, modelProvider.models) &&
+            Objects.equals(this.name, modelProvider.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(count, list);
+        return Objects.hash(models, name);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class LLMProviderSummaryResponseListDTO {\n");
-    sb.append("    count: ").append(toIndentedString(count)).append("\n");
-    sb.append("    list: ").append(toIndentedString(list)).append("\n");
+sb.append("class ModelProviderDTO {\n");
+    sb.append("    models: ").append(toIndentedString(models)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
 sb.append("}");
 return sb.toString();
 }

@@ -23,199 +23,92 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AIServiceProviderEndpointAuthenticationConfigurationDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* LLMProviderResponseDTO
+* AIServiceProviderEndpointConfigurationDTO
 */
 
-public class LLMProviderResponseDTO {
-        public static final String SERIALIZED_NAME_ID = "id";
-        @SerializedName(SERIALIZED_NAME_ID)
-            private String id;
+public class AIServiceProviderEndpointConfigurationDTO {
+        public static final String SERIALIZED_NAME_AUTHENTICATION_CONFIGURATION = "authenticationConfiguration";
+        @SerializedName(SERIALIZED_NAME_AUTHENTICATION_CONFIGURATION)
+            private AIServiceProviderEndpointAuthenticationConfigurationDTO authenticationConfiguration;
 
-        public static final String SERIALIZED_NAME_NAME = "name";
-        @SerializedName(SERIALIZED_NAME_NAME)
-            private String name;
+        public static final String SERIALIZED_NAME_AUTH_HEADER = "authHeader";
+        @SerializedName(SERIALIZED_NAME_AUTH_HEADER)
+            private String authHeader;
 
-        public static final String SERIALIZED_NAME_API_VERSION = "apiVersion";
-        @SerializedName(SERIALIZED_NAME_API_VERSION)
-            private String apiVersion;
-
-        public static final String SERIALIZED_NAME_BUILT_IN_SUPPORT = "builtInSupport";
-        @SerializedName(SERIALIZED_NAME_BUILT_IN_SUPPORT)
-            private Boolean builtInSupport;
-
-        public static final String SERIALIZED_NAME_DESCRIPTION = "description";
-        @SerializedName(SERIALIZED_NAME_DESCRIPTION)
-            private String description;
-
-        public static final String SERIALIZED_NAME_CONFIGURATIONS = "configurations";
-        @SerializedName(SERIALIZED_NAME_CONFIGURATIONS)
-            private String configurations;
-
-        public static final String SERIALIZED_NAME_API_DEFINITION = "apiDefinition";
-        @SerializedName(SERIALIZED_NAME_API_DEFINITION)
-            private String apiDefinition;
+        public static final String SERIALIZED_NAME_AUTH_QUERY_PARAMETER = "authQueryParameter";
+        @SerializedName(SERIALIZED_NAME_AUTH_QUERY_PARAMETER)
+            private String authQueryParameter;
 
 
-        public LLMProviderResponseDTO id(String id) {
+        public AIServiceProviderEndpointConfigurationDTO authenticationConfiguration(AIServiceProviderEndpointAuthenticationConfigurationDTO authenticationConfiguration) {
         
-        this.id = id;
+        this.authenticationConfiguration = authenticationConfiguration;
         return this;
         }
 
     /**
-        * Get id
-    * @return id
+        * Get authenticationConfiguration
+    * @return authenticationConfiguration
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "ece92bdc-e1e6-325c-b6f4-656208a041e9", value = "")
+      @ApiModelProperty(value = "")
     
-    public String getId() {
-        return id;
+    public AIServiceProviderEndpointAuthenticationConfigurationDTO getAuthenticationConfiguration() {
+        return authenticationConfiguration;
     }
 
 
-    public void setId(String id) {
-        this.id = id;
+    public void setAuthenticationConfiguration(AIServiceProviderEndpointAuthenticationConfigurationDTO authenticationConfiguration) {
+        this.authenticationConfiguration = authenticationConfiguration;
     }
 
 
-        public LLMProviderResponseDTO name(String name) {
+        public AIServiceProviderEndpointConfigurationDTO authHeader(String authHeader) {
         
-        this.name = name;
+        this.authHeader = authHeader;
         return this;
         }
 
     /**
-        * Get name
-    * @return name
+        * Get authHeader
+    * @return authHeader
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "OpenAI", value = "")
+      @ApiModelProperty(example = "Authorization", value = "")
     
-    public String getName() {
-        return name;
+    public String getAuthHeader() {
+        return authHeader;
     }
 
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAuthHeader(String authHeader) {
+        this.authHeader = authHeader;
     }
 
 
-        public LLMProviderResponseDTO apiVersion(String apiVersion) {
+        public AIServiceProviderEndpointConfigurationDTO authQueryParameter(String authQueryParameter) {
         
-        this.apiVersion = apiVersion;
+        this.authQueryParameter = authQueryParameter;
         return this;
         }
 
     /**
-        * Get apiVersion
-    * @return apiVersion
+        * Get authQueryParameter
+    * @return authQueryParameter
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "1.0.0", value = "")
+      @ApiModelProperty(example = "ApiKey", value = "")
     
-    public String getApiVersion() {
-        return apiVersion;
+    public String getAuthQueryParameter() {
+        return authQueryParameter;
     }
 
 
-    public void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
-    }
-
-
-        public LLMProviderResponseDTO builtInSupport(Boolean builtInSupport) {
-        
-        this.builtInSupport = builtInSupport;
-        return this;
-        }
-
-    /**
-        * Is built-in support
-    * @return builtInSupport
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "Is built-in support")
-    
-    public Boolean isBuiltInSupport() {
-        return builtInSupport;
-    }
-
-
-    public void setBuiltInSupport(Boolean builtInSupport) {
-        this.builtInSupport = builtInSupport;
-    }
-
-
-        public LLMProviderResponseDTO description(String description) {
-        
-        this.description = description;
-        return this;
-        }
-
-    /**
-        * Get description
-    * @return description
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "OpenAI LLM", value = "")
-    
-    public String getDescription() {
-        return description;
-    }
-
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-
-        public LLMProviderResponseDTO configurations(String configurations) {
-        
-        this.configurations = configurations;
-        return this;
-        }
-
-    /**
-        * LLM Provider configurations
-    * @return configurations
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "LLM Provider configurations")
-    
-    public String getConfigurations() {
-        return configurations;
-    }
-
-
-    public void setConfigurations(String configurations) {
-        this.configurations = configurations;
-    }
-
-
-        public LLMProviderResponseDTO apiDefinition(String apiDefinition) {
-        
-        this.apiDefinition = apiDefinition;
-        return this;
-        }
-
-    /**
-        * OpenAPI specification
-    * @return apiDefinition
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "OpenAPI specification")
-    
-    public String getApiDefinition() {
-        return apiDefinition;
-    }
-
-
-    public void setApiDefinition(String apiDefinition) {
-        this.apiDefinition = apiDefinition;
+    public void setAuthQueryParameter(String authQueryParameter) {
+        this.authQueryParameter = authQueryParameter;
     }
 
 
@@ -227,33 +120,25 @@ public class LLMProviderResponseDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            LLMProviderResponseDTO llMProviderResponse = (LLMProviderResponseDTO) o;
-            return Objects.equals(this.id, llMProviderResponse.id) &&
-            Objects.equals(this.name, llMProviderResponse.name) &&
-            Objects.equals(this.apiVersion, llMProviderResponse.apiVersion) &&
-            Objects.equals(this.builtInSupport, llMProviderResponse.builtInSupport) &&
-            Objects.equals(this.description, llMProviderResponse.description) &&
-            Objects.equals(this.configurations, llMProviderResponse.configurations) &&
-            Objects.equals(this.apiDefinition, llMProviderResponse.apiDefinition);
+            AIServiceProviderEndpointConfigurationDTO aiServiceProviderEndpointConfiguration = (AIServiceProviderEndpointConfigurationDTO) o;
+            return Objects.equals(this.authenticationConfiguration, aiServiceProviderEndpointConfiguration.authenticationConfiguration) &&
+            Objects.equals(this.authHeader, aiServiceProviderEndpointConfiguration.authHeader) &&
+            Objects.equals(this.authQueryParameter, aiServiceProviderEndpointConfiguration.authQueryParameter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, apiVersion, builtInSupport, description, configurations, apiDefinition);
+        return Objects.hash(authenticationConfiguration, authHeader, authQueryParameter);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class LLMProviderResponseDTO {\n");
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    apiVersion: ").append(toIndentedString(apiVersion)).append("\n");
-    sb.append("    builtInSupport: ").append(toIndentedString(builtInSupport)).append("\n");
-    sb.append("    description: ").append(toIndentedString(description)).append("\n");
-    sb.append("    configurations: ").append(toIndentedString(configurations)).append("\n");
-    sb.append("    apiDefinition: ").append(toIndentedString(apiDefinition)).append("\n");
+sb.append("class AIServiceProviderEndpointConfigurationDTO {\n");
+    sb.append("    authenticationConfiguration: ").append(toIndentedString(authenticationConfiguration)).append("\n");
+    sb.append("    authHeader: ").append(toIndentedString(authHeader)).append("\n");
+    sb.append("    authQueryParameter: ").append(toIndentedString(authQueryParameter)).append("\n");
 sb.append("}");
 return sb.toString();
 }

@@ -25,10 +25,10 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* LLMProviderSummaryResponseDTO
+* AIServiceProviderSummaryResponseDTO
 */
 
-public class LLMProviderSummaryResponseDTO {
+public class AIServiceProviderSummaryResponseDTO {
         public static final String SERIALIZED_NAME_ID = "id";
         @SerializedName(SERIALIZED_NAME_ID)
             private String id;
@@ -50,7 +50,7 @@ public class LLMProviderSummaryResponseDTO {
             private String description;
 
 
-        public LLMProviderSummaryResponseDTO id(String id) {
+        public AIServiceProviderSummaryResponseDTO id(String id) {
         
         this.id = id;
         return this;
@@ -73,7 +73,7 @@ public class LLMProviderSummaryResponseDTO {
     }
 
 
-        public LLMProviderSummaryResponseDTO name(String name) {
+        public AIServiceProviderSummaryResponseDTO name(String name) {
         
         this.name = name;
         return this;
@@ -96,7 +96,7 @@ public class LLMProviderSummaryResponseDTO {
     }
 
 
-        public LLMProviderSummaryResponseDTO apiVersion(String apiVersion) {
+        public AIServiceProviderSummaryResponseDTO apiVersion(String apiVersion) {
         
         this.apiVersion = apiVersion;
         return this;
@@ -119,7 +119,7 @@ public class LLMProviderSummaryResponseDTO {
     }
 
 
-        public LLMProviderSummaryResponseDTO builtInSupport(Boolean builtInSupport) {
+        public AIServiceProviderSummaryResponseDTO builtInSupport(Boolean builtInSupport) {
         
         this.builtInSupport = builtInSupport;
         return this;
@@ -142,7 +142,7 @@ public class LLMProviderSummaryResponseDTO {
     }
 
 
-        public LLMProviderSummaryResponseDTO description(String description) {
+        public AIServiceProviderSummaryResponseDTO description(String description) {
         
         this.description = description;
         return this;
@@ -173,12 +173,12 @@ public class LLMProviderSummaryResponseDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            LLMProviderSummaryResponseDTO llMProviderSummaryResponse = (LLMProviderSummaryResponseDTO) o;
-            return Objects.equals(this.id, llMProviderSummaryResponse.id) &&
-            Objects.equals(this.name, llMProviderSummaryResponse.name) &&
-            Objects.equals(this.apiVersion, llMProviderSummaryResponse.apiVersion) &&
-            Objects.equals(this.builtInSupport, llMProviderSummaryResponse.builtInSupport) &&
-            Objects.equals(this.description, llMProviderSummaryResponse.description);
+            AIServiceProviderSummaryResponseDTO aiServiceProviderSummaryResponse = (AIServiceProviderSummaryResponseDTO) o;
+            return Objects.equals(this.id, aiServiceProviderSummaryResponse.id) &&
+            Objects.equals(this.name, aiServiceProviderSummaryResponse.name) &&
+            Objects.equals(this.apiVersion, aiServiceProviderSummaryResponse.apiVersion) &&
+            Objects.equals(this.builtInSupport, aiServiceProviderSummaryResponse.builtInSupport) &&
+            Objects.equals(this.description, aiServiceProviderSummaryResponse.description);
     }
 
     @Override
@@ -190,7 +190,7 @@ public class LLMProviderSummaryResponseDTO {
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class LLMProviderSummaryResponseDTO {\n");
+sb.append("class AIServiceProviderSummaryResponseDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    apiVersion: ").append(toIndentedString(apiVersion)).append("\n");

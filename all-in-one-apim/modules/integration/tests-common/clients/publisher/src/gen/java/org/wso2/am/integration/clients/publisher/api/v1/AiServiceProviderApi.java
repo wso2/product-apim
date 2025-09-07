@@ -27,7 +27,9 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LLMProviderEndpointConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AIServiceProviderEndpointConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AIServiceProviderResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ModelProviderDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -35,14 +37,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LlmProviderApi {
+public class AiServiceProviderApi {
     private ApiClient localVarApiClient;
 
-    public LlmProviderApi() {
+    public AiServiceProviderApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public LlmProviderApi(ApiClient apiClient) {
+    public AiServiceProviderApi(ApiClient apiClient) {
         this.localVarApiClient = apiClient;
     }
 
@@ -55,23 +57,23 @@ public class LlmProviderApi {
     }
 
     /**
-     * Build call for getLLMProviderApiDefinition
-     * @param llmProviderId  (required)
+     * Build call for getAIServiceProvider
+     * @param aiServiceProviderId AI Service Provider ID  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. AI Service Provider  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getLLMProviderApiDefinitionCall(String llmProviderId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAIServiceProviderCall(String aiServiceProviderId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/llm-providers/{llmProviderId}/api-definition"
-            .replaceAll("\\{" + "llmProviderId" + "\\}", localVarApiClient.escapeString(llmProviderId.toString()));
+        String localVarPath = "/ai-service-providers/{aiServiceProviderId}"
+            .replaceAll("\\{" + "aiServiceProviderId" + "\\}", localVarApiClient.escapeString(aiServiceProviderId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -97,23 +99,134 @@ public class LlmProviderApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getLLMProviderApiDefinitionValidateBeforeCall(String llmProviderId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAIServiceProviderValidateBeforeCall(String aiServiceProviderId, final ApiCallback _callback) throws ApiException {
         
-        // verify the required parameter 'llmProviderId' is set
-        if (llmProviderId == null) {
-            throw new ApiException("Missing the required parameter 'llmProviderId' when calling getLLMProviderApiDefinition(Async)");
+        // verify the required parameter 'aiServiceProviderId' is set
+        if (aiServiceProviderId == null) {
+            throw new ApiException("Missing the required parameter 'aiServiceProviderId' when calling getAIServiceProvider(Async)");
         }
         
 
-        okhttp3.Call localVarCall = getLLMProviderApiDefinitionCall(llmProviderId, _callback);
+        okhttp3.Call localVarCall = getAIServiceProviderCall(aiServiceProviderId, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Get LLM Provider&#39;s API Definition
-     * Get LLM Provider&#39;s API Definition 
-     * @param llmProviderId  (required)
+     * Get AI Service Provider
+     * Get a AI Service Provider 
+     * @param aiServiceProviderId AI Service Provider ID  (required)
+     * @return AIServiceProviderResponseDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. AI Service Provider  </td><td>  -  </td></tr>
+     </table>
+     */
+    public AIServiceProviderResponseDTO getAIServiceProvider(String aiServiceProviderId) throws ApiException {
+        ApiResponse<AIServiceProviderResponseDTO> localVarResp = getAIServiceProviderWithHttpInfo(aiServiceProviderId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get AI Service Provider
+     * Get a AI Service Provider 
+     * @param aiServiceProviderId AI Service Provider ID  (required)
+     * @return ApiResponse&lt;AIServiceProviderResponseDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. AI Service Provider  </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<AIServiceProviderResponseDTO> getAIServiceProviderWithHttpInfo(String aiServiceProviderId) throws ApiException {
+        okhttp3.Call localVarCall = getAIServiceProviderValidateBeforeCall(aiServiceProviderId, null);
+        Type localVarReturnType = new TypeToken<AIServiceProviderResponseDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get AI Service Provider (asynchronously)
+     * Get a AI Service Provider 
+     * @param aiServiceProviderId AI Service Provider ID  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. AI Service Provider  </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAIServiceProviderAsync(String aiServiceProviderId, final ApiCallback<AIServiceProviderResponseDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAIServiceProviderValidateBeforeCall(aiServiceProviderId, _callback);
+        Type localVarReturnType = new TypeToken<AIServiceProviderResponseDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAIServiceProviderApiDefinition
+     * @param aiServiceProviderId  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAIServiceProviderApiDefinitionCall(String aiServiceProviderId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/ai-service-providers/{aiServiceProviderId}/api-definition"
+            .replaceAll("\\{" + "aiServiceProviderId" + "\\}", localVarApiClient.escapeString(aiServiceProviderId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAIServiceProviderApiDefinitionValidateBeforeCall(String aiServiceProviderId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'aiServiceProviderId' is set
+        if (aiServiceProviderId == null) {
+            throw new ApiException("Missing the required parameter 'aiServiceProviderId' when calling getAIServiceProviderApiDefinition(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAIServiceProviderApiDefinitionCall(aiServiceProviderId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get AI Service Provider&#39;s API Definition
+     * Get AI Service Provider&#39;s API Definition 
+     * @param aiServiceProviderId  (required)
      * @return String
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -122,15 +235,15 @@ public class LlmProviderApi {
         <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
      </table>
      */
-    public String getLLMProviderApiDefinition(String llmProviderId) throws ApiException {
-        ApiResponse<String> localVarResp = getLLMProviderApiDefinitionWithHttpInfo(llmProviderId);
+    public String getAIServiceProviderApiDefinition(String aiServiceProviderId) throws ApiException {
+        ApiResponse<String> localVarResp = getAIServiceProviderApiDefinitionWithHttpInfo(aiServiceProviderId);
         return localVarResp.getData();
     }
 
     /**
-     * Get LLM Provider&#39;s API Definition
-     * Get LLM Provider&#39;s API Definition 
-     * @param llmProviderId  (required)
+     * Get AI Service Provider&#39;s API Definition
+     * Get AI Service Provider&#39;s API Definition 
+     * @param aiServiceProviderId  (required)
      * @return ApiResponse&lt;String&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -139,16 +252,16 @@ public class LlmProviderApi {
         <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<String> getLLMProviderApiDefinitionWithHttpInfo(String llmProviderId) throws ApiException {
-        okhttp3.Call localVarCall = getLLMProviderApiDefinitionValidateBeforeCall(llmProviderId, null);
+    public ApiResponse<String> getAIServiceProviderApiDefinitionWithHttpInfo(String aiServiceProviderId) throws ApiException {
+        okhttp3.Call localVarCall = getAIServiceProviderApiDefinitionValidateBeforeCall(aiServiceProviderId, null);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get LLM Provider&#39;s API Definition (asynchronously)
-     * Get LLM Provider&#39;s API Definition 
-     * @param llmProviderId  (required)
+     * Get AI Service Provider&#39;s API Definition (asynchronously)
+     * Get AI Service Provider&#39;s API Definition 
+     * @param aiServiceProviderId  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -158,16 +271,16 @@ public class LlmProviderApi {
         <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getLLMProviderApiDefinitionAsync(String llmProviderId, final ApiCallback<String> _callback) throws ApiException {
+    public okhttp3.Call getAIServiceProviderApiDefinitionAsync(String aiServiceProviderId, final ApiCallback<String> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getLLMProviderApiDefinitionValidateBeforeCall(llmProviderId, _callback);
+        okhttp3.Call localVarCall = getAIServiceProviderApiDefinitionValidateBeforeCall(aiServiceProviderId, _callback);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for getLLMProviderEndpointConfiguration
-     * @param llmProviderId  (required)
+     * Build call for getAIServiceProviderEndpointConfiguration
+     * @param aiServiceProviderId  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -177,12 +290,12 @@ public class LlmProviderApi {
         <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getLLMProviderEndpointConfigurationCall(String llmProviderId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAIServiceProviderEndpointConfigurationCall(String aiServiceProviderId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/llm-providers/{llmProviderId}/endpoint-configuration"
-            .replaceAll("\\{" + "llmProviderId" + "\\}", localVarApiClient.escapeString(llmProviderId.toString()));
+        String localVarPath = "/ai-service-providers/{aiServiceProviderId}/endpoint-configuration"
+            .replaceAll("\\{" + "aiServiceProviderId" + "\\}", localVarApiClient.escapeString(aiServiceProviderId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -208,24 +321,24 @@ public class LlmProviderApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getLLMProviderEndpointConfigurationValidateBeforeCall(String llmProviderId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAIServiceProviderEndpointConfigurationValidateBeforeCall(String aiServiceProviderId, final ApiCallback _callback) throws ApiException {
         
-        // verify the required parameter 'llmProviderId' is set
-        if (llmProviderId == null) {
-            throw new ApiException("Missing the required parameter 'llmProviderId' when calling getLLMProviderEndpointConfiguration(Async)");
+        // verify the required parameter 'aiServiceProviderId' is set
+        if (aiServiceProviderId == null) {
+            throw new ApiException("Missing the required parameter 'aiServiceProviderId' when calling getAIServiceProviderEndpointConfiguration(Async)");
         }
         
 
-        okhttp3.Call localVarCall = getLLMProviderEndpointConfigurationCall(llmProviderId, _callback);
+        okhttp3.Call localVarCall = getAIServiceProviderEndpointConfigurationCall(aiServiceProviderId, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Get LLM provider&#39;s security configurations
-     * Get LLM provider&#39;s endpoint security configurations 
-     * @param llmProviderId  (required)
-     * @return LLMProviderEndpointConfigurationDTO
+     * Get AI Service Provider&#39;s security configurations
+     * Get AI Service Provider&#39;s endpoint security configurations 
+     * @param aiServiceProviderId  (required)
+     * @return AIServiceProviderEndpointConfigurationDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -233,16 +346,16 @@ public class LlmProviderApi {
         <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
      </table>
      */
-    public LLMProviderEndpointConfigurationDTO getLLMProviderEndpointConfiguration(String llmProviderId) throws ApiException {
-        ApiResponse<LLMProviderEndpointConfigurationDTO> localVarResp = getLLMProviderEndpointConfigurationWithHttpInfo(llmProviderId);
+    public AIServiceProviderEndpointConfigurationDTO getAIServiceProviderEndpointConfiguration(String aiServiceProviderId) throws ApiException {
+        ApiResponse<AIServiceProviderEndpointConfigurationDTO> localVarResp = getAIServiceProviderEndpointConfigurationWithHttpInfo(aiServiceProviderId);
         return localVarResp.getData();
     }
 
     /**
-     * Get LLM provider&#39;s security configurations
-     * Get LLM provider&#39;s endpoint security configurations 
-     * @param llmProviderId  (required)
-     * @return ApiResponse&lt;LLMProviderEndpointConfigurationDTO&gt;
+     * Get AI Service Provider&#39;s security configurations
+     * Get AI Service Provider&#39;s endpoint security configurations 
+     * @param aiServiceProviderId  (required)
+     * @return ApiResponse&lt;AIServiceProviderEndpointConfigurationDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -250,16 +363,16 @@ public class LlmProviderApi {
         <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<LLMProviderEndpointConfigurationDTO> getLLMProviderEndpointConfigurationWithHttpInfo(String llmProviderId) throws ApiException {
-        okhttp3.Call localVarCall = getLLMProviderEndpointConfigurationValidateBeforeCall(llmProviderId, null);
-        Type localVarReturnType = new TypeToken<LLMProviderEndpointConfigurationDTO>(){}.getType();
+    public ApiResponse<AIServiceProviderEndpointConfigurationDTO> getAIServiceProviderEndpointConfigurationWithHttpInfo(String aiServiceProviderId) throws ApiException {
+        okhttp3.Call localVarCall = getAIServiceProviderEndpointConfigurationValidateBeforeCall(aiServiceProviderId, null);
+        Type localVarReturnType = new TypeToken<AIServiceProviderEndpointConfigurationDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get LLM provider&#39;s security configurations (asynchronously)
-     * Get LLM provider&#39;s endpoint security configurations 
-     * @param llmProviderId  (required)
+     * Get AI Service Provider&#39;s security configurations (asynchronously)
+     * Get AI Service Provider&#39;s endpoint security configurations 
+     * @param aiServiceProviderId  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -269,31 +382,31 @@ public class LlmProviderApi {
         <tr><td> 200 </td><td> OK. API Definition  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getLLMProviderEndpointConfigurationAsync(String llmProviderId, final ApiCallback<LLMProviderEndpointConfigurationDTO> _callback) throws ApiException {
+    public okhttp3.Call getAIServiceProviderEndpointConfigurationAsync(String aiServiceProviderId, final ApiCallback<AIServiceProviderEndpointConfigurationDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getLLMProviderEndpointConfigurationValidateBeforeCall(llmProviderId, _callback);
-        Type localVarReturnType = new TypeToken<LLMProviderEndpointConfigurationDTO>(){}.getType();
+        okhttp3.Call localVarCall = getAIServiceProviderEndpointConfigurationValidateBeforeCall(aiServiceProviderId, _callback);
+        Type localVarReturnType = new TypeToken<AIServiceProviderEndpointConfigurationDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for getLLMProviderModels
-     * @param llmProviderId  (required)
+     * Build call for getAIServiceProviderModels
+     * @param aiServiceProviderId  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of models  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. List of supported model families grouped by vendor  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getLLMProviderModelsCall(String llmProviderId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAIServiceProviderModelsCall(String aiServiceProviderId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/llm-providers/{llmProviderId}/models"
-            .replaceAll("\\{" + "llmProviderId" + "\\}", localVarApiClient.escapeString(llmProviderId.toString()));
+        String localVarPath = "/ai-service-providers/{aiServiceProviderId}/models"
+            .replaceAll("\\{" + "aiServiceProviderId" + "\\}", localVarApiClient.escapeString(aiServiceProviderId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -319,71 +432,71 @@ public class LlmProviderApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getLLMProviderModelsValidateBeforeCall(String llmProviderId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAIServiceProviderModelsValidateBeforeCall(String aiServiceProviderId, final ApiCallback _callback) throws ApiException {
         
-        // verify the required parameter 'llmProviderId' is set
-        if (llmProviderId == null) {
-            throw new ApiException("Missing the required parameter 'llmProviderId' when calling getLLMProviderModels(Async)");
+        // verify the required parameter 'aiServiceProviderId' is set
+        if (aiServiceProviderId == null) {
+            throw new ApiException("Missing the required parameter 'aiServiceProviderId' when calling getAIServiceProviderModels(Async)");
         }
         
 
-        okhttp3.Call localVarCall = getLLMProviderModelsCall(llmProviderId, _callback);
+        okhttp3.Call localVarCall = getAIServiceProviderModelsCall(aiServiceProviderId, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Get LLM provider&#39;s model list
-     * Get LLM provider&#39;s model list 
-     * @param llmProviderId  (required)
-     * @return List&lt;String&gt;
+     * Get AI Service Provider&#39;s model list
+     * Get AI Service Provider&#39;s model list 
+     * @param aiServiceProviderId  (required)
+     * @return List&lt;ModelProviderDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of models  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. List of supported model families grouped by vendor  </td><td>  -  </td></tr>
      </table>
      */
-    public List<String> getLLMProviderModels(String llmProviderId) throws ApiException {
-        ApiResponse<List<String>> localVarResp = getLLMProviderModelsWithHttpInfo(llmProviderId);
+    public List<ModelProviderDTO> getAIServiceProviderModels(String aiServiceProviderId) throws ApiException {
+        ApiResponse<List<ModelProviderDTO>> localVarResp = getAIServiceProviderModelsWithHttpInfo(aiServiceProviderId);
         return localVarResp.getData();
     }
 
     /**
-     * Get LLM provider&#39;s model list
-     * Get LLM provider&#39;s model list 
-     * @param llmProviderId  (required)
-     * @return ApiResponse&lt;List&lt;String&gt;&gt;
+     * Get AI Service Provider&#39;s model list
+     * Get AI Service Provider&#39;s model list 
+     * @param aiServiceProviderId  (required)
+     * @return ApiResponse&lt;List&lt;ModelProviderDTO&gt;&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of models  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. List of supported model families grouped by vendor  </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<List<String>> getLLMProviderModelsWithHttpInfo(String llmProviderId) throws ApiException {
-        okhttp3.Call localVarCall = getLLMProviderModelsValidateBeforeCall(llmProviderId, null);
-        Type localVarReturnType = new TypeToken<List<String>>(){}.getType();
+    public ApiResponse<List<ModelProviderDTO>> getAIServiceProviderModelsWithHttpInfo(String aiServiceProviderId) throws ApiException {
+        okhttp3.Call localVarCall = getAIServiceProviderModelsValidateBeforeCall(aiServiceProviderId, null);
+        Type localVarReturnType = new TypeToken<List<ModelProviderDTO>>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get LLM provider&#39;s model list (asynchronously)
-     * Get LLM provider&#39;s model list 
-     * @param llmProviderId  (required)
+     * Get AI Service Provider&#39;s model list (asynchronously)
+     * Get AI Service Provider&#39;s model list 
+     * @param aiServiceProviderId  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of models  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. List of supported model families grouped by vendor  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getLLMProviderModelsAsync(String llmProviderId, final ApiCallback<List<String>> _callback) throws ApiException {
+    public okhttp3.Call getAIServiceProviderModelsAsync(String aiServiceProviderId, final ApiCallback<List<ModelProviderDTO>> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getLLMProviderModelsValidateBeforeCall(llmProviderId, _callback);
-        Type localVarReturnType = new TypeToken<List<String>>(){}.getType();
+        okhttp3.Call localVarCall = getAIServiceProviderModelsValidateBeforeCall(aiServiceProviderId, _callback);
+        Type localVarReturnType = new TypeToken<List<ModelProviderDTO>>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

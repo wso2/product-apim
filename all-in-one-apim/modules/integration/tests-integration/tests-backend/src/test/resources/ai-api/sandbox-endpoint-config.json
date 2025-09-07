@@ -1,0 +1,18 @@
+{
+  "endpoint_type": "http",
+  "endpoint_security": {
+    "sandbox": {
+      "enabled": true,
+      "type": "apikey",
+      "apiKeyIdentifier": "Authorization",
+      "apiKeyValue": "Bearer 456",
+      "apiKeyIdentifierType": "HEADER",
+      "username": "",
+      "password": null,
+      "grantType": "",
+      "tokenUrl": "",
+      "clientId": null,
+      "clientSecret": null
+    }
+  }
+}

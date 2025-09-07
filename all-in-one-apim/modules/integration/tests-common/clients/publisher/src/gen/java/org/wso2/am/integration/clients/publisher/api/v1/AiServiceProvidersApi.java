@@ -27,8 +27,8 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AIServiceProviderSummaryResponseListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LLMProviderSummaryResponseListDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -36,14 +36,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LlmProvidersApi {
+public class AiServiceProvidersApi {
     private ApiClient localVarApiClient;
 
-    public LlmProvidersApi() {
+    public AiServiceProvidersApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public LlmProvidersApi(ApiClient apiClient) {
+    public AiServiceProvidersApi(ApiClient apiClient) {
         this.localVarApiClient = apiClient;
     }
 
@@ -56,23 +56,23 @@ public class LlmProvidersApi {
     }
 
     /**
-     * Build call for getLLMProviders
+     * Build call for getAIServiceProviders
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of LLM providers.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. List of AI Service providers.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getLLMProvidersCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAIServiceProvidersCall(final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/llm-providers";
+        String localVarPath = "/ai-service-providers";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -98,69 +98,69 @@ public class LlmProvidersApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getLLMProvidersValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAIServiceProvidersValidateBeforeCall(final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = getLLMProvidersCall(_callback);
+        okhttp3.Call localVarCall = getAIServiceProvidersCall(_callback);
         return localVarCall;
 
     }
 
     /**
-     * Get all LLM providers
-     * Get all LLM providers 
-     * @return LLMProviderSummaryResponseListDTO
+     * Get all AI Service providers
+     * Get all AI Service providers 
+     * @return AIServiceProviderSummaryResponseListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of LLM providers.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. List of AI Service providers.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public LLMProviderSummaryResponseListDTO getLLMProviders() throws ApiException {
-        ApiResponse<LLMProviderSummaryResponseListDTO> localVarResp = getLLMProvidersWithHttpInfo();
+    public AIServiceProviderSummaryResponseListDTO getAIServiceProviders() throws ApiException {
+        ApiResponse<AIServiceProviderSummaryResponseListDTO> localVarResp = getAIServiceProvidersWithHttpInfo();
         return localVarResp.getData();
     }
 
     /**
-     * Get all LLM providers
-     * Get all LLM providers 
-     * @return ApiResponse&lt;LLMProviderSummaryResponseListDTO&gt;
+     * Get all AI Service providers
+     * Get all AI Service providers 
+     * @return ApiResponse&lt;AIServiceProviderSummaryResponseListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of LLM providers.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. List of AI Service providers.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<LLMProviderSummaryResponseListDTO> getLLMProvidersWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = getLLMProvidersValidateBeforeCall(null);
-        Type localVarReturnType = new TypeToken<LLMProviderSummaryResponseListDTO>(){}.getType();
+    public ApiResponse<AIServiceProviderSummaryResponseListDTO> getAIServiceProvidersWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = getAIServiceProvidersValidateBeforeCall(null);
+        Type localVarReturnType = new TypeToken<AIServiceProviderSummaryResponseListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get all LLM providers (asynchronously)
-     * Get all LLM providers 
+     * Get all AI Service providers (asynchronously)
+     * Get all AI Service providers 
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of LLM providers.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. List of AI Service providers.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getLLMProvidersAsync(final ApiCallback<LLMProviderSummaryResponseListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAIServiceProvidersAsync(final ApiCallback<AIServiceProviderSummaryResponseListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getLLMProvidersValidateBeforeCall(_callback);
-        Type localVarReturnType = new TypeToken<LLMProviderSummaryResponseListDTO>(){}.getType();
+        okhttp3.Call localVarCall = getAIServiceProvidersValidateBeforeCall(_callback);
+        Type localVarReturnType = new TypeToken<AIServiceProviderSummaryResponseListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
