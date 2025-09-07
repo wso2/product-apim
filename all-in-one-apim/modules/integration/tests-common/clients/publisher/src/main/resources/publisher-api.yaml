@@ -9043,22 +9043,22 @@ paths:
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/endpoints/13092607-ed01-4fa1-bc64-5da0e2abe92c"'
       operationId: deleteApiEndpoint
-      
+
   ######################################################
-  # LLM Providers resource APIs
+  # AI Service Providers resource APIs
   ######################################################
-  /llm-providers:
+  /ai-service-providers:
     get:
       tags:
-        - LLMProviders
-      summary: Get all LLM providers
+        - AIServiceProviders
+      summary: Get all AI Service providers
       description: |
-        Get all LLM providers
+        Get all AI Service providers
       responses:
         200:
           description: |
             OK.
-            List of LLM providers.
+            List of AI Service providers.
           headers:
             Content-Type:
               description: The content type of the body.
@@ -9067,7 +9067,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LLMProviderSummaryResponseList'
+                $ref: '#/components/schemas/AIServiceProviderSummaryResponseList'
         406:
           $ref: '#/components/responses/NotAcceptable'
         500:
@@ -9078,18 +9078,18 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://127.0.0.1:9443/api/am/publisher/v4/llm-providers"'
-      operationId: getLLMProviders
+            "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers"'
+      operationId: getAIServiceProviders
 
-  /llm-providers/{llmProviderId}/api-definition:
+  /ai-service-providers/{aiServiceProviderId}/api-definition:
     get:
       tags:
-        - LLMProvider
-      summary: Get LLM Provider's API Definition
+        - AIServiceProvider
+      summary: Get AI Service Provider's API Definition
       description: |
-        Get LLM Provider's API Definition
+        Get AI Service Provider's API Definition
       parameters:
-        - name: llmProviderId
+        - name: aiServiceProviderId
           in: path
           required: true
           schema:
@@ -9109,18 +9109,18 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/api-definition"'
-      operationId: getLLMProviderApiDefinition
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/api-definition"'
+      operationId: getAIServiceProviderApiDefinition
 
-  /llm-providers/{llmProviderId}/endpoint-configuration:
+  /ai-service-providers/{aiServiceProviderId}/endpoint-configuration:
     get:
       tags:
-        - LLMProvider
-      summary: Get LLM provider's security configurations
+        - AIServiceProvider
+      summary: Get AI Service Provider's security configurations
       description: |
-        Get LLM provider's endpoint security configurations
+        Get AI Service Provider's endpoint security configurations
       parameters:
-        - name: llmProviderId
+        - name: aiServiceProviderId
           in: path
           required: true
           schema:
@@ -9133,25 +9133,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LLMProviderEndpointConfiguration'
+                $ref: '#/components/schemas/AIServiceProviderEndpointConfiguration'
       security:
         - OAuth2Security:
             - apim:llm_provider_read
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/endpoint-configuration"'
-      operationId: getLLMProviderEndpointConfiguration
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/endpoint-configuration"'
+      operationId: getAIServiceProviderEndpointConfiguration
 
-  /llm-providers/{llmProviderId}/models:
+  /ai-service-providers/{aiServiceProviderId}/models:
     get:
       tags:
-        - LLMProvider
-      summary: Get LLM provider's model list
+        - AIServiceProvider
+      summary: Get AI Service Provider's model list
       description: |
-        Get LLM provider's model list
+        Get AI Service Provider's model list
       parameters:
-        - name: llmProviderId
+        - name: aiServiceProviderId
           in: path
           required: true
           schema:
@@ -9160,21 +9160,57 @@ paths:
         200:
           description: |
             OK.
-            List of models
+            List of supported model families grouped by vendor
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  type: string
+                  $ref: '#/components/schemas/ModelProvider'
       security:
         - OAuth2Security:
             - apim:llm_provider_read
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/models"'
-      operationId: getLLMProviderModels
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/models"'
+      operationId: getAIServiceProviderModels
+
+  ######################################################
+  # The "Individual AI Service Provider" resource APIs
+  ######################################################
+  /ai-service-providers/{aiServiceProviderId}:
+    get:
+      tags:
+        - AIServiceProvider
+      summary: Get AI Service Provider
+      description: |
+        Get a AI Service Provider
+      parameters:
+        - name: aiServiceProviderId
+          in: path
+          description: |
+            AI Service Provider ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            AI Service Provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderResponse'
+      security:
+        - OAuth2Security:
+            - apim:llm_provider_read
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      operationId: getAIServiceProvider
 
   ######################################################
   # The Gateway Policies API
@@ -11785,8 +11821,20 @@ components:
             $ref: '#/components/schemas/APIEndpoint'
         pagination:
           $ref: '#/components/schemas/Pagination'
-    LLMProviderResponse:
-      title: LLMProviderResponse
+    ModelProvider:
+      title: Model Provider
+      type: object
+      properties:
+        models:
+          type: array
+          items:
+            type: string
+            example: "gpt-4o"
+        name:
+          type: string
+          example: OpenAI
+    AIServiceProviderResponse:
+      title: AIServiceProviderResponse
       type: object
       properties:
         id:
@@ -11816,8 +11864,8 @@ components:
         apiDefinition:
           type: string
           description: OpenAPI specification
-    LLMProviderSummaryResponse:
-      title: LLMProviderSummaryResponse
+    AIServiceProviderSummaryResponse:
+      title: AIServiceProviderSummaryResponse
       type: object
       properties:
         id:
@@ -11841,8 +11889,8 @@ components:
           maxLength: 1023
           type: string
           example: OpenAI LLM Provider
-    LLMProviderSummaryResponseList:
-      title: LLMProviderSummaryResponseList
+    AIServiceProviderSummaryResponseList:
+      title: AIServiceProviderSummaryResponseList
       type: object
       properties:
         count:
@@ -11853,17 +11901,38 @@ components:
         list:
           type: array
           items:
-            $ref: '#/components/schemas/LLMProviderSummaryResponse'
-    LLMProviderEndpointConfiguration:
-      title: LLMProviderEndpointConfiguration
+            $ref: '#/components/schemas/AIServiceProviderSummaryResponse'
+    AIServiceProviderEndpointConfiguration:
+      title: AIServiceProviderEndpointConfiguration
       type: object
       properties:
+        authenticationConfiguration:
+          $ref: '#/components/schemas/AIServiceProviderEndpointAuthenticationConfiguration'
         authHeader:
           type: string
           example: Authorization
+          deprecated: true
         authQueryParameter:
           type: string
           example: ApiKey
+          deprecated: true
+    AIServiceProviderEndpointAuthenticationConfiguration:
+      title: AIServiceProviderEndpointAuthenticationConfiguration
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: Whether the authentication configuration is enabled or not
+          default: false
+        type:
+          type: string
+          description: Type of the authentication configuration
+          example: apiKey
+        parameters:
+          type: object
+          description: |
+            Parameters required for the authentication configuration. The parameters are different based on the type of the authentication configuration.
+          example: { "headerEnabled": true, "headerName": "Authorization" }
     AdditionalProperty:
       title: Additional Gateway Properties
       type: object

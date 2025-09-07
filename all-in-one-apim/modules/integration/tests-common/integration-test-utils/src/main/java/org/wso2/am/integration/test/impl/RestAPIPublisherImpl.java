@@ -67,6 +67,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationRes
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ModelProviderDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataListDTO;
@@ -143,8 +144,7 @@ public class RestAPIPublisherImpl {
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
     private GatewayPoliciesApi gatewayPoliciesApi = new GatewayPoliciesApi();
     private ApiEndpointsApi apiEndpointsApi = new ApiEndpointsApi();
-    private LlmProviderApi llmProviderApi = new LlmProviderApi();
-
+    private AiServiceProviderApi aiServiceProviderApi = new AiServiceProviderApi();
     private ImportExportApi importExportApi = new ImportExportApi();
 
     private LinterCustomRulesApi linterCustomRulesApi = new LinterCustomRulesApi();
@@ -2841,6 +2841,52 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
+    /**
+     * Update an API endpoint with name and deployment stage
+     *
+     * @param apiId           API ID
+     * @param endpointId      API endpoint ID
+     * @param name            Endpoint name
+     * @param deploymentStage Deployment stage
+     * @param endpointConfig  API endpoint configuration
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when updating the API endpoint
+     */
+    public HttpResponse updateApiEndpoint(String apiId, String endpointId, String name, String deploymentStage, Object endpointConfig) throws ApiException {
+        APIEndpointDTO apiEndpointDTO = new APIEndpointDTO();
+        apiEndpointDTO.setName(name);
+        apiEndpointDTO.setDeploymentStage(deploymentStage);
+        apiEndpointDTO.setEndpointConfig(endpointConfig);
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointDTO> updatedApiEndpoint = apiEndpointsApi.updateApiEndpointWithHttpInfo(apiId, endpointId, apiEndpointDTO);
+            apiEndpointDTO = updatedApiEndpoint.getData();
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Delete an API endpoint
+     *
+     * @param apiId      API ID
+     * @param endpointId API endpoint ID
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when deleting the API endpoint
+     */
+    public HttpResponse deleteApiEndpoint(String apiId, String endpointId) throws ApiException {
+        try {
+            apiEndpointsApi.deleteApiEndpointWithHttpInfo(apiId, endpointId);
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        return new HttpResponse("API endpoint deleted successfully", HttpStatus.SC_OK);
+    }
 
     /**
      * Get API endpoints for a given API UUID.
@@ -2866,16 +2912,40 @@ public class RestAPIPublisherImpl {
     }
 
     /**
-     * Get model list registered under the LLM Provider.
+     * Get a specific API endpoint by endpoint ID.
      *
-     * @param llmProviderId LLM Provider ID
+     * @param apiId      API UUID
+     * @param endpointId API endpoint ID
      * @return HttpResponse
+     * @throws ApiException throws if an error occurred when retrieving the API endpoint
      */
-    public HttpResponse getLLMProviderModelList(String llmProviderId) {
+    public HttpResponse getApiEndpoint(String apiId, String endpointId) throws ApiException {
+        APIEndpointDTO apiEndpointDTO;
+        HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            ApiResponse<List<String>> modelListResponse = llmProviderApi.getLLMProviderModelsWithHttpInfo(
-                    llmProviderId);
+            ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.getApiEndpointWithHttpInfo(apiId, endpointId);
+            apiEndpointDTO = apiResponse.getData();
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Get AI Service Provider's model list
+     *
+     * @param aiServiceProviderId AI service provider ID
+     * @return HttpResponse
+     */
+    public HttpResponse getAIServiceProviderModels(String aiServiceProviderId) {
+        Gson gson = new Gson();
+        try {
+            ApiResponse<List<ModelProviderDTO>> modelListResponse = aiServiceProviderApi.getAIServiceProviderModelsWithHttpInfo(
+                    aiServiceProviderId);
             return new HttpResponse(gson.toJson(modelListResponse.getData()), modelListResponse.getStatusCode());
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
