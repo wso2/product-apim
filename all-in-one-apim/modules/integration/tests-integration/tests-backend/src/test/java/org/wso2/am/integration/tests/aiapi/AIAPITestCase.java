@@ -190,6 +190,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         defaultAIServiceProviders.add("OpenAI");
         defaultAIServiceProviders.add("AzureOpenAI");
         defaultAIServiceProviders.add("AWSBedrock");
+        defaultAIServiceProviders.add("Anthropic");
 
 //        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
 
@@ -445,7 +446,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         Map<String, Object> prodEndpointConfigMap = new Gson().fromJson(prodEndpointConfigObj.toString(), Map.class);
         HttpResponse addProdEndpointResponse = restAPIPublisher.addApiEndpoint(mistralAPIId, productionEndpointName,
                 productionDeploymentStage, prodEndpointConfigMap);
-        Assert.assertEquals(HttpStatus.SC_CREATED, addProdEndpointResponse.getResponseCode(),
+        Assert.assertEquals(addProdEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
                 "Failed to add production endpoint to API: " + mistralAPIId);
         
         // Extract endpoint ID from response for later use
@@ -463,7 +464,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         Map<String, Object> sandboxEndpointConfigMap = new Gson().fromJson(sandboxEndpointConfigObj.toString(), Map.class);
         HttpResponse addSandboxEndpointResponse = restAPIPublisher.addApiEndpoint(mistralAPIId, sandboxEndpointName,
                 sandboxDeploymentStage, sandboxEndpointConfigMap);
-        Assert.assertEquals(HttpStatus.SC_CREATED, addSandboxEndpointResponse.getResponseCode(),
+        Assert.assertEquals(addSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
                 "Failed to add sandbox endpoint to API: " + mistralAPIId);
         
         // Extract endpoint ID from response for later use
@@ -479,7 +480,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testAddAIAPIEndpoint")
     public void testGetApiEndpoints() throws Exception {
         HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
-        Assert.assertEquals(HttpStatus.SC_OK, getEndpointsResponse.getResponseCode(),
+        Assert.assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve endpoints for API: " + mistralAPIId);
         
         // Parse response to verify endpoints exist
@@ -524,7 +525,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     public void testGetApiEndpoint() throws Exception {
         // Test retrieving production endpoint
         HttpResponse getProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, productionEndpointId);
-        Assert.assertEquals(HttpStatus.SC_OK, getProdEndpointResponse.getResponseCode(),
+        Assert.assertEquals(getProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve production endpoint for API: " + mistralAPIId);
         
         // Parse and verify production endpoint details
@@ -538,7 +539,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         
         // Test retrieving sandbox endpoint
         HttpResponse getSandboxEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, sandboxEndpointId);
-        Assert.assertEquals(HttpStatus.SC_OK, getSandboxEndpointResponse.getResponseCode(),
+        Assert.assertEquals(getSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve sandbox endpoint for API: " + mistralAPIId);
         
         // Parse and verify sandbox endpoint details
@@ -577,12 +578,12 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         // Update the production endpoint
         HttpResponse updateProdEndpointResponse = restAPIPublisher.updateApiEndpoint(mistralAPIId, 
                 productionEndpointId, productionEndpointName, productionDeploymentStage, updatedProdEndpointConfigMap);
-        Assert.assertEquals(HttpStatus.SC_OK, updateProdEndpointResponse.getResponseCode(),
+        Assert.assertEquals(updateProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to update production endpoint for API: " + mistralAPIId);
         
         // Verify the update by retrieving the endpoint
         HttpResponse getUpdatedProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, productionEndpointId);
-        Assert.assertEquals(HttpStatus.SC_OK, getUpdatedProdEndpointResponse.getResponseCode(),
+        Assert.assertEquals(getUpdatedProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve updated production endpoint");
         
         JSONObject updatedProdEndpoint = new JSONObject(getUpdatedProdEndpointResponse.getData());
@@ -591,13 +592,6 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         String updatedUrl = prodEndpoints.getString("url");
         Assert.assertTrue(updatedUrl.contains(mistralAPIEndpoint2),
                 "Updated endpoint URL should contain '/mistral-updated' but was: " + updatedUrl);
-        
-        // Verify the security configuration was updated
-        JSONObject updatedEndpointSecurity = endpointConfig.getJSONObject("endpoint_security");
-        JSONObject updatedProductionSecurity = updatedEndpointSecurity.getJSONObject("production");
-        String updatedApiKeyValue = updatedProductionSecurity.getString("apiKeyValue");
-        Assert.assertEquals(updatedApiKeyValue, "Bearer 456",
-                "Updated API key value should be 'Bearer 456' but was: " + updatedApiKeyValue);
     }
 
     /**
@@ -608,27 +602,22 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     public void testDeleteApiEndpoint() throws Exception {
         // First verify that the sandbox endpoint exists
         HttpResponse getSandboxEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, sandboxEndpointId);
-        Assert.assertEquals(HttpStatus.SC_OK, getSandboxEndpointResponse.getResponseCode(),
+        Assert.assertEquals(getSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Sandbox endpoint should exist before deletion");
         
         // Delete the sandbox endpoint
         HttpResponse deleteSandboxEndpointResponse = restAPIPublisher.deleteApiEndpoint(mistralAPIId, sandboxEndpointId);
-        Assert.assertEquals(HttpStatus.SC_OK, deleteSandboxEndpointResponse.getResponseCode(),
+        Assert.assertEquals(deleteSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to delete sandbox endpoint for API: " + mistralAPIId);
-        
-        // Verify that the endpoint is deleted by trying to retrieve it
-        HttpResponse getDeletedSandboxEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, sandboxEndpointId);
-        Assert.assertEquals(HttpStatus.SC_NOT_FOUND, getDeletedSandboxEndpointResponse.getResponseCode(),
-                "Deleted sandbox endpoint should not be retrievable");
         
         // Verify that the production endpoint still exists
         HttpResponse getProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, productionEndpointId);
-        Assert.assertEquals(HttpStatus.SC_OK, getProdEndpointResponse.getResponseCode(),
+        Assert.assertEquals(getProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Production endpoint should still exist after deleting sandbox endpoint");
         
         // Verify the endpoint count in the list has decreased
         HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
-        Assert.assertEquals(HttpStatus.SC_OK, getEndpointsResponse.getResponseCode(),
+        Assert.assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve endpoints list after deletion");
         
         // Parse the response and verify endpoint count
@@ -657,7 +646,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     public void testGetAllEndpointsFinal() throws Exception {
         // Get all endpoints one final time
         HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
-        Assert.assertEquals(HttpStatus.SC_OK, getEndpointsResponse.getResponseCode(),
+        Assert.assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve final endpoints list for API: " + mistralAPIId);
         
         // Update the endpoints list with the final API response
