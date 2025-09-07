@@ -15851,6 +15851,633 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
       x-accepts: application/json
+  /apis/{apiId}/endpoints:
+    get:
+      description: |
+        This operation can be used to get all the available endpoints of an API.
+      operationId: getApiEndpoints
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIEndpointList'
+          description: |
+            OK.
+            List of API endpoints.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_create
+        - apim:api_manage
+        - apim:api_publish
+        - apim:api_import_export
+      summary: Get all API Endpoints
+      tags:
+      - API Endpoints
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/endpoints?limit=10&offset=0"'
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to add an endpoint to an API.
+      operationId: addApiEndpoint
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIEndpoint'
+        description: Endpoint object that needs to be added
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIEndpoint'
+          description: |
+            Created.
+            Successful response with the newly created API Endpoint object in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "415":
+          content:
+            application/json:
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unsupported Media Type. The entity of the request was not in
+            a supported format.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:api_publish
+        - apim:api_import_export
+      summary: Add an Endpoint
+      tags:
+      - API Endpoints
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/endpoints"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /apis/{apiId}/endpoints/{endpointId}:
+    delete:
+      description: |
+        This operation can be used to delete a API endpoint.
+      operationId: deleteApiEndpoint
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Endpoint ID** consisting of the **UUID** of the Endpoint**.
+        explode: false
+        in: path
+        name: endpointId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Endpoint deleted successfully.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:api_publish
+        - apim:api_import_export
+      summary: Delete an Endpoint
+      tags:
+      - API Endpoints
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/endpoints/13092607-ed01-4fa1-bc64-5da0e2abe92c"'
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to get an endpoint of an API by UUID.
+      operationId: getApiEndpoint
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Endpoint ID** consisting of the **UUID** of the Endpoint**.
+        explode: false
+        in: path
+        name: endpointId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIEndpoint'
+          description: |
+            OK.
+            API Endpoint object is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_create
+        - apim:api_manage
+        - apim:api_publish
+        - apim:api_import_export
+      summary: Get an Endpoint
+      tags:
+      - API Endpoints
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/endpoints/13092607-ed01-4fa1-bc64-5da0e2abe92c"'
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update a API endpoint.
+      operationId: updateApiEndpoint
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Endpoint ID** consisting of the **UUID** of the Endpoint**.
+        explode: false
+        in: path
+        name: endpointId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIEndpoint'
+        description: API Endpoint object with updated details
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIEndpoint'
+          description: |
+            OK.
+            Updated API Endpoint is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "415":
+          content:
+            application/json:
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unsupported Media Type. The entity of the request was not in
+            a supported format.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:api_publish
+        - apim:api_import_export
+      summary: Update an Endpoint
+      tags:
+      - API Endpoints
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/endpoints/13092607-ed01-4fa1-bc64-5da0e2abe92c"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /ai-service-providers:
+    get:
+      description: |
+        Get all AI Service providers
+      operationId: getAIServiceProviders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderSummaryResponseList'
+          description: |
+            OK.
+            List of AI Service providers.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:llm_provider_read
+      summary: Get all AI Service providers
+      tags:
+      - AIServiceProviders
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers"'
+      x-accepts: application/json
+  /ai-service-providers/{aiServiceProviderId}/api-definition:
+    get:
+      description: |
+        Get AI Service Provider's API Definition
+      operationId: getAIServiceProviderApiDefinition
+      parameters:
+      - explode: false
+        in: path
+        name: aiServiceProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: |
+            OK.
+            API Definition
+      security:
+      - OAuth2Security:
+        - apim:llm_provider_read
+      summary: Get AI Service Provider's API Definition
+      tags:
+      - AIServiceProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/api-definition"'
+      x-accepts: application/json
+  /ai-service-providers/{aiServiceProviderId}/endpoint-configuration:
+    get:
+      description: |
+        Get AI Service Provider's endpoint security configurations
+      operationId: getAIServiceProviderEndpointConfiguration
+      parameters:
+      - explode: false
+        in: path
+        name: aiServiceProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderEndpointConfiguration'
+          description: |
+            OK.
+            API Definition
+      security:
+      - OAuth2Security:
+        - apim:llm_provider_read
+      summary: Get AI Service Provider's security configurations
+      tags:
+      - AIServiceProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/endpoint-configuration"'
+      x-accepts: application/json
+  /ai-service-providers/{aiServiceProviderId}/models:
+    get:
+      description: |
+        Get AI Service Provider's model list
+      operationId: getAIServiceProviderModels
+      parameters:
+      - explode: false
+        in: path
+        name: aiServiceProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ModelProvider'
+                type: array
+          description: |
+            OK.
+            List of supported model families grouped by vendor
+      security:
+      - OAuth2Security:
+        - apim:llm_provider_read
+      summary: Get AI Service Provider's model list
+      tags:
+      - AIServiceProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f/models"'
+      x-accepts: application/json
+  /ai-service-providers/{aiServiceProviderId}:
+    get:
+      description: |
+        Get a AI Service Provider
+      operationId: getAIServiceProvider
+      parameters:
+      - description: |
+          AI Service Provider ID
+        explode: false
+        in: path
+        name: aiServiceProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderResponse'
+          description: |
+            OK.
+            AI Service Provider
+      security:
+      - OAuth2Security:
+        - apim:llm_provider_read
+      summary: Get AI Service Provider
+      tags:
+      - AIServiceProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-accepts: application/json
   /gateway-policies:
     get:
       description: |
@@ -20306,6 +20933,224 @@ components:
             $ref: '#/components/schemas/Environment'
           type: array
       title: Environment List
+      type: object
+    APIEndpoint:
+      example:
+        deploymentStage: PRODUCTION or SANDBOX
+        endpointConfig: '{}'
+        name: Endpoint1
+        id: 57a380b7-d852-4f56-bb23-db172722e9d4
+      properties:
+        id:
+          example: 57a380b7-d852-4f56-bb23-db172722e9d4
+          type: string
+        name:
+          example: Endpoint1
+          type: string
+        deploymentStage:
+          example: PRODUCTION or SANDBOX
+          type: string
+        endpointConfig:
+          description: |
+            Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
+          properties: {}
+          type: object
+      required:
+      - name
+      title: Endpoint
+      type: object
+    APIEndpointList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - deploymentStage: PRODUCTION or SANDBOX
+          endpointConfig: '{}'
+          name: Endpoint1
+          id: 57a380b7-d852-4f56-bb23-db172722e9d4
+        - deploymentStage: PRODUCTION or SANDBOX
+          endpointConfig: '{}'
+          name: Endpoint1
+          id: 57a380b7-d852-4f56-bb23-db172722e9d4
+      properties:
+        count:
+          description: |
+            Number of Endpoints returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/APIEndpoint'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Endpoints List
+      type: object
+    ModelProvider:
+      example:
+        models:
+        - gpt-4o
+        - gpt-4o
+        name: OpenAI
+      properties:
+        models:
+          items:
+            example: gpt-4o
+            type: string
+          type: array
+        name:
+          example: OpenAI
+          type: string
+      title: Model Provider
+      type: object
+    AIServiceProviderResponse:
+      example:
+        apiVersion: 1.0.0
+        builtInSupport: true
+        configurations: configurations
+        name: OpenAI
+        description: OpenAI LLM
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        apiDefinition: apiDefinition
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: OpenAI
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        builtInSupport:
+          description: Is built-in support
+          type: boolean
+        description:
+          example: OpenAI LLM
+          maxLength: 1023
+          type: string
+        configurations:
+          description: LLM Provider configurations
+          type: string
+        apiDefinition:
+          description: OpenAPI specification
+          type: string
+      title: AIServiceProviderResponse
+      type: object
+    AIServiceProviderSummaryResponse:
+      example:
+        apiVersion: 1.0.0
+        builtInSupport: true
+        name: open-ai
+        description: OpenAI LLM Provider
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: open-ai
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        builtInSupport:
+          description: Is built-in support
+          type: boolean
+        description:
+          example: OpenAI LLM Provider
+          maxLength: 1023
+          type: string
+      title: AIServiceProviderSummaryResponse
+      type: object
+    AIServiceProviderSummaryResponseList:
+      example:
+        count: 1
+        list:
+        - apiVersion: 1.0.0
+          builtInSupport: true
+          name: open-ai
+          description: OpenAI LLM Provider
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        - apiVersion: 1.0.0
+          builtInSupport: true
+          name: open-ai
+          description: OpenAI LLM Provider
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        count:
+          description: |
+            Number of LLM Providers returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/AIServiceProviderSummaryResponse'
+          type: array
+      title: AIServiceProviderSummaryResponseList
+      type: object
+    AIServiceProviderEndpointConfiguration:
+      example:
+        authHeader: Authorization
+        authQueryParameter: ApiKey
+        authenticationConfiguration:
+          type: apiKey
+          parameters:
+            headerEnabled: true
+            headerName: Authorization
+          enabled: false
+      properties:
+        authenticationConfiguration:
+          $ref: '#/components/schemas/AIServiceProviderEndpointAuthenticationConfiguration'
+        authHeader:
+          deprecated: true
+          example: Authorization
+          type: string
+        authQueryParameter:
+          deprecated: true
+          example: ApiKey
+          type: string
+      title: AIServiceProviderEndpointConfiguration
+      type: object
+    AIServiceProviderEndpointAuthenticationConfiguration:
+      example:
+        type: apiKey
+        parameters:
+          headerEnabled: true
+          headerName: Authorization
+        enabled: false
+      properties:
+        enabled:
+          default: false
+          description: Whether the authentication configuration is enabled or not
+          type: boolean
+        type:
+          description: Type of the authentication configuration
+          example: apiKey
+          type: string
+        parameters:
+          description: |
+            Parameters required for the authentication configuration. The parameters are different based on the type of the authentication configuration.
+          example:
+            headerEnabled: true
+            headerName: Authorization
+          type: object
+      title: AIServiceProviderEndpointAuthenticationConfiguration
       type: object
     AdditionalProperty:
       example:
