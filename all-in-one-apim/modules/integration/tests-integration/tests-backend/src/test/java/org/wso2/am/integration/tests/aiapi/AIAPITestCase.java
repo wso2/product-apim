@@ -37,8 +37,8 @@ import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderResponseDT
 import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderSummaryResponseDTO;
 import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderSummaryResponseListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-//import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
-//import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -128,10 +128,18 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     private final String sandboxEndpointName = "Sandbox Endpoint";
     private final String productionDeploymentStage = "PRODUCTION";
     private final String sandboxDeploymentStage = "SANDBOX";
+    private final String defaultProductionEndpointId = "default_production_endpoint";
+    private final String defaultProductionEndpointName = "Default Production Endpoint";
+    private final String newVersion = "2.0.0";
+    private final String newVersionContext = mistralAPIContext + "-v2";
+    private final String failoverEndpointUrl = "/failover-endpoint";
+    private final String failoverEndpointName = "Failover Endpoint";
     private String productionEndpointId;
     private String sandboxEndpointId;
+    private String newVersionApiId;
+    private String failoverEndpointId;
     private List<JSONObject> endpointsList = new ArrayList<>();
-//    private Map<String, String> policyMap;
+    private Map<String, String> policyMap;
 
     private final String customAIServiceProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
             "\"authenticationConfiguration\":{\"enabled\":false,\"type\":\"none\"," +
@@ -192,7 +200,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         defaultAIServiceProviders.add("AWSBedrock");
         defaultAIServiceProviders.add("Anthropic");
 
-//        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
+        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
 
         // Add application
         ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationName,
@@ -680,63 +688,230 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertFalse(foundSandboxEndpoint, "Sandbox endpoint should be completely removed from the final list");
     }
 
-//    /**
-//     * Test Mistral AI API invocation after adding model round-robin policy
-//     */
-//    @Test(groups = {"wso2.am"}, description = "Test AI API invocation after adding model round-robin policy",
-//            dependsOnMethods = "testMistralAIApiEndpointAddition")
-//    public void testMistralAIApiInvocationAfterAddingModelRoundRobinPolicy() throws Exception {
-//
-//        // Retrieve model list
-//        HttpResponse getModelListResponse = restAPIPublisher.getLLMProviderModelList(aiServiceProviderId);
-//        Assert.assertEquals(HttpStatus.SC_OK, getModelListResponse.getResponseCode(),
-//                "Failed to retrieve model list of LLM provider: " + aiServiceProviderId);
-//
-////        HttpResponse getAPIResponse = restAPIPublisher.getAPI(mistralAPIId);
-////        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
-////
-////        // Add weighted round-robin policy
-////        String policyName = "modelWeightedRoundRobin";
-////        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
-////
-////        Map<String, Object> attributeMap = new HashMap<>();
-////        JSONObject weightedRoundRobinConfigs = new JSONObject();
-////        List<JSONObject> productionModelList = new ArrayList<>();
-////        JSONObject model1Obj = new JSONObject();
-////        model1Obj.put("model", model1);
-////        model1Obj.put("endpointId", );
-////        model1Obj.put("weight", 80);
-////        productionModelList.add();
-////        weightedRoundRobinConfigs.put("production", productionModelList);
-////
-////        attributeMap.put("weightedRoundRobinConfigs", "");
-////
-////        List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
-////        OperationPolicyDTO roundRobinPolicyDTO = new OperationPolicyDTO();
-////        roundRobinPolicyDTO.setPolicyName(policyName);
-////        roundRobinPolicyDTO.setPolicyType("common");
-////        roundRobinPolicyDTO.setPolicyId(policyMap.get(policyName));
-////        roundRobinPolicyDTO.setParameters(attributeMap);
-////        requestPolicyList.add(roundRobinPolicyDTO);
-////
-////        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-////        apiOperationPoliciesDTO.setRequest(requestPolicyList);
-////        apidto.setApiPolicies(apiOperationPoliciesDTO);
-////        restAPIPublisher.updateAPI(apidto);
-////
-////        // Create Revision and Deploy to Gateway
-////        createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
-////        waitForAPIDeployment();
-////
-////        // Invoke API
-////        Map<String, String> requestHeaders = new HashMap<>();
-////        requestHeaders.put("ApiKey", apiKey);
-////        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
-////        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
-////
-////        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
-////        assertEquals(model1Response, serviceResponse.getData(), "Mistral AI API response mismatch");
-//    }
+    /**
+     * Test Mistral AI API invocation after adding model round-robin policy
+     */
+    @Test(groups = {"wso2.am"}, description = "Test AI API invocation after adding model round-robin policy",
+            dependsOnMethods = "testGetAllEndpointsFinal")
+    public void testAIApiInvocationAfterAddingApiLevelModelRoundRobinPolicy() throws Exception {
+
+        // Retrieve model list
+        HttpResponse getModelListResponse = restAPIPublisher.getAIServiceProviderModels(aiServiceProviderId);
+        Assert.assertEquals(HttpStatus.SC_OK, getModelListResponse.getResponseCode(),
+                "Failed to retrieve model list of AI Service Provider: " + aiServiceProviderId);
+        // Parse the model provider response to extract the models list
+        List<Map<String, Object>> modelProviderList = new Gson().fromJson(getModelListResponse.getData(), List.class);
+        List<String> modelList = new ArrayList<>();
+
+        if (!modelProviderList.isEmpty()) {
+            Map<String, Object> firstProvider = modelProviderList.get(0);
+            if (firstProvider.containsKey("models")) {
+                List<String> models = (List<String>) firstProvider.get("models");
+                modelList.addAll(models);
+            }
+        }
+
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(mistralAPIId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        // Add weighted round-robin policy
+        String policyName = "modelWeightedRoundRobin";
+        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
+
+        Map<String, Object> attributeMap = new HashMap<>();
+        JSONObject weightedRoundRobinConfigs = new JSONObject();
+        List<JSONObject> productionModelList = new ArrayList<>();
+
+        // Use specific models from the retrieved modelList
+        String firstModel = model2; // Use model2 from the modelList
+        String secondModel = model3; // Use model3 from the modelList
+        
+        // Verify that the specific models exist in the modelList
+        Assert.assertTrue(modelList.contains(firstModel), "Model " + firstModel + " should be in the model list");
+        Assert.assertTrue(modelList.contains(secondModel), "Model " + secondModel + " should be in the model list");
+        
+        JSONObject model1Obj = new JSONObject();
+        model1Obj.put("model", firstModel);
+        model1Obj.put("endpointId", productionEndpointId);
+        model1Obj.put("endpointName", productionEndpointName);
+        model1Obj.put("weight", 80);
+
+         JSONObject model2Obj = new JSONObject();
+         model2Obj.put("model", secondModel);
+         model2Obj.put("endpointId", defaultProductionEndpointId);
+         model2Obj.put("endpointName", defaultProductionEndpointName);
+         model2Obj.put("weight", 20);
+
+        productionModelList.add(model1Obj);
+        productionModelList.add(model2Obj);
+        weightedRoundRobinConfigs.put("production", productionModelList);
+        weightedRoundRobinConfigs.put("sandbox", new ArrayList<>()); // No sandbox models configured
+        weightedRoundRobinConfigs.put("suspendDuration", 5);
+
+        attributeMap.put("weightedRoundRobinConfigs", weightedRoundRobinConfigs);
+
+        List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
+        OperationPolicyDTO roundRobinPolicyDTO = new OperationPolicyDTO();
+        roundRobinPolicyDTO.setPolicyName(policyName);
+        roundRobinPolicyDTO.setPolicyType("common");
+        roundRobinPolicyDTO.setPolicyId(policyMap.get(policyName));
+        roundRobinPolicyDTO.setParameters(attributeMap);
+        requestPolicyList.add(roundRobinPolicyDTO);
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(requestPolicyList);
+        apidto.setApiPolicies(apiOperationPoliciesDTO);
+        restAPIPublisher.updateAPI(apidto);
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Invoke API
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("ApiKey", apiKey);
+        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
+
+        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
+        
+        // Verify that the response matches one of the configured models (model2 or model3)
+        String actualResponse = serviceResponse.getData();
+        boolean isFirstModelResponse = model2Response.equals(actualResponse);
+        boolean isSecondModelResponse = model3Response.equals(actualResponse);
+
+        Assert.assertTrue(isFirstModelResponse || isSecondModelResponse, 
+                "Response should match either " + firstModel + " or " + secondModel + " response. " +
+                "Actual response: " + actualResponse + 
+                ", Expected " + firstModel + " response: " + model2Response +
+                ", Expected " + secondModel + " response: " + model3Response);
+    }
+
+    /**
+     * Test creating a new API version with failover policy
+     */
+    @Test(groups = {"wso2.am"}, description = "Test creating new API version with failover policy",
+            dependsOnMethods = "testAIApiInvocationAfterAddingApiLevelModelRoundRobinPolicy")
+    public void testCreateNewVersionWithFailoverPolicy() throws Exception {
+        // Create new version of the API
+        HttpResponse copyApiResponse = restAPIPublisher.copyAPI(newVersion, mistralAPIId, false);
+        Assert.assertEquals(copyApiResponse.getResponseCode(), HttpStatus.SC_CREATED,
+                "Failed to create new version of API");
+        
+        newVersionApiId = copyApiResponse.getData();
+        Assert.assertNotNull(newVersionApiId, "New version API ID should not be null");
+        
+        // Get the new version API
+        HttpResponse getNewVersionApiResponse = restAPIPublisher.getAPI(newVersionApiId);
+        Assert.assertEquals(getNewVersionApiResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to retrieve new version API");
+        
+        APIDTO newVersionApiDto = new Gson().fromJson(getNewVersionApiResponse.getData(), APIDTO.class);
+        Assert.assertEquals(newVersionApiDto.getVersion(), newVersion, "API version should match");
+        
+        // Remove the round-robin policy and add failover policy
+        String failoverPolicyName = "modelFailover";
+        Assert.assertNotNull(policyMap.get(failoverPolicyName), "Unable to find a common policy with name " + failoverPolicyName);
+        
+        Map<String, Object> failoverAttributeMap = new HashMap<>();
+        JSONObject failoverConfigs = new JSONObject();
+        
+        // Configure production failover
+        JSONObject productionConfig = new JSONObject();
+        JSONObject targetModel = new JSONObject();
+        targetModel.put("model", model1);
+        targetModel.put("endpointId", failoverEndpointId);
+        targetModel.put("endpointName", failoverEndpointName);
+        productionConfig.put("targetModel", targetModel);
+        
+        List<JSONObject> fallbackModels = new ArrayList<>();
+        JSONObject fallbackModel = new JSONObject();
+        fallbackModel.put("model", model3);
+        fallbackModel.put("endpointId", productionEndpointId);
+        fallbackModel.put("endpointName", productionEndpointName);
+        fallbackModels.add(fallbackModel);
+        productionConfig.put("fallbackModels", fallbackModels);
+        
+        failoverConfigs.put("production", productionConfig);
+        failoverConfigs.put("sandbox", new JSONObject());
+        failoverConfigs.put("requestTimeout", "10");
+        failoverConfigs.put("suspendDuration", "5");
+        
+        failoverAttributeMap.put("failoverConfigs", failoverConfigs);
+        
+        // Create failover policy
+        List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
+        OperationPolicyDTO failoverPolicyDTO = new OperationPolicyDTO();
+        failoverPolicyDTO.setPolicyName(failoverPolicyName);
+        failoverPolicyDTO.setPolicyType("common");
+        failoverPolicyDTO.setPolicyId(policyMap.get(failoverPolicyName));
+        failoverPolicyDTO.setParameters(failoverAttributeMap);
+        requestPolicyList.add(failoverPolicyDTO);
+        
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(requestPolicyList);
+        newVersionApiDto.setApiPolicies(apiOperationPoliciesDTO);
+        
+        // Update the new version API with failover policy
+        HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(newVersionApiDto);
+        Assert.assertEquals(updateResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to update new version API with failover policy");
+        
+        // Add a new endpoint with failover URL for the new version
+        String failoverEndpointConfig = readFile(resourcePath + "prod-endpoint-add-endpoint-config.json");
+        JSONObject failoverEndpointConfigObj = new JSONObject(failoverEndpointConfig);
+        JSONObject productionEndpoints = new JSONObject();
+        productionEndpoints.put("url", endpointHost + ":" + endpointPort + failoverEndpointUrl);
+        failoverEndpointConfigObj.put("production_endpoints", productionEndpoints);
+
+        Map<String, Object> failoverEndpointConfigMap = new Gson().fromJson(failoverEndpointConfigObj.toString(), Map.class);
+        HttpResponse addFailoverEndpointResponse = restAPIPublisher.addApiEndpoint(newVersionApiId, failoverEndpointName,
+                productionDeploymentStage, failoverEndpointConfigMap);
+        Assert.assertEquals(addFailoverEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
+                "Failed to add failover endpoint to new version API");
+        
+        // Extract failover endpoint ID from response
+        JSONObject failoverEndpointResponse = new JSONObject(addFailoverEndpointResponse.getData());
+        failoverEndpointId = failoverEndpointResponse.getString("id");
+        Assert.assertNotNull(failoverEndpointId, "Failover endpoint ID should not be null");
+        
+        // Update the API to set the new endpoint as primary production endpoint
+        newVersionApiDto.setPrimaryProductionEndpointId(failoverEndpointId);
+        
+        // Create revision and deploy the new version
+        String revisionUUID = createAPIRevisionAndDeployUsingRest(newVersionApiId, restAPIPublisher);
+        Assert.assertNotNull(revisionUUID, "Failed to create and deploy revision for new version API");
+        
+        // Publish the new version API
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(newVersionApiId, false);
+        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to publish new version API");
+        
+        // Wait for API deployment
+        waitForAPIDeploymentSync(newVersionApiDto.getProvider(), newVersionApiDto.getName(), 
+                newVersionApiDto.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+        
+        // Subscribe to the new version API
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(newVersionApiId, applicationId, 
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        Assert.assertNotNull(subscriptionDTO, "New version API subscription failed");
+        
+        // Invoke the new version API to test failover
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("ApiKey", apiKey);
+        String invokeURL = getAPIInvocationURLHttp(newVersionContext, newVersion) + mistralAPIResource;
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
+        
+        // Verify that the API call succeeded (failover should have worked)
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, 
+                "API invocation should succeed due to failover");
+        
+        // Verify that the response matches the fallback model (model3)
+        String actualResponse = serviceResponse.getData();
+        String expectedFallbackResponse = model3Response;
+        Assert.assertEquals(actualResponse, expectedFallbackResponse, 
+                "Response should match fallback model (model3) after failover");
+    }
 
 //    testCreateNewVersionAfterAddingModelRoundRobinPolicy
 
@@ -745,15 +920,17 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      * Verifies that the provider is successfully deleted and no longer listed.
      */
     @Test(groups = {"wso2.am"}, description = "Delete AI Service Provider",
-            dependsOnMethods = "testGetAllEndpointsFinal")
+            dependsOnMethods = "testCreateNewVersionWithFailoverPolicy")
     public void deleteAIServiceProvider() throws Exception {
 
         restAPIStore.removeAPISubscriptionByName(unsecuredAPIName, unsecuredAPIVersion, apiProvider,
                 applicationName);
         restAPIStore.removeAPISubscriptionByName(mistralAPIName, mistralAPIVersion, apiProvider, applicationName);
+        restAPIStore.removeAPISubscriptionByName(mistralAPIName, newVersion, apiProvider, applicationName);
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(unsecuredAPIId);
         restAPIPublisher.deleteAPI(mistralAPIId);
+        restAPIPublisher.deleteAPI(newVersionApiId);
 
         ApiResponse<Void> deleteProviderResponse = restAPIAdmin.deleteAIServiceProvider(aiServiceProviderId);
         assertEquals(Response.Status.OK.getStatusCode(),
@@ -814,6 +991,44 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody(mistralResponse)
                         .withTransformers("response-template")));
+
+        // Stub for model2 (mistral-medium-latest) with Bearer 456
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
+                .withHeader("Authorization", WireMock.matching("Bearer 456"))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(model2)))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(mistralResponse)
+                        .withTransformers("response-template")));
+
+        // Stub for model3 (mistral-large-latest) with Bearer 123
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + mistralAPIResource))
+                .withHeader("Authorization", WireMock.matching("Bearer 123"))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(model3)))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(mistralResponse)
+                        .withTransformers("response-template")));
+
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
+                .withHeader("Authorization", WireMock.matching("Bearer 456"))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(model3)))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(mistralResponse)
+                        .withTransformers("response-template")));
+
+        // Stub for failover endpoint that returns 500 (to trigger failover)
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(failoverEndpointUrl + mistralAPIResource))
+                .withHeader("Authorization", WireMock.matching("Bearer 123"))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(model1)))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"error\": \"Internal Server Error\"}")));
 
         // Stub for unsecured AI API (no Authorization header)
         wireMockServer.stubFor(WireMock.post(urlEqualTo(noAuthAPIEndpoint + mistralAPIResource))
