@@ -10364,6 +10364,12 @@ components:
               url: https://localhost:9443/am/sample/pizzashack/v1/api/
             production_endpoints:
               url: https://localhost:9443/am/sample/pizzashack/v1/api/
+        primaryProductionEndpointId:
+          type: string
+          example: "13092607-ed01-4fa1-bc64-5da0e2abe92c"
+        primarySandboxEndpointId:
+          type: string
+          example: "13092607-ed01-4fa1-bc64-5da0e2abe92c"
         endpointImplementationType:
           type: string
           example: INLINE
@@ -14245,4 +14251,5 @@ components:
             apim:api_list_view: View, Retrieve API list
             apim:api_definition_view: View, Retrieve API definition
             apim:policies_import_export: Export and import policies related operations
+            apim:llm_provider_read: Read LLM Providers
             apim:publisher_organization_read: Read organization

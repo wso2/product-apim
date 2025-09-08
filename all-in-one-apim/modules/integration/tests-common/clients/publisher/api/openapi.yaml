@@ -18543,6 +18543,7 @@ components:
       type: object
     API:
       example:
+        primarySandboxEndpointId: 13092607-ed01-4fa1-bc64-5da0e2abe92c
         endpointImplementationType: INLINE
         workflowStatus: APPROVED
         isRevision: false
@@ -18724,6 +18725,7 @@ components:
         - http
         - https
         revisionId: 1
+        primaryProductionEndpointId: 13092607-ed01-4fa1-bc64-5da0e2abe92c
         businessInformation: ""
         securityScheme:
         - oauth2
@@ -19153,6 +19155,12 @@ components:
               url: https://localhost:9443/am/sample/pizzashack/v1/api/
           properties: {}
           type: object
+        primaryProductionEndpointId:
+          example: 13092607-ed01-4fa1-bc64-5da0e2abe92c
+          type: string
+        primarySandboxEndpointId:
+          example: 13092607-ed01-4fa1-bc64-5da0e2abe92c
+          type: string
         endpointImplementationType:
           default: ENDPOINT
           enum:
@@ -24302,6 +24310,7 @@ components:
             apim:api_list_view: View, Retrieve API list
             apim:api_definition_view: View, Retrieve API definition
             apim:policies_import_export: Export and import policies related operations
+            apim:llm_provider_read: Read LLM Providers
             apim:publisher_organization_read: Read organization
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
