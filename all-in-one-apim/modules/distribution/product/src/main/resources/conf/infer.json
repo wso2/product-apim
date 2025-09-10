@@ -147,5 +147,13 @@
         "loggedInUser"
       ]
     }
+  },
+  "preserve_previous_product_behaviour.version": {
+    "4.4.0": {
+      "apim.endpoint_config.enable_failover_in_loadbalanced_endpoints": false
+    },
+    "4.5.0": {
+      "apim.endpoint_config.enable_failover_in_loadbalanced_endpoints": false
+    }
   }
 }
