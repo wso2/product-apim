@@ -1,0 +1,2 @@
+[apim.oauth_config]
+auth_header = "Test-Custom-Header"
