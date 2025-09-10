@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) 2025, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.wso2.am</groupId>
+        <artifactId>am-parent</artifactId>
+        <version>4.6.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>integration-v2</artifactId>
+    <name>WSO2 API Manager - Integration Tests 2</name>
+    <version>4.6.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>tests-common</module>
+        <module>tests-integration</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <truststore.path>${user.dir}/client-truststore.jks</truststore.path>
+        <truststore.password>wso2carbon</truststore.password>
+        <wso2.host>localhost</wso2.host>
+        <wso2.port>9443</wso2.port>
+        <skipCertificateFetch>false</skipCertificateFetch>
+        <!-- Shared DB defaults -->
+        <shared.database.type>mysql</shared.database.type>
+        <shared.database.driver>com.mysql.cj.jdbc.Driver</shared.database.driver>
+        <shared.database.url>jdbc:mysql://host.docker.internal:3307/WSO2AM_COMMON_DB?allowPublicKeyRetrieval=true&amp;useSSL=false</shared.database.url>
+        <shared.database.username>shared_user</shared.database.username>
+        <shared.database.password>sharedpass</shared.database.password>
+        <shared.database.validationQuery>SELECT 1</shared.database.validationQuery>
+
+        <!-- APIM DB defaults -->
+        <apim.database.type>mysql</apim.database.type>
+        <apim.database.driver>com.mysql.cj.jdbc.Driver</apim.database.driver>
+        <apim.database.url>jdbc:mysql://host.docker.internal:3306/WSO2AM_APIMGT_DB?allowPublicKeyRetrieval=true&amp;useSSL=false</apim.database.url>
+        <apim.database.username>apim_user</apim.database.username>
+        <apim.database.password>apimpass</apim.database.password>
+        <apim.database.validationQuery>SELECT 1</apim.database.validationQuery>
+
+        <!-- APIM server name -->
+        <apim.server.version>${project.version}</apim.server.version>
+        <apim.server.name>wso2am-${apim.server.version}</apim.server.name>
+
+        <!-- APIM docker image-->
+        <apim.docker.image.name>wso2am:${apim.server.version}-jdk17</apim.docker.image.name>
+        <!--Node app servers docker image-->
+        <node.docker.image.name>node-app-server:latest</node.docker.image.name>
+
+        <!-- Debug API Manager instance-->
+        <apim.debug.enabled>False</apim.debug.enabled>
+        <apim.debug.port>5006</apim.debug.port>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.databind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-toml</artifactId>
+            <version>${jackson.dataformat.toml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>${javax.ws.rs.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${glassfish.jaxb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>${findbugs.jsr305.version}</version>
+        </dependency>
+    </dependencies>
+    <profiles>
+        <profile>
+            <id>migration</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>migration</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
+                                <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
+                                <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
+                                <module.dir>${project.basedir}</module.dir>
+                                <apim.server.name>${apim.server.name}</apim.server.name>
+                                <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
+                                <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
+                                <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
+                                <apim.debug.port>${apim.debug.port}</apim.debug.port>
+                                <active.profile>migration</active.profile>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <GATEWAY_ENVIRONMENT>Production and Sandbox</GATEWAY_ENVIRONMENT>
+                                <APIM_TEST_CONTAINERS_PARALLEL_ENABLED>False</APIM_TEST_CONTAINERS_PARALLEL_ENABLED>
+                                <PARALLEL_THREAD_COUNT>1</PARALLEL_THREAD_COUNT>
+
+                                <SHARED_DATABASE_TYPE>${shared.database.type}</SHARED_DATABASE_TYPE>
+                                <SHARED_DATABASE_DRIVER>${shared.database.driver}</SHARED_DATABASE_DRIVER>
+                                <SHARED_DATABASE_URL>${shared.database.url}</SHARED_DATABASE_URL>
+                                <SHARED_DATABASE_USERNAME>${shared.database.username}</SHARED_DATABASE_USERNAME>
+                                <SHARED_DATABASE_PASSWORD>${shared.database.password}</SHARED_DATABASE_PASSWORD>
+                                <SHARED_DATABASE_VALIDATION_QUERY>${shared.database.validationQuery}</SHARED_DATABASE_VALIDATION_QUERY>
+
+                                <API_MANAGER_DATABASE_TYPE>${apim.database.type}</API_MANAGER_DATABASE_TYPE>
+                                <API_MANAGER_DATABASE_DRIVER>${apim.database.driver}</API_MANAGER_DATABASE_DRIVER>
+                                <API_MANAGER_DATABASE_URL>${apim.database.url}</API_MANAGER_DATABASE_URL>
+                                <API_MANAGER_DATABASE_USERNAME>${apim.database.username}</API_MANAGER_DATABASE_USERNAME>
+                                <API_MANAGER_DATABASE_PASSWORD>${apim.database.password}</API_MANAGER_DATABASE_PASSWORD>
+                                <API_MANAGER_DATABASE_VALIDATION_QUERY>${apim.database.validationQuery}</API_MANAGER_DATABASE_VALIDATION_QUERY>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <source>11</source>
+                            <target>11</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>default</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
+                                <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
+                                <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
+                                <module.dir>${project.basedir}</module.dir>
+                                <apim.server.name>${apim.server.name}</apim.server.name>
+                                <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
+                                <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
+                                <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
+                                <apim.debug.port>${apim.debug.port}</apim.debug.port>
+                                <active.profile>default</active.profile>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <GATEWAY_ENVIRONMENT>Default</GATEWAY_ENVIRONMENT>
+                                <APIM_TEST_CONTAINERS_PARALLEL_ENABLED>True</APIM_TEST_CONTAINERS_PARALLEL_ENABLED>
+                                <PARALLEL_THREAD_COUNT>2</PARALLEL_THREAD_COUNT>
+
+                                <SHARED_DATABASE_TYPE>h2</SHARED_DATABASE_TYPE>
+                                <SHARED_DATABASE_DRIVER>org.h2.Driver</SHARED_DATABASE_DRIVER>
+                                <SHARED_DATABASE_URL>
+                                    jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE
+                                </SHARED_DATABASE_URL>
+                                <SHARED_DATABASE_USERNAME>wso2carbon</SHARED_DATABASE_USERNAME>
+                                <SHARED_DATABASE_PASSWORD>wso2carbon</SHARED_DATABASE_PASSWORD>
+                                <SHARED_DATABASE_VALIDATION_QUERY>SELECT 1</SHARED_DATABASE_VALIDATION_QUERY>
+
+                                <API_MANAGER_DATABASE_TYPE>h2</API_MANAGER_DATABASE_TYPE>
+                                <API_MANAGER_DATABASE_DRIVER>org.h2.Driver</API_MANAGER_DATABASE_DRIVER>
+                                <API_MANAGER_DATABASE_URL>
+                                    jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE
+                                </API_MANAGER_DATABASE_URL>
+                                <API_MANAGER_DATABASE_USERNAME>wso2carbon</API_MANAGER_DATABASE_USERNAME>
+                                <API_MANAGER_DATABASE_PASSWORD>wso2carbon</API_MANAGER_DATABASE_PASSWORD>
+                                <API_MANAGER_DATABASE_VALIDATION_QUERY>SELECT 1</API_MANAGER_DATABASE_VALIDATION_QUERY>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <source>11</source>
+                            <target>11</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
