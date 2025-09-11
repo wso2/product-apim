@@ -261,6 +261,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         <loopback/>
     </then>
     <else>
+        <property name="uri.var.gwHttpsPort" expression="get-property('https.nio.port')"/>
         #end
                 #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
                     && !$endpoint_config.get("production_endpoints")) )
