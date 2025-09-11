@@ -1,0 +1,74 @@
+{
+  "category": "Mediation",
+  "name": "azureRateLimit",
+  "version": "v1",
+  "displayName": "Rate Limit",
+  "description": "This policy prevents API usage spikes on a per subscription basis by limiting the call rate to a specified number per a specified time period. When the call rate is exceeded, the caller receives a 429 Too Many Requests response status code.",
+  "policyAttributes": [
+    {
+      "name": "calls",
+      "displayName": "Calls",
+      "description": "The maximum total number of calls allowed during the time interval specified in renewal-period. Policy expressions aren't allowed.",
+      "validationRegex": "^.+$",
+      "type": "Integer",
+      "required": true
+    },
+    {
+      "name": "renewalPeriod",
+      "displayName": "Renewal Period",
+      "description": "The length in seconds of the sliding window during which the number of allowed requests should not exceed the value specified in calls. Maximum allowed value: 300 seconds. Policy expressions aren't allowed.",
+      "validationRegex": "^.+$",
+      "type": "Integer",
+      "required": true
+    },
+    {
+      "name": "retryAfterHeaderName",
+      "displayName": "Retry after header name",
+      "description": "The name of a custom response header whose value is the recommended retry interval in seconds after the specified call rate is exceeded. Policy expressions aren't allowed.",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "retryAfterVariableName",
+      "displayName": "Retry after variable name",
+      "description": "The name of a variable that stores the recommended retry interval in seconds after the specified call rate is exceeded. Policy expressions aren't allowed.",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "remainingCallsHeaderName",
+      "displayName": "Remaining calls header name",
+      "description": "The name of a response header whose value after each policy execution is the number of remaining calls allowed for the time interval specified in the renewal-period. Policy expressions aren't allowed.",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "remainingCallsVariableName",
+      "displayName": "Remaining calls variable name",
+      "description": "The name of a variable that after each policy execution stores the number of remaining calls allowed for the time interval specified in the renewal-period. Policy expressions aren't allowed.",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "totalCallsHeaderName",
+      "displayName": "Total calls header name",
+      "description": "The name of a response header whose value is the value specified in calls. Policy expressions aren't allowed.",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": false
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Azure"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

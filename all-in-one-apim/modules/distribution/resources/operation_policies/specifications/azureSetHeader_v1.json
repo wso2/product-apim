@@ -16,7 +16,7 @@
     {
       "name": "headerValue",
       "displayName": "Header Value",
-      "description": "Value of the header",
+      "description": "Value of the header. Will be ignored if exists-action is delete.",
       "validationRegex": "^.+$",
       "type": "String",
       "required": true
