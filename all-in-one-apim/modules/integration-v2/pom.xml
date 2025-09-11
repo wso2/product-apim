@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.wso2.am</groupId>
+    <artifactId>integration-v2</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>tests-common</module>
+        <module>tests-integration</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <truststore.path>${user.dir}/client-truststore.jks</truststore.path>
+        <truststore.password>wso2carbon</truststore.password>
+        <wso2.host>localhost</wso2.host>
+        <wso2.port>9443</wso2.port>
+        <skipCertificateFetch>false</skipCertificateFetch>
+        <!-- Shared DB defaults -->
+        <shared.database.type>mysql</shared.database.type>
+        <shared.database.driver>com.mysql.cj.jdbc.Driver</shared.database.driver>
+        <shared.database.url>jdbc:mysql://host.docker.internal:3307/shared_db?allowPublicKeyRetrieval=true&amp;useSSL=false</shared.database.url>
+        <shared.database.username>shared_user</shared.database.username>
+        <shared.database.password>sharedpass</shared.database.password>
+        <shared.database.validationQuery>SELECT 1</shared.database.validationQuery>
+
+        <!-- APIM DB defaults -->
+        <apim.database.type>mysql</apim.database.type>
+        <apim.database.driver>com.mysql.cj.jdbc.Driver</apim.database.driver>
+        <apim.database.url>jdbc:mysql://host.docker.internal:3306/apim_db?allowPublicKeyRetrieval=true&amp;useSSL=false</apim.database.url>
+        <apim.database.username>apim_user</apim.database.username>
+        <apim.database.password>apimpass</apim.database.password>
+        <apim.database.validationQuery>SELECT 1</apim.database.validationQuery>
+
+        <!-- APIM server name -->
+        <apim.server.name>wso2am-4.6.0-SNAPSHOT</apim.server.name>
+        <!--APIM docker image-->
+        <apim.docker.image.name>wso2am:4.5.0-jdk17</apim.docker.image.name>
+        <!--Node app servers docker image-->
+        <node.docker.image.name>node-app-server:latest</node.docker.image.name>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.11</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.20.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-tools</artifactId>
+            <version>4.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>4.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>migration</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>migration</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
+                                <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
+                                <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
+                                <module.dir>${project.basedir}</module.dir>
+                                <apim.server.name>${apim.server.name}</apim.server.name>
+                                <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
+                                <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
+                                <active.profile>migration</active.profile>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <GATEWAY_ENVIRONMENT>Production and Sandbox</GATEWAY_ENVIRONMENT>
+
+                                <SHARED_DATABASE_TYPE>${shared.database.type}</SHARED_DATABASE_TYPE>
+                                <SHARED_DATABASE_DRIVER>${shared.database.driver}</SHARED_DATABASE_DRIVER>
+                                <SHARED_DATABASE_URL>${shared.database.url}</SHARED_DATABASE_URL>
+                                <SHARED_DATABASE_USERNAME>${shared.database.username}</SHARED_DATABASE_USERNAME>
+                                <SHARED_DATABASE_PASSWORD>${shared.database.password}</SHARED_DATABASE_PASSWORD>
+                                <SHARED_DATABASE_VALIDATION_QUERY>${shared.database.validationQuery}</SHARED_DATABASE_VALIDATION_QUERY>
+
+                                <API_MANAGER_DATABASE_TYPE>${apim.database.type}</API_MANAGER_DATABASE_TYPE>
+                                <API_MANAGER_DATABASE_DRIVER>${apim.database.driver}</API_MANAGER_DATABASE_DRIVER>
+                                <API_MANAGER_DATABASE_URL>${apim.database.url}</API_MANAGER_DATABASE_URL>
+                                <API_MANAGER_DATABASE_USERNAME>${apim.database.username}</API_MANAGER_DATABASE_USERNAME>
+                                <API_MANAGER_DATABASE_PASSWORD>${apim.database.password}</API_MANAGER_DATABASE_PASSWORD>
+                                <API_MANAGER_DATABASE_VALIDATION_QUERY>${apim.database.validationQuery}</API_MANAGER_DATABASE_VALIDATION_QUERY>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <source>11</source>
+                            <target>11</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>default</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
+                                <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
+                                <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
+                                <module.dir>${project.basedir}</module.dir>
+                                <apim.server.name>${apim.server.name}</apim.server.name>
+                                <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
+                                <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
+                                <active.profile>default</active.profile>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <GATEWAY_ENVIRONMENT>Default</GATEWAY_ENVIRONMENT>
+
+                                <SHARED_DATABASE_TYPE>h2</SHARED_DATABASE_TYPE>
+                                <SHARED_DATABASE_DRIVER>org.h2.Driver</SHARED_DATABASE_DRIVER>
+                                <SHARED_DATABASE_URL>
+                                    jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE
+                                </SHARED_DATABASE_URL>
+                                <SHARED_DATABASE_USERNAME>wso2carbon</SHARED_DATABASE_USERNAME>
+                                <SHARED_DATABASE_PASSWORD>wso2carbon</SHARED_DATABASE_PASSWORD>
+                                <SHARED_DATABASE_VALIDATION_QUERY>SELECT 1</SHARED_DATABASE_VALIDATION_QUERY>
+
+                                <API_MANAGER_DATABASE_TYPE>h2</API_MANAGER_DATABASE_TYPE>
+                                <API_MANAGER_DATABASE_DRIVER>org.h2.Driver</API_MANAGER_DATABASE_DRIVER>
+                                <API_MANAGER_DATABASE_URL>
+                                    jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE
+                                </API_MANAGER_DATABASE_URL>
+                                <API_MANAGER_DATABASE_USERNAME>wso2carbon</API_MANAGER_DATABASE_USERNAME>
+                                <API_MANAGER_DATABASE_PASSWORD>wso2carbon</API_MANAGER_DATABASE_PASSWORD>
+                                <API_MANAGER_DATABASE_VALIDATION_QUERY>SELECT 1</API_MANAGER_DATABASE_VALIDATION_QUERY>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <source>11</source>
+                            <target>11</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
