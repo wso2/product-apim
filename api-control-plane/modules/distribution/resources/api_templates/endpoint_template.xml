@@ -272,7 +272,7 @@ optimize="$advance_ep.get("optimize")"
 </session>
         #end
 <loadbalance algorithm="$!endpoint_config.get("algoClassName")"
-        #if($failoverInLoadbalancedEndpoints)
+        #if($enableFailoverInLoadbalancedEndpoints)
             #if($endpoint_config.get("failOver") == false)
             failover="false"
             #end
