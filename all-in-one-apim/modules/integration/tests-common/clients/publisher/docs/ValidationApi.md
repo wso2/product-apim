@@ -8,7 +8,11 @@ Method | HTTP request | Description
 [**validateAsyncAPISpecification**](ValidationApi.md#validateAsyncAPISpecification) | **POST** /apis/validate-asyncapi | Validate an AsyncAPI Specification
 [**validateEndpoint**](ValidationApi.md#validateEndpoint) | **POST** /apis/validate-endpoint | Check Whether Given Endpoint URL is Valid
 [**validateGraphQLSchema**](ValidationApi.md#validateGraphQLSchema) | **POST** /apis/validate-graphql-schema | Validate a GraphQL SDL
+[**validateMCPServer**](ValidationApi.md#validateMCPServer) | **POST** /mcp-servers/validate | Check Given API Context Name already Exists
+[**validateMCPServerEndpoint**](ValidationApi.md#validateMCPServerEndpoint) | **POST** /mcp-servers/validate-endpoint | Check Whether Given Endpoint URL is Valid
 [**validateOpenAPIDefinition**](ValidationApi.md#validateOpenAPIDefinition) | **POST** /apis/validate-openapi | Validate an OpenAPI Definition
+[**validateOpenAPIDefinitionOfMCPServer**](ValidationApi.md#validateOpenAPIDefinitionOfMCPServer) | **POST** /mcp-servers/validate-openapi | Validate an OpenAPI Definition of a API
+[**validateThirdPartyMCPServer**](ValidationApi.md#validateThirdPartyMCPServer) | **POST** /mcp-servers/validate-mcp-server | Validate a third-party MCP Server
 [**validateWSDLDefinition**](ValidationApi.md#validateWSDLDefinition) | **POST** /apis/validate-wsdl | Validate a WSDL Definition
 
 
@@ -299,6 +303,147 @@ Name | Type | Description  | Notes
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 
+<a name="validateMCPServer"></a>
+# **validateMCPServer**
+> validateMCPServer(query, ifNoneMatch)
+
+Check Given API Context Name already Exists
+
+Using this operation, you can check a given API context is already used. You need to provide the context name you want to check. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ValidationApi apiInstance = new ValidationApi(defaultClient);
+    String query = "query_example"; // String | **Search condition**.  You can search in attributes by using an **\"<attribute>:\"** modifier.  Eg. \"name:wso2\" will match an MCP server if the provider of the API is exactly \"wso2\".  Supported attribute modifiers are [** version, context, name **]  If no advanced attribute modifier has been specified, search will match the given query string against MCP server Name. 
+    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+    try {
+      apiInstance.validateMCPServer(query, ifNoneMatch);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ValidationApi#validateMCPServer");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **query** | **String**| **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:wso2\&quot; will match an MCP server if the provider of the API is exactly \&quot;wso2\&quot;.  Supported attribute modifiers are [** version, context, name **]  If no advanced attribute modifier has been specified, search will match the given query string against MCP server Name.  |
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. API definition validation information is returned  |  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
+<a name="validateMCPServerEndpoint"></a>
+# **validateMCPServerEndpoint**
+> ApiEndpointValidationResponseDTO validateMCPServerEndpoint(endpointUrl, apiId)
+
+Check Whether Given Endpoint URL is Valid
+
+Using this operation, it is possible check whether the given MCP server URL is a valid url 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ValidationApi apiInstance = new ValidationApi(defaultClient);
+    String endpointUrl = "endpointUrl_example"; // String | API endpoint url
+    String apiId = "apiId_example"; // String | API ID consisting of the UUID of the MCP server
+    try {
+      ApiEndpointValidationResponseDTO result = apiInstance.validateMCPServerEndpoint(endpointUrl, apiId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ValidationApi#validateMCPServerEndpoint");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **endpointUrl** | **String**| API endpoint url |
+ **apiId** | **String**| API ID consisting of the UUID of the MCP server | [optional]
+
+### Return type
+
+[**ApiEndpointValidationResponseDTO**](ApiEndpointValidationResponseDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. API definition validation information is returned  |  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
 <a name="validateOpenAPIDefinition"></a>
 # **validateOpenAPIDefinition**
 > OpenAPIDefinitionValidationResponseDTO validateOpenAPIDefinition(returnContent, url, file, inlineAPIDefinition)
@@ -371,6 +516,150 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK. API definition validation information is returned  |  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
+<a name="validateOpenAPIDefinitionOfMCPServer"></a>
+# **validateOpenAPIDefinitionOfMCPServer**
+> OpenAPIDefinitionValidationResponseDTO validateOpenAPIDefinitionOfMCPServer(returnContent, url, file, inlineAPIDefinition)
+
+Validate an OpenAPI Definition of a API
+
+This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either &#x60;url&#x60; or &#x60;file&#x60; to specify the definition. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ValidationApi apiInstance = new ValidationApi(defaultClient);
+    Boolean returnContent = false; // Boolean | Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation 
+    String url = "url_example"; // String | OpenAPI definition url
+    File file = new File("/path/to/file"); // File | OpenAPI definition as a file
+    String inlineAPIDefinition = "inlineAPIDefinition_example"; // String | Inline content of the OpenAPI definition
+    try {
+      OpenAPIDefinitionValidationResponseDTO result = apiInstance.validateOpenAPIDefinitionOfMCPServer(returnContent, url, file, inlineAPIDefinition);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ValidationApi#validateOpenAPIDefinitionOfMCPServer");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **returnContent** | **Boolean**| Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation  | [optional] [default to false]
+ **url** | **String**| OpenAPI definition url | [optional]
+ **file** | **File**| OpenAPI definition as a file | [optional]
+ **inlineAPIDefinition** | **String**| Inline content of the OpenAPI definition | [optional]
+
+### Return type
+
+[**OpenAPIDefinitionValidationResponseDTO**](OpenAPIDefinitionValidationResponseDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. API definition validation information is returned  |  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
+<a name="validateThirdPartyMCPServer"></a>
+# **validateThirdPartyMCPServer**
+> MCPServerValidationResponseDTO validateThirdPartyMCPServer(mcPServerValidationRequestDTO)
+
+Validate a third-party MCP Server
+
+This operation can be used to validate a &#x60;url&#x60; of a third party mcp server 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ValidationApi apiInstance = new ValidationApi(defaultClient);
+    MCPServerValidationRequestDTO mcPServerValidationRequestDTO = new MCPServerValidationRequestDTO(); // MCPServerValidationRequestDTO | Object containing validation input parameters
+    try {
+      MCPServerValidationResponseDTO result = apiInstance.validateThirdPartyMCPServer(mcPServerValidationRequestDTO);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ValidationApi#validateThirdPartyMCPServer");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **mcPServerValidationRequestDTO** | [**MCPServerValidationRequestDTO**](MCPServerValidationRequestDTO.md)| Object containing validation input parameters |
+
+### Return type
+
+[**MCPServerValidationResponseDTO**](MCPServerValidationResponseDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. MCP Server validation result is returned.  |  * Content-Type - The content type of the response body. <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 

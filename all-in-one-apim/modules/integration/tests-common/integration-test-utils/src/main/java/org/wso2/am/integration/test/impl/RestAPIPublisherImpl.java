@@ -52,6 +52,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
 import org.wso2.am.integration.clients.publisher.api.v1.LinterCustomRulesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.McpServersApi;
 import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
@@ -94,6 +95,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeLis
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MCPServerDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ModelProviderDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
@@ -143,6 +145,7 @@ public class RestAPIPublisherImpl {
     public static final String password = "admin";
     public static final String testNameProperty = "testName";
     public ApIsApi apIsApi = new ApIsApi();
+    public McpServersApi mcpServersApi = new McpServersApi();
     public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
     public ApiRevisionsApi apiRevisionsApi = new ApiRevisionsApi();
     public ApiResourcePoliciesApi apiResourcePoliciesApi = new ApiResourcePoliciesApi();
@@ -1240,6 +1243,14 @@ public class RestAPIPublisherImpl {
                 null);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
+    }
+
+    public MCPServerDTO createMCPServerFromOpenAPI(File file, String properties) throws ApiException {
+
+        ApiResponse<MCPServerDTO> mcpServerDTOApiResponse =
+                mcpServersApi.createMCPServerFromOpenAPIWithHttpInfo(file, null, properties);
+        Assert.assertEquals(HttpStatus.SC_CREATED, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
     }
 
     public ApiResponse<APIDTO> importOASDefinitionResponse(File file, String properties) throws ApiException {

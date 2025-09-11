@@ -1,0 +1,51 @@
+{
+  "name": "PetstoreMCP",
+  "displayName": "Petstore MCP",
+  "version": "1.0.0",
+  "context": "petstore-v3-mcp",
+  "gatewayType": "wso2/synapse",
+  "policies": [
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "feature": "TOOL",
+      "backendOperationMapping": {
+        "backendId": "",
+        "backendOperation": {
+          "target": "/pets",
+          "verb": "GET"
+        }
+      }
+    },
+    {
+      "feature": "TOOL",
+      "backendOperationMapping": {
+        "backendId": "",
+        "backendOperation": {
+          "target": "/pets/{petId}",
+          "verb": "GET"
+        }
+      }
+    },
+    {
+      "feature": "TOOL",
+      "backendOperationMapping": {
+        "backendId": "",
+        "backendOperation": {
+          "target": "/oldpets",
+          "verb": "DELETE"
+        }
+      }
+    }
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://api.yourdomain.com/"
+    },
+    "production_endpoints": {
+      "url": "http://api.yourdomain.com/"
+    }
+  }
+}

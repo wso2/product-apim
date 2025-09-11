@@ -32,6 +32,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.AsyncAPISpecificatio
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import java.io.File;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MCPServerValidationRequestDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MCPServerValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLValidationResponseDTO;
 
@@ -583,6 +585,262 @@ public class ValidationApi {
         return localVarCall;
     }
     /**
+     * Build call for validateMCPServer
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:wso2\&quot; will match an MCP server if the provider of the API is exactly \&quot;wso2\&quot;.  Supported attribute modifiers are [** version, context, name **]  If no advanced attribute modifier has been specified, search will match the given query string against MCP server Name.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateMCPServerCall(String query, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/validate";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (query != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("query", query));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call validateMCPServerValidateBeforeCall(String query, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'query' is set
+        if (query == null) {
+            throw new ApiException("Missing the required parameter 'query' when calling validateMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = validateMCPServerCall(query, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Check Given API Context Name already Exists
+     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check. 
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:wso2\&quot; will match an MCP server if the provider of the API is exactly \&quot;wso2\&quot;.  Supported attribute modifiers are [** version, context, name **]  If no advanced attribute modifier has been specified, search will match the given query string against MCP server Name.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void validateMCPServer(String query, String ifNoneMatch) throws ApiException {
+        validateMCPServerWithHttpInfo(query, ifNoneMatch);
+    }
+
+    /**
+     * Check Given API Context Name already Exists
+     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check. 
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:wso2\&quot; will match an MCP server if the provider of the API is exactly \&quot;wso2\&quot;.  Supported attribute modifiers are [** version, context, name **]  If no advanced attribute modifier has been specified, search will match the given query string against MCP server Name.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> validateMCPServerWithHttpInfo(String query, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = validateMCPServerValidateBeforeCall(query, ifNoneMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Check Given API Context Name already Exists (asynchronously)
+     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check. 
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:wso2\&quot; will match an MCP server if the provider of the API is exactly \&quot;wso2\&quot;.  Supported attribute modifiers are [** version, context, name **]  If no advanced attribute modifier has been specified, search will match the given query string against MCP server Name.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateMCPServerAsync(String query, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = validateMCPServerValidateBeforeCall(query, ifNoneMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for validateMCPServerEndpoint
+     * @param endpointUrl API endpoint url (required)
+     * @param apiId API ID consisting of the UUID of the MCP server (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateMCPServerEndpointCall(String endpointUrl, String apiId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/validate-endpoint";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (endpointUrl != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("endpointUrl", endpointUrl));
+        }
+
+        if (apiId != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("apiId", apiId));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call validateMCPServerEndpointValidateBeforeCall(String endpointUrl, String apiId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'endpointUrl' is set
+        if (endpointUrl == null) {
+            throw new ApiException("Missing the required parameter 'endpointUrl' when calling validateMCPServerEndpoint(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = validateMCPServerEndpointCall(endpointUrl, apiId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Check Whether Given Endpoint URL is Valid
+     * Using this operation, it is possible check whether the given MCP server URL is a valid url 
+     * @param endpointUrl API endpoint url (required)
+     * @param apiId API ID consisting of the UUID of the MCP server (optional)
+     * @return ApiEndpointValidationResponseDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiEndpointValidationResponseDTO validateMCPServerEndpoint(String endpointUrl, String apiId) throws ApiException {
+        ApiResponse<ApiEndpointValidationResponseDTO> localVarResp = validateMCPServerEndpointWithHttpInfo(endpointUrl, apiId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Check Whether Given Endpoint URL is Valid
+     * Using this operation, it is possible check whether the given MCP server URL is a valid url 
+     * @param endpointUrl API endpoint url (required)
+     * @param apiId API ID consisting of the UUID of the MCP server (optional)
+     * @return ApiResponse&lt;ApiEndpointValidationResponseDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<ApiEndpointValidationResponseDTO> validateMCPServerEndpointWithHttpInfo(String endpointUrl, String apiId) throws ApiException {
+        okhttp3.Call localVarCall = validateMCPServerEndpointValidateBeforeCall(endpointUrl, apiId, null);
+        Type localVarReturnType = new TypeToken<ApiEndpointValidationResponseDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Check Whether Given Endpoint URL is Valid (asynchronously)
+     * Using this operation, it is possible check whether the given MCP server URL is a valid url 
+     * @param endpointUrl API endpoint url (required)
+     * @param apiId API ID consisting of the UUID of the MCP server (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateMCPServerEndpointAsync(String endpointUrl, String apiId, final ApiCallback<ApiEndpointValidationResponseDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = validateMCPServerEndpointValidateBeforeCall(endpointUrl, apiId, _callback);
+        Type localVarReturnType = new TypeToken<ApiEndpointValidationResponseDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for validateOpenAPIDefinition
      * @param returnContent Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation  (optional, default to false)
      * @param url OpenAPI definition url (optional)
@@ -720,6 +978,265 @@ public class ValidationApi {
 
         okhttp3.Call localVarCall = validateOpenAPIDefinitionValidateBeforeCall(returnContent, url, file, inlineAPIDefinition, _callback);
         Type localVarReturnType = new TypeToken<OpenAPIDefinitionValidationResponseDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for validateOpenAPIDefinitionOfMCPServer
+     * @param returnContent Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation  (optional, default to false)
+     * @param url OpenAPI definition url (optional)
+     * @param file OpenAPI definition as a file (optional)
+     * @param inlineAPIDefinition Inline content of the OpenAPI definition (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateOpenAPIDefinitionOfMCPServerCall(Boolean returnContent, String url, File file, String inlineAPIDefinition, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/validate-openapi";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (returnContent != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("returnContent", returnContent));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (url != null) {
+            localVarFormParams.put("url", url);
+        }
+
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        if (inlineAPIDefinition != null) {
+            localVarFormParams.put("inlineAPIDefinition", inlineAPIDefinition);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call validateOpenAPIDefinitionOfMCPServerValidateBeforeCall(Boolean returnContent, String url, File file, String inlineAPIDefinition, final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = validateOpenAPIDefinitionOfMCPServerCall(returnContent, url, file, inlineAPIDefinition, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Validate an OpenAPI Definition of a API
+     * This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either &#x60;url&#x60; or &#x60;file&#x60; to specify the definition. 
+     * @param returnContent Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation  (optional, default to false)
+     * @param url OpenAPI definition url (optional)
+     * @param file OpenAPI definition as a file (optional)
+     * @param inlineAPIDefinition Inline content of the OpenAPI definition (optional)
+     * @return OpenAPIDefinitionValidationResponseDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public OpenAPIDefinitionValidationResponseDTO validateOpenAPIDefinitionOfMCPServer(Boolean returnContent, String url, File file, String inlineAPIDefinition) throws ApiException {
+        ApiResponse<OpenAPIDefinitionValidationResponseDTO> localVarResp = validateOpenAPIDefinitionOfMCPServerWithHttpInfo(returnContent, url, file, inlineAPIDefinition);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Validate an OpenAPI Definition of a API
+     * This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either &#x60;url&#x60; or &#x60;file&#x60; to specify the definition. 
+     * @param returnContent Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation  (optional, default to false)
+     * @param url OpenAPI definition url (optional)
+     * @param file OpenAPI definition as a file (optional)
+     * @param inlineAPIDefinition Inline content of the OpenAPI definition (optional)
+     * @return ApiResponse&lt;OpenAPIDefinitionValidationResponseDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<OpenAPIDefinitionValidationResponseDTO> validateOpenAPIDefinitionOfMCPServerWithHttpInfo(Boolean returnContent, String url, File file, String inlineAPIDefinition) throws ApiException {
+        okhttp3.Call localVarCall = validateOpenAPIDefinitionOfMCPServerValidateBeforeCall(returnContent, url, file, inlineAPIDefinition, null);
+        Type localVarReturnType = new TypeToken<OpenAPIDefinitionValidationResponseDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Validate an OpenAPI Definition of a API (asynchronously)
+     * This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either &#x60;url&#x60; or &#x60;file&#x60; to specify the definition. 
+     * @param returnContent Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation  (optional, default to false)
+     * @param url OpenAPI definition url (optional)
+     * @param file OpenAPI definition as a file (optional)
+     * @param inlineAPIDefinition Inline content of the OpenAPI definition (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateOpenAPIDefinitionOfMCPServerAsync(Boolean returnContent, String url, File file, String inlineAPIDefinition, final ApiCallback<OpenAPIDefinitionValidationResponseDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = validateOpenAPIDefinitionOfMCPServerValidateBeforeCall(returnContent, url, file, inlineAPIDefinition, _callback);
+        Type localVarReturnType = new TypeToken<OpenAPIDefinitionValidationResponseDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for validateThirdPartyMCPServer
+     * @param mcPServerValidationRequestDTO Object containing validation input parameters (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. MCP Server validation result is returned.  </td><td>  * Content-Type - The content type of the response body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateThirdPartyMCPServerCall(MCPServerValidationRequestDTO mcPServerValidationRequestDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = mcPServerValidationRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/validate-mcp-server";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call validateThirdPartyMCPServerValidateBeforeCall(MCPServerValidationRequestDTO mcPServerValidationRequestDTO, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'mcPServerValidationRequestDTO' is set
+        if (mcPServerValidationRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'mcPServerValidationRequestDTO' when calling validateThirdPartyMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = validateThirdPartyMCPServerCall(mcPServerValidationRequestDTO, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Validate a third-party MCP Server
+     * This operation can be used to validate a &#x60;url&#x60; of a third party mcp server 
+     * @param mcPServerValidationRequestDTO Object containing validation input parameters (required)
+     * @return MCPServerValidationResponseDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. MCP Server validation result is returned.  </td><td>  * Content-Type - The content type of the response body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public MCPServerValidationResponseDTO validateThirdPartyMCPServer(MCPServerValidationRequestDTO mcPServerValidationRequestDTO) throws ApiException {
+        ApiResponse<MCPServerValidationResponseDTO> localVarResp = validateThirdPartyMCPServerWithHttpInfo(mcPServerValidationRequestDTO);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Validate a third-party MCP Server
+     * This operation can be used to validate a &#x60;url&#x60; of a third party mcp server 
+     * @param mcPServerValidationRequestDTO Object containing validation input parameters (required)
+     * @return ApiResponse&lt;MCPServerValidationResponseDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. MCP Server validation result is returned.  </td><td>  * Content-Type - The content type of the response body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<MCPServerValidationResponseDTO> validateThirdPartyMCPServerWithHttpInfo(MCPServerValidationRequestDTO mcPServerValidationRequestDTO) throws ApiException {
+        okhttp3.Call localVarCall = validateThirdPartyMCPServerValidateBeforeCall(mcPServerValidationRequestDTO, null);
+        Type localVarReturnType = new TypeToken<MCPServerValidationResponseDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Validate a third-party MCP Server (asynchronously)
+     * This operation can be used to validate a &#x60;url&#x60; of a third party mcp server 
+     * @param mcPServerValidationRequestDTO Object containing validation input parameters (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. MCP Server validation result is returned.  </td><td>  * Content-Type - The content type of the response body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateThirdPartyMCPServerAsync(MCPServerValidationRequestDTO mcPServerValidationRequestDTO, final ApiCallback<MCPServerValidationResponseDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = validateThirdPartyMCPServerValidateBeforeCall(mcPServerValidationRequestDTO, _callback);
+        Type localVarReturnType = new TypeToken<MCPServerValidationResponseDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
