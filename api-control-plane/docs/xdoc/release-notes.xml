@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Control Plane v4.6.0-Alpha - 20th August 2025</title>
+    <title>WSO2 API Control Plane v4.6.0-Alpha2 - 12th September 2025</title>
 </head>
 <body>
 <div id="main-content">
-<h1>WSO2 API Control Plane 4.6.0-Alpha Released!</h1>
+<h1>WSO2 API Control Plane 4.6.0-Alpha2 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 4.6.0-Alpha of
+    The WSO2 API Manager team is pleased to announce the release of version 4.6.0-Alpha2 of
     the Open Source API Control Plane.
 </p>
 
@@ -77,9 +77,9 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-    <h2>Bug Fixes And Improvements in 4.6.0-Alpha</h2>
+    <h2>Bug Fixes And Improvements in 4.6.0-Alpha2</h2>
     <ul>
-        <li>GitHub (<a href="https://github.com/wso2/api-manager/milestone/25">api-manager</a>)
+        <li>GitHub (<a href="https://github.com/wso2/api-manager/milestone/26">api-manager</a>)
         </li>
     </ul>
 
