@@ -1304,7 +1304,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.9.29</carbon.kernel.version>
-        <apimserver.version>4.6.0-SNAPSHOT</apimserver.version>
+        <apimserver.version>${project.version}</apimserver.version>
 
         <cipher.tool.version>1.1.28</cipher.tool.version>
 
@@ -1484,7 +1484,7 @@
         <auth0.keymanager.feature.version>1.0.7</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.1.8</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.2.24</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.2.27</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
         <charon3.version>4.0.23</charon3.version>
