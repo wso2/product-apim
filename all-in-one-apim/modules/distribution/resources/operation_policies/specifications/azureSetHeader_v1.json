@@ -1,0 +1,45 @@
+{
+  "category": "Mediation",
+  "name": "azureSetHeader",
+  "version": "v1",
+  "displayName": "Set Header",
+  "description": "This policy assigns a value to an existing HTTP response and/or request header or adds a new response and/or request header.",
+  "policyAttributes": [
+    {
+      "name": "headerName",
+      "displayName": "Header Name",
+      "description": "Name of the header to be added",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "headerValue",
+      "displayName": "Header Value",
+      "description": "Value of the header. Will be ignored if exists-action is delete.",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "existsAction",
+      "displayName": "Exists Action",
+      "description": "Action to take if the header exists",
+      "validationRegex": "^.+$",
+      "type": "Enum",
+      "allowedValues" : ["override","skip","append", "delete"],
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request",
+    "response",
+    "fault"
+  ],
+  "supportedGateways": [
+    "Azure"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
