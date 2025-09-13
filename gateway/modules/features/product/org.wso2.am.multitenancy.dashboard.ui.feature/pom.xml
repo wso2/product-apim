@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.wso2.am.gw</groupId>
             <artifactId>org.wso2.am.gw.multitenancy.dashboard.ui</artifactId>
-            <version>${apimserver.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
