@@ -252,7 +252,7 @@
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediators.server.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
                    
-                                <featureArtifactDef>org.wso2.am:org.wso2.am.styles.feature:${apimserver.version}
+                                <featureArtifactDef>org.wso2.am:org.wso2.am.styles.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.relay.feature:${carbon.mediation.version}
@@ -296,13 +296,13 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am:org.wso2.am.multitenancy.dashboard.ui.feature:${apimserver.version}
+                                    org.wso2.am:org.wso2.am.multitenancy.dashboard.ui.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am:org.wso2.am.security.feature:${apimserver.version}
+                                    org.wso2.am:org.wso2.am.security.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am:org.wso2.carbon.identity.local.auth.api.endpoint.feature:${apimserver.version}
+                                    org.wso2.am:org.wso2.carbon.identity.local.auth.api.endpoint.feature:${project.version}
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
@@ -705,7 +705,7 @@
 
                                 <!-- AM Policies Feature -->
                                 <featureArtifactDef>
-                                    org.wso2.am:org.wso2.am.policies.feature:${apimserver.version}
+                                    org.wso2.am:org.wso2.am.policies.feature:${project.version}
                                 </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
@@ -1066,7 +1066,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.local.auth.api.endpoint.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
 
                                 <feature>
@@ -1097,16 +1097,16 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -1511,7 +1511,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
@@ -1571,7 +1571,7 @@
                                 <!-- AM Policy Feature -->
                                 <feature>
                                     <id>org.wso2.am.policies.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -1767,7 +1767,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.local.auth.api.endpoint.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
 
                                 <feature>
@@ -1790,12 +1790,12 @@
 
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
 
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -2167,7 +2167,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
@@ -2403,11 +2403,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -2660,7 +2660,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.server.feature.group</id>
@@ -2910,11 +2910,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -3199,7 +3199,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
@@ -3407,11 +3407,11 @@
                               
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -3697,7 +3697,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
@@ -3958,7 +3958,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
@@ -3966,7 +3966,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -4174,7 +4174,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
@@ -4442,7 +4442,7 @@
 
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.receiver.feature.group</id>
@@ -4535,7 +4535,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>

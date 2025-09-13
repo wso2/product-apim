@@ -111,7 +111,7 @@ under the License.
                                 <sec.verifier.dir>${basedir}/target/security-verifier/</sec.verifier.dir>
                                 <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                                 <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
-                                <apim.server.version>${apimserver.version}</apim.server.version>
+                                <apim.server.version>${project.version}</apim.server.version>
                                 <startupScript>api-manager</startupScript>
                             </systemProperties>
                             <skipTests>${skipBenchMarkTest}</skipTests>
@@ -249,7 +249,7 @@ under the License.
                                 <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                                 <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
                                 <startupScript>api-manager</startupScript>
-                                <apim.server.version>${apimserver.version}</apim.server.version>
+                                <apim.server.version>${project.version}</apim.server.version>
                             </systemProperties>
                             <skipTests>${skipBenchMarkTest}</skipTests>
                             <workingDirectory>${basedir}/target</workingDirectory>

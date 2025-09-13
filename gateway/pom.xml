@@ -355,12 +355,12 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.styles</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.thirdparty.km</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.h2database.wso2</groupId>
@@ -514,12 +514,12 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.multitenancy.dashboard.ui</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.security.feature</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <!--Test framework dependencies -->
@@ -561,17 +561,17 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.admin.clients</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.test.extensions</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -827,7 +827,7 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.stratos.apimgt.login.ui</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -957,37 +957,37 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.clients.publisher.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.clients.store.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.clients.admin.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.service.catalog.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.internal.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.samples.utils</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.swagger</groupId>
@@ -1225,7 +1225,7 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.publisher.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
@@ -1304,7 +1304,6 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.9.29</carbon.kernel.version>
-        <apimserver.version>${project.version}</apimserver.version>
 
         <cipher.tool.version>1.1.28</cipher.tool.version>
 

@@ -249,7 +249,7 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediation.configadmin.server.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>org.wso2.am.acp:org.wso2.am.acp.styles.feature:${apimserver.version}
+                                <featureArtifactDef>org.wso2.am.acp:org.wso2.am.acp.styles.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.relay.feature:${carbon.mediation.version}
@@ -283,13 +283,13 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am.acp:org.wso2.am.acp.multitenancy.dashboard.ui.feature:${apimserver.version}
+                                    org.wso2.am.acp:org.wso2.am.acp.multitenancy.dashboard.ui.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am.acp:org.wso2.am.acp.security.feature:${apimserver.version}
+                                    org.wso2.am.acp:org.wso2.am.acp.security.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am.acp:org.wso2.am.acp.carbon.identity.local.auth.api.endpoint.feature:${apimserver.version}
+                                    org.wso2.am.acp:org.wso2.am.acp.carbon.identity.local.auth.api.endpoint.feature:${project.version}
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
@@ -918,7 +918,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.acp.carbon.identity.local.auth.api.endpoint.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
 
                                 <feature>
@@ -943,11 +943,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.acp.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.acp.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -1313,7 +1313,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.acp.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
