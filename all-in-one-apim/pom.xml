@@ -1251,6 +1251,18 @@
                 <artifactId>opensaml</artifactId>
                 <version>${opensaml2.wso2.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.framework.extensions</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
 
             <!-- analytics features -->
             <dependency>
