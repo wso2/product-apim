@@ -17,12 +17,15 @@
  */
 package org.wso2.am.integration.tests.logging;
 
+import com.google.gson.Gson;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -30,6 +33,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -132,6 +136,39 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore,
                 applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
+        // Add additional resources to the existing API
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        // Get existing operations and add new ones
+        List<APIOperationsDTO> operations = apidto.getOperations();
+        if (operations == null) {
+            operations = new ArrayList<>();
+        }
+
+        // Add POST /payee/personal operation
+        APIOperationsDTO postOperation = new APIOperationsDTO();
+        postOperation.setVerb("POST");
+        postOperation.setTarget("/payee/personal");
+        postOperation.setAuthType("Application & Application User");
+        postOperation.setThrottlingPolicy("Unlimited");
+        operations.add(postOperation);
+
+        // Add GET /payee/:id operation
+        APIOperationsDTO getPayeeOperation = new APIOperationsDTO();
+        getPayeeOperation.setVerb("GET");
+        getPayeeOperation.setTarget("/payee/{id}");
+        getPayeeOperation.setAuthType("Application & Application User");
+        getPayeeOperation.setThrottlingPolicy("Unlimited");
+        operations.add(getPayeeOperation);
+
+        apidto.setOperations(operations);
+        restAPIPublisher.updateAPI(apidto);
+
+        // Create new revision and deploy
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+
         // Get list of APIs with an API
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
@@ -180,6 +217,16 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
             }
             lineNo++;
         }
+
+        // Test POST /payee/personal endpoint first
+        HttpPost postRequest = new HttpPost(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + "/payee/personal");
+        postRequest.setHeader("Authorization", "Bearer " + accessToken);
+        postRequest.setHeader("Content-Type", "application/json");
+        postRequest.setEntity(new StringEntity("{\"name\":\"test\"}"));
+
+        org.apache.http.HttpResponse postResponse = client.execute(postRequest);
+        assertEquals(postResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "POST request to /payee/personal should succeed");
     }
 
     @Test(groups = {"wso2.am"}, description = "Sending http request to per API logging enabled API: ",
