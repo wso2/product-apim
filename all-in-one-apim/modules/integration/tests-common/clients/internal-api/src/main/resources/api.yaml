@@ -592,6 +592,69 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /notify-gateway:
+    post:
+      summary: Gateway Register or Heartbeat
+      description: |
+        Accepts a payload indicating either a gateway registration or a heartbeat update.
+        The `payloadType` field distinguishes the operation.
+      parameters:
+        - name: body
+          in: body
+          description: 'Gateway notification payload'
+          required: true
+          schema:
+            $ref: '#/definitions/NotifyGatewayPayload'
+      tags:
+        - 'Gateway Lifecycle'
+      responses:
+        200:
+          description: 'Successful response for registration or heartbeat'
+          schema:
+            $ref: '#/definitions/NotifyGatewayStatusResponse'
+        400:
+          description: 'Invalid payload'
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: 'Internal server error while processing gateway status'
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /notify-api-deployment-status:
+    post:
+      summary: Acknowledge an API Revision Deployment
+      description: |
+        This endpoint is invoked by the Gateway to notify the Control Plane about the status of an API revision deployment or undeployment.
+      parameters:
+        - name: body
+          in: body
+          description: 'Gateway deployment status acknowledgment payload'
+          required: true
+          schema:
+            $ref: '#/definitions/GatewayDeploymentStatusAcknowledgmentList'
+      tags:
+        - 'Gateway Monitoring'
+      responses:
+        200:
+          description: 'Deployment acknowledgement received successfully'
+          schema:
+            $ref: '#/definitions/DeploymentAcknowledgmentResponse'
+        400:
+          description: 'Malformed deployment acknowledgment payload'
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: 'Internal server error while processing deployment status'
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
 ######################################################
 # Parameters - required by some of the APIs above
@@ -1417,7 +1480,7 @@ definitions:
   EventCountLimit:
     title: Event Count Limit object
     allOf:
-      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/definitions/ThrottleLimitBase'
       - required:
           - eventCount
         type: object
@@ -1427,4 +1490,154 @@ definitions:
             description: Maximum number of events allowed
             format: int64
             example: 3000
+
+  #-----------------------------------------------------
+  # Gateway Notification Payload
+  #-----------------------------------------------------
+  NotifyGatewayPayload:
+    type: object
+    required:
+      - payloadType
+    properties:
+      payloadType:
+        type: string
+        enum:
+          - REGISTER
+          - HEARTBEAT
+        description: |
+          Indicates the type of payload.
+          - "REGISTER": Gateway registration payload
+          - "HEARTBEAT": Heartbeat update payload
+        example: REGISTER
+      gatewayProperties:
+        $ref: '#/definitions/GatewayProperties'
+      loadingTenants:
+        type: array
+        items:
+          type: string
+        description: List of tenant names
+        example: ["tenant1.com", "tenant2.org", "carbon.super"]
+      environmentLabels:
+        type: array
+        description: A list of environments this gateway supports.
+        items:
+          type: string
+        example: ["default", "production", "sandbox"]
+      gatewayId:
+        type: string
+        description: The unique identifier assigned to the newly registered gateway.
+      timeStamp:
+        type: integer
+        description: The timestamp when the heartbeat was generated.
+        format: int64
+
+  #-----------------------------------------------------
+  # Gateway Notification Status Response
+  #-----------------------------------------------------
+  NotifyGatewayStatusResponse:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        description: Response status
+        enum:
+          - REGISTERED
+          - ACKNOWLEDGED
+        example: REGISTERED
+      gatewayId:
+        type: string
+        description: Returned if registration was successful.
+        example: "ID_1"
+
+  #-----------------------------------------------------
+  # Gateway Properties
+  #-----------------------------------------------------
+  GatewayProperties:
+    type: object
+    description: Technical properties of the gateway instance.
+    properties:
+      ipAddress:
+        type: string
+        format: ipv4
+        description: The IP address of the gateway instance.
+        example: "192.168.1.100"
+
+  #-----------------------------------------------------
+  # Gateway Deployment Status Acknowledgment List
+  #-----------------------------------------------------
+  GatewayDeploymentStatusAcknowledgmentList:
+    title: API Revision Deployment Status acknowledgements List
+    type: object
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of APIs returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/GatewayDeploymentStatusAcknowledgment'
+
+  #-----------------------------------------------------
+  # Gateway Deployment Status Acknowledgment
+  #-----------------------------------------------------
+  GatewayDeploymentStatusAcknowledgment:
+    type: object
+    required:
+      - gatewayId
+      - apiId
+      - tenantDomain
+      - deploymentStatus
+      - timeStamp
+    properties:
+      gatewayId:
+        type: string
+        description: The unique identifier assigned to the newly registered gateway.
+      apiId:
+        type: string
+        description: Unique identifier of the deployed API.
+        example: "3c2240f2-33f1-4c6d-936e-74172ea864ab"
+      tenantDomain:
+        type: string
+      deploymentStatus:
+        type: string
+        description: The final status of the deployment action.
+        enum: [SUCCESS, FAILURE]
+      timeStamp:
+        type: integer
+        description: The timestamp when the heartbeat was generated.
+        format: int64
+      action:
+        type: string
+        description: The action performed by the gateway.
+        enum: [DEPLOY, UNDEPLOY]
+      revisionId:
+        type: string
+        description: Unique identifier of the API revision that was deployed or undeployed.
+        example: "f46c7962-cd36-4aa6-b804-8d66ad6a0dc4"
+      errorCode:
+        type: integer
+        description: A unique code identifying the error, present only if deploymentStatus is 'FAILURE'.
+      errorMessage:
+        type: string
+        description: A descriptive error message, present only if deploymentStatus is 'FAILURE'.
+
+  #-----------------------------------------------------
+  # Deployment Acknowledgment Response
+  #-----------------------------------------------------
+  DeploymentAcknowledgmentResponse:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        description: Response status
+        enum:
+          - RECEIVED
+          - DROPPED
+        example: RECEIVED
 
