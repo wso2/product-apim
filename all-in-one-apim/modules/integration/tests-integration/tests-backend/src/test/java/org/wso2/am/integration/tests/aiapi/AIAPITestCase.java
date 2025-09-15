@@ -744,7 +744,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         // Use specific models for the round-robin configuration
         String firstModel = model2;
         String secondModel = model3;
-        
+
         JSONObject model1Obj = new JSONObject();
         model1Obj.put("vendor", "");
         model1Obj.put("model", firstModel);
@@ -880,8 +880,8 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         failoverConfigs.put("production", productionConfig);
         failoverConfigs.put("sandbox", sandboxConfig);
-        failoverConfigs.put("requestTimeout", "60");
-        failoverConfigs.put("suspendDuration", "5");
+        failoverConfigs.put("requestTimeout", "120");
+        failoverConfigs.put("suspendDuration", "0");
 
         String configString = failoverConfigs.toString().replace("\"", "'");
         failoverAttributeMap.put("failoverConfigs", configString);
@@ -1121,9 +1121,9 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 .withHeader("Authorization", WireMock.matching("Bearer 123"))
                 .withRequestBody(WireMock.containing(model1))
                 .willReturn(aResponse()
-                        .withStatus(500)
+                        .withStatus(401)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"error\": \"Internal Server Error\"}")));
+                        .withBody("{\"error\": \"Unauthorized\"}")));
 
         // Stub for unsecured AI API (no Authorization header)
         wireMockServer.stubFor(WireMock.post(urlEqualTo(noAuthAPIEndpoint + mistralAPIResource))

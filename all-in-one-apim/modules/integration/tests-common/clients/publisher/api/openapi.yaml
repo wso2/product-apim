@@ -18258,6 +18258,7 @@ components:
           type: HTTP
           version: 1.0.0
           provider: admin
+          subtype: AIAPI
           gatewayVendor: wso2
           securityScheme:
           - securityScheme
@@ -18291,6 +18292,7 @@ components:
           type: HTTP
           version: 1.0.0
           provider: admin
+          subtype: AIAPI
           gatewayVendor: wso2
           securityScheme:
           - securityScheme
@@ -18374,6 +18376,7 @@ components:
         type: HTTP
         version: 1.0.0
         provider: admin
+        subtype: AIAPI
         gatewayVendor: wso2
         securityScheme:
         - securityScheme
@@ -18430,6 +18433,12 @@ components:
           type: string
         type:
           example: HTTP
+          type: string
+        subtype:
+          default: DEFAULT
+          description: Subtype of the API.
+          example: AIAPI
+          readOnly: true
           type: string
         audience:
           description: The audience of the API. Accepted values are PUBLIC, SINGLE

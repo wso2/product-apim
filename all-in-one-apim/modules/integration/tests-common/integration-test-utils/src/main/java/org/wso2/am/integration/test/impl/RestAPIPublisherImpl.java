@@ -209,6 +209,7 @@ public class RestAPIPublisherImpl {
         linterCustomRulesApi.setApiClient(apiPublisherClient);
         gatewayPoliciesApi.setApiClient(apiPublisherClient);
         apiEndpointsApi.setApiClient(apiPublisherClient);
+        aiServiceProviderApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
