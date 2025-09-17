@@ -25,6 +25,8 @@ import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -70,7 +72,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * AI API Test Case
@@ -80,100 +84,82 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(AIAPITestCase.class);
 
-    // Variables related to mistral AI API
-    private static final String mistralAPIName = "mistralAPI";
-    public static final String unsecuredAPIName = "mistralNoAuthAPI";
-    private static final String mistralAPIVersion = "1.0.0";
-    public static final String unsecuredAPIVersion = "1.0.0";
-    private static final String mistralAPIContext = "mistralAPI";
-    public static final String unsecuredAPIContext = "mistralNoAuthAPI";
-    private static final String mistralAPIEndpoint = "/mistral";
-    public static final String mistralAPIEndpoint2 = "/mistral-updated";
-    public static final String noAuthAPIEndpoint = "/noauth";
-    private static final String mistralAPIResource = "/v1/chat/completions";
-    private String mistralAPIId;
-    private String unsecuredAPIId;
+    // API Configuration Constants
+    private static final String MISTRAL_API_NAME = "mistralAPI";
+    private static final String UNSECURED_API_NAME = "mistralNoAuthAPI";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String API_VERSION_2_0_0 = "2.0.0";
+    private static final String MISTRAL_API_CONTEXT = "mistralAPI";
+    private static final String UNSECURED_API_CONTEXT = "mistralNoAuthAPI";
+    private static final String MISTRAL_API_ENDPOINT = "/mistral";
+    private static final String MISTRAL_API_ENDPOINT_UPDATED = "/mistral-updated";
+    private static final String NO_AUTH_API_ENDPOINT = "/no-auth";
+    private static final String MISTRAL_API_RESOURCE = "/v1/chat/completions";
+    // API Instance Variables
+    private String mistralApiId;
+    private String unsecuredApiId;
     private String mistralPayload;
-    private String mistralResponse;
     private String model1Response;
     private String model2Response;
     private String model3Response;
 
-    // Application and API related common details
-    private static final String apiProvider = "admin";
-    private static final String applicationName = "AI-API-Application";
+    // Application Configuration Constants
+    private static final String API_PROVIDER = "admin";
+    private static final String APPLICATION_NAME = "AI-API-Application";
+
+    // Application Instance Variables
     private String applicationId;
     private String apiKey;
 
-    // Other variables
+    // WireMock Configuration
+    private static final String ENDPOINT_HOST = "http://localhost";
+
+    // WireMock Instance Variables
     private String resourcePath;
     private WireMockServer wireMockServer;
     private int endpointPort;
-    private String endpointHost = "http://localhost";
-    private int lowerPortLimit = 9950;
-    private int upperPortLimit = 9999;
 
+    // AI Service Provider Configuration Constants
+    private static final String AI_SERVICE_PROVIDER_NAME = "TestAIService";
+    private static final String AI_SERVICE_PROVIDER_API_VERSION = "1.0.0";
+    private static final String AI_SERVICE_PROVIDER_DESCRIPTION = "This is a copy of MistralAI service";
+    private static final String MODEL_SMALL = "mistral-small-latest";
+    private static final String MODEL_MEDIUM = "mistral-medium-latest";
+    private static final String MODEL_LARGE = "mistral-large-latest";
+
+    // AI Service Provider Instance Variables
     private String aiServiceProviderId;
-    private final String aiServiceProviderName = "TestAIService";
-    private final String aiServiceProviderApiVersion = "1.0.0";
-
-    private final String aiServiceProviderDescription = "This is a copy of MistralAI service";
-    private final String model1 = "mistral-small-latest";
-    private final String model2 = "mistral-medium-latest";
-    private final String model3 = "mistral-large-latest";
-    private final String modelList = String.format("[\"%s\", \"%s\", \"%s\"]", model1, model2, model3);
-    private final String modelProviders = String.format("[{\"models\": %s, \"name\": \"%s\"}]", modelList,
-            aiServiceProviderName);
-    private final String productionEndpointName = "Prod Endpoint";
-    private final String sandboxEndpointName = "Sandbox Endpoint";
-    private final String productionDeploymentStage = "PRODUCTION";
-    private final String sandboxDeploymentStage = "SANDBOX";
-    private final String defaultProductionEndpointId = "default_production_endpoint";
-    private final String defaultProductionEndpointName = "Default Production Endpoint";
-    private final String newVersion = "2.0.0";
-    private final String failoverEndpointUrl = "/failover-endpoint";
-    private final String failoverEndpointName = "Failover Endpoint";
+    private String modelProviders;
+    // Endpoint Configuration Constants
+    private static final String PRODUCTION_ENDPOINT_NAME = "Prod Endpoint";
+    private static final String SANDBOX_ENDPOINT_NAME = "Sandbox Endpoint";
+    private static final String PRODUCTION_DEPLOYMENT_STAGE = "PRODUCTION";
+    private static final String SANDBOX_DEPLOYMENT_STAGE = "SANDBOX";
+    private static final String DEFAULT_PRODUCTION_ENDPOINT_ID = "default_production_endpoint";
+    private static final String DEFAULT_PRODUCTION_ENDPOINT_NAME = "Default Production Endpoint";
+    private static final String FAILOVER_ENDPOINT_URL = "/failover-endpoint";
+    private static final String FAILOVER_ENDPOINT_NAME = "Failover Endpoint";
+    // Endpoint Instance Variables
     private String productionEndpointId;
     private String sandboxEndpointId;
     private String newVersionApiId;
-    private String failoverEndpointId;
-    private List<JSONObject> endpointsList = new ArrayList<>();
+    private final List<JSONObject> endpointsList = new ArrayList<>();
     private Map<String, String> policyMap;
 
-    private final String customAIServiceProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
-            "\"authenticationConfiguration\":{\"enabled\":false,\"type\":\"none\"," +
-            "\"parameters\":{}}," +
-            "\"metadata\":[{\"attributeName\":\"requestModel\",\"inputSource\":\"payload\",\"attributeIdentifier\"" +
-            ":\"$.model\",\"required\":false},{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.model\",\"required\":true},{\"attributeName\":\"promptTokenCount\"," +
-            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
-            "{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.usage.completion_tokens\",\"required\":true}," +
-            "{\"attributeName\":\"totalTokenCount\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.usage.total_tokens\",\"required\":true}," +
-            "{\"attributeName\":\"remainingTokenCount\",\"inputSource\":\"header\"," +
-            "\"attributeIdentifier\":\"x-ratelimit-remaining-tokens\",\"required\":false}]}";
+    // AI Service Provider Configuration Variables (loaded from JSON files)
+    private String customAiServiceProviderConfigurations;
+    private String updatedCustomAiServiceProviderConfigurations;
 
-    private final String updatedCustomAIServiceProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
-            "\"authenticationConfiguration\":{\"enabled\":true,\"type\":\"apikey\"," +
-            "\"parameters\":{\"headerEnabled\":true,\"queryParameterEnabled\":false,\"headerName\":\"Authorization\"" +
-            "}},\"metadata\":[{\"attributeName\":\"requestModel\",\"inputSource\":\"payload\",\"attributeIdentifier\"" +
-            ":\"$.model\",\"required\":false},{\"attributeName\":\"responseModel\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.model\",\"required\":true},{\"attributeName\":\"promptTokenCount\"," +
-            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.prompt_tokens\",\"required\":true}," +
-            "{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.usage.completion_tokens\",\"required\":true}," +
-            "{\"attributeName\":\"totalTokenCount\",\"inputSource\":\"payload\"," +
-            "\"attributeIdentifier\":\"$.usage.total_tokens\",\"required\":true}," +
-            "{\"attributeName\":\"remainingTokenCount\",\"inputSource\":\"header\"," +
-            "\"attributeIdentifier\":\"x-ratelimit-remaining-tokens\",\"required\":false}]}";
+    // File Configuration Constants
+    private static final String API_DEFINITION_FILE_NAME = "mistral-def.json";
+    private static final String MISTRAL_RESPONSE_FILE_NAME = "mistral-response.json";
+    private static final String MISTRAL_PAYLOAD_FILE_NAME = "mistral-payload.json";
+    private static final String AI_SERVICE_PROVIDER_CONFIG_NO_AUTH_FILE = "ai-service-provider-config-no-auth.json";
+    private static final String AI_SERVICE_PROVIDER_CONFIG_WITH_AUTH_FILE = "ai-service-provider-config-with-auth.json";
+    private static final String ENDPOINT_CONFIG_TEMPLATE_FILE = "endpoint-config-template.json";
 
-
-    private List<String> defaultAIServiceProviders = new ArrayList<>();
-
-    private final String apiDefinitionFileName = "mistral-def.json";
-
-    private final String mistralResponseFileName = "mistral-response.json";
+    // Default AI Service Providers
+    private final List<String> defaultAiServiceProviders = new ArrayList<>();
     @Factory(dataProvider = "userModeDataProvider")
     public AIAPITestCase(TestUserMode userMode) {
 
@@ -191,51 +177,58 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
         super.init(userMode);
-        defaultAIServiceProviders.add("MistralAI");
-        defaultAIServiceProviders.add("OpenAI");
-        defaultAIServiceProviders.add("AzureOpenAI");
-        defaultAIServiceProviders.add("AWSBedrock");
-        defaultAIServiceProviders.add("Anthropic");
-
+        initializeDefaultAiServiceProviders();
+        initializeModelConfigurations();
         policyMap = restAPIPublisher.getAllCommonOperationPolicies();
-
-        // Add application
-        ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationName,
-                APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
-        applicationId = applicationDTO.getApplicationId();
-        Assert.assertNotNull(applicationId);
-
-        resourcePath = TestConfigurationProvider.getResourceLocation() + "ai-api" + File.separator;
-        mistralResponse = readFile(resourcePath + mistralResponseFileName);
-        model1Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", model1);
-        model2Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", model2);
-        model3Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", model3);
-
-        mistralPayload = readFile(resourcePath + "mistral-payload.json");
-
-        // Start WireMock server
+        applicationId = createTestApplication();
+        initializeTestData();
         startWiremockServer();
     }
 
     /**
-     * Tests the retrieval of predefined AI service providers and verifies all are present.
-     * Ensures that all predefined AI service providers are retrieved successfully.
+     * Tests the retrieval of predefined AI service providers and validates against expected providers.
+     * Verifies that all expected built-in AI service providers are present and have correct properties.
      */
     @Test(groups = {"wso2.am"}, description = "Test retrieve AI Service Providers")
-    public void testPredefinedAIServiceProviders() throws Exception {
-        List<String> copyDefaultAIServiceProviders = new ArrayList<>(defaultAIServiceProviders);
+    public void testPredefinedAiServiceProviders() throws Exception {
         ApiResponse<AIServiceProviderSummaryResponseListDTO> aiServiceProviders = restAPIAdmin.getAIServiceProviders();
-        assertEquals(Response.Status.OK.getStatusCode(),
-                aiServiceProviders.getStatusCode(), "Failed to retrieve AI service providers");
-        for (AIServiceProviderSummaryResponseDTO provider : aiServiceProviders.getData().getList()) {
-            if (defaultAIServiceProviders.contains(provider.getName())) {
-                copyDefaultAIServiceProviders.remove(provider.getName());
+        assertEquals(Response.Status.OK.getStatusCode(), aiServiceProviders.getStatusCode(),
+                "Failed to retrieve AI service providers");
+
+        List<AIServiceProviderSummaryResponseDTO> providerList = aiServiceProviders.getData().getList();
+        assertNotNull(providerList, "AI service providers list should not be null");
+        assertTrue(providerList.size() >= defaultAiServiceProviders.size(),
+                "Expected at least " + defaultAiServiceProviders.size() + " providers, but found: " + providerList.size());
+
+        // Create a map of retrieved providers for easier lookup
+        Map<String, AIServiceProviderSummaryResponseDTO> retrievedProviders = new HashMap<>();
+        for (AIServiceProviderSummaryResponseDTO provider : providerList) {
+            retrievedProviders.put(provider.getName(), provider);
+        }
+
+        // Validate each expected provider is present and has correct properties
+        List<String> missingProviders = new ArrayList<>();
+        for (String expectedProvider : defaultAiServiceProviders) {
+            AIServiceProviderSummaryResponseDTO provider = retrievedProviders.get(expectedProvider);
+            if (provider == null) {
+                missingProviders.add(expectedProvider);
+            } else {
+                // Validate provider properties
+                assertNotNull(provider.getId(), "Provider ID should not be null for: " + expectedProvider);
+                assertEquals(expectedProvider, provider.getName(), "Provider name mismatch");
+                assertNotNull(provider.getApiVersion(), "API version should not be null for: " + expectedProvider);
+                assertTrue(provider.isBuiltInSupport(), "Provider should have built-in support: " + expectedProvider);
+                assertNotNull(provider.getDescription(), "Description should not be null for: " + expectedProvider);
+
+                log.info(
+                        "Validated AI service provider: " + expectedProvider + " (ID: " + provider.getId() + ", Version: " + provider.getApiVersion() + ")");
             }
         }
-        assertEquals(0,
-                copyDefaultAIServiceProviders.size(), "Failed to retrieve all predefined AI service providers");
+
+        assertTrue(missingProviders.isEmpty(), "Missing expected AI service providers: " + missingProviders);
+
+        log.info("Successfully validated " + defaultAiServiceProviders.size() + " predefined AI service providers");
     }
 
     /**
@@ -243,18 +236,18 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      * Ensures the provider is created with the given details and retrieves its ID.
      */
     @Test(groups = {"wso2.am"}, description = "Add AI Service Provider")
-    public void addCustomAIServiceProviderWithNoAuth() throws Exception {
-        String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
+    public void addCustomAiServiceProviderWithNoAuth() throws Exception {
+        String originalDefinition = readFile(resourcePath + API_DEFINITION_FILE_NAME);
         File file = getTempFileWithContent(originalDefinition);
 
         ApiResponse<AIServiceProviderResponseDTO> createProviderResponse = restAPIAdmin.addAIServiceProvider(
-                aiServiceProviderName, aiServiceProviderApiVersion, aiServiceProviderDescription, false,
-                customAIServiceProviderConfigurations, file, modelProviders);
+                AI_SERVICE_PROVIDER_NAME, AI_SERVICE_PROVIDER_API_VERSION, AI_SERVICE_PROVIDER_DESCRIPTION, false,
+                customAiServiceProviderConfigurations, file, modelProviders);
 
-        assertEquals(Response.Status.CREATED.getStatusCode(), createProviderResponse.getStatusCode(),
+        assertEquals(createProviderResponse.getStatusCode(), Response.Status.CREATED.getStatusCode(),
                 "Failed to add an AI service provider");
         aiServiceProviderId = createProviderResponse.getData().getId();
-        Assert.assertNotNull(aiServiceProviderId, "AI Service Provider ID is null");
+        assertNotNull(aiServiceProviderId, "AI Service Provider ID should not be null");
     }
 
     /**
@@ -262,15 +255,15 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      * Ensures the provider is retrieved successfully and the name and API version match.
      */
     @Test(groups = {"wso2.am"}, description = "Get AI Service Provider",
-            dependsOnMethods = "addCustomAIServiceProviderWithNoAuth")
-    public void retrieveCustomAIServiceProvider() throws Exception {
+            dependsOnMethods = "addCustomAiServiceProviderWithNoAuth")
+    public void retrieveCustomAiServiceProvider() throws Exception {
         ApiResponse<AIServiceProviderResponseDTO> getProviderResponse = restAPIAdmin.getAIServiceProvider(
                 aiServiceProviderId);
-        assertEquals(Response.Status.OK.getStatusCode(), getProviderResponse.getStatusCode(),
+        assertEquals(getProviderResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Failed to retrieve AI service provider");
-        assertEquals(getProviderResponse.getData().getName(), aiServiceProviderName,
+        assertEquals(getProviderResponse.getData().getName(), AI_SERVICE_PROVIDER_NAME,
                 "AI service provider name does not match");
-        assertEquals(getProviderResponse.getData().getApiVersion(), aiServiceProviderApiVersion,
+        assertEquals(getProviderResponse.getData().getApiVersion(), AI_SERVICE_PROVIDER_API_VERSION,
                 "AI service provider API version does not match");
     }
 
@@ -278,70 +271,28 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      * Test AI API with unsecured AI service provider. Verify creation, deployment, and publishing
      */
     @Test(groups = {"wso2.am"}, description = "Test Unsecured AI API creation, deployment and publishing",
-            dependsOnMethods = "addCustomAIServiceProviderWithNoAuth")
-    public void testUnsecuredAIAPICreationAndPublish() throws Exception {
-
-        String apiDefinition = readFile(resourcePath + apiDefinitionFileName);
-        String additionalProperties = readFile(resourcePath + "mistral-no-auth-add-props.json");
-        JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
-
-        // Update production endpoint
-        JSONObject endpointConfig = additionalPropertiesObj.getJSONObject("endpointConfig");
-        JSONObject productionEndpoints = new JSONObject();
-        productionEndpoints.put("url", endpointHost + ":" + endpointPort + noAuthAPIEndpoint);
-        endpointConfig.put("production_endpoints", productionEndpoints);
-        additionalPropertiesObj.put("endpointConfig", endpointConfig);
-
-        // Create API
-        File file = getTempFileWithContent(apiDefinition);
-        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
-        unsecuredAPIId = apidto.getId();
-
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(unsecuredAPIId);
-        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
-                "Failed to create AI API using the custom AI Service Provider");
-
-        // Deploy API
-        String revisionUUID = createAPIRevisionAndDeployUsingRest(unsecuredAPIId, restAPIPublisher);
-        Assert.assertNotNull(revisionUUID);
-
-        // Publish API
-        HttpResponse lifecycleResponse = restAPIPublisher
-                .changeAPILifeCycleStatusToPublish(unsecuredAPIId, false);
-        assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
-
-        waitForAPIDeploymentSync(apidto.getProvider(),
-                apidto.getName(), apidto.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+            dependsOnMethods = "addCustomAiServiceProviderWithNoAuth")
+    public void testUnsecuredAiApiCreationAndPublish() throws Exception {
+        unsecuredApiId = createAndPublishAiApi(NO_AUTH_API_ENDPOINT, "mistral-no-auth-add-props.json");
     }
 
     /**
      * Test Unsecured AI API invocation
      */
     @Test(groups = {"wso2.am"}, description = "Test AI API invocation",
-            dependsOnMethods = "testUnsecuredAIAPICreationAndPublish")
-    public void testUnsecuredAIApiInvocation() throws Exception {
-
-        // Subscribe to API
-        SubscriptionDTO subscriptionDTO = restAPIStore.
-                subscribeToAPI(unsecuredAPIId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
-        assertNotNull(subscriptionDTO, "Unsecured AI API subscription failed");
-
-        // Get API Key
-        APIKeyDTO apiKeyDTO = restAPIStore.
-                generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                -1, null, null);
-        assertNotNull(apiKeyDTO, "Unsecured AI API Key generation failed");
-        apiKey = apiKeyDTO.getApikey();
+            dependsOnMethods = "testUnsecuredAiApiCreationAndPublish")
+    public void testUnsecuredAiApiInvocation() throws Exception {
+        apiKey = subscribeToApiAndGenerateKey(unsecuredApiId);
 
         // Invoke API
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
         requestHeaders.put("Content-Type", "application/json");
-        String invokeURL = getAPIInvocationURLHttp(unsecuredAPIContext, unsecuredAPIVersion) + mistralAPIResource;
+        String invokeURL = getAPIInvocationURLHttp(UNSECURED_API_CONTEXT, API_VERSION_1_0_0) + MISTRAL_API_RESOURCE;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
         assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Unsecured AI API invocation failed");
-        assertEquals(model1Response, serviceResponse.getData(), "Unsecured AI API response mismatch");
+        assertEquals(serviceResponse.getData(), model1Response, "Unsecured AI API response mismatch");
     }
 
     /**
@@ -349,23 +300,24 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      * Ensures the updated provider is retrieved successfully and the configurations are correct.
      */
     @Test(groups = {"wso2.am"}, description = "Update AI Service Provider",
-            dependsOnMethods = "testUnsecuredAIApiInvocation")
-    public void updateCustomAIServiceProvider() throws Exception {
-        String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
+            dependsOnMethods = "testUnsecuredAiApiInvocation")
+    public void updateCustomAiServiceProvider() throws Exception {
+        String originalDefinition = readFile(resourcePath + API_DEFINITION_FILE_NAME);
         File file = getTempFileWithContent(originalDefinition);
 
         ApiResponse<AIServiceProviderResponseDTO> updateProviderResponse = restAPIAdmin.updateAIServiceProvider(
-                aiServiceProviderId, aiServiceProviderName, aiServiceProviderApiVersion, aiServiceProviderDescription,
-                false, updatedCustomAIServiceProviderConfigurations, file, modelProviders);
+                aiServiceProviderId, AI_SERVICE_PROVIDER_NAME, AI_SERVICE_PROVIDER_API_VERSION,
+                AI_SERVICE_PROVIDER_DESCRIPTION, false, updatedCustomAiServiceProviderConfigurations, file,
+                modelProviders);
 
-        assertEquals(Response.Status.OK.getStatusCode(),
-                updateProviderResponse.getStatusCode(), "Failed to update AI service provider");
+        assertEquals(updateProviderResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Failed to update AI service provider");
 
         ApiResponse<AIServiceProviderResponseDTO> getProviderResponse = restAPIAdmin.getAIServiceProvider(
                 aiServiceProviderId);
-        assertEquals(Response.Status.OK.getStatusCode(), getProviderResponse.getStatusCode(),
+        assertEquals(getProviderResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Failed to retrieve AI service provider");
-        assertEquals(getProviderResponse.getData().getConfigurations(), updatedCustomAIServiceProviderConfigurations,
+        assertEquals(getProviderResponse.getData().getConfigurations(), updatedCustomAiServiceProviderConfigurations,
                 "Failed to update AI service provider configurations");
     }
 
@@ -373,128 +325,104 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      * Test AI API creation, deployment, and publishing
      */
     @Test(groups = {"wso2.am"}, description = "Test Mistral AI API creation, deployment and publishing",
-            dependsOnMethods = "updateCustomAIServiceProvider")
-    public void testSecuredAIAPICreationAndPublish() throws Exception {
-
-        String apiDefinition = readFile(resourcePath + apiDefinitionFileName);
-        String additionalProperties = readFile(resourcePath + "mistral-add-props.json");
-        JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
-
-        // Update production endpoint
-        JSONObject endpointConfig = additionalPropertiesObj.getJSONObject("endpointConfig");
-        JSONObject productionEndpoints = new JSONObject();
-        productionEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint);
-        endpointConfig.put("production_endpoints", productionEndpoints);
-        additionalPropertiesObj.put("endpointConfig", endpointConfig);
-
-        // Create API
-        File file = getTempFileWithContent(apiDefinition);
-        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
-        mistralAPIId = apidto.getId();
-
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(mistralAPIId);
-        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
-                "Failed to create AI API using the custom AI Service Provider");
-
-        // Deploy API
-        String revisionUUID = createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
-        Assert.assertNotNull(revisionUUID);
-
-        // Publish API
-        HttpResponse lifecycleResponse = restAPIPublisher
-                .changeAPILifeCycleStatusToPublish(mistralAPIId, false);
-        assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
-
-        waitForAPIDeploymentSync(apidto.getProvider(),
-                apidto.getName(), apidto.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+            dependsOnMethods = "updateCustomAiServiceProvider")
+    public void testSecuredAiApiCreationAndPublish() throws Exception {
+        mistralApiId = createAndPublishAiApi(MISTRAL_API_ENDPOINT, "mistral-add-props.json");
     }
 
     /**
      * Test Mistral AI API invocation
      */
     @Test(groups = {"wso2.am"}, description = "Test AI API invocation",
-            dependsOnMethods = "testSecuredAIAPICreationAndPublish")
-    public void testSecuredAIApiInvocation() throws Exception {
-
-        // Subscribe to API
-        SubscriptionDTO subscriptionDTO = restAPIStore.
-                subscribeToAPI(mistralAPIId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
-        assertNotNull(subscriptionDTO, "AI API subscription failed");
-
-        // Get API Key
-        APIKeyDTO apiKeyDTO = restAPIStore.
-                generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                        -1, null, null);
-        assertNotNull(apiKeyDTO, "AI API Key generation failed");
-        apiKey = apiKeyDTO.getApikey();
+            dependsOnMethods = "testSecuredAiApiCreationAndPublish")
+    public void testSecuredAiApiInvocation() throws Exception {
+        // Note: Use existing API key from previous test to avoid regeneration
+        if (apiKey == null) {
+            apiKey = subscribeToApiAndGenerateKey(mistralApiId);
+        } else {
+            // Just subscribe the existing application
+            SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(mistralApiId, applicationId,
+                    APIMIntegrationConstants.API_TIER.UNLIMITED);
+            assertNotNull(subscriptionDTO, "AI API subscription failed");
+        }
 
         // Invoke API
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
         requestHeaders.put("Content-Type", "application/json");
-        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
+        String invokeURL = getAPIInvocationURLHttp(MISTRAL_API_CONTEXT, API_VERSION_1_0_0) + MISTRAL_API_RESOURCE;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
         assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "AI API invocation failed");
-        assertEquals(model1Response, serviceResponse.getData(), "AI API response mismatch");
+        assertEquals(serviceResponse.getData(), model1Response, "AI API response mismatch");
     }
 
     /**
      * Test endpoint addition to Mistral AI API - handles multiple endpoints (production and sandbox)
      */
     @Test(groups = {"wso2.am"}, description = "Test multiple endpoint addition to AI API",
-            dependsOnMethods = "testSecuredAIApiInvocation")
-    public void testAddAIAPIEndpoint() throws Exception {
+            dependsOnMethods = "testSecuredAiApiInvocation")
+    public void testAddAiApiEndpoint() throws Exception {
         // Add production endpoint
-        String prodEndpointConfig = readFile(resourcePath + "prod-endpoint-add-endpoint-config.json");
-        JSONObject prodEndpointConfigObj = new JSONObject(prodEndpointConfig);
+        String endpointConfig = readFile(resourcePath + ENDPOINT_CONFIG_TEMPLATE_FILE);
+        JSONObject prodEndpointConfigObj = new JSONObject(endpointConfig);
         JSONObject productionEndpoints = new JSONObject();
-        productionEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint);
+        productionEndpoints.put("url", ENDPOINT_HOST + ":" + endpointPort + MISTRAL_API_ENDPOINT);
         prodEndpointConfigObj.put("production_endpoints", productionEndpoints);
 
-        Map<String, Object> prodEndpointConfigMap = new Gson().fromJson(prodEndpointConfigObj.toString(), Map.class);
-        HttpResponse addProdEndpointResponse = restAPIPublisher.addApiEndpoint(mistralAPIId, productionEndpointName,
-                productionDeploymentStage, prodEndpointConfigMap);
-        Assert.assertEquals(addProdEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
-                "Failed to add production endpoint to API: " + mistralAPIId);
-        
+        // Remove sandbox section from endpoint_security for production endpoint
+        JSONObject endpointSecurity = prodEndpointConfigObj.getJSONObject("endpoint_security");
+        endpointSecurity.remove("sandbox");
+        prodEndpointConfigObj.put("endpoint_security", endpointSecurity);
+
+        Map prodEndpointConfigMap = new Gson().fromJson(prodEndpointConfigObj.toString(), Map.class);
+        HttpResponse addProdEndpointResponse = restAPIPublisher.addApiEndpoint(mistralApiId, PRODUCTION_ENDPOINT_NAME,
+                PRODUCTION_DEPLOYMENT_STAGE, prodEndpointConfigMap);
+        assertEquals(addProdEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
+                "Failed to add production endpoint to API: " + mistralApiId);
+
         // Extract endpoint ID from response for later use
         JSONObject prodEndpointResponse = new JSONObject(addProdEndpointResponse.getData());
         productionEndpointId = prodEndpointResponse.getString("id");
-        Assert.assertNotNull(productionEndpointId, "Production endpoint ID should not be null");
+        assertNotNull(productionEndpointId, "Production endpoint ID should not be null");
 
-        // Add sandbox endpoint
-        String sandboxEndpointConfig = readFile(resourcePath + "sandbox-endpoint-config.json");
-        JSONObject sandboxEndpointConfigObj = new JSONObject(sandboxEndpointConfig);
+        // Add sandbox endpoint using the same template
+        JSONObject sandboxEndpointConfigObj = new JSONObject(endpointConfig);
         JSONObject sandboxEndpoints = new JSONObject();
-        sandboxEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint + "/sandbox");
+        sandboxEndpoints.put("url", ENDPOINT_HOST + ":" + endpointPort + MISTRAL_API_ENDPOINT + "/sandbox");
         sandboxEndpointConfigObj.put("sandbox_endpoints", sandboxEndpoints);
 
-        Map<String, Object> sandboxEndpointConfigMap = new Gson().fromJson(sandboxEndpointConfigObj.toString(), Map.class);
-        HttpResponse addSandboxEndpointResponse = restAPIPublisher.addApiEndpoint(mistralAPIId, sandboxEndpointName,
-                sandboxDeploymentStage, sandboxEndpointConfigMap);
-        Assert.assertEquals(addSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
-                "Failed to add sandbox endpoint to API: " + mistralAPIId);
-        
+        // Remove production section from endpoint_security for sandbox endpoint
+        JSONObject sandboxEndpointSecurity = sandboxEndpointConfigObj.getJSONObject("endpoint_security");
+        sandboxEndpointSecurity.remove("production");
+        sandboxEndpointConfigObj.put("endpoint_security", sandboxEndpointSecurity);
+
+        Map<String, Object> sandboxEndpointConfigMap = new Gson().fromJson(sandboxEndpointConfigObj.toString(),
+                Map.class);
+        HttpResponse addSandboxEndpointResponse = restAPIPublisher.addApiEndpoint(mistralApiId, SANDBOX_ENDPOINT_NAME,
+                SANDBOX_DEPLOYMENT_STAGE, sandboxEndpointConfigMap);
+        assertEquals(addSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
+                "Failed to add sandbox endpoint to API: " + mistralApiId);
+
         // Extract endpoint ID from response for later use
         JSONObject sandboxEndpointResponse = new JSONObject(addSandboxEndpointResponse.getData());
         sandboxEndpointId = sandboxEndpointResponse.getString("id");
-        Assert.assertNotNull(sandboxEndpointId, "Sandbox endpoint ID should not be null");
+        assertNotNull(sandboxEndpointId, "Sandbox endpoint ID should not be null");
     }
 
     /**
      * Test retrieving all endpoints for an API
      */
     @Test(groups = {"wso2.am"}, description = "Test retrieving all API endpoints",
-            dependsOnMethods = "testAddAIAPIEndpoint")
+            dependsOnMethods = "testAddAiApiEndpoint")
     public void testGetApiEndpoints() throws Exception {
-        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
-        Assert.assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Failed to retrieve endpoints for API: " + mistralAPIId);
+        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralApiId);
+        assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to retrieve endpoints for API: " + mistralApiId);
         
         // Parse response to verify endpoints exist
         JSONObject endpointsResponse = new JSONObject(getEndpointsResponse.getData());
-        Assert.assertTrue(endpointsResponse.has("list"), "Response should contain 'list' field");
+        assertTrue(endpointsResponse.has("list"), "Response should contain 'list' field");
         
         // Update the endpoints list with the current API response
         ArrayList<JSONObject> retrievedEndpointsList = new ArrayList<>();
@@ -504,7 +432,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         
         // Verify that we have at least 2 endpoints (production and sandbox)
         int endpointCount = retrievedEndpointsList.size();
-        Assert.assertTrue(endpointCount >= 2, "Should have 2 endpoints, but found: " + endpointCount);
+        assertTrue(endpointCount >= 2, "Should have 2 endpoints, but found: " + endpointCount);
         
         // Verify that our created endpoints are in the list
         boolean foundProductionEndpoint = false;
@@ -514,50 +442,50 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
             String endpointId = endpoint.getString("id");
             String endpointName = endpoint.getString("name");
             
-            if (productionEndpointId.equals(endpointId) && productionEndpointName.equals(endpointName)) {
+            if (productionEndpointId.equals(endpointId) && PRODUCTION_ENDPOINT_NAME.equals(endpointName)) {
                 foundProductionEndpoint = true;
             }
-            if (sandboxEndpointId.equals(endpointId) && sandboxEndpointName.equals(endpointName)) {
+            if (sandboxEndpointId.equals(endpointId) && SANDBOX_ENDPOINT_NAME.equals(endpointName)) {
                 foundSandboxEndpoint = true;
             }
         }
         
-        Assert.assertTrue(foundProductionEndpoint, "Production endpoint not found in the list");
-        Assert.assertTrue(foundSandboxEndpoint, "Sandbox endpoint not found in the list");
+        assertTrue(foundProductionEndpoint, "Production endpoint not found in the list");
+        assertTrue(foundSandboxEndpoint, "Sandbox endpoint not found in the list");
     }
 
     /**
      * Test retrieving a specific endpoint by ID
      */
     @Test(groups = {"wso2.am"}, description = "Test retrieving a specific API endpoint",
-            dependsOnMethods = "testAddAIAPIEndpoint")
+            dependsOnMethods = "testAddAiApiEndpoint")
     public void testGetApiEndpoint() throws Exception {
         // Test retrieving production endpoint
-        HttpResponse getProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, productionEndpointId);
-        Assert.assertEquals(getProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Failed to retrieve production endpoint for API: " + mistralAPIId);
+        HttpResponse getProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralApiId, productionEndpointId);
+        assertEquals(getProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to retrieve production endpoint for API: " + mistralApiId);
         
         // Parse and verify production endpoint details
         JSONObject prodEndpoint = new JSONObject(getProdEndpointResponse.getData());
-        Assert.assertEquals(prodEndpoint.getString("id"), productionEndpointId,
+        assertEquals(prodEndpoint.getString("id"), productionEndpointId,
                 "Retrieved endpoint ID does not match expected production endpoint ID");
-        Assert.assertEquals(prodEndpoint.getString("name"), productionEndpointName,
+        assertEquals(prodEndpoint.getString("name"), PRODUCTION_ENDPOINT_NAME,
                 "Retrieved endpoint name does not match expected production endpoint name");
-        Assert.assertEquals(prodEndpoint.getString("deploymentStage"), productionDeploymentStage,
+        assertEquals(prodEndpoint.getString("deploymentStage"), PRODUCTION_DEPLOYMENT_STAGE,
                 "Retrieved endpoint deployment stage does not match expected production stage");
         
         // Test retrieving sandbox endpoint
-        HttpResponse getSandboxEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, sandboxEndpointId);
-        Assert.assertEquals(getSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Failed to retrieve sandbox endpoint for API: " + mistralAPIId);
+        HttpResponse getSandboxEndpointResponse = restAPIPublisher.getApiEndpoint(mistralApiId, sandboxEndpointId);
+        assertEquals(getSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to retrieve sandbox endpoint for API: " + mistralApiId);
         
         // Parse and verify sandbox endpoint details
         JSONObject sandboxEndpoint = new JSONObject(getSandboxEndpointResponse.getData());
-        Assert.assertEquals(sandboxEndpoint.getString("id"), sandboxEndpointId,
+        assertEquals(sandboxEndpoint.getString("id"), sandboxEndpointId,
                 "Retrieved endpoint ID does not match expected sandbox endpoint ID");
-        Assert.assertEquals(sandboxEndpoint.getString("name"), sandboxEndpointName,
+        assertEquals(sandboxEndpoint.getString("name"), SANDBOX_ENDPOINT_NAME,
                 "Retrieved endpoint name does not match expected sandbox endpoint name");
-        Assert.assertEquals(sandboxEndpoint.getString("deploymentStage"), sandboxDeploymentStage,
+        assertEquals(sandboxEndpoint.getString("deploymentStage"), SANDBOX_DEPLOYMENT_STAGE,
                 "Retrieved endpoint deployment stage does not match expected sandbox stage");
     }
 
@@ -568,39 +496,48 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testGetApiEndpoint")
     public void testUpdateApiEndpoint() throws Exception {
         // Create updated endpoint configuration for production endpoint
-        String updatedProdEndpointConfig = readFile(resourcePath + "prod-endpoint-add-endpoint-config.json");
-        JSONObject updatedProdEndpointConfigObj = new JSONObject(updatedProdEndpointConfig);
-        JSONObject updatedProductionEndpoints = new JSONObject();
-        // Update the URL to a different endpoint
-        updatedProductionEndpoints.put("url", endpointHost + ":" + endpointPort + mistralAPIEndpoint2);
-        updatedProdEndpointConfigObj.put("production_endpoints", updatedProductionEndpoints);
-        
-        // Update the endpoint security configuration
-        JSONObject endpointSecurity = updatedProdEndpointConfigObj.getJSONObject("endpoint_security");
-        JSONObject productionSecurity = endpointSecurity.getJSONObject("production");
-        productionSecurity.put("apiKeyValue", "Bearer 456"); // Change the API key value
-        endpointSecurity.put("production", productionSecurity);
-        updatedProdEndpointConfigObj.put("endpoint_security", endpointSecurity);
+        String baseEndpointConfig = readFile(resourcePath + ENDPOINT_CONFIG_TEMPLATE_FILE);
+        JSONObject updatedProdEndpointConfigObj = updateBaseEndpointConfig(baseEndpointConfig);
 
         // Convert JSONObject to Map to avoid "map" wrapper in serialization
-        Map<String, Object> updatedProdEndpointConfigMap = new Gson().fromJson(updatedProdEndpointConfigObj.toString(), Map.class);
+        Map updatedProdEndpointConfigMap = new Gson().fromJson(updatedProdEndpointConfigObj.toString(), Map.class);
         // Update the production endpoint
-        HttpResponse updateProdEndpointResponse = restAPIPublisher.updateApiEndpoint(mistralAPIId, 
-                productionEndpointId, productionEndpointName, productionDeploymentStage, updatedProdEndpointConfigMap);
-        Assert.assertEquals(updateProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Failed to update production endpoint for API: " + mistralAPIId);
+        HttpResponse updateProdEndpointResponse = restAPIPublisher.updateApiEndpoint(mistralApiId,
+                productionEndpointId, PRODUCTION_ENDPOINT_NAME, PRODUCTION_DEPLOYMENT_STAGE, updatedProdEndpointConfigMap);
+        assertEquals(updateProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to update production endpoint for API: " + mistralApiId);
         
         // Verify the update by retrieving the endpoint
-        HttpResponse getUpdatedProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, productionEndpointId);
-        Assert.assertEquals(getUpdatedProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
+        HttpResponse getUpdatedProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralApiId, productionEndpointId);
+        assertEquals(getUpdatedProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve updated production endpoint");
         
         JSONObject updatedProdEndpoint = new JSONObject(getUpdatedProdEndpointResponse.getData());
         JSONObject endpointConfig = new JSONObject(updatedProdEndpoint.getString("endpointConfig"));
         JSONObject prodEndpoints = endpointConfig.getJSONObject("production_endpoints");
         String updatedUrl = prodEndpoints.getString("url");
-        Assert.assertTrue(updatedUrl.contains(mistralAPIEndpoint2),
+        assertTrue(updatedUrl.contains(MISTRAL_API_ENDPOINT_UPDATED),
                 "Updated endpoint URL should contain '/mistral-updated' but was: " + updatedUrl);
+    }
+
+    @NotNull
+    private JSONObject updateBaseEndpointConfig(String updatedProdEndpointConfig) throws JSONException {
+        JSONObject updatedProdEndpointConfigObj = new JSONObject(updatedProdEndpointConfig);
+        JSONObject updatedProductionEndpoints = new JSONObject();
+        // Update the URL to a different endpoint
+        updatedProductionEndpoints.put("url", ENDPOINT_HOST + ":" + endpointPort + MISTRAL_API_ENDPOINT_UPDATED);
+        updatedProdEndpointConfigObj.put("production_endpoints", updatedProductionEndpoints);
+
+        // Update the endpoint security configuration
+        JSONObject endpointSecurity = updatedProdEndpointConfigObj.getJSONObject("endpoint_security");
+        JSONObject productionSecurity = endpointSecurity.getJSONObject("production");
+        productionSecurity.put("apiKeyValue", "Bearer 456"); // Change the API key value
+        endpointSecurity.put("production", productionSecurity);
+
+        // Remove sandbox section from endpoint_security for production endpoint update
+        endpointSecurity.remove("sandbox");
+        updatedProdEndpointConfigObj.put("endpoint_security", endpointSecurity);
+        return updatedProdEndpointConfigObj;
     }
 
     /**
@@ -610,30 +547,31 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testUpdateApiEndpoint")
     public void testDeleteApiEndpoint() throws Exception {
         // First verify that the sandbox endpoint exists
-        HttpResponse getSandboxEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, sandboxEndpointId);
-        Assert.assertEquals(getSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
+        HttpResponse getSandboxEndpointResponse = restAPIPublisher.getApiEndpoint(mistralApiId, sandboxEndpointId);
+        assertEquals(getSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Sandbox endpoint should exist before deletion");
-        
+
         // Delete the sandbox endpoint
-        HttpResponse deleteSandboxEndpointResponse = restAPIPublisher.deleteApiEndpoint(mistralAPIId, sandboxEndpointId);
-        Assert.assertEquals(deleteSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Failed to delete sandbox endpoint for API: " + mistralAPIId);
-        
+        HttpResponse deleteSandboxEndpointResponse = restAPIPublisher.deleteApiEndpoint(mistralApiId,
+                sandboxEndpointId);
+        assertEquals(deleteSandboxEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to delete sandbox endpoint for API: " + mistralApiId);
+
         // Verify that the production endpoint still exists
-        HttpResponse getProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralAPIId, productionEndpointId);
-        Assert.assertEquals(getProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
+        HttpResponse getProdEndpointResponse = restAPIPublisher.getApiEndpoint(mistralApiId, productionEndpointId);
+        assertEquals(getProdEndpointResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Production endpoint should still exist after deleting sandbox endpoint");
-        
+
         // Verify the endpoint count in the list has decreased
-        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
-        Assert.assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
+        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralApiId);
+        assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve endpoints list after deletion");
-        
+
         // Parse the response and verify endpoint count
         JSONObject endpointsResponse = new JSONObject(getEndpointsResponse.getData());
         int endpointCount = endpointsResponse.getJSONArray("list").length();
-        Assert.assertTrue(endpointCount >= 1, "Should have at least 1 endpoint remaining, but found: " + endpointCount);
-        
+        assertTrue(endpointCount >= 1, "Should have at least 1 endpoint remaining, but found: " + endpointCount);
+
         // Verify that the sandbox endpoint is not in the list anymore
         boolean foundSandboxEndpoint = false;
         for (int i = 0; i < endpointCount; i++) {
@@ -644,7 +582,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 break;
             }
         }
-        Assert.assertFalse(foundSandboxEndpoint, "Deleted sandbox endpoint should not be in the endpoints list");
+        assertFalse(foundSandboxEndpoint, "Deleted sandbox endpoint should not be in the endpoints list");
     }
 
     /**
@@ -652,11 +590,11 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      */
     @Test(groups = {"wso2.am"}, description = "Test final retrieval of all API endpoints",
             dependsOnMethods = "testDeleteApiEndpoint")
-    public void testGetAllEndpointsFinal() throws Exception {
+    public void testGetAllEndpoints() throws Exception {
         // Get all endpoints one final time
-        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralAPIId);
-        Assert.assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Failed to retrieve final endpoints list for API: " + mistralAPIId);
+        HttpResponse getEndpointsResponse = restAPIPublisher.getApiEndpoints(mistralApiId);
+        assertEquals(getEndpointsResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Failed to retrieve final endpoints list for API: " + mistralApiId);
         
         // Update the endpoints list with the final API response
         JSONObject endpointsResponse = new JSONObject(getEndpointsResponse.getData());
@@ -665,7 +603,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         }
         
         // Verify that we have at least 1 endpoint remaining (production endpoint)
-        Assert.assertTrue(endpointsList.size() >= 1, 
+        assertFalse(endpointsList.isEmpty(),
                 "Should have at least 1 endpoint remaining, but found: " + endpointsList.size());
         
         // Verify that the production endpoint still exists
@@ -676,7 +614,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 break;
             }
         }
-        Assert.assertTrue(foundProductionEndpoint, "Production endpoint should still exist in the final list");
+        assertTrue(foundProductionEndpoint, "Production endpoint should still exist in the final list");
         
         // Verify that the sandbox endpoint is completely removed
         boolean foundSandboxEndpoint = false;
@@ -686,18 +624,18 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 break;
             }
         }
-        Assert.assertFalse(foundSandboxEndpoint, "Sandbox endpoint should be completely removed from the final list");
+        assertFalse(foundSandboxEndpoint, "Sandbox endpoint should be completely removed from the final list");
     }
 
     /**
      * Test retrieving AI service provider models from the publisher portal
      */
     @Test(groups = {"wso2.am"}, description = "Test retrieving AI service provider models",
-            dependsOnMethods = "testGetAllEndpointsFinal")
-    public void testGetAIServiceProviderModels() throws Exception {
+            dependsOnMethods = "testGetAllEndpoints")
+    public void testGetServiceProviderModels() {
         // Retrieve model list
         HttpResponse getModelListResponse = restAPIPublisher.getAIServiceProviderModels(aiServiceProviderId);
-        Assert.assertEquals(HttpStatus.SC_OK, getModelListResponse.getResponseCode(),
+        assertEquals(getModelListResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve model list of AI Service Provider: " + aiServiceProviderId);
 
         // Parse the model provider response to extract the models list
@@ -713,23 +651,23 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         }
 
         // Verify that the retrieved model list contains the expected 3 models
-        Assert.assertNotNull(modelList, "Model list should not be null");
-        Assert.assertEquals(modelList.size(), 3, "Expected 3 models but found: " + modelList.size());
+        assertNotNull(modelList, "Model list should not be null");
+        assertEquals(modelList.size(), 3, "Expected 3 models but found: " + modelList.size());
 
         // Verify presence of specific models
-        Assert.assertTrue(modelList.contains(model1), "Model list should contain " + model1);
-        Assert.assertTrue(modelList.contains(model2), "Model list should contain " + model2);
-        Assert.assertTrue(modelList.contains(model3), "Model list should contain " + model3);
+        assertTrue(modelList.contains(MODEL_SMALL), "Model list should contain " + MODEL_SMALL);
+        assertTrue(modelList.contains(MODEL_MEDIUM), "Model list should contain " + MODEL_MEDIUM);
+        assertTrue(modelList.contains(MODEL_LARGE), "Model list should contain " + MODEL_LARGE);
     }
 
     /**
      * Test Mistral AI API invocation after adding model round-robin policy
      */
     @Test(groups = {"wso2.am"}, description = "Test AI API invocation after adding model round-robin policy",
-            dependsOnMethods = "testGetAIServiceProviderModels")
-    public void testAIApiInvocationAfterAddingApiLevelModelRoundRobinPolicy() throws Exception {
+            dependsOnMethods = "testGetServiceProviderModels")
+    public void testApiInvocationWithRoundRobinPolicy() throws Exception {
 
-        HttpResponse getAPIResponse = restAPIPublisher.getAPI(mistralAPIId);
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(mistralApiId);
         APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
 
         // Add weighted round-robin policy
@@ -741,21 +679,21 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         List<JSONObject> productionModelList = new ArrayList<>();
 
         // Use specific models for the round-robin configuration
-        String firstModel = model2;
-        String secondModel = model3;
+        String firstModel = MODEL_MEDIUM;
+        String secondModel = MODEL_LARGE;
 
         JSONObject model1Obj = new JSONObject();
         model1Obj.put("vendor", "");
         model1Obj.put("model", firstModel);
         model1Obj.put("endpointId", productionEndpointId);
-        model1Obj.put("endpointName", productionEndpointName);
+        model1Obj.put("endpointName", PRODUCTION_ENDPOINT_NAME);
         model1Obj.put("weight", 80);
 
          JSONObject model2Obj = new JSONObject();
          model2Obj.put("vendor", "");
          model2Obj.put("model", secondModel);
-         model2Obj.put("endpointId", defaultProductionEndpointId);
-         model2Obj.put("endpointName", defaultProductionEndpointName);
+         model2Obj.put("endpointId", DEFAULT_PRODUCTION_ENDPOINT_ID);
+         model2Obj.put("endpointName", DEFAULT_PRODUCTION_ENDPOINT_NAME);
          model2Obj.put("weight", 20);
 
         productionModelList.add(model1Obj);
@@ -783,14 +721,14 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.updateAPI(apidto);
 
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(mistralAPIId, restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(mistralApiId, restAPIPublisher);
         waitForAPIDeployment();
 
         // Invoke API
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
         requestHeaders.put("Content-Type", "application/json");
-        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
+        String invokeURL = getAPIInvocationURLHttp(MISTRAL_API_CONTEXT, API_VERSION_1_0_0) + MISTRAL_API_RESOURCE;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
         assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to invoke Mistral AI API");
@@ -800,9 +738,9 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         boolean isFirstModelResponse = model2Response.equals(actualResponse);
         boolean isSecondModelResponse = model3Response.equals(actualResponse);
 
-        Assert.assertTrue(isFirstModelResponse || isSecondModelResponse, 
+        assertTrue(isFirstModelResponse || isSecondModelResponse,
                 "Response should match either " + firstModel + " or " + secondModel + " response. " +
-                "Actual response: " + actualResponse + 
+                "Actual response: " + actualResponse +
                 ", Expected " + firstModel + " response: " + model2Response +
                 ", Expected " + secondModel + " response: " + model3Response);
     }
@@ -810,68 +748,61 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     /**
      * Test creating a new API version with failover policy
      */
-    @Test(groups = {"wso2.am"}, description = "Test creating new API version with failover policy",
-            dependsOnMethods = "testAIApiInvocationAfterAddingApiLevelModelRoundRobinPolicy")
-    public void testCreateNewVersionWithFailoverPolicy() throws Exception {
+    @Test(groups = { "wso2.am" }, description = "Test creating new API version with failover policy",
+            dependsOnMethods = "testApiInvocationWithRoundRobinPolicy")
+    public void testCreateApiVersionWithFailover() throws Exception {
         // Create new version of the API
-        HttpResponse copyApiResponse = restAPIPublisher.copyAPI(newVersion, mistralAPIId, false);
-        Assert.assertEquals(copyApiResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Failed to create new version of API");
-        
+        HttpResponse copyApiResponse = restAPIPublisher.copyAPI(API_VERSION_2_0_0, mistralApiId, false);
+        assertEquals(copyApiResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to create new version of API");
+
         newVersionApiId = copyApiResponse.getData();
-        Assert.assertNotNull(newVersionApiId, "New version API ID should not be null");
-        
+        assertNotNull(newVersionApiId, "New version API ID should not be null");
+
         // Get the new version API
         HttpResponse getNewVersionApiResponse = restAPIPublisher.getAPI(newVersionApiId);
-        Assert.assertEquals(getNewVersionApiResponse.getResponseCode(), HttpStatus.SC_OK,
+        assertEquals(getNewVersionApiResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to retrieve new version API");
-        
+
         APIDTO newVersionApiDto = new Gson().fromJson(getNewVersionApiResponse.getData(), APIDTO.class);
-        Assert.assertEquals(newVersionApiDto.getVersion(), newVersion, "API version should match");
+        assertEquals(newVersionApiDto.getVersion(), API_VERSION_2_0_0, "API version should match");
 
         // Add a new endpoint with failover URL for the new version
-        String failoverEndpointConfig = readFile(resourcePath + "prod-endpoint-add-endpoint-config.json");
-        JSONObject failoverEndpointConfigObj = new JSONObject(failoverEndpointConfig);
+        String baseEndpointConfig = readFile(resourcePath + ENDPOINT_CONFIG_TEMPLATE_FILE);
+        JSONObject failoverEndpointConfigObj = new JSONObject(baseEndpointConfig);
         JSONObject productionEndpoints = new JSONObject();
-        productionEndpoints.put("url", endpointHost + ":" + endpointPort + failoverEndpointUrl);
+        productionEndpoints.put("url", ENDPOINT_HOST + ":" + endpointPort + FAILOVER_ENDPOINT_URL);
         failoverEndpointConfigObj.put("production_endpoints", productionEndpoints);
 
-        Map<String, Object> failoverEndpointConfigMap = new Gson().fromJson(failoverEndpointConfigObj.toString(), Map.class);
-        HttpResponse addFailoverEndpointResponse = restAPIPublisher.addApiEndpoint(newVersionApiId, failoverEndpointName,
-                productionDeploymentStage, failoverEndpointConfigMap);
-        Assert.assertEquals(addFailoverEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
+        // Remove sandbox section from endpoint_security for failover production endpoint
+        JSONObject failoverEndpointSecurity = failoverEndpointConfigObj.getJSONObject("endpoint_security");
+        failoverEndpointSecurity.remove("sandbox");
+        failoverEndpointConfigObj.put("endpoint_security", failoverEndpointSecurity);
+
+        Map<String, Object> failoverEndpointConfigMap = new Gson().fromJson(failoverEndpointConfigObj.toString(),
+                Map.class);
+        HttpResponse addFailoverEndpointResponse = restAPIPublisher.addApiEndpoint(newVersionApiId,
+                FAILOVER_ENDPOINT_NAME, PRODUCTION_DEPLOYMENT_STAGE, failoverEndpointConfigMap);
+        assertEquals(addFailoverEndpointResponse.getResponseCode(), HttpStatus.SC_CREATED,
                 "Failed to add failover endpoint to new version API");
-        
+
         // Extract failover endpoint ID from response
         JSONObject failoverEndpointResponse = new JSONObject(addFailoverEndpointResponse.getData());
-        failoverEndpointId = failoverEndpointResponse.getString("id");
-        Assert.assertNotNull(failoverEndpointId, "Failover endpoint ID should not be null");
-        
+        String failoverEndpointId = failoverEndpointResponse.getString("id");
+        assertNotNull(failoverEndpointId, "Failover endpoint ID should not be null");
+
         // Update the API to set the new endpoint as primary production endpoint
         newVersionApiDto.setPrimaryProductionEndpointId(failoverEndpointId);
 
         // Remove the round-robin policy and add failover policy
         String failoverPolicyName = "modelFailover";
-        Assert.assertNotNull(policyMap.get(failoverPolicyName), "Unable to find a common policy with name " + failoverPolicyName);
+        Assert.assertNotNull(policyMap.get(failoverPolicyName),
+                "Unable to find a common policy with name " + failoverPolicyName);
 
         Map<String, Object> failoverAttributeMap = new HashMap<>();
         JSONObject failoverConfigs = new JSONObject();
 
         // Configure production failover
-        JSONObject productionConfig = new JSONObject();
-        JSONObject targetModel = new JSONObject();
-        targetModel.put("model", model1);
-        targetModel.put("endpointId", failoverEndpointId);
-        targetModel.put("endpointName", failoverEndpointName);
-        productionConfig.put("targetModel", targetModel);
-
-        List<JSONObject> fallbackModels = new ArrayList<>();
-        JSONObject fallbackModel = new JSONObject();
-        fallbackModel.put("model", model3);
-        fallbackModel.put("endpointId", defaultProductionEndpointId);
-        fallbackModel.put("endpointName", defaultProductionEndpointName);
-        fallbackModels.add(fallbackModel);
-        productionConfig.put("fallbackModels", fallbackModels);
+        JSONObject productionConfig = getProductionFailoverProdConfig(failoverEndpointId);
 
         // Configure sandbox failover (empty in this case)
         JSONObject sandboxConfig = new JSONObject();
@@ -901,67 +832,88 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         // Update the new version API with failover policy
         HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(newVersionApiDto);
-        Assert.assertEquals(updateResponse.getResponseCode(), HttpStatus.SC_OK,
+        assertEquals(updateResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Failed to update new version API with failover policy and updated primary production endpoint");
 
         // Create revision and deploy the new version
         String revisionUUID = createAPIRevisionAndDeployUsingRest(newVersionApiId, restAPIPublisher);
-        Assert.assertNotNull(revisionUUID, "Failed to create and deploy revision for new version API");
+        assertNotNull(revisionUUID, "Failed to create and deploy revision for new version API");
 
         // Publish the new version API
         HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(newVersionApiId, false);
-        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Failed to publish new version API");
-        
+        assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to publish new version API");
+
         // Wait for API deployment
-        waitForAPIDeploymentSync(newVersionApiDto.getProvider(), newVersionApiDto.getName(), 
+        waitForAPIDeploymentSync(newVersionApiDto.getProvider(), newVersionApiDto.getName(),
                 newVersionApiDto.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
-        
+
         // Invoke the new version API to test failover
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
         requestHeaders.put("Content-Type", "application/json");
-        String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, newVersion) + mistralAPIResource;
+        String invokeURL = getAPIInvocationURLHttp(MISTRAL_API_CONTEXT, API_VERSION_2_0_0) + MISTRAL_API_RESOURCE;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
         // Verify that the API call succeeded (failover should have worked)
-        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, 
+        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
                 "API invocation should succeed due to failover");
-        
+
         // Verify that the response matches the fallback model (model3)
         String actualResponse = serviceResponse.getData();
         String expectedFallbackResponse = model3Response;
-        Assert.assertEquals(actualResponse, expectedFallbackResponse, 
+        assertEquals(actualResponse, expectedFallbackResponse,
                 "Response should match fallback model (model3) after failover");
     }
 
     /**
-     * Deletes a specified AI service provider after removing API subscriptions and applications.
-     * Verifies that the provider is successfully deleted and no longer listed.
+     * Helper method to create production failover configuration
      */
-    @Test(groups = {"wso2.am"}, description = "Delete AI Service Provider",
-            dependsOnMethods = "testCreateNewVersionWithFailoverPolicy")
+    @NotNull
+    private JSONObject getProductionFailoverProdConfig(String failoverEndpointId) throws JSONException {
+        JSONObject productionConfig = new JSONObject();
+        JSONObject targetModel = new JSONObject();
+        targetModel.put("model", MODEL_SMALL);
+        targetModel.put("endpointId", failoverEndpointId);
+        targetModel.put("endpointName", FAILOVER_ENDPOINT_NAME);
+        productionConfig.put("targetModel", targetModel);
+
+        List<JSONObject> fallbackModels = new ArrayList<>();
+        JSONObject fallbackModel = new JSONObject();
+        fallbackModel.put("model", MODEL_LARGE);
+        fallbackModel.put("endpointId", DEFAULT_PRODUCTION_ENDPOINT_ID);
+        fallbackModel.put("endpointName", DEFAULT_PRODUCTION_ENDPOINT_NAME);
+        fallbackModels.add(fallbackModel);
+        productionConfig.put("fallbackModels", fallbackModels);
+        return productionConfig;
+    }
+
+    /**
+     * Deletes a specified AI service provider after removing API subscriptions and applications. Verifies that the
+     * provider is successfully deleted and no longer listed.
+     */
+    @Test(groups = {
+            "wso2.am" }, description = "Delete AI Service Provider", dependsOnMethods = "testCreateApiVersionWithFailover")
     public void deleteAIServiceProvider() throws Exception {
 
-        restAPIStore.removeAPISubscriptionByName(unsecuredAPIName, unsecuredAPIVersion, apiProvider,
-                applicationName);
-        restAPIStore.removeAPISubscriptionByName(mistralAPIName, mistralAPIVersion, apiProvider, applicationName);
-        restAPIStore.removeAPISubscriptionByName(mistralAPIName, newVersion, apiProvider, applicationName);
+        restAPIStore.removeAPISubscriptionByName(UNSECURED_API_NAME, API_VERSION_1_0_0, API_PROVIDER, APPLICATION_NAME);
+        restAPIStore.removeAPISubscriptionByName(MISTRAL_API_NAME, API_VERSION_1_0_0, API_PROVIDER, APPLICATION_NAME);
+        restAPIStore.removeAPISubscriptionByName(MISTRAL_API_NAME, API_VERSION_2_0_0, API_PROVIDER, APPLICATION_NAME);
         restAPIStore.deleteApplication(applicationId);
-        restAPIPublisher.deleteAPI(unsecuredAPIId);
-        restAPIPublisher.deleteAPI(mistralAPIId);
+        restAPIPublisher.deleteAPI(unsecuredApiId);
+        restAPIPublisher.deleteAPI(mistralApiId);
         restAPIPublisher.deleteAPI(newVersionApiId);
 
         ApiResponse<Void> deleteProviderResponse = restAPIAdmin.deleteAIServiceProvider(aiServiceProviderId);
-        assertEquals(Response.Status.OK.getStatusCode(),
-                deleteProviderResponse.getStatusCode(), "Failed to delete AI service provider");
+        assertEquals(deleteProviderResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Failed to delete AI service provider");
 
         ApiResponse<AIServiceProviderSummaryResponseListDTO> aiServiceProviders = restAPIAdmin.getAIServiceProviders();
-        assertEquals(Response.Status.OK.getStatusCode(),
-                aiServiceProviders.getStatusCode(), "Failed to retrieve AI service providers");
+        assertEquals(aiServiceProviders.getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Failed to retrieve AI service providers");
+        assertNotNull(aiServiceProviders.getData().getList(), "AI service providers list should not be null");
         for (AIServiceProviderSummaryResponseDTO provider : aiServiceProviders.getData().getList()) {
-            if (provider.getName().equals(aiServiceProviderName)) {
-                Assert.fail("AI Service Provider " + aiServiceProviderName + " has not deleted correctly");
+            if (provider.getName().equals(AI_SERVICE_PROVIDER_NAME)) {
+                Assert.fail("AI Service Provider " + AI_SERVICE_PROVIDER_NAME + " has not deleted correctly");
             }
         }
 
@@ -969,12 +921,134 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-
         if (wireMockServer != null) {
             wireMockServer.stop();
         }
     }
 
+    /**
+     * Initialize default AI service providers list
+     */
+    private void initializeDefaultAiServiceProviders() {
+        defaultAiServiceProviders.add("MistralAI");
+        defaultAiServiceProviders.add("OpenAI");
+        defaultAiServiceProviders.add("AzureOpenAI");
+        defaultAiServiceProviders.add("AWSBedrock");
+        defaultAiServiceProviders.add("Anthropic");
+        defaultAiServiceProviders.add("Gemini");
+        defaultAiServiceProviders.add("AzureAIFoundry");
+    }
+
+    /**
+     * Initialize model configurations
+     */
+    private void initializeModelConfigurations() {
+        String modelList = String.format("[\"%s\", \"%s\", \"%s\"]", MODEL_SMALL, MODEL_MEDIUM, MODEL_LARGE);
+        modelProviders = String.format("[{\"models\": %s, \"name\": \"%s\"}]", modelList, AI_SERVICE_PROVIDER_NAME);
+    }
+
+    /**
+     * Create test application for API subscriptions
+     *
+     * @return application ID
+     * @throws Exception if application creation fails
+     */
+    private String createTestApplication() throws Exception {
+        ApplicationDTO applicationDTO = restAPIStore.addApplication(APPLICATION_NAME,
+                APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
+        String appId = applicationDTO.getApplicationId();
+        Assert.assertNotNull(appId, "Application ID should not be null");
+        return appId;
+    }
+
+    /**
+     * Initialize test data including response templates and payloads
+     *
+     * @throws Exception if file reading fails
+     */
+    private void initializeTestData() throws Exception {
+        resourcePath = TestConfigurationProvider.getResourceLocation() + "ai-api" + File.separator;
+        String mistralResponse = readFile(resourcePath + MISTRAL_RESPONSE_FILE_NAME);
+        model1Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", MODEL_SMALL);
+        model2Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", MODEL_MEDIUM);
+        model3Response = mistralResponse.replace("{{jsonPath request.body '$.model'}}", MODEL_LARGE);
+        mistralPayload = readFile(resourcePath + MISTRAL_PAYLOAD_FILE_NAME);
+
+        // Load AI service provider configurations from JSON files
+        customAiServiceProviderConfigurations = readFile(resourcePath + AI_SERVICE_PROVIDER_CONFIG_NO_AUTH_FILE);
+        updatedCustomAiServiceProviderConfigurations = readFile(
+                resourcePath + AI_SERVICE_PROVIDER_CONFIG_WITH_AUTH_FILE);
+    }
+
+    /**
+     * Create and publish an AI API with given configurations
+     *
+     * @param endpoint                endpoint URL
+     * @param additionalPropsFileName additional properties file name
+     * @return API ID of the created API
+     * @throws Exception if API creation fails
+     */
+    private String createAndPublishAiApi(String endpoint, String additionalPropsFileName) throws Exception {
+        String apiDefinition = readFile(resourcePath + API_DEFINITION_FILE_NAME);
+        String additionalProperties = readFile(resourcePath + additionalPropsFileName);
+        JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
+
+        // Update endpoint configuration
+        JSONObject endpointConfig = additionalPropertiesObj.getJSONObject("endpointConfig");
+        JSONObject productionEndpoints = new JSONObject();
+        productionEndpoints.put("url", ENDPOINT_HOST + ":" + endpointPort + endpoint);
+        endpointConfig.put("production_endpoints", productionEndpoints);
+        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+
+        // Create API
+        File file = getTempFileWithContent(apiDefinition);
+        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
+        String apiId = apidto.getId();
+
+        // Verify API creation
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId);
+        assertEquals(createdApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Failed to create AI API using the custom AI Service Provider");
+
+        // Deploy and publish API
+        String revisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        Assert.assertNotNull(revisionUUID, "Revision UUID should not be null");
+
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId, false);
+        assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to publish API");
+
+        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+        return apiId;
+    }
+
+    /**
+     * Subscribe to API and generate API key
+     *
+     * @param apiId API ID to subscribe to
+     * @return API key
+     * @throws Exception if subscription or key generation fails
+     */
+    private String subscribeToApiAndGenerateKey(String apiId) throws Exception {
+        // Subscribe to API
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        assertNotNull(subscriptionDTO, "API subscription should not be null");
+
+        // Generate API Key
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1, null, null);
+        assertNotNull(apiKeyDTO, "API Key should not be null");
+        return apiKeyDTO.getApikey();
+    }
+
+    /**
+     * Create a temporary file with the given content
+     *
+     * @param content Content to write to the file
+     * @return Temporary file
+     * @throws IOException if file creation fails
+     */
     private File getTempFileWithContent(String content) throws IOException {
 
         File temp = File.createTempFile("swagger", ".json");
@@ -993,9 +1067,9 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 .extensions(new ResponseTemplateTransformer(true)));
 
         // Stub for secured AI API (with Authorization header value of Bearer 123)
-        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + mistralAPIResource))
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(MISTRAL_API_ENDPOINT + MISTRAL_API_RESOURCE))
                 .withHeader("Authorization", WireMock.matching("Bearer 123"))
-                .withRequestBody(matchingJsonPath("$.model", equalTo(model1)))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(MODEL_SMALL)))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -1003,18 +1077,18 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         // Stub for round-robin policy: model1 request routed to model2 (80% weight)
         // Using more flexible matching with containsString to handle potential JSON formatting issues
-        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(MISTRAL_API_ENDPOINT_UPDATED + MISTRAL_API_RESOURCE))
                 .withHeader("Authorization", WireMock.matching("Bearer 456"))
-                .withRequestBody(WireMock.containing(model2))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(MODEL_MEDIUM)))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(model2Response)));
 
         // Stub for round-robin policy: model1 request routed to model3 (20% weight)  
-        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(MISTRAL_API_ENDPOINT_UPDATED + MISTRAL_API_RESOURCE))
                 .withHeader("Authorization", WireMock.matching("Bearer 456"))
-                .withRequestBody(WireMock.containing(model3))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(MODEL_LARGE)))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -1022,34 +1096,26 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         // Stub for /mistral endpoint with Bearer 123 and model3
         // Using flexible matching to handle JSON formatting issues
-        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + mistralAPIResource))
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(MISTRAL_API_ENDPOINT + MISTRAL_API_RESOURCE))
                 .withHeader("Authorization", WireMock.matching("Bearer 123"))
-                .withRequestBody(WireMock.containing(model3))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(model3Response)));
-
-        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + '/' + newVersion + mistralAPIResource))
-                .withHeader("Authorization", WireMock.matching("Bearer 123"))
-                .withRequestBody(WireMock.containing(model3))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(MODEL_LARGE)))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(model3Response)));
 
         // Stub for failover endpoint that returns 500 (to trigger failover)
-        wireMockServer.stubFor(WireMock.post(urlEqualTo(failoverEndpointUrl + mistralAPIResource))
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(FAILOVER_ENDPOINT_URL + MISTRAL_API_RESOURCE))
                 .withHeader("Authorization", WireMock.matching("Bearer 123"))
-                .withRequestBody(WireMock.containing(model1))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(MODEL_SMALL)))
                 .willReturn(aResponse()
-                        .withStatus(401)
+                        .withStatus(429)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"error\": \"Unauthorized\"}")));
+                        .withBody("{\"error\": \"Rate limit exceeded\"}")));
 
         // Stub for unsecured AI API (no Authorization header)
-        wireMockServer.stubFor(WireMock.post(urlEqualTo(noAuthAPIEndpoint + mistralAPIResource))
-                .withRequestBody(matchingJsonPath("$.model", equalTo(model1)))
+        wireMockServer.stubFor(WireMock.post(urlEqualTo(NO_AUTH_API_ENDPOINT + MISTRAL_API_RESOURCE))
+                .withRequestBody(matchingJsonPath("$.model", equalTo(MODEL_SMALL)))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -1060,45 +1126,33 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Find a free port to start backend WebSocket server in given port range
-     *
-     * @return Available Port Number
+     * Find a free port to start WireMock server in the specified port range
+     * @return Available port number
      */
     private int getAvailablePort() {
+        final int lowerPortLimit = 9950;
+        final int upperPortLimit = 9999;
 
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit)) {
-                return lowerPortLimit;
+        for (int currentPort = lowerPortLimit; currentPort < upperPortLimit; currentPort++) {
+            if (isPortFree(currentPort)) {
+                return currentPort;
             }
-            lowerPortLimit++;
         }
         return -1;
     }
 
     /**
      * Check whether given port is available
-     *
-     * @param port Port Number
-     * @return status
+     * @param port Port number to check
+     * @return true if port is available, false otherwise
      */
     private boolean isPortFree(int port) {
-
-        Socket s = null;
-        try {
-            s = new Socket(endpointHost, port);
-            // something is using the port and has responded.
+        try (Socket socket = new Socket("localhost", port)) {
+            // Something is using the port and has responded
             return false;
         } catch (IOException e) {
-            // port available
+            // Port is available
             return true;
-        } finally {
-            if (s != null) {
-                try {
-                    s.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to close connection ", e);
-                }
-            }
         }
     }
 }
