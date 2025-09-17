@@ -336,6 +336,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         // Invoke API
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
+        requestHeaders.put("Content-Type", "application/json");
         String invokeURL = getAPIInvocationURLHttp(unsecuredAPIContext, unsecuredAPIVersion) + mistralAPIResource;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
@@ -430,6 +431,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         // Invoke API
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
+        requestHeaders.put("Content-Type", "application/json");
         String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
@@ -686,48 +688,45 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         }
         Assert.assertFalse(foundSandboxEndpoint, "Sandbox endpoint should be completely removed from the final list");
     }
-//
-//    /**
-//     * Test retrieving AI service provider models from the publisher portal
-//     */
-//    @Test(groups = {"wso2.am"}, description = "Test retrieving AI service provider models",
-//            dependsOnMethods = "testGetAllEndpointsFinal")
-//    public void testGetAIServiceProviderModels() throws Exception {
-//        // Retrieve model list
-//        HttpResponse getModelListResponse = restAPIPublisher.getAIServiceProviderModels(aiServiceProviderId);
-//        Assert.assertEquals(HttpStatus.SC_OK, getModelListResponse.getResponseCode(),
-//                "Failed to retrieve model list of AI Service Provider: " + aiServiceProviderId);
-//
-//        // Parse the model provider response to extract the models list
-//        List<Map<String, Object>> modelProviderList = new Gson().fromJson(getModelListResponse.getData(), List.class);
-//        List<String> modelList = new ArrayList<>();
-//
-//        if (!modelProviderList.isEmpty()) {
-//            Map<String, Object> firstProvider = modelProviderList.get(0);
-//            if (firstProvider.containsKey("models")) {
-//                List<String> models = (List<String>) firstProvider.get("models");
-//                modelList.addAll(models);
-//            }
-//        }
-//
-//        // Verify that the retrieved model list contains the expected 3 models
-//        Assert.assertNotNull(modelList, "Model list should not be null");
-//        Assert.assertEquals(modelList.size(), 3, "Expected 3 models but found: " + modelList.size());
-//
-//        // Verify presence of specific models
-//        Assert.assertTrue(modelList.contains(model1), "Model list should contain " + model1);
-//        Assert.assertTrue(modelList.contains(model2), "Model list should contain " + model2);
-//        Assert.assertTrue(modelList.contains(model3), "Model list should contain " + model3);
-//
-//        // Log the retrieved models for debugging
-//        log.info("Retrieved models from AI Service Provider: " + modelList.toString());
-//    }
+
+    /**
+     * Test retrieving AI service provider models from the publisher portal
+     */
+    @Test(groups = {"wso2.am"}, description = "Test retrieving AI service provider models",
+            dependsOnMethods = "testGetAllEndpointsFinal")
+    public void testGetAIServiceProviderModels() throws Exception {
+        // Retrieve model list
+        HttpResponse getModelListResponse = restAPIPublisher.getAIServiceProviderModels(aiServiceProviderId);
+        Assert.assertEquals(HttpStatus.SC_OK, getModelListResponse.getResponseCode(),
+                "Failed to retrieve model list of AI Service Provider: " + aiServiceProviderId);
+
+        // Parse the model provider response to extract the models list
+        List<Map<String, Object>> modelProviderList = new Gson().fromJson(getModelListResponse.getData(), List.class);
+        List<String> modelList = new ArrayList<>();
+
+        if (!modelProviderList.isEmpty()) {
+            Map<String, Object> firstProvider = modelProviderList.get(0);
+            if (firstProvider.containsKey("models")) {
+                List<String> models = (List<String>) firstProvider.get("models");
+                modelList.addAll(models);
+            }
+        }
+
+        // Verify that the retrieved model list contains the expected 3 models
+        Assert.assertNotNull(modelList, "Model list should not be null");
+        Assert.assertEquals(modelList.size(), 3, "Expected 3 models but found: " + modelList.size());
+
+        // Verify presence of specific models
+        Assert.assertTrue(modelList.contains(model1), "Model list should contain " + model1);
+        Assert.assertTrue(modelList.contains(model2), "Model list should contain " + model2);
+        Assert.assertTrue(modelList.contains(model3), "Model list should contain " + model3);
+    }
 
     /**
      * Test Mistral AI API invocation after adding model round-robin policy
      */
     @Test(groups = {"wso2.am"}, description = "Test AI API invocation after adding model round-robin policy",
-            dependsOnMethods = "testGetAllEndpointsFinal")
+            dependsOnMethods = "testGetAIServiceProviderModels")
     public void testAIApiInvocationAfterAddingApiLevelModelRoundRobinPolicy() throws Exception {
 
         HttpResponse getAPIResponse = restAPIPublisher.getAPI(mistralAPIId);
@@ -790,6 +789,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         // Invoke API
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
+        requestHeaders.put("Content-Type", "application/json");
         String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) + mistralAPIResource;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
@@ -917,14 +917,10 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         waitForAPIDeploymentSync(newVersionApiDto.getProvider(), newVersionApiDto.getName(), 
                 newVersionApiDto.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
         
-        // Subscribe to the new version API
-//        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(newVersionApiId, applicationId,
-//                APIMIntegrationConstants.API_TIER.UNLIMITED);
-//        Assert.assertNotNull(subscriptionDTO, "New version API subscription failed");
-        
         // Invoke the new version API to test failover
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
+        requestHeaders.put("Content-Type", "application/json");
         String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, newVersion) + mistralAPIResource;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, mistralPayload);
 
@@ -938,8 +934,6 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(actualResponse, expectedFallbackResponse, 
                 "Response should match fallback model (model3) after failover");
     }
-
-//    testCreateNewVersionAfterAddingModelRoundRobinPolicy
 
     /**
      * Deletes a specified AI service provider after removing API subscriptions and applications.
@@ -998,60 +992,10 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 .port(endpointPort)
                 .extensions(new ResponseTemplateTransformer(true)));
 
-//        // Stub for secured AI API (with Authorization header value of Bearer 123)
-//        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + mistralAPIResource))
-//                .withHeader("Authorization", WireMock.matching("Bearer 123"))
-//                .withRequestBody(matchingJsonPath("$.model", equalTo(model1)))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(mistralResponse)
-//                        .withTransformers("response-template")));
-//
-//        // Stub for secured AI API (with Authorization header value of Bearer 456)
-//        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
-//                .withHeader("Authorization", WireMock.matching("Bearer 456"))
-//                .withRequestBody(matchingJsonPath("$.model", equalTo(model1)))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(mistralResponse)
-//                        .withTransformers("response-template")));
-//
-//        // More specific matching for model2 with additional JSON path validation
-//        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
-//                .withHeader("Authorization", WireMock.matching("Bearer 456"))
-//                .withRequestBody(matchingJsonPath("$.model", equalTo(model2)))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(mistralResponse)
-//                        .withTransformers("response-template")));
-//
-//        // Stub for model3 (mistral-large-latest) with Bearer 123
-//        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + mistralAPIResource))
-//                .withHeader("Authorization", WireMock.matching("Bearer 123"))
-//                .withRequestBody(matchingJsonPath("$.model", equalTo(model3)))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(mistralResponse)
-//                        .withTransformers("response-template")));
-//
-//        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
-//                .withHeader("Authorization", WireMock.matching("Bearer 456"))
-//                .withRequestBody(matchingJsonPath("$.model", equalTo(model3)))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(mistralResponse)
-//                        .withTransformers("response-template")));
-//
         // Stub for secured AI API (with Authorization header value of Bearer 123)
         wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint + mistralAPIResource))
                 .withHeader("Authorization", WireMock.matching("Bearer 123"))
                 .withRequestBody(matchingJsonPath("$.model", equalTo(model1)))
-//                .withRequestBody(equalTo(model1))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -1075,28 +1019,6 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(model3Response)));
-
-        // Stub for model3 (mistral-large-latest)
-//        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
-//                .withHeader("Authorization", WireMock.matching("Bearer 456"))
-//                .withRequestBody(matchingJsonPath("$.model", equalTo(model3)))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(model3Response)));
-
-//        // Generic stub for model round-robin policy, matching either model2 or model3
-//        wireMockServer.stubFor(WireMock.post(urlEqualTo(mistralAPIEndpoint2 + mistralAPIResource))
-//                .withHeader("Authorization", WireMock.matching("Bearer 456"))
-//                .withRequestBody(WireMock.or(
-//                        equalTo(model2), // Match the plain string "mistral-medium-latest"
-//                        equalTo(model3)  // Match the plain string "mistral-large-latest"
-//                ))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(mistralResponse) // Use the template response
-//                        .withTransformers("response-template")));
 
         // Stub for /mistral endpoint with Bearer 123 and model3
         // Using flexible matching to handle JSON formatting issues
