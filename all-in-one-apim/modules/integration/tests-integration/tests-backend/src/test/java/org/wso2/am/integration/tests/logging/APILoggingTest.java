@@ -174,9 +174,12 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
         assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION +
                 "\",\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\",\"resourceMethod\":null,\"resourcePath\":null}," +
-                "{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION + "\",\"logLevel\":\"OFF\",\"apiId\":\""+apiId+"\",\"" +
-                "resourceMethod\":\"GET\",\"resourcePath\":\""
-                + apiRequest.getUriTemplate() + "\"}]}");
+                "{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION + "\",\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\",\"" +
+                "resourceMethod\":\"GET\",\"resourcePath\":\"" + apiRequest.getUriTemplate() + "\"}," +
+                "{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION + "\",\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\",\"" +
+                "resourceMethod\":\"POST\",\"resourcePath\":\"/payee/personal\"}," +
+                "{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION + "\",\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\",\"" +
+                "resourceMethod\":\"GET\",\"resourcePath\":\"/payee/{id}\"}]}");
         String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";
         HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v0/tenant-logs/carbon.super/apis/" + apiId, header,
                 addNewLoggerPayload);
