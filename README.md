@@ -80,7 +80,7 @@ Please **do not** report security issues via GitHub issues. Instead, follow the 
 
 If you are planning on contributing to the development efforts of WSO2 API Manager, you can do so by checking out the latest development version. The master branch holds the latest unreleased source code.
 
-Please follow the detailed instructions available here: https://wso2.github.io
+Please follow the detailed instructions available in [contribution guidelines](https://github.com/wso2/product-apim/blob/master/CONTRIBUTING.md).
 
 ## Commercial support
 
