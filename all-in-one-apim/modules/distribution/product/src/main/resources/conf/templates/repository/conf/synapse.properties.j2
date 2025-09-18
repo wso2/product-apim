@@ -43,4 +43,13 @@ synapse.endpoint.http.oauth.token.endpoint.global.proxy.username={{apim.proxy_co
 synapse.endpoint.http.oauth.token.endpoint.global.proxy.password={{apim.proxy_config.password}}
 synapse.endpoint.http.oauth.token.endpoint.global.proxy.protocol={{apim.proxy_config.protocol}}
 {% endif %}
+{% if apim.mediator_config.oauth.external_trust_store.location is defined %}
+synapse.endpoint.http.oauth.token.endpoint.external.trust.store.location={{apim.mediator_config.oauth.external_trust_store.location}}
+{% endif %}
+{% if apim.mediator_config.oauth.external_trust_store.type is defined %}
+synapse.endpoint.http.oauth.token.endpoint.external.trust.store.type={{apim.mediator_config.oauth.external_trust_store.type}}
+{% endif %}
+{% if apim.mediator_config.oauth.external_trust_store.password is defined %}
+synapse.endpoint.http.oauth.token.endpoint.external.trust.store.password={{apim.mediator_config.oauth.external_trust_store.password}}
+{% endif %}
 {% endif %}
