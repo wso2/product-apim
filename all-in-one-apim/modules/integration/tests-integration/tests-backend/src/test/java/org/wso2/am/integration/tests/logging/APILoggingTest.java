@@ -147,12 +147,12 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         }
 
         // Add POST /payee/personal operation
-        APIOperationsDTO postOperation = new APIOperationsDTO();
-        postOperation.setVerb("POST");
-        postOperation.setTarget("/payee/personal");
-        postOperation.setAuthType("Application & Application User");
-        postOperation.setThrottlingPolicy("Unlimited");
-        operations.add(postOperation);
+        APIOperationsDTO postPayeeOperation = new APIOperationsDTO();
+        postPayeeOperation.setVerb("POST");
+        postPayeeOperation.setTarget("/payee/personal");
+        postPayeeOperation.setAuthType("Application & Application User");
+        postPayeeOperation.setThrottlingPolicy("Unlimited");
+        operations.add(postPayeeOperation);
 
         // Add GET /payee/:id operation
         APIOperationsDTO getPayeeOperation = new APIOperationsDTO();
@@ -232,15 +232,10 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
                 "POST request to /payee/personal should succeed");
 
         // Remove the additional resources that were added for testing
-        HttpResponse getAPIResponse2 = restAPIPublisher.getAPI(apiId);
-        APIDTO apidto2 = new Gson().fromJson(getAPIResponse2.getData(), APIDTO.class);
-        List<APIOperationsDTO> operations2 = apidto2.getOperations();
-        if (operations2 != null) {
-            operations2.removeIf(op -> "POST".equals(op.getVerb()) && "/payee/personal".equals(op.getTarget()));
-            operations2.removeIf(op -> "GET".equals(op.getVerb()) && "/payee/{id}".equals(op.getTarget()));
-        }
-        apidto2.setOperations(operations2);
-        restAPIPublisher.updateAPI(apidto2);
+        operations.remove(postPayeeOperation);
+        operations.remove(getPayeeOperation);
+        apidto.setOperations(operations);
+        restAPIPublisher.updateAPI(apidto);
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
     }
