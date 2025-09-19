@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Cucumber Test Suite" parallel="false">
+
+    <test name="CucumberTests">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateAPITestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIVerification"/>
+        </classes>
+    </test>
+    <test name="CustomHeaderTests">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.CustomHeaderSystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.header.CustomAuthorizationHeaderTestRunner"/>
+        </classes>
+    </test>
+</suite>
