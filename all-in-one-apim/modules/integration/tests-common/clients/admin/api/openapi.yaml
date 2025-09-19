@@ -5234,6 +5234,85 @@ paths:
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       x-contentType: application/json
       x-accepts: application/json
+  /environments/{environmentId}/gateways:
+    get:
+      description: |
+        Retrieve list of gateway Instances in the gateway environment.
+      parameters:
+      - description: |
+          Environment UUID (or Environment name defined in config)
+        explode: false
+        in: path
+        name: environmentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayInstanceList'
+          description: |
+            OK.
+            List of gateway Instances in the gateway environment returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:environment_read
+      summary: Get Gateway Instances in a Gateway Environment
+      tags:
+      - Environments
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/environments/8d263942-a6df-4cc2-a804-7a2525501450/gateways"'
+      x-accepts: application/json
   /organizations:
     get:
       description: |
@@ -9249,6 +9328,51 @@ components:
             $ref: '#/components/schemas/Environment'
           type: array
       title: Environment List
+      type: object
+    GatewayInstanceList:
+      example:
+        count: 1
+        list:
+        - lastActive: 2025-06-26T06:47:50Z
+          gatewayId: Env1_1372344
+          status: ACTIVE
+        - lastActive: 2025-06-26T06:47:50Z
+          gatewayId: Env1_1372344
+          status: ACTIVE
+      properties:
+        count:
+          description: |
+            Number of Gateway Instances returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/GatewayInstance'
+          type: array
+      title: Gateway instance list
+      type: object
+    GatewayInstance:
+      example:
+        lastActive: 2025-06-26T06:47:50Z
+        gatewayId: Env1_1372344
+        status: ACTIVE
+      properties:
+        gatewayId:
+          example: Env1_1372344
+          type: string
+        lastActive:
+          example: 2025-06-26T06:47:50Z
+          type: string
+        status:
+          default: ACTIVE
+          enum:
+          - ACTIVE
+          - EXPIRED
+          example: ACTIVE
+          type: string
+      required:
+      - gatewayId
+      title: Gateway instance in the gateway environment
       type: object
     Organization:
       example:
