@@ -34,6 +34,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
 import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.KeyManagersCollectionApi;
+import org.wso2.am.integration.clients.store.api.v1.McpServersApi;
 import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
@@ -118,6 +119,7 @@ public class RestAPIStoreImpl {
     public UsersApi usersApi = new UsersApi();
     public TopicsApi topicsApi = new TopicsApi();
     public WebhooksApi webhooksApi = new WebhooksApi();
+    public McpServersApi mcpServersApi = new McpServersApi();
     public String storeURL;
     public String tenantDomain;
     ApiClient apiStoreClient = new ApiClient();
@@ -157,6 +159,7 @@ public class RestAPIStoreImpl {
         graphQlPoliciesApi.setApiClient(apiStoreClient);
         usersApi.setApiClient(apiStoreClient);
         throttlingPoliciesApi.setApiClient(apiStoreClient);
+        mcpServersApi.setApiClient(apiStoreClient);
         apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
@@ -2363,6 +2366,15 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setKeyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId,
                 applicationKeyGenerateRequest, this.tenantDomain);
+    }
+
+    public APIListDTO getAllMCPServers(Integer limit, Integer offset, String xWSO2Tenant, String query)
+            throws ApiException {
+
+        ApiResponse<APIListDTO> apiDtoApiResponse =
+                mcpServersApi.getAllMCPServersWithHttpInfo(limit, offset, xWSO2Tenant, query, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
     }
 
     public ApplicationKeyListDTO getApplicationOauthKeys(String applicationUUID, String tenantDomain) throws ApiException {

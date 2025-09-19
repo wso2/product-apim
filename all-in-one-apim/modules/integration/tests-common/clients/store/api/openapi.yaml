@@ -2509,6 +2509,1899 @@ paths:
       - lang: Curl
         source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
       x-accepts: application/json
+  /mcp-servers:
+    get:
+      description: "This operation provides you a list of available MCP servers qualifying\
+        \ under a given search condition.\n\nEach retrieved MCP Server is represented\
+        \ with a minimal amount of attributes. If you want to get complete \ndetails\
+        \ of a MCP server, you need to use **Get details of a MCP** operation.\n\n\
+        This operation supports retrieving MCP servers of other tenants. The required\
+        \ tenant domain need to be \nspecified as a header `X-WSO2-Tenant`. If not\
+        \ specified super tenant's MCP servers will be retrieved. If you \nused an\
+        \ Authorization header, the user's tenant associated with the access token\
+        \ will be used.\n\n**NOTE:**\n* By default, this operation retrieves Published\
+        \ MCP Server. \n* This operation does not require an Authorization header\
+        \ by default. But if it is provided, it will be validated and checked for\
+        \ permissions of the user, hence you may be able to see APIs which are restricted\
+        \ for special permissions/roles.\n"
+      operationId: getAllMCPServers
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Search condition**.
+
+          You can search in attributes by using an **"<attribute>:"** modifier.
+
+          Eg.
+          "provider:wso2" will match an MCP Server if the provider of the MCP Server is exactly "wso2".
+
+          Additionally you can use wildcards.
+
+          Eg.
+          "provider:wso2*" will match a MCP Server if the provider of the MCP Server starts with "wso2".
+
+          Supported attribute modifiers are [**version, context, status,
+          description, doc, provider, tag**]
+
+          To search by Properties provide the query in below format.
+
+          **property_name:property_value**
+
+          Eg.
+          "environment:test" where environment is the property name and test is the propert value.
+
+          If no advanced attribute modifier has been specified, search will match the
+          given query string against API Name.
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIList'
+          description: |
+            OK.
+            List of qualifying MCP Servers is returned.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security: []
+      summary: |
+        Retrieve/Search MCP Servers
+      tags:
+      - MCP Servers
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers"
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}:
+    get:
+      description: "Using this operation, you can retrieve complete details of a single\
+        \ MCP Server. You need to provide the Id of \nthe MCP Server to retrieve it.\n\
+        \n`X-WSO2-Tenant` header can be used to retrieve a MCP Server of a different\
+        \ tenant domain. If not specified \nsuper tenant will be used. If Authorization\
+        \ header is present in the request, the user's tenant associated \nwith the\
+        \ access token will be used.\n\n**NOTE:**\n* This operation does not require\
+        \ an Authorization header by default. But if it is provided, it will be \n\
+        validated and checked for permissions of the user, hence you may be able to\
+        \ see APIs which are restricted for\nspecial permissions/roles. \\n\n"
+      operationId: getMCPServer
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+          description: |
+            OK.
+            Requested API is returned
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security: []
+      summary: |
+        Get Details of a MCP Server
+      tags:
+      - MCP Servers
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/c43a325c-260b-4302-81cb-768eafaa3aed"
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/documents:
+    get:
+      description: "This operation can be used to retrieve a list of documents belonging\
+        \ to a MCP Server by providing the id of the \nMCP Server.\n\n`X-WSO2-Tenant`\
+        \ header can be used to retrieve documents of a MCP Server that belongs to\
+        \ a different tenant \ndomain. If not specified super tenant will be used.\
+        \ If Authorization header is present in the request, the \nuser's tenant associated\
+        \ with the access token will be used.\n\n**NOTE:**\n* This operation does\
+        \ not require an Authorization header by default. But in order to see a restricted\
+        \ MCP \nServer's documents, you need to provide Authorization header.\n"
+      operationId: getMCPServerDocuments
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentList'
+          description: |
+            OK.
+            Document list is returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security: []
+      summary: |
+        Get a List of Documents of a MCP Server
+      tags:
+      - MCP Server Documents
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/documents/{documentId}:
+    get:
+      description: "This operation can be used to retrieve a particular document's\
+        \ metadata associated with a MCP Server.\n\n`X-WSO2-Tenant` header can be\
+        \ used to retrieve a document of a MCP Server that belongs to a different\
+        \ tenant \ndomain. If not specified super tenant will be used. If Authorization\
+        \ header is present in the request, the \nuser's tenant associated with the\
+        \ access token will be used.\n\n**NOTE:**\n* This operation does not require\
+        \ an Authorization header by default. But in order to see a restricted MCP\
+        \ \nServer's document, you need to provide Authorization header.\n"
+      operationId: getMCPServerDocument
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Document Identifier
+        explode: false
+        in: path
+        name: documentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: |
+            OK.
+            Document returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security: []
+      summary: |
+        Get a Document of a MCP Server
+      tags:
+      - MCP Server Documents
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/documents/{documentId}/content:
+    get:
+      description: "This operation can be used to retrieve the content of a MCP Server's\
+        \ document.\n\nThe document can be of 3 types. In each cases responses are\
+        \ different.\n\n1. **Inline type**:\n   The content of the document will be\
+        \ retrieved in `text/plain` content type\n2. **FILE type**:\n   The file will\
+        \ be downloaded with the related content type (eg. `application/pdf`)\n3.\
+        \ **URL type**:\n    The client will recieve the URL of the document as the\
+        \ Location header with the response with - `303 See Other`\n\n`X-WSO2-Tenant`\
+        \ header can be used to retrieve the content of a document of a MCP Server\
+        \ that belongs to a \ndifferent tenant domain. If not specified super tenant\
+        \ will be used. If Authorization header is present in the \nrequest, the user's\
+        \ tenant associated with the access token will be used.\n\n**NOTE:**\n* This\
+        \ operation does not require an Authorization header by default. But in order\
+        \ to see a restricted MCP \nServer's document content, you need to provide\
+        \ Authorization header.\n"
+      operationId: getMCPServerDocumentContent
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Document Identifier
+        explode: false
+        in: path
+        name: documentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            File or inline content returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "303":
+          content: {}
+          description: |
+            See Other.
+            Source can be retrieved from the URL specified at the Location header.
+          headers:
+            Location:
+              description: |
+                The Source URL of the document.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security: []
+      summary: |
+        Get the Content of a MCP Server Document
+      tags:
+      - MCP Server Documents
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/thumbnail:
+    get:
+      description: "This operation can be used to download a thumbnail image of a\
+        \ MCP Server.\n\n`X-WSO2-Tenant` header can be used to retrieve a thumbnail\
+        \ of a MCP Server that belongs to a different tenant \ndomain. If not specified\
+        \ super tenant will be used. If Authorization header is present in the request,\
+        \ the \nuser's tenant associated with the access token will be used.\n\n**NOTE:**\n\
+        * This operation does not require an Authorization header by default. But\
+        \ in order to see a restricted \nMCP Server's thumbnail, you need to provide\
+        \ Authorization header.\n"
+      operationId: getMCPServerThumbnail
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Thumbnail image returned
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security: []
+      summary: Get Thumbnail Image
+      tags:
+      - MCP Servers
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail"
+          > image.jpeg
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/ratings:
+    get:
+      description: "This operation can be used to retrieve the list of ratings of\
+        \ a MCP Server.\n\n`X-WSO2-Tenant` header can be used to retrieve ratings\
+        \ of a MCP Server that belongs to a different tenant \ndomain. If not specified\
+        \ super tenant will be used. If Authorization header is present in the request,\
+        \ the \nuser's tenant associated with the access token will be used.\n"
+      operationId: getMCPServerRatings
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingList'
+          description: |
+            OK.
+            Rating list returned.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security: []
+      summary: Retrieve MCP Server Ratings
+      tags:
+      - Ratings
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/user-rating:
+    delete:
+      description: "This operation can be used to delete logged in user MCP Server\
+        \ rating.\n\n`X-WSO2-Tenant` header can be used to delete the logged in user\
+        \ rating of a MCP Server that belongs to a \ndifferent tenant domain. If not\
+        \ specified super tenant will be used. If Authorization header is present\
+        \ in the \nrequest, the user's tenant associated with the access token will\
+        \ be used.\n"
+      operationId: deleteMCPServerRating
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Resource successfully deleted.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+      summary: Delete User MCP Server Rating
+      tags:
+      - Ratings
+      x-code-samples:
+      - lang: Curl
+        source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+      x-accepts: application/json
+    get:
+      description: "This operation can be used to get the user rating of a MCP Server.\n\
+        \n`X-WSO2-Tenant` header can be used to retrieve the logged in user rating\
+        \ of a MCP Server that belongs to a \ndifferent tenant domain. If not specified\
+        \ super tenant will be used. If Authorization header is present in the request,\
+        \ the user's tenant associated with the access token will be used.\n"
+      operationId: getMCPServerRating
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+          description: |
+            OK.
+            Rating returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client already has the latest version of the requested resource.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+      summary: Retrieve MCP Server Rating of User
+      tags:
+      - Ratings
+      x-code-samples:
+      - lang: Curl
+        source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+      x-accepts: application/json
+    put:
+      description: "This operation can be used to add or update a MCP Server rating.\n\
+        \n`X-WSO2-Tenant` header can be used to add or update the logged in user rating\
+        \ of a MCP Server that belongs to a \ndifferent tenant domain. If not specified\
+        \ super tenant will be used. If Authorization header is present in \nthe request,\
+        \ the user's tenant associated with the access token will be used.\n"
+      operationId: addMCPServerRating
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+        description: |
+          Rating object that should to be added
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+          description: |
+            OK.
+            Successful response with the newly created or updated object as entity in the body.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional request.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "415":
+          content:
+            application/json:
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unsupported Media Type. The entity of the request was not in
+            a supported format.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+      summary: Add or Update Logged in User's Rating for a MCP Server
+      tags:
+      - Ratings
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/comments:
+    get:
+      description: |
+        Get a list of Comments that are already added to MCP Servers
+      operationId: getAllCommentsOfMCPServer
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          Whether we need to display commentor details.
+        explode: true
+        in: query
+        name: includeCommenterInfo
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+          description: |
+            OK.
+            Comments list is returned.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security: []
+      summary: Retrieve MCP Server Comments
+      tags:
+      - Comments
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/comments"
+      x-accepts: application/json
+    post:
+      operationId: addCommentToMCPServer
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          ID of the perent comment.
+        explode: true
+        in: query
+        name: replyTo
+        required: false
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRequestBody'
+        description: |
+          Comment object that should to be added
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional request.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Location:
+              description: |
+                Location to the newly created Comment.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "415":
+          content:
+            application/json:
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unsupported Media Type. The entity of the request was not in
+            a supported format.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+      summary: Add a MCP Server Comment
+      tags:
+      - Comments
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/comments/{commentId}:
+    delete:
+      description: |
+        Remove a Comment
+      operationId: deleteCommentOfMCPServer
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Comment Id
+        explode: false
+        in: path
+        name: commentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Resource successfully deleted.
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
+        "403":
+          content: {}
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "405":
+          content: {}
+          description: |
+            MethodNotAllowed.
+            Request method is known by the server but is not supported by the target resource.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:admin
+      summary: Delete a MCP Server Comment
+      tags:
+      - Comments
+      x-code-samples:
+      - lang: Curl
+        source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+      x-accepts: application/json
+    get:
+      description: |
+        Get the individual comment given by a user for a certain MCP Server.
+      operationId: getCommentOfMCPServer
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Comment Id
+        explode: false
+        in: path
+        name: commentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Whether we need to display commentor details.
+        explode: true
+        in: query
+        name: includeCommenterInfo
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: |
+          Maximum size of replies array to return.
+        explode: true
+        in: query
+        name: replyLimit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of replies.
+        explode: true
+        in: query
+        name: replyOffset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+          description: |
+            OK.
+            Comment returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security: []
+      summary: Get Details of a MCP Server Comment
+      tags:
+      - Comments
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+      x-accepts: application/json
+    patch:
+      description: |
+        Edit the individual comment
+      operationId: editCommentOfMCPServer
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Comment Id
+        explode: false
+        in: path
+        name: commentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchRequestBody'
+        description: |
+          Comment object that should to be updated
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+          description: |
+            OK.
+            Comment updated.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional request.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Location:
+              description: |
+                Location to the newly created Comment.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
+        "403":
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "415":
+          content:
+            application/json:
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unsupported Media Type. The entity of the request was not in
+            a supported format.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+      summary: Edit a comment
+      tags:
+      - Comments
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/comments/{commentId}/replies:
+    get:
+      description: |
+        Get replies of a comment
+      operationId: getRepliesOfCommentOfMCPServer
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Comment Id
+        explode: false
+        in: path
+        name: commentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Whether we need to display commentor details.
+        explode: true
+        in: query
+        name: includeCommenterInfo
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+          description: |
+            OK.
+            Comment returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security: []
+      summary: Get replies of a comment
+      tags:
+      - Comments
+      x-code-samples:
+      - lang: Curl
+        source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://localhost:9443/api/am/devportal/v3/mcp-servers/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
+      x-accepts: application/json
+  /mcp-servers/{mcpServerId}/subscription-policies:
+    get:
+      description: "This operation can be used to retrieve details of the subscription\
+        \ throttling policy of a MCP Server by \nspecifying the MCP Server Id.\n\n\
+        `X-WSO2-Tenant` header can be used to retrieve MCP Server subscription throttling\
+        \ policies that belongs to a \ndifferent tenant domain. If not specified super\
+        \ tenant will be used. If Authorization header is present in the \nrequest,\
+        \ the user's tenant associated with the access token will be used.\n"
+      operationId: getMCPServerSubscriptionPolicies
+      parameters:
+      - description: |
+          **MCP Server ID** consisting of the **UUID** of the MCP Server.
+        explode: false
+        in: path
+        name: mcpServerId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThrottlingPolicy'
+          description: |
+            OK.
+            Throttling Policy returned
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security: []
+      summary: |
+        Get Details of the Subscription Throttling Policies of a MCP Server
+      tags:
+      - MCP Servers
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/mcp-servers/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
+      x-accepts: application/json
   /applications:
     get:
       description: |
@@ -6714,7 +8607,7 @@ paths:
       x-accepts: application/json
 components:
   parameters:
-    parentCommentID:
+    parentCommentId:
       description: |
         ID of the perent comment.
       explode: true
@@ -6752,6 +8645,16 @@ components:
       explode: false
       in: path
       name: apiId
+      required: true
+      schema:
+        type: string
+      style: simple
+    mcpServerId:
+      description: |
+        **MCP Server ID** consisting of the **UUID** of the MCP Server.
+      explode: false
+      in: path
+      name: mcpServerId
       required: true
       schema:
         type: string
@@ -10129,6 +12032,38 @@ components:
             type: string
           type: array
       title: SolaceTopics
+      type: object
+    PostRequestBody:
+      properties:
+        content:
+          description: |
+            Content of the comment
+          example: This is a comment
+          maxLength: 512
+          type: string
+        category:
+          description: |
+            Category of the comment
+          example: general
+          type: string
+      required:
+      - content
+      title: Post request body
+      type: object
+    PatchRequestBody:
+      properties:
+        content:
+          description: |
+            Content of the comment
+          example: This is a comment
+          maxLength: 512
+          type: string
+        category:
+          description: |
+            Category of the comment
+          example: general
+          type: string
+      title: Patch request body
       type: object
     Post_request_body:
       properties:

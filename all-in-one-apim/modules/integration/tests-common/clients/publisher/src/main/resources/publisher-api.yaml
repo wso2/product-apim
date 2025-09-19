@@ -17512,3 +17512,10 @@ components:
             apim:policies_import_export: Export and import policies related operations
             apim:llm_provider_read: Read LLM Providers
             apim:publisher_organization_read: Read organization
+            apim:mcp_server_view: View MCP Server
+            apim:mcp_server_list_view: View, Retrieve MCP Server list
+            apim:mcp_server_create: Create MCP Server
+            apim:mcp_server_delete: Delete MCP Server
+            apim:mcp_server_publish: Publish MCP Server
+            apim:mcp_server_manage: Manage all MCP Server related operations
+            apim:mcp_server_import_export: Import and export MCP Server related operations
