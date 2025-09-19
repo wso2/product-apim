@@ -230,6 +230,19 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         org.apache.http.HttpResponse postResponse = client.execute(postRequest);
         assertEquals(postResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "POST request to /payee/personal should succeed");
+
+        // Remove the additional resources that were added for testing
+        HttpResponse getAPIResponse2 = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto2 = new Gson().fromJson(getAPIResponse2.getData(), APIDTO.class);
+        List<APIOperationsDTO> operations2 = apidto2.getOperations();
+        if (operations2 != null) {
+            operations2.removeIf(op -> "POST".equals(op.getVerb()) && "/payee/personal".equals(op.getTarget()));
+            operations2.removeIf(op -> "GET".equals(op.getVerb()) && "/payee/{id}".equals(op.getTarget()));
+        }
+        apidto2.setOperations(operations2);
+        restAPIPublisher.updateAPI(apidto2);
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
     }
 
     @Test(groups = {"wso2.am"}, description = "Sending http request to per API logging enabled API: ",
