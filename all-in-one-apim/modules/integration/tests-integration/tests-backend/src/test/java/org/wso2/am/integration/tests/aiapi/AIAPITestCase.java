@@ -927,6 +927,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         if (wireMockServer != null) {
             wireMockServer.stop();
         }
+        super.cleanUp();
     }
 
     /**
