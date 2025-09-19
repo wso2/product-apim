@@ -888,17 +888,17 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Deletes a specified AI service provider after removing API subscriptions and applications. Verifies that the
-     * provider is successfully deleted and no longer listed.
+     * Deletes a specified AI service provider. The cleanup of APIs and subscriptions
+     * is handled by the @AfterClass method to ensure proper cleanup order.
      */
     @Test(groups = {
             "wso2.am" }, description = "Delete AI Service Provider", dependsOnMethods = "testCreateApiVersionWithFailover")
     public void deleteAIServiceProvider() throws Exception {
 
+        // Clean up APIs and subscriptions before deleting the AI service provider
         restAPIStore.removeAPISubscriptionByName(UNSECURED_API_NAME, API_VERSION_1_0_0, API_PROVIDER, APPLICATION_NAME);
         restAPIStore.removeAPISubscriptionByName(MISTRAL_API_NAME, API_VERSION_1_0_0, API_PROVIDER, APPLICATION_NAME);
         restAPIStore.removeAPISubscriptionByName(MISTRAL_API_NAME, API_VERSION_2_0_0, API_PROVIDER, APPLICATION_NAME);
-        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(unsecuredApiId);
         restAPIPublisher.deleteAPI(mistralApiId);
         restAPIPublisher.deleteAPI(newVersionApiId);
@@ -907,20 +907,23 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         assertEquals(deleteProviderResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Failed to delete AI service provider");
 
+        // Verify the AI service provider is no longer listed
         ApiResponse<AIServiceProviderSummaryResponseListDTO> aiServiceProviders = restAPIAdmin.getAIServiceProviders();
         assertEquals(aiServiceProviders.getStatusCode(), Response.Status.OK.getStatusCode(),
-                "Failed to retrieve AI service providers");
+                "Failed to retrieve AI service providers after deletion");
         assertNotNull(aiServiceProviders.getData().getList(), "AI service providers list should not be null");
+
+        // Ensure the deleted provider is not in the list
         for (AIServiceProviderSummaryResponseDTO provider : aiServiceProviders.getData().getList()) {
             if (provider.getName().equals(AI_SERVICE_PROVIDER_NAME)) {
-                Assert.fail("AI Service Provider " + AI_SERVICE_PROVIDER_NAME + " has not deleted correctly");
+                Assert.fail("AI Service Provider " + AI_SERVICE_PROVIDER_NAME + " has not been deleted correctly");
             }
         }
-
     }
 
     @AfterClass(alwaysRun = true)
-    public void destroyAPIs() throws Exception {
+    public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
         if (wireMockServer != null) {
             wireMockServer.stop();
         }
