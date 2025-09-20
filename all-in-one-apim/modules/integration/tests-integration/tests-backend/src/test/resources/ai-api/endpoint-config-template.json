@@ -1,0 +1,31 @@
+{
+  "endpoint_type": "http",
+  "endpoint_security": {
+    "production": {
+      "enabled": true,
+      "type": "apikey",
+      "apiKeyIdentifier": "Authorization",
+      "apiKeyValue": "Bearer 123",
+      "apiKeyIdentifierType": "HEADER",
+      "username": "",
+      "password": null,
+      "grantType": "",
+      "tokenUrl": "",
+      "clientId": null,
+      "clientSecret": null
+    },
+    "sandbox": {
+      "enabled": true,
+      "type": "apikey",
+      "apiKeyIdentifier": "Authorization",
+      "apiKeyValue": "Bearer 456",
+      "apiKeyIdentifierType": "HEADER",
+      "username": "",
+      "password": null,
+      "grantType": "",
+      "tokenUrl": "",
+      "clientId": null,
+      "clientSecret": null
+    }
+  }
+}

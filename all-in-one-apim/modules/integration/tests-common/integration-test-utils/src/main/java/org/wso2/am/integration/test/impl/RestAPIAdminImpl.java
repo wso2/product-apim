@@ -65,6 +65,8 @@ public class RestAPIAdminImpl {
     private EnvironmentApi environmentApi = new EnvironmentApi();
     private LlmProviderApi llmProviderApi = new LlmProviderApi();
     private LlmProvidersApi llmProvidersApi = new LlmProvidersApi();
+    private AiServiceProviderApi aiServiceProviderApi = new AiServiceProviderApi();
+    private AiServiceProvidersApi aiServiceProvidersApi = new AiServiceProvidersApi();
     private EnvironmentCollectionApi environmentCollectionApi = new EnvironmentCollectionApi();
     private TenantConfigApi tenantConfigApi = new TenantConfigApi();
     private TenantConfigSchemaApi tenantConfigSchemaApi = new TenantConfigSchemaApi();
@@ -115,7 +117,8 @@ public class RestAPIAdminImpl {
                 "apim:api_category " +
                 "apim:admin_tier_view " +
                 "apim:admin_tier_manage " +
-                "apim:scope_manage";
+                "apim:scope_manage " +
+                "apim:llm_provider_manage ";
 
         String accessToken = ClientAuthenticator
                 .getAccessToken(scopeList,
@@ -150,6 +153,8 @@ public class RestAPIAdminImpl {
         environmentApi.setApiClient(apiAdminClient);
         llmProviderApi.setApiClient(apiAdminClient);
         llmProvidersApi.setApiClient(apiAdminClient);
+        aiServiceProviderApi.setApiClient(apiAdminClient);
+        aiServiceProvidersApi.setApiClient(apiAdminClient);
         environmentCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
@@ -319,6 +324,78 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteLLMProvider(String llmProviderId) throws ApiException {
         return llmProviderApi.llmProvidersLlmProviderIdDeleteWithHttpInfo(llmProviderId);
+    }
+
+    /**
+     * Retrieves a list of AI Service Providers.
+     *
+     * @return ApiResponse containing a list of AIServiceProviderSummaryResponseListDTO with details about available AI service providers.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<AIServiceProviderSummaryResponseListDTO> getAIServiceProviders() throws ApiException {
+        return aiServiceProvidersApi.getAIServiceProvidersWithHttpInfo();
+    }
+
+    /**
+     * Retrieves details of a specific AI Service Provider by its ID.
+     *
+     * @param aiServiceProviderId The unique identifier of the AI service provider.
+     * @return ApiResponse containing AIServiceProviderResponseDTO with details of the specified AI service provider.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<AIServiceProviderResponseDTO> getAIServiceProvider(String aiServiceProviderId) throws ApiException {
+        return aiServiceProviderApi.getAIServiceProviderWithHttpInfo(aiServiceProviderId);
+    }
+
+    /**
+     * Add the details of a specific AI Service Provider.
+     *
+     * @param name                          The new name of the AI service provider.
+     * @param apiVersion                    The API version of the AI service provider.
+     * @param description                   A brief description of the AI service provider.
+     * @param multipleModelProviderSupport  Whether the provider supports multiple model providers.
+     * @param configurations                Configuration details for the AI service provider.
+     * @param apiDefinition                 The API definition file for the AI service provider.
+     * @param modelProviders                The list of model providers for the AI service provider.
+     * @return ApiResponse containing AIServiceProviderResponseDTO with the created details of the AI service provider.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<AIServiceProviderResponseDTO> addAIServiceProvider(String name, String apiVersion, String description,
+            Boolean multipleModelProviderSupport, String configurations, File apiDefinition, String modelProviders) throws ApiException {
+
+        return aiServiceProvidersApi.addAIServiceProviderWithHttpInfo(name, apiVersion, configurations,
+                apiDefinition, description, multipleModelProviderSupport.toString(), modelProviders);
+    }
+
+    /**
+     * Updates the details of a specific AI Service Provider by its ID.
+     *
+     * @param aiServiceProviderId           The unique identifier of the AI service provider.
+     * @param name                          The new name of the AI service provider.
+     * @param apiVersion                    The API version of the AI service provider.
+     * @param description                   A brief description of the AI service provider.
+     * @param multipleModelProviderSupport  Whether the provider supports multiple model providers.
+     * @param configurations                Configuration details for the AI service provider.
+     * @param apiDefinition                 The API definition file for the AI service provider.
+     * @param modelProviders                The list of model providers for the AI service provider.
+     * @return ApiResponse containing AIServiceProviderResponseDTO with the updated details of the AI service provider.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<AIServiceProviderResponseDTO> updateAIServiceProvider(String aiServiceProviderId, String name, String apiVersion,
+            String description, Boolean multipleModelProviderSupport, String configurations, File apiDefinition, String modelProviders) throws ApiException {
+        return aiServiceProviderApi.updateAIServiceProviderWithHttpInfo(aiServiceProviderId, name, apiVersion,
+                configurations, apiDefinition, description, multipleModelProviderSupport.toString(), modelProviders);
+    }
+
+    /**
+     * Deletes a specific AI Service Provider by its ID.
+     *
+     * @param aiServiceProviderId The unique identifier of the AI service provider to be deleted.
+     * @return ApiResponse containing void, indicating successful deletion of the AI service provider.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<Void> deleteAIServiceProvider(String aiServiceProviderId) throws ApiException {
+        return aiServiceProviderApi.deleteAIServiceProviderWithHttpInfo(aiServiceProviderId);
     }
 
     /***
