@@ -888,8 +888,8 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Deletes a specified AI service provider. The cleanup of APIs and subscriptions
-     * is handled by the @AfterClass method to ensure proper cleanup order.
+     * Deletes a specified AI service provider after removing API subscriptions and applications. Verifies that the
+     * provider is successfully deleted and no longer listed.
      */
     @Test(groups = {
             "wso2.am" }, description = "Delete AI Service Provider", dependsOnMethods = "testCreateApiVersionWithFailover")
@@ -899,6 +899,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         restAPIStore.removeAPISubscriptionByName(UNSECURED_API_NAME, API_VERSION_1_0_0, API_PROVIDER, APPLICATION_NAME);
         restAPIStore.removeAPISubscriptionByName(MISTRAL_API_NAME, API_VERSION_1_0_0, API_PROVIDER, APPLICATION_NAME);
         restAPIStore.removeAPISubscriptionByName(MISTRAL_API_NAME, API_VERSION_2_0_0, API_PROVIDER, APPLICATION_NAME);
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(unsecuredApiId);
         restAPIPublisher.deleteAPI(mistralApiId);
         restAPIPublisher.deleteAPI(newVersionApiId);
@@ -923,7 +924,6 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIStore.deleteApplication(applicationId);
         if (wireMockServer != null) {
             wireMockServer.stop();
         }
