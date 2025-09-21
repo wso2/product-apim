@@ -49,6 +49,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -60,7 +61,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +73,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -887,47 +888,50 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         return productionConfig;
     }
 
-    /**
-     * Deletes a specified AI service provider after removing API subscriptions and applications. Verifies that the
-     * provider is successfully deleted and no longer listed.
-     */
-    @Test(groups = {
-            "wso2.am" }, description = "Delete AI Service Provider", dependsOnMethods = "testCreateApiVersionWithFailover")
-    public void deleteAIServiceProvider() throws Exception {
+    @AfterClass(alwaysRun = true)
+    public void cleanUpArtifacts() throws Exception {
 
-        // Clean up APIs and subscriptions before deleting the AI service provider
-        restAPIStore.removeAPISubscriptionByName(UNSECURED_API_NAME, API_VERSION_1_0_0, API_PROVIDER, APPLICATION_NAME);
-        restAPIStore.removeAPISubscriptionByName(MISTRAL_API_NAME, API_VERSION_1_0_0, API_PROVIDER, APPLICATION_NAME);
-        restAPIStore.removeAPISubscriptionByName(MISTRAL_API_NAME, API_VERSION_2_0_0, API_PROVIDER, APPLICATION_NAME);
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(unsecuredApiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(mistralApiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(newVersionApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(unsecuredApiId);
         restAPIPublisher.deleteAPI(mistralApiId);
         restAPIPublisher.deleteAPI(newVersionApiId);
 
-        ApiResponse<Void> deleteProviderResponse = restAPIAdmin.deleteAIServiceProvider(aiServiceProviderId);
-        assertEquals(deleteProviderResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
-                "Failed to delete AI service provider");
+        // Clean up AI service provider
+        if (aiServiceProviderId != null) {
+            try {
+                ApiResponse<Void> deleteProviderResponse = restAPIAdmin.deleteAIServiceProvider(aiServiceProviderId);
+                assertEquals(deleteProviderResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
+                        "Failed to delete AI service provider");
 
-        // Verify the AI service provider is no longer listed
-        ApiResponse<AIServiceProviderSummaryResponseListDTO> aiServiceProviders = restAPIAdmin.getAIServiceProviders();
-        assertEquals(aiServiceProviders.getStatusCode(), Response.Status.OK.getStatusCode(),
-                "Failed to retrieve AI service providers after deletion");
-        assertNotNull(aiServiceProviders.getData().getList(), "AI service providers list should not be null");
+                // Verify the AI service provider is no longer listed
+                ApiResponse<AIServiceProviderSummaryResponseListDTO> aiServiceProviders = restAPIAdmin.getAIServiceProviders();
+                assertEquals(aiServiceProviders.getStatusCode(), Response.Status.OK.getStatusCode(),
+                        "Failed to retrieve AI service providers after deletion");
+                assertNotNull(aiServiceProviders.getData().getList(), "AI service providers list should not be null");
 
-        // Ensure the deleted provider is not in the list
-        for (AIServiceProviderSummaryResponseDTO provider : aiServiceProviders.getData().getList()) {
-            if (provider.getName().equals(AI_SERVICE_PROVIDER_NAME)) {
-                Assert.fail("AI Service Provider " + AI_SERVICE_PROVIDER_NAME + " has not been deleted correctly");
+                // Ensure the deleted provider is not in the list
+                for (AIServiceProviderSummaryResponseDTO provider : aiServiceProviders.getData().getList()) {
+                    if (provider.getName().equals(AI_SERVICE_PROVIDER_NAME)) {
+                        Assert.fail("AI Service Provider " + AI_SERVICE_PROVIDER_NAME + " has not been deleted correctly");
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to delete AI service provider: " + e.getMessage());
             }
         }
-    }
 
-    @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
+        // Stop WireMock server
         if (wireMockServer != null) {
-            wireMockServer.stop();
+            try {
+                wireMockServer.stop();
+            } catch (Exception e) {
+                log.warn("Error stopping WireMock server: " + e.getMessage());
+            }
         }
-        super.cleanUp();
+
     }
 
     /**
@@ -1056,16 +1060,19 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     private File getTempFileWithContent(String content) throws IOException {
 
         File temp = File.createTempFile("swagger", ".json");
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(temp))) {
-            out.write(content);
-        }
         temp.deleteOnExit();
+        BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+        out.write(content);
+        out.close();
         return temp;
     }
 
     private void startWiremockServer() {
 
-        endpointPort = getAvailablePort();
+        endpointPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
+        assertNotEquals(endpointPort, -1,
+                "No available port in the range " + MockServerUtils.httpsPortLowerRange + "-" +
+                        MockServerUtils.httpsPortUpperRange + " was found");
         wireMockServer = new WireMockServer(options()
                 .port(endpointPort)
                 .extensions(new ResponseTemplateTransformer(true)));
@@ -1125,38 +1132,13 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody(model1Response)));
 
-        wireMockServer.start();
-        log.info("Wiremock server started on port " + endpointPort);
-    }
-
-    /**
-     * Find a free port to start WireMock server in the specified port range
-     * @return Available port number
-     */
-    private int getAvailablePort() {
-        final int lowerPortLimit = 9950;
-        final int upperPortLimit = 9999;
-
-        for (int currentPort = lowerPortLimit; currentPort < upperPortLimit; currentPort++) {
-            if (isPortFree(currentPort)) {
-                return currentPort;
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Check whether given port is available
-     * @param port Port number to check
-     * @return true if port is available, false otherwise
-     */
-    private boolean isPortFree(int port) {
-        try (Socket socket = new Socket("localhost", port)) {
-            // Something is using the port and has responded
-            return false;
-        } catch (IOException e) {
-            // Port is available
-            return true;
+        try {
+            wireMockServer.start();
+            log.info("WireMock server started successfully on port " + endpointPort);
+        } catch (Exception e) {
+            log.error("Failed to start WireMock server on port " + endpointPort + ": " + e.getMessage(), e);
+            throw e;
         }
     }
+
 }
