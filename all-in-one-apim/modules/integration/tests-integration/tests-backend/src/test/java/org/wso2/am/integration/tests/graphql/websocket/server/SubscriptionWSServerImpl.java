@@ -57,7 +57,7 @@ public class SubscriptionWSServerImpl {
                             for (int i = 1; i < 5; i++) {
                                 response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
                                         + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
-                                Thread.sleep(1000L);
+                                Thread.sleep(300L);
                                 session.getRemote().sendString(response);
                             }
                         } else {
