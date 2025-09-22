@@ -81,6 +81,8 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
     private int logLineCounter = 0;
     private String tokenURL;
     private String identityLoginURL;
+    private String accessToken;
+    private HttpClient client;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APILoggingTest(TestUserMode userMode) {
@@ -160,8 +162,8 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         assertNotNull(applicationKeyDTO.getToken());
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+        client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
         request.setHeader("Authorization", "Bearer " + accessToken);
         org.apache.http.HttpResponse response = client.execute(request);
@@ -354,11 +356,6 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
 
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        assertNotNull(applicationKeyDTO.getToken());
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpPost postRequest = new HttpPost(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + "/payee/personal");
         postRequest.setHeader("Authorization", "Bearer " + accessToken);
         postRequest.setHeader("Content-Type", "application/json");
