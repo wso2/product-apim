@@ -327,6 +327,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Invoking API with logging enabled with similar templates",
             dependsOnMethods = "testAPIPerAPIResourceLoggingTestcase")
     public void testSimilarTemplateInvocationWithLoggingTestcase() throws Exception {
+        String API_CONTEXT = "apiloggingtest";
         HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
         APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
 
