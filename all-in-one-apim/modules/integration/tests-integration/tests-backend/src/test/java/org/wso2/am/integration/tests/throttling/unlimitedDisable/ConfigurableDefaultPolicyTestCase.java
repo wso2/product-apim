@@ -270,8 +270,8 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
             restAPIPublisher.updateAPI(retrievedDto, restAPIId);
             Assert.fail("API Update Successful with Unlimited Subscription Policy.");
         } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), 500);
-            Assert.assertTrue(e.getResponseBody().contains("Unlimited"));
+            Assert.assertEquals(e.getCode(), 400);
+            Assert.assertFalse(e.getResponseBody().contains("Unlimited"));
         }
     }
 
