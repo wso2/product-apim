@@ -1826,8 +1826,6 @@ public class RestAPIPublisherImpl {
             if (context.startsWith("/{version}")) {
                 Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
             } else {
-                log.info("AAAAAAAAAA********************************************AAAAAAAAAA");
-                log.info("context: " + context + " version: " + version);
                 Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
             }
             Assert.assertEquals(apiInfo.getName(), name);
