@@ -9,7 +9,8 @@
       "system.parameter.profile": "gateway-worker",
       "apim.key_manager.enable_registration": false,
       "oauth.grant_type.token_exchange.enable": false,
-      "apim.ai.llm_provider_events_enabled": false
+      "apim.ai.llm_provider_events_enabled": false,
+      "apim.certificate_manager.events_enabled": false
     },
     "api-key-manager-deprecated": {
       "apim.throttling.enable_policy_deploy": false,
@@ -33,7 +34,8 @@
       "apim.throttling.enable_decision_connection": false,
       "apim.throttling.enable_blacklist_condition": false,
       "oauth.grant_type.token_exchange.enable": false,
-      "apim.ai.llm_provider_events_enabled": false
+      "apim.ai.llm_provider_events_enabled": false,
+      "apim.certificate_manager.events_enabled": false
     },
     "control-plane": {
       "system.parameter.profile": "control-plane",
@@ -45,7 +47,8 @@
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
       "apim.sync_runtime_artifacts.gateway.enable": "false",
-      "apim.ai.llm_provider_events_enabled": true
+      "apim.ai.llm_provider_events_enabled": true,
+      "apim.certificate_manager.events_enabled": true
     },
     "default": {
       "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl"

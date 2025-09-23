@@ -9,7 +9,8 @@
       "apim.throttling.enable_decision_connection": false,
       "apim.throttling.enable_blacklist_condition": false,
       "oauth.grant_type.token_exchange.enable": false,
-      "apim.ai.llm_provider_events_enabled": false
+      "apim.ai.llm_provider_events_enabled": false,
+      "apim.certificate_manager.events_enabled": false
     }
   },
   "apim.jwt.encoding": {
