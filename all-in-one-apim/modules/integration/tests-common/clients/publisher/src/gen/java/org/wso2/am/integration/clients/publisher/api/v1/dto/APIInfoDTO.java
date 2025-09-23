@@ -71,6 +71,10 @@ public class APIInfoDTO {
         @SerializedName(SERIALIZED_NAME_TYPE)
             private String type;
 
+        public static final String SERIALIZED_NAME_SUBTYPE = "subtype";
+        @SerializedName(SERIALIZED_NAME_SUBTYPE)
+            private String subtype = "DEFAULT";
+
             /**
 * The audience of the API. Accepted values are PUBLIC, SINGLE
 */
@@ -366,6 +370,29 @@ public static AudienceEnum fromValue(String value) {
     }
 
 
+        public APIInfoDTO subtype(String subtype) {
+        
+        this.subtype = subtype;
+        return this;
+        }
+
+    /**
+        * Subtype of the API.
+    * @return subtype
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "AIAPI", value = "Subtype of the API.")
+    
+    public String getSubtype() {
+        return subtype;
+    }
+
+
+    public void setSubtype(String subtype) {
+        this.subtype = subtype;
+    }
+
+
         public APIInfoDTO audience(AudienceEnum audience) {
         
         this.audience = audience;
@@ -614,6 +641,7 @@ public static AudienceEnum fromValue(String value) {
             Objects.equals(this.version, apIInfo.version) &&
             Objects.equals(this.provider, apIInfo.provider) &&
             Objects.equals(this.type, apIInfo.type) &&
+            Objects.equals(this.subtype, apIInfo.subtype) &&
             Objects.equals(this.audience, apIInfo.audience) &&
             Objects.equals(this.audiences, apIInfo.audiences) &&
             Objects.equals(this.lifeCycleStatus, apIInfo.lifeCycleStatus) &&
@@ -628,7 +656,7 @@ public static AudienceEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, additionalProperties, additionalPropertiesMap, version, provider, type, audience, audiences, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, createdTime, updatedTime, gatewayVendor, advertiseOnly);
+        return Objects.hash(id, name, description, context, additionalProperties, additionalPropertiesMap, version, provider, type, subtype, audience, audiences, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, createdTime, updatedTime, gatewayVendor, advertiseOnly);
     }
 
 
@@ -645,6 +673,7 @@ sb.append("class APIInfoDTO {\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    subtype: ").append(toIndentedString(subtype)).append("\n");
     sb.append("    audience: ").append(toIndentedString(audience)).append("\n");
     sb.append("    audiences: ").append(toIndentedString(audiences)).append("\n");
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");

@@ -31,9 +31,11 @@ import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.AiServiceProviderApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiEndpointsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiOperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
@@ -60,6 +62,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -91,6 +95,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationRes
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ModelProviderDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataListDTO;
@@ -166,7 +171,8 @@ public class RestAPIPublisherImpl {
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
     private GatewayPoliciesApi gatewayPoliciesApi = new GatewayPoliciesApi();
-
+    private ApiEndpointsApi apiEndpointsApi = new ApiEndpointsApi();
+    private AiServiceProviderApi aiServiceProviderApi = new AiServiceProviderApi();
     private ImportExportApi importExportApi = new ImportExportApi();
 
     private LinterCustomRulesApi linterCustomRulesApi = new LinterCustomRulesApi();
@@ -193,7 +199,8 @@ public class RestAPIPublisherImpl {
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
                                 "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage " +
-                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage apim:subscription_manage",
+                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage " +
+                                "apim:subscription_manage apim:llm_provider_read",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -229,6 +236,8 @@ public class RestAPIPublisherImpl {
         importExportApi.setApiClient(apiPublisherClient);
         linterCustomRulesApi.setApiClient(apiPublisherClient);
         gatewayPoliciesApi.setApiClient(apiPublisherClient);
+        apiEndpointsApi.setApiClient(apiPublisherClient);
+        aiServiceProviderApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -1817,8 +1826,6 @@ public class RestAPIPublisherImpl {
             if (context.startsWith("/{version}")) {
                 Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
             } else {
-                log.info("AAAAAAAAAA********************************************AAAAAAAAAA");
-                log.info("context: " + context + " version: " + version);
                 Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
             }
             Assert.assertEquals(apiInfo.getName(), name);
@@ -2829,5 +2836,147 @@ public class RestAPIPublisherImpl {
      */
     public void changeSubscriptionBusinessPlan(String subscriptionId, String businessPlan, String ifMatch) throws ApiException {
         subscriptionsApi.changeSubscriptionBusinessPlan(subscriptionId, businessPlan, ifMatch);
+    }
+
+    /**
+     * This method is used to add an API Endpoint.
+     *
+     * @param apiId           API UUID
+     * @param name            API endpoint name
+     * @param deploymentStage Deployment stage: Production or Sandbox
+     * @param endpointConfig  Endpoint configuration object
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when creating the API Endpoint
+     */
+    public HttpResponse addApiEndpoint(String apiId, String name, String deploymentStage, Object endpointConfig)
+            throws ApiException {
+
+        APIEndpointDTO apiEndpointDTO = new APIEndpointDTO();
+        apiEndpointDTO.setName(name);
+        apiEndpointDTO.setDeploymentStage(deploymentStage);
+        apiEndpointDTO.setEndpointConfig(endpointConfig);
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointDTO> addedApiEndpoint = apiEndpointsApi.addApiEndpointWithHttpInfo(apiId,
+                    apiEndpointDTO);
+            apiEndpointDTO = addedApiEndpoint.getData();
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_CREATED);
+        }
+        return response;
+    }
+    /**
+     * Update an API endpoint with name and deployment stage
+     *
+     * @param apiId           API ID
+     * @param endpointId      API endpoint ID
+     * @param name            Endpoint name
+     * @param deploymentStage Deployment stage
+     * @param endpointConfig  API endpoint configuration
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when updating the API endpoint
+     */
+    public HttpResponse updateApiEndpoint(String apiId, String endpointId, String name, String deploymentStage, Object endpointConfig) throws ApiException {
+        APIEndpointDTO apiEndpointDTO = new APIEndpointDTO();
+        apiEndpointDTO.setName(name);
+        apiEndpointDTO.setDeploymentStage(deploymentStage);
+        apiEndpointDTO.setEndpointConfig(endpointConfig);
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointDTO> updatedApiEndpoint = apiEndpointsApi.updateApiEndpointWithHttpInfo(apiId, endpointId, apiEndpointDTO);
+            apiEndpointDTO = updatedApiEndpoint.getData();
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Delete an API endpoint
+     *
+     * @param apiId      API ID
+     * @param endpointId API endpoint ID
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when deleting the API endpoint
+     */
+    public HttpResponse deleteApiEndpoint(String apiId, String endpointId) throws ApiException {
+        try {
+            apiEndpointsApi.deleteApiEndpointWithHttpInfo(apiId, endpointId);
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        return new HttpResponse("API endpoint deleted successfully", HttpStatus.SC_OK);
+    }
+
+    /**
+     * Get API endpoints for a given API UUID.
+     *
+     * @param apiId API UUID
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when retrieving the API endpoints
+     */
+    public HttpResponse getApiEndpoints(String apiId) {
+        APIEndpointListDTO apiEndpointListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointListDTO> apiResponse = apiEndpointsApi.getApiEndpointsWithHttpInfo(apiId, null, 0);
+            apiEndpointListDTO = apiResponse.getData();
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (apiEndpointListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(apiEndpointListDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Get a specific API endpoint by endpoint ID.
+     *
+     * @param apiId      API UUID
+     * @param endpointId API endpoint ID
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when retrieving the API endpoint
+     */
+    public HttpResponse getApiEndpoint(String apiId, String endpointId) throws ApiException {
+        APIEndpointDTO apiEndpointDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.getApiEndpointWithHttpInfo(apiId, endpointId);
+            apiEndpointDTO = apiResponse.getData();
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Get AI Service Provider's model list
+     *
+     * @param aiServiceProviderId AI service provider ID
+     * @return HttpResponse
+     */
+    public HttpResponse getAIServiceProviderModels(String aiServiceProviderId) {
+        Gson gson = new Gson();
+        try {
+            ApiResponse<List<ModelProviderDTO>> modelListResponse = aiServiceProviderApi.getAIServiceProviderModelsWithHttpInfo(
+                    aiServiceProviderId);
+            return new HttpResponse(gson.toJson(modelListResponse.getData()), modelListResponse.getStatusCode());
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
     }
 }

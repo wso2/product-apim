@@ -2,7 +2,7 @@
   "id": "f821a1dd4df2492382ec9676b59ddcd3",
   "object": "chat.completion",
   "created": 1727259070,
-  "model": "mistral-large-latest",
+  "model": "{{jsonPath request.body '$.model'}}",
   "choices": [
     {
       "index": 0,
