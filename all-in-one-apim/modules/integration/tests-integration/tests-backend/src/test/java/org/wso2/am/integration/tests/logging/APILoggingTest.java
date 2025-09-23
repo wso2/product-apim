@@ -365,6 +365,13 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         org.apache.http.HttpResponse postResponse = client.execute(postRequest);
         assertEquals(postResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "POST request to /payee/personal should succeed");
+
+        HttpGet getRequest = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + "/payee/123");
+        getRequest.setHeader("Authorization", "Bearer " + accessToken);
+
+        org.apache.http.HttpResponse getResponse = client.execute(getRequest);
+        assertEquals(getResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "GET request to /payee/{id} should succeed");
     }
 
     @AfterClass(alwaysRun = true)
