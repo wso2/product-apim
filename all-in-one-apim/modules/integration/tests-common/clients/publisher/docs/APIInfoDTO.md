@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **version** | **String** |  |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
 **type** | **String** |  |  [optional]
+**subtype** | **String** | Subtype of the API. |  [optional] [readonly]
 **audience** | [**AudienceEnum**](#AudienceEnum) | The audience of the API. Accepted values are PUBLIC, SINGLE |  [optional]
 **audiences** | **List&lt;String&gt;** | The audiences of the API for jwt validation. Accepted values are any String values |  [optional]
 **lifeCycleStatus** | **String** |  |  [optional]

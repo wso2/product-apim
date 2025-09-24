@@ -4840,6 +4840,227 @@ paths:
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       x-contentType: application/json
       x-accepts: application/json
+  /ai-service-providers:
+    get:
+      description: |
+        Get all AI Service providers
+      operationId: getAIServiceProviders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderSummaryResponseList'
+          description: |
+            OK.
+            AI Service providers returned
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Get all AI Service providers
+      tags:
+      - AIServiceProviders
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers"'
+      x-accepts: application/json
+    post:
+      description: |
+        Add a new AI Service provider
+      operationId: addAIServiceProvider
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIServiceProviderRequest'
+        description: |
+          AI Service provider object that should to be added
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderResponse'
+          description: |
+            Created.
+            Successful response with the newly created AI Service provider as entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Add a AI Service provider
+      tags:
+      - AIServiceProviders
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer <ACCESS_TOKEN>" -H "Content-Type:
+          multipart/form-data" -F "name=AIServiceProviderName" -F "apiVersion=v1"
+          -F "configurations={\"key\":\"value\"}" -F "apiDefinition=@api_definition_file.json"
+          "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /ai-service-providers/{aiServiceProviderId}:
+    delete:
+      description: |
+        Delete a AI Service Provider by aiServiceProviderId
+      operationId: deleteAIServiceProvider
+      parameters:
+      - description: |
+          AI Service Provider UUID
+        explode: false
+        in: path
+        name: aiServiceProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            AI Service provider successfully deleted.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Delete a AI Service Provider
+      tags:
+      - AIServiceProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-accepts: application/json
+    get:
+      description: |
+        Get a AI Service Provider
+      operationId: getAIServiceProvider
+      parameters:
+      - description: |
+          AI Service Provider UUID
+        explode: false
+        in: path
+        name: aiServiceProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderResponse'
+          description: |
+            OK.
+            OpenAPI specification
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Get AI Service Provider
+      tags:
+      - AIServiceProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-accepts: application/json
+    put:
+      description: |
+        Update a AI Service provider by AIServiceProviderId
+      operationId: updateAIServiceProvider
+      parameters:
+      - description: |
+          AI Service Provider UUID
+        explode: false
+        in: path
+        name: aiServiceProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIServiceProviderRequest'
+        description: |
+          AI Service Provider object with updated information
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderResponse'
+          description: |
+            OK.
+            AI Service Provider updated.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Update an AI Service provider
+      tags:
+      - AIServiceProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          \ -F "name=UpdatedProviderName" \ -F "apiVersion=v2" \ -F "configurations={\"key\":\"value\"}"
+          \ -F "apiDefinition=@api_definition.json" \ "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers/{aiServiceProviderId}"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
   /llm-providers:
     get:
       description: |
@@ -7939,6 +8160,16 @@ components:
       schema:
         type: string
       style: simple
+    aiServiceProviderId:
+      description: |
+        AI Service Provider UUID
+      explode: false
+      in: path
+      name: aiServiceProviderId
+      required: true
+      schema:
+        type: string
+      style: simple
     policyId:
       description: |
         Thorttle policy UUID
@@ -9437,6 +9668,185 @@ components:
             $ref: '#/components/schemas/Organization'
           type: array
       title: Organization List
+      type: object
+    AIServiceProviderRequest:
+      properties:
+        name:
+          example: OpenAI
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        description:
+          example: OpenAI LLM
+          maxLength: 1023
+          type: string
+        multipleModelProviderSupport:
+          default: "false"
+          description: |
+            Indicates whether the AI Service Provider supports multiple model providers.
+            If true, the AI Service Provider can support multiple model providers.
+            If false, the AI Service Provider supports only one model provider.
+          type: string
+        configurations:
+          description: LLM Provider configurations
+          type: string
+        apiDefinition:
+          description: OpenAPI specification
+          format: binary
+          type: string
+        modelProviders:
+          type: string
+      required:
+      - apiDefinition
+      - apiVersion
+      - configurations
+      - name
+      title: AIServiceProvider
+      type: object
+    ModelProvider:
+      example:
+        models:
+        - gpt-4o
+        - gpt-4o
+        name: OpenAI
+      properties:
+        models:
+          items:
+            example: gpt-4o
+            type: string
+          type: array
+        name:
+          example: OpenAI
+          type: string
+      required:
+      - models
+      - name
+      title: Model Provider
+      type: object
+    AIServiceProviderResponse:
+      example:
+        modelProviders:
+        - models:
+          - gpt-4o
+          - gpt-4o
+          name: OpenAI
+        - models:
+          - gpt-4o
+          - gpt-4o
+          name: OpenAI
+        apiVersion: 1.0.0
+        multipleModelProviderSupport: true
+        builtInSupport: true
+        configurations: configurations
+        name: OpenAI
+        description: OpenAI LLM
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        apiDefinition: apiDefinition
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: OpenAI
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        builtInSupport:
+          description: Is built-in support
+          type: boolean
+        multipleModelProviderSupport:
+          description: |
+            Indicates whether the AI Service Provider supports multiple model providers.
+            If true, the AI Service Provider can support multiple model providers.
+            If false, the AI Service Provider supports only one model provider.
+          type: boolean
+        description:
+          example: OpenAI LLM
+          maxLength: 1023
+          type: string
+        configurations:
+          description: LLM Provider configurations
+          type: string
+        apiDefinition:
+          description: OpenAPI specification
+          type: string
+        modelProviders:
+          description: List of model providers supported by the AI Service Provider
+          items:
+            $ref: '#/components/schemas/ModelProvider'
+          type: array
+      title: AIServiceProviderResponse
+      type: object
+    AIServiceProviderSummaryResponse:
+      example:
+        apiVersion: 1.0.0
+        builtInSupport: true
+        name: open-ai
+        description: OpenAI LLM Provider
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: open-ai
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        builtInSupport:
+          description: Is built-in support
+          type: boolean
+        description:
+          example: OpenAI LLM Provider
+          maxLength: 1023
+          type: string
+      required:
+      - apiVersion
+      - name
+      title: AIServiceProviderSummaryResponse
+      type: object
+    AIServiceProviderSummaryResponseList:
+      example:
+        count: 1
+        list:
+        - apiVersion: 1.0.0
+          builtInSupport: true
+          name: open-ai
+          description: OpenAI LLM Provider
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        - apiVersion: 1.0.0
+          builtInSupport: true
+          name: open-ai
+          description: OpenAI LLM Provider
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        count:
+          description: |
+            Number of LLM Providers returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/AIServiceProviderSummaryResponse'
+          type: array
+      title: AIServiceProviderSummaryResponseList
       type: object
     LLMProviderRequest:
       properties:
