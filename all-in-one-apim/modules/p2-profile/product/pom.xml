@@ -703,6 +703,11 @@
                                     org.wso2.gw.ext:kong.gw.manager.feature:${kong.gwmanager.feature.version}
                                 </featureArtifactDef>
 
+                                <!-- Envoy Gateway Agent Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.gw.ext:envoy.gw.manager.feature:${envoy.gwmanager.feature.version}
+                                </featureArtifactDef>
+
                                 <!-- AM Policies Feature -->
                                 <featureArtifactDef>
                                     org.wso2.am:org.wso2.am.policies.feature:${project.version}
@@ -1568,6 +1573,11 @@
                                     <version>${kong.gwmanager.feature.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>envoy.gw.manager.feature.group</id>
+                                    <version>${envoy.gwmanager.feature.version}</version>
+                                </feature>
+
                                 <!-- AM Policy Feature -->
                                 <feature>
                                     <id>org.wso2.am.policies.feature.group</id>
@@ -2215,6 +2225,10 @@
                                 <feature>
                                     <id>kong.gw.manager.feature.group</id>
                                     <version>${kong.gwmanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>envoy.gw.manager.feature.group</id>
+                                    <version>${envoy.gwmanager.feature.version}</version>
                                 </feature>
                             </features>
                         </configuration>
