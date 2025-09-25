@@ -685,6 +685,9 @@
                                 <featureArtifactDef>
                                     org.wso2.gw.ext:kong.gw.manager.feature:${kong.gwmanager.feature.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.gw.ext:envoy.gw.manager.feature:${envoy.gwmanager.feature.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1405,6 +1408,10 @@
                                 <feature>
                                     <id>kong.gw.manager.feature.group</id>
                                     <version>${kong.gwmanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>envoy.gw.manager.feature.group</id>
+                                    <version>${envoy.gwmanager.feature.version}</version>
                                 </feature>
 
                             </features>
