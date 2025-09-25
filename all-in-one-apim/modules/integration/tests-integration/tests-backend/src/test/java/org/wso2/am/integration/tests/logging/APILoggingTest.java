@@ -24,6 +24,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -357,18 +358,38 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
 
+        // Send OPTIONS pre-flight request for POST
+        HttpOptions optionsPostRequest = new HttpOptions(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) +
+                "/payee/personal");
+        optionsPostRequest.addHeader("Origin", "https://localhost:9443");
+        optionsPostRequest.addHeader("Access-Control-Request-Method", "POST");
+        optionsPostRequest.addHeader("Access-Control-Request-Headers", "authorization,content-type");
+        org.apache.http.HttpResponse optionsPostResponse = client.execute(optionsPostRequest);
+        assertEquals(optionsPostResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "OPTIONS pre-flight request for POST /payee/personal should succeed");
+
+        // Actual POST call
         HttpPost postRequest = new HttpPost(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + "/payee/personal");
         postRequest.setHeader("Authorization", "Bearer " + accessToken);
         postRequest.setHeader("Content-Type", "application/json");
         postRequest.setEntity(new StringEntity("{\"name\":\"test\"}"));
-
         org.apache.http.HttpResponse postResponse = client.execute(postRequest);
         assertEquals(postResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "POST request to /payee/personal should succeed");
 
+        // Send OPTIONS pre-flight request for GET /payee/{id}
+        HttpOptions optionsGetRequest = new HttpOptions(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) +
+                "/payee/123");
+        optionsGetRequest.addHeader("Origin", "https://localhost:9443");
+        optionsGetRequest.addHeader("Access-Control-Request-Method", "GET");
+        optionsGetRequest.addHeader("Access-Control-Request-Headers", "authorization");
+        org.apache.http.HttpResponse optionsGetResponse = client.execute(optionsGetRequest);
+        assertEquals(optionsGetResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "OPTIONS pre-flight request for GET /payee/{id} should succeed");
+
+        // Actual GET call
         HttpGet getRequest = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + "/payee/123");
         getRequest.setHeader("Authorization", "Bearer " + accessToken);
-
         org.apache.http.HttpResponse getResponse = client.execute(getRequest);
         assertEquals(getResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "GET request to /payee/{id} should succeed");
