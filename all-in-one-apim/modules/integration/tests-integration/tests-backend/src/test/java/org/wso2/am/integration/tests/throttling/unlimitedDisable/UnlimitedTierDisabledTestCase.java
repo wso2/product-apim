@@ -82,6 +82,7 @@ public class UnlimitedTierDisabledTestCase extends APIMIntegrationBaseTest {
     private String schemaDefinition;
     private String graphqlAPIId;
     private String restAPIId;
+    private String restAPIIdForUpdateAPIWithThrottlingTierEmptyResource;
 
     @Factory(dataProvider = "userModeDataProvider")
     public UnlimitedTierDisabledTestCase(TestUserMode userMode) {
@@ -198,8 +199,76 @@ public class UnlimitedTierDisabledTestCase extends APIMIntegrationBaseTest {
             restAPIPublisher.updateAPI(retrievedDto, restAPIId);
             Assert.fail("API Update Successful with Unlimited Subscription Policy.");
         } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), 500);
-            Assert.assertTrue(e.getResponseBody().contains("Unlimited"));
+            Assert.assertEquals(e.getCode(), 400);
+            Assert.assertFalse(e.getResponseBody().contains("Unlimited"));
+        }
+    }
+
+    @Test(groups = { "wso2.am" }, description =
+            "Update a REST API with a resource without x-throttling tier and check if "
+                    + "API gets published successfully with next available tier (10KPerMin)")
+    public void updateAPIWithThrottlingTierEmptyResource() throws Exception {
+        // Create a REST API
+        String swaggerPath = getAMResourceLocation() + File.separator + "configFiles" + File.separator + "unlimitedTier"
+                + File.separator + "TestAPI.json";
+        File definition = new File(swaggerPath);
+
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "http://testapi.com");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.SILVER);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "TestAPINew");
+        apiProperties.put("context", "/TestAPINew");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", providerName);
+        apiProperties.put("policies", tierList);
+        apiProperties.put("endpointConfig", endpointConfig);
+        APIDTO restAPIDTO = restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
+        restAPIIdForUpdateAPIWithThrottlingTierEmptyResource = restAPIDTO.getId();
+
+        // Update Swagger
+        String updatedSwaggerPath =
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "unlimitedTier"
+                        + File.separator + "TestAPIUpdated.json";
+        String updatedSwaggerContent = restAPIPublisher.updateSwagger(
+                restAPIIdForUpdateAPIWithThrottlingTierEmptyResource, readFile(updatedSwaggerPath));
+
+        // Validate the updated Swagger content
+        OpenAPIParser parser = new OpenAPIParser();
+        SwaggerParseResult swaggerParseResult = parser.readContents(updatedSwaggerContent, null, null);
+        OpenAPI openAPI = swaggerParseResult.getOpenAPI();
+        Paths paths = openAPI.getPaths();
+
+        // Assert that the `/test` endpoint exists
+        Assert.assertTrue(paths.containsKey("/test"), "The '/test' endpoint is missing in the updated Swagger.");
+
+        // Validate the properties of the `/test` endpoint
+        Operation getOperation = paths.get("/test").getGet();
+        Assert.assertNotNull(getOperation, "The 'GET' operation for '/test' is missing.");
+
+        // Validate the "x-throttling-tier" property
+        Map<String, Object> extensions = getOperation.getExtensions();
+        Assert.assertNotNull(extensions, "Extensions are missing for the 'GET' operation of '/test'.");
+        Assert.assertEquals(extensions.get("x-throttling-tier"), "10KPerMin",
+                "The 'x-throttling-tier' is not set to '10KPerMin'.");
+
+        // Publish the API and validate its operations
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(restAPIIdForUpdateAPIWithThrottlingTierEmptyResource, false);
+        APIDTO retrievedDto = restAPIPublisher.getAPIByID(restAPIIdForUpdateAPIWithThrottlingTierEmptyResource);
+        Assert.assertNotNull(retrievedDto);
+        Assert.assertNotNull(retrievedDto.getOperations());
+        for (APIOperationsDTO operation : retrievedDto.getOperations()) {
+            Assert.assertNotEquals(operation.getThrottlingPolicy(), "Unlimited",
+                    "The throttling policy should not be 'Unlimited'.");
         }
     }
 
@@ -273,6 +342,7 @@ public class UnlimitedTierDisabledTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         testDeleteApi(restAPIId);
+        testDeleteApi(restAPIIdForUpdateAPIWithThrottlingTierEmptyResource);
         testDeleteApi(graphqlAPIId);
     }
 
