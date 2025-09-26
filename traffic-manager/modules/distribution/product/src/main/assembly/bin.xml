@@ -173,6 +173,7 @@
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v4.jar</exclude>
                 <exclude>**/lib/xalan*.jar</exclude>
+                <exclude>**/repository/components/plugins/swagger-request-validator-core-v3_2.44.1.wso2v1.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
