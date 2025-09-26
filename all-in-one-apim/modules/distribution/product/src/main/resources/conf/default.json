@@ -574,5 +574,27 @@
   "apim.basic_authenticator.max_active": "100",
   "apim.basic_authenticator.max_wait_millis": "30000",
   "apim.mcp.enable": true,
-  "apim.devportal.mode": "HYBRID"
+  "apim.devportal.mode": "HYBRID",
+  "admin_service.deny_list": [
+    "ClassMediatorAdmin",
+    "CommandMediatorAdmin",
+    "ConfigServiceAdmin",
+    "CustomMeteringService",
+    "DeploymentSynchronizerAdmin",
+    "EndpointTemplateAdminService",
+    "ESBNTaskAdmin",
+    "MediationLibraryAdminService",
+    "MediationLibraryUploader",
+    "MediationSecurityAdminService",
+    "MetricsDataService",
+    "ModuleAdminService",
+    "RemoteTaskAdmin",
+    "StatisticsAdmin",
+    "SynapseApplicationAdmin",
+    "SynapseArtifactUploaderAdmin",
+    "TemplateAdminService",
+    "ThemeMgtService",
+    "TierCacheService",
+    "WebappAdmin"
+  ]
 }
