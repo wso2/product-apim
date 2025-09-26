@@ -13,6 +13,9 @@ Name | Type | Description | Notes
 **displayOnDevportal** | **Boolean** |  |  [optional]
 **deployedTime** | **String** |  |  [optional] [readonly]
 **successDeployedTime** | **String** |  |  [optional] [readonly]
+**liveGatewayCount** | **Integer** | The number of gateways that are currently live in the gateway environment  |  [optional] [readonly]
+**deployedGatewayCount** | **Integer** | The number of gateways in which the API revision is deployed successfully  |  [optional] [readonly]
+**failedGatewayCount** | **Integer** | The number of gateways where the API revision deployment has failed  |  [optional] [readonly]
 
 
 

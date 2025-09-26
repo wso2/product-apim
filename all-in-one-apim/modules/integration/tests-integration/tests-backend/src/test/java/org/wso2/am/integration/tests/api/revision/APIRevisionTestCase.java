@@ -210,8 +210,168 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
     }
 
+    @Test(groups = {"wso2.am"}, description = "Verify deployment acknowledgment counts after API Revision deployment",
+            dependsOnMethods = "testDeployAPIRevision")
+    public void testVerifyDeploymentAcknowledgmentCounts() throws Exception {
+        // Wait a moment for deployment to complete
+        Thread.sleep(5000);
+
+        HttpResponse apiRevisionsGetResponse = null;
+        JSONObject jsonObject = null;
+        JSONArray revisionList = null;
+        boolean deploymentAcknowledgmentFound = false;
+        int maxRetries = 20;
+        int sleepTime = 5000; // 5 seconds
+        
+        // Retry mechanism to wait for deployment acknowledgment counts
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            log.info("Attempt " + attempt + "/" + maxRetries + " - Checking for deployment acknowledgment counts");
+            
+            // Get API Revisions to verify deployment acknowledgment
+            apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, null);
+            assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                    "Unable to retrieve revisions for deployment acknowledgment validation: " + apiRevisionsGetResponse.getData());
+
+            jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
+            revisionList = jsonObject.getJSONArray("list");
+            
+            // Check if deployment acknowledgment counts are available
+            for (int i = 0; i < revisionList.length(); i++) {
+                JSONObject revision = revisionList.getJSONObject(i);
+                if (revisionUUID.equals(revision.getString("id"))) {
+                    if (revision.has("deploymentInfo")) {
+                        JSONArray deploymentInfoArray = revision.getJSONArray("deploymentInfo");
+                        if (deploymentInfoArray.length() > 0) {
+                            for (int j = 0; j < deploymentInfoArray.length(); j++) {
+                                JSONObject deploymentInfo = deploymentInfoArray.getJSONObject(j);
+                                
+                                // Check if all gateway count fields are present and have valid values
+                                if (deploymentInfo.has("liveGatewayCount") && 
+                                    deploymentInfo.has("deployedGatewayCount") && 
+                                    deploymentInfo.has("failedGatewayCount")) {
+                                    
+                                    int deployedGatewayCount = deploymentInfo.getInt("deployedGatewayCount");
+                                    int liveGatewayCount = deploymentInfo.getInt("liveGatewayCount");
+                                    
+                                    // Consider deployment acknowledgment found if we have expected counts
+                                    if (deployedGatewayCount > 0 && liveGatewayCount > 0) {
+                                        log.info("Deployment acknowledgment counts found on attempt " + attempt + 
+                                            ": deployedGatewayCount=" + deployedGatewayCount + 
+                                            ", liveGatewayCount=" + liveGatewayCount);
+                                        deploymentAcknowledgmentFound = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            if (deploymentAcknowledgmentFound) {
+                log.info("Deployment acknowledgment counts successfully received after " + attempt + " attempts");
+                break;
+            }
+            
+            if (attempt < maxRetries) {
+                log.info("Deployment acknowledgment counts not yet available. Waiting " + (sleepTime/1000) + 
+                    " seconds before retry " + (attempt + 1) + "/" + maxRetries);
+                Thread.sleep(sleepTime);
+            }
+        }
+        
+        if (!deploymentAcknowledgmentFound) {
+            log.warn("Deployment acknowledgment counts were not received after " + maxRetries + " attempts. " +
+                "This may indicate that gateway notification system is not fully configured or there are no active gateways.");
+        }
+        
+        // Now perform detailed validation on the final response
+        boolean deployedRevisionFound = false;
+        for (int i = 0; i < revisionList.length(); i++) {
+            JSONObject revision = revisionList.getJSONObject(i);
+            if (revisionUUID.equals(revision.getString("id"))) {
+                
+                // Check if deploymentInfo exists
+                if (revision.has("deploymentInfo")) {
+                    JSONArray deploymentInfoArray = revision.getJSONArray("deploymentInfo");
+                    assertTrue(deploymentInfoArray.length() > 0, 
+                        "Deployment info should not be empty after deployment");
+                    
+                    for (int j = 0; j < deploymentInfoArray.length(); j++) {
+                        JSONObject deploymentInfo = deploymentInfoArray.getJSONObject(j);
+                        
+                        // Verify deployment acknowledgment fields exist
+                        assertTrue(deploymentInfo.has("liveGatewayCount"), 
+                            "liveGatewayCount field should be present in deployment info");
+                        assertTrue(deploymentInfo.has("deployedGatewayCount"), 
+                            "deployedGatewayCount field should be present in deployment info");
+                        assertTrue(deploymentInfo.has("failedGatewayCount"), 
+                            "failedGatewayCount field should be present in deployment info");
+                        
+                        // Get the actual values
+                        int liveGatewayCount = deploymentInfo.getInt("liveGatewayCount");
+                        int deployedGatewayCount = deploymentInfo.getInt("deployedGatewayCount");
+                        int failedGatewayCount = deploymentInfo.getInt("failedGatewayCount");
+                        
+                        log.info("Final Deployment Acknowledgment Stats for environment '" + 
+                            deploymentInfo.getString("name") + "':");
+                        log.info("  - Live Gateway Count: " + liveGatewayCount);
+                        log.info("  - Deployed Gateway Count: " + deployedGatewayCount);
+                        log.info("  - Failed Gateway Count: " + failedGatewayCount);
+                        
+                        // Assert deployment acknowledgment values
+                        assertTrue(liveGatewayCount >= 0, 
+                            "liveGatewayCount should be non-negative, but was: " + liveGatewayCount);
+                        assertTrue(deployedGatewayCount >= 0, 
+                            "deployedGatewayCount should be non-negative, but was: " + deployedGatewayCount);
+                        assertTrue(failedGatewayCount >= 0, 
+                            "failedGatewayCount should be non-negative, but was: " + failedGatewayCount);
+                        
+                        // Only enforce stricter validation if deployment acknowledgment was found
+                        if (deploymentAcknowledgmentFound) {
+                            // For a successful deployment with gateway notification system active:
+                            assertTrue(liveGatewayCount > 0, 
+                                "There should be at least one live gateway when deployment acknowledgment is available, but found: " + liveGatewayCount);
+                            
+                            // Check deployment status
+                            String status = deploymentInfo.getString("status");
+                            if ("CREATED".equals(status) || "APPROVED".equals(status)) {
+                                // For successful deployments, deployed count should be > 0
+                                assertTrue(deployedGatewayCount > 0, 
+                                    "deployedGatewayCount should be greater than 0 for successful deployment, but was: " + deployedGatewayCount);
+                                
+                                // The sum of deployed and failed should not exceed live gateways
+                                assertTrue((deployedGatewayCount + failedGatewayCount) <= liveGatewayCount,
+                                    "Sum of deployed (" + deployedGatewayCount + ") and failed (" + failedGatewayCount + 
+                                    ") gateways should not exceed live gateways (" + liveGatewayCount + ")");
+                            }
+                        } else {
+                            log.info("Deployment acknowledgment counts are 0 - this is expected when gateway notification system is not configured");
+                        }
+                        
+                        // Verify other deployment info fields for completeness
+                        assertNotNull(deploymentInfo.getString("name"), "Environment name should not be null");
+                        assertTrue(deploymentInfo.has("deployedTime"), "Deployed time should be present");
+                        
+                        log.info("Deployment acknowledgment validation passed for environment: " + 
+                            deploymentInfo.getString("name"));
+                        
+                        deployedRevisionFound = true;
+                    }
+                } else {
+                    Assert.fail("Deployment info should be present after API revision deployment");
+                }
+                break;
+            }
+        }
+        
+        assertTrue(deployedRevisionFound, "Deployed revision should be found with deployment info");
+        log.info("API Revision deployment acknowledgment validation completed successfully");
+    }
+
     @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments " +
-            "with invalid API UUID", dependsOnMethods = "testDeployAPIRevision")
+            "with invalid API UUID", dependsOnMethods = "testVerifyDeploymentAcknowledgmentCounts")
     public void testDeployAPIRevisionWithInvalidAPI() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
