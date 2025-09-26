@@ -560,5 +560,27 @@
     }
   ],
   "service_provider.use_username_as_sub_claim": false,
-  "apim.ai.llm_provider_events_enabled": true
+  "apim.ai.llm_provider_events_enabled": true,
+  "admin_service.deny_list": [
+    "ClassMediatorAdmin",
+    "CommandMediatorAdmin",
+    "ConfigServiceAdmin",
+    "CustomMeteringService",
+    "DeploymentSynchronizerAdmin",
+    "EndpointTemplateAdminService",
+    "ESBNTaskAdmin",
+    "MediationLibraryAdminService",
+    "MediationLibraryUploader",
+    "MediationSecurityAdminService",
+    "MetricsDataService",
+    "ModuleAdminService",
+    "RemoteTaskAdmin",
+    "StatisticsAdmin",
+    "SynapseApplicationAdmin",
+    "SynapseArtifactUploaderAdmin",
+    "TemplateAdminService",
+    "ThemeMgtService",
+    "TierCacheService",
+    "WebappAdmin"
+  ]
 }

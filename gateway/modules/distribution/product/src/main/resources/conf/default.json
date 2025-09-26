@@ -564,5 +564,27 @@
   "apim.basic_authenticator.max_idle": "100",
   "apim.basic_authenticator.init_idle_capacity": "50",
   "apim.basic_authenticator.max_active": "100",
-  "apim.basic_authenticator.max_wait_millis": "30000"
+  "apim.basic_authenticator.max_wait_millis": "30000",
+  "admin_service.deny_list": [
+    "ClassMediatorAdmin",
+    "CommandMediatorAdmin",
+    "ConfigServiceAdmin",
+    "CustomMeteringService",
+    "DeploymentSynchronizerAdmin",
+    "EndpointTemplateAdminService",
+    "ESBNTaskAdmin",
+    "MediationLibraryAdminService",
+    "MediationLibraryUploader",
+    "MediationSecurityAdminService",
+    "MetricsDataService",
+    "ModuleAdminService",
+    "RemoteTaskAdmin",
+    "StatisticsAdmin",
+    "SynapseApplicationAdmin",
+    "SynapseArtifactUploaderAdmin",
+    "TemplateAdminService",
+    "ThemeMgtService",
+    "TierCacheService",
+    "WebappAdmin"
+  ]
 }
