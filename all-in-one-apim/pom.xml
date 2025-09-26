@@ -1525,7 +1525,7 @@
 
         <!-- External Gateway Agent Versions -->
         <aws.gwmanager.feature.version>1.3.0</aws.gwmanager.feature.version>
-        <azure.gwmanager.feature.version>0.3.0</azure.gwmanager.feature.version>
+        <azure.gwmanager.feature.version>0.4.0</azure.gwmanager.feature.version>
         <kong.gwmanager.feature.version>0.4.0</kong.gwmanager.feature.version>
         <envoy.gwmanager.feature.version>0.1.0</envoy.gwmanager.feature.version>
 
