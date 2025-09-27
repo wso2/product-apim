@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Cucumber Test Suite">
+    <listeners>
+        <!-- Set test suite parallel mode and threads from system env at runtime  -->
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.ParallelToggleAlterSuiteListener"/>
+        <!-- Add <test> name to MDC for per-test logs -->
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.TestNameMdcListener"/>
+    </listeners>
+    <test name="CucumberTests">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateAPITestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIVerificationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
+        </classes>
+    </test>
+    <test name="CustomHeaderTests">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.CustomHeaderSystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.header.CustomAuthorizationHeaderTestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
+        </classes>
+    </test>
+</suite>
