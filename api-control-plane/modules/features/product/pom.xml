@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.am.acp</groupId>
     	<artifactId>am-acp-features-parent</artifactId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.6.0-alpha3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
