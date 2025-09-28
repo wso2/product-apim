@@ -26,8 +26,8 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -36,10 +36,9 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.User;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
@@ -72,17 +71,6 @@ public class DuplicateHeaderTestCase extends APIMIntegrationBaseTest {
         tenantAdmin = tenantUser.getUserName();
 
         String apiEndpointPostfixUrl = "t/wso2.com/webapps/duplicate-header-backend/duplicateHeaderBackend";
-        String webAppName = "duplicate-header-backend";
-        String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "war" +
-                File.separator + webAppName + ".war";
-        String sessionId = createSession(gatewayContextWrk);
-
-        WebAppAdminClient webAppAdminClient =
-                new WebAppAdminClient(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId, webAppName);
 
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
