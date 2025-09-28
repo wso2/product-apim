@@ -26,7 +26,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -38,7 +38,6 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -93,35 +92,10 @@ public class APIM34InvokeAPIWithSandboxTokenTestCase extends APIMIntegrationBase
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-
-        String productionWebAppName = "jaxrs_basic";
         String SanBoxWebAppName = "name-check1";
         String apiSandBoxEndpointPostfixUrl = "name-check1/";
         String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" +
                 "customerservice/customers/123";
-
-        String sourcePathProd = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
-                File.separator + productionWebAppName + ".war";
-
-        String sourcePathSand = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
-                File.separator + SanBoxWebAppName + ".war";
-
-        String sessionId = createSession(gatewayContextWrk);
-
-        WebAppAdminClient webAppAdminClient =
-                new WebAppAdminClient(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePathProd);
-        webAppAdminClient.uploadWarFile(sourcePathSand);
-
-        boolean isWebAppDeployProd = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, productionWebAppName);
-        assertTrue(isWebAppDeployProd, productionWebAppName + " is not deployed");
-
-        boolean isWebAppDeploySand = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, SanBoxWebAppName);
-        assertTrue(isWebAppDeploySand, SanBoxWebAppName + " is not deployed");
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
