@@ -19,6 +19,67 @@
                 <send/>
             </inSequence>
         </resource>
+
+        <resource methods="GET" url-mapping="/pets">
+            <inSequence>
+                <property name="RESPONSE" value="true"/>
+                <property name="HTTP_SC" value="200" scope="axis2"/>
+                <property name="messageType" value="application/json" scope="axis2"/>
+                <header name="To" action="remove"/>
+                <header name="Access-Control-Allow-Origin" scope="transport" value="*"/>
+                <header name="Access-Control-Allow-Methods" scope="transport" value="GET, PUT, POST, DELETE, PATCH, OPTIONS"/>
+                <header name="Access-Control-Allow-Headers" scope="transport" value="authorization, Access-Control-Allow-Origin, Content-Type, SOAPAction"/>
+                <payloadFactory media-type="json">
+                    <format>
+                        [
+                        { "id": "1", "name": "Fido", "tag": "dog" },
+                        { "id": "2", "name": "Whiskers", "tag": "cat" }
+                        ]
+                    </format>
+                </payloadFactory>
+                <send/>
+            </inSequence>
+        </resource>
+
+        <!-- GET /pets/{petId} -->
+        <resource methods="GET" uri-template="/pets/{petId}">
+            <inSequence>
+                <property name="petId" expression="get-property('uri.var.petId')"/>
+                <property name="RESPONSE" value="true"/>
+                <property name="HTTP_SC" value="200" scope="axis2"/>
+                <property name="messageType" value="application/json" scope="axis2"/>
+                <header name="To" action="remove"/>
+                <header name="Access-Control-Allow-Origin" scope="transport" value="*"/>
+                <header name="Access-Control-Allow-Methods" scope="transport" value="GET, PUT, POST, DELETE, PATCH, OPTIONS"/>
+                <header name="Access-Control-Allow-Headers" scope="transport" value="authorization, Access-Control-Allow-Origin, Content-Type, SOAPAction"/>
+                <payloadFactory media-type="json">
+                    <format>
+                        { "id": "$1", "name": "MockPet-$1", "tag": "mock" }
+                    </format>
+                    <args>
+                        <arg evaluator="xml" expression="get-property('petId')"/>
+                    </args>
+                </payloadFactory>
+                <send/>
+            </inSequence>
+        </resource>
+
+        <!-- DELETE /oldpets -->
+        <resource methods="DELETE" url-mapping="/oldpets">
+            <inSequence>
+                <property name="RESPONSE" value="true"/>
+                <property name="HTTP_SC" value="200" scope="axis2"/>
+                <property name="messageType" value="application/json" scope="axis2"/>
+                <header name="To" action="remove"/>
+                <header name="Access-Control-Allow-Origin" scope="transport" value="*"/>
+                <header name="Access-Control-Allow-Methods" scope="transport" value="GET, PUT, POST, DELETE, PATCH, OPTIONS"/>
+                <header name="Access-Control-Allow-Headers" scope="transport" value="authorization, Access-Control-Allow-Origin, Content-Type, SOAPAction"/>
+                <payloadFactory media-type="json">
+                    <format>{ "status": "OK", "message": "Old pets removed" }</format>
+                </payloadFactory>
+                <send/>
+            </inSequence>
+        </resource>
     </api>
 </definitions>
 

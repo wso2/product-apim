@@ -19,7 +19,7 @@
           }
         },
         "security" : [ {
-          "default" : [ "SwaggerPetstore_v3" ]
+          "default" : [ ]
         } ],
         "x-auth-type" : "Application & Application User",
         "x-throttling-tier" : "Unlimited",
@@ -59,29 +59,11 @@
           }
         },
         "security" : [ {
-          "default" : [ "SwaggerPetstore_v3" ]
+          "default" : [ ]
         } ],
         "x-auth-type" : "Application & Application User",
         "x-throttling-tier" : "Unlimited",
         "description" : "Delete all old pets"
-      }
-    }
-  },
-  "components" : {
-    "securitySchemes" : {
-      "default" : {
-        "type" : "oauth2",
-        "flows" : {
-          "implicit" : {
-            "authorizationUrl" : "https://test.com",
-            "scopes" : {
-              "SwaggerPetstore_v3" : "SwaggerPetstore_v3"
-            },
-            "x-scopes-bindings" : {
-              "SwaggerPetstore_v3" : "admin"
-            }
-          }
-        }
       }
     }
   },
@@ -92,8 +74,5 @@
     "accessControlAllowCredentials" : false,
     "accessControlAllowHeaders" : [ "authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction" ],
     "accessControlAllowMethods" : [ "GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS" ]
-  },
-  "x-wso2-production-endpoints" : "https://localhost:9443/publisher-new/apis/create/openapi",
-  "x-wso2-sandbox-endpoints" : "https://localhost:9443/publisher-new/apis/create/openapi",
-  "x-wso2-basePath" : "/SwaggerPetstorev3/1.0.0"
+  }
 }

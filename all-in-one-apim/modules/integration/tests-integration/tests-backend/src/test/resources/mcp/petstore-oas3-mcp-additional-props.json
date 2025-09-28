@@ -25,24 +25,6 @@
           "verb": "GET"
         }
       }
-    },
-    {
-      "feature": "TOOL",
-      "backendOperationMapping": {
-        "backendOperation": {
-          "target": "/oldpets",
-          "verb": "DELETE"
-        }
-      }
     }
-  ],
-  "endpointConfig": {
-    "endpoint_type": "http",
-    "sandbox_endpoints": {
-      "url": "http://api.yourdomain.com/"
-    },
-    "production_endpoints": {
-      "url": "http://api.yourdomain.com/"
-    }
-  }
+  ]
 }

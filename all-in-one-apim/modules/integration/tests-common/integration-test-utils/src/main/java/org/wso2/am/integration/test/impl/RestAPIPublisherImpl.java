@@ -1332,6 +1332,14 @@ public class RestAPIPublisherImpl {
         return mcpServerDTOApiResponse.getData();
     }
 
+    public APIRevisionListDTO deleteMCPServerRevision(String mcpServerId, String revisionId) throws ApiException {
+
+        ApiResponse<APIRevisionListDTO> mcpServerDTOApiResponse =
+                mcpServerRevisionsApi.deleteMCPServerRevisionWithHttpInfo(mcpServerId, revisionId);
+        Assert.assertEquals(HttpStatus.SC_OK, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
     public APIRevisionListDTO getMCPServerRevisions(String mcpServerId) throws ApiException {
 
         ApiResponse<APIRevisionListDTO> mcpServerDTOApiResponse =
