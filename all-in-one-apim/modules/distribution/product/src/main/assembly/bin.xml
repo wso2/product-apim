@@ -43,6 +43,7 @@
                 <exclude>**/conf/tomcat/catalina-server.xml</exclude>
                 <exclude>**/conf/tomcat/catalina-server.xml.j2</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
+                <exclude>**/conf/tomcat/carbon/META-INF/context.xml.j2</exclude>
                 <exclude>**/log4j2.properties</exclude>
                 <exclude>**/pax-logging.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
@@ -243,6 +244,7 @@
                 <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/catalina-server.xml.j2</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
+                <exclude>**/conf/tomcat/carbon/META-INF/context.xml.j2</exclude>
                 <exclude>**/webapps/authenticationendpoint/WEB-INF/web.xml.j2</exclude>
             </excludes>
         </fileSet>
