@@ -3,7 +3,7 @@
     <parent>
         <artifactId>am-gw-parent</artifactId>
         <groupId>org.wso2.am.gw</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.6.0-alpha3</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
