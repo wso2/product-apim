@@ -39,6 +39,7 @@ import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationMappingDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
@@ -59,6 +60,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.throttling.ThrottlingUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -109,6 +111,8 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(MCPServerTestCase.class);
 
+    private static final String MCP_PATH = "/mcp";
+
     private static final String GROUP_WSO2_AM = "wso2.am";
     private static final String OAS_FILE = "petstore-oas3.json";
     private static final String ADDITIONAL_PROPS_MCP_FILE = "petstore-oas3-mcp-additional-props.json";
@@ -158,7 +162,6 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
     private static final String LIFECYCLE_STATE_PUBLISHED = "Published";
     private static final String REVISION_NAME_DEFAULT = "Default";
     private static final String REVISION_VHOST_LOCALHOST = "localhost";
-    private static final String DEPLOYMENT_STATUS_APPROVED = "APPROVED";
     private static final String REVISION_DESCRIPTION_1 = "Revision 1";
 
     private static final String APP_NAME = "MCP Application";
@@ -465,10 +468,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
 
-        return new Object[][]{
-                {TestUserMode.SUPER_TENANT_ADMIN},
-//                {TestUserMode.TENANT_ADMIN}
-        };
+        return new Object[][]{{TestUserMode.SUPER_TENANT_ADMIN}, {TestUserMode.TENANT_ADMIN}};
     }
 
     @BeforeClass(alwaysRun = true)
@@ -485,307 +485,208 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         log.info("Initialized test environment for user mode: " + userMode);
     }
 
-//    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using OpenAPI definition")
-//    public void createMCPServerUsingOpenAPIDefinition() throws Exception {
-//
-//        final File openApiDefFile = resolveExistingFile(mcpTestResourcePath, OAS_FILE);
-//        final JSONObject additionalPropsObj =
-//                new JSONObject(readFileContent(mcpTestResourcePath, ADDITIONAL_PROPS_MCP_FILE));
-//
-//        final JSONObject endpointConfig = new JSONObject();
-//        final JSONObject endpoints = new JSONObject().put(URL_KEY, getGatewayURLNhttps() + REST_BACKEND_CONTEXT);
-//        endpointConfig.put(PROD_ENDPOINTS, endpoints);
-//        endpointConfig.put(SANDBOX_ENDPOINTS, endpoints);
-//        endpointConfig.put(ENDPOINT_TYPE, "http");
-//        additionalPropsObj.put("endpointConfig", endpointConfig);
-//
-//        final MCPServerDTO mcpServer =
-//                restAPIPublisher.createMCPServerFromOpenAPI(openApiDefFile, additionalPropsObj.toString());
-//        Assert.assertNotNull(mcpServer, "MCP Server response is null (OpenAPI flow)");
-//        Assert.assertNotNull(mcpServer.getId(), "MCP Server ID is null (OpenAPI flow)");
-//        mcpServerFromOpenApiId = mcpServer.getId();
-//        assertNonEmpty(mcpServer.getOperations(), "No operations found in MCP Server (OpenAPI flow)");
-//        assertTargets(mcpServer.getOperations(), listOf(TARGET_GET_PETS, TARGET_GET_PETS_BY_ID),
-//                "OpenAPI flow: Missing expected operations");
-//
-//        final MCPServerOperationDTO getByIdOp =
-//                getOperationByTarget(mcpServer.getOperations(), TARGET_GET_PETS_BY_ID);
-//        Assert.assertEquals(compactJson(getByIdOp.getSchemaDefinition()), compactJson(EXPECTED_SCHEMA_GET_PETS_BY_ID),
-//                mismatch("Schema definition", TARGET_GET_PETS_BY_ID, EXPECTED_SCHEMA_GET_PETS_BY_ID,
-//                        getByIdOp.getSchemaDefinition()));
-//        Assert.assertEquals(getByIdOp.getDescription(), DESC_GET_PET_BY_ID,
-//                mismatch("Description", TARGET_GET_PETS_BY_ID, DESC_GET_PET_BY_ID, getByIdOp.getDescription()));
-//    }
-//
-//    @Test(groups = {GROUP_WSO2_AM}, description = "Create, deploy and validate MCP Server revision",
-//            dependsOnMethods = {"createMCPServerUsingOpenAPIDefinition"})
-//    public void testMCPServerRevisionDeploymentForDirectBackendSubtype() throws Exception {
-//
-//        final APIRevisionDTO revisionReq = new APIRevisionDTO();
-//        revisionReq.setDescription(REVISION_DESCRIPTION_1);
-//        final APIRevisionDTO revision = restAPIPublisher.addMCPServerRevision(mcpServerFromOpenApiId, revisionReq);
-//        Assert.assertNotNull(revision, "MCP Server revision creation failed");
-//
-//        final APIRevisionListDTO revisions = restAPIPublisher.getMCPServerRevisions(mcpServerFromOpenApiId);
-//        Assert.assertNotNull(revisions, "MCP Server revisions fetch failed");
-//        assertNonEmpty(revisions.getList(), "No revisions found in MCP Server");
-//
-//        final APIRevisionDTO createdRevision = revisions.getList().get(0);
-//        Assert.assertEquals(createdRevision.getApiInfo().getId(), mcpServerFromOpenApiId,
-//                "MCP Server revision - MCP Server ID mismatch");
-//        Assert.assertEquals(createdRevision.getDescription(), revisionReq.getDescription(),
-//                "MCP Server revision description mismatch");
-//
-//        final APIRevisionDeploymentDTO deployment = new APIRevisionDeploymentDTO();
-//        deployment.setName(REVISION_NAME_DEFAULT);
-//        deployment.setVhost(REVISION_VHOST_LOCALHOST);
-//        deployment.setDisplayOnDevportal(true);
-//
-//        final List<APIRevisionDeploymentDTO> deployments =
-//                restAPIPublisher.deployMCPServerRevision(mcpServerFromOpenApiId, createdRevision.getId(),
-//                        Collections.singletonList(deployment));
-//        assertNonEmpty(deployments, "MCP Server revision deployment failed. Deployment list is empty");
-//        Assert.assertEquals(String.valueOf(deployments.get(0).getStatus()), DEPLOYMENT_STATUS_APPROVED,
-//                "Deployment status is not 'APPROVED'");
-//
-//        waitForAPIDeploymentSync(tenantDomain, SERVER_NAME_PETSTORE_OPENAPI, SERVER_VERSION_1,
-//                APIMIntegrationConstants.IS_API_EXISTS);
-//    }
-//
-//    @Test(groups = {GROUP_WSO2_AM}, description = "Publish, subscribe and validate visibility",
-//            dependsOnMethods = {"testMCPServerRevisionDeploymentForDirectBackendSubtype"})
-//    public void testMCPServerSubscribeAndInvokeForDirectBackendSubtype() throws Exception {
-//
-//        final WorkflowResponseDTO workflowResponse =
-//                restAPIPublisher.changeMCPServerLifecycle(LIFECYCLE_ACTION_PUBLISH, mcpServerFromOpenApiId,
-//                        LIFECYCLE_CHECKLIST);
-//        Assert.assertNotNull(workflowResponse, "MCP Server lifecycle change failed");
-//        Assert.assertEquals(workflowResponse.getLifecycleState().getState(), LIFECYCLE_STATE_PUBLISHED,
-//                "MCP Server lifecycle state mismatch.");
-//
-//        Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis());
-//
-//        final List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
-//                restAPIStore.getAllMCPServers(10, 0, tenantDomain, null));
-//        Assert.assertTrue(isMCPServerAvailableInList(SERVER_NAME_PETSTORE_OPENAPI, publisherAPIList),
-//                DEVPORTAL_VISIBILITY_ERROR);
-//
-//        final HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME, APP_DESC,
-//                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, TokenTypeEnum.JWT);
-//        applicationId = applicationResponse.getData();
-//        final HttpResponse subscribeResponse = restAPIStore.createSubscription(mcpServerFromOpenApiId, applicationId,
-//                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
-//        Assert.assertEquals(subscribeResponse.getResponseCode(), HttpStatus.SC_OK, "MCP Server subscription failed");
-//        Assert.assertTrue(StringUtils.isNotEmpty(subscribeResponse.getData()),
-//                "MCP Server subscription failed. Subscription data is missing");
-//
-//        ArrayList<String> grantTypes = new ArrayList<>();
-//        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-//        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-//
-//        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
-//                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-//        accessToken = applicationKeyDTO.getToken().getAccessToken();
-//
-//        Map<String, String> requestHeaders = new HashMap<>();
-//        requestHeaders.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-//        requestHeaders.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-//        requestHeaders.put(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-//
-//        String petstoreBackendURL = getAPIInvocationURLHttps(
-//                SERVER_CONTEXT_PETSTORE_OPENAPI + "/" + SERVER_VERSION_1 + "/mcp");
-//        HttpResponse initResponse =
-//                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, INIT_REQUEST_PAYLOAD);
-//        Assert.assertEquals(initResponse.getResponseCode(), 200, "MCP Server init call failed");
-//        Assert.assertEquals(compactJson(initResponse.getData()), compactJson(EXPECTED_INIT_RESPONSE),
-//                "MCP Server init response mismatch");
-//
-//        HttpResponse toolListResponse =
-//                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
-//        Assert.assertEquals(toolListResponse.getResponseCode(), 200, "Tool list call failed");
-//        Assert.assertEquals(compactJson(toolListResponse.getData()), compactJson(EXPECTED_TOOL_LIST_RESPONSE),
-//                "MCP Server tool list response mismatch");
-//
-//        HttpResponse toolCallResponse =
-//                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
-//        Assert.assertEquals(toolCallResponse.getResponseCode(), 200, "Tool call failed");
-//        Assert.assertEquals(compactJson(toolCallResponse.getData()), compactJson
-//        (EXPECTED_TOOL_CALL_GET_PETS_RESPONSE),
-//                "MCP Server tool call response mismatch");
-//    }
-//
+    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using OpenAPI definition")
+    public void createMCPServerUsingOpenAPIDefinition() throws Exception {
 
-    /// /    @Test(groups = {GROUP_WSO2_AM}, description = "Validate and update MCP Server backends",
-    /// /            dependsOnMethods = {"createMCPServerUsingOpenAPIDefinition"})
-    /// /    public void testMCPServerBackends() throws Exception {
-    /// /
-    /// /        final MCPServerDTO mcpServer = fetchMCPServer(mcpServerFromOpenApiId);
-    /// /        assertNonEmpty(mcpServer.getOperations(), "No operations found in MCP Server");
-    /// /
-    /// /        final MCPServerOperationDTO firstOp = mcpServer.getOperations().get(0);
-    /// /        Assert.assertNotNull(firstOp.getBackendOperationMapping(),
-    /// /                "Backend operation mapping is null for operation: " + firstOp);
-    /// /
-    /// /        final String backendId = firstOp.getBackendOperationMapping().getBackendId();
-    /// /        final BackendDTO backend = restAPIPublisher.getMCPServerBackend(mcpServerFromOpenApiId, backendId);
-    /// /        Assert.assertNotNull(backend, "MCP Server backend is null");
-    /// /        Assert.assertNotNull(backend.getEndpointConfig(), "MCP Server backend EndpointConfig is null");
-    /// /        Assert.assertFalse(StringUtils.isBlank(backend.getEndpointConfig().toString()),
-    /// /                "MCP Server backend EndpointConfig is empty");
-    /// /        Assert.assertEquals(compactJson(backend.getEndpointConfig().toString()), compactJson
-    /// /                        (EXPECTED_ENDPOINT_CONFIG),
-    /// /                "Expected endpoint config does not match");
-    /// /
-    /// /        final JSONObject endpointConfig = new JSONObject();
-    /// /        final JSONObject endpoints = new JSONObject().put(URL_KEY, getGatewayURLNhttps() + BACKEND_CONTEXT);
-    /// /        endpointConfig.put(PROD_ENDPOINTS, endpoints);
-    /// /        endpointConfig.put(SANDBOX_ENDPOINTS, endpoints);
-    /// /        endpointConfig.put(ENDPOINT_TYPE, "http");
-    /// /        backend.setEndpointConfig(endpointConfig.toString());
-    /// /        final BackendDTO updatedBackend =
-    /// /                restAPIPublisher.updateMCPServerBackend(mcpServerFromOpenApiId, backendId, backend);
-    /// /        Assert.assertNotNull(updatedBackend, "Updated MCP Server backend is null");
-    /// /        Assert.assertNotNull(updatedBackend.getEndpointConfig(), "Updated MCP Server backend EndpointConfig
-    /// is null");
-    /// /        Assert.assertEquals(compactJson(updatedBackend.getEndpointConfig().toString()),
-    /// /                compactJson(endpointConfig.toString()), "Updated endpoint config does not match");
-    /// /    }
-    ////
-//    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using an API")
+        final File openApiDefFile = resolveExistingFile(mcpTestResourcePath, OAS_FILE);
+        final JSONObject additionalPropsObj =
+                new JSONObject(readFileContent(mcpTestResourcePath, ADDITIONAL_PROPS_MCP_FILE));
 
-    /// /            dependsOnMethods = {"testMCPServerSubscribeAndInvokeForDirectBackendSubtype"})
-//    public void createMCPServerUsingAPI() throws Exception {
-//
-//        final File openApiDefFile = new File(mcpTestResourcePath + OAS_FILE);
-//        Assert.assertTrue(openApiDefFile.exists(),
-//                "OpenAPI definition file not found: " + openApiDefFile.getAbsolutePath());
-//
-//        final String additionalPropsContent = readFileContent(mcpTestResourcePath, ADDITIONAL_PROPS_API_FILE);
-//        final JSONObject additionalPropsObj = new JSONObject(additionalPropsContent);
-//
-//        final JSONObject endpointConfig = new JSONObject();
-//        final JSONObject endpoints = new JSONObject().put(URL_KEY, getGatewayURLNhttps() + REST_BACKEND_CONTEXT);
-//        endpointConfig.put(PROD_ENDPOINTS, endpoints);
-//        endpointConfig.put(SANDBOX_ENDPOINTS, endpoints);
-//        endpointConfig.put(ENDPOINT_TYPE, "http");
-//        additionalPropsObj.put(ENDPOINT_CONFIG, endpointConfig);
-//        final APIDTO apiDto = restAPIPublisher.importOASDefinition(openApiDefFile, additionalPropsObj.toString());
-//        Assert.assertNotNull(apiDto, "API import response is null");
-//
-//        apiId = apiDto.getId();
-//        Assert.assertNotNull(apiId, "Imported API ID is null");
-//        assertHttpOk(restAPIPublisher.getAPI(apiId), "API creation failed");
-//
-//        String apiRevisionUuid = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-//        Assert.assertNotNull(apiRevisionUuid, "API revision deployment failed. API Revision UUID is null");
-//
-//        final MCPServerDTO mcpServerRequest = new MCPServerDTO();
-//        mcpServerRequest.setName(SERVER_NAME_PETSTORE_API);
-//        mcpServerRequest.setContext(SERVER_CONTEXT_PETSTORE_API);
-//        mcpServerRequest.setVersion(SERVER_VERSION_1);
-//        mcpServerRequest.setOperations(
-//                Arrays.asList(buildToolOpForApi(apiId, PATH_PETS, BackendOperationDTO.VerbEnum.GET),
-//                        buildToolOpForApi(apiId, PATH_PETS_BY_ID, BackendOperationDTO.VerbEnum.GET)));
-//        mcpServerRequest.setPolicies(Collections.singletonList(THOTTLING_TIER_UNLIMITED));
-//
-//        final MCPServerDTO mcpServer = restAPIPublisher.createMCPServerFromAPI(mcpServerRequest);
-//        Assert.assertNotNull(mcpServer, "MCP Server response is null (API flow)");
-//        Assert.assertNotNull(mcpServer.getId(), "MCP Server ID is null (OpenAPI flow)");
-//        mcpServerFromApiId = mcpServer.getId();
-//        assertNonEmpty(mcpServer.getOperations(), "No operations found in MCP Server (API flow)");
-//        assertTargets(mcpServer.getOperations(), listOf(TARGET_GET_PETS, TARGET_GET_PETS_BY_ID),
-//                "API flow: Missing expected operations");
-//
-//        final MCPServerOperationDTO getByIdOp = getOperationByTarget(mcpServer.getOperations(),
-//        TARGET_GET_PETS_BY_ID);
-//        Assert.assertEquals(compactJson(getByIdOp.getSchemaDefinition()), compactJson(EXPECTED_SCHEMA_GET_PETS_BY_ID),
-//                mismatch("Schema definition", TARGET_GET_PETS_BY_ID, EXPECTED_SCHEMA_GET_PETS_BY_ID,
-//                        getByIdOp.getSchemaDefinition()));
-//        Assert.assertEquals(getByIdOp.getDescription(), DESC_GET_PET_BY_ID,
-//                mismatch("Description", TARGET_GET_PETS_BY_ID, DESC_GET_PET_BY_ID, getByIdOp.getDescription()));
-//    }
-//
-//    @Test(groups = {GROUP_WSO2_AM}, description = "Create, deploy and validate MCP Server revision",
-//            dependsOnMethods = {"createMCPServerUsingAPI"})
-//    public void testRevisionDeploymentForExistingApiSubtype() throws Exception {
-//
-//        final APIRevisionDTO revisionReq = new APIRevisionDTO();
-//        revisionReq.setDescription(REVISION_DESCRIPTION_1);
-//        final APIRevisionDTO revision = restAPIPublisher.addMCPServerRevision(mcpServerFromApiId, revisionReq);
-//        Assert.assertNotNull(revision, "MCP Server revision creation failed");
-//
-//        final APIRevisionListDTO revisions = restAPIPublisher.getMCPServerRevisions(mcpServerFromApiId);
-//        Assert.assertNotNull(revisions, "MCP Server revisions fetch failed");
-//        assertNonEmpty(revisions.getList(), "No revisions found in MCP Server");
-//
-//        final APIRevisionDTO createdRevision = revisions.getList().get(0);
-//        Assert.assertEquals(createdRevision.getApiInfo().getId(), mcpServerFromApiId,
-//                "MCP Server revision - MCP Server ID mismatch");
-//
-//        final APIRevisionDeploymentDTO deployment = new APIRevisionDeploymentDTO();
-//        deployment.setName(REVISION_NAME_DEFAULT);
-//        deployment.setVhost(REVISION_VHOST_LOCALHOST);
-//        deployment.setDisplayOnDevportal(true);
-//
-//        final List<APIRevisionDeploymentDTO> deployments =
-//                restAPIPublisher.deployMCPServerRevision(mcpServerFromApiId, revision.getId(),
-//                        Collections.singletonList(deployment));
-//        assertNonEmpty(deployments, "MCP Server revision deployment failed. Deployment list is empty");
-//        Assert.assertEquals(String.valueOf(deployments.get(0).getStatus()), DEPLOYMENT_STATUS_APPROVED,
-//                "Deployment status is not 'APPROVED'");
-//
-//        waitForAPIDeploymentSync(tenantDomain, SERVER_NAME_PETSTORE_API, SERVER_VERSION_1,
-//                APIMIntegrationConstants.IS_API_EXISTS);
-//    }
-//
-//    @Test(groups = {GROUP_WSO2_AM}, description = "Publish, subscribe and validate visibility",
-//            dependsOnMethods = {"testRevisionDeploymentForExistingApiSubtype"})
-//    public void testSubscribeAndInvokeForExistingApiSubtype() throws Exception {
-//
-//        final WorkflowResponseDTO workflowResponse =
-//                restAPIPublisher.changeMCPServerLifecycle(LIFECYCLE_ACTION_PUBLISH, mcpServerFromApiId,
-//                        LIFECYCLE_CHECKLIST);
-//        Assert.assertNotNull(workflowResponse, "MCP Server lifecycle change failed");
-//        Assert.assertEquals(workflowResponse.getLifecycleState().getState(), LIFECYCLE_STATE_PUBLISHED,
-//                "MCP Server lifecycle state mismatch.");
-//
-//        Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis());
-//
-//        final HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME, APP_DESC,
-//                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, TokenTypeEnum.JWT);
-//        applicationId = applicationResponse.getData();
-//
-//        ArrayList<String> grantTypes = new ArrayList<>();
-//        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-//        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-//
-//        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
-//                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-//        accessToken = applicationKeyDTO.getToken().getAccessToken();
-//
-//        final HttpResponse subscribeResponse = restAPIStore.createSubscription(mcpServerFromApiId, applicationId,
-//                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
-//        Assert.assertEquals(subscribeResponse.getResponseCode(), HttpStatus.SC_OK, "MCP Server subscription failed");
-//        Assert.assertTrue(StringUtils.isNotEmpty(subscribeResponse.getData()),
-//                "MCP Server subscription failed. Subscription data is missing");
-//
-//        Map<String, String> requestHeaders = new HashMap<>();
-//        requestHeaders.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-//        requestHeaders.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-//        requestHeaders.put(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-//
-//        String petstoreBackendURL = getAPIInvocationURLHttps(
-//                SERVER_CONTEXT_PETSTORE_API + "/" + SERVER_VERSION_1 + "/mcp");
-//
-//        HttpResponse toolCallResponse =
-//                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
-//        Assert.assertEquals(toolCallResponse.getResponseCode(), 200, "Tool call failed");
-//        Assert.assertEquals(compactJson(toolCallResponse.getData()), compactJson
-//        (EXPECTED_TOOL_CALL_GET_PETS_RESPONSE),
-//                "MCP Server tool call response mismatch");
-//    }
-    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using a third-party MCP Server (proxy)")
-//        dependsOnMethods = {"testSubscribeAndInvokeForExistingApiSubtype"})
+        String backendUrl = getGatewayURLNhttps() + REST_BACKEND_CONTEXT;
+        additionalPropsObj.put("endpointConfig", buildEndpointConfigJson(backendUrl));
+
+        final MCPServerDTO mcpServer =
+                restAPIPublisher.createMCPServerFromOpenAPI(openApiDefFile, additionalPropsObj.toString());
+        Assert.assertNotNull(mcpServer, "MCP Server response is null (OpenAPI flow)");
+        Assert.assertNotNull(mcpServer.getId(), "MCP Server ID is null (OpenAPI flow)");
+        mcpServerFromOpenApiId = mcpServer.getId();
+        assertNonEmpty(mcpServer.getOperations(), "No operations found in MCP Server (OpenAPI flow)");
+        assertTargets(mcpServer.getOperations(), listOf(TARGET_GET_PETS, TARGET_GET_PETS_BY_ID),
+                "OpenAPI flow: Missing expected operations");
+
+        final MCPServerOperationDTO getByIdOp = getOperationByTarget(mcpServer.getOperations(), TARGET_GET_PETS_BY_ID);
+        Assert.assertEquals(compactJson(getByIdOp.getSchemaDefinition()), compactJson(EXPECTED_SCHEMA_GET_PETS_BY_ID),
+                mismatch("Schema definition", TARGET_GET_PETS_BY_ID,
+                        EXPECTED_SCHEMA_GET_PETS_BY_ID, getByIdOp.getSchemaDefinition()));
+        Assert.assertEquals(getByIdOp.getDescription(), DESC_GET_PET_BY_ID,
+                mismatch("Description", TARGET_GET_PETS_BY_ID,
+                        DESC_GET_PET_BY_ID, getByIdOp.getDescription()));
+    }
+
+    @Test(groups = {GROUP_WSO2_AM}, description = "Create, deploy and validate MCP Server revision",
+            dependsOnMethods = {"createMCPServerUsingOpenAPIDefinition"})
+    public void testMCPServerRevisionDeploymentForDirectBackendSubtype() throws Exception {
+
+        final APIRevisionDTO revision = deployRevision(mcpServerFromOpenApiId);
+        final APIRevisionListDTO revisions = restAPIPublisher.getMCPServerRevisions(mcpServerFromOpenApiId);
+        Assert.assertNotNull(revisions, "MCP Server revisions fetch failed");
+        assertNonEmpty(revisions.getList(), "No revisions found in MCP Server");
+
+        final APIRevisionDTO createdRevision = revisions.getList().get(0);
+        Assert.assertEquals(createdRevision.getApiInfo().getId(), mcpServerFromOpenApiId,
+                "MCP Server revision - MCP Server ID mismatch");
+        Assert.assertEquals(createdRevision.getDescription(), revision.getDescription(),
+                "MCP Server revision description mismatch");
+
+        waitForAPIDeploymentSync(tenantDomain, SERVER_NAME_PETSTORE_OPENAPI, SERVER_VERSION_1,
+                APIMIntegrationConstants.IS_API_EXISTS);
+    }
+
+    @Test(groups = {GROUP_WSO2_AM}, description = "Publish, subscribe and validate visibility",
+            dependsOnMethods = {"testMCPServerRevisionDeploymentForDirectBackendSubtype"})
+    public void testMCPServerSubscribeAndInvokeForDirectBackendSubtype() throws Exception {
+
+        final WorkflowResponseDTO workflowResponse =
+                restAPIPublisher.changeMCPServerLifecycle(LIFECYCLE_ACTION_PUBLISH, mcpServerFromOpenApiId,
+                        LIFECYCLE_CHECKLIST);
+        Assert.assertNotNull(workflowResponse, "MCP Server lifecycle change failed");
+        Assert.assertEquals(workflowResponse.getLifecycleState().getState(), LIFECYCLE_STATE_PUBLISHED,
+                "MCP Server lifecycle state mismatch.");
+
+        Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis());
+
+        final List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
+                restAPIStore.getAllMCPServers(10, 0, tenantDomain, null));
+        Assert.assertTrue(isMCPServerAvailableInList(SERVER_NAME_PETSTORE_OPENAPI, publisherAPIList),
+                DEVPORTAL_VISIBILITY_ERROR);
+
+        final HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME, APP_DESC,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, TokenTypeEnum.JWT);
+        applicationId = applicationResponse.getData();
+
+        final HttpResponse subscribeResponse = restAPIStore.createSubscription(mcpServerFromOpenApiId, applicationId,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        Assert.assertEquals(subscribeResponse.getResponseCode(), HttpStatus.SC_OK, "MCP Server subscription failed");
+        Assert.assertTrue(StringUtils.isNotEmpty(subscribeResponse.getData()),
+                "MCP Server subscription failed. Subscription data is missing");
+
+        ApplicationKeyDTO applicationKeyDTO = generateKeysForApp(applicationId, null);
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+        Map<String, String> requestHeaders = createRequestHeaders(accessToken);
+        String petstoreBackendURL = getAPIInvocationURLHttps(
+                SERVER_CONTEXT_PETSTORE_OPENAPI + "/" + SERVER_VERSION_1 + MCP_PATH);
+
+        HttpResponse initResponse =
+                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, INIT_REQUEST_PAYLOAD);
+        assertHttpOk(initResponse, "MCP Server init call failed");
+        Assert.assertEquals(compactJson(initResponse.getData()), compactJson(EXPECTED_INIT_RESPONSE),
+                mismatch("Init response", "init", EXPECTED_INIT_RESPONSE, initResponse.getData()));
+
+        HttpResponse toolListResponse =
+                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
+        assertHttpOk(toolListResponse, "Tool list call failed");
+        Assert.assertEquals(compactJson(toolListResponse.getData()), compactJson(EXPECTED_TOOL_LIST_RESPONSE),
+                mismatch("Tool list response", "tool-list", EXPECTED_TOOL_LIST_RESPONSE, toolListResponse.getData()));
+
+        HttpResponse toolCallResponse =
+                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
+        assertHttpOk(toolCallResponse, "Tool call failed");
+        Assert.assertEquals(compactJson(toolCallResponse.getData()), compactJson(EXPECTED_TOOL_CALL_GET_PETS_RESPONSE),
+                mismatch("Tool call response", "get-pets", EXPECTED_TOOL_CALL_GET_PETS_RESPONSE,
+                        toolCallResponse.getData()));
+    }
+
+    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using an API",
+            dependsOnMethods = {"testMCPServerSubscribeAndInvokeForDirectBackendSubtype"})
+    public void createMCPServerUsingAPI() throws Exception {
+
+        final File openApiDefFile = resolveExistingFile(mcpTestResourcePath, OAS_FILE);
+        final JSONObject additionalPropsObj =
+                new JSONObject(readFileContent(mcpTestResourcePath, ADDITIONAL_PROPS_API_FILE));
+        String backendUrl = getGatewayURLNhttps() + REST_BACKEND_CONTEXT;
+        additionalPropsObj.put(ENDPOINT_CONFIG, buildEndpointConfigJson(backendUrl));
+
+        final APIDTO apiDto = restAPIPublisher.importOASDefinition(openApiDefFile, additionalPropsObj.toString());
+        Assert.assertNotNull(apiDto, "API import response is null");
+
+        apiId = apiDto.getId();
+        Assert.assertNotNull(apiId, "Imported API ID is null");
+        assertHttpOk(restAPIPublisher.getAPI(apiId), "API creation failed");
+
+        String apiRevisionUuid = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        Assert.assertNotNull(apiRevisionUuid, "API revision deployment failed. API Revision UUID is null");
+
+        final MCPServerDTO mcpServerRequest = new MCPServerDTO();
+        mcpServerRequest.setName(SERVER_NAME_PETSTORE_API);
+        mcpServerRequest.setContext(SERVER_CONTEXT_PETSTORE_API);
+        mcpServerRequest.setVersion(SERVER_VERSION_1);
+        mcpServerRequest.setOperations(Arrays.asList(
+                buildToolOpForApi(apiId, PATH_PETS, BackendOperationDTO.VerbEnum.GET),
+                buildToolOpForApi(apiId, PATH_PETS_BY_ID, BackendOperationDTO.VerbEnum.GET)
+        ));
+        mcpServerRequest.setPolicies(Collections.singletonList(THROTTLING_TIER_UNLIMITED));
+
+        final MCPServerDTO mcpServer = restAPIPublisher.createMCPServerFromAPI(mcpServerRequest);
+        Assert.assertNotNull(mcpServer, "MCP Server response is null (API flow)");
+        Assert.assertNotNull(mcpServer.getId(), "MCP Server ID is null (API flow)");
+
+        mcpServerFromApiId = mcpServer.getId();
+
+        assertNonEmpty(mcpServer.getOperations(), "No operations found in MCP Server (API flow)");
+        assertTargets(mcpServer.getOperations(), listOf(TARGET_GET_PETS, TARGET_GET_PETS_BY_ID),
+                "API flow: Missing expected operations");
+
+        final MCPServerOperationDTO getByIdOp =
+                getOperationByTarget(mcpServer.getOperations(), TARGET_GET_PETS_BY_ID);
+        Assert.assertEquals(compactJson(getByIdOp.getSchemaDefinition()),
+                compactJson(EXPECTED_SCHEMA_GET_PETS_BY_ID),
+                mismatch("Schema definition", TARGET_GET_PETS_BY_ID,
+                        EXPECTED_SCHEMA_GET_PETS_BY_ID, getByIdOp.getSchemaDefinition()));
+        Assert.assertEquals(getByIdOp.getDescription(), DESC_GET_PET_BY_ID,
+                mismatch("Description", TARGET_GET_PETS_BY_ID, DESC_GET_PET_BY_ID, getByIdOp.getDescription()));
+    }
+
+    @Test(groups = {GROUP_WSO2_AM}, description = "Create, deploy and validate MCP Server revision",
+            dependsOnMethods = {"createMCPServerUsingAPI"})
+    public void testRevisionDeploymentForExistingApiSubtype() throws Exception {
+
+        deployRevision(mcpServerFromApiId);
+        final APIRevisionListDTO revisions = restAPIPublisher.getMCPServerRevisions(mcpServerFromApiId);
+        Assert.assertNotNull(revisions, "MCP Server revisions fetch failed");
+        assertNonEmpty(revisions.getList(), "No revisions found in MCP Server");
+
+        final APIRevisionDTO createdRevision = revisions.getList().get(0);
+        Assert.assertEquals(createdRevision.getApiInfo().getId(), mcpServerFromApiId,
+                "MCP Server revision - MCP Server ID mismatch");
+
+        waitForAPIDeploymentSync(tenantDomain, SERVER_NAME_PETSTORE_API, SERVER_VERSION_1,
+                APIMIntegrationConstants.IS_API_EXISTS);
+    }
+
+    @Test(groups = {GROUP_WSO2_AM}, description = "Publish, subscribe and validate visibility",
+            dependsOnMethods = {"testRevisionDeploymentForExistingApiSubtype"})
+    public void testSubscribeAndInvokeForExistingApiSubtype() throws Exception {
+
+        final WorkflowResponseDTO workflowResponse =
+                restAPIPublisher.changeMCPServerLifecycle(LIFECYCLE_ACTION_PUBLISH, mcpServerFromApiId,
+                        LIFECYCLE_CHECKLIST);
+        Assert.assertNotNull(workflowResponse, "MCP Server lifecycle change failed");
+        Assert.assertEquals(workflowResponse.getLifecycleState().getState(), LIFECYCLE_STATE_PUBLISHED,
+                "MCP Server lifecycle state mismatch.");
+
+        Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis());
+
+        final HttpResponse subscribeResponse = restAPIStore.createSubscription(mcpServerFromApiId, applicationId,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        Assert.assertEquals(subscribeResponse.getResponseCode(), HttpStatus.SC_OK, "MCP Server subscription failed");
+        Assert.assertTrue(StringUtils.isNotEmpty(subscribeResponse.getData()),
+                "MCP Server subscription failed. Subscription data is missing");
+
+        Map<String, String> requestHeaders = createRequestHeaders(accessToken);
+        String petstoreBackendURL = getAPIInvocationURLHttps(
+                SERVER_CONTEXT_PETSTORE_API + "/" + SERVER_VERSION_1 + MCP_PATH);
+
+        HttpResponse toolCallResponse =
+                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
+        assertHttpOk(toolCallResponse, "Tool call failed");
+        Assert.assertEquals(compactJson(toolCallResponse.getData()),
+                compactJson(EXPECTED_TOOL_CALL_GET_PETS_RESPONSE),
+                mismatch("Tool call response", "get-pets", EXPECTED_TOOL_CALL_GET_PETS_RESPONSE,
+                        toolCallResponse.getData()));
+    }
+
+    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using a third-party MCP Server (proxy)",
+            dependsOnMethods = {"testSubscribeAndInvokeForExistingApiSubtype"})
     public void createMCPServerUsingThirdPartyMCPServer() throws Exception {
 
         final MCPServerDTO mcpServerRequest = new MCPServerDTO();
@@ -860,13 +761,6 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis());
 
-        final HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME, APP_DESC,
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, TokenTypeEnum.JWT);
-        applicationId = applicationResponse.getData();
-
-        ApplicationKeyDTO applicationKeyDTO = generateKeysForApp(applicationId, null);
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
-
         final HttpResponse subscribeResponse = restAPIStore.createSubscription(mcpServerProxyId, applicationId,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
         Assert.assertEquals(subscribeResponse.getResponseCode(), HttpStatus.SC_OK, "MCP Server subscription failed");
@@ -875,7 +769,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = createRequestHeaders(accessToken);
         String petstoreBackendURL = getAPIInvocationURLHttps(
-                SERVER_CONTEXT_EVERYTHING + "/" + SERVER_VERSION_1 + "/mcp");
+                SERVER_CONTEXT_EVERYTHING + "/" + SERVER_VERSION_1 + MCP_PATH);
 
         HttpResponse toolCallResponse =
                 HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_CALL_ECHO_REQUEST_PAYLOAD);
@@ -884,140 +778,101 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
                 "MCP Server tool call response mismatch");
     }
 
-    //    @Test(groups = {GROUP_WSO2_AM}, description = "Update tool operations in a MCP Server",
-//            dependsOnMethods = {"testMCPServerSubscribeAndInvokeForDirectBackendSubtype"})
-//    public void testMCPServerToolOperationsForDirectBackendSubtype() throws Exception {
-//
-//        final MCPServerDTO mcpServer = fetchMCPServer(mcpServerFromOpenApiId);
-//        assertNonEmpty(mcpServer.getOperations(), "MCP Server operations list is empty");
-//
-//        final MCPServerOperationDTO updateOp = new MCPServerOperationDTO();
-//        copyOperation(mcpServer.getOperations().get(0), updateOp);
-//        updateOp.setDescription(DESC_UPDATE_GET_PETS);
-//
-//        final MCPServerOperationDTO addOp =
-//                buildToolOpForDirectBackend(updateOp.getBackendOperationMapping().getBackendId(), PATH_OLD_PETS,
-//                        BackendOperationDTO.VerbEnum.DELETE);
-//        mcpServer.setOperations(Arrays.asList(addOp, updateOp));
-//
-//        final MCPServerDTO updated = restAPIPublisher.updateMCPServer(mcpServerFromOpenApiId, mcpServer);
-//        assertTargets(updated.getOperations(), listOf(TARGET_GET_PETS, TARGET_DELETE_OLD_PETS),
-//                "API flow: Expected operations do not match after update");
-//
-//        final MCPServerOperationDTO deleteOldPets =
-//                getOperationByTarget(updated.getOperations(), TARGET_DELETE_OLD_PETS);
-//        Assert.assertEquals(compactJson(deleteOldPets.getSchemaDefinition()),
-//                compactJson(EXPECTED_SCHEMA_DELETE_OLD_PETS),
-//                mismatch("Schema definition", TARGET_DELETE_OLD_PETS, EXPECTED_SCHEMA_DELETE_OLD_PETS,
-//                        deleteOldPets.getSchemaDefinition()));
-//        Assert.assertEquals(deleteOldPets.getDescription(), DESC_DELETE_OLD_PETS,
-//                mismatch("Description", TARGET_DELETE_OLD_PETS, DESC_DELETE_OLD_PETS, deleteOldPets.getDescription
-//                ()));
-//
-//        final MCPServerOperationDTO getPetsOp = getOperationByTarget(updated.getOperations(), TARGET_GET_PETS);
-//        Assert.assertEquals(getPetsOp.getDescription(), DESC_UPDATE_GET_PETS,
-//                mismatch("Description", TARGET_GET_PETS, DESC_UPDATE_GET_PETS, getPetsOp.getDescription()));
-//
-//        final APIRevisionDTO revisionReq = new APIRevisionDTO();
-//        revisionReq.setDescription(REVISION_DESCRIPTION_1);
-//        final APIRevisionDTO revision = restAPIPublisher.addMCPServerRevision(mcpServerFromOpenApiId, revisionReq);
-//        Assert.assertNotNull(revision, "MCP Server revision creation failed");
-//
-//        final APIRevisionDeploymentDTO deployment = new APIRevisionDeploymentDTO();
-//        deployment.setName(REVISION_NAME_DEFAULT);
-//        deployment.setVhost(REVISION_VHOST_LOCALHOST);
-//        deployment.setDisplayOnDevportal(true);
-//
-//        final List<APIRevisionDeploymentDTO> deployments =
-//                restAPIPublisher.deployMCPServerRevision(mcpServerFromOpenApiId, revision.getId(),
-//                        Collections.singletonList(deployment));
-//        assertNonEmpty(deployments, "MCP Server revision deployment failed.");
-//        Assert.assertEquals(String.valueOf(deployments.get(0).getStatus()), DEPLOYMENT_STATUS_APPROVED,
-//                "Deployment status is not 'APPROVED'");
-//
-//        Thread.sleep(WAIT_FOR_DEPLOYMENT_IN_MILLISECONDS);
-//
-//        Map<String, String> requestHeaders = new HashMap<>();
-//        requestHeaders.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-//        requestHeaders.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-//        requestHeaders.put(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-//
-//        String petstoreBackendURL = getAPIInvocationURLHttps(
-//                SERVER_CONTEXT_PETSTORE_OPENAPI + "/" + SERVER_VERSION_1 + "/mcp");
-//
-//        HttpResponse toolListResponse =
-//                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
-//        Assert.assertEquals(toolListResponse.getResponseCode(), 200, "Tool list call failed");
-//        Assert.assertEquals(compactJson(toolListResponse.getData()), compactJson(EXPECTED_UPDATED_TOOL_LIST_RESPONSE),
-//                "MCP Server tool list response mismatch");
-//    }
-//
-//    @Test(groups = {GROUP_WSO2_AM}, description = "Update tool operations in a MCP Server",
-//            dependsOnMethods = {"testSubscribeAndInvokeForExistingApiSubtype"})
-//    public void testToolsForExistingApiSubtype() throws Exception {
-//
-//        final MCPServerDTO mcpServer = fetchMCPServer(mcpServerFromApiId);
-//        assertNonEmpty(mcpServer.getOperations(), "MCP Server operations list is empty");
-//
-//        final MCPServerOperationDTO updateOp = new MCPServerOperationDTO();
-//        copyOperation(mcpServer.getOperations().get(0), updateOp);
-//        updateOp.setDescription(DESC_UPDATE_GET_PETS);
-//
-//        final MCPServerOperationDTO addOp =
-//                buildToolOpForApi(apiId, PATH_OLD_PETS, BackendOperationDTO.VerbEnum.DELETE);
-//        mcpServer.setOperations(Arrays.asList(addOp, updateOp));
-//
-//        final MCPServerDTO updated = restAPIPublisher.updateMCPServer(mcpServerFromApiId, mcpServer);
-//        assertTargets(updated.getOperations(), listOf(TARGET_GET_PETS, TARGET_DELETE_OLD_PETS),
-//                "API flow: Expected operations do not match after update");
-//
-//        final MCPServerOperationDTO deleteOldPets =
-//                getOperationByTarget(updated.getOperations(), TARGET_DELETE_OLD_PETS);
-//        Assert.assertEquals(compactJson(deleteOldPets.getSchemaDefinition()),
-//                compactJson(EXPECTED_SCHEMA_DELETE_OLD_PETS),
-//                mismatch("Schema definition", TARGET_DELETE_OLD_PETS, EXPECTED_SCHEMA_DELETE_OLD_PETS,
-//                        deleteOldPets.getSchemaDefinition()));
-//        Assert.assertEquals(deleteOldPets.getDescription(), DESC_DELETE_OLD_PETS,
-//                mismatch("Description", TARGET_DELETE_OLD_PETS, DESC_DELETE_OLD_PETS, deleteOldPets.getDescription
-//                ()));
-//
-//        final MCPServerOperationDTO getPetsOp = getOperationByTarget(updated.getOperations(), TARGET_GET_PETS);
-//        Assert.assertEquals(getPetsOp.getDescription(), DESC_UPDATE_GET_PETS,
-//                mismatch("Description", TARGET_GET_PETS, DESC_UPDATE_GET_PETS, getPetsOp.getDescription()));
-//
-//        final APIRevisionDTO revisionReq = new APIRevisionDTO();
-//        revisionReq.setDescription(REVISION_DESCRIPTION_1);
-//        final APIRevisionDTO revision = restAPIPublisher.addMCPServerRevision(mcpServerFromApiId, revisionReq);
-//        Assert.assertNotNull(revision, "MCP Server revision creation failed");
-//
-//        final APIRevisionDeploymentDTO deployment = new APIRevisionDeploymentDTO();
-//        deployment.setName(REVISION_NAME_DEFAULT);
-//        deployment.setVhost(REVISION_VHOST_LOCALHOST);
-//        deployment.setDisplayOnDevportal(true);
-//
-//        final List<APIRevisionDeploymentDTO> deployments =
-//                restAPIPublisher.deployMCPServerRevision(mcpServerFromApiId, revision.getId(),
-//                        Collections.singletonList(deployment));
-//        assertNonEmpty(deployments, "MCP Server revision deployment failed.");
-//        Assert.assertEquals(String.valueOf(deployments.get(0).getStatus()), DEPLOYMENT_STATUS_APPROVED,
-//                "Deployment status is not 'APPROVED'");
-//
-//        Thread.sleep(WAIT_FOR_DEPLOYMENT_IN_MILLISECONDS);
-//
-//        Map<String, String> requestHeaders = new HashMap<>();
-//        requestHeaders.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-//        requestHeaders.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-//        requestHeaders.put(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-//
-//        String petstoreBackendURL = getAPIInvocationURLHttps(
-//                SERVER_CONTEXT_PETSTORE_API + "/" + SERVER_VERSION_1 + "/mcp");
-//
-//        HttpResponse toolListResponse =
-//                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
-//        Assert.assertEquals(toolListResponse.getResponseCode(), 200, "Tool list call failed");
-//        Assert.assertEquals(compactJson(toolListResponse.getData()), compactJson(EXPECTED_UPDATED_TOOL_LIST_RESPONSE),
-//                "MCP Server tool list response mismatch");
-//    }
+    @Test(groups = {GROUP_WSO2_AM}, description = "Update tool operations in a MCP Server",
+            dependsOnMethods = {"testMCPServerSubscribeAndInvokeForDirectBackendSubtype"})
+    public void testMCPServerToolOperationsForDirectBackendSubtype() throws Exception {
+
+        final MCPServerDTO mcpServer = fetchMCPServer(mcpServerFromOpenApiId);
+        assertNonEmpty(mcpServer.getOperations(), "MCP Server operations list is empty");
+
+        final MCPServerOperationDTO updateOp = new MCPServerOperationDTO();
+        copyOperation(mcpServer.getOperations().get(0), updateOp);
+        updateOp.setDescription(DESC_UPDATE_GET_PETS);
+
+        final MCPServerOperationDTO addOp =
+                buildToolOpForDirectBackend(updateOp.getBackendOperationMapping().getBackendId(),
+                        PATH_OLD_PETS, BackendOperationDTO.VerbEnum.DELETE);
+        mcpServer.setOperations(Arrays.asList(addOp, updateOp));
+
+        final MCPServerDTO updated = restAPIPublisher.updateMCPServer(mcpServerFromOpenApiId, mcpServer);
+        assertTargets(updated.getOperations(), listOf(TARGET_GET_PETS, TARGET_DELETE_OLD_PETS),
+                "API flow: Expected operations do not match after update");
+
+        final MCPServerOperationDTO deleteOldPets =
+                getOperationByTarget(updated.getOperations(), TARGET_DELETE_OLD_PETS);
+        Assert.assertEquals(compactJson(deleteOldPets.getSchemaDefinition()),
+                compactJson(EXPECTED_SCHEMA_DELETE_OLD_PETS),
+                mismatch("Schema definition", TARGET_DELETE_OLD_PETS,
+                        EXPECTED_SCHEMA_DELETE_OLD_PETS, deleteOldPets.getSchemaDefinition()));
+        Assert.assertEquals(deleteOldPets.getDescription(), DESC_DELETE_OLD_PETS,
+                mismatch("Description", TARGET_DELETE_OLD_PETS,
+                        DESC_DELETE_OLD_PETS, deleteOldPets.getDescription()));
+
+        final MCPServerOperationDTO getPetsOp = getOperationByTarget(updated.getOperations(), TARGET_GET_PETS);
+        Assert.assertEquals(getPetsOp.getDescription(), DESC_UPDATE_GET_PETS,
+                mismatch("Description", TARGET_GET_PETS, DESC_UPDATE_GET_PETS, getPetsOp.getDescription()));
+
+        deployRevision(mcpServerFromOpenApiId);
+
+        Map<String, String> requestHeaders = createRequestHeaders(accessToken);
+        String petstoreBackendURL = getAPIInvocationURLHttps(
+                SERVER_CONTEXT_PETSTORE_OPENAPI + "/" + SERVER_VERSION_1 + MCP_PATH);
+
+        HttpResponse toolListResponse =
+                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
+        assertHttpOk(toolListResponse, "Tool list call failed");
+        Assert.assertEquals(compactJson(toolListResponse.getData()),
+                compactJson(EXPECTED_UPDATED_TOOL_LIST_RESPONSE),
+                mismatch("Tool list response", "tool-list",
+                        EXPECTED_UPDATED_TOOL_LIST_RESPONSE, toolListResponse.getData()));
+    }
+
+    @Test(groups = {GROUP_WSO2_AM}, description = "Update tool operations in a MCP Server",
+            dependsOnMethods = {"testSubscribeAndInvokeForExistingApiSubtype"})
+    public void testToolsForExistingApiSubtype() throws Exception {
+
+        final MCPServerDTO mcpServer = fetchMCPServer(mcpServerFromApiId);
+        assertNonEmpty(mcpServer.getOperations(), "MCP Server operations list is empty");
+        final MCPServerOperationDTO updateOp = new MCPServerOperationDTO();
+        copyOperation(mcpServer.getOperations().get(0), updateOp);
+        updateOp.setDescription(DESC_UPDATE_GET_PETS);
+
+        final MCPServerOperationDTO addOp =
+                buildToolOpForApi(apiId, PATH_OLD_PETS, BackendOperationDTO.VerbEnum.DELETE);
+        mcpServer.setOperations(Arrays.asList(addOp, updateOp));
+
+        final MCPServerDTO updated = restAPIPublisher.updateMCPServer(mcpServerFromApiId, mcpServer);
+        assertTargets(updated.getOperations(), listOf(TARGET_GET_PETS, TARGET_DELETE_OLD_PETS),
+                "API flow: Expected operations do not match after update");
+
+        final MCPServerOperationDTO deleteOldPets =
+                getOperationByTarget(updated.getOperations(), TARGET_DELETE_OLD_PETS);
+        Assert.assertEquals(compactJson(deleteOldPets.getSchemaDefinition()),
+                compactJson(EXPECTED_SCHEMA_DELETE_OLD_PETS),
+                mismatch("Schema definition", TARGET_DELETE_OLD_PETS,
+                        EXPECTED_SCHEMA_DELETE_OLD_PETS, deleteOldPets.getSchemaDefinition()));
+        Assert.assertEquals(deleteOldPets.getDescription(), DESC_DELETE_OLD_PETS,
+                mismatch("Description", TARGET_DELETE_OLD_PETS,
+                        DESC_DELETE_OLD_PETS, deleteOldPets.getDescription()));
+
+        final MCPServerOperationDTO getPetsOp = getOperationByTarget(updated.getOperations(), TARGET_GET_PETS);
+        Assert.assertEquals(getPetsOp.getDescription(), DESC_UPDATE_GET_PETS,
+                mismatch("Description", TARGET_GET_PETS, DESC_UPDATE_GET_PETS, getPetsOp.getDescription()));
+
+        deployRevision(mcpServerFromApiId);
+
+        Map<String, String> requestHeaders = createRequestHeaders(accessToken);
+        String petstoreBackendURL = getAPIInvocationURLHttps(
+                SERVER_CONTEXT_PETSTORE_API + "/" + SERVER_VERSION_1 + MCP_PATH);
+
+        HttpResponse toolListResponse =
+                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
+        assertHttpOk(toolListResponse, "Tool list call failed");
+        Assert.assertEquals(compactJson(toolListResponse.getData()),
+                compactJson(EXPECTED_UPDATED_TOOL_LIST_RESPONSE),
+                mismatch("Tool list response", "tool-list",
+                        EXPECTED_UPDATED_TOOL_LIST_RESPONSE, toolListResponse.getData()));
+    }
 
     @Test(groups = {GROUP_WSO2_AM}, description = "Update tool operations in a MCP Server",
             dependsOnMethods = {"testSubscribeAndInvokeForProxySubtype"})
@@ -1053,7 +908,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = createRequestHeaders(accessToken);
         String petstoreBackendURL = getAPIInvocationURLHttps(
-                SERVER_CONTEXT_EVERYTHING + "/" + SERVER_VERSION_1 + "/mcp");
+                SERVER_CONTEXT_EVERYTHING + "/" + SERVER_VERSION_1 + MCP_PATH);
 
         HttpResponse toolListResponse =
                 HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
@@ -1063,100 +918,72 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
                 "MCP Server tool list response mismatch");
     }
 
-//    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using a third-party MCP Server (proxy)",
-//            dependsOnMethods = {"testToolsForExistingApiSubtype"})
-//    public void testScopesForExistingApiSubtype() throws Exception {
-//
-//        final MCPServerDTO mcpServer = fetchMCPServer(mcpServerFromApiId);
-//        assertNonEmpty(mcpServer.getOperations(), "MCP Server operations list is empty");
-//
-//        final MCPServerOperationDTO updateOp = new MCPServerOperationDTO();
-//        copyOperation(mcpServer.getOperations().get(1), updateOp);
-//
-//        List role = new ArrayList();
-//        role.add(ADMIN_ROLE);
-//
-//        ScopeDTO scopeObject = new ScopeDTO();
-//        scopeObject.setName(SCOPE_1);
-//        scopeObject.setBindings(role);
-//        APIScopeDTO apiScope1DTO = new APIScopeDTO();
-//        apiScope1DTO.setScope(scopeObject);
-//
-//        List apiScopeList = new ArrayList();
-//        apiScopeList.add(apiScope1DTO);
-//        mcpServer.setScopes(apiScopeList);
-//
-//        ArrayList<String> scopes = new ArrayList<>();
-//        scopes.add(SCOPE_1);
-//        updateOp.setScopes(scopes);
-//        mcpServer.getOperations().set(1, updateOp);
-//
-//        final MCPServerDTO mcpServerResponse = restAPIPublisher.updateMCPServer(mcpServerFromApiId, mcpServer);
-//        Assert.assertNotNull(mcpServerResponse, "MCP Server response is null (third-party flow)");
-//        final MCPServerOperationDTO getPetsOps =
-//                getOperationByTarget(mcpServerResponse.getOperations(), TARGET_GET_PETS);
-//        Assert.assertNotNull(getPetsOps, "MCP Server operation not found: " + TARGET_GET_PETS);
-//        Assert.assertEquals(getPetsOps.getScopes(), scopes, "Scopes are not updated properly");
-//
-//        final APIRevisionDTO revisionReq = new APIRevisionDTO();
-//        revisionReq.setDescription(REVISION_DESCRIPTION_1);
-//        final APIRevisionDTO revision = restAPIPublisher.addMCPServerRevision(mcpServerFromApiId, revisionReq);
-//        Assert.assertNotNull(revision, "MCP Server revision creation failed");
-//
-//        final APIRevisionDeploymentDTO deployment = new APIRevisionDeploymentDTO();
-//        deployment.setName(REVISION_NAME_DEFAULT);
-//        deployment.setVhost(REVISION_VHOST_LOCALHOST);
-//        deployment.setDisplayOnDevportal(true);
-//
-//        final List<APIRevisionDeploymentDTO> deployments =
-//                restAPIPublisher.deployMCPServerRevision(mcpServerFromApiId, revision.getId(),
-//                        Collections.singletonList(deployment));
-//        assertNonEmpty(deployments, "MCP Server revision deployment failed. Deployment list is empty");
-//        Assert.assertEquals(String.valueOf(deployments.get(0).getStatus()), DEPLOYMENT_STATUS_APPROVED,
-//                "Deployment status is not 'APPROVED'");
-//
-//        Thread.sleep(WAIT_FOR_DEPLOYMENT_IN_MILLISECONDS);
-//
-//        final HttpResponse applicationResponse = restAPIStore.createApplication(SCOPES_APP_NAME_1, APP_DESC,
-//                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, TokenTypeEnum.JWT);
-//        applicationForScopesId_1 = applicationResponse.getData();
-//
-//        final HttpResponse subscribeResponse =
-//                restAPIStore.createSubscription(mcpServerFromApiId, applicationForScopesId_1,
-//                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
-//        Assert.assertEquals(subscribeResponse.getResponseCode(), HttpStatus.SC_OK, "MCP Server subscription failed");
-//        Assert.assertTrue(StringUtils.isNotEmpty(subscribeResponse.getData()),
-//                "MCP Server subscription failed. Subscription data is missing");
-//
-//        ArrayList<String> grantTypes = new ArrayList<>();
-//        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-//        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-//
-//        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationForScopesId_1, "3600", null,
-//                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
-//        accessTokenWithScopes_1 = applicationKeyDTO.getToken().getAccessToken();
-//
-//        Map<String, String> requestHeaders = new HashMap<>();
-//        requestHeaders.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessTokenWithScopes_1);
-//        requestHeaders.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-//        requestHeaders.put(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-//
-//        String petstoreBackendURL = getAPIInvocationURLHttps(
-//                SERVER_CONTEXT_PETSTORE_API + "/" + SERVER_VERSION_1 + "/mcp");
-//
-//        HttpResponse toolCallResponse1 =
-//                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
-//
-//        Assert.assertEquals(toolCallResponse1.getResponseCode(), 200, "Tool call failed");
-//        Assert.assertEquals(compactJson(toolCallResponse1.getData()), compactJson
-//        (EXPECTED_TOOL_CALL_GET_PETS_RESPONSE),
-//                "MCP Server tool call response mismatch");
-//
-//        requestHeaders.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-//        HttpResponse toolCallResponse2 =
-//                HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
-//        Assert.assertEquals(toolCallResponse2.getResponseCode(), 403, "Tool call should fail due to missing scopes");
-//    }
+    @Test(groups = {GROUP_WSO2_AM}, description = "Update MCP server scopes and validate invocation",
+            dependsOnMethods = {"testToolsForExistingApiSubtype"})
+    public void testScopesForExistingApiSubtype() throws Exception {
+
+        // Fetch server and ensure operations exist
+        final MCPServerDTO mcpServer = fetchMCPServer(mcpServerFromApiId);
+        assertNonEmpty(mcpServer.getOperations(), "MCP Server operations list is empty");
+
+        // Update operation with scope
+        final MCPServerOperationDTO updateOp = new MCPServerOperationDTO();
+        copyOperation(mcpServer.getOperations().get(1), updateOp);
+
+        List<String> roles = Collections.singletonList(ADMIN_ROLE);
+        ScopeDTO scopeObject = new ScopeDTO();
+        scopeObject.setName(SCOPE_1);
+        scopeObject.setBindings(roles);
+
+        MCPServerScopeDTO apiScope1DTO = new MCPServerScopeDTO();
+        apiScope1DTO.setScope(scopeObject);
+        mcpServer.setScopes(Collections.singletonList(apiScope1DTO));
+        ArrayList<String> scopes = new ArrayList<>();
+        scopes.add(SCOPE_1);
+        updateOp.setScopes(scopes);
+        mcpServer.getOperations().set(1, updateOp);
+
+        final MCPServerDTO updated = restAPIPublisher.updateMCPServer(mcpServerFromApiId, mcpServer);
+        Assert.assertNotNull(updated, "MCP Server update response is null");
+        final MCPServerOperationDTO getPetsOp =
+                getOperationByTarget(updated.getOperations(), TARGET_GET_PETS);
+        Assert.assertNotNull(getPetsOp, "MCP Server operation not found: " + TARGET_GET_PETS);
+        Assert.assertEquals(getPetsOp.getScopes(), scopes, "Scopes are not updated properly");
+
+        deployRevision(mcpServerFromApiId);
+
+        final HttpResponse applicationResponse = restAPIStore.createApplication(
+                SCOPES_APP_NAME_1, APP_DESC,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, TokenTypeEnum.JWT);
+        applicationForScopesId_1 = applicationResponse.getData();
+
+        final HttpResponse subscribeResponse =
+                restAPIStore.createSubscription(mcpServerFromApiId, applicationForScopesId_1,
+                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        Assert.assertEquals(subscribeResponse.getResponseCode(), HttpStatus.SC_OK, "MCP Server subscription failed");
+        Assert.assertTrue(StringUtils.isNotEmpty(subscribeResponse.getData()),
+                "MCP Server subscription failed. Subscription data is missing");
+
+        ApplicationKeyDTO applicationKeyDTO = generateKeysForApp(applicationForScopesId_1, scopes);
+        accessTokenWithScopes_1 = applicationKeyDTO.getToken().getAccessToken();
+        String petstoreBackendURL = getAPIInvocationURLHttps(
+                SERVER_CONTEXT_PETSTORE_API + "/" + SERVER_VERSION_1 + MCP_PATH);
+
+        Map<String, String> headersWithScopes = createRequestHeaders(accessTokenWithScopes_1);
+        HttpResponse toolCallResponse1 =
+                HTTPSClientUtils.doPost(petstoreBackendURL, headersWithScopes, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
+        assertHttpOk(toolCallResponse1, "Tool call with scopes failed");
+        Assert.assertEquals(compactJson(toolCallResponse1.getData()),
+                compactJson(EXPECTED_TOOL_CALL_GET_PETS_RESPONSE),
+                mismatch("Tool call response", TARGET_GET_PETS,
+                        EXPECTED_TOOL_CALL_GET_PETS_RESPONSE, toolCallResponse1.getData()));
+
+        Map<String, String> headersWithoutScopes = createRequestHeaders(accessToken);
+        HttpResponse toolCallResponse2 =
+                HTTPSClientUtils.doPost(petstoreBackendURL, headersWithoutScopes, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
+        Assert.assertEquals(toolCallResponse2.getResponseCode(), 403,
+                "Tool call should fail due to missing scopes");
+    }
 
     @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using a third-party MCP Server (proxy)",
             dependsOnMethods = {"testToolsForProxySubtype"})
@@ -1210,7 +1037,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = createRequestHeaders(accessTokenWithScopes_2);
         String petstoreBackendURL = getAPIInvocationURLHttps(
-                SERVER_CONTEXT_EVERYTHING + "/" + SERVER_VERSION_1 + "/mcp");
+                SERVER_CONTEXT_EVERYTHING + "/" + SERVER_VERSION_1 + MCP_PATH);
         HttpResponse toolCallResponse1 =
                 HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_CALL_ECHO_REQUEST_PAYLOAD);
 
@@ -1252,7 +1079,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = createRequestHeaders(accessTokenWithScopes_2);
         String petstoreBackendURL = getAPIInvocationURLHttps(SERVER_CONTEXT_EVERYTHING
-                + "/" + SERVER_VERSION_1 + "/mcp");
+                + "/" + SERVER_VERSION_1 + MCP_PATH);
 
         ThrottlingUtils.waitUntilNextClockHourIfCurrentHourIsInLastNMinutes(3);
         invokeToolCallsExpecting200(petstoreBackendURL, requestHeaders, 5);
@@ -1434,6 +1261,22 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
             }
         }
         return false;
+    }
+
+    /**
+     * Build a JSON endpoint configuration for the given backend URL.
+     *
+     * @param url backend URL
+     * @return endpoint config JSON object
+     */
+    private static JSONObject buildEndpointConfigJson(String url) throws JSONException {
+
+        JSONObject endpointConfig = new JSONObject();
+        JSONObject endpoints = new JSONObject().put(URL_KEY, url);
+        endpointConfig.put(PROD_ENDPOINTS, endpoints);
+        endpointConfig.put(SANDBOX_ENDPOINTS, endpoints);
+        endpointConfig.put(ENDPOINT_TYPE, "http");
+        return endpointConfig;
     }
 
     /**
@@ -1718,33 +1561,31 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         mcpWireMock.stop();
         log.info("Cleaning up artifacts");
-//        super.cleanUp();
         SubscriptionListDTO subs1DTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId, tenantDomain);
         for (org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO subscriptionDTO : subs1DTO.getList()) {
             restAPIStore.removeSubscription(subscriptionDTO);
         }
-//        SubscriptionListDTO subs2DTO = restAPIStore.getAllSubscriptionsOfApplication(applicationForScopesId_1,
-//        tenantDomain);
-//        for (org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO subscriptionDTO : subs2DTO.getList()) {
-//            restAPIStore.removeSubscription(subscriptionDTO);
-//        }
+        SubscriptionListDTO subs2DTO = restAPIStore.getAllSubscriptionsOfApplication(applicationForScopesId_1,
+        tenantDomain);
+        for (org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO subscriptionDTO : subs2DTO.getList()) {
+            restAPIStore.removeSubscription(subscriptionDTO);
+        }
         SubscriptionListDTO subs3DTO =
                 restAPIStore.getAllSubscriptionsOfApplication(applicationForScopesId_2, tenantDomain);
         for (org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO subscriptionDTO : subs3DTO.getList()) {
             restAPIStore.removeSubscription(subscriptionDTO);
         }
         restAPIStore.deleteApplication(applicationId);
-//        restAPIStore.deleteApplication(applicationForScopesId_1);
+        restAPIStore.deleteApplication(applicationForScopesId_1);
         restAPIStore.deleteApplication(applicationForScopesId_2);
-//        restAPIPublisher.deleteMCPServer(mcpServerFromApiId);
-//        restAPIPublisher.deleteAPI(apiId);
-//        restAPIPublisher.deleteMCPServer(mcpServerFromOpenApiId);
+        restAPIPublisher.deleteMCPServer(mcpServerFromApiId);
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteMCPServer(mcpServerFromOpenApiId);
         restAPIPublisher.deleteMCPServer(mcpServerProxyId);
     }
 
     public class MCPWireMock {
 
-        private static final String MCP_PATH = "/mcp";
         private static final String SESSION_ID = "5d2755db-2e92-4016-b7f2-f49691ae1a08";
 
         private WireMockServer server;
