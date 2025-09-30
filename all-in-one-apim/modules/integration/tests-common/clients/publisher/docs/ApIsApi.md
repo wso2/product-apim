@@ -20,6 +20,7 @@ Method | HTTP request | Description
 [**getAPIThumbnail**](ApIsApi.md#getAPIThumbnail) | **GET** /apis/{apiId}/thumbnail | Get Thumbnail Image
 [**getAllAPIs**](ApIsApi.md#getAllAPIs) | **GET** /apis | Retrieve/Search APIs 
 [**getGeneratedMockScriptsOfAPI**](ApIsApi.md#getGeneratedMockScriptsOfAPI) | **GET** /apis/{apiId}/generated-mock-scripts | Get Generated Mock Response Payloads
+[**getMCPServerUsage**](ApIsApi.md#getMCPServerUsage) | **GET** /apis/{apiId}/mcp-servers-usage | Retrieve MCP Server(s) that uses the given API
 [**getSequenceBackendContent**](ApIsApi.md#getSequenceBackendContent) | **GET** /apis/{apiId}/sequence-backend/{type}/content | Get Sequence of Custom Backend
 [**getSequenceBackendData**](ApIsApi.md#getSequenceBackendData) | **GET** /apis/{apiId}/sequence-backend | Get Sequence Backends of the API
 [**getWSDLInfoOfAPI**](ApIsApi.md#getWSDLInfoOfAPI) | **GET** /apis/{apiId}/wsdl-info | Get WSDL Meta Information
@@ -1216,6 +1217,76 @@ Name | Type | Description  | Notes
 **304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
+
+<a name="getMCPServerUsage"></a>
+# **getMCPServerUsage**
+> MCPServerMetadataListDTO getMCPServerUsage(apiId)
+
+Retrieve MCP Server(s) that uses the given API
+
+This operation can be used to retrieve/identify MCP Server(s) that uses the API given by the &#x60;apiId&#x60; parameter. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    try {
+      MCPServerMetadataListDTO result = apiInstance.getMCPServerUsage(apiId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#getMCPServerUsage");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+
+### Return type
+
+[**MCPServerMetadataListDTO**](MCPServerMetadataListDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. List of qualifying MCP Servers returned.  |  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getSequenceBackendContent"></a>
 # **getSequenceBackendContent**

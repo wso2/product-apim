@@ -1,0 +1,30 @@
+{
+  "name": "PetstoreMCPFromOpenAPI",
+  "displayName": "Petstore MCP",
+  "version": "1.0.0",
+  "context": "petstore-mcp-openapi",
+  "gatewayType": "wso2/synapse",
+  "policies": [
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "feature": "TOOL",
+      "backendOperationMapping": {
+        "backendOperation": {
+          "target": "/pets",
+          "verb": "GET"
+        }
+      }
+    },
+    {
+      "feature": "TOOL",
+      "backendOperationMapping": {
+        "backendOperation": {
+          "target": "/pets/{petId}",
+          "verb": "GET"
+        }
+      }
+    }
+  ]
+}

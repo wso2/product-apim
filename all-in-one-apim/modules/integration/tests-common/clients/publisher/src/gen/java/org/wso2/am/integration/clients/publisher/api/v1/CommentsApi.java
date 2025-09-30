@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentRequestDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
@@ -207,6 +208,154 @@ public class CommentsApi {
         return localVarCall;
     }
     /**
+     * Build call for addCommentToMCPServer
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param commentRequestDTO Comment object that should to be added  (required)
+     * @param replyTo ID of the perent comment.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call addCommentToMCPServerCall(String mcpServerId, CommentRequestDTO commentRequestDTO, String replyTo, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = commentRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/comments"
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (replyTo != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("replyTo", replyTo));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call addCommentToMCPServerValidateBeforeCall(String mcpServerId, CommentRequestDTO commentRequestDTO, String replyTo, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling addCommentToMCPServer(Async)");
+        }
+        
+        // verify the required parameter 'commentRequestDTO' is set
+        if (commentRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'commentRequestDTO' when calling addCommentToMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = addCommentToMCPServerCall(mcpServerId, commentRequestDTO, replyTo, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Add an MCP Server Comment
+     * 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param commentRequestDTO Comment object that should to be added  (required)
+     * @param replyTo ID of the perent comment.  (optional)
+     * @return CommentDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public CommentDTO addCommentToMCPServer(String mcpServerId, CommentRequestDTO commentRequestDTO, String replyTo) throws ApiException {
+        ApiResponse<CommentDTO> localVarResp = addCommentToMCPServerWithHttpInfo(mcpServerId, commentRequestDTO, replyTo);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Add an MCP Server Comment
+     * 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param commentRequestDTO Comment object that should to be added  (required)
+     * @param replyTo ID of the perent comment.  (optional)
+     * @return ApiResponse&lt;CommentDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<CommentDTO> addCommentToMCPServerWithHttpInfo(String mcpServerId, CommentRequestDTO commentRequestDTO, String replyTo) throws ApiException {
+        okhttp3.Call localVarCall = addCommentToMCPServerValidateBeforeCall(mcpServerId, commentRequestDTO, replyTo, null);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Add an MCP Server Comment (asynchronously)
+     * 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param commentRequestDTO Comment object that should to be added  (required)
+     * @param replyTo ID of the perent comment.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call addCommentToMCPServerAsync(String mcpServerId, CommentRequestDTO commentRequestDTO, String replyTo, final ApiCallback<CommentDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = addCommentToMCPServerValidateBeforeCall(mcpServerId, commentRequestDTO, replyTo, _callback);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for deleteComment
      * @param commentId Comment Id  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
@@ -348,6 +497,151 @@ public class CommentsApi {
     public okhttp3.Call deleteCommentAsync(String commentId, String apiId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = deleteCommentValidateBeforeCall(commentId, apiId, ifMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for deleteCommentOfMCPServer
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 405 </td><td> MethodNotAllowed. Request method is known by the server but is not supported by the target resource.  </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteCommentOfMCPServerCall(String commentId, String mcpServerId, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/comments/{commentId}"
+            .replaceAll("\\{" + "commentId" + "\\}", localVarApiClient.escapeString(commentId.toString()))
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call deleteCommentOfMCPServerValidateBeforeCall(String commentId, String mcpServerId, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'commentId' is set
+        if (commentId == null) {
+            throw new ApiException("Missing the required parameter 'commentId' when calling deleteCommentOfMCPServer(Async)");
+        }
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling deleteCommentOfMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = deleteCommentOfMCPServerCall(commentId, mcpServerId, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Delete a MCP Server Comment
+     * Remove a Comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 405 </td><td> MethodNotAllowed. Request method is known by the server but is not supported by the target resource.  </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void deleteCommentOfMCPServer(String commentId, String mcpServerId, String ifMatch) throws ApiException {
+        deleteCommentOfMCPServerWithHttpInfo(commentId, mcpServerId, ifMatch);
+    }
+
+    /**
+     * Delete a MCP Server Comment
+     * Remove a Comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 405 </td><td> MethodNotAllowed. Request method is known by the server but is not supported by the target resource.  </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> deleteCommentOfMCPServerWithHttpInfo(String commentId, String mcpServerId, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = deleteCommentOfMCPServerValidateBeforeCall(commentId, mcpServerId, ifMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Delete a MCP Server Comment (asynchronously)
+     * Remove a Comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 405 </td><td> MethodNotAllowed. Request method is known by the server but is not supported by the target resource.  </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteCommentOfMCPServerAsync(String commentId, String mcpServerId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = deleteCommentOfMCPServerValidateBeforeCall(commentId, mcpServerId, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
@@ -506,6 +800,160 @@ public class CommentsApi {
         return localVarCall;
     }
     /**
+     * Build call for editCommentOfMCPServer
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param commentRequestDTO Comment object that should to be updated  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment updated.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call editCommentOfMCPServerCall(String commentId, String mcpServerId, CommentRequestDTO commentRequestDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = commentRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/comments/{commentId}"
+            .replaceAll("\\{" + "commentId" + "\\}", localVarApiClient.escapeString(commentId.toString()))
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PATCH", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call editCommentOfMCPServerValidateBeforeCall(String commentId, String mcpServerId, CommentRequestDTO commentRequestDTO, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'commentId' is set
+        if (commentId == null) {
+            throw new ApiException("Missing the required parameter 'commentId' when calling editCommentOfMCPServer(Async)");
+        }
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling editCommentOfMCPServer(Async)");
+        }
+        
+        // verify the required parameter 'commentRequestDTO' is set
+        if (commentRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'commentRequestDTO' when calling editCommentOfMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = editCommentOfMCPServerCall(commentId, mcpServerId, commentRequestDTO, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Edit a comment
+     * Edit the individual comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param commentRequestDTO Comment object that should to be updated  (required)
+     * @return CommentDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment updated.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public CommentDTO editCommentOfMCPServer(String commentId, String mcpServerId, CommentRequestDTO commentRequestDTO) throws ApiException {
+        ApiResponse<CommentDTO> localVarResp = editCommentOfMCPServerWithHttpInfo(commentId, mcpServerId, commentRequestDTO);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Edit a comment
+     * Edit the individual comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param commentRequestDTO Comment object that should to be updated  (required)
+     * @return ApiResponse&lt;CommentDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment updated.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<CommentDTO> editCommentOfMCPServerWithHttpInfo(String commentId, String mcpServerId, CommentRequestDTO commentRequestDTO) throws ApiException {
+        okhttp3.Call localVarCall = editCommentOfMCPServerValidateBeforeCall(commentId, mcpServerId, commentRequestDTO, null);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Edit a comment (asynchronously)
+     * Edit the individual comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param commentRequestDTO Comment object that should to be updated  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment updated.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call editCommentOfMCPServerAsync(String commentId, String mcpServerId, CommentRequestDTO commentRequestDTO, final ApiCallback<CommentDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = editCommentOfMCPServerValidateBeforeCall(commentId, mcpServerId, commentRequestDTO, _callback);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for getAllCommentsOfAPI
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
@@ -652,6 +1100,157 @@ public class CommentsApi {
     public okhttp3.Call getAllCommentsOfAPIAsync(String apiId, String xWSO2Tenant, Integer limit, Integer offset, Boolean includeCommenterInfo, final ApiCallback<CommentListDTO> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = getAllCommentsOfAPIValidateBeforeCall(apiId, xWSO2Tenant, limit, offset, includeCommenterInfo, _callback);
+        Type localVarReturnType = new TypeToken<CommentListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAllCommentsOfMCPServer
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comments list is returned.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAllCommentsOfMCPServerCall(String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, Boolean includeCommenterInfo, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/comments"
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
+        }
+
+        if (includeCommenterInfo != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("includeCommenterInfo", includeCommenterInfo));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAllCommentsOfMCPServerValidateBeforeCall(String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, Boolean includeCommenterInfo, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling getAllCommentsOfMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAllCommentsOfMCPServerCall(mcpServerId, xWSO2Tenant, limit, offset, includeCommenterInfo, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Retrieve MCP Server Comments
+     * Get a list of Comments that are already added to MCP Server 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @return CommentListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comments list is returned.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public CommentListDTO getAllCommentsOfMCPServer(String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, Boolean includeCommenterInfo) throws ApiException {
+        ApiResponse<CommentListDTO> localVarResp = getAllCommentsOfMCPServerWithHttpInfo(mcpServerId, xWSO2Tenant, limit, offset, includeCommenterInfo);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Retrieve MCP Server Comments
+     * Get a list of Comments that are already added to MCP Server 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @return ApiResponse&lt;CommentListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comments list is returned.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<CommentListDTO> getAllCommentsOfMCPServerWithHttpInfo(String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, Boolean includeCommenterInfo) throws ApiException {
+        okhttp3.Call localVarCall = getAllCommentsOfMCPServerValidateBeforeCall(mcpServerId, xWSO2Tenant, limit, offset, includeCommenterInfo, null);
+        Type localVarReturnType = new TypeToken<CommentListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Retrieve MCP Server Comments (asynchronously)
+     * Get a list of Comments that are already added to MCP Server 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comments list is returned.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAllCommentsOfMCPServerAsync(String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, Boolean includeCommenterInfo, final ApiCallback<CommentListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAllCommentsOfMCPServerValidateBeforeCall(mcpServerId, xWSO2Tenant, limit, offset, includeCommenterInfo, _callback);
         Type localVarReturnType = new TypeToken<CommentListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -834,6 +1433,183 @@ public class CommentsApi {
         return localVarCall;
     }
     /**
+     * Build call for getCommentOfMCPServer
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param replyLimit Maximum size of replies array to return.  (optional, default to 25)
+     * @param replyOffset Starting point within the complete list of replies.  (optional, default to 0)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getCommentOfMCPServerCall(String commentId, String mcpServerId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/comments/{commentId}"
+            .replaceAll("\\{" + "commentId" + "\\}", localVarApiClient.escapeString(commentId.toString()))
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (includeCommenterInfo != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("includeCommenterInfo", includeCommenterInfo));
+        }
+
+        if (replyLimit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("replyLimit", replyLimit));
+        }
+
+        if (replyOffset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("replyOffset", replyOffset));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getCommentOfMCPServerValidateBeforeCall(String commentId, String mcpServerId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'commentId' is set
+        if (commentId == null) {
+            throw new ApiException("Missing the required parameter 'commentId' when calling getCommentOfMCPServer(Async)");
+        }
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling getCommentOfMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getCommentOfMCPServerCall(commentId, mcpServerId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Details of an API Comment
+     * Get the individual comment given by a username for a certain MCP Server. 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param replyLimit Maximum size of replies array to return.  (optional, default to 25)
+     * @param replyOffset Starting point within the complete list of replies.  (optional, default to 0)
+     * @return CommentDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public CommentDTO getCommentOfMCPServer(String commentId, String mcpServerId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset) throws ApiException {
+        ApiResponse<CommentDTO> localVarResp = getCommentOfMCPServerWithHttpInfo(commentId, mcpServerId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Details of an API Comment
+     * Get the individual comment given by a username for a certain MCP Server. 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param replyLimit Maximum size of replies array to return.  (optional, default to 25)
+     * @param replyOffset Starting point within the complete list of replies.  (optional, default to 0)
+     * @return ApiResponse&lt;CommentDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<CommentDTO> getCommentOfMCPServerWithHttpInfo(String commentId, String mcpServerId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset) throws ApiException {
+        okhttp3.Call localVarCall = getCommentOfMCPServerValidateBeforeCall(commentId, mcpServerId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset, null);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Details of an API Comment (asynchronously)
+     * Get the individual comment given by a username for a certain MCP Server. 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param replyLimit Maximum size of replies array to return.  (optional, default to 25)
+     * @param replyOffset Starting point within the complete list of replies.  (optional, default to 0)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getCommentOfMCPServerAsync(String commentId, String mcpServerId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset, final ApiCallback<CommentDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getCommentOfMCPServerValidateBeforeCall(commentId, mcpServerId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset, _callback);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for getRepliesOfComment
      * @param commentId Comment Id  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
@@ -1006,6 +1782,183 @@ public class CommentsApi {
     public okhttp3.Call getRepliesOfCommentAsync(String commentId, String apiId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback<CommentListDTO> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = getRepliesOfCommentValidateBeforeCall(commentId, apiId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo, _callback);
+        Type localVarReturnType = new TypeToken<CommentListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getRepliesOfCommentOfMCPServer
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getRepliesOfCommentOfMCPServerCall(String commentId, String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/comments/{commentId}/replies"
+            .replaceAll("\\{" + "commentId" + "\\}", localVarApiClient.escapeString(commentId.toString()))
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
+        }
+
+        if (includeCommenterInfo != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("includeCommenterInfo", includeCommenterInfo));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getRepliesOfCommentOfMCPServerValidateBeforeCall(String commentId, String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'commentId' is set
+        if (commentId == null) {
+            throw new ApiException("Missing the required parameter 'commentId' when calling getRepliesOfCommentOfMCPServer(Async)");
+        }
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling getRepliesOfCommentOfMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getRepliesOfCommentOfMCPServerCall(commentId, mcpServerId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get replies of a comment
+     * Get replies of a comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @return CommentListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public CommentListDTO getRepliesOfCommentOfMCPServer(String commentId, String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo) throws ApiException {
+        ApiResponse<CommentListDTO> localVarResp = getRepliesOfCommentOfMCPServerWithHttpInfo(commentId, mcpServerId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get replies of a comment
+     * Get replies of a comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @return ApiResponse&lt;CommentListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<CommentListDTO> getRepliesOfCommentOfMCPServerWithHttpInfo(String commentId, String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo) throws ApiException {
+        okhttp3.Call localVarCall = getRepliesOfCommentOfMCPServerValidateBeforeCall(commentId, mcpServerId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo, null);
+        Type localVarReturnType = new TypeToken<CommentListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get replies of a comment (asynchronously)
+     * Get replies of a comment 
+     * @param commentId Comment Id  (required)
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getRepliesOfCommentOfMCPServerAsync(String commentId, String mcpServerId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback<CommentListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getRepliesOfCommentOfMCPServerValidateBeforeCall(commentId, mcpServerId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo, _callback);
         Type localVarReturnType = new TypeToken<CommentListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

@@ -6,9 +6,11 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**exportAPI**](ImportExportApi.md#exportAPI) | **GET** /apis/export | Export an API
 [**exportAPIProduct**](ImportExportApi.md#exportAPIProduct) | **GET** /api-products/export | Export an API Product
+[**exportMCPServer**](ImportExportApi.md#exportMCPServer) | **GET** /mcp-servers/export | Export a MCP Server
 [**exportOperationPolicy**](ImportExportApi.md#exportOperationPolicy) | **GET** /operation-policies/export | Export an API Policy by its name and version 
 [**importAPI**](ImportExportApi.md#importAPI) | **POST** /apis/import | Import an API
 [**importAPIProduct**](ImportExportApi.md#importAPIProduct) | **POST** /api-products/import | Import an API Product
+[**importMCPServer**](ImportExportApi.md#importMCPServer) | **POST** /mcp-servers/import | Import a MCP Server
 [**importOperationPolicy**](ImportExportApi.md#importOperationPolicy) | **POST** /operation-policies/import | Import an API Policy
 
 
@@ -155,6 +157,93 @@ Name | Type | Description  | Notes
  **format** | **String**| Format of output documents. Can be YAML or JSON.  | [optional] [enum: JSON, YAML]
  **preserveStatus** | **Boolean**| Preserve API Product Status on export  | [optional]
  **latestRevision** | **Boolean**| Export the latest revision of the API Product  | [optional] [default to false]
+
+### Return type
+
+[**File**](File.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/zip, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Export Successful.  |  * Content-Type - The content type of the body.  <br>  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
+
+<a name="exportMCPServer"></a>
+# **exportMCPServer**
+> File exportMCPServer(mcpServerId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, gatewayEnvironment, preserveCredentials)
+
+Export a MCP Server
+
+This operation can be used to export the details of a particular MCP server as a zip file. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ImportExportApi apiInstance = new ImportExportApi(defaultClient);
+    String mcpServerId = "mcpServerId_example"; // String | UUID of the MCP server
+    String name = "name_example"; // String | API Name 
+    String version = "version_example"; // String | Version of the MCP Server 
+    String revisionNumber = "revisionNumber_example"; // String | Revision number of the API artifact 
+    String providerName = "providerName_example"; // String | Provider name of the MCP Server 
+    String format = "format_example"; // String | Format of output documents. Can be YAML or JSON. 
+    Boolean preserveStatus = true; // Boolean | Preserve MCP Server Status during export 
+    Boolean latestRevision = false; // Boolean | Export the latest revision of the MCP server 
+    String gatewayEnvironment = "gatewayEnvironment_example"; // String | Gateway environment of the exported MCP servers 
+    Boolean preserveCredentials = true; // Boolean | Preserve endpoint configuration credentials 
+    try {
+      File result = apiInstance.exportMCPServer(mcpServerId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, gatewayEnvironment, preserveCredentials);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ImportExportApi#exportMCPServer");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **mcpServerId** | **String**| UUID of the MCP server | [optional]
+ **name** | **String**| API Name  | [optional]
+ **version** | **String**| Version of the MCP Server  | [optional]
+ **revisionNumber** | **String**| Revision number of the API artifact  | [optional]
+ **providerName** | **String**| Provider name of the MCP Server  | [optional]
+ **format** | **String**| Format of output documents. Can be YAML or JSON.  | [optional] [enum: JSON, YAML]
+ **preserveStatus** | **Boolean**| Preserve MCP Server Status during export  | [optional]
+ **latestRevision** | **Boolean**| Export the latest revision of the MCP server  | [optional] [default to false]
+ **gatewayEnvironment** | **String**| Gateway environment of the exported MCP servers  | [optional]
+ **preserveCredentials** | **Boolean**| Preserve endpoint configuration credentials  | [optional]
 
 ### Return type
 
@@ -401,6 +490,89 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Created. API Product Imported Successfully.  |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**409** | Conflict. Specified resource already exists. |  -  |
+**500** | Internal Server Error. |  -  |
+
+<a name="importMCPServer"></a>
+# **importMCPServer**
+> String importMCPServer(file, preserveProvider, rotateRevision, overwrite, preservePortalConfigurations, dryRun, accept)
+
+Import a MCP Server
+
+This operation can be used to import a MCP server. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ImportExportApi apiInstance = new ImportExportApi(defaultClient);
+    File file = new File("/path/to/file"); // File | Zip archive consisting on exported MCP Server configuration
+    Boolean preserveProvider = true; // Boolean | Preserve Original Provider of the MCP server. This is the user choice to keep or replace the MCP server  provider 
+    Boolean rotateRevision = true; // Boolean | Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision 
+    Boolean overwrite = true; // Boolean | Whether to update the MCP server or not. This is used when updating already existing MCP servers 
+    Boolean preservePortalConfigurations = true; // Boolean | Preserve Portal Configurations. This is used to preserve the portal configurations of the MCP server 
+    Boolean dryRun = false; // Boolean | Dry Run. This is used to validate the MCP server without importing it 
+    String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
+    try {
+      String result = apiInstance.importMCPServer(file, preserveProvider, rotateRevision, overwrite, preservePortalConfigurations, dryRun, accept);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ImportExportApi#importMCPServer");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **file** | **File**| Zip archive consisting on exported MCP Server configuration |
+ **preserveProvider** | **Boolean**| Preserve Original Provider of the MCP server. This is the user choice to keep or replace the MCP server  provider  | [optional]
+ **rotateRevision** | **Boolean**| Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  | [optional]
+ **overwrite** | **Boolean**| Whether to update the MCP server or not. This is used when updating already existing MCP servers  | [optional]
+ **preservePortalConfigurations** | **Boolean**| Preserve Portal Configurations. This is used to preserve the portal configurations of the MCP server  | [optional]
+ **dryRun** | **Boolean**| Dry Run. This is used to validate the MCP server without importing it  | [optional] [default to false]
+ **accept** | **String**| Media types acceptable for the response. Default is application/json.  | [optional] [default to &quot;application/json&quot;]
+
+### Return type
+
+**String**
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: text/plain, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Created. API Imported Successfully.  |  -  |
 **403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **409** | Conflict. Specified resource already exists. |  -  |

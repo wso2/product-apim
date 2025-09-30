@@ -57,6 +57,142 @@ public class RatingsApi {
     }
 
     /**
+     * Build call for addMCPServerRating
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param ratingDTO Rating object that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with the newly created or updated object as entity in the body.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call addMCPServerRatingCall(String mcpServerId, RatingDTO ratingDTO, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = ratingDTO;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/user-rating"
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call addMCPServerRatingValidateBeforeCall(String mcpServerId, RatingDTO ratingDTO, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling addMCPServerRating(Async)");
+        }
+        
+        // verify the required parameter 'ratingDTO' is set
+        if (ratingDTO == null) {
+            throw new ApiException("Missing the required parameter 'ratingDTO' when calling addMCPServerRating(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = addMCPServerRatingCall(mcpServerId, ratingDTO, xWSO2Tenant, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Add or Update Logged in User&#39;s Rating for a MCP Server
+     * This operation can be used to add or update a MCP Server rating.  &#x60;X-WSO2-Tenant&#x60; header can be used to add or update the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in  the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param ratingDTO Rating object that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @return RatingDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with the newly created or updated object as entity in the body.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public RatingDTO addMCPServerRating(String mcpServerId, RatingDTO ratingDTO, String xWSO2Tenant) throws ApiException {
+        ApiResponse<RatingDTO> localVarResp = addMCPServerRatingWithHttpInfo(mcpServerId, ratingDTO, xWSO2Tenant);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Add or Update Logged in User&#39;s Rating for a MCP Server
+     * This operation can be used to add or update a MCP Server rating.  &#x60;X-WSO2-Tenant&#x60; header can be used to add or update the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in  the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param ratingDTO Rating object that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @return ApiResponse&lt;RatingDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with the newly created or updated object as entity in the body.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<RatingDTO> addMCPServerRatingWithHttpInfo(String mcpServerId, RatingDTO ratingDTO, String xWSO2Tenant) throws ApiException {
+        okhttp3.Call localVarCall = addMCPServerRatingValidateBeforeCall(mcpServerId, ratingDTO, xWSO2Tenant, null);
+        Type localVarReturnType = new TypeToken<RatingDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Add or Update Logged in User&#39;s Rating for a MCP Server (asynchronously)
+     * This operation can be used to add or update a MCP Server rating.  &#x60;X-WSO2-Tenant&#x60; header can be used to add or update the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in  the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param ratingDTO Rating object that should to be added  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with the newly created or updated object as entity in the body.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call addMCPServerRatingAsync(String mcpServerId, RatingDTO ratingDTO, String xWSO2Tenant, final ApiCallback<RatingDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = addMCPServerRatingValidateBeforeCall(mcpServerId, ratingDTO, xWSO2Tenant, _callback);
+        Type localVarReturnType = new TypeToken<RatingDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for apisApiIdRatingsGet
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
@@ -590,6 +726,407 @@ public class RatingsApi {
 
         okhttp3.Call localVarCall = apisApiIdUserRatingPutValidateBeforeCall(apiId, ratingDTO, xWSO2Tenant, _callback);
         Type localVarReturnType = new TypeToken<RatingDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for deleteMCPServerRating
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteMCPServerRatingCall(String mcpServerId, String xWSO2Tenant, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/user-rating"
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call deleteMCPServerRatingValidateBeforeCall(String mcpServerId, String xWSO2Tenant, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling deleteMCPServerRating(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = deleteMCPServerRatingCall(mcpServerId, xWSO2Tenant, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Delete User MCP Server Rating
+     * This operation can be used to delete logged in user MCP Server rating.  &#x60;X-WSO2-Tenant&#x60; header can be used to delete the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in the  request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+     </table>
+     */
+    public void deleteMCPServerRating(String mcpServerId, String xWSO2Tenant, String ifMatch) throws ApiException {
+        deleteMCPServerRatingWithHttpInfo(mcpServerId, xWSO2Tenant, ifMatch);
+    }
+
+    /**
+     * Delete User MCP Server Rating
+     * This operation can be used to delete logged in user MCP Server rating.  &#x60;X-WSO2-Tenant&#x60; header can be used to delete the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in the  request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> deleteMCPServerRatingWithHttpInfo(String mcpServerId, String xWSO2Tenant, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = deleteMCPServerRatingValidateBeforeCall(mcpServerId, xWSO2Tenant, ifMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Delete User MCP Server Rating (asynchronously)
+     * This operation can be used to delete logged in user MCP Server rating.  &#x60;X-WSO2-Tenant&#x60; header can be used to delete the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in the  request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteMCPServerRatingAsync(String mcpServerId, String xWSO2Tenant, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = deleteMCPServerRatingValidateBeforeCall(mcpServerId, xWSO2Tenant, ifMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getMCPServerRating
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Rating returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client already has the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getMCPServerRatingCall(String mcpServerId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/user-rating"
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getMCPServerRatingValidateBeforeCall(String mcpServerId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling getMCPServerRating(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getMCPServerRatingCall(mcpServerId, xWSO2Tenant, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Retrieve MCP Server Rating of User
+     * This operation can be used to get the user rating of a MCP Server.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return RatingDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Rating returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client already has the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public RatingDTO getMCPServerRating(String mcpServerId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
+        ApiResponse<RatingDTO> localVarResp = getMCPServerRatingWithHttpInfo(mcpServerId, xWSO2Tenant, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Retrieve MCP Server Rating of User
+     * This operation can be used to get the user rating of a MCP Server.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return ApiResponse&lt;RatingDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Rating returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client already has the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<RatingDTO> getMCPServerRatingWithHttpInfo(String mcpServerId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getMCPServerRatingValidateBeforeCall(mcpServerId, xWSO2Tenant, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<RatingDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Retrieve MCP Server Rating of User (asynchronously)
+     * This operation can be used to get the user rating of a MCP Server.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve the logged in user rating of a MCP Server that belongs to a  different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Rating returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client already has the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getMCPServerRatingAsync(String mcpServerId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback<RatingDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getMCPServerRatingValidateBeforeCall(mcpServerId, xWSO2Tenant, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<RatingDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getMCPServerRatings
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Rating list returned.  </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getMCPServerRatingsCall(String mcpServerId, Integer limit, Integer offset, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/{mcpServerId}/ratings"
+            .replaceAll("\\{" + "mcpServerId" + "\\}", localVarApiClient.escapeString(mcpServerId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getMCPServerRatingsValidateBeforeCall(String mcpServerId, Integer limit, Integer offset, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'mcpServerId' is set
+        if (mcpServerId == null) {
+            throw new ApiException("Missing the required parameter 'mcpServerId' when calling getMCPServerRatings(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getMCPServerRatingsCall(mcpServerId, limit, offset, xWSO2Tenant, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Retrieve MCP Server Ratings
+     * This operation can be used to retrieve the list of ratings of a MCP Server.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve ratings of a MCP Server that belongs to a different tenant  domain. If not specified super tenant will be used. If Authorization header is present in the request, the  user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @return RatingListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Rating list returned.  </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public RatingListDTO getMCPServerRatings(String mcpServerId, Integer limit, Integer offset, String xWSO2Tenant) throws ApiException {
+        ApiResponse<RatingListDTO> localVarResp = getMCPServerRatingsWithHttpInfo(mcpServerId, limit, offset, xWSO2Tenant);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Retrieve MCP Server Ratings
+     * This operation can be used to retrieve the list of ratings of a MCP Server.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve ratings of a MCP Server that belongs to a different tenant  domain. If not specified super tenant will be used. If Authorization header is present in the request, the  user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @return ApiResponse&lt;RatingListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Rating list returned.  </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<RatingListDTO> getMCPServerRatingsWithHttpInfo(String mcpServerId, Integer limit, Integer offset, String xWSO2Tenant) throws ApiException {
+        okhttp3.Call localVarCall = getMCPServerRatingsValidateBeforeCall(mcpServerId, limit, offset, xWSO2Tenant, null);
+        Type localVarReturnType = new TypeToken<RatingListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Retrieve MCP Server Ratings (asynchronously)
+     * This operation can be used to retrieve the list of ratings of a MCP Server.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve ratings of a MCP Server that belongs to a different tenant  domain. If not specified super tenant will be used. If Authorization header is present in the request, the  user&#39;s tenant associated with the access token will be used. 
+     * @param mcpServerId **MCP Server ID** consisting of the **UUID** of the MCP Server.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Rating list returned.  </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getMCPServerRatingsAsync(String mcpServerId, Integer limit, Integer offset, String xWSO2Tenant, final ApiCallback<RatingListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getMCPServerRatingsValidateBeforeCall(mcpServerId, limit, offset, xWSO2Tenant, _callback);
+        Type localVarReturnType = new TypeToken<RatingListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
