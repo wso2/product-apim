@@ -13537,6 +13537,24 @@ components:
         successDeployedTime:
           readOnly: true
           type: string
+        liveGatewayCount:
+          readOnly: true
+          type: integer
+          description: |
+            The number of gateways that are currently live in the gateway environment
+          example: 1
+        deployedGatewayCount:
+          readOnly: true
+          type: integer
+          description: |
+            The number of gateways in which the API revision is deployed successfully
+          example: 1
+        failedGatewayCount:
+          readOnly: true
+          type: integer
+          description: |
+            The number of gateways where the API revision deployment has failed
+          example: 1
     AuditReport:
       title: Resource for Audit Report
       type: object

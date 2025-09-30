@@ -118,6 +118,8 @@
                         class="org.wso2.carbon.relay.ExpandingMessageFormatter"/-->
         <!--messageFormatter contentType="text/html"
                         class="org.wso2.carbon.relay.ExpandingMessageFormatter"/-->
+        <messageFormatter contentType="text/event-stream"
+                        class="org.apache.axis2.format.PlainTextFormatter"/>
         <!--messageFormatter contentType="application/soap+xml"
                         class="org.wso2.carbon.relay.ExpandingMessageFormatter"/-->
         <!--messageFormatter contentType="x-application/hessian"
@@ -166,6 +168,8 @@
                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/-->
         <!--messageBuilder contentType="text/xml"
                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/-->
+        <messageBuilder contentType="text/event-stream"
+                       class="org.apache.axis2.format.PlainTextBuilder"/>
         <!--messageFormatter contentType="text/plain"
                         class="org.apache.axis2.format.PlainTextBuilder"/-->
         <!--messageBuilder contentType="x-application/hessian"

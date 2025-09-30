@@ -24702,16 +24702,22 @@ components:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
+          failedGatewayCount: 1
           deployedTime: deployedTime
           name: default
+          liveGatewayCount: 1
           successDeployedTime: successDeployedTime
+          deployedGatewayCount: 1
           status: CREATED
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
+          failedGatewayCount: 1
           deployedTime: deployedTime
           name: default
+          liveGatewayCount: 1
           successDeployedTime: successDeployedTime
+          deployedGatewayCount: 1
           status: CREATED
         apiInfo:
           id: 01234567-0123-0123-0123-012345678901
@@ -24761,16 +24767,22 @@ components:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
+            failedGatewayCount: 1
             deployedTime: deployedTime
             name: default
+            liveGatewayCount: 1
             successDeployedTime: successDeployedTime
+            deployedGatewayCount: 1
             status: CREATED
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
+            failedGatewayCount: 1
             deployedTime: deployedTime
             name: default
+            liveGatewayCount: 1
             successDeployedTime: successDeployedTime
+            deployedGatewayCount: 1
             status: CREATED
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
@@ -24782,16 +24794,22 @@ components:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
+            failedGatewayCount: 1
             deployedTime: deployedTime
             name: default
+            liveGatewayCount: 1
             successDeployedTime: successDeployedTime
+            deployedGatewayCount: 1
             status: CREATED
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
+            failedGatewayCount: 1
             deployedTime: deployedTime
             name: default
+            liveGatewayCount: 1
             successDeployedTime: successDeployedTime
+            deployedGatewayCount: 1
             status: CREATED
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
@@ -24812,16 +24830,22 @@ components:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
+          failedGatewayCount: 1
           deployedTime: deployedTime
           name: default
+          liveGatewayCount: 1
           successDeployedTime: successDeployedTime
+          deployedGatewayCount: 1
           status: CREATED
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
+          failedGatewayCount: 1
           deployedTime: deployedTime
           name: default
+          liveGatewayCount: 1
           successDeployedTime: successDeployedTime
+          deployedGatewayCount: 1
           status: CREATED
       properties:
         list:
@@ -24834,9 +24858,12 @@ components:
         revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         vhost: mg.wso2.com
         displayOnDevportal: true
+        failedGatewayCount: 1
         deployedTime: deployedTime
         name: default
+        liveGatewayCount: 1
         successDeployedTime: successDeployedTime
+        deployedGatewayCount: 1
         status: CREATED
       properties:
         revisionUuid:
@@ -24872,6 +24899,24 @@ components:
         successDeployedTime:
           readOnly: true
           type: string
+        liveGatewayCount:
+          description: |
+            The number of gateways that are currently live in the gateway environment
+          example: 1
+          readOnly: true
+          type: integer
+        deployedGatewayCount:
+          description: |
+            The number of gateways in which the API revision is deployed successfully
+          example: 1
+          readOnly: true
+          type: integer
+        failedGatewayCount:
+          description: |
+            The number of gateways where the API revision deployment has failed
+          example: 1
+          readOnly: true
+          type: integer
       title: APIRevisionDeployment Info object with basic API deployment details
     AuditReport:
       example:
