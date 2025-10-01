@@ -27,17 +27,12 @@ import static org.testng.Assert.assertTrue;
 
 import org.json.JSONObject;
 import org.testng.annotations.*;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
-import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
@@ -148,8 +143,5 @@ public class CopyNewVersionTestCase extends APIMIntegrationBaseTest {
         };
 
     }
-
-
-
 
 }

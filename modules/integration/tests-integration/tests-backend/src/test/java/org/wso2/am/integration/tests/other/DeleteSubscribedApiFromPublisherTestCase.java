@@ -26,16 +26,11 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.*;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
-import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -78,19 +73,7 @@ public class DeleteSubscribedApiFromPublisherTestCase extends APIMIntegrationBas
         super.init(userMode);
         log.info("Test Starting user mode:" + userMode);
 
-        //copy first .war file
-        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
 
-        String sourcePath = path + webApp + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        assertTrue(isWebAppDeployed, "Web APP is not deployed");
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
 
@@ -259,5 +242,3 @@ public class DeleteSubscribedApiFromPublisherTestCase extends APIMIntegrationBas
         };
     }
 }
-
-
