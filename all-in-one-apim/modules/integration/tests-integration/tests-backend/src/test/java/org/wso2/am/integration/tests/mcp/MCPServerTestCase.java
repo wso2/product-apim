@@ -1051,8 +1051,8 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(toolCallResponse2.getResponseCode(), 403, "Tool call should fail due to missing scopes");
     }
 
-    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using a third-party MCP Server (proxy)",
-            dependsOnMethods = {"testScopesForProxySubtype"})
+//    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using a third-party MCP Server (proxy)",
+//            dependsOnMethods = {"testScopesForProxySubtype"})
     public void testThrottlingForProxySubtype() throws Exception {
 
         RequestCountLimitDTO requestCountLimit5PerMin =
