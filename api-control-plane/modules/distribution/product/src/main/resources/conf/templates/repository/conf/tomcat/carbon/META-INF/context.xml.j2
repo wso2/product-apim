@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+  ~
+  ~ WSO2 LLC. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<!-- The contents of this file will be loaded for each web application -->
+<Context privileged="true" useHttpOnly="true" useRelativeRedirects="false">
+    <Resources allowLinking="true" />
+
+    <!-- Default set of monitored resources -->
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+
+    <!-- comment this out to enable session persistence across Tomcat restarts -->
+    <Manager pathname=""/>
+
+    <JarScanner className="org.wso2.carbon.tomcat.ext.scan.CarbonTomcatJarScanner" scanClassPath="true"
+                scanAllFiles="false" scanAllDirectories="false"/>
+
+    <!-- Following are default values. But we specifically add them in kernel, becuase they get overridden in WSO2 AS -->
+    <Loader className="org.apache.catalina.loader.WebappLoader"
+            loaderClass="org.apache.catalina.loader.WebappClassLoader"/>
+
+    {% if admin_console.authenticator.iwa_ui_authenticator.enable is sameas true %}
+    <Valve className="waffle.apache.NegotiateAuthenticator" principalFormat="fqn" roleFormat="both"/>
+    <Realm className="waffle.apache.WindowsRealm"/>
+    {% endif %}
+
+    {% if admin_console.control_access.enable is sameas true %}
+    <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+        allow="{% for ip in admin_console.control_access.allow %}{{ip}}{{ "|" if not loop.last}}{% endfor %}"/>
+    {% endif %}
+</Context>
