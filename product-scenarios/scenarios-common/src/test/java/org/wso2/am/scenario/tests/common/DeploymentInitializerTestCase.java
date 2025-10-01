@@ -20,13 +20,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.am.scenario.test.common.ScenarioTestBase;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,26 +47,8 @@ public class DeploymentInitializerTestCase extends ScenarioTestBase {
     public void deployingWebAPPs() throws Exception {
         setup();
         log.info(System.getProperty("test.resource.location"));
-        log.info("Start deploying Web Apps");
-        String testArtifactPath = resourceLocation + File.separator + "artifacts";
-        String APIStatusMonitorWebAppSourcePath = testArtifactPath + File.separator +
-                APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
-
-        webAppAdminClient = getWebAppAdminClient();
-        webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
-
-        WebAppDeploymentUtil.isMonitoringAppDeployed(getBackendEndServiceEndPointHttps(""));
-
-        String productionWebAppName = "jaxrs_basic";
-        String sourcePathProd =  testArtifactPath + "/" + productionWebAppName + ".war";
-
-        webAppAdminClient.uploadWarFile(sourcePathProd);
-
-        String sessionCookie = login(serviceEndpoint, "admin", "admin");
-
-        boolean isWebAppDeployProd = WebAppDeploymentUtil.isWebApplicationDeployed
-                (serviceEndpoint, sessionCookie, productionWebAppName);
-        assertTrue(isWebAppDeployProd, productionWebAppName + " is not deployed");
-        // Once distributed setup is created use gateway webapp url from TG
+        // Note: WebApp deployment has been moved to file-based approach during server startup.
+        // WebApps are now automatically deployed when the server starts via APIMCarbonServerExtension
+        // which uses WebAppDeploymentUtil.copyWebApp() to copy WAR files to the webapps directory.
     }
 }
