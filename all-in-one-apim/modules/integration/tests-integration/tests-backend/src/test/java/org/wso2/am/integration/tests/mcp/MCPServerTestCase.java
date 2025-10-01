@@ -1083,8 +1083,8 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         ThrottlingUtils.waitUntilNextClockHourIfCurrentHourIsInLastNMinutes(3);
         invokeToolCallsExpecting200(petstoreBackendURL, requestHeaders, 5);
-        Thread.sleep(5000);
-        int failCount = invokeToolCallsExpecting429(petstoreBackendURL, requestHeaders, 3);
+        Thread.sleep(8000);
+        int failCount = invokeToolCallsExpecting429(petstoreBackendURL, requestHeaders, 4);
         Assert.assertTrue(failCount >= 1, "At least one request should be throttled with 429");
 
         mcpServerResponse1.setThrottlingPolicy(THROTTLING_TIER_UNLIMITED);
@@ -1103,8 +1103,8 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         ThrottlingUtils.waitUntilNextClockHourIfCurrentHourIsInLastNMinutes(3);
         invokeToolCallsExpecting200(petstoreBackendURL, requestHeaders, 5);
-        Thread.sleep(5000);
-        invokeToolCallsExpecting200(petstoreBackendURL, requestHeaders, 3);
+        Thread.sleep(8000);
+        invokeToolCallsExpecting200(petstoreBackendURL, requestHeaders, 4);
 
         final MCPServerOperationDTO updateOp = new MCPServerOperationDTO();
         copyOperation(mcpServerResponse2.getOperations().get(0), updateOp);
@@ -1123,8 +1123,8 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         ThrottlingUtils.waitUntilNextClockHourIfCurrentHourIsInLastNMinutes(3);
         invokeToolCallsExpecting200(petstoreBackendURL, requestHeaders, 5);
-        Thread.sleep(5000);
-        failCount = invokeToolCallsExpecting429(petstoreBackendURL, requestHeaders, 3);
+        Thread.sleep(8000);
+        failCount = invokeToolCallsExpecting429(petstoreBackendURL, requestHeaders, 4);
         Assert.assertTrue(failCount >= 1, "At least one request should be throttled with 429");
     }
 
@@ -1200,9 +1200,9 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
             throws Exception {
 
         for (int i = 0; i < count; i++) {
+            Thread.sleep(1000);
             HttpResponse response = HTTPSClientUtils.doPost(backendURL, headers, TOOL_CALL_ECHO_REQUEST_PAYLOAD);
             Assert.assertEquals(response.getResponseCode(), 200, "Tool call should succeed");
-            Thread.sleep(1000);
         }
     }
 
@@ -1220,11 +1220,11 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
         int failCount = 0;
         for (int i = 0; i < count; i++) {
+            Thread.sleep((i+1) * 1000);
             HttpResponse response = HTTPSClientUtils.doPost(backendURL, headers, TOOL_CALL_ECHO_REQUEST_PAYLOAD);
             if (response.getResponseCode() == 429) {
                 failCount++;
             }
-            Thread.sleep(1000);
         }
         return failCount;
     }
