@@ -21,7 +21,6 @@ package org.wso2.am.integration.tests.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
@@ -29,13 +28,9 @@ import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-
-import java.io.File;
 
 /**
  * Deploy jaxrs_basic webApp and monitoring webApp required to run tests
@@ -46,7 +41,6 @@ import java.io.File;
 public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(APIManagerConfigurationChangeTest.class);
-    WebAppAdminClient webAppAdminClient;
 
     @Test(alwaysRun = true)
     public void configureEnvironment() throws Exception {
@@ -80,30 +74,5 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         ClientAuthenticator.makeDCRRequest(adminPortalParamRequest);
 
         super.init();
-        String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                File.separator + "AM" + File.separator;
-
-        String testArtifactWarFilePath = testArtifactPath + "lifecycletest" + File.separator;
-
-        String APIStatusMonitorWebAppSourcePath = testArtifactPath + "war" + File.separator +
-                APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
-
-        String gatewayMgtSessionId = createSession(gatewayContextMgt);
-
-        webAppAdminClient = new WebAppAdminClient(
-                gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayMgtSessionId);
-
-        webAppAdminClient
-                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war");
-
-        webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
-
-        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
-
-        WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
-
-        log.info("Web App Deployed");
-        String gatewaySessionCookie = createSession(gatewayContextMgt);
     }
 }

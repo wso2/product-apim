@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -45,7 +44,6 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
-    private WebAppAdminClient webAppAdminClient;
     private String apiId;
     private String applicationID;
     private String accessToken;

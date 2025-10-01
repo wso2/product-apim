@@ -72,11 +72,11 @@ public class DocAPIParameterTamperingTest extends APIMIntegrationBaseTest {
             Assert.fail("ApiException Exception expected to be thrown");
         } catch (ApiException e) {
             log.error(e);
-            if (e.getCode() == 404) {
+            if (e.getCode() == 401) {
                 expectedExceptionOccured = true;
             }
         }
-        Assert.assertTrue("Expected ApiException to be thrown with a response code 404. But it was not thrown " +
+        Assert.assertTrue("Expected ApiException to be thrown with a response code 401. But it was not thrown " +
                 "as that.", expectedExceptionOccured);
     }
 }
