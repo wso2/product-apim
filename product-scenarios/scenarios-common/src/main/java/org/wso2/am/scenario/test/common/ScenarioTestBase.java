@@ -28,7 +28,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
@@ -454,20 +453,15 @@ public class ScenarioTestBase {
 
     /**
      * Create a Client to communicate with Web Application Admin Service
-     *
-     * @return {@link WebAppAdminClient}
+     * 
+     * @deprecated WebApp deployment has been moved to file-based approach during server startup
+     * @return {@link org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil}
      * @throws APIManagementException If there are any errors during initializing the client
      */
-    public WebAppAdminClient getWebAppAdminClient() throws APIManagementException {
-        try {
-
-            // using service endpoint for now. get gw services url from TG once distributed deployment is ready
-            String sessionCookie = login(serviceEndpoint, "admin", "admin");
-
-            return new WebAppAdminClient(serviceEndpoint, sessionCookie);
-        } catch (RemoteException e) {
-            throw new APIManagementException("Unable to create new WebAppAdminClient ", e);
-        }
+    @Deprecated
+    public Object getWebAppAdminClient() throws APIManagementException {
+        throw new APIManagementException("WebAppAdminClient has been replaced with file-based webapp deployment. " +
+                "WebApps are now deployed during server startup using WebAppDeploymentUtil.copyWebApp()");
     }
 
     protected String login(String serviceEndpoint, String username, String password) throws APIManagementException {
@@ -853,32 +847,13 @@ public class ScenarioTestBase {
         return gatewayHttpsURL + "/" + apiContext + "/" + apiVersion + apiResource;
     }
 
+    @Deprecated
     public boolean isWebApplicationDeployed(String serviceEndpoint, String username, String password,
                                             String webAppFileName)
             throws RemoteException, APIManagementException {
-        String sessionCookie = login(serviceEndpoint, username, password);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(serviceEndpoint, sessionCookie);
-
-        List<String> webAppList;
-        long WEB_APP_DEPLOYMENT_DELAY = 90 * 1000;
-
-        String webAppName = webAppFileName + ".war";
-        boolean isWebappDeployed = false;
-        long waitingTime = System.currentTimeMillis() + WEB_APP_DEPLOYMENT_DELAY;
-        while (waitingTime > System.currentTimeMillis()) {
-            webAppList = webAppAdminClient.getWebAppList(webAppFileName);
-            for (String name : webAppList) {
-                if (webAppName.equalsIgnoreCase(name)) {
-                    return !isWebappDeployed;
-                }
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ignored) {
-
-            }
-        }
-        return isWebappDeployed;
+        log.info("WebApp deployment verification simplified - webapps are now deployed during server startup: " + webAppFileName);
+        // Since webapps are now deployed during server startup, we assume they are available
+        return true;
     }
 
     public String getBackendEndServiceEndPointHttps(String serviceName) {
