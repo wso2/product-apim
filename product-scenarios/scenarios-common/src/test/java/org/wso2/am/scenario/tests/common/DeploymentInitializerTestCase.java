@@ -40,7 +40,6 @@ import static org.testng.Assert.assertTrue;
 public class DeploymentInitializerTestCase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(DeploymentInitializerTestCase.class);
 
-    private WebAppAdminClient webAppAdminClient;
     private String resourceLocation = System.getProperty("test.resource.location");
 
     @Test
