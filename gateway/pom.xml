@@ -1504,7 +1504,7 @@
         <!-- AM Policy Bundle Versions -->
         <regex-guardrail.version>1.0.0</regex-guardrail.version>
         <aws-bedrock-guardrail.version>1.1.0</aws-bedrock-guardrail.version>
-        <azure-content-safety-guardrail.version>1.0.0</azure-content-safety-guardrail.version>
+        <azure-content-safety-guardrail.version>1.0.1</azure-content-safety-guardrail.version>
         <content-length-guardrail.version>1.0.0</content-length-guardrail.version>
         <json-schema-guardrail.version>1.0.0</json-schema-guardrail.version>
         <pii-masking-regex.version>1.0.0</pii-masking-regex.version>
