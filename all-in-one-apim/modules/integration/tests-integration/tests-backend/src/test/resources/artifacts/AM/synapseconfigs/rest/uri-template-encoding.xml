@@ -1,22 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://ws.apache.org/ns/synapse">
-    <sequence name="port_calculate">
-    <script language="js">
-        var port = parseInt(8280 + parseInt(java.lang.System.getProperty("portOffset")));
-        mc.setProperty("uri.var.port",port.toString());
-    </script>
-    </sequence>
     <api context="/services/client/" name="ClientApi">
         <resource methods="GET" uri-template="/urlEncoded?queryParam={+value}">
             <inSequence>
                 <log level="custom">
                     <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
                 </log>
-                <sequence key="port_calculate"/>
                 <send>
                     <endpoint>
                         <http method="GET"
-                              uri-template="http://localhost:{uri.var.port}/services/test/urlEncoded?queryParam={uri.var.value}"/>
+                              uri-template="http://localhost:8780/services/test/urlEncoded?queryParam={uri.var.value}"/>
                     </endpoint>
                 </send>
             </inSequence>
@@ -29,11 +22,10 @@
                 <log level="custom">
                     <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
                 </log>
-                <sequence key="port_calculate"/>
                 <send>
                     <endpoint>
                         <http method="GET"
-                              uri-template="http://localhost:{uri.var.port}/services/test/escapeUrlEncoded?queryParam={+uri.var.value}"/>
+                              uri-template="http://localhost:8780/services/test/escapeUrlEncoded?queryParam={+uri.var.value}"/>
                     </endpoint>
                 </send>
             </inSequence>
@@ -46,10 +38,9 @@
                 <log level="custom">
                     <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
                 </log>
-                <sequence key="port_calculate"/>
                 <send>
                     <endpoint>
-                        <http method="GET" uri-template="http://localhost:{uri.var.port}/services/test_2/{uri.var.value}"/>
+                        <http method="GET" uri-template="http://localhost:8780/services/test_2/{uri.var.value}"/>
                     </endpoint>
                 </send>
             </inSequence>
@@ -62,10 +53,9 @@
                 <log level="custom">
                     <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
                 </log>
-                <sequence key="port_calculate"/>
                 <send>
                     <endpoint>
-                        <http method="GET" uri-template="http://localhost:{uri.var.port}/services/test_2/{+uri.var.value}"/>
+                        <http method="GET" uri-template="http://localhost:8780/services/test_2/{+uri.var.value}"/>
                     </endpoint>
                 </send>
             </inSequence>
@@ -78,7 +68,6 @@
                 <log level="custom">
                     <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
                 </log>
-                <sequence key="port_calculate"/>
                 <send>
                     <endpoint>
                         <http method="GET" uri-template="{uri.var.value}"/>

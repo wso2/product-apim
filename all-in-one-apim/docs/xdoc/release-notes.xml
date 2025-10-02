@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v4.6.0-Alpha3 - 29th September 2025</title>
+    <title>WSO2 API Manager v4.6.0-Beta - 2nd October 2025</title>
 </head>
 <body>
 <div id="main-content">
-<h1>WSO2 API Manager 4.6.0-Alpha3 Released!</h1>
+<h1>WSO2 API Manager 4.6.0-Beta Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 4.6.0-Alpha3 of
+    The WSO2 API Manager team is pleased to announce the release of version 4.6.0-Beta of
     the Open Source API Manager.
 </p>
 
@@ -77,9 +77,9 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-    <h2>Bug Fixes And Improvements in 4.6.0-Alpha3</h2>
+    <h2>Bug Fixes And Improvements in 4.6.0-Beta</h2>
     <ul>
-        <li>GitHub (<a href="https://github.com/wso2/api-manager/milestone/28">api-manager</a>)
+        <li>GitHub (<a href="https://github.com/wso2/api-manager/milestone/29">api-manager</a>)
         </li>
     </ul>
 
