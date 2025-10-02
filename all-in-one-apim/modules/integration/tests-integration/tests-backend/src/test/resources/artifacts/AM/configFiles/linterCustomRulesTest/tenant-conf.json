@@ -440,6 +440,10 @@
       {
         "Name": "apim:mcp_server_delete",
         "Roles": "admin,Internal/creator"
+      },
+      {
+        "Name": "apim:mcp_server_generate_key",
+        "Roles": "admin,Internal/creator,Internal/publisher"
       }
     ]
   },
