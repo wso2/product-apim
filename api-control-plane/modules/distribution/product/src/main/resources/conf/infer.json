@@ -111,29 +111,29 @@
     }
   },
   "preserve_previous_product_behaviour.version": {
-    "3.2.0": {
+    "APIM_3.2.0": {
       "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     },
-    "3.2.1": {
+    "APIM_3.2.1": {
       "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     },
-    "4.0.0": {
+    "APIM_4.0.0": {
       "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     },
-    "4.1.0": {
+    "APIM_4.1.0": {
       "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     },
-    "4.2.0": {
+    "APIM_4.2.0": {
       "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     },
-    "4.3.0": {
+    "APIM_4.3.0": {
       "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     },
-    "4.4.0": {
+    "APIM_4.4.0": {
       "apim.endpoint_config.loadbalanced.enable_failover": false,
       "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     },
-    "4.5.0": {
+    "APIM_4.5.0": {
       "apim.endpoint_config.loadbalanced.enable_failover": false,
       "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     }
