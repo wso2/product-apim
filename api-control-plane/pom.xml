@@ -1289,7 +1289,7 @@
         <carbon.apimgt.ui.version>9.3.79</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.32.108</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.109</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1481,7 +1481,7 @@
         <auth0.keymanager.feature.version>1.0.7</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.1.8</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.2.30</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.2.31</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
         <charon3.version>4.0.23</charon3.version>
@@ -1502,7 +1502,7 @@
         <identity.branding.preference.management.version>1.0.17</identity.branding.preference.management.version>
 
         <!-- External Gateway Agent Versions -->
-        <aws.gwmanager.feature.version>1.3.0</aws.gwmanager.feature.version>
+        <aws.gwmanager.feature.version>1.4.0</aws.gwmanager.feature.version>
         <azure.gwmanager.feature.version>0.6.0</azure.gwmanager.feature.version>
         <kong.gwmanager.feature.version>0.5.0</kong.gwmanager.feature.version>
         <envoy.gwmanager.feature.version>0.2.0</envoy.gwmanager.feature.version>
