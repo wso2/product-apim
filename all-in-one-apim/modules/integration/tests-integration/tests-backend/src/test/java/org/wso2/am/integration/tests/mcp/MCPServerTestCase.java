@@ -406,15 +406,19 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
             "  }\n" +
             "}";
 
-    private static final String EXPECTED_TOOL_CALL_GET_PETS_RESPONSE = "[ {\n" +
-            "  \"id\" : \"1\",\n" +
-            "  \"name\" : \"Fido\",\n" +
-            "  \"tag\" : \"dog\"\n" +
-            "}, {\n" +
-            "  \"id\" : \"2\",\n" +
-            "  \"name\" : \"Whiskers\",\n" +
-            "  \"tag\" : \"cat\"\n" +
-            "} ]";
+    private static final String EXPECTED_TOOL_CALL_GET_PETS_RESPONSE = "{\n" +
+            "  \"jsonrpc\": \"2.0\",\n" +
+            "  \"id\": 0,\n" +
+            "  \"result\": {\n" +
+            "    \"isError\": false,\n" +
+            "    \"content\": [\n" +
+            "      {\n" +
+            "        \"text\": \"[\\n                        { \\\"id\\\": \\\"1\\\", \\\"name\\\": \\\"Fido\\\", \\\"tag\\\": \\\"dog\\\" },\\n                        { \\\"id\\\": \\\"2\\\", \\\"name\\\": \\\"Whiskers\\\", \\\"tag\\\": \\\"cat\\\" }\\n                        ]\",\n" +
+            "        \"type\": \"text\"\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  }\n" +
+            "}";
 
     private static final String EXPECTED_TOOL_CALL_ECHO_RESPONSE = "\"echo\"";
 
