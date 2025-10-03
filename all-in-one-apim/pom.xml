@@ -359,12 +359,12 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.styles</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.thirdparty.km</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.h2database.wso2</groupId>
@@ -518,12 +518,12 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.multitenancy.dashboard.ui</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.security.feature</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <!--Test framework dependencies -->
@@ -565,17 +565,17 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.admin.clients</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.test.extensions</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -831,7 +831,7 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.stratos.apimgt.login.ui</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -961,42 +961,42 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.clients.publisher.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.clients.store.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.clients.admin.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.service.catalog.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.internal.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.governance.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.samples.utils</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.swagger</groupId>
@@ -1234,7 +1234,7 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.publisher.api</artifactId>
-                <version>${apimserver.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
@@ -1250,6 +1250,18 @@
                 <groupId>org.wso2.orbit.org.opensaml</groupId>
                 <artifactId>opensaml</artifactId>
                 <version>${opensaml2.wso2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.framework.extensions</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
             </dependency>
 
             <!-- analytics features -->
@@ -1292,54 +1304,51 @@
 
         <project.scm.id>scm-server</project.scm.id>
 
-        <carbon.analytics.common.version>5.3.25</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.3.27</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.21</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.81</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-
-        <carbon.apimgt.version>9.32.37</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.113</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.8.43</carbon.registry.version>
+        <carbon.registry.version>4.8.50</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.8.34</carbon.governance.version>
+        <carbon.governance.version>4.8.37</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.9.29-alpha</carbon.kernel.version>
-        <apimserver.version>4.6.0-SNAPSHOT</apimserver.version>
+        <carbon.kernel.version>4.9.30</carbon.kernel.version>
 
         <cipher.tool.version>1.1.28</cipher.tool.version>
 
-        <carbon.commons.version>4.9.14</carbon.commons.version>
+        <carbon.commons.version>4.9.18</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.255</carbon.mediation.version>
+        <carbon.mediation.version>4.7.262</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.729</carbon.identity.version>
-        <carbon.identity.governance.version>1.8.109</carbon.identity.governance.version>
+        <carbon.identity.version>5.25.734</carbon.identity.version>
+        <carbon.identity.governance.version>1.8.111</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
-        <carbon.identity.event.handler.notification.version>1.7.34</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.34</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.event.handler.notification.version>1.7.35</carbon.identity.event.handler.notification.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.40</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
-        <carbon.identity-user-ws.version>5.7.6</carbon.identity-user-ws.version>
-        <carbon.identity-inbound-auth-openid.version>5.9.12</carbon.identity-inbound-auth-openid.version>
-        <org.wso2.carbon.identity.local.auth.api.version>2.5.14</org.wso2.carbon.identity.local.auth.api.version>
+        <carbon.identity-user-ws.version>5.7.7</carbon.identity-user-ws.version>
+        <carbon.identity-inbound-auth-openid.version>5.9.14</carbon.identity-inbound-auth-openid.version>
+        <org.wso2.carbon.identity.local.auth.api.version>2.5.15</org.wso2.carbon.identity.local.auth.api.version>
         <carbon.identity-local-auth-basicauth.version>6.7.33</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.8.13</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.7.71</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.6.8</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.4</carbon.extension.identity.oauth2.grantType.jwt.version>
-        <carbon.identity.carbon.auth.saml2.version>5.8.9</carbon.identity.carbon.auth.saml2.version>
-        <carbon.identity.auth.version>1.8.42</carbon.identity.auth.version>
+        <carbon.identity.carbon.auth.saml2.version>5.8.10</carbon.identity.carbon.auth.saml2.version>
         <identity.apps.version>1.6.383</identity.apps.version>
         <identity.oauth.addons.version>2.4.38</identity.oauth.addons.version>
 
@@ -1348,14 +1357,14 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.11.19</carbon.deployment.version>
+        <carbon.deployment.version>4.11.24</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.9.36</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.9.42</carbon.multitenancy.version>
 
-        <siddhi.version>3.2.14</siddhi.version>
+        <siddhi.version>3.2.15</siddhi.version>
 
-        <axis2-transport-mail.wso2.version>2.0.0-wso2v71</axis2-transport-mail.wso2.version>
+        <axis2-transport-mail.wso2.version>2.0.0-wso2v73</axis2-transport-mail.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.17</log4j.version>
@@ -1365,7 +1374,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.0.0-wso2v240</synapse.version>
+        <synapse.version>4.0.0-wso2v256</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v105</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v29</axiom.wso2.version>
@@ -1396,10 +1405,10 @@
         <emma.version>2.1.5320</emma.version>
         <javax.ws.rs-api.version>2.1.1</javax.ws.rs-api.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
-        <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
+        <waffle-jna.version>1.6.wso2v7</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
         <opensaml2.wso2.version>3.3.1.wso2v14</opensaml2.wso2.version>
-        <transport.http.netty.version>6.3.53</transport.http.netty.version>
+        <transport.http.netty.version>6.3.55</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
@@ -1408,8 +1417,7 @@
         <carbon.automation.version>4.4.10</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <testng.version>6.11</testng.version>
-        <org.apache.cxf.version>3.6.5</org.apache.cxf.version>
-        <org.apache.axis2.transport.version>2.0.0-wso2v66</org.apache.axis2.transport.version> <!-- not used -->
+        <org.apache.cxf.version>3.6.8</org.apache.cxf.version>
         <org.springframework.version>5.1.13.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.96</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.13</org.codehaus.jackson.version>
@@ -1433,9 +1441,9 @@
         <carbon.metrics.version>1.3.12</carbon.metrics.version>
         <!-- MB Features -->
 
-        <carbon.messaging.version>3.3.35</carbon.messaging.version>
-        <carbon.event-processing.version>2.3.15</carbon.event-processing.version>
-        <andes.version>3.3.35</andes.version>
+        <carbon.messaging.version>3.3.38</carbon.messaging.version>
+        <carbon.event-processing.version>2.3.19</carbon.event-processing.version>
+        <andes.version>3.3.36</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
@@ -1458,7 +1466,7 @@
         <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
 
         <!--Consent Management dependencies-->
-        <carbon.consent.mgt.version>2.5.6</carbon.consent.mgt.version>
+        <carbon.consent.mgt.version>2.5.8</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.1.5</carbon.database.utils.version>
 
         <com.jayway.jsonpath.version>2.9.0.wso2v1</com.jayway.jsonpath.version>
@@ -1469,7 +1477,7 @@
 
         <!-- API Import/Export Dependencies -->
         <com.fasterxml.jackson.dataformat.version>2.16.1</com.fasterxml.jackson.dataformat.version>
-        <versions.pax.logging>2.2.1-wso2v2</versions.pax.logging>
+        <versions.pax.logging>2.3.0-wso2v1</versions.pax.logging>
         <config.mapper.version>1.0.25</config.mapper.version>
 
         <!-- Diagnostic Tool Dependencies -->
@@ -1485,21 +1493,21 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.7.14</wso2is.km.version>
+        <wso2is.km.version>1.7.16</wso2is.km.version>
         <wso2is7.km.version>2.0.8</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
-        <azure.keymanager.feature.version>1.0.11</azure.keymanager.feature.version>
+        <azure.keymanager.feature.version>1.0.15</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.1</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.7</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.1.8</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.2.24</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.2.32</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
         <charon3.version>4.0.23</charon3.version>
 
         <!-- Service Catalog Client Dependencies -->
-        <com.squareup.okhttp3.version>4.9.0</com.squareup.okhttp3.version>
+        <com.squareup.okhttp3.version>4.12.0</com.squareup.okhttp3.version>
         <io.gsonfire.version>1.8.3</io.gsonfire.version>
         <org.apache.oltu.oauth2.version>1.0.1</org.apache.oltu.oauth2.version>
         <identity.org.mgt.version>1.3.153</identity.org.mgt.version>
@@ -1508,20 +1516,21 @@
         <xmlsec.wso2.version>1.5.6-wso2v1</xmlsec.wso2.version>
         <xmlsec.version>2.3.4</xmlsec.version>
         <identity.user.workflow.version>5.6.1</identity.user.workflow.version>
-        <identity.carbon.auth.rest.version>1.8.41</identity.carbon.auth.rest.version>
+        <identity.carbon.auth.rest.version>1.8.48</identity.carbon.auth.rest.version>
 
         <!-- Identity Branding Preference Management Versions -->
         <identity.branding.preference.management.version>1.0.17</identity.branding.preference.management.version>
 
         <!-- External Gateway Agent Versions -->
-        <aws.gwmanager.feature.version>1.2.1</aws.gwmanager.feature.version>
-        <azure.gwmanager.feature.version>0.2.0</azure.gwmanager.feature.version>
-        <kong.gwmanager.feature.version>0.3.0</kong.gwmanager.feature.version>
+        <aws.gwmanager.feature.version>1.4.0</aws.gwmanager.feature.version>
+        <azure.gwmanager.feature.version>0.6.0</azure.gwmanager.feature.version>
+        <kong.gwmanager.feature.version>0.5.0</kong.gwmanager.feature.version>
+        <envoy.gwmanager.feature.version>0.2.0</envoy.gwmanager.feature.version>
 
         <!-- AM Policy Bundle Versions -->
         <regex-guardrail.version>1.0.0</regex-guardrail.version>
         <aws-bedrock-guardrail.version>1.1.0</aws-bedrock-guardrail.version>
-        <azure-content-safety-guardrail.version>1.0.0</azure-content-safety-guardrail.version>
+        <azure-content-safety-guardrail.version>1.0.1</azure-content-safety-guardrail.version>
         <content-length-guardrail.version>1.0.0</content-length-guardrail.version>
         <json-schema-guardrail.version>1.0.0</json-schema-guardrail.version>
         <pii-masking-regex.version>1.0.0</pii-masking-regex.version>

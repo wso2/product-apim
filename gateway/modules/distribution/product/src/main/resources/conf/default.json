@@ -176,6 +176,9 @@
   "synapse_properties.'synapse.fault.xml.location'": "repository/resources/apim-synapse-config/fault.xml",
   "synapse_properties.'synapse.registry.xml.location'": "repository/resources/apim-synapse-config/registry.xml",
   "synapse_properties.'synapse.script.mediator.default.engine'": "rhinoJs",
+  "synapse_properties.'limit_java_class_access_in_scripts.enable'": true,
+  "synapse_properties.'limit_java_class_access_in_scripts.list_type'": "BLOCK_LIST",
+  "synapse_properties.'limit_java_class_access_in_scripts.class_prefixes'": "java.lang.System,java.lang.Runtime,java.lang.ProcessBuilder,java.io.File,java.io.RandomAccessFile,java.nio.file.Files, java.nio.file.Paths,java.net.URL, java.net.Socket, java.net.HttpURLConnection,java.lang.reflect.Method, java.lang.reflect.Field, java.lang.reflect.Constructor",
   "passthru_http.'http.socket.timeout'": "180000",
   "passthru_http.worker_pool_size_core": "400",
   "passthru_http.worker_pool_size_max": "500",
@@ -560,5 +563,31 @@
     }
   ],
   "service_provider.use_username_as_sub_claim": false,
-  "apim.ai.llm_provider_events_enabled": true
+  "apim.ai.llm_provider_events_enabled": true,
+  "apim.basic_authenticator.max_idle": "100",
+  "apim.basic_authenticator.init_idle_capacity": "50",
+  "apim.basic_authenticator.max_active": "100",
+  "apim.basic_authenticator.max_wait_millis": "30000",
+  "admin_service.deny_list": [
+    "ClassMediatorAdmin",
+    "CommandMediatorAdmin",
+    "ConfigServiceAdmin",
+    "CustomMeteringService",
+    "DeploymentSynchronizerAdmin",
+    "EndpointTemplateAdminService",
+    "ESBNTaskAdmin",
+    "MediationLibraryAdminService",
+    "MediationLibraryUploader",
+    "MediationSecurityAdminService",
+    "MetricsDataService",
+    "ModuleAdminService",
+    "RemoteTaskAdmin",
+    "StatisticsAdmin",
+    "SynapseApplicationAdmin",
+    "SynapseArtifactUploaderAdmin",
+    "TemplateAdminService",
+    "ThemeMgtService",
+    "TierCacheService",
+    "WebappAdmin"
+  ]
 }

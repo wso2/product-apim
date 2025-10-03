@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import java.io.File;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MCPServerMetadataListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePathListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SequenceBackendListDTO;
@@ -2272,6 +2273,129 @@ public class ApIsApi {
 
         okhttp3.Call localVarCall = getGeneratedMockScriptsOfAPIValidateBeforeCall(apiId, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<MockResponsePayloadListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getMCPServerUsage
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. List of qualifying MCP Servers returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getMCPServerUsageCall(String apiId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/mcp-servers-usage"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getMCPServerUsageValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getMCPServerUsage(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getMCPServerUsageCall(apiId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Retrieve MCP Server(s) that uses the given API
+     * This operation can be used to retrieve/identify MCP Server(s) that uses the API given by the &#x60;apiId&#x60; parameter. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return MCPServerMetadataListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. List of qualifying MCP Servers returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public MCPServerMetadataListDTO getMCPServerUsage(String apiId) throws ApiException {
+        ApiResponse<MCPServerMetadataListDTO> localVarResp = getMCPServerUsageWithHttpInfo(apiId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Retrieve MCP Server(s) that uses the given API
+     * This operation can be used to retrieve/identify MCP Server(s) that uses the API given by the &#x60;apiId&#x60; parameter. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return ApiResponse&lt;MCPServerMetadataListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. List of qualifying MCP Servers returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<MCPServerMetadataListDTO> getMCPServerUsageWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = getMCPServerUsageValidateBeforeCall(apiId, null);
+        Type localVarReturnType = new TypeToken<MCPServerMetadataListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Retrieve MCP Server(s) that uses the given API (asynchronously)
+     * This operation can be used to retrieve/identify MCP Server(s) that uses the API given by the &#x60;apiId&#x60; parameter. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. List of qualifying MCP Servers returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getMCPServerUsageAsync(String apiId, final ApiCallback<MCPServerMetadataListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getMCPServerUsageValidateBeforeCall(apiId, _callback);
+        Type localVarReturnType = new TypeToken<MCPServerMetadataListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

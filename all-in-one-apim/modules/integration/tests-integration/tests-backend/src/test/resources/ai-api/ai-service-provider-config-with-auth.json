@@ -1,0 +1,50 @@
+{
+  "connectorType": "mistralAi_1.0.0",
+  "authenticationConfiguration": {
+    "enabled": true,
+    "type": "apikey",
+    "parameters": {
+      "headerEnabled": true,
+      "queryParameterEnabled": false,
+      "headerName": "Authorization"
+    }
+  },
+  "metadata": [
+    {
+      "attributeName": "requestModel",
+      "inputSource": "payload",
+      "attributeIdentifier": "$.model",
+      "required": false
+    },
+    {
+      "attributeName": "responseModel",
+      "inputSource": "payload",
+      "attributeIdentifier": "$.model",
+      "required": true
+    },
+    {
+      "attributeName": "promptTokenCount",
+      "inputSource": "payload",
+      "attributeIdentifier": "$.usage.prompt_tokens",
+      "required": true
+    },
+    {
+      "attributeName": "completionTokenCount",
+      "inputSource": "payload",
+      "attributeIdentifier": "$.usage.completion_tokens",
+      "required": true
+    },
+    {
+      "attributeName": "totalTokenCount",
+      "inputSource": "payload",
+      "attributeIdentifier": "$.usage.total_tokens",
+      "required": true
+    },
+    {
+      "attributeName": "remainingTokenCount",
+      "inputSource": "header",
+      "attributeIdentifier": "x-ratelimit-remaining-tokens",
+      "required": false
+    }
+  ]
+}

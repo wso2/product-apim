@@ -29,9 +29,12 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.EnvironmentsApi;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentPermissionsDTO;
+import org.wso2.am.integration.clients.admin.api.dto.GatewayInstanceDTO;
+import org.wso2.am.integration.clients.admin.api.dto.GatewayInstanceListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
@@ -467,14 +470,19 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, updatedEnvironmentDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test delete environment",
+    @Test(groups = {"wso2.am"}, description = "Test delete environment with API revisions deployed",
             dependsOnMethods = "testUpdateEnvironmentByRemovingVHost")
-    public void testDeleteEnvironment() throws Exception {
-        //Delete dynamic environment
-        ApiResponse<Void> apiResponse = restAPIAdmin.deleteEnvironment(environmentDTO.getId());
-        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    public void testDeleteEnvironmentWithAPIRevisions() throws Exception {
 
-        //Delete configured environment - bad request
+        // Delete environment with API revisions - conflict
+        try {
+            restAPIAdmin.deleteEnvironment(environmentDTO.getId());
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT,
+                    "Environment deletion should fail with 409 Conflict when API revisions are deployed");
+        }
+
+        // Delete configured environment - bad request
         EnvironmentDTO configuredGatewayEnvironment = getConfiguredGatewayEnvironment();
         try {
             restAPIAdmin.deleteEnvironment(configuredGatewayEnvironment.getId());
@@ -482,16 +490,49 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
         }
 
-        //Delete non existing environment - not found
+        // Delete non existing environment - not found
         try {
-            apiResponse = restAPIAdmin.deleteEnvironment(UUID.randomUUID().toString());
+            restAPIAdmin.deleteEnvironment(UUID.randomUUID().toString());
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test delete environment after undeploying API revisions",
+            dependsOnMethods = "testDeleteEnvironmentWithAPIRevisions")
+    public void testDeleteEnvironmentAfterUndeployingRevisions() throws Exception {
+
+        // Undeploy API two from "us-region"
+        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionUndeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUndeployRequest.setName("us-region");
+        apiRevisionUndeployRequest.setVhost("foods.com");
+        apiRevisionUndeployRequest.setDisplayOnDevportal(true);
+        apiRevisionUndeployRequestList.add(apiRevisionUndeployRequest);
+        HttpResponse apiRevisionsUndeployResponse = restAPIPublisher.undeployAPIRevision(apiTwoId, apiTwoRevisionId,
+                apiRevisionUndeployRequestList);
+        assertEquals(apiRevisionsUndeployResponse.getResponseCode(), HttpStatus.SC_CREATED,
+                "Unable to undeploy API Revisions:" + apiRevisionsUndeployResponse.getData());
+
+        // Undeploy API product from "us-region"
+        apiRevisionUndeployRequestList = new ArrayList<>();
+        apiRevisionUndeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUndeployRequest.setName("us-region");
+        apiRevisionUndeployRequest.setVhost("us.mg.wso2.com");
+        apiRevisionUndeployRequest.setDisplayOnDevportal(true);
+        apiRevisionUndeployRequestList.add(apiRevisionUndeployRequest);
+        apiRevisionsUndeployResponse = restAPIPublisher.undeployAPIProductRevision(apiProductId, apiProductRevisionId,
+                apiRevisionUndeployRequestList);
+        assertEquals(apiRevisionsUndeployResponse.getResponseCode(), HttpStatus.SC_CREATED,
+                "Unable to undeploy API Product Revisions:" + apiRevisionsUndeployResponse.getData());
+
+        // Delete environment
+        ApiResponse<Void> apiResponse = restAPIAdmin.deleteEnvironment(environmentDTO.getId());
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
     @Test(groups = {"wso2.am"}, description = "Test gateway environment permissions",
-            dependsOnMethods = "testDeleteEnvironment")
+            dependsOnMethods = "testDeleteEnvironmentAfterUndeployingRevisions")
     public void testGatewayPermissions() throws Exception {
         String providerName = user.getUserName();
         String context = "permissions";
@@ -581,8 +622,106 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(apiEndpointURLsDTOs);
         Assert.assertTrue(!apiEndpointURLsDTOs.contains("gateway-permission-allow"), "Environment list should contain the gateway-permission-allow environment for the user test.");
         Assert.assertTrue(!apiEndpointURLsDTOs.contains("gateway-permission-deny"), "Environment list should not contain the gateway-permission-deny environment for the user test.");
+
+        // Clean up API deployments before deleting environments
+        HttpResponse revisionsResponse = restAPIPublisher.getAPIRevisions(apiId, null);
+        JSONObject revisionsJson = new JSONObject(revisionsResponse.getData());
+        if (revisionsJson.has("list") && revisionsJson.getJSONArray("list").length() > 0) {
+            for (int i = 0; i < revisionsJson.getJSONArray("list").length(); i++) {
+                JSONObject revisionObj = revisionsJson.getJSONArray("list").getJSONObject(i);
+                String revisionId = revisionObj.getString("id");
+                if (revisionObj.has("deploymentInfo") && revisionObj.getJSONArray("deploymentInfo").length() > 0) {
+                    JSONObject deploymentInfo = revisionObj.getJSONArray("deploymentInfo").getJSONObject(0);
+                    String environmentName = deploymentInfo.getString("name");
+                    if (environmentName.equals(gatewayName1) || environmentName.equals(gatewayName2)) {
+                        List<APIRevisionDeployUndeployRequest> undeployRequestList = new ArrayList<>();
+                        APIRevisionDeployUndeployRequest undeployRequest = new APIRevisionDeployUndeployRequest();
+                        undeployRequest.setName(environmentName);
+                        undeployRequest.setVhost("localhost");
+                        undeployRequest.setDisplayOnDevportal(true);
+                        undeployRequestList.add(undeployRequest);
+                        restAPIPublisher.undeployAPIRevision(apiId, revisionId, undeployRequestList);
+                    }
+                }
+            }
+        }
+        // Delete environments
         restAPIAdmin.deleteEnvironment(environmentId1);
         restAPIAdmin.deleteEnvironment(environmentId2);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test get gateway instances in default environment")
+    public void testGetGatewayInstancesInDefaultEnvironment() throws Exception {
+        // Get the default environment ID using Constants.GATEWAY_ENVIRONMENT
+        String defaultEnvironmentId = Constants.GATEWAY_ENVIRONMENT;
+        
+        try {
+            // Create EnvironmentsApi instance and set the same API client as restAPIAdmin
+            EnvironmentsApi environmentsApi = new EnvironmentsApi();
+            environmentsApi.setApiClient(restAPIAdmin.apiAdminClient);
+            
+            // Invoke the /environments/{environmentId}/gateways API
+            ApiResponse<GatewayInstanceListDTO> gatewayInstancesResponse = 
+                environmentsApi.environmentsEnvironmentIdGatewaysGetWithHttpInfo(defaultEnvironmentId);
+            
+            // Assert the status code
+            Assert.assertEquals(gatewayInstancesResponse.getStatusCode(), HttpStatus.SC_OK,
+                    "Failed to retrieve gateway instances for default environment");
+            
+            // Get the gateway instances list
+            GatewayInstanceListDTO gatewayInstanceList = gatewayInstancesResponse.getData();
+            Assert.assertNotNull(gatewayInstanceList, "Gateway instance list should not be null");
+            
+            // Verify that we have a count property
+            Integer count = gatewayInstanceList.getCount();
+            Assert.assertNotNull(count, "Gateway instance count should not be null");
+            Assert.assertTrue(count > 0, "Gateway instance count should be positive");
+            
+            // Get the list of gateway instances
+            List<GatewayInstanceDTO> gatewayInstances = gatewayInstanceList.getList();
+            if (gatewayInstances != null && !gatewayInstances.isEmpty()) {
+                // If we have gateway instances, verify their properties
+                for (GatewayInstanceDTO gatewayInstance : gatewayInstances) {
+                    Assert.assertNotNull(gatewayInstance.getGatewayId(), 
+                            "Gateway ID should not be null");
+                    Assert.assertNotNull(gatewayInstance.getStatus(), 
+                            "Gateway status should not be null");
+                    
+                    // Verify that status is either ACTIVE or EXPIRED
+                    Assert.assertTrue(
+                        gatewayInstance.getStatus() == GatewayInstanceDTO.StatusEnum.ACTIVE ||
+                        gatewayInstance.getStatus() == GatewayInstanceDTO.StatusEnum.EXPIRED,
+                        "Gateway status should be either ACTIVE or EXPIRED"
+                    );
+                }
+                
+                // Verify that count matches the actual list size
+                Assert.assertEquals(count.intValue(), gatewayInstances.size(),
+                        "Gateway instance count should match the list size");
+                
+                // Check if we have any active gateways
+                long activeGatewaysCount = gatewayInstances.stream()
+                    .filter(gw -> gw.getStatus() == GatewayInstanceDTO.StatusEnum.ACTIVE)
+                    .count();
+
+                Assert.assertTrue(activeGatewaysCount >= 0, 
+                        "Should have at least 0 active gateways in default environment");
+            } else {
+                // No gateway instances found - this might be expected in some test environments
+                Assert.assertEquals(count.intValue(), 0, 
+                        "If no gateway instances in list, count should be 0");
+            }
+            
+        } catch (ApiException e) {
+            if (e.getCode() == HttpStatus.SC_NOT_FOUND) {
+                // Environment not found - this might happen if default environment doesn't exist
+                Assert.fail("Default environment should exist: " + defaultEnvironmentId);
+            } else {
+                // Other API exceptions
+                Assert.fail("Failed to get gateway instances: " + e.getMessage() + 
+                           ", Response: " + e.getResponseBody());
+            }
+        }
     }
 
     @AfterClass(alwaysRun = true)

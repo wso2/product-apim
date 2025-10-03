@@ -31,9 +31,11 @@ import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.AiServiceProviderApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiEndpointsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiOperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
@@ -50,6 +52,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
 import org.wso2.am.integration.clients.publisher.api.v1.LinterCustomRulesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.McpServerBackendsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.McpServerLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.McpServerRevisionsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.McpServersApi;
 import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
@@ -60,6 +66,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -67,12 +75,15 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMetadataListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevenueDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AsyncAPISpecificationValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.BackendDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.BackendListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificatesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
@@ -90,7 +101,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeLis
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MCPServerDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MCPServerProxyRequestDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ModelProviderDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataListDTO;
@@ -138,6 +152,10 @@ public class RestAPIPublisherImpl {
     public static final String password = "admin";
     public static final String testNameProperty = "testName";
     public ApIsApi apIsApi = new ApIsApi();
+    public McpServersApi mcpServersApi = new McpServersApi();
+    public McpServerRevisionsApi mcpServerRevisionsApi = new McpServerRevisionsApi();
+    public McpServerLifecycleApi mcpServerLifecycleApi = new McpServerLifecycleApi();
+    public McpServerBackendsApi mcpServersBackendsApi = new McpServerBackendsApi();
     public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
     public ApiRevisionsApi apiRevisionsApi = new ApiRevisionsApi();
     public ApiResourcePoliciesApi apiResourcePoliciesApi = new ApiResourcePoliciesApi();
@@ -166,7 +184,8 @@ public class RestAPIPublisherImpl {
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
     private GatewayPoliciesApi gatewayPoliciesApi = new GatewayPoliciesApi();
-
+    private ApiEndpointsApi apiEndpointsApi = new ApiEndpointsApi();
+    private AiServiceProviderApi aiServiceProviderApi = new AiServiceProviderApi();
     private ImportExportApi importExportApi = new ImportExportApi();
 
     private LinterCustomRulesApi linterCustomRulesApi = new LinterCustomRulesApi();
@@ -193,7 +212,8 @@ public class RestAPIPublisherImpl {
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
                                 "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage " +
-                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage apim:subscription_manage",
+                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage " +
+                                "apim:subscription_manage apim:llm_provider_read apim:mcp_server_create " +                                 "apim:mcp_server_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -229,6 +249,12 @@ public class RestAPIPublisherImpl {
         importExportApi.setApiClient(apiPublisherClient);
         linterCustomRulesApi.setApiClient(apiPublisherClient);
         gatewayPoliciesApi.setApiClient(apiPublisherClient);
+        mcpServersApi.setApiClient(apiPublisherClient);
+        mcpServerRevisionsApi.setApiClient(apiPublisherClient);
+        mcpServerLifecycleApi.setApiClient(apiPublisherClient);
+        mcpServersBackendsApi.setApiClient(apiPublisherClient);
+        apiEndpointsApi.setApiClient(apiPublisherClient);
+        aiServiceProviderApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -1233,6 +1259,127 @@ public class RestAPIPublisherImpl {
         return apiDtoApiResponse.getData();
     }
 
+    public MCPServerDTO createMCPServerFromOpenAPI(File file, String properties) throws ApiException {
+
+        ApiResponse<MCPServerDTO> mcpServerDTOApiResponse =
+                mcpServersApi.createMCPServerFromOpenAPIWithHttpInfo(file, null, properties);
+        Assert.assertEquals(HttpStatus.SC_CREATED, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public MCPServerDTO createMCPServerFromAPI(MCPServerDTO mcPServerDTO) throws ApiException {
+
+        ApiResponse<MCPServerDTO> mcpServerDTOApiResponse =
+                mcpServersApi.createMCPServerFromAPIWithHttpInfo(mcPServerDTO, null);
+        Assert.assertEquals(HttpStatus.SC_CREATED, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public MCPServerDTO createMCPServerProxy(MCPServerProxyRequestDTO mcpServerProxyRequest) throws ApiException {
+
+        ApiResponse<MCPServerDTO> mcpServerDTOApiResponse =
+                mcpServersApi.createMCPServerProxyWithHttpInfo(mcpServerProxyRequest);
+        Assert.assertEquals(HttpStatus.SC_CREATED, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public HttpResponse getMCPServer(String mcpServerId) {
+
+        Gson gson = new Gson();
+        MCPServerDTO mcpServerDTO;
+        HttpResponse response = null;
+
+        try {
+            mcpServerDTO = mcpServersApi.getMCPServer(mcpServerId, tenantDomain, null);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (StringUtils.isNotEmpty(mcpServerDTO.getId())) {
+            response = new HttpResponse(gson.toJson(mcpServerDTO), 200);
+        }
+        return response;
+    }
+
+    public MCPServerDTO updateMCPServer(String mcpServerId, MCPServerDTO mcPServerDTO) throws ApiException {
+
+        ApiResponse<MCPServerDTO> mcpServerDTOApiResponse =
+                mcpServersApi.updateMCPServerWithHttpInfo(mcpServerId, mcPServerDTO, null);
+        Assert.assertEquals(HttpStatus.SC_OK, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public BackendDTO getMCPServerBackend(String mcpServerId, String backendId) throws ApiException {
+
+        ApiResponse<BackendDTO> mcpServerDTOApiResponse =
+                mcpServersBackendsApi.getMCPServerBackendWithHttpInfo(mcpServerId, backendId);
+        Assert.assertEquals(HttpStatus.SC_OK, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public BackendDTO updateMCPServerBackend(String mcpServerId, String backendId, BackendDTO backend) throws ApiException {
+
+        ApiResponse<BackendDTO> mcpServerDTOApiResponse =
+                mcpServersBackendsApi.updateMCPServerBackendWithHttpInfo(mcpServerId, backendId, backend);
+        Assert.assertEquals(HttpStatus.SC_OK, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public APIRevisionDTO addMCPServerRevision(String mcpServerId, APIRevisionDTO apiRevision) throws ApiException {
+
+        ApiResponse<APIRevisionDTO> mcpServerDTOApiResponse =
+                mcpServerRevisionsApi.createMCPServerRevisionWithHttpInfo(mcpServerId, apiRevision);
+        Assert.assertEquals(HttpStatus.SC_CREATED, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public APIRevisionListDTO deleteMCPServerRevision(String mcpServerId, String revisionId) throws ApiException {
+
+        ApiResponse<APIRevisionListDTO> mcpServerDTOApiResponse =
+                mcpServerRevisionsApi.deleteMCPServerRevisionWithHttpInfo(mcpServerId, revisionId);
+        Assert.assertEquals(HttpStatus.SC_OK, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public APIRevisionListDTO getMCPServerRevisions(String mcpServerId) throws ApiException {
+
+        ApiResponse<APIRevisionListDTO> mcpServerDTOApiResponse =
+                mcpServerRevisionsApi.getMCPServerRevisionsWithHttpInfo(mcpServerId, null);
+        Assert.assertEquals(HttpStatus.SC_OK, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public List<APIRevisionDeploymentDTO> deployMCPServerRevision(String mcpServerId, String revisionId,
+                                                                  List<APIRevisionDeploymentDTO> revisionDeploymentList)
+            throws ApiException {
+
+        ApiResponse<List<APIRevisionDeploymentDTO>> mcpServerDTOApiResponse =
+                mcpServerRevisionsApi.deployMCPServerRevisionWithHttpInfo(mcpServerId, revisionId,
+                        revisionDeploymentList);
+        Assert.assertEquals(HttpStatus.SC_CREATED, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+    public WorkflowResponseDTO changeMCPServerLifecycle(String action, String mcpServerId, String lifecycleChecklist)
+            throws ApiException {
+
+        ApiResponse<WorkflowResponseDTO> mcpServerDTOApiResponse =
+                mcpServerLifecycleApi.changeMCPServerLifecycleWithHttpInfo(action, mcpServerId, lifecycleChecklist,
+                        null);
+        Assert.assertEquals(HttpStatus.SC_OK, mcpServerDTOApiResponse.getStatusCode());
+        return mcpServerDTOApiResponse.getData();
+    }
+
+
+    public HttpResponse deleteMCPServer(String mcpServerId) throws ApiException {
+
+        ApiResponse<Void> deleteResponse = mcpServersApi.deleteMCPServerWithHttpInfo(mcpServerId, null);
+        HttpResponse response = null;
+        if (deleteResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully deleted the API", 200);
+        }
+        return response;
+    }
+
     public ApiResponse<APIDTO> importOASDefinitionResponse(File file, String properties) throws ApiException {
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties, null);
         return apiDtoApiResponse;
@@ -1817,8 +1964,6 @@ public class RestAPIPublisherImpl {
             if (context.startsWith("/{version}")) {
                 Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
             } else {
-                log.info("AAAAAAAAAA********************************************AAAAAAAAAA");
-                log.info("context: " + context + " version: " + version);
                 Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
             }
             Assert.assertEquals(apiInfo.getName(), name);
@@ -2439,7 +2584,7 @@ public class RestAPIPublisherImpl {
 
         setActivityID();
         ApiResponse<OperationPolicyDataListDTO> apiResponse =
-                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(50, 0, null);
+                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(200, 0, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
                 "Unable to retrieve common policies " + apiResponse.getData());
         if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
@@ -2829,5 +2974,147 @@ public class RestAPIPublisherImpl {
      */
     public void changeSubscriptionBusinessPlan(String subscriptionId, String businessPlan, String ifMatch) throws ApiException {
         subscriptionsApi.changeSubscriptionBusinessPlan(subscriptionId, businessPlan, ifMatch);
+    }
+
+    /**
+     * This method is used to add an API Endpoint.
+     *
+     * @param apiId           API UUID
+     * @param name            API endpoint name
+     * @param deploymentStage Deployment stage: Production or Sandbox
+     * @param endpointConfig  Endpoint configuration object
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when creating the API Endpoint
+     */
+    public HttpResponse addApiEndpoint(String apiId, String name, String deploymentStage, Object endpointConfig)
+            throws ApiException {
+
+        APIEndpointDTO apiEndpointDTO = new APIEndpointDTO();
+        apiEndpointDTO.setName(name);
+        apiEndpointDTO.setDeploymentStage(deploymentStage);
+        apiEndpointDTO.setEndpointConfig(endpointConfig);
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointDTO> addedApiEndpoint = apiEndpointsApi.addApiEndpointWithHttpInfo(apiId,
+                    apiEndpointDTO);
+            apiEndpointDTO = addedApiEndpoint.getData();
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_CREATED);
+        }
+        return response;
+    }
+    /**
+     * Update an API endpoint with name and deployment stage
+     *
+     * @param apiId           API ID
+     * @param endpointId      API endpoint ID
+     * @param name            Endpoint name
+     * @param deploymentStage Deployment stage
+     * @param endpointConfig  API endpoint configuration
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when updating the API endpoint
+     */
+    public HttpResponse updateApiEndpoint(String apiId, String endpointId, String name, String deploymentStage, Object endpointConfig) throws ApiException {
+        APIEndpointDTO apiEndpointDTO = new APIEndpointDTO();
+        apiEndpointDTO.setName(name);
+        apiEndpointDTO.setDeploymentStage(deploymentStage);
+        apiEndpointDTO.setEndpointConfig(endpointConfig);
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointDTO> updatedApiEndpoint = apiEndpointsApi.updateApiEndpointWithHttpInfo(apiId, endpointId, apiEndpointDTO);
+            apiEndpointDTO = updatedApiEndpoint.getData();
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Delete an API endpoint
+     *
+     * @param apiId      API ID
+     * @param endpointId API endpoint ID
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when deleting the API endpoint
+     */
+    public HttpResponse deleteApiEndpoint(String apiId, String endpointId) throws ApiException {
+        try {
+            apiEndpointsApi.deleteApiEndpointWithHttpInfo(apiId, endpointId);
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+        return new HttpResponse("API endpoint deleted successfully", HttpStatus.SC_OK);
+    }
+
+    /**
+     * Get API endpoints for a given API UUID.
+     *
+     * @param apiId API UUID
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when retrieving the API endpoints
+     */
+    public HttpResponse getApiEndpoints(String apiId) {
+        APIEndpointListDTO apiEndpointListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointListDTO> apiResponse = apiEndpointsApi.getApiEndpointsWithHttpInfo(apiId, null, 0);
+            apiEndpointListDTO = apiResponse.getData();
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (apiEndpointListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(apiEndpointListDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Get a specific API endpoint by endpoint ID.
+     *
+     * @param apiId      API UUID
+     * @param endpointId API endpoint ID
+     * @return HttpResponse
+     * @throws ApiException throws if an error occurred when retrieving the API endpoint
+     */
+    public HttpResponse getApiEndpoint(String apiId, String endpointId) throws ApiException {
+        APIEndpointDTO apiEndpointDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.getApiEndpointWithHttpInfo(apiId, endpointId);
+            apiEndpointDTO = apiResponse.getData();
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (apiEndpointDTO != null && StringUtils.isNotEmpty(apiEndpointDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiEndpointDTO), HttpStatus.SC_OK);
+        }
+        return response;
+    }
+
+    /**
+     * Get AI Service Provider's model list
+     *
+     * @param aiServiceProviderId AI service provider ID
+     * @return HttpResponse
+     */
+    public HttpResponse getAIServiceProviderModels(String aiServiceProviderId) {
+        Gson gson = new Gson();
+        try {
+            ApiResponse<List<ModelProviderDTO>> modelListResponse = aiServiceProviderApi.getAIServiceProviderModelsWithHttpInfo(
+                    aiServiceProviderId);
+            return new HttpResponse(gson.toJson(modelListResponse.getData()), modelListResponse.getStatusCode());
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
     }
 }

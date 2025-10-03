@@ -1,0 +1,34 @@
+{
+  "name": "mistralNoAuthAPI",
+  "version": "1.0.0",
+  "context": "mistralNoAuthAPI",
+  "gatewayType": "wso2/synapse",
+  "policies": ["Unlimited"],
+  "endpointConfig": {
+    "endpoint_type": "http"
+  },
+  "subtypeConfiguration": {
+    "subtype": "AIAPI",
+    "configuration": {
+      "llmProviderName": "TestAIService",
+      "llmProviderApiVersion": "1.0.0"
+    }
+  },
+  "maxTps": {
+    "production": 1000,
+    "sandbox": 1000,
+    "productionTimeUnit": "MINUTE",
+    "sandboxTimeUnit": "MINUTE",
+    "tokenBasedThrottlingConfiguration": {
+      "productionMaxPromptTokenCount": 1234,
+      "productionMaxCompletionTokenCount": 2345,
+      "productionMaxTotalTokenCount": 3456,
+      "sandboxMaxPromptTokenCount": 4567,
+      "sandboxMaxCompletionTokenCount": 5678,
+      "sandboxMaxTotalTokenCount": 6789,
+      "isTokenBasedThrottlingEnabled": true
+    }
+  },
+  "securityScheme":["api_key"],
+  "egress":true
+}

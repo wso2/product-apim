@@ -95,6 +95,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     private APIIdentifier apiIdentifier;
     private  AdminDashboardRestClient adminDashboardRestClient;
     private String apiId;
+    private String apiId2;
     private String applicationID;
     private String subscriptionId;
     private ApiProductTestHelper apiProductTestHelper;
@@ -1324,12 +1325,12 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setProvider(USER_SMITH);
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        apiId = apiResponse.getData();
+        apiId2 = apiResponse.getData();
         assertEquals(apiResponse.getResponseCode(), 201,
                 "API creation failed in Revision Deployment Workflow Executor");
 
         // Create revision and send deploy request
-        String firstRevisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        String firstRevisionUUID = createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
 
         String firstExternalWorkflowRef = getExternalRef(apiName);
 
@@ -1342,14 +1343,14 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         // Reject workflow and check whether the revision is not deployed
         response = restAPIAdmin.rejectWorkflowStatus(firstExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 200, "First Workflow request reject failed for user admin");
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId2, "deployed:true");
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
         JSONObject apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
         assertEquals(apiRevisionsGetResponseObj.getJSONArray("list").length(), 0, "First Revision is deployed");
 
-        deployAPIRevisionWithWorkflow(apiId, firstRevisionUUID, firstExternalWorkflowRef);
-        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        deployAPIRevisionWithWorkflow(apiId2, firstRevisionUUID, firstExternalWorkflowRef);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId2, "deployed:true");
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
         apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
@@ -1364,18 +1365,18 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         }
 
         // Undeploy revision and check whether it is undeployed
-        undeployAPIRevisionWithWorkflow(apiId, firstRevisionUUID, firstExternalWorkflowRef);
-        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        undeployAPIRevisionWithWorkflow(apiId2, firstRevisionUUID, firstExternalWorkflowRef);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId2, "deployed:true");
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
         apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
         assertEquals(apiRevisionsGetResponseObj.getJSONArray("list").length(), 0, "First Revision is deployed");
 
         // Deploy a revision then send another request and check whether the second request is not deployed
-        deployAPIRevisionWithWorkflow(apiId, firstRevisionUUID, firstExternalWorkflowRef);
+        deployAPIRevisionWithWorkflow(apiId2, firstRevisionUUID, firstExternalWorkflowRef);
         // Create Second Revision and send deploy request
-        String secondRevisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        String secondRevisionUUID = createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId2, "deployed:true");
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
         apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
@@ -1390,14 +1391,14 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         }
 
         String secondExternalWorkflowRef = getExternalRef(apiName);
-        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId2, "deployed:true");
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
 
         // Reject the second workflow request and check whether the second revision is not deployed
         response = restAPIAdmin.rejectWorkflowStatus(secondExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 200, "Workflow request update failed for user admin");
-        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId2, "deployed:true");
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
         apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
@@ -1412,8 +1413,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         }
 
         // Deploy the second revision and check whether the first revision is undeployed
-        deployAPIRevisionWithWorkflow(apiId, secondRevisionUUID, secondExternalWorkflowRef);
-        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        deployAPIRevisionWithWorkflow(apiId2, secondRevisionUUID, secondExternalWorkflowRef);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId2, "deployed:true");
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
         apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
@@ -1524,6 +1525,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         removeDeletePendingApplication(applicationName);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(apiId2);
         userManagementClient.deleteUser(USER_SMITH);
         userManagementClient.deleteUser(USER_ADMIN);
         userManagementClient.deleteUser("JaneDoe");

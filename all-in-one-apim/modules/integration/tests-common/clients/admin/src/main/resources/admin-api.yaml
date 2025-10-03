@@ -2783,6 +2783,170 @@ paths:
           "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
 
   ######################################################
+  # AI Service Providers resource APIs
+  ######################################################
+  /ai-service-providers:
+    get:
+      tags:
+        - AIServiceProviders
+      summary: Get all AI Service providers
+      description: |
+        Get all AI Service providers
+      responses:
+        200:
+          description: |
+            OK.
+            AI Service providers returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderSummaryResponseList'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers"'
+      operationId: getAIServiceProviders
+
+    post:
+      tags:
+        - AIServiceProviders
+      summary: Add a AI Service provider
+      description: |
+        Add a new AI Service provider
+      requestBody:
+        description: |
+          AI Service provider object that should to be added
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIServiceProviderRequest'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created AI Service provider as entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:llm_provider_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer <ACCESS_TOKEN>" -H "Content-Type: multipart/form-data" 
+          -F "name=AIServiceProviderName" -F "apiVersion=v1" -F "configurations={\"key\":\"value\"}" 
+          -F "apiDefinition=@api_definition_file.json" 
+          "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers"'
+      operationId: addAIServiceProvider
+
+  ######################################################
+  # The "Individual AI Service Provider" resource APIs
+  ######################################################
+  /ai-service-providers/{aiServiceProviderId}:
+    put:
+      tags:
+        - AIServiceProvider
+      summary: Update an AI Service provider
+      description: |
+        Update a AI Service provider by AIServiceProviderId
+      parameters:
+        - $ref: '#/components/parameters/aiServiceProviderId'
+      requestBody:
+        description: |
+          AI Service Provider object with updated information
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIServiceProviderRequest'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            AI Service Provider updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:llm_provider_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" \
+                   -F "name=UpdatedProviderName" \
+                   -F "apiVersion=v2" \
+                   -F "configurations={\"key\":\"value\"}" \
+                   -F "apiDefinition=@api_definition.json" \
+                   "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers/{aiServiceProviderId}"'
+      operationId: updateAIServiceProvider
+
+    delete:
+      tags:
+        - AIServiceProvider
+      summary: Delete a AI Service Provider
+      description: |
+        Delete a AI Service Provider by aiServiceProviderId
+      parameters:
+        - $ref: '#/components/parameters/aiServiceProviderId'
+      responses:
+        200:
+          description: |
+            OK.
+            AI Service provider successfully deleted.
+          content: { }
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:llm_provider_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      operationId: deleteAIServiceProvider
+
+    get:
+      tags:
+        - AIServiceProvider
+      summary: Get AI Service Provider
+      description: |
+        Get a AI Service Provider
+      parameters:
+        - $ref: '#/components/parameters/aiServiceProviderId'
+      responses:
+        200:
+          description: |
+            OK.
+            OpenAPI specification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServiceProviderResponse'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/ai-service-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      operationId: getAIServiceProvider
+
+  ######################################################
   # LLM Providers resource APIs
   ######################################################
   /llm-providers:
@@ -3070,6 +3234,44 @@ paths:
         - lang: Shell
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+
+  /environments/{environmentId}/gateways:
+    get:
+      tags:
+        - Environments
+      summary: Get Gateway Instances in a Gateway Environment
+      description: |
+        Retrieve list of gateway Instances in the gateway environment.
+      parameters:
+        - $ref: '#/components/parameters/environmentId'
+      responses:
+        200:
+          description: |
+            OK.
+            List of gateway Instances in the gateway environment returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayInstanceList'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:environment_read
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://127.0.0.1:9443/api/am/admin/v4/environments/8d263942-a6df-4cc2-a804-7a2525501450/gateways"'
   ######################################################
   # The "Organizations" resource API
   ######################################################
@@ -5700,6 +5902,38 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Environment'
+    GatewayInstanceList:
+      title: Gateway instance list
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Gateway Instances returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatewayInstance'
+    GatewayInstance:
+      title: Gateway instance in the gateway environment
+      type: object
+      required:
+        - gatewayId
+      properties:
+        gatewayId:
+          type: string
+          example: "Env1_1372344"
+        lastActive:
+          type: string
+          example: "2025-06-26T06:47:50Z"
+        status:
+          type: string
+          example: ACTIVE
+          default: ACTIVE
+          enum:
+            - ACTIVE
+            - EXPIRED
     Organization:
       title: Organization
       required:
@@ -5745,6 +5979,143 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    AIServiceProviderRequest:
+      title: AIServiceProvider
+      required:
+        - name
+        - apiVersion
+        - configurations
+        - apiDefinition
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: OpenAI
+        apiVersion:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: 1.0.0
+        description:
+          maxLength: 1023
+          type: string
+          example: OpenAI LLM
+        multipleModelProviderSupport:
+          type: string
+          description: |
+            Indicates whether the AI Service Provider supports multiple model providers.
+            If true, the AI Service Provider can support multiple model providers.
+            If false, the AI Service Provider supports only one model provider.
+          default: "false"
+        configurations:
+          type: string
+          description: LLM Provider configurations
+        apiDefinition:
+          type: string
+          description: OpenAPI specification
+          format: binary
+        modelProviders:
+          type: string
+    ModelProvider:
+      title: Model Provider
+      type: object
+      required:
+        - name
+        - models
+      properties:
+        models:
+          type: array
+          items:
+            type: string
+            example: "gpt-4o"
+        name:
+          type: string
+          example: OpenAI
+    AIServiceProviderResponse:
+      title: AIServiceProviderResponse
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: OpenAI
+        apiVersion:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: 1.0.0
+        builtInSupport:
+          type: boolean
+          description: Is built-in support
+        multipleModelProviderSupport:
+          type: boolean
+          description: |
+            Indicates whether the AI Service Provider supports multiple model providers.
+            If true, the AI Service Provider can support multiple model providers.
+            If false, the AI Service Provider supports only one model provider.
+        description:
+          maxLength: 1023
+          type: string
+          example: OpenAI LLM
+        configurations:
+          type: string
+          description: LLM Provider configurations
+        apiDefinition:
+          type: string
+          description: OpenAPI specification
+        modelProviders:
+          type: array
+          description: List of model providers supported by the AI Service Provider
+          items:
+            $ref: '#/components/schemas/ModelProvider'
+    AIServiceProviderSummaryResponse:
+      title: AIServiceProviderSummaryResponse
+      type: object
+      required:
+        - name
+        - apiVersion
+      properties:
+        id:
+          type: string
+          readOnly: true
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: open-ai
+        apiVersion:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: 1.0.0
+        builtInSupport:
+          type: boolean
+          description: Is built-in support
+        description:
+          maxLength: 1023
+          type: string
+          example: OpenAI LLM Provider
+    AIServiceProviderSummaryResponseList:
+      title: AIServiceProviderSummaryResponseList
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of LLM Providers returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIServiceProviderSummaryResponse'
     LLMProviderRequest:
       title: LLMProvider
       type: object
@@ -6877,6 +7248,14 @@ components:
       in: path
       description: |
         LLM Provider UUID
+      required: true
+      schema:
+        type: string
+    aiServiceProviderId:
+      name: aiServiceProviderId
+      in: path
+      description: |
+        AI Service Provider UUID
       required: true
       schema:
         type: string

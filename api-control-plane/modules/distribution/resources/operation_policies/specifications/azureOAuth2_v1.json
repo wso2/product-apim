@@ -7,8 +7,8 @@
   "policyAttributes": [
     {
       "name": "openIdURL",
-      "displayName": "OpenID URL",
-      "description": "OpenID URL for validating OAuth2 tokens",
+      "displayName": "Open ID configuration endpoint URL",
+      "description": "Open ID configuration endpoint URL from where Open ID configuration metadata can be obtained.",
       "validationRegex": "(.*?)",
       "type": "String",
       "required": true

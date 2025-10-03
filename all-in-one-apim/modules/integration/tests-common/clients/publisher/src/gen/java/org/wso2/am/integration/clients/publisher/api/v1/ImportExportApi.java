@@ -394,6 +394,195 @@ public class ImportExportApi {
         return localVarCall;
     }
     /**
+     * Build call for exportMCPServer
+     * @param mcpServerId UUID of the MCP server (optional)
+     * @param name API Name  (optional)
+     * @param version Version of the MCP Server  (optional)
+     * @param revisionNumber Revision number of the API artifact  (optional)
+     * @param providerName Provider name of the MCP Server  (optional)
+     * @param format Format of output documents. Can be YAML or JSON.  (optional)
+     * @param preserveStatus Preserve MCP Server Status during export  (optional)
+     * @param latestRevision Export the latest revision of the MCP server  (optional, default to false)
+     * @param gatewayEnvironment Gateway environment of the exported MCP servers  (optional)
+     * @param preserveCredentials Preserve endpoint configuration credentials  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call exportMCPServerCall(String mcpServerId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision, String gatewayEnvironment, Boolean preserveCredentials, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/export";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (mcpServerId != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("mcpServerId", mcpServerId));
+        }
+
+        if (name != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("name", name));
+        }
+
+        if (version != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("version", version));
+        }
+
+        if (revisionNumber != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("revisionNumber", revisionNumber));
+        }
+
+        if (providerName != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("providerName", providerName));
+        }
+
+        if (format != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("format", format));
+        }
+
+        if (preserveStatus != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveStatus", preserveStatus));
+        }
+
+        if (latestRevision != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("latestRevision", latestRevision));
+        }
+
+        if (gatewayEnvironment != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("gatewayEnvironment", gatewayEnvironment));
+        }
+
+        if (preserveCredentials != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveCredentials", preserveCredentials));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/zip", "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call exportMCPServerValidateBeforeCall(String mcpServerId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision, String gatewayEnvironment, Boolean preserveCredentials, final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = exportMCPServerCall(mcpServerId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, gatewayEnvironment, preserveCredentials, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Export a MCP Server
+     * This operation can be used to export the details of a particular MCP server as a zip file. 
+     * @param mcpServerId UUID of the MCP server (optional)
+     * @param name API Name  (optional)
+     * @param version Version of the MCP Server  (optional)
+     * @param revisionNumber Revision number of the API artifact  (optional)
+     * @param providerName Provider name of the MCP Server  (optional)
+     * @param format Format of output documents. Can be YAML or JSON.  (optional)
+     * @param preserveStatus Preserve MCP Server Status during export  (optional)
+     * @param latestRevision Export the latest revision of the MCP server  (optional, default to false)
+     * @param gatewayEnvironment Gateway environment of the exported MCP servers  (optional)
+     * @param preserveCredentials Preserve endpoint configuration credentials  (optional)
+     * @return File
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public File exportMCPServer(String mcpServerId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision, String gatewayEnvironment, Boolean preserveCredentials) throws ApiException {
+        ApiResponse<File> localVarResp = exportMCPServerWithHttpInfo(mcpServerId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, gatewayEnvironment, preserveCredentials);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Export a MCP Server
+     * This operation can be used to export the details of a particular MCP server as a zip file. 
+     * @param mcpServerId UUID of the MCP server (optional)
+     * @param name API Name  (optional)
+     * @param version Version of the MCP Server  (optional)
+     * @param revisionNumber Revision number of the API artifact  (optional)
+     * @param providerName Provider name of the MCP Server  (optional)
+     * @param format Format of output documents. Can be YAML or JSON.  (optional)
+     * @param preserveStatus Preserve MCP Server Status during export  (optional)
+     * @param latestRevision Export the latest revision of the MCP server  (optional, default to false)
+     * @param gatewayEnvironment Gateway environment of the exported MCP servers  (optional)
+     * @param preserveCredentials Preserve endpoint configuration credentials  (optional)
+     * @return ApiResponse&lt;File&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<File> exportMCPServerWithHttpInfo(String mcpServerId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision, String gatewayEnvironment, Boolean preserveCredentials) throws ApiException {
+        okhttp3.Call localVarCall = exportMCPServerValidateBeforeCall(mcpServerId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, gatewayEnvironment, preserveCredentials, null);
+        Type localVarReturnType = new TypeToken<File>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Export a MCP Server (asynchronously)
+     * This operation can be used to export the details of a particular MCP server as a zip file. 
+     * @param mcpServerId UUID of the MCP server (optional)
+     * @param name API Name  (optional)
+     * @param version Version of the MCP Server  (optional)
+     * @param revisionNumber Revision number of the API artifact  (optional)
+     * @param providerName Provider name of the MCP Server  (optional)
+     * @param format Format of output documents. Can be YAML or JSON.  (optional)
+     * @param preserveStatus Preserve MCP Server Status during export  (optional)
+     * @param latestRevision Export the latest revision of the MCP server  (optional, default to false)
+     * @param gatewayEnvironment Gateway environment of the exported MCP servers  (optional)
+     * @param preserveCredentials Preserve endpoint configuration credentials  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call exportMCPServerAsync(String mcpServerId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision, String gatewayEnvironment, Boolean preserveCredentials, final ApiCallback<File> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = exportMCPServerValidateBeforeCall(mcpServerId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, gatewayEnvironment, preserveCredentials, _callback);
+        Type localVarReturnType = new TypeToken<File>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for exportOperationPolicy
      * @param name Policy name (optional)
      * @param version Version of the policy (optional)
@@ -844,6 +1033,184 @@ public class ImportExportApi {
 
         okhttp3.Call localVarCall = importAPIProductValidateBeforeCall(file, preserveProvider, rotateRevision, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for importMCPServer
+     * @param file Zip archive consisting on exported MCP Server configuration (required)
+     * @param preserveProvider Preserve Original Provider of the MCP server. This is the user choice to keep or replace the MCP server  provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
+     * @param overwrite Whether to update the MCP server or not. This is used when updating already existing MCP servers  (optional)
+     * @param preservePortalConfigurations Preserve Portal Configurations. This is used to preserve the portal configurations of the MCP server  (optional)
+     * @param dryRun Dry Run. This is used to validate the MCP server without importing it  (optional, default to false)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. API Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importMCPServerCall(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite, Boolean preservePortalConfigurations, Boolean dryRun, String accept, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/mcp-servers/import";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (preserveProvider != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveProvider", preserveProvider));
+        }
+
+        if (rotateRevision != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("rotateRevision", rotateRevision));
+        }
+
+        if (overwrite != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("overwrite", overwrite));
+        }
+
+        if (preservePortalConfigurations != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("preservePortalConfigurations", preservePortalConfigurations));
+        }
+
+        if (dryRun != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("dryRun", dryRun));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (accept != null) {
+            localVarHeaderParams.put("Accept", localVarApiClient.parameterToString(accept));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        final String[] localVarAccepts = {
+            "text/plain", "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call importMCPServerValidateBeforeCall(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite, Boolean preservePortalConfigurations, Boolean dryRun, String accept, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'file' is set
+        if (file == null) {
+            throw new ApiException("Missing the required parameter 'file' when calling importMCPServer(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = importMCPServerCall(file, preserveProvider, rotateRevision, overwrite, preservePortalConfigurations, dryRun, accept, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Import a MCP Server
+     * This operation can be used to import a MCP server. 
+     * @param file Zip archive consisting on exported MCP Server configuration (required)
+     * @param preserveProvider Preserve Original Provider of the MCP server. This is the user choice to keep or replace the MCP server  provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
+     * @param overwrite Whether to update the MCP server or not. This is used when updating already existing MCP servers  (optional)
+     * @param preservePortalConfigurations Preserve Portal Configurations. This is used to preserve the portal configurations of the MCP server  (optional)
+     * @param dryRun Dry Run. This is used to validate the MCP server without importing it  (optional, default to false)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @return String
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. API Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public String importMCPServer(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite, Boolean preservePortalConfigurations, Boolean dryRun, String accept) throws ApiException {
+        ApiResponse<String> localVarResp = importMCPServerWithHttpInfo(file, preserveProvider, rotateRevision, overwrite, preservePortalConfigurations, dryRun, accept);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Import a MCP Server
+     * This operation can be used to import a MCP server. 
+     * @param file Zip archive consisting on exported MCP Server configuration (required)
+     * @param preserveProvider Preserve Original Provider of the MCP server. This is the user choice to keep or replace the MCP server  provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
+     * @param overwrite Whether to update the MCP server or not. This is used when updating already existing MCP servers  (optional)
+     * @param preservePortalConfigurations Preserve Portal Configurations. This is used to preserve the portal configurations of the MCP server  (optional)
+     * @param dryRun Dry Run. This is used to validate the MCP server without importing it  (optional, default to false)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @return ApiResponse&lt;String&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. API Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<String> importMCPServerWithHttpInfo(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite, Boolean preservePortalConfigurations, Boolean dryRun, String accept) throws ApiException {
+        okhttp3.Call localVarCall = importMCPServerValidateBeforeCall(file, preserveProvider, rotateRevision, overwrite, preservePortalConfigurations, dryRun, accept, null);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Import a MCP Server (asynchronously)
+     * This operation can be used to import a MCP server. 
+     * @param file Zip archive consisting on exported MCP Server configuration (required)
+     * @param preserveProvider Preserve Original Provider of the MCP server. This is the user choice to keep or replace the MCP server  provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
+     * @param overwrite Whether to update the MCP server or not. This is used when updating already existing MCP servers  (optional)
+     * @param preservePortalConfigurations Preserve Portal Configurations. This is used to preserve the portal configurations of the MCP server  (optional)
+     * @param dryRun Dry Run. This is used to validate the MCP server without importing it  (optional, default to false)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. API Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importMCPServerAsync(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite, Boolean preservePortalConfigurations, Boolean dryRun, String accept, final ApiCallback<String> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = importMCPServerValidateBeforeCall(file, preserveProvider, rotateRevision, overwrite, preservePortalConfigurations, dryRun, accept, _callback);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**

@@ -10,7 +10,8 @@
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
       "apim.sync_runtime_artifacts.gateway.enable": "false",
-      "apim.ai.llm_provider_events_enabled": true
+      "apim.ai.llm_provider_events_enabled": true,
+      "apim.certificate_manager.events_enabled": true
     }
   },
   "apim.jwt.encoding": {
@@ -108,6 +109,34 @@
       "authentication.endpoint.redirect_params.parameters": [
         "loggedInUser"
       ]
+    }
+  },
+  "preserve_previous_product_behaviour.version": {
+    "APIM_3.2.0": {
+      "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
+    },
+    "APIM_3.2.1": {
+      "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
+    },
+    "APIM_4.0.0": {
+      "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
+    },
+    "APIM_4.1.0": {
+      "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
+    },
+    "APIM_4.2.0": {
+      "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
+    },
+    "APIM_4.3.0": {
+      "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
+    },
+    "APIM_4.4.0": {
+      "apim.endpoint_config.loadbalanced.enable_failover": false,
+      "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
+    },
+    "APIM_4.5.0": {
+      "apim.endpoint_config.loadbalanced.enable_failover": false,
+      "synapse_properties.'limit_java_class_access_in_scripts.enable'": false
     }
   }
 }

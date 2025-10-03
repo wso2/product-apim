@@ -249,7 +249,7 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediation.configadmin.server.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>org.wso2.am.acp:org.wso2.am.acp.styles.feature:${apimserver.version}
+                                <featureArtifactDef>org.wso2.am.acp:org.wso2.am.acp.styles.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.relay.feature:${carbon.mediation.version}
@@ -283,13 +283,13 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am.acp:org.wso2.am.acp.multitenancy.dashboard.ui.feature:${apimserver.version}
+                                    org.wso2.am.acp:org.wso2.am.acp.multitenancy.dashboard.ui.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am.acp:org.wso2.am.acp.security.feature:${apimserver.version}
+                                    org.wso2.am.acp:org.wso2.am.acp.security.feature:${project.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.am.acp:org.wso2.am.acp.carbon.identity.local.auth.api.endpoint.feature:${apimserver.version}
+                                    org.wso2.am.acp:org.wso2.am.acp.carbon.identity.local.auth.api.endpoint.feature:${project.version}
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
@@ -530,13 +530,13 @@
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.consent.mgt.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.auth.server.feature:${carbon.identity.auth.version}
+                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.auth.server.feature:${identity.carbon.auth.rest.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.authz.server.feature:${carbon.identity.auth.version}
+                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.authz.server.feature:${identity.carbon.auth.rest.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.context.rewrite.server.feature:${carbon.identity.auth.version}
+                                    org.wso2.carbon.identity.auth.rest:org.wso2.carbon.identity.context.rewrite.server.feature:${identity.carbon.auth.rest.version}
                                 </featureArtifactDef>
                                 <!--CORS-->
                                 <featureArtifactDef>
@@ -684,6 +684,9 @@
                                 <!-- Kong Gateway Agent Feature -->
                                 <featureArtifactDef>
                                     org.wso2.gw.ext:kong.gw.manager.feature:${kong.gwmanager.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.gw.ext:envoy.gw.manager.feature:${envoy.gwmanager.feature.version}
                                 </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
@@ -918,7 +921,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.acp.carbon.identity.local.auth.api.endpoint.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
 
                                 <feature>
@@ -943,11 +946,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.acp.styles.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.acp.multitenancy.dashboard.ui.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -1228,15 +1231,15 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.auth.server.feature.group</id>
-                                    <version>${carbon.identity.auth.version}</version>
+                                    <version>${identity.carbon.auth.rest.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.authz.server.feature.group</id>
-                                    <version>${carbon.identity.auth.version}</version>
+                                    <version>${identity.carbon.auth.rest.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.context.rewrite.server.feature.group</id>
-                                    <version>${carbon.identity.auth.version}</version>
+                                    <version>${identity.carbon.auth.rest.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.cors.mgt.server.feature.group</id>
@@ -1313,7 +1316,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.acp.security.feature.group</id>
-                                    <version>${apimserver.version}</version>
+                                    <version>${project.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
@@ -1405,6 +1408,10 @@
                                 <feature>
                                     <id>kong.gw.manager.feature.group</id>
                                     <version>${kong.gwmanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>envoy.gw.manager.feature.group</id>
+                                    <version>${envoy.gwmanager.feature.version}</version>
                                 </feature>
 
                             </features>

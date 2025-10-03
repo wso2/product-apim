@@ -106,6 +106,18 @@ public static StatusEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_SUCCESS_DEPLOYED_TIME)
             private String successDeployedTime;
 
+        public static final String SERIALIZED_NAME_LIVE_GATEWAY_COUNT = "liveGatewayCount";
+        @SerializedName(SERIALIZED_NAME_LIVE_GATEWAY_COUNT)
+            private Integer liveGatewayCount;
+
+        public static final String SERIALIZED_NAME_DEPLOYED_GATEWAY_COUNT = "deployedGatewayCount";
+        @SerializedName(SERIALIZED_NAME_DEPLOYED_GATEWAY_COUNT)
+            private Integer deployedGatewayCount;
+
+        public static final String SERIALIZED_NAME_FAILED_GATEWAY_COUNT = "failedGatewayCount";
+        @SerializedName(SERIALIZED_NAME_FAILED_GATEWAY_COUNT)
+            private Integer failedGatewayCount;
+
 
         public APIRevisionDeploymentDTO revisionUuid(String revisionUuid) {
         
@@ -268,6 +280,75 @@ public static StatusEnum fromValue(String value) {
     }
 
 
+        public APIRevisionDeploymentDTO liveGatewayCount(Integer liveGatewayCount) {
+        
+        this.liveGatewayCount = liveGatewayCount;
+        return this;
+        }
+
+    /**
+        * The number of gateways that are currently live in the gateway environment 
+    * @return liveGatewayCount
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "The number of gateways that are currently live in the gateway environment ")
+    
+    public Integer getLiveGatewayCount() {
+        return liveGatewayCount;
+    }
+
+
+    public void setLiveGatewayCount(Integer liveGatewayCount) {
+        this.liveGatewayCount = liveGatewayCount;
+    }
+
+
+        public APIRevisionDeploymentDTO deployedGatewayCount(Integer deployedGatewayCount) {
+        
+        this.deployedGatewayCount = deployedGatewayCount;
+        return this;
+        }
+
+    /**
+        * The number of gateways in which the API revision is deployed successfully 
+    * @return deployedGatewayCount
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "The number of gateways in which the API revision is deployed successfully ")
+    
+    public Integer getDeployedGatewayCount() {
+        return deployedGatewayCount;
+    }
+
+
+    public void setDeployedGatewayCount(Integer deployedGatewayCount) {
+        this.deployedGatewayCount = deployedGatewayCount;
+    }
+
+
+        public APIRevisionDeploymentDTO failedGatewayCount(Integer failedGatewayCount) {
+        
+        this.failedGatewayCount = failedGatewayCount;
+        return this;
+        }
+
+    /**
+        * The number of gateways where the API revision deployment has failed 
+    * @return failedGatewayCount
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "The number of gateways where the API revision deployment has failed ")
+    
+    public Integer getFailedGatewayCount() {
+        return failedGatewayCount;
+    }
+
+
+    public void setFailedGatewayCount(Integer failedGatewayCount) {
+        this.failedGatewayCount = failedGatewayCount;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -283,12 +364,15 @@ public static StatusEnum fromValue(String value) {
             Objects.equals(this.vhost, apIRevisionDeployment.vhost) &&
             Objects.equals(this.displayOnDevportal, apIRevisionDeployment.displayOnDevportal) &&
             Objects.equals(this.deployedTime, apIRevisionDeployment.deployedTime) &&
-            Objects.equals(this.successDeployedTime, apIRevisionDeployment.successDeployedTime);
+            Objects.equals(this.successDeployedTime, apIRevisionDeployment.successDeployedTime) &&
+            Objects.equals(this.liveGatewayCount, apIRevisionDeployment.liveGatewayCount) &&
+            Objects.equals(this.deployedGatewayCount, apIRevisionDeployment.deployedGatewayCount) &&
+            Objects.equals(this.failedGatewayCount, apIRevisionDeployment.failedGatewayCount);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(revisionUuid, name, status, vhost, displayOnDevportal, deployedTime, successDeployedTime);
+        return Objects.hash(revisionUuid, name, status, vhost, displayOnDevportal, deployedTime, successDeployedTime, liveGatewayCount, deployedGatewayCount, failedGatewayCount);
     }
 
 
@@ -303,6 +387,9 @@ sb.append("class APIRevisionDeploymentDTO {\n");
     sb.append("    displayOnDevportal: ").append(toIndentedString(displayOnDevportal)).append("\n");
     sb.append("    deployedTime: ").append(toIndentedString(deployedTime)).append("\n");
     sb.append("    successDeployedTime: ").append(toIndentedString(successDeployedTime)).append("\n");
+    sb.append("    liveGatewayCount: ").append(toIndentedString(liveGatewayCount)).append("\n");
+    sb.append("    deployedGatewayCount: ").append(toIndentedString(deployedGatewayCount)).append("\n");
+    sb.append("    failedGatewayCount: ").append(toIndentedString(failedGatewayCount)).append("\n");
 sb.append("}");
 return sb.toString();
 }

@@ -38,6 +38,7 @@
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
             <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.mcp.MCPServerTestCase"/>
         </classes>
     </test>
 

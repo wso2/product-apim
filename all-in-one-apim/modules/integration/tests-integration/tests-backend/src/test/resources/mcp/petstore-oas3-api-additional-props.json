@@ -1,0 +1,19 @@
+{
+  "name": "PetstoreAPI",
+  "displayName": "Petstore API",
+  "version": "1.0.0",
+  "context": "petstore-v3-api",
+  "gatewayType": "wso2/synapse",
+  "policies": [
+    "Unlimited"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://api.yourdomain.com/"
+    },
+    "production_endpoints": {
+      "url": "http://api.yourdomain.com/"
+    }
+  }
+}

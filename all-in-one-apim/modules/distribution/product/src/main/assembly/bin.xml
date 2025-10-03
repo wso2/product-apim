@@ -43,6 +43,7 @@
                 <exclude>**/conf/tomcat/catalina-server.xml</exclude>
                 <exclude>**/conf/tomcat/catalina-server.xml.j2</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
+                <exclude>**/conf/tomcat/carbon/META-INF/context.xml.j2</exclude>
                 <exclude>**/log4j2.properties</exclude>
                 <exclude>**/pax-logging.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
@@ -170,6 +171,7 @@
                 <exclude>**/repository/components/plugins/commons-io_2.4.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v11.jar</exclude>
                 <exclude>**/lib/xalan*.jar</exclude>
+                <exclude>**/repository/components/plugins/swagger-request-validator-core-v3_2.44.1.wso2v1.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -243,6 +245,7 @@
                 <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/catalina-server.xml.j2</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
+                <exclude>**/conf/tomcat/carbon/META-INF/context.xml.j2</exclude>
                 <exclude>**/webapps/authenticationendpoint/WEB-INF/web.xml.j2</exclude>
             </excludes>
         </fileSet>

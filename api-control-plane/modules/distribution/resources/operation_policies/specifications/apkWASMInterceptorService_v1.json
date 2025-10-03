@@ -1,0 +1,85 @@
+{
+  "category": "Mediation",
+  "name": "apkWASMInterceptorService",
+  "version": "v1",
+  "displayName": "WASM Extension Service",
+  "description": "This policy allows you to call an WASM extension service for a request message",
+  "policyAttributes": [
+    {
+      "name": "policyName",
+      "displayName": "Policy Name",
+      "description": "Name for the WASM policy(Must be unique within the gateway).",
+      "validationRegex": "^([a-zA-Z_\\:][a-zA-Z\\d_\\-\\ ]*)$",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "rootId",
+      "displayName": "Root ID",
+      "description": "This uniquely identifies a set of extensions within a VM that share the same RootContext and Contexts.",
+      "validationRegex": "^([a-zA-Z_\\:][a-zA-Z\\d_\\-\\ ]*)$",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "wasmpolicyURL",
+      "displayName": "Policy URL",
+      "description": "The HTTP URL containing the Wasm code.",
+      "validationRegex": "^(([\\w+]+\\:\\/\\/)?([\\w\\d-]+\\.)*[\\w-]+([\\.\\:]\\w+)*([\\/\\?\\=\\&\\#\\.]?[\\w-]+)*\\/?)$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "wasmpolicyImage",
+      "displayName": "Policy Image",
+      "description": "The OCI image containing the WASM code.",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "imagePullPolicy",
+      "displayName": "Image Pull Policy",
+      "description": "This is the policy to use when pulling the Wasm module by either the HTTP or Image source.",
+      "validationRegex": "^.+$",
+      "type": "Enum",
+      "allowedValues" : ["Always","IfNotPresent"],
+      "required": false
+    },
+    {
+      "name": "wasmConfig",
+      "displayName": "Config",
+      "description": "Configuration for the WASM extension(Must be a valid JSON string).",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "failOpen",
+      "displayName": "FailOpen",
+      "description": "This is a switch used to control the behavior when a fatal error occurs during the initialization or the execution of the Wasm extension.",
+      "validationRegex": "^(true|false)$",
+      "type": "Boolean",
+      "defaultValue": false,
+      "required": false
+    },
+    {
+      "name": "hostKeys",
+      "displayName": "Host Keys",
+      "description": "Includes a comma separated list of keys for environment variables from the host envoy process that should be passed into the Wasm VM.",
+      "validationRegex": "^.+$",
+      "type": "String",
+      "required": false
+    }
+  ],
+  "applicableFlows": [
+    "request",
+    "response"
+  ],
+  "supportedGateways": [
+    "ChoreoConnect"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
