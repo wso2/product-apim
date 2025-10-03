@@ -51,6 +51,7 @@
         <module>modules/local-authenticators</module>
         <module>modules/distribution</module>
         <module>modules/integration</module>
+        <module>modules/integration-v2</module>
     </modules>
 
     <scm>
@@ -1571,6 +1572,33 @@
         <url-guardrail.policy.version>v1.0</url-guardrail.policy.version>
         <word-count-guardrail.policy.version>v1.1</word-count-guardrail.policy.version>
         <semantic-cache.policy.version>v1.0</semantic-cache.policy.version>
+
+
+        <carbon.automation.version>4.4.12</carbon.automation.version>
+        <carbon.apimgt.api.version>9.31.94</carbon.apimgt.api.version>
+        <carbon.utils.version>4.10.44</carbon.utils.version>
+
+        <cucumber.version>7.0.0</cucumber.version>
+        <cucumber.picocontainer.version>7.22.0</cucumber.picocontainer.version>
+        <testng.version>7.4.0</testng.version>
+        <testcontainers.version>1.20.4</testcontainers.version>
+
+        <glassfish.jaxb.version>2.3.1</glassfish.jaxb.version>
+        <javax.ws.rs.version>2.1.1</javax.ws.rs.version>
+        <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
+
+        <commons.lang3.version>3.0</commons.lang3.version>
+        <commons.io.version>2.18.0</commons.io.version>
+        <apache.httpclient.version>4.5.14</apache.httpclient.version>
+
+        <jackson.databind.version>2.16.1</jackson.databind.version>
+        <jackson.dataformat.toml.version>2.17.1</jackson.dataformat.toml.version>
+        <gson.version>2.10.1</gson.version>
+        <json.version>20250107</json.version>
+        <toml4j.version>0.7.2</toml4j.version>
+
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.11</logback.version>
     </properties>
 
 </project>
