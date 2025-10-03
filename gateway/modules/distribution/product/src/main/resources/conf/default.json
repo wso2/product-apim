@@ -249,7 +249,6 @@
   "apim.wss.dispatch.on_error.sequence" : "fault",
   "apim.wss.out_dispatch_seq" : "outDispatchSeq",
   "apim.wss.handler.class" : "org.wso2.carbon.apimgt.gateway.handlers.WebsocketHandler",
-  "apim.wss.subprotocol.handler.class" : "org.wso2.carbon.inbound.endpoint.protocol.websocket.subprotocols.EchoSubprotocolHandler",
   "apim.wss.dispatch.custom.sequence" : true,
   "apim.wss.outflow.dispatch.fault.sequence" : "fault",
   "apim.wss.client.side.broadcast.level" : "0",
