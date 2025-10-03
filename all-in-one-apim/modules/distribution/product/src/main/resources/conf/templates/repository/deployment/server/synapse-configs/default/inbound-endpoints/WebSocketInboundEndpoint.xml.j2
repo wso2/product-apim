@@ -22,5 +22,8 @@
         {%if apim.ws.pass_through_control_frames is defined %}
         <parameter name="ws.pass.through.control.frames">{{apim.ws.pass_through_control_frames}}</parameter>
         {%endif%}
+        {%if apim.ws.subprotocol_handler is defined %}
+        <parameter name="ws.subprotocol.handler.class">{{apim.ws.subprotocol_handler}}</parameter>
+        {%endif%}
     </parameters>
 </inboundEndpoint> 
