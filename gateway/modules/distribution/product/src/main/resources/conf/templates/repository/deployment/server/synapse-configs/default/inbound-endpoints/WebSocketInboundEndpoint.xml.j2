@@ -4,7 +4,7 @@
                  sequence="{{apim.ws.dispatch.sequence}}"
                  onError="{{apim.ws.dispatch.on_error.sequence}}"
                  protocol="ws"
-                 suspend="false">
+                 suspend="{{!apim.ws.enable}}">
     <parameters>
         <parameter name="inbound.ws.port">{{apim.ws.port}}</parameter>
         <parameter name="ws.outflow.dispatch.sequence">{{apim.ws.out_dispatch_seq}}</parameter>
