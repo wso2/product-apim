@@ -1310,7 +1310,7 @@
         <carbon.apimgt.ui.version>9.3.81</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.32.117</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.120</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
