@@ -1163,10 +1163,10 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         removeDeletePendingApplication(applicationName);
         //check workflow pending requests are cleaned (Application Creation, API State Change)
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(applicationCreationExternalWorkflowRef);
-        assertEquals(response.getResponseCode(), 500,
+        assertEquals(response.getResponseCode(), 404,
                 "Clean up pending task process is failed for Application creation");
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(apiStateChangeExternalWorkflowRef);
-        assertEquals(response.getResponseCode(), 500,
+        assertEquals(response.getResponseCode(), 404,
                 "Clean up pending task process is failed for API state change");
 
         //create Application
@@ -1289,12 +1289,12 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         removeDeletePendingApplication(applicationName);
         undeployAndDeleteAPIRevisionsUsingRest(apiIdSecond, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiIdSecond);
-        //check the clean up process is successful (Application key generation, API subscription)
+        //check the cleanup process is successful (Application key generation, API subscription)
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(subscriptionCreationExternalWorkflowRef);
-        assertEquals(response.getResponseCode(), 500,
+        assertEquals(response.getResponseCode(), 404,
                 "Clean up pending task process is failed for Subscription Creation");
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(keyGenerationExternalWorkflowRef);
-        assertEquals(response.getResponseCode(), 500,
+        assertEquals(response.getResponseCode(), 404,
                 "Clean up pending task process is failed for Application Key generation");
     }
 
