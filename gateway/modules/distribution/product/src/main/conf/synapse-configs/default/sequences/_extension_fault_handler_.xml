@@ -1,0 +1,3 @@
+<sequence name="_extension_fault_handler_" xmlns="http://ws.apache.org/ns/synapse">
+    <sequence key="_cors_request_handler_"/>
+</sequence>
