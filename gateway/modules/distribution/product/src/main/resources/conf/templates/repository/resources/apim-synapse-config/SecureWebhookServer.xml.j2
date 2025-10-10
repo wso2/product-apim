@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inboundEndpoint name="SecureWebhookServer"
                  protocol="https"
-                 suspend="false" sequence="TestIn" onError="fault" >
+                 suspend="{{!apim.webhooks.https.enable}}" sequence="TestIn" onError="fault" >
     <p:parameters xmlns:p="http://ws.apache.org/ns/synapse">
         <p:parameter  name="inbound.http.port">{{apim.webhooks.https.port}}</p:parameter>
         <p:parameter name="keystore">
