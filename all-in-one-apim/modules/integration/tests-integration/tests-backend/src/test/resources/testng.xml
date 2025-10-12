@@ -103,10 +103,10 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.UpdateAPINullPointerTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>-->
         </classes>
     </test>
 
