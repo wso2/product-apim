@@ -311,7 +311,8 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         Assert.assertEquals(apiResponse.getResponseCode(), 500);
     }
 
-    @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {"testInvokeAPI"})
+    @Test(groups = { "wso2.am" }, description = "test Upload Endpoint Certificate", dependsOnMethods = {
+            "testInvokeAPIAfterRemovingCertificate" })
     public void testDeleteNotAvailableCert() {
 
         try {
