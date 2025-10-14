@@ -1286,10 +1286,10 @@
         <carbon.analytics.common.version>5.3.27</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.99</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.103</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.32.130</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.132</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1317,7 +1317,7 @@
         <carbon.identity.governance.version>1.8.111</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.35</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.40</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.41</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.7.7</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.9.14</carbon.identity-inbound-auth-openid.version>
@@ -1480,7 +1480,7 @@
         <auth0.keymanager.feature.version>1.0.8</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.1.8</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.2.32</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.2.33</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
         <charon3.version>4.0.23</charon3.version>
@@ -1502,9 +1502,9 @@
 
         <!-- External Gateway Agent Versions -->
         <aws.gwmanager.feature.version>1.4.0</aws.gwmanager.feature.version>
-        <azure.gwmanager.feature.version>0.6.0</azure.gwmanager.feature.version>
-        <kong.gwmanager.feature.version>0.5.0</kong.gwmanager.feature.version>
-        <envoy.gwmanager.feature.version>0.2.0</envoy.gwmanager.feature.version>
+        <azure.gwmanager.feature.version>1.0.0</azure.gwmanager.feature.version>
+        <kong.gwmanager.feature.version>1.0.0</kong.gwmanager.feature.version>
+        <envoy.gwmanager.feature.version>1.0.0</envoy.gwmanager.feature.version>
 
         <!-- AM Policy Bundle Versions -->
         <regex-guardrail.version>1.0.0</regex-guardrail.version>
