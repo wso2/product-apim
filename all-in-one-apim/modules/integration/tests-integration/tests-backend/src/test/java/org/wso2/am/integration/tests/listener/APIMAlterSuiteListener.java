@@ -34,7 +34,6 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
         String testClassesToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_CLASSES");
         String testGroupsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_GROUPS");
         String isReleaseBuild = System.getProperty("releaseBuild");
-        List<XmlTest> newXMLTests = new ArrayList<>();
         if (!StringUtils.isBlank(isReleaseBuild) && "true".equals(isReleaseBuild)) {
             list.clear();
         } else {
@@ -56,6 +55,7 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
             }
             for (XmlSuite suite : list) {
                 if ("ApiManager-features-test-suite".equals(suite.getName())) {
+                    List<XmlTest> newXMLTests = new ArrayList<>();
                     for (XmlTest xmlTest : suite.getTests()) {
                         // process PRODUCT_APIM_TESTS to select xml tests to run
                         boolean xmlTestAdded = false;
@@ -98,8 +98,8 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
                             }
                         }
                     }
+                    suite.setTests(newXMLTests);
                 }
-                suite.setTests(newXMLTests);
             }
         }
     }
