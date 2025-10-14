@@ -37,9 +37,9 @@ under the License.
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-<!--                <module>tests-benchmark</module>-->
+                <module>tests-benchmark</module>
                 <module>tests-backend</module>
-<!--                <module>tests-restart</module>-->
+                <module>tests-restart</module>
             </modules>
         </profile>
         <profile>
