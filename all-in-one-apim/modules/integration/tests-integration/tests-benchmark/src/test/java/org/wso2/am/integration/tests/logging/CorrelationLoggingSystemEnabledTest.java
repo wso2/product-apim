@@ -33,7 +33,6 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -53,7 +52,7 @@ import org.wso2.carbon.utils.ServerConstants;
                     + File.separator + "correlation.log";
     BufferedReader bufferedReader;
     private String apiId;
-    ;
+
     private String applicationId;
     private String accessToken;
     private String context = "context_correlation";
@@ -61,12 +60,13 @@ import org.wso2.carbon.utils.ServerConstants;
     private Map<String, String> requestHeaders = new HashMap<>();
     private String apiEndPointUrl, providerName;
     private Boolean httpLog, jdbcLog, synapseLog, methodCallsLog, correlationIDLog;
+    public static final String BASIC_AUTH_HEADER = "admin:admin";
 
     @Factory(dataProvider = "userModeDataProvider") public CorrelationLoggingSystemEnabledTest(TestUserMode userMode)
             throws Exception {
         this.userMode = userMode;
         byte[] encodedBytes =
-                Base64.encodeBase64(RESTAPITestConstants.BASIC_AUTH_HEADER.getBytes(StandardCharsets.UTF_8));
+                Base64.encodeBase64(BASIC_AUTH_HEADER.getBytes(StandardCharsets.UTF_8));
         header.put("Authorization", "Basic " + new String(encodedBytes, StandardCharsets.UTF_8));
         header.put("Content-Type", "application/json");
         header.put("Accept", "application/json");
