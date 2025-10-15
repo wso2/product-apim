@@ -52,7 +52,7 @@ import org.wso2.carbon.utils.ServerConstants;
                     + File.separator + "correlation.log";
     BufferedReader bufferedReader;
     private String apiId;
-    ;
+
     private String applicationId;
     private String accessToken;
     private String context = "context_correlation";
@@ -61,7 +61,6 @@ import org.wso2.carbon.utils.ServerConstants;
     private String apiEndPointUrl, providerName;
     private Boolean httpLog, jdbcLog, synapseLog, methodCallsLog, correlationIDLog;
     public static final String BASIC_AUTH_HEADER = "admin:admin";
-
 
     @Factory(dataProvider = "userModeDataProvider") public CorrelationLoggingSystemEnabledTest(TestUserMode userMode)
             throws Exception {
