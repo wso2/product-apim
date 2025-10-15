@@ -444,11 +444,11 @@ under the License.
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.wso2.am</groupId>-->
+<!--            <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>-->
+<!--            <type>test-jar</type>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
     </dependencies>
 </project>

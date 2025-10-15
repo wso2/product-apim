@@ -23,7 +23,7 @@ import static org.junit.Assert.assertFalse;
 import java.io.File;
 
 import org.testng.annotations.Test;
-import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.utils.ServerConstants;
 
 public class OOMLogsCheckTest extends APIManagerLifecycleBaseTest {
