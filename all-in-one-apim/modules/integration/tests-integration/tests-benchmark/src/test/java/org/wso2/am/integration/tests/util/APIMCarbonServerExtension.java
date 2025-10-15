@@ -136,7 +136,7 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                                             + File.separator + "secondary.xml"),
                             userStorePath + File.separator + "secondary.xml");
 
-                    WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
+                    WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "lifecycletest" + File.separator
                                     + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
 
