@@ -17,11 +17,15 @@
  */
 package org.wso2.am.integration.tests.logging;
 
+import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -29,6 +33,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -64,9 +69,11 @@ import static org.testng.Assert.assertTrue;
 public class APILoggingTest extends APIManagerLifecycleBaseTest {
     private String apiId;
     private String apiId2;
+    private String templateMatchApiId;
     private APIRequest apiRequest;
     private Map<String, String> requestHeaders = new HashMap<String, String>();
     private String applicationId;
+    private String templateMatchApplicationId;
     private ArrayList<String> grantTypes = new ArrayList<>();
     private final String CALLBACK_URL = "https://localhost:9443/store/";
     private String applicationId2;
@@ -317,11 +324,131 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         }
     }
 
+    @Test(groups = {"wso2.am"}, description = "Invoking API with logging enabled with similar templates: ",
+            dependsOnMethods = "testAPIPerAPIResourceLoggingTestcase")
+    public void testSimilarTemplateInvocationWithLoggingTestcase() throws Exception {
+        String API_NAME = "SimilarTemplateAPI";
+        String API_CONTEXT = "similartemplatetest";
+        String API_TAGS = "testTag1, testTag2, testTag3";
+        String API_END_POINT_POSTFIX_URL = "xmlapi";
+        String APPLICATION_NAME = "SimilarTemplateTestApp";
+        String templateMatchAccessToken;
+        HttpClient templateMatchClient;
+
+        // Create a templateMatch application
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
+                "Test Application for Similar Template Test", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT);
+        templateMatchApplicationId = applicationResponse.getData();
+
+        // Create a templateMatch API
+        String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION);
+        APIRequest templateMatchApiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+        templateMatchApiRequest.setVersion(API_VERSION);
+        templateMatchApiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        templateMatchApiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        templateMatchApiRequest.setTags(API_TAGS);
+        templateMatchApiRequest.setProvider(user.getUserName());
+        templateMatchApiId = createPublishAndSubscribeToAPIUsingRest(templateMatchApiRequest, restAPIPublisher, restAPIStore,
+                templateMatchApplicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        // Enable logging for the templateMatch API
+        Map<String, String> header = new HashMap<>();
+        byte[] encodedBytes = Base64.encodeBase64(RESTAPITestConstants.BASIC_AUTH_HEADER
+                .getBytes(StandardCharsets.UTF_8));
+        header.put("Authorization", "Basic " + new String(encodedBytes, StandardCharsets.UTF_8));
+        header.put("Content-Type", "application/json");
+        String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";
+        HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v0/tenant-logs/carbon.super/apis/" + templateMatchApiId, header,
+                addNewLoggerPayload);
+
+        // Generate templateMatch access token
+        ArrayList<String> templateMatchGrantTypes = new ArrayList<>();
+        templateMatchGrantTypes.add("client_credentials");
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(templateMatchApplicationId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, templateMatchGrantTypes);
+        assertNotNull(applicationKeyDTO.getToken());
+        templateMatchAccessToken = applicationKeyDTO.getToken().getAccessToken();
+        templateMatchClient = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
+
+        // Update API with additional operations
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(templateMatchApiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        List<APIOperationsDTO> operations = apidto.getOperations();
+        if (operations == null) {
+            operations = new ArrayList<>();
+        }
+        // Add POST /payee/personal operation
+        APIOperationsDTO postPayeeOperation = new APIOperationsDTO();
+        postPayeeOperation.setVerb("POST");
+        postPayeeOperation.setTarget("/payee/personal");
+        postPayeeOperation.setAuthType("Application & Application User");
+        postPayeeOperation.setThrottlingPolicy("Unlimited");
+        operations.add(postPayeeOperation);
+        // Add GET /payee/{id} operation
+        APIOperationsDTO getPayeeOperation = new APIOperationsDTO();
+        getPayeeOperation.setVerb("GET");
+        getPayeeOperation.setTarget("/payee/{id}");
+        getPayeeOperation.setAuthType("Application & Application User");
+        getPayeeOperation.setThrottlingPolicy("Unlimited");
+        operations.add(getPayeeOperation);
+
+        apidto.setOperations(operations);
+        restAPIPublisher.updateAPI(apidto);
+
+        // Create new revision and deploy
+        createAPIRevisionAndDeployUsingRest(templateMatchApiId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Send OPTIONS pre-flight request for POST
+        HttpOptions optionsPostRequest = new HttpOptions(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) +
+                "/payee/personal");
+        optionsPostRequest.addHeader("Origin", "https://localhost:9443");
+        optionsPostRequest.addHeader("Access-Control-Request-Method", "POST");
+        optionsPostRequest.addHeader("Access-Control-Request-Headers", "authorization,content-type");
+        org.apache.http.HttpResponse optionsPostResponse = templateMatchClient.execute(optionsPostRequest);
+        assertEquals(optionsPostResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "OPTIONS pre-flight request for POST /payee/personal should succeed");
+        optionsPostRequest.releaseConnection();
+
+        // Actual POST call
+        HttpPost postRequest = new HttpPost(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + "/payee/personal");
+        postRequest.setHeader("Authorization", "Bearer " + templateMatchAccessToken);
+        postRequest.setHeader("Content-Type", "application/json");
+        postRequest.setEntity(new StringEntity("{\"name\":\"test\"}"));
+        org.apache.http.HttpResponse postResponse = templateMatchClient.execute(postRequest);
+        assertEquals(postResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "POST request to /payee/personal should succeed");
+        postRequest.releaseConnection();
+
+        // Send OPTIONS pre-flight request for GET /payee/{id}
+        HttpOptions optionsGetRequest = new HttpOptions(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) +
+                "/payee/123");
+        optionsGetRequest.addHeader("Origin", "https://localhost:9443");
+        optionsGetRequest.addHeader("Access-Control-Request-Method", "GET");
+        optionsGetRequest.addHeader("Access-Control-Request-Headers", "authorization");
+        org.apache.http.HttpResponse optionsGetResponse = templateMatchClient.execute(optionsGetRequest);
+        assertEquals(optionsGetResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "OPTIONS pre-flight request for GET /payee/{id} should succeed");
+        optionsGetRequest.releaseConnection();
+
+        // Actual GET call
+        HttpGet getRequest = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + "/payee/123");
+        getRequest.setHeader("Authorization", "Bearer " + templateMatchAccessToken);
+        org.apache.http.HttpResponse getResponse = templateMatchClient.execute(getRequest);
+        assertEquals(getResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "GET request to /payee/{id} should succeed");
+        getRequest.releaseConnection();
+    }
+
     @AfterClass(alwaysRun = true)
     void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIStore.deleteApplication(applicationId2);
+        restAPIStore.deleteApplication(templateMatchApplicationId);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(apiId2);
+        restAPIPublisher.deleteAPI(templateMatchApiId);
     }
 }
