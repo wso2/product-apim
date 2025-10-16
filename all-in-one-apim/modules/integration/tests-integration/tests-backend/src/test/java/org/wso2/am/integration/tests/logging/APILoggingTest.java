@@ -53,6 +53,7 @@ import org.wso2.carbon.utils.ServerConstants;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
@@ -178,7 +179,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         int lineNo = 0;
         while ((logLine = bufferedReader.readLine()) != null) {
             if (lineNo == logLineCounter) {
-                if (logLineCounter < 4 || (logLineCounter >= 8 && logLineCounter < 12)) {
+                if (logLineCounter < 4) {
                     assertTrue(logLine.contains("INFO {API_LOG} " + API_NAME));
                     assertTrue(logLine.contains("correlationId"));
                 }
@@ -314,7 +315,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         int lineNo = 0;
         while ((logLine = bufferedReader.readLine()) != null) {
             if (lineNo == logLineCounter) {
-                if (logLineCounter >= 12 || (logLineCounter >= 4 && logLineCounter < 8)) {
+                if (logLineCounter >= 4 && logLineCounter < 8) {
                     assertTrue(logLine.contains("INFO {API_LOG} " + API_NAME));
                     assertTrue(logLine.contains("correlationId"));
                 }
@@ -440,6 +441,17 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         assertEquals(getResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "GET request to /payee/{id} should succeed");
         getRequest.releaseConnection();
+
+        // Clear the log file
+        String apiLogFilePath = System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository"
+                + File.separator + "logs" + File.separator + "api.log";
+        File logFile = new File(apiLogFilePath);
+        if (logFile.exists()) {
+            new FileWriter(logFile, false).close();
+        }
+
+        // Reset log line counter
+        logLineCounter = 0;
     }
 
     @AfterClass(alwaysRun = true)
