@@ -1286,10 +1286,10 @@
         <carbon.analytics.common.version>5.3.27</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.103</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.106</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.32.132</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.136</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1302,7 +1302,7 @@
         <carbon.governance.version>4.8.37</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.9.31</carbon.kernel.version>
+        <carbon.kernel.version>4.9.32</carbon.kernel.version>
 
         <cipher.tool.version>1.1.28</cipher.tool.version>
 
@@ -1310,7 +1310,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.262</carbon.mediation.version>
+        <carbon.mediation.version>4.7.263</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.25.736</carbon.identity.version>
@@ -1478,7 +1478,7 @@
         <azure.keymanager.feature.version>1.0.15</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.2</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.8</auth0.keymanager.feature.version>
-        <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
+        <pingfederate.keymanager.feature.version>1.0.8</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.1.8</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.2.33</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
