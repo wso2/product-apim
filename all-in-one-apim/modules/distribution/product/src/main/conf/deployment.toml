@@ -103,7 +103,7 @@ gateway_labels =["Default"]
 
 [apim.analytics]
 enable = false
-auth_token = ""
+type = "moesif"
 
 [apim.ai]
 enable = true
