@@ -1307,10 +1307,10 @@
         <carbon.analytics.common.version>5.3.27</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.106</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.107</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.32.136</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.140</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1323,7 +1323,7 @@
         <carbon.governance.version>4.8.37</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.9.32</carbon.kernel.version>
+        <carbon.kernel.version>4.9.33</carbon.kernel.version>
 
         <cipher.tool.version>1.1.28</cipher.tool.version>
 
@@ -1496,7 +1496,7 @@
         <wso2is.km.version>1.7.17</wso2is.km.version>
         <wso2is7.km.version>2.0.8</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.2</okta.keymanager.feature.version>
-        <azure.keymanager.feature.version>1.0.15</azure.keymanager.feature.version>
+        <azure.keymanager.feature.version>1.0.16</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.2</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.8</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.8</pingfederate.keymanager.feature.version>
