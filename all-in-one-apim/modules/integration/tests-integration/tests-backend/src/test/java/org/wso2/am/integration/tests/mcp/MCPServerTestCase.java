@@ -1594,6 +1594,13 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.deleteMCPServer(mcpServerProxyId);
     }
 
+    /**
+     * Compares two JsonNode objects for deep equality, ignoring the order of fields in objects and elements in arrays.
+     *
+     * @param node1     the first JsonNode to compare
+     * @param node2     the second JsonNode to compare
+     * @return          true if the nodes are deeply equal according to the checked rules; false otherwise
+     */
     private static boolean compareNodes(JsonNode node1, JsonNode node2) {
         if (node1 == null || node2 == null) {
             return node1 == null && node2 == null;
