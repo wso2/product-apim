@@ -33,14 +33,10 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
         String testsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TESTS");
         String testClassesToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_CLASSES");
         String testGroupsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_GROUPS");
-        String testSecondTimeExecution = System.getProperty("PRODUCT_SECOND_TIME_EXECUTION");
-        String isReleaseBuild = System.getProperty("releaseBuild");
+        String isReleaseBuild = System.getProperty("performRelease");
         if (!StringUtils.isBlank(isReleaseBuild) && "true".equals(isReleaseBuild)) {
             list.clear();
-        } else if (!StringUtils.isBlank(testSecondTimeExecution) && "true".equals(testSecondTimeExecution)) {
-            list.clear();
         } else {
-            System.setProperty("PRODUCT_SECOND_TIME_EXECUTION", "true");
             if (StringUtils.isBlank(testsToRunCommaSeparated) && StringUtils.isBlank(testClassesToRunCommaSeparated)
                     && StringUtils.isBlank(testGroupsToRunCommaSeparated)) {
                 return;
