@@ -19,6 +19,8 @@
 package org.wso2.am.integration.tests.listener;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.IAlterSuiteListener;
 import org.testng.xml.XmlClass;
 import org.testng.xml.XmlSuite;
@@ -28,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class APIMAlterSuiteListener implements IAlterSuiteListener {
+    private static final Log log = LogFactory.getLog(APIMAlterSuiteListener.class);
+
     @Override
     public void alter(List<XmlSuite> list) {
         String testsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TESTS");
@@ -35,6 +39,7 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
         String testGroupsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_GROUPS");
         String testSecondTimeExecution = System.getProperty("PRODUCT_SECOND_TIME_EXECUTION");
         String isReleaseBuild = System.getProperty("releaseBuild");
+        log.info("----------------- System Properties Available: " + System.getProperties() + " ------------------");
         if (!StringUtils.isBlank(isReleaseBuild) && "true".equals(isReleaseBuild)) {
             list.clear();
         } else if (!StringUtils.isBlank(testSecondTimeExecution) && "true".equals(testSecondTimeExecution)) {
