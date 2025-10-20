@@ -28,6 +28,8 @@ import org.testng.xml.XmlTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class APIMAlterSuiteListener implements IAlterSuiteListener {
     private static final Log log = LogFactory.getLog(APIMAlterSuiteListener.class);
@@ -39,7 +41,15 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
         String testGroupsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_GROUPS");
         String testSecondTimeExecution = System.getProperty("PRODUCT_SECOND_TIME_EXECUTION");
         String isReleaseBuild = System.getProperty("releaseBuild");
-        log.info("----------------- System Properties Available: " + System.getProperties() + " ------------------");
+        log.info("----------------- System Properties Available: ");
+        Properties props = System.getProperties();
+        log.info("------------------------------- ");
+        props.forEach((key, value) -> log.info(key + " = " + value));
+        log.info("****************** Env Properties: ");
+        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+            log.info(entry.getKey() + " = " + entry.getValue());
+        }
+        log.info("****************** ");
         if (!StringUtils.isBlank(isReleaseBuild) && "true".equals(isReleaseBuild)) {
             list.clear();
         } else if (!StringUtils.isBlank(testSecondTimeExecution) && "true".equals(testSecondTimeExecution)) {
