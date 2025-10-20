@@ -33,9 +33,7 @@ under the License.
     <profiles>
         <profile>
             <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+
             <modules>
                 <module>tests-benchmark</module>
                 <module>tests-backend</module>
@@ -44,6 +42,9 @@ under the License.
         </profile>
         <profile>
             <id>without-restart</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <modules>
                 <module>tests-backend</module>
             </modules>
