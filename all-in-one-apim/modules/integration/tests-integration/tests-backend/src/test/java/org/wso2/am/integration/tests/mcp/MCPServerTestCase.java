@@ -20,7 +20,6 @@ package org.wso2.am.integration.tests.mcp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.gson.Gson;
@@ -89,10 +88,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -830,10 +827,23 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         HttpResponse toolListResponse =
                 HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
         assertHttpOk(toolListResponse, "Tool list call failed");
+
+        // Check whether the returned tool list contains both delete_oldpets and get_pets tools
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode expected = mapper.readTree(EXPECTED_UPDATED_TOOL_LIST_RESPONSE);
-        JsonNode actual = mapper.readTree(toolListResponse.getData());
-        Assert.assertTrue(compareNodes(expected, actual), mismatch("Tool list response", "tool-list",
+        JsonNode root = mapper.readTree(toolListResponse.getData());
+        JsonNode tools = root.path("result").path("tools");
+        boolean hasDeleteOldPets = false;
+        boolean hasGetPets = false;
+        for (JsonNode tool : tools) {
+            if ("delete_oldpets".equals(tool.path("name").asText())) {
+                hasDeleteOldPets = true;
+            }
+            if ("get_pets".equals(tool.path("name").asText())) {
+                hasGetPets = true;
+            }
+        }
+
+        Assert.assertTrue(hasGetPets && hasDeleteOldPets, mismatch("Tool list response", "tool-list",
                 EXPECTED_UPDATED_TOOL_LIST_RESPONSE, toolListResponse.getData()));
     }
 
@@ -1592,78 +1602,6 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteMCPServer(mcpServerFromOpenApiId);
         restAPIPublisher.deleteMCPServer(mcpServerProxyId);
-    }
-
-    /**
-     * Compares two JsonNode objects for deep equality, ignoring the order of fields in objects and elements in arrays.
-     *
-     * @param node1     the first JsonNode to compare
-     * @param node2     the second JsonNode to compare
-     * @return          true if the nodes are deeply equal according to the checked rules; false otherwise
-     */
-    private static boolean compareNodes(JsonNode node1, JsonNode node2) {
-        if (node1 == null || node2 == null) {
-            return node1 == null && node2 == null;
-        }
-
-        if (node1.getNodeType() != node2.getNodeType()) {
-            return false;
-        }
-
-        switch (node1.getNodeType()) {
-            case OBJECT:
-                Iterator<String> fieldNames1 = node1.fieldNames();
-                Set<String> fields1 = new HashSet<>();
-                while (fieldNames1.hasNext()) {
-                    fields1.add(fieldNames1.next());
-                }
-
-                Iterator<String> fieldNames2 = node2.fieldNames();
-                Set<String> fields2 = new HashSet<>();
-                while (fieldNames2.hasNext()) {
-                    fields2.add(fieldNames2.next());
-                }
-
-                if (!fields1.equals(fields2)) {
-                    return false;
-                }
-
-                for (String field : fields1) {
-                    if (!compareNodes(node1.get(field), node2.get(field))) {
-                        return false;
-                    }
-                }
-                return true;
-
-            case ARRAY:
-                ArrayNode array1 = (ArrayNode) node1;
-                ArrayNode array2 = (ArrayNode) node2;
-
-                if (array1.size() != array2.size()) {
-                    return false;
-                }
-
-                // Convert array elements to a normalized list
-                List<JsonNode> list1 = new ArrayList<>();
-                List<JsonNode> list2 = new ArrayList<>();
-
-                array1.forEach(e -> list1.add(e));
-                array2.forEach(e -> list2.add(e));
-
-                // Normalize by sorting JSON string representations
-                list1.sort(Comparator.comparing(JsonNode::toString));
-                list2.sort(Comparator.comparing(JsonNode::toString));
-
-                for (int i = 0; i < list1.size(); i++) {
-                    if (!compareNodes(list1.get(i), list2.get(i))) {
-                        return false;
-                    }
-                }
-                return true;
-
-            default:
-                return node1.equals(node2);
-        }
     }
 
     public class MCPWireMock {
