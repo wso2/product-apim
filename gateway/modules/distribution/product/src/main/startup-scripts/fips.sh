@@ -20,6 +20,19 @@ BCPKIX_FIPS_VERSION=1.0.7;
 EXPECTED_BC_FIPS_CHECKSUM="704e65f7e4fe679e5ab2aa8a840f27f8ced4c522"
 EXPECTED_BCPKIX_FIPS_CHECKSUM="fe07959721cfa2156be9722ba20fdfee2b5441b0"
 
+# resolve links
+PRG="$0"
+
+while [ -h "$PRG" ]; do
+  ls=`ls -ld "$PRG"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '.*/.*' > /dev/null; then
+    PRG="$link"
+  else
+    PRG=`dirname "$PRG"`/"$link"
+  fi
+done
+
 # Get standard environment variables
 PRGDIR=`dirname "$PRG"`
 
