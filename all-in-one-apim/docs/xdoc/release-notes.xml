@@ -23,7 +23,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v4.6.0 - 17th October 2025</title>
+    <title>WSO2 API Manager v4.6.0 - 4th November 2025</title>
 </head>
 <body>
 <div id="main-content">
@@ -79,7 +79,7 @@
 
     <h2>Bug Fixes And Improvements in 4.6.0</h2>
     <ul>
-        <li>GitHub (<a href="https://github.com/wso2/api-manager/issues?q=is%3Aissue%20state%3Aclosed%20(milestone%3A%224.6.0-M1%22%20OR%20milestone%3A%224.6.0-Alpha%22%20OR%20milestone%3A4.6.0-Alpha2%20OR%20milestone%3A4.6.0-Alpha3%20OR%20milestone%3A4.6.0-Beta%20OR%20milestone%3A4.6.0)">api-manager</a>)
+        <li>GitHub (<a href="https://github.com/wso2/api-manager/issues?q=is%3Aissue%20is%3Aclosed%20label%3AComponent%2FAPIM%20closed%3A2025-03-06..2025-10-26%20-label%3AResolution%2FInvalid%20-label%3AResolution%2FDuplicate%20-label%3A%22Resolution%2FNot%20a%20bug%22%20-label%3A%22Resolution%2FCannot%20Reproduce%22%20-label%3A%22Resolution%2FWon%E2%80%99t%20Fix%22">api-manager</a>)
         </li>
     </ul>
 
