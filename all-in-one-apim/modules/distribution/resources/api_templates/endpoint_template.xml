@@ -216,6 +216,9 @@ optimize="$advance_ep.get("optimize")"
         #macro( draw_endpoint $type $endpoint_config )
 
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
+        #if($endpointClass)
+            #set($endpointClass = $endpointClass.toLowerCase())
+        #end
 
         ##If graphql api
         #if( $endpointClass == "graphql" )
