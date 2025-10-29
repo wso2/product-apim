@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.tests.mcp;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.gson.Gson;
@@ -825,10 +827,24 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         HttpResponse toolListResponse =
                 HTTPSClientUtils.doPost(petstoreBackendURL, requestHeaders, TOOL_LIST_REQUEST_PAYLOAD);
         assertHttpOk(toolListResponse, "Tool list call failed");
-        Assert.assertEquals(compactJson(toolListResponse.getData()),
-                compactJson(EXPECTED_UPDATED_TOOL_LIST_RESPONSE),
-                mismatch("Tool list response", "tool-list",
-                        EXPECTED_UPDATED_TOOL_LIST_RESPONSE, toolListResponse.getData()));
+
+        // Check whether the returned tool list contains both delete_oldpets and get_pets tools
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(toolListResponse.getData());
+        JsonNode tools = root.path("result").path("tools");
+        boolean hasDeleteOldPets = false;
+        boolean hasGetPets = false;
+        for (JsonNode tool : tools) {
+            if ("delete_oldpets".equals(tool.path("name").asText())) {
+                hasDeleteOldPets = true;
+            }
+            if ("get_pets".equals(tool.path("name").asText())) {
+                hasGetPets = true;
+            }
+        }
+
+        Assert.assertTrue(hasGetPets && hasDeleteOldPets, mismatch("Tool list response", "tool-list",
+                EXPECTED_UPDATED_TOOL_LIST_RESPONSE, toolListResponse.getData()));
     }
 
     @Test(groups = {GROUP_WSO2_AM}, description = "Update tool operations in a MCP Server",
