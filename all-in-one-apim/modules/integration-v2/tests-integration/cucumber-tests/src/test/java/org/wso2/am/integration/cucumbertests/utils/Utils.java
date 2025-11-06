@@ -204,6 +204,22 @@ public class Utils {
         return baseUrl + "services/RemoteUserStoreManagerService";
     }
 
+    public static String getNewAPIVersionURL(String baseUrl, String newVersion, Boolean defaultVersion, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/copy-api" +
+                "?newVersion=" + URLEncoder.encode(newVersion, StandardCharsets.UTF_8) +
+                "&defaultVersion=" + defaultVersion +
+                "&apiId=" + URLEncoder.encode(apiId, StandardCharsets.UTF_8);
+    }
+
+    public static String getAPIDocuments(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents";
+    }
+
+    public static String getAPIDocument(String baseUrl, String apiId, String documentId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents/" + documentId;
+    }
+
+
 
     /**
      * Extracts the API UUID
@@ -361,4 +377,6 @@ public class Utils {
         }
         return (Tenant) value;
     }
+
+
 }
