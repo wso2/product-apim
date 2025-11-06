@@ -18,10 +18,13 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import com.google.gson.JsonObject;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -136,6 +139,16 @@ public class BaseSteps {
         TestContext.set("devportalAccessToken", accessToken);
     }
 
+    // Composite function to Combine the above four steps to reduce length of feature definition
+    @Given("The system is ready and I have valid access tokens for current user")
+    public void iHaveSystemAndTokens() throws Exception {
+
+        theSystemIsReady();
+        iHaveADCRApplication();
+        iHaveValidPublisherAccessToken();
+        iHaveValidDevportalAccessToken();
+    }
+
     @When("I put JSON payload from file {string} in context as {string}")
     public void putJsonPayloadFromFile(String jsonFilePath, String key) throws IOException {
 
@@ -160,7 +173,6 @@ public class BaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         TestContext.set(Utils.normalizeContextKey(key), response.getData());
     }
-
 
     @Then("The response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
@@ -189,6 +201,40 @@ public class BaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response.getHeaders().containsKey(headerName), "Header " + headerName + " not found in response");
         Assert.assertEquals(response.getHeaders().get(headerName), expectedValue, "Header value mismatch for " + headerName);
+    }
+
+    @And("The API should reflect the updated {string} as:")
+    public void theAPIShouldReflectTheUpdatedAs(String config, String configValue) throws IOException{
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+
+        JSONObject json = new JSONObject(response.getData());
+        Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
+
+        Object actualValue = json.get(config);
+
+        // Handle JSON true/false, numbers, or strings gracefully
+        if (actualValue instanceof Boolean) {
+            Assert.assertEquals(actualValue.toString(), configValue,
+                    "Expected boolean " + configValue + " but got " + actualValue);
+        } else if (actualValue instanceof Number) {
+            Assert.assertEquals(String.valueOf(actualValue), configValue,
+                    "Expected numeric " + configValue + " but got " + actualValue);
+        } else if(actualValue instanceof JSONArray){
+            JSONArray expectedArray = new JSONArray(configValue);
+            JSONArray actualArray = (JSONArray) actualValue;
+
+            Assert.assertEquals(actualArray.toString(), expectedArray.toString(),
+                    "Expected array " + expectedArray + " but got " + actualArray);
+        } else if(actualValue instanceof JSONObject){
+            JSONObject expectedObject = new JSONObject(configValue);
+            JSONObject actualObject = (JSONObject) actualValue;
+
+            Assert.assertTrue(actualObject.similar(expectedObject), "Expected JSON object:\n" + expectedObject
+                    + "\nbut got:\n" + actualObject);
+        } else {
+            Assert.assertEquals(actualValue, configValue,
+                    "Expected string " + configValue + " but got " + actualValue);
+        }
     }
 
     @Then("I wait for {int} seconds")
