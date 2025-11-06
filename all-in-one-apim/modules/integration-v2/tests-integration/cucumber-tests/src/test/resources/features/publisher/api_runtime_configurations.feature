@@ -25,13 +25,13 @@ Feature: API Runtime Configurations
       | apiID         | configType               | configValue          |
       | createdApiId  | responseCachingEnabled   | true                 |
       | createdApiId  | cacheTimeout             | 400                  |
-      | createdApiId  | responseCachingEnabled   | false                |
       | createdApiId  | enableSchemaValidation   | true                 |
-      | createdApiId  | enableSchemaValidation   | false                |
       | createdApiId  | transport                | ["http","https"]     |
-      | createdApiId  | transport                | ["https"]            |
       | createdApiId  | corsConfiguration        | {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowMethods":["GET","POST"],"accessControlAllowHeaders":["Authorization"],"accessControlAllowCredentials":true} |
-      | createdApiId  | corsConfiguration        | {"corsConfigurationEnabled":false,"accessControlAllowOrigins":[],"accessControlAllowMethods":[],"accessControlAllowHeaders":[],"accessControlAllowCredentials":false} |
+      | createdApiId  | responseCachingEnabled   | false                |
+      | createdApiId  | enableSchemaValidation   | false                |
+      | createdApiId  | transport                | ["https"]            |
+      | createdApiId  | corsConfiguration        | {"accessControlAllowOrigins":[],"accessControlAllowCredentials":false,"corsConfigurationEnabled":false,"accessControlAllowHeaders":[],"accessControlAllowMethods":[]} |
 
   Scenario: Remove the API
     When I delete the API with id "<createdApiId>"
