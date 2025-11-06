@@ -1,0 +1,9 @@
+{
+  "name": "NewTestDocument",
+  "type": "<type>",
+  "summary": "Summary of test Documentation",
+  "sourceType": "<sourceType>",
+  "inlineContent": "<inlineContent>",
+  "visibility": "API_LEVEL",
+  "createdBy": "admin"
+}
