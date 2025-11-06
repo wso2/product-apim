@@ -1,0 +1,64 @@
+package org.wso2.am.integration.cucumbertests.runners.publisher;
+
+import io.cucumber.testng.AbstractTestNGCucumberTests;
+import io.cucumber.testng.CucumberOptions;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.wso2.am.integration.cucumbertests.utils.TestContext;
+import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.carbon.automation.engine.context.beans.Tenant;
+import org.wso2.carbon.automation.engine.context.beans.User;
+
+@CucumberOptions(
+        features = "src/test/resources/features/publisher/api_other_common_configurations.feature",
+        glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
+        plugin = {"pretty", "html:target/cucumber-report/apiVersioning.html" }
+)
+public class APIOtherCommonConfigurationsRunner extends AbstractTestNGCucumberTests {
+    private String testUserDomain;
+    private String testUserKey;
+
+    void setTestUserDomain(String testUserDomain) {
+        this.testUserDomain = testUserDomain;
+    }
+
+    void setTestUserKey(String testUserKey) {
+        this.testUserKey = testUserKey;
+    }
+
+    @BeforeClass(alwaysRun = true)
+    public void beforeClass() {
+        Tenant tenant = Utils.getTenantFromContext(testUserDomain);
+        User user  = testUserKey.equals(Constants.ADMIN_USER_KEY)
+                ? tenant.getTenantAdmin()
+                : tenant.getTenantUser(testUserKey);
+        tenant.setContextUser(user);
+        TestContext.set("currentTenant", tenant);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void afterClass() {
+        TestContext.remove("currentTenant");
+    }
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public static Object[] factory(String tenantDomain, String userKey) {
+        APIOtherCommonConfigurationsRunner runner = new APIOtherCommonConfigurationsRunner();
+        runner.setTestUserDomain(tenantDomain);
+        runner.setTestUserKey(userKey);
+        return new Object[]{ runner };
+    }
+
+    @DataProvider
+    public Object[][] userModeDataProvider() {
+        return new Object[][]{
+                {"carbon.super", "admin"}, // Super tenant admin
+                {"carbon.super", "userKey1"}, // Super tenant user
+                {"tenant1.com", "admin"},  // Tenant admin
+                {"tenant1.com", "userKey1"} // Tenant user
+        };
+    }
+}
