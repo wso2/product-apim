@@ -185,4 +185,41 @@ public class StoreStepDefinitions {
 
         Assert.assertTrue(found, "Subscription with id " + actualSubscriptionId + " not found in the list.");
     }
+
+    BaseSteps baseSteps = new BaseSteps();
+
+    /**
+     * Composite step definition for,
+     * Application creation - put the 'createdAppId' in context
+     * Generate credentials for application - put 'consumerKey', 'consumerSecret' , and 'keyMappingId' in context
+     * Subscribe to a given apiId - put 'subscriptionId' in context
+     * Generate access tokens - put 'generatedAccessToken' in context
+     *
+     * @param apiId Api to be subscribed
+     */
+    @When("I have set up application with keys, subscribed to API {string}, and obtained access token")
+    public void iSetupApplicationSubscribeAndGetToken(String apiId) throws IOException, Exception {
+
+        // create an application
+        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
+        iCreateAnApplicationWithJsonPayload("<createAppPayload>");
+
+        // generate credentials for application
+        baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
+                "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
+        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
+        baseSteps.theResponseStatusCodeShouldBe(200);
+
+        // subscribe to an api with that created application
+        baseSteps.putJsonPayloadInContext("<apiSubscriptionPayload>", "{\"applicationId\": \"{{applicationId}}\"," +
+                "\"apiId\": \"{{apiId}}\",\"throttlingPolicy\": \"Bronze\"}");
+        iSubscribeToApi(apiId, "<createdAppId>", "<apiSubscriptionPayload>");
+
+        // generate access token
+        baseSteps.putJsonPayloadInContext("<createApplicationAccessTokenPayload>", "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
+                "\"validityPeriod\": 3600}");
+        iRequestAccessToken("<createdAppId>", "<createApplicationAccessTokenPayload>");
+        baseSteps.theResponseStatusCodeShouldBe(200);
+    }
+
 }
