@@ -69,6 +69,24 @@ public class PublisherStepDefinitions {
 
     }
 
+    @And("I create an API with payload {string} as {string}")
+    public void iCreateAnAPIWithPayloadAs(String payload, String apiID) throws IOException {
+
+        String jsonPayload = Utils.resolveFromContext(payload).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse apiCreateResponse = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getAPICreateEndpointURL(baseUrl), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        Assert.assertEquals(apiCreateResponse.getResponseCode(), 201, apiCreateResponse.getData());
+        TestContext.set(apiID, Utils.extractValueFromPayload(apiCreateResponse.getData(), "id"));
+
+    }
+
     @When("I update API of id {string} with payload {string}")
     public void iUpdateApiWithJsonPayloadFromContext(String apiId, String payload) throws IOException {
 
@@ -98,6 +116,7 @@ public class PublisherStepDefinitions {
         }
     }
 
+   // Step definitions for revisions
     @When("I make a request to create a revision for API {string} with payload {string}")
     public void iCreateApiRevision(String apiId, String contextKey) throws IOException, InterruptedException {
 
@@ -113,8 +132,51 @@ public class PublisherStepDefinitions {
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         Assert.assertEquals(createRevisionResponse.getResponseCode(), 201, createRevisionResponse.getData());
+        TestContext.set("httpResponse", createRevisionResponse);
         TestContext.set("revisionId", Utils.extractValueFromPayload(createRevisionResponse.getData(), "id"));
         Thread.sleep(3000);
+    }
+
+    @When("I get the existing revision as {string} for API with {string}")
+    public void iGetTheExistingRevisionAsForAPIWith(String revisionID, String apiId) throws IOException, InterruptedException {
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse getRevisionResponse = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getAPIRevisionURL(baseUrl, actualApiId), headers);
+
+        TestContext.set("httpResponse", getRevisionResponse);
+        Assert.assertEquals(getRevisionResponse.getResponseCode(), 200, getRevisionResponse.getData());
+
+        // extract and store  exiting revision ID in context
+        JSONObject responseJson = new JSONObject(getRevisionResponse.getData());
+        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
+            String firstRevisionId = responseJson
+                    .getJSONArray("list")
+                    .getJSONObject(0)
+                    .getString("id");
+            TestContext.set(revisionID, firstRevisionId);
+        } else {
+            throw new RuntimeException("No revisions found for API: " + actualApiId);
+        }
+    }
+
+    @When("I Delete the API revision with {string} for {string}")
+    public void iDeleteTheAPIRevisionWithFor(String revisionId, String apiId) throws IOException{
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse getRevisionResponse = SimpleHTTPClient.getInstance()
+                .doDelete(Utils.getAPIRevisionByID(baseUrl, actualApiId, actualRevisionId), headers);
+
+        TestContext.set("httpResponse", getRevisionResponse);
     }
 
     @When("I make a request to deploy revision {string} of API {string} with payload {string}")
@@ -134,6 +196,45 @@ public class PublisherStepDefinitions {
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", deployRevisionResponse);
+    }
+
+    @When("I undeploy revision {string} of API {string}")
+    public void iUndeployRevisionOfAPI(String revisionId, String apiId) throws IOException{
+
+        baseSteps.putJsonPayloadInContext("<undeployRevisionPayload>",
+                "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
+
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
+        String jsonPayload = Utils.resolveFromContext("<undeployRevisionPayload>").toString();
+        jsonPayload = jsonPayload.replace("{{gatewayEnvironment}}", System.getenv(Constants.GATEWAY_ENVIRONMENT));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse unDeployRevisionResponse = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getAPIRevisionUnDeploymentURL(baseUrl, actualApiId, actualRevisionId), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        TestContext.set("httpResponse", unDeployRevisionResponse);
+
+    }
+
+    @When("I restore a previous revision {string} of API {string}")
+    public void iRestoreAPreviousRevisionOfAPI(String revisionId, String apiId) throws IOException{
+
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse restoreRevisionResponse = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getAPIRevisionRestoreURL(baseUrl, actualApiId, actualRevisionId), headers, null, null);
+
+        TestContext.set("httpResponse", restoreRevisionResponse);
     }
 
     @When("I delete the API with id {string}")
@@ -251,6 +352,7 @@ public class PublisherStepDefinitions {
     // Composite function to create and deploy an api with
     @Given("I have created an api and deployed it")
     public void iCreateAndDeployApi() throws IOException, InterruptedException {
+
         baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_api.json", "<createApiPayload>");
         iCreateApiWithJsonPayload("<createApiPayload>");
         baseSteps.putJsonPayloadInContext("<createRevisionPayload>","{\"description\":\"Initial Revision\"}");
@@ -261,6 +363,23 @@ public class PublisherStepDefinitions {
         baseSteps.theResponseStatusCodeShouldBe(201);
     }
 
+    // Composite function to create API
+    @And("I create an API as {string}")
+    public void iCreateAnAPIAs(String apiID) throws IOException {
+
+        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_api.json", "<createApiPayload>");
+        iCreateAnAPIWithPayloadAs("<createApiPayload>", apiID);
+    }
+
+    // Composite function to deploy a revision of API
+    @When("I deploy revision {string} of API {string}")
+    public void iDeployRevisionOfAPI(String revisionID, String apiID) throws IOException {
+        baseSteps.putJsonPayloadInContext("<deployRevisionPayload>",
+                "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
+        iDeployApiRevisionGivenPayload(revisionID, apiID, "<deployRevisionPayload>");
+    }
+
+    // Composite function to create a revision and then deploy a API
     @Given("I deploy the API with id {string}")
     public void iDeployAPI(String apiID) throws IOException, InterruptedException{
         baseSteps.putJsonPayloadInContext("<createRevisionPayload>","{\"description\":\"Initial Revision\"}");
@@ -269,6 +388,26 @@ public class PublisherStepDefinitions {
                 "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
         iDeployApiRevisionGivenPayload("<revisionId>", apiID, "<deployRevisionPayload>");
 
+    }
+
+    @Given("I have a migrated API with name {string} and version {string} or I create an API as {string}")
+    public void iHaveAMigratedAPIWithNameAndVersionOrICreateAnAPIAs(String apiName, String apiVersion, String apiID) throws IOException, InterruptedException{
+
+        String foundedApiId;
+
+        // Find the migrated api
+        try {
+            iFindTheApiUUIDOfTheAPICreatedWithTheNameAndVersionAs(apiName, apiVersion, apiID);
+            foundedApiId = Utils.resolveFromContext(apiID).toString();
+        } catch (Exception e) {
+            foundedApiId = null;
+        }
+
+        if (foundedApiId != null && !foundedApiId.isEmpty()) {
+            TestContext.set(apiID, foundedApiId);
+        } else{
+            iCreateAnAPIAs(apiID);
+        }
     }
 
     /**
