@@ -1,0 +1,392 @@
+{
+  "name": "ADPStarWarsAPI",
+  "description": null,
+  "context": "/adp-swapi",
+  "version": "1.0.0",
+  "provider": "adp_crt_user",
+  "lifeCycleStatus": "PUBLISHED",
+  "wsdlInfo": null,
+  "wsdlUrl": null,
+  "responseCachingEnabled": false,
+  "cacheTimeout": 300,
+  "hasThumbnail": false,
+  "isDefaultVersion": false,
+  "isRevision": false,
+  "revisionedApiId": null,
+  "revisionId": 0,
+  "enableSchemaValidation": false,
+  "enableSubscriberVerification": false,
+  "type": "GRAPHQL",
+  "audience": null,
+  "audiences": [],
+  "transport": [
+    "http",
+    "https"
+  ],
+  "tags": [],
+  "policies": [
+    "Bronze",
+    "Gold",
+    "Silver",
+    "ADPBrass"
+  ],
+  "organizationPolicies": [],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": null,
+  "apiKeyHeader": null,
+  "securityScheme": [
+    "oauth_basic_auth_api_key_mandatory",
+    "oauth2"
+  ],
+  "maxTps": null,
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "visibleTenants": [],
+  "visibleOrganizations": [
+    "none"
+  ],
+  "mediationPolicies": [],
+  "apiPolicies": null,
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "subscriptionAvailableTenants": [],
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "monetization": null,
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "businessInformation": {
+    "businessOwner": "Business Owner",
+    "businessOwnerEmail": "adp.bo@gmail.com",
+    "technicalOwner": "Technical Owner",
+    "technicalOwnerEmail": "adp.to@gmail.com"
+  },
+  "corsConfiguration": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": [
+      "*"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "testKey"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  },
+  "websubSubscriptionConfiguration": {
+    "enable": false,
+    "secret": "",
+    "signingAlgorithm": "SHA1",
+    "signatureHeader": "x-hub-signature"
+  },
+  "workflowStatus": null,
+  "createdTime": "1753950789000",
+  "lastUpdatedTimestamp": "1755760864000",
+  "lastUpdatedTime": "2025-08-21 12:51:04.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://localhost:8080/graphql"
+    },
+    "production_endpoints": {
+      "url": "http://localhost:8080/graphql"
+    }
+  },
+  "primaryProductionEndpointId": null,
+  "primarySandboxEndpointId": null,
+  "endpointImplementationType": "ENDPOINT",
+  "subtypeConfiguration": {
+    "subtype": "DEFAULT",
+    "configuration": null
+  },
+  "scopes": [
+    {
+      "scope": {
+        "id": null,
+        "name": "adp-admin",
+        "displayName": "adp-admin",
+        "description": "ADP admin",
+        "bindings": [
+          "admin"
+        ],
+        "usageCount": null
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "id": null,
+        "name": "adp-film-subscriber",
+        "displayName": "adp-film-subscriber",
+        "description": "ADP film subscriber",
+        "bindings": [],
+        "usageCount": null
+      },
+      "shared": false
+    }
+  ],
+  "operations": [
+    {
+      "id": "",
+      "target": "allCharacters",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "adp-admin"
+      ],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "allDroids",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "adp-film-subscriber"
+      ],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "allHumans",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "ADP10PerMin",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "character",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "createReview",
+      "verb": "MUTATION",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "droid",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "hero",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "human",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "reviewAdded",
+      "verb": "SUBSCRIPTION",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "reviews",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "search",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "starship",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "threatProtectionPolicies": null,
+  "categories": [
+    "adp-imported"
+  ],
+  "keyManagers": [
+    "all"
+  ],
+  "serviceInfo": null,
+  "advertiseInfo": {
+    "advertised": false,
+    "apiExternalProductionEndpoint": null,
+    "apiExternalSandboxEndpoint": null,
+    "originalDevPortalUrl": null,
+    "apiOwner": null,
+    "vendor": "WSO2"
+  },
+  "gatewayVendor": "wso2",
+  "gatewayType": "wso2/synapse",
+  "asyncTransportProtocols": [],
+  "egress": false
+}

@@ -45,7 +45,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class BaseSteps {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseSteps.class);
@@ -188,6 +187,7 @@ public class BaseSteps {
         Assert.assertTrue(response.getData().contains(expectedValue));
     }
 
+
     @Then("The response should not contain {string}")
     public void responseShouldNotContainFieldValue(String unexpectedValue) {
 
@@ -204,28 +204,83 @@ public class BaseSteps {
     }
 
     @And("The API should reflect the updated {string} as:")
-    public void theAPIShouldReflectTheUpdatedAs(String config, String configValue) throws IOException{
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+    public void theAPIShouldReflectTheUpdatedAs(String config, String configValue) throws IOException, InterruptedException {
+        // Get the API ID from the update response
+        HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
+        JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
+        String apiId = updateResponseJson.optString("id", null);
 
+        if ("endpointConfig".equals(config)){
+            configValue = Utils.resolveFromContext(configValue).toString();
+        }
+
+        if (apiId == null || apiId.isEmpty()) {
+            verifyConfigurationInResponse(updateResponse, config, configValue);
+            return;
+        }
+
+        // Retry mechanism: retrieve the API and check until the configuration matches
+        int maxRetries = 20;
+        int delayMs = 3000;
+        boolean configMatches = false;
+        HttpResponse retrievedResponse = null;
+
+        for (int i = 0; i < maxRetries; i++) {
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                    "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+            retrievedResponse = SimpleHTTPClient.getInstance().doGet(
+                    Utils.getAPIEndpointURL(baseUrl, apiId), headers);
+
+            if (retrievedResponse.getResponseCode() == 200) {
+                try {
+                    verifyConfigurationInResponse(retrievedResponse, config, configValue);
+                    configMatches = true;
+                    break;
+                } catch (AssertionError e) {
+                    // Configuration doesn't match yet, retry
+                    if (i < maxRetries - 1) {
+                        Thread.sleep(delayMs);
+                    } else {
+                        throw e;
+                    }
+                }
+            } else {
+                if (i == 0) {
+                    verifyConfigurationInResponse(updateResponse, config, configValue);
+                    return;
+                }
+                Thread.sleep(delayMs);
+            }
+        }
+
+        // Final fall back
+        if (!configMatches) {
+            verifyConfigurationInResponse(updateResponse, config, configValue);
+        }
+    }
+
+    private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
         JSONObject json = new JSONObject(response.getData());
         Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
 
         Object actualValue = json.get(config);
 
-        // Handle JSON true/false, numbers, or strings gracefully
+        // Handle JSON true/false, numbers, or strings
         if (actualValue instanceof Boolean) {
             Assert.assertEquals(actualValue.toString(), configValue,
                     "Expected boolean " + configValue + " but got " + actualValue);
         } else if (actualValue instanceof Number) {
             Assert.assertEquals(String.valueOf(actualValue), configValue,
                     "Expected numeric " + configValue + " but got " + actualValue);
-        } else if(actualValue instanceof JSONArray){
+        } else if (actualValue instanceof JSONArray) {
             JSONArray expectedArray = new JSONArray(configValue);
             JSONArray actualArray = (JSONArray) actualValue;
 
             Assert.assertEquals(actualArray.toString(), expectedArray.toString(),
                     "Expected array " + expectedArray + " but got " + actualArray);
-        } else if(actualValue instanceof JSONObject){
+        } else if (actualValue instanceof JSONObject) {
             JSONObject expectedObject = new JSONObject(configValue);
             JSONObject actualObject = (JSONObject) actualValue;
 

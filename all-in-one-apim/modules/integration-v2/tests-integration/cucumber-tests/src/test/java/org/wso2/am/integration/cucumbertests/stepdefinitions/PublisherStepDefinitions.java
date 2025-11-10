@@ -581,7 +581,7 @@ public class PublisherStepDefinitions {
 
     // Step definitions for updating apis for runtime configurations
     @When("I update the API with {string} configuration type {string} and value:")
-    public void iUpdateTheAPIWithConfigurationTypeAndValue(String apiID, String configType, String configValue) throws IOException {
+    public void iUpdateTheAPIWithConfigurationTypeAndValue(String apiID, String configType, String configValue) throws IOException, InterruptedException {
         baseSteps.putJsonPayloadFromFile("artifacts/payloads/update_apim_test_api.json", "apiConfigUpdate");
 
         // Retrieve a JSON object safely
@@ -598,5 +598,43 @@ public class PublisherStepDefinitions {
         TestContext.set(Utils.normalizeContextKey("<apiConfigUpdate>"), updatedJsonPayload);
 
         iUpdateApiWithJsonPayloadFromContext(apiID, "<apiConfigUpdate>");
+        Thread.sleep(1000);
+    }
+
+    @When("I update the API {string} and {string} with configuration type {string} and value:")
+    public void iUpdateTheAPIAndWithConfigurationTypeAndValue(String apiID, String apiUpdatePayload, String configType, String configValue) throws IOException, InterruptedException {
+
+        // Retrieve a JSON object safely
+        Object ctxValue = Utils.resolveFromContext(apiUpdatePayload);
+        JSONObject jsonPayload = (ctxValue instanceof JSONObject)
+                ? (JSONObject) ctxValue
+                : new JSONObject(ctxValue.toString());
+
+        if ("endpointConfig".equals(configType)){
+            configValue = Utils.resolveFromContext(configValue).toString();
+        }
+        Object parsedValue = parseConfigValue(configValue);
+
+        // update or overwrite the payload
+        jsonPayload.put(configType, parsedValue);
+        String updatedJsonPayload = jsonPayload.toString();
+        TestContext.set(Utils.normalizeContextKey("<apiConfigUpdate>"), updatedJsonPayload);
+
+        iUpdateApiWithJsonPayloadFromContext(apiID, "<apiConfigUpdate>");
+        Thread.sleep(3000);
+    }
+
+    @When("I prepare an endpoint update with {string}, {string} and {string} as {string}")
+    public void iPrepareAnEndpointUpdateWithAnd(String type, String productionEndpoint, String sandboxEndpoint, String contextKey) throws IOException{
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("artifacts/payloads/update_api_endpoint.json")) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("File not found on classpath: " + "artifacts/payloads/update_api_endpoint.json");
+            }
+            String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            jsonPayload = jsonPayload.replace("<type>", type)
+                    .replace("<productionEndpoint>", productionEndpoint)
+                    .replace("<sandboxEndpoint>", sandboxEndpoint);
+            TestContext.set(Utils.normalizeContextKey(contextKey), jsonPayload);
+        }
     }
 }

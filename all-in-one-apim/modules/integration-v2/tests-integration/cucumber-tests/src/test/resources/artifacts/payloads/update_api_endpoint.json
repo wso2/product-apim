@@ -1,0 +1,91 @@
+{
+  "endpoint_type": "<type>",
+  "sandbox_endpoints": {
+    "config": {
+    "retryDelay": "",
+    "actionDuration": "30000",
+    "retryTimeOut": "",
+    "suspendDuration": "2",
+    "suspendErrorCode": [
+    "101001"
+    ],
+    "retryErroCode": [],
+    "factor": "2",
+    "suspendMaxDuration": "2",
+    "actionSelect": "fault"
+    },
+    "url": "<sandboxEndpoint>"
+  },
+  "endpoint_security": {
+    "sandbox": {
+    "apiKeyValue": null,
+    "tokenUrl": "",
+    "clientId": null,
+    "connectionTimeoutDuration": -1,
+    "apiKeyIdentifier": null,
+    "type": "BASIC",
+    "socketTimeoutDuration": -1,
+    "enabled": true,
+    "apiKeyIdentifierType": null,
+    "proxyConfigs": {
+    "proxyEnabled": false,
+    "proxyPort": "",
+    "proxyProtocol": "",
+    "proxyUsername": "",
+    "proxyPassword": "",
+    "proxyHost": ""
+    },
+    "password": "",
+    "clientSecret": null,
+    "customParameters": {},
+    "additionalProperties": {},
+    "grantType": "",
+    "connectionRequestTimeoutDuration": -1,
+    "uniqueIdentifier": null,
+    "username": "user123"
+    },
+    "production": {
+    "apiKeyValue": null,
+    "tokenUrl": "",
+    "clientId": null,
+    "connectionTimeoutDuration": -1,
+    "apiKeyIdentifier": null,
+    "type": "BASIC",
+    "socketTimeoutDuration": -1,
+    "enabled": true,
+    "apiKeyIdentifierType": null,
+    "proxyConfigs": {
+    "proxyEnabled": false,
+    "proxyPort": "",
+    "proxyProtocol": "",
+    "proxyUsername": "",
+    "proxyPassword": "",
+    "proxyHost": ""
+    },
+    "password": "",
+    "clientSecret": null,
+    "customParameters": {},
+    "additionalProperties": {},
+    "grantType": "",
+    "connectionRequestTimeoutDuration": -1,
+    "uniqueIdentifier": null,
+    "username": "user123"
+    }
+  },
+  "production_endpoints": {
+    "config": {
+    "retryDelay": "",
+    "actionDuration": "30000",
+    "retryTimeOut": "",
+    "suspendDuration": "2",
+    "suspendErrorCode": [
+    "101001"
+    ],
+    "retryErroCode": [],
+    "factor": "2",
+    "suspendMaxDuration": "2",
+    "actionSelect": "fault"
+    },
+    "url": "<productionEndpoint>"
+  }
+}
