@@ -1,0 +1,158 @@
+{
+  "id": "67a75004-1a24-48df-9629-34df0bfd52c9",
+  "name": "ADPPhoneVerificationAPI",
+  "description": null,
+  "context": "/adp-phoneverify",
+  "version": "1.0.0",
+  "provider": "adp_crt_user",
+  "lifeCycleStatus": "PUBLISHED",
+  "wsdlInfo": {
+    "type": "WSDL"
+  },
+  "wsdlUrl": "/registry/resource/_system/governance/apimgt/applicationdata/provider/adp_crt_user/ADPPhoneVerificationAPI/1.0.0/adp_crt_user--ADPPhoneVerificationAPI1.0.0.wsdl",
+  "responseCachingEnabled": false,
+  "cacheTimeout": 300,
+  "hasThumbnail": false,
+  "isDefaultVersion": true,
+  "isRevision": false,
+  "revisionedApiId": null,
+  "revisionId": 0,
+  "enableSchemaValidation": true,
+  "enableSubscriberVerification": false,
+  "type": "SOAP",
+  "audience": null,
+  "audiences": [
+    "all"
+  ],
+  "transport": [
+    "http",
+    "https"
+  ],
+  "tags": [
+    "wsdl"
+  ],
+  "policies": [
+    "Unlimited"
+  ],
+  "organizationPolicies": [],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": null,
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": [
+    "oauth_basic_auth_api_key_mandatory",
+    "oauth2"
+  ],
+  "maxTps": null,
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "visibleTenants": [],
+  "visibleOrganizations": [
+    "none"
+  ],
+  "mediationPolicies": [],
+  "apiPolicies": null,
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "subscriptionAvailableTenants": [],
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "monetization": null,
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "businessInformation": {
+    "businessOwner": null,
+    "businessOwnerEmail": null,
+    "technicalOwner": null,
+    "technicalOwnerEmail": null
+  },
+  "corsConfiguration": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": [
+      "*"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "testKey"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  },
+  "websubSubscriptionConfiguration": {
+    "enable": false,
+    "secret": "",
+    "signingAlgorithm": "SHA1",
+    "signatureHeader": "x-hub-signature"
+  },
+  "workflowStatus": null,
+  "createdTime": "1753950784000",
+  "lastUpdatedTimestamp": "1762748276000",
+  "lastUpdatedTime": "2025-11-10 09:47:56.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://ws.cdyne.com/phoneverify/phoneverify.asmx"
+    },
+    "production_endpoints": {
+      "url": "http://ws.cdyne.com/phoneverify/phoneverify.asmx"
+    }
+  },
+  "primaryProductionEndpointId": null,
+  "primarySandboxEndpointId": null,
+  "endpointImplementationType": "ENDPOINT",
+  "subtypeConfiguration": {
+    "subtype": "DEFAULT",
+    "configuration": null
+  },
+  "scopes": [],
+  "operations": [
+    {
+      "id": "",
+      "target": "/*",
+      "verb": "POST",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "threatProtectionPolicies": null,
+  "categories": [
+    "adp-imported"
+  ],
+  "keyManagers": [
+    "all"
+  ],
+  "serviceInfo": null,
+  "advertiseInfo": {
+    "advertised": false,
+    "apiExternalProductionEndpoint": null,
+    "apiExternalSandboxEndpoint": null,
+    "originalDevPortalUrl": null,
+    "apiOwner": null,
+    "vendor": "WSO2"
+  },
+  "gatewayVendor": "wso2",
+  "gatewayType": "wso2/synapse",
+  "asyncTransportProtocols": [],
+  "egress": false
+}

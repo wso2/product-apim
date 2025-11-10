@@ -74,6 +74,18 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/deploy-revision?revisionId=" + revisionId;
     }
 
+    public static String getAPIRevisionUnDeploymentURL(String baseUrl, String apiId, String revisionId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/undeploy-revision?revisionId=" + revisionId;
+    }
+
+    public static String getAPIRevisionRestoreURL(String baseUrl, String apiId, String revisionId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/restore-revision?revisionId=" + revisionId;
+    }
+
+    public static String getAPIRevisionByID(String baseUrl, String apiId, String revisionID) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/revisions/" + revisionID;
+    }
+
     public static String getAPISearchEndpointURL(String baseUrl, String query, Integer limit, Integer offset) {
 
         StringBuilder urlBuilder = new StringBuilder(baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/");
