@@ -637,4 +637,50 @@ public class PublisherStepDefinitions {
             TestContext.set(Utils.normalizeContextKey(contextKey), jsonPayload);
         }
     }
+
+    // Subscription related step definitions
+    @When("I block the subscription with {string} for the api")
+    public void iBlockTheSubscriptionWithForTheApi(String subscriptionID) throws IOException {
+
+        String subscriptionId = Utils.resolveFromContext(subscriptionID).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse documentUpdateResponse = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getSubscriptionBlockingURL(baseUrl, subscriptionId), headers, null, null);
+
+        TestContext.set("httpResponse", documentUpdateResponse);
+    }
+
+    @When("I unblock the subscription with {string} for the api")
+    public void iUnblockTheSubscriptionWithForTheApi(String subscriptionID) throws IOException {
+
+        String subscriptionId = Utils.resolveFromContext(subscriptionID).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse documentUpdateResponse = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getSubscriptionUnBlockingURL(baseUrl, subscriptionId), headers, null, null);
+
+        TestContext.set("httpResponse", documentUpdateResponse);
+    }
+
+    //All subscriptions
+    @When("I retrieve the subscriptions for Api {string}")
+    public void iRetrieveTheSubscriptionsForApi(String apiID) throws IOException {
+
+        String actualApiId = Utils.resolveFromContext(apiID).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getSubscriptions(baseUrl, actualApiId), headers);
+        TestContext.set("httpResponse", response);
+    }
 }
