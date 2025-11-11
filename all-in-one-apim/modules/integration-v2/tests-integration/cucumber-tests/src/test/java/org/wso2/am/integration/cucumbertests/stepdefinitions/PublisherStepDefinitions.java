@@ -506,6 +506,30 @@ public class PublisherStepDefinitions {
         TestContext.set("httpResponse", response);
     }
 
+    @When("I find the document with name {string} as {string}")
+    public void iFindTheDocumentWithNameAs(String documentName, String documentID) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        JSONObject json = new JSONObject(response.getData());
+
+        JSONArray docs = json.getJSONArray("list");
+        String foundDocId = null;
+
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject doc = docs.getJSONObject(i);
+            if (doc.has("name") && doc.getString("name").equalsIgnoreCase(documentName)) {
+                foundDocId = doc.getString("documentId");
+                break;
+            }
+        }
+
+        if (foundDocId == null) {
+            throw new AssertionError("Document with name '" + documentName + "' not found");
+        }
+
+        TestContext.set(documentID, foundDocId);
+    }
+
     @When("I retrieve document with {string} for {string}")
     public void iRetrieveDocumentWithFor(String documentID, String apiID) throws IOException{
 
@@ -536,6 +560,26 @@ public class PublisherStepDefinitions {
                 .doDelete(Utils.getAPIDocument(baseUrl, actualApiId, documentId), headers);
         TestContext.set("httpResponse", response);
 
+    }
+
+    @When("I update the document {string} with {string} for {string} as {string} and value:")
+    public void iUpdateTheDocumentWithForAsAndValue(String documentID, String documentPayload, String apiID, String config, String configValue) throws InterruptedException, IOException {
+
+        // Retrieve a JSON object safely
+        Object ctxValue = Utils.resolveFromContext(documentPayload);
+        JSONObject jsonPayload = (ctxValue instanceof JSONObject)
+                ? (JSONObject) ctxValue
+                : new JSONObject(ctxValue.toString());
+
+        Object parsedValue = parseConfigValue(configValue);
+
+        // update or overwrite the payload
+        jsonPayload.put(config, parsedValue);
+        String updatedJsonPayload = jsonPayload.toString();
+        TestContext.set(Utils.normalizeContextKey("<newDocumentPayload>"), updatedJsonPayload);
+
+        iUpdateTheDocumentWithForAPI(documentID, apiID);
+        Thread.sleep(3000);
     }
 
     @And("I update the document with {string} for API {string}")
@@ -683,4 +727,6 @@ public class PublisherStepDefinitions {
                 .doGet(Utils.getSubscriptions(baseUrl, actualApiId), headers);
         TestContext.set("httpResponse", response);
     }
+
+
 }
