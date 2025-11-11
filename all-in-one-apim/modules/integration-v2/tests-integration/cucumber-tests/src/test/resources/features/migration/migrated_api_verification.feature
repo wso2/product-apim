@@ -7,8 +7,8 @@ Feature: Migrated API Verification
     And I have a valid Devportal access token for the current user
 
   Scenario: Migrated API Retrieval, Update and Invocation
-    When I find the apiUUID of the API created with the name "APIM18PublisherTest" and version "1.0.0" as "<selectedApiId>"
-    And I retrieve the API with id "<selectedApiId>"
+    When I find the apiUUID of the API created with the name "APIM18PublisherTest" and version "1.0.0" as "selectedApiId"
+    And I retrieve the API with id "selectedApiId"
     Then The response status code should be 200
     And I put the response payload in context as "<retrievedApiPayload>"
 
