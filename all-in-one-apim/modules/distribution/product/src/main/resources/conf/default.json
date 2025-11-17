@@ -607,6 +607,7 @@
     "TemplateAdminService",
     "ThemeMgtService",
     "TierCacheService",
-    "WebappAdmin"
+    "WebappAdmin",
+    "NDataSourceAdmin"
   ]
 }
