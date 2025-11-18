@@ -12,9 +12,10 @@ Feature: API Runtime Configurations
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
-      |payloadFile                                         | apiID        | apiUpdatePayload|
-      |artifacts/payloads/create_apim_test_api.json        |  RestAPIId   | RestAPIPayload  |
-      |artifacts/payloads/create_apim_test_soap_api.json   |  SoapAPIId   | SoapAPIPayload  |
+      |payloadFile                                            | apiID        | apiUpdatePayload|
+      |artifacts/payloads/create_apim_test_api.json           |  RestAPIId   | RestAPIPayload  |
+      |artifacts/payloads/create_apim_test_soap_api.json      |  SoapAPIId   | SoapAPIPayload  |
+      |artifacts/payloads/create_apim_test_websocket_api.json | AsyncAPIId   | AsyncAPIPayload |
 
     Scenario: Create GraphQL API
       When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "graphQLAPIPayload"
@@ -56,6 +57,7 @@ Feature: API Runtime Configurations
       | GraphQLAPIId  |  graphQLAPIPayload                  |enableSchemaValidation   | true                 |
       | GraphQLAPIId  |  graphQLAPIPayload                 |transport                | ["http","https"]     |
       | GraphQLAPIId  |  graphQLAPIPayload                  |corsConfiguration        | {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowMethods":["GET","POST"],"accessControlAllowHeaders":["Authorization"],"accessControlAllowCredentials":true} |
+      | AsyncAPIId       | AsyncAPIPayload               |apiThrottlingPolicy      | "Unlimited"          |
 
  # Step 3: Remove created APIs
   Scenario Outline: Remove the APIs
@@ -67,5 +69,6 @@ Feature: API Runtime Configurations
     | RestAPIId     |
     | SoapAPIId     |
     | GraphQLAPIId  |
+    | AsyncAPIId    |
 
 
