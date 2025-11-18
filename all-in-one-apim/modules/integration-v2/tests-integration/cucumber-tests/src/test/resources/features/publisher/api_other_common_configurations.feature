@@ -12,9 +12,10 @@ Feature: API Other Common Configurations
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
-      |payloadFile                                         | apiID        | apiUpdatePayload|
-      |artifacts/payloads/create_apim_test_api.json        |  RestAPIId   | RestAPIPayload  |
-      |artifacts/payloads/create_apim_test_soap_api.json   |  SoapAPIId   | SoapAPIPayload  |
+      |payloadFile                                            | apiID        | apiUpdatePayload|
+      |artifacts/payloads/create_apim_test_api.json           |  RestAPIId   | RestAPIPayload  |
+      |artifacts/payloads/create_apim_test_soap_api.json      |  SoapAPIId   | SoapAPIPayload  |
+      |artifacts/payloads/create_apim_test_websocket_api.json | AsyncAPIId   | AsyncAPIPayload |
 
   Scenario: Create GraphQL API
     When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "graphQLAPIPayload"
@@ -41,6 +42,7 @@ Feature: API Other Common Configurations
       | RestAPIId    |  RestAPIPayload  | additionalProperties     | []                                                             |
       | SoapAPIId    |  SoapAPIPayload  | additionalProperties     | [{"name": "newProperty", "value": "newValue", "display": true}]|
       | GraphQLAPIId | graphQLAPIPayload| additionalProperties     | [{"name": "newProperty", "value": "newValue", "display": true}]|
+      | AsyncAPIId   | AsyncAPIPayload  | additionalProperties     | [{"name": "newProperty", "value": "newValue", "display": true}]|
 
  # Step 3: Update API Resources
   Scenario Outline: Configuring Resources
@@ -57,6 +59,7 @@ Feature: API Other Common Configurations
       | RestAPIId    |RestAPIPayload    | operations               | [{"verb": "POST", "target": "/newlyAddedResource"}]                  |
       | SoapAPIId    |SoapAPIPayload    | operations               | [{"verb": "POST", "target": "/newlyAddedResource"}]                  |
       | GraphQLAPIId |graphQLAPIPayload | operations               | [{"verb": "QUERY", "target": "newlyAddedResource"}] ]                |
+      | AsyncAPIId   | AsyncAPIPayload  |operations                | [{"verb": "SUBSCRIBE", "target": "/newlyAddedResource"}]             |
 
   # Step 4: Update subscription Plans
   Scenario Outline: Update Subscription of API
@@ -76,6 +79,7 @@ Feature: API Other Common Configurations
       | RestAPIId    |  RestAPIPayload   | policies                 | ["Bronze","Gold","Silver"]    |
       | SoapAPIId    |  SoapAPIPayload   | policies                 | ["Bronze","Gold","Silver"]    |
       | GraphQLAPIId |  graphQLAPIPayload| policies                 | ["Bronze","Gold","Silver"]    |
+      | AsyncAPIId   | AsyncAPIPayload   |policies                  | ["Bronze","Gold","Silver"]    |
 
 
   # Step 5: Add scopes for resources
@@ -104,6 +108,7 @@ Feature: API Other Common Configurations
       | RestAPIId    |  RestAPIPayload   | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":[],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
       | SoapAPIId    |  SoapAPIPayload   | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":[],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
       | GraphQLAPIId |  graphQLAPIPayload| scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":[],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
+      | AsyncAPIId   |  AsyncAPIPayload  | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":[],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
 
 
   # Step 5.3: Update the api with created scope
@@ -124,9 +129,12 @@ Feature: API Other Common Configurations
       | RestAPIId        | RestAPIPayload                    |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["new-shared-scope"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
       | SoapAPIId        | SoapAPIPayload                    |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["new-shared-scope"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
       | GraphQLAPIId     | graphQLAPIPayload                 |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["new-shared-scope"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
-      | RestAPIId        | RestAPIPayload                    |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
-      | SoapAPIId        | SoapAPIPayload                    |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
-      | GraphQLAPIId     | graphQLAPIPayload                 |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
+      | AsyncAPIId       | AsyncAPIPayload                   |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"SUBSCRIBE","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["new-shared-scope"],"amznResourceTimeout":null,"authType":"Application & Application User"}]|
+      | RestAPIId        | RestAPIPayload                    |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]        |
+      | SoapAPIId        | SoapAPIPayload                    |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]        |
+      | GraphQLAPIId     | graphQLAPIPayload                 |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]        |
+      | AsyncAPIId       | AsyncAPIPayload                   |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"SUBSCRIBE","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
+
 
 
   # Step 5.4: Delete the created scope

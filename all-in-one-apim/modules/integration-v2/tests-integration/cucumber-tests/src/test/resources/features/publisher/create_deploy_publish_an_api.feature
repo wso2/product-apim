@@ -10,9 +10,10 @@ Feature: Publisher API Creation and Deployment
     And I create an API with payload "<apiPayload>" as "<apiID>"
 
     Examples:
-      |payloadFile                                         | apiPayload          | apiID          |
-      |artifacts/payloads/create_apim_test_api.json        | restAPIPayload      |  RestAPIId     |
-      |artifacts/payloads/create_apim_test_soap_api.json   | soapAPIPayload      |  SoapAPIId     |
+      |payloadFile                                             | apiPayload          | apiID          |
+      |artifacts/payloads/create_apim_test_api.json            | restAPIPayload      |  RestAPIId     |
+      |artifacts/payloads/create_apim_test_soap_api.json       | soapAPIPayload      |  SoapAPIId     |
+      |artifacts/payloads/create_apim_test_websocket_api.json  | asyncAPIPayload     |  AsyncAPIId     |
 
   # Step 1.2:Create graphQL API
   Scenario: Create GraphQL API
@@ -65,4 +66,6 @@ Feature: Publisher API Creation and Deployment
     |  RestAPIId     |APIMTest        |apiTestContext        | 1.0.0     |
     |  SoapAPIId     |APIMTestSoap    |apiTestSoapContext    |1.0.0      |
     |  GraphQLAPIId  |APIMTestGraphQL |apiTestGraphQLContext |1.0.0      |
+    |  AsyncAPIId    |APIMAsyncTest   |apimAsyncContext      |1.0.0      |
+
 
