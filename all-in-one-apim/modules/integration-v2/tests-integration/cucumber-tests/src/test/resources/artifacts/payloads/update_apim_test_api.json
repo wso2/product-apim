@@ -38,5 +38,7 @@
       "target": "/customers/{id}"
     }
   ],
-  "isDefaultVersion": true
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
 }
