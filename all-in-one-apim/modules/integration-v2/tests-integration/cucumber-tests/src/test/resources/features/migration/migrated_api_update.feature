@@ -87,20 +87,23 @@ Feature: Migrated API Updates
 
 
 # Step 5: Modify operations by updating existing scopes to resource(refer artifacts/payloads/MigratedAPIs for existing configs)
-  Scenario Outline: Update Resources
+  Scenario Outline: Update Scopes
     When I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
     Then The response status code should be 200
     When I retrieve the API with id "<apiID>"
-    And The response should contain "<scope>"
+    And The API should reflect the updated "<configType>" as:
+      """
+      <configValue>
+      """
 
 # Modify APIs with existing scopes
     Examples:
-      | apiID            |  apiUpdatePayload                 | configType       | configValue                                                                                           | scope                             |
-      | RestApiId        | ADPRestAPIPayload                 |operations        | [{"verb": "POST", "target": "/newlyAddedResource", "scopes": ["adp-shared-scope-without-roles"]}]     |  adp-shared-scope-without-roles   |
-      | GraphQLApiId     | ADPGraphQLAPIPayload              |operations        | [{"verb": "QUERY", "target": "newlyAddedResource", "scopes": ["adp-admin"]}]                          |  adp-admin                        |
+      | apiID            |  apiUpdatePayload                 | configType       | configValue                                                                                           |
+      | RestApiId        | ADPRestAPIPayload                 |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-shared-scope-without-roles"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
+      | GraphQLApiId     | ADPGraphQLAPIPayload              |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-admin"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
 
 
 ## Step 6: Custom properties (refer artifacts/payloads/MigratedAPIs for existing configs)
