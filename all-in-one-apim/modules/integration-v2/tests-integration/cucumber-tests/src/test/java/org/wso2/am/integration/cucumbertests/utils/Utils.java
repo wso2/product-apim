@@ -231,6 +231,36 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents/" + documentId;
     }
 
+    public static String getAPIDocumentContent(String baseUrl, String apiId, String documentId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents/" + documentId + "/content";
+    }
+
+    public static String getSubscriptionBlockingURL(String baseUrl, String subscriptionID) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/block-subscription?subscriptionId=" + subscriptionID + "&blockState=BLOCKED";
+    }
+
+    public static String getSubscriptionUnBlockingURL(String baseUrl, String subscriptionID) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/unblock-subscription?subscriptionId=" + subscriptionID + "&blockState=BLOCKED";
+    }
+
+    public static String getSubscriptions(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions?apiId=" + apiId;
+    }
+
+    public static String getAPIScopes(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "scopes";
+    }
+
+    public static String getAPIScopesById(String baseUrl, String scopeId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "scopes/" + scopeId;
+    }
+
+    public static String getGraphQLSchema(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-graphql-schema";
+    }
+
+
+
 
 
     /**

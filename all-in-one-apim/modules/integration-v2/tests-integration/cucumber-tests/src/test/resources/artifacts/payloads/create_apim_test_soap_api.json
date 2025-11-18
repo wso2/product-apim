@@ -1,21 +1,22 @@
 {
-  "name": "APIMTest",
-  "context": "apiTestContext",
+  "name": "APIMTestSoap",
+  "context": "apiTestSoapContext",
   "version": "1.0.0",
+  "type": "SOAP",
   "endpointConfig": {
     "endpoint_type": "http",
     "production_endpoints": {
       "template_not_supported": false,
       "config": null,
-      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+      "url": "http://ws.cdyne.com/phoneverify/phoneverify.asmx"
     },
     "sandbox_endpoints": {
-      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "url": "http://ws.cdyne.com/phoneverify/phoneverify.asmx",
       "config": null,
       "template_not_supported": false
     }
   },
-  "description": "This is Test API Created by API Manager Integration Test",
+  "description": "This is Test SOAP API Created by API Manager Integration Test",
   "tags": [
     "tag18-1",
     "tag18-2",
@@ -33,11 +34,8 @@
   },
   "operations": [
     {
-      "verb": "GET",
-      "target": "/customers/{id}",
-      "scopes": [
-
-      ]
+      "verb": "POST",
+      "target": "/*"
     }
   ],
   "isDefaultVersion": true,

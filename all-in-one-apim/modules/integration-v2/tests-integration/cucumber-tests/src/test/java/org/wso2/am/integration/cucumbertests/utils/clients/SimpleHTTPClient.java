@@ -40,6 +40,11 @@ import org.apache.http.ssl.TrustStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.integration.test.utils.Constants;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.HttpEntity;
+import java.io.File;
 
 
 import javax.net.ssl.SSLContext;
@@ -161,6 +166,50 @@ public class SimpleHTTPClient {
         }
     }
 
+    /**
+     * Send a HTTP POST request with multipart/form-data to the specified URL
+     *
+     * @param url         Target endpoint URL
+     * @param headers     Any HTTP headers that should be added to the request
+     * @param file        File to upload
+     * @param formFields  Additional form fields (key-value pairs)
+     * @return Returned HTTP response
+     * @throws IOException If an error occurs while making the invocation
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPostMultipart(
+            String url, final Map<String, String> headers, final File file,
+            final Map<String, String> formFields) throws IOException {
+
+        HttpPost request = new HttpPost(url);
+        setHeaders(headers, request);
+
+        // Remove Content-Type header if present
+        request.removeHeaders("Content-Type");
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.STRICT);
+
+        // Add file
+        if (file != null) {
+            builder.addBinaryBody("file", file,
+                    ContentType.APPLICATION_OCTET_STREAM, file.getName());
+        }
+
+        // Add form fields
+        if (formFields != null) {
+            for (Map.Entry<String, String> field : formFields.entrySet()) {
+                builder.addTextBody(field.getKey(), field.getValue(),
+                        ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
+            }
+        }
+
+        HttpEntity multipartEntity = builder.build();
+        request.setEntity(multipartEntity);
+
+        try (CloseableHttpResponse response = client.execute(request)) {
+            return constructResponse(response);
+        }
+    }
     /**
      * Send a HTTP PUT request to the specified URL
      *

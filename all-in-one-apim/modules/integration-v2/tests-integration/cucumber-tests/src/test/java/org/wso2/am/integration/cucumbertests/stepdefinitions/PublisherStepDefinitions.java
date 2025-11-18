@@ -42,6 +42,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class PublisherStepDefinitions {
 
@@ -360,6 +364,20 @@ public class PublisherStepDefinitions {
         baseSteps.putJsonPayloadInContext("<deployRevisionPayload>",
                 "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
         iDeployApiRevisionGivenPayload("<revisionId>", "<createdApiId>", "<deployRevisionPayload>");
+        baseSteps.theResponseStatusCodeShouldBe(201);
+    }
+
+
+    @Given("I have created an api from {string} as {string} and deployed it")
+    public void iHaveCreatedAnApiFromAsAndDeployedIt(String payloadPath, String apiID) throws IOException, InterruptedException {
+
+        baseSteps.putJsonPayloadFromFile(payloadPath, "<createApiPayload>");
+        iCreateAnAPIWithPayloadAs("<createApiPayload>", apiID);
+        baseSteps.putJsonPayloadInContext("<createRevisionPayload>","{\"description\":\"Initial Revision\"}");
+        iCreateApiRevision(apiID, "<createRevisionPayload>");
+        baseSteps.putJsonPayloadInContext("<deployRevisionPayload>",
+                "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
+        iDeployApiRevisionGivenPayload("<revisionId>", apiID, "<deployRevisionPayload>");
         baseSteps.theResponseStatusCodeShouldBe(201);
     }
 
@@ -729,4 +747,78 @@ public class PublisherStepDefinitions {
     }
 
 
+    @When("I create a new shared scope as {string}")
+    public void iCreateANewSharedScopeAs(String scopeName) throws IOException{
+
+        // Create payload
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("artifacts/payloads/create_apim_shared_scope_payload.json")) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("File not found on classpath: " + "artifacts/payloads/create_apim_shared_scope_payload.json");
+            }
+            String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            jsonPayload = jsonPayload.replace("<name>", scopeName);
+
+            TestContext.set(Utils.normalizeContextKey("<newSharedScope>"), jsonPayload);
+        }
+
+        String jsonPayload = Utils.resolveFromContext("<newSharedScope>").toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse scopeCreationResponse = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getAPIScopes(baseUrl), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        TestContext.set("httpResponse", scopeCreationResponse);
+        TestContext.set("scopeID", Utils.extractValueFromPayload(scopeCreationResponse.getData(), "id"));
+      }
+
+    @When("I delete shared scope with {string}")
+    public void iDeleteSharedScopeWith(String scopeID) throws IOException {
+
+        String scopeId = Utils.resolveFromContext(scopeID).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doDelete(Utils.getAPIScopesById(baseUrl, scopeId), headers);
+        TestContext.set("httpResponse", response);
+
+    }
+
+    @When("I create a GraphQL API with schema file {string} and additional properties {string} as {string}")
+    public void iCreateAGraphQLAPIWithSchemaFileAndAdditionalPropertiesAs(String schemaFilePath, String additionalPropertiesKey, String apiID) throws IOException {
+        // Load GraphQL schema file from resources
+        File schemaFile;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(schemaFilePath)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("GraphQL schema file not found: " + schemaFilePath);
+            }
+
+            // Create temporary file object
+            schemaFile = File.createTempFile("graphql-schema", ".graphql");
+            schemaFile.deleteOnExit();
+            Files.copy(inputStream, schemaFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        String additionalProperties = Utils.resolveFromContext(additionalPropertiesKey).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("type", "GRAPHQL");
+        formFields.put("additionalProperties", additionalProperties);
+
+        HttpResponse apiCreateResponse = SimpleHTTPClient.getInstance()
+                .doPostMultipart(Utils.getGraphQLSchema(baseUrl), headers, schemaFile, formFields);
+
+        Assert.assertEquals(apiCreateResponse.getResponseCode(), 201, apiCreateResponse.getData());
+        TestContext.set(apiID, Utils.extractValueFromPayload(apiCreateResponse.getData(), "id"));
+    }
 }
