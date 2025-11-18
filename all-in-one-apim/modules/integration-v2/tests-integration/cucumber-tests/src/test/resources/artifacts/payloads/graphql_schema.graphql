@@ -1,0 +1,9 @@
+type Language {
+  code: String
+  name: String
+}
+
+type Query {
+  languages: [Language]
+  language(code: String): Language
+}
