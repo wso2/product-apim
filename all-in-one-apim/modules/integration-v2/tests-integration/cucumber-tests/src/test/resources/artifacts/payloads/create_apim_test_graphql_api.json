@@ -1,21 +1,22 @@
 {
-  "name": "APIMTest",
-  "context": "apiTestContext",
+  "name": "APIMTestGraphQL",
+  "context": "apiTestGraphQLContext",
   "version": "1.0.0",
+  "type": "GRAPHQL",
   "endpointConfig": {
     "endpoint_type": "http",
     "production_endpoints": {
       "template_not_supported": false,
       "config": null,
-      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+      "url": "http://nodebackend:3003/graphql"
     },
     "sandbox_endpoints": {
-      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "url": "http://nodebackend:3003/graphql",
       "config": null,
       "template_not_supported": false
     }
   },
-  "description": "This is Test API Created by API Manager Integration Test",
+  "description": "This is Test GraphQL API Created by API Manager Integration Test",
   "tags": [
     "tag18-1",
     "tag18-2",
@@ -31,15 +32,6 @@
     "technicalOwner": "api18t",
     "technicalOwnerEmail": "api18t@ww.com"
   },
-  "operations": [
-    {
-      "verb": "GET",
-      "target": "/customers/{id}",
-      "scopes": [
-
-      ]
-    }
-  ],
   "isDefaultVersion": true,
   "additionalProperties": [],
   "additionalPropertiesMap": {}
