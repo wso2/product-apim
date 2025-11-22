@@ -65,6 +65,7 @@ public class Constants {
 
     public static final String DEFAULT_APIM_API_DEPLOYER = "api/am/publisher/v4/";
     public static final String DEFAULT_DEVPORTAL = "api/am/devportal/v3/";
+    public static final String DEFAULT_APIM_ADMIN = "api/am/admin/v4/";
     public static final String GATEWAY = "api/am/gateway/v2/";
     public static final String DEFAULT_APIM_TOKEN_EP = "oauth2/token";
     public static final String DEFAULT_DCR_EP = "client-registration/v0.17/register";
