@@ -28,10 +28,10 @@ Feature: Migrated API Documentation Management
     <configValue>
     """
     Then The response status code should be 200
-    And The API should reflect the updated "<config>" as:
-    """
-    <configValue>
-    """
+    And The "apis" resource should reflect the updated "<config>" as:
+      """
+      <configValue>
+      """
 
     # Step 4: Delete an existing API document
     When I delete the document with "<deleteDocument>" for "<apiID>"
