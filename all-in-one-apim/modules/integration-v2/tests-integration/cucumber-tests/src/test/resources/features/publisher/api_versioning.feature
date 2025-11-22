@@ -10,14 +10,14 @@ Feature: API Versioning
     Given I have created an api and deployed it
 
     # Step 2: Create a new version
-    When I create a new version "<newVersion>" of API "<createdApiId>" with default version "<defaultProperty>" as "<newVersionId>"
+    When I create a new version "<newVersion>" of "apis" resource "<createdApiId>" with default version "<defaultProperty>" as "<newVersionId>"
     Then The response status code should be <expectedStatus>
     And The response should contain "<newVersion>"
     And The response should contain "<defaultProperty>"
     And The lifecycle status of API "<newVersionId>" should be "<expectedLifecycle>"
 
     # Step 3: Verify the version exists
-    When I retrieve the API with id "<newVersionId>"
+    When I retrieve the "apis" resource with id "<newVersionId>"
     Then The response status code should be 200
     And The response should contain "<newVersion>"
     And I put the response payload in context as "<retrievedApiPayload>"
@@ -25,10 +25,10 @@ Feature: API Versioning
     # Step 4: Deploy the version
     When I deploy the API with id "<newVersionId>"
     Then The response status code should be 201
-    And I wait for deployment of the API in "<retrievedApiPayload>"
+    And I wait for deployment of the resource in "<retrievedApiPayload>"
 
     # Step 5: Publish the new version
-    When I publish the API with id "<newVersionId>"
+    When I publish the "apis" resource with id "<newVersionId>"
     Then The lifecycle status of API "<newVersionId>" should be "Published"
 
     # Step 6: Invoke the new version
@@ -43,17 +43,29 @@ Feature: API Versioning
     Then The response status code should be 200
 
     # Step 7: Delete the version
-    When I delete the API with id "<newVersionId>"
+    When I delete the "apis" resource with id "<newVersionId>"
     Then The response status code should be 200
 
     # Step 8: Delete the base API
-    When I delete the API with id "<createdApiId>"
+    When I delete the "apis" resource with id "<createdApiId>"
     Then The response status code should be 200
 
     Examples:
       | newVersion | defaultProperty | expectedStatus | newVersionId    | expectedLifecycle |
       | 2.0.0      | false           | 201            | newVersionApiId | Created           |
       | 3.0.0      | true            | 201            | newVersionApiId2| Created           |
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -7,9 +7,9 @@ Feature: API Documents
 
   # Step 1: Create base APIs
 
-  Scenario Outline: Take an existing API or creating an API
+  Scenario Outline: Create an API
     Given I have created an api from "<payloadFile>" as "<apiID>" and deployed it
-    And I retrieve the API with id "<apiID>"
+    And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
@@ -21,7 +21,7 @@ Feature: API Documents
   Scenario: Create GraphQL API
     When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "graphQLAPIPayload"
     And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "graphQLAPIPayload" as "GraphQLAPIId"
-    And I retrieve the API with id "GraphQLAPIId"
+    And I retrieve the "apis" resource with id "<GraphQLAPIId>"
     And I put the response payload in context as "graphQLAPIPayload"
 
   Scenario Outline: Add a new Document for API
@@ -49,7 +49,7 @@ Feature: API Documents
     Then The response status code should be 200
 
     # Step 7:Delete the base API
-    When I delete the API with id "<apiID>"
+    When I delete the "apis" resource with id "<apiID>"
     Then The response status code should be 200
 
     Examples:
