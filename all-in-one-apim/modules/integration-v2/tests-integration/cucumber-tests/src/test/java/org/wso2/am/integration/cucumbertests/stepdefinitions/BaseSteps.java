@@ -107,7 +107,7 @@ public class BaseSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", currentuser.getUserName());
         json.addProperty("password", currentuser.getPassword());
-        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update");
+        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage");
 
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(baseUrl), headers,
             json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -138,6 +138,26 @@ public class BaseSteps {
         TestContext.set("devportalAccessToken", accessToken);
     }
 
+    public void iHaveValidAdminAccessToken() throws Exception {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + TestContext.get("dcrCredentials").toString());
+
+        // create json payload to obtain admin access token
+        JsonObject json = new JsonObject();
+        json.addProperty("grant_type", "password");
+        json.addProperty("username", currentuser.getUserName());
+        json.addProperty("password", currentuser.getPassword());
+        json.addProperty("scope", "apim:admin apim:tier_view apim:api_provider_change");
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(baseUrl), headers,
+                json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+
+        String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
+        TestContext.set("adminAccessToken", accessToken);
+    }
+
     // Composite function to Combine the above four steps to reduce length of feature definition
     @Given("The system is ready and I have valid access tokens for current user")
     public void iHaveSystemAndTokens() throws Exception {
@@ -146,6 +166,7 @@ public class BaseSteps {
         iHaveADCRApplication();
         iHaveValidPublisherAccessToken();
         iHaveValidDevportalAccessToken();
+        iHaveValidAdminAccessToken();
     }
 
     @When("I put JSON payload from file {string} in context as {string}")
@@ -203,18 +224,18 @@ public class BaseSteps {
         Assert.assertEquals(response.getHeaders().get(headerName), expectedValue, "Header value mismatch for " + headerName);
     }
 
-    @And("The API should reflect the updated {string} as:")
-    public void theAPIShouldReflectTheUpdatedAs(String config, String configValue) throws IOException, InterruptedException {
+    @And("The {string} resource should reflect the updated {string} as:")
+    public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String configValue) throws IOException, InterruptedException {
         // Get the API ID from the update response
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
         JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
-        String apiId = updateResponseJson.optString("id", null);
+        String resourceId = updateResponseJson.optString("id", null);
 
         if ("endpointConfig".equals(config)){
             configValue = Utils.resolveFromContext(configValue).toString();
         }
 
-        if (apiId == null || apiId.isEmpty()) {
+        if (resourceId == null || resourceId.isEmpty()) {
             verifyConfigurationInResponse(updateResponse, config, configValue);
             return;
         }
@@ -231,7 +252,7 @@ public class BaseSteps {
                     "Bearer " + TestContext.get("publisherAccessToken").toString());
 
             retrievedResponse = SimpleHTTPClient.getInstance().doGet(
-                    Utils.getAPIEndpointURL(baseUrl, apiId), headers);
+                    Utils.getResourceEndpointURL(baseUrl,resourceType,resourceId), headers);
 
             if (retrievedResponse.getResponseCode() == 200) {
                 try {
@@ -325,7 +346,7 @@ public class BaseSteps {
                 Constants.DEPLOYMENT_WAIT_TIME /60000 + " minutes");
     }
 
-    @Then("I wait for deployment of the API in {string}")
+    @Then("I wait for deployment of the resource in {string}")
     public void waitForAPIDeployment(String apiDetailsPayload) throws IOException {
 
         String actualApiDetailsPayload = Utils.resolveFromContext(apiDetailsPayload).toString();
