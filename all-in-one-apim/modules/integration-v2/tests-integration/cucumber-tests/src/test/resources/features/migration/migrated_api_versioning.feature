@@ -6,7 +6,7 @@ Feature: Migrated API Versioning
 # Step 1: Find the api
   Scenario Outline: Migrated API Retrieval
     When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
-    And I retrieve the API with id "<apiID>"
+    And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
@@ -20,8 +20,8 @@ Feature: Migrated API Versioning
   Scenario Outline: Change API provider
     When I update the api provider with "<providerName>" for "<apiID>"
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
-    And The API should reflect the updated "provider" as:
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "provider" as:
       """
       <providerName>
       """
@@ -33,26 +33,26 @@ Feature: Migrated API Versioning
 
   Scenario Outline: Create new versions of migrated APIs
     # Step 3: Create a new version
-    When I create a new version "<newVersion>" of API "<apiID>" with default version "<defaultProperty>" as "<newVersionId>"
+    When I create a new version "<newVersion>" of "apis" resource "<apiID>" with default version "<defaultProperty>" as "<newVersionId>"
     Then The response status code should be <expectedStatus>
     And The response should contain "<newVersion>"
     And The response should contain "<defaultProperty>"
     And The lifecycle status of API "<newVersionId>" should be "<expectedLifecycle>"
 
     # Step 4: Enable/disable default versioning
-    When I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
-    And The API should reflect the updated "<configType>" as:
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
       """
 
     # Step 5: Delete the version
-    When I delete the API with id "<newVersionId>"
+    When I delete the "apis" resource with id "<newVersionId>"
     Then The response status code should be 200
 
     Examples:

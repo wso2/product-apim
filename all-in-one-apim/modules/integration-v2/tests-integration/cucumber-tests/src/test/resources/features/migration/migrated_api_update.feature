@@ -6,7 +6,7 @@ Feature: Migrated API Updates
 # Step 1: Find the api
   Scenario Outline: Migrated API Retrieval
     When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
-    And I retrieve the API with id "<apiID>"
+    And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
@@ -19,13 +19,13 @@ Feature: Migrated API Updates
 
 # Step 2: Update Runtime configurations(refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Runtime configurations
-    When I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
-    And The API should reflect the updated "<configType>" as:
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
       """
@@ -49,12 +49,12 @@ Feature: Migrated API Updates
 
 # Step 3: Modify resources(refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Resources
-    When I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
+    When I retrieve the "apis" resource with id "<apiID>"
     And The response should contain "newlyAddedResource"
 
     Examples:
@@ -67,13 +67,13 @@ Feature: Migrated API Updates
 
 # Step 4: subscription tiers/plans(refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Subscription plans
-    When I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
-    And The API should reflect the updated "<configType>" as:
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
       """
@@ -88,13 +88,13 @@ Feature: Migrated API Updates
 
 # Step 5: Modify operations by updating existing scopes to resource(refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Scopes
-    When I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
-    And The API should reflect the updated "<configType>" as:
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
       """
@@ -108,13 +108,13 @@ Feature: Migrated API Updates
 
 ## Step 6: Custom properties (refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Custom Properties
-    When I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
-    And The API should reflect the updated "<configType>" as:
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
       """
@@ -131,13 +131,13 @@ Feature: Migrated API Updates
 
   Scenario Outline: Update Endpoint configurations
     When I prepare an endpoint update with "<type>", "<productionEndpoint>" and "<sandboxEndpoint>" as "<endpointUpdateConfig>"
-    And I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "endpointConfig" and value:
+    And I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "endpointConfig" and value:
       """
       <endpointUpdateConfig>
       """
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
-    And The API should reflect the updated "endpointConfig" as:
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "endpointConfig" as:
       """
       <endpointUpdateConfig>
       """

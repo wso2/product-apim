@@ -7,7 +7,7 @@ Feature: Publisher API Creation and Deployment
   # Step 1.1: Create Rest apis and soap apis
   Scenario Outline: Create REST/SOAP APIs
     When I put JSON payload from file "<payloadFile>" in context as "<apiPayload>"
-    And I create an API with payload "<apiPayload>" as "<apiID>"
+    And I create an "apis" resource with payload "<apiPayload>" as "<apiID>"
 
     Examples:
       |payloadFile                                             | apiPayload          | apiID          |
@@ -23,7 +23,7 @@ Feature: Publisher API Creation and Deployment
   Scenario Outline: Create an API Through the Publisher Rest API
 
     # Step 2: Verify created APIs
-    When  I retrieve the API with id "<apiID>"
+    When  I retrieve the "apis" resource with id "<apiID>"
     Then The response status code should be 200
     And The response should contain "<apiName>"
     And The response should contain "<apiContext>"
@@ -37,7 +37,7 @@ Feature: Publisher API Creation and Deployment
       "description":"Initial Revision"
     }
     """
-    And I make a request to create a revision for API "<apiID>" with payload "<createRevisionPayload>"
+    And  I make a request to create a revision for "apis" resource "<apiID>" with payload "<createRevisionPayload>"
     And I put the following JSON payload in context as "<deployRevisionPayload>"
     """
     [
@@ -48,17 +48,17 @@ Feature: Publisher API Creation and Deployment
       }
     ]
     """
-    And I make a request to deploy revision "<revisionId>" of API "<apiID>" with payload "<deployRevisionPayload>"
+    And I make a request to deploy revision "<revisionId>" of "apis" resource "<apiID>" with payload "<deployRevisionPayload>"
     Then The response status code should be 201
     Then The lifecycle status of API "<apiID>" should be "Created"
-    And I wait for deployment of the API in "<retrievedApiPayload>"
+    And I wait for deployment of the resource in "<retrievedApiPayload>"
 
     # Step 4: Publish the API
-    And I publish the API with id "<apiID>"
+    And I publish the "apis" resource with id "<apiID>"
     Then The lifecycle status of API "<apiID>" should be "Published"
 
     # Step 5: Delete the created API
-    When I delete the API with id "<apiID>"
+    When I delete the "apis" resource with id "<apiID>"
     Then The response status code should be 200
 
   Examples:
