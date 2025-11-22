@@ -8,7 +8,7 @@ Feature: API Runtime Configurations
   # Step 1: Create base APIs
   Scenario Outline: Take an existing API or creating an API
     Given I have created an api from "<payloadFile>" as "<apiID>" and deployed it
-    And I retrieve the API with id "<apiID>"
+    And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
@@ -20,18 +20,18 @@ Feature: API Runtime Configurations
     Scenario: Create GraphQL API
       When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "graphQLAPIPayload"
       And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "graphQLAPIPayload" as "GraphQLAPIId"
-      And I retrieve the API with id "GraphQLAPIId"
+      And I retrieve the "apis" resource with id "GraphQLAPIId"
       And I put the response payload in context as "graphQLAPIPayload"
 
  # Step 2: Update runtime configurations and check
   Scenario Outline: Update runtime configuration of API
-    When I update the API "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
     Then The response status code should be 200
-    When I retrieve the API with id "<apiID>"
-    And The API should reflect the updated "<configType>" as:
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
       """
@@ -61,7 +61,7 @@ Feature: API Runtime Configurations
 
  # Step 3: Remove created APIs
   Scenario Outline: Remove the APIs
-    When I delete the API with id "<apiID>"
+    When I delete the "apis" resource with id "<apiID>"
     Then The response status code should be 200
 
     Examples:
