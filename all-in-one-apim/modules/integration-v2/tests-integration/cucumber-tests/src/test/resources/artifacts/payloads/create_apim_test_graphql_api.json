@@ -1,38 +1,177 @@
 {
   "name": "APIMTestGraphQL",
-  "context": "apiTestGraphQLContext",
+  "description": null,
+  "context": "/apiTestGraphQLContext",
   "version": "1.0.0",
+  "provider": "admin",
+  "lifeCycleStatus": "CREATED",
+  "wsdlInfo": null,
+  "wsdlUrl": null,
+  "responseCachingEnabled": false,
+  "cacheTimeout": 300,
+  "hasThumbnail": false,
+  "isDefaultVersion": false,
+  "isRevision": false,
+  "revisionedApiId": null,
+  "revisionId": 0,
+  "enableSchemaValidation": false,
+  "enableSubscriberVerification": false,
   "type": "GRAPHQL",
-  "endpointConfig": {
-    "endpoint_type": "http",
-    "production_endpoints": {
-      "template_not_supported": false,
-      "config": null,
-      "url": "http://nodebackend:3003/graphql"
-    },
-    "sandbox_endpoints": {
-      "url": "http://nodebackend:3003/graphql",
-      "config": null,
-      "template_not_supported": false
-    }
-  },
-  "description": "This is Test GraphQL API Created by API Manager Integration Test",
-  "tags": [
-    "tag18-1",
-    "tag18-2",
-    "tag18-3"
+  "audience": null,
+  "audiences": [
+    "all"
   ],
+  "transport": [
+    "http",
+    "https"
+  ],
+  "tags": [],
   "policies": [
-    "Gold",
+    "Unlimited",
     "Bronze"
   ],
-  "businessInformation": {
-    "businessOwner": "api18b",
-    "businessOwnerEmail": "api18b@ee.com",
-    "technicalOwner": "api18t",
-    "technicalOwnerEmail": "api18t@ww.com"
-  },
-  "isDefaultVersion": true,
+  "organizationPolicies": [],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": "Authorization",
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": [
+    "oauth_basic_auth_api_key_mandatory",
+    "oauth2"
+  ],
+  "maxTps": null,
+  "visibility": "PUBLIC",
+  "visibleRoles": [
+    ""
+  ],
+  "visibleTenants": [],
+  "visibleOrganizations": [
+    "none"
+  ],
+  "mediationPolicies": [],
+  "apiPolicies": null,
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "subscriptionAvailableTenants": [
+    ""
+  ],
   "additionalProperties": [],
-  "additionalPropertiesMap": {}
+  "additionalPropertiesMap": {},
+  "monetization": null,
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "businessInformation": {
+    "businessOwner": null,
+    "businessOwnerEmail": null,
+    "technicalOwner": null,
+    "technicalOwnerEmail": null
+  },
+  "corsConfiguration": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": [
+      "*"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "Internal-Key"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  },
+  "websubSubscriptionConfiguration": {
+    "enable": false,
+    "secret": "",
+    "signingAlgorithm": "SHA1",
+    "signatureHeader": "x-hub-signature"
+  },
+  "workflowStatus": null,
+  "createdTime": "1763891624506",
+  "lastUpdatedTimestamp": null,
+  "lastUpdatedTime": null,
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3003/graphql"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3003/graphql"
+    }
+  },
+  "primaryProductionEndpointId": null,
+  "primarySandboxEndpointId": null,
+  "endpointImplementationType": "ENDPOINT",
+  "subtypeConfiguration": {
+    "subtype": "DEFAULT",
+    "configuration": null
+  },
+  "scopes": [],
+  "operations": [
+    {
+      "id": "",
+      "target": "languages",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "language",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "threatProtectionPolicies": null,
+  "categories": [],
+  "keyManagers": [
+    "all"
+  ],
+  "serviceInfo": null,
+  "advertiseInfo": {
+    "advertised": false,
+    "apiExternalProductionEndpoint": null,
+    "apiExternalSandboxEndpoint": null,
+    "originalDevPortalUrl": null,
+    "apiOwner": "admin",
+    "vendor": "WSO2"
+  },
+  "gatewayVendor": "wso2",
+  "gatewayType": "wso2/synapse",
+  "asyncTransportProtocols": [
+    ""
+  ],
+  "egress": false
 }
