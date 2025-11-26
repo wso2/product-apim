@@ -43,7 +43,7 @@ Feature: New product creation
     Then The lifecycle status of API "newAPIProductId" should be "Published"
 
     # Step 7: Subscribe and invoke
-    When I have set up application with keys, subscribed to API "newAPIProductId", and obtained access token
+    When I have set up application with keys, subscribed to API "newAPIProductId", and obtained access token for "subscriptionId"
     And I invoke the API resource at path "apiTestProductContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
 

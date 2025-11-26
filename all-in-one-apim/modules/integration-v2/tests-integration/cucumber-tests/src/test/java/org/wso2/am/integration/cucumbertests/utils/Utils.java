@@ -178,6 +178,10 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications";
     }
 
+    public static String getApplicationSearchURL(String baseUrl, String applicationName ) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications?query=" + applicationName;
+    }
+
     public static String getApplicationEndpointURL(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId;
     }
@@ -186,9 +190,17 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/generate-keys";
     }
 
+    public static String getApplicationAllKeys(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys" ;
+    }
+
     public static String getGenerateApplicationTokenURL(String baseUrl, String applicationId, String keyMappingId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
                 keyMappingId + "/generate-token";
+    }
+
+    public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" + keyMappingId;
     }
 
     public static String getAPIInvocationURL(String baseGatewayUrl, String resourcePath, String tenantDomain) {
