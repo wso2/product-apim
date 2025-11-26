@@ -25,8 +25,8 @@ Feature: Migrated API Lifecycle Management
     When I publish the "apis" resource with id "<apiID>"
     Then The lifecycle status of API "<apiID>" should be "Published"
 
-    # Step 5: Subscribe to api,"createdAppId" and "subscriptionId" saved in cotext
-    When I have set up application with keys, subscribed to API "<apiID>", and obtained access token
+    # Step 5: Subscribe to api,"createdAppId" and "subscriptionId" saved in context
+    When I have set up application with keys, subscribed to API "<apiID>", and obtained access token for "subscriptionId"
 
     # Step 6: Block the subscription
     When I block the subscription with "subscriptionId" for the resource
