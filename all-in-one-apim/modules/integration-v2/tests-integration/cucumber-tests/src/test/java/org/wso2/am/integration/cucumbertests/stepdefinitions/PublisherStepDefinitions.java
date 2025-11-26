@@ -402,7 +402,7 @@ public class PublisherStepDefinitions {
     // Composite function to create a revision and then deploy a API
     @Given("I deploy the API with id {string}")
     public void iDeployAPI(String apiID) throws IOException, InterruptedException{
-        baseSteps.putJsonPayloadInContext("<createRevisionPayload>","{\"description\":\"Initial Revision\"}");
+        baseSteps.putJsonPayloadInContext("<createRevisionPayload>","{\"description\":\"new Revision\"}");
         iCreateResourceRevision("apis", apiID , "<createRevisionPayload>");
         baseSteps.putJsonPayloadInContext("<deployRevisionPayload>",
                 "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
@@ -792,6 +792,58 @@ public class PublisherStepDefinitions {
 
     }
 
+    @And("I update shared scope {string} with payload {string}")
+    public void iUpdateSharedScopeWithPayload(String scopeID, String scopePayload) throws IOException {
+
+        String scopeId = Utils.resolveFromContext(scopeID).toString();
+        String jsonPayload = Utils.resolveFromContext(scopePayload).toString();
+
+        jsonPayload = jsonPayload.replace("<scopeID>", scopeID);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPut(Utils.getAPIScopesById(baseUrl, scopeId), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+
+    }
+
+    @When("I fetch the shared scope with name {string} into context as {string}")
+    public void fetchSharedScopeByName(String scopeName, String scopeId) throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getAPIScopes(baseUrl), headers);
+
+        TestContext.set("httpResponse", response);
+
+        // --- Parse JSON to extract scope id ---
+        JSONObject json = new JSONObject(response.getData());
+        JSONArray list = json.getJSONArray("list");
+
+        String foundedScopeId = null;
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject scope = list.getJSONObject(i);
+            if (scope.getString("name").equals(scopeName)) {
+                foundedScopeId = scope.getString("id");
+                break;
+            }
+        }
+
+        if (scopeId == null) {
+            throw new RuntimeException("Scope name not found: " + scopeName);
+        }
+
+        TestContext.set(scopeId, foundedScopeId);
+
+    }
+
     @When("I create a GraphQL API with schema file {string} and additional properties {string} as {string}")
     public void iCreateAGraphQLAPIWithSchemaFileAndAdditionalPropertiesAs(String schemaFilePath, String additionalPropertiesKey, String apiID) throws IOException {
         // Load GraphQL schema file from resources
@@ -838,7 +890,6 @@ public class PublisherStepDefinitions {
         TestContext.set("httpResponse", response);
         TestContext.set(productId, Utils.extractAPIUUID(response.getData()));
 
-
     }
 
     @When("I create a new API product as {string} from apis {string} and {string}")
@@ -859,4 +910,5 @@ public class PublisherStepDefinitions {
         iCreateAnAPIWithPayloadAs("api-products","<newAPIProductPayload>",productID );
 
     }
+
 }

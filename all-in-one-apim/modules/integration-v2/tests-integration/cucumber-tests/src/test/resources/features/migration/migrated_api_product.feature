@@ -64,7 +64,7 @@ Feature: Migrated API Products
     Then The lifecycle status of API "apiProductId" should be "Published"
 
     # Step 4: Subscribe to api,"createdAppId" and "subscriptionId" saved in cotext
-    When I have set up application with keys, subscribed to API "apiProductId", and obtained access token
+    When I have set up application with keys, subscribed to API "apiProductId", and obtained access token for "subscriptionId"
 
     # Step 5: Block the subscription
     When I block the subscription with "subscriptionId" for the resource
