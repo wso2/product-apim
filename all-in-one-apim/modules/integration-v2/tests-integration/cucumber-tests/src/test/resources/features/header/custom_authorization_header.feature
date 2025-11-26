@@ -47,7 +47,7 @@ Feature: Custom Header Authorization
       "throttlingPolicy": "Bronze"
     }
     """
-    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>"
+    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>" as "subscriptionId"
 
   Scenario: Invoke API using custom authentication header named Test-Custom-Header
     And I put the following JSON payload in context as "<generateApplicationKeysPayload>"
