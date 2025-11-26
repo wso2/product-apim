@@ -1,0 +1,27 @@
+{
+  "keyManager": "Resident Key Manager",
+  "consumerKey": "UYfI63BvohrXJc2dzjh39S_9rH0a",
+  "consumerSecret": "6jtMOsGwPSih28_aQVkbWROzYPMa",
+  "supportedGrantTypes": [
+    "password",
+    "client_credentials",
+    "iwa:ntlm",
+    "urn:ietf:params:oauth:grant-type:device_code",
+    "urn:ietf:params:oauth:grant-type:jwt-bearer"
+  ],
+  "callbackUrl": "http://sample.com/callback/url",
+  "keyState": null,
+  "keyType": "PRODUCTION",
+  "mode": null,
+  "groupId": null,
+  "token": null,
+  "additionalProperties": {
+    "id_token_expiry_time": 2147483646,
+    "application_access_token_expiry_time": 2147483646,
+    "user_access_token_expiry_time": 2147483646,
+    "bypassClientCredentials": true,
+    "pkceMandatory": false,
+    "pkceSupportPlain": false,
+    "refresh_token_expiry_time": 2147483646
+  }
+}
