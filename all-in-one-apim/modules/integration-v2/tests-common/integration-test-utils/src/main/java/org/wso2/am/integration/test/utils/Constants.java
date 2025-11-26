@@ -75,6 +75,11 @@ public class Constants {
     public static final String SUPER_TENANT_ADMIN_PASSWORD = "admin";
     public static final String ADMIN_USER_KEY = "admin";
 
+    public static final String ADPSAMPLE_TENANT_DOMAIN = "adpsample.com";
+    public static final String ADPSAMPLE_TENANT_ADMIN_USERNAME = "admin@adpsample.com";
+    public static final String ADPSAMPLE_TENANT_ADMIN_PASSWORD = "admin";
+    public static final String ADPSAMPLE_USER_KEY = "admin";
+
     public static class REQUEST_HEADERS {
 
         public static final String HOST = "Host";
