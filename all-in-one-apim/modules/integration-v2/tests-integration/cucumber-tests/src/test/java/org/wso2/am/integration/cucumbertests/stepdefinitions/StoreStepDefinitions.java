@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
@@ -69,8 +70,62 @@ public class StoreStepDefinitions {
         TestContext.set("httpResponse", applicationDeleteResponse);
     }
 
-    @When("I subscribe to API {string} using application {string} with payload {string}")
-    public void iSubscribeToApi(String apiId, String appId, String payload) throws Exception {
+    @When("I retrieve the application with id {string}")
+    public void iShouldBeAbleToRetrieveApplication(String appId) throws Exception {
+        String actualAppId = Utils.resolveFromContext(appId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse applicationRetrieveResponse = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getApplicationEndpointURL(baseUrl, actualAppId), headers);
+
+        TestContext.set("httpResponse", applicationRetrieveResponse);
+    }
+
+    @When("I fetch the application with {string} as {string}")
+    public void iFetchTheApplicationWithAs(String applicationName, String appId) throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getApplicationSearchURL(baseUrl, applicationName), headers);
+
+        TestContext.set("httpResponse", response);
+
+        JSONObject responseJson = new JSONObject(response.getData());
+        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
+            String applicationId = responseJson
+                    .getJSONArray("list")
+                    .getJSONObject(0)
+                    .getString("applicationId");
+            TestContext.set(appId, applicationId);
+        } else {
+            throw new IOException("No applications found with name: " + applicationName);
+        }
+    }
+
+    @When("I update the application {string} with payload {string}")
+    public void iUpdateTheApplicationWithPayload(String appId, String updatePayload) throws IOException {
+
+        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String jsonPayload = Utils.resolveFromContext(updatePayload).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doPut(
+                Utils.getApplicationEndpointURL(baseUrl, actualAppId), headers, jsonPayload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        TestContext.set("httpResponse", response);
+    }
+
+    @When("I subscribe to API {string} using application {string} with payload {string} as {string}")
+    public void iSubscribeToApi(String apiId, String appId, String payload, String subscriptionID) throws Exception {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
         String actualAppId = Utils.resolveFromContext(appId).toString();
@@ -87,20 +142,7 @@ public class StoreStepDefinitions {
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
-        TestContext.set("subscriptionId",Utils.extractValueFromPayload(response.getData(), "subscriptionId"));
-    }
-
-    @When("I retrieve the application with id {string}")
-    public void iShouldBeAbleToRetrieveApplication(String appId) throws Exception {
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
-
-        HttpResponse applicationRetrieveResponse = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationEndpointURL(baseUrl, actualAppId), headers);
-
-        TestContext.set("httpResponse", applicationRetrieveResponse);
+        TestContext.set(subscriptionID,Utils.extractValueFromPayload(response.getData(), "subscriptionId"));
     }
 
     @Then("I retrieve the subscription for Api {string} by Application {string}")
@@ -115,6 +157,82 @@ public class StoreStepDefinitions {
                 .doGet(Utils.getAllSubscriptionsURL(baseUrl, actualApiId, actualAppId, null, null,
                         null), headers);
 
+        TestContext.set("httpResponse", response);
+
+        JSONObject responseJson = new JSONObject(response.getData());
+        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
+            String subscriptionId = responseJson
+                    .getJSONArray("list")
+                    .getJSONObject(0)
+                    .getString("subscriptionId");
+            TestContext.set("subscriptionId", subscriptionId);
+        } else {
+            throw new IOException("No subscription found");
+        }
+    }
+
+    @When("I retrieve existing application keys for {string}")
+    public void iRetrieveExistingApplicationKeys(String appId) throws IOException {
+
+        String actualAppId = Utils.resolveFromContext(appId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getApplicationAllKeys(baseUrl, actualAppId), headers);
+
+        TestContext.set("httpResponse", response);
+
+        JSONObject responseJson = new JSONObject(response.getData());
+        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
+            JSONObject firstKey = responseJson
+                    .getJSONArray("list")
+                    .getJSONObject(0);
+
+            String consumerSecret = firstKey.optString("consumerSecret", null);
+            String keyMappingId = firstKey.optString("keyMappingId", null);
+
+            if (consumerSecret != null) {
+                TestContext.set("consumerSecret", consumerSecret);
+            }
+
+            if (keyMappingId != null) {
+                TestContext.set("keyMappingId", keyMappingId);
+            }
+        } else {
+            throw new IOException("No application keys found in response");
+        }
+
+    }
+
+    @And("I update the keys for application with {string}")
+    public void iUpdateTheKeysForApplicationWith(String appId) throws IOException, InterruptedException {
+
+        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
+        String jsonPayload =Utils.resolveFromContext("updateKeysPayload").toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPut(Utils.getUpdateKey(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+    }
+
+    @When("I delete the generated keys for {string}")
+    public void iDeleteTheGeneratedKeysFor(String appId) throws IOException {
+
+        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doDelete(Utils.getUpdateKey(baseUrl, actualAppId, keyMappingId), headers);
         TestContext.set("httpResponse", response);
     }
 
@@ -155,6 +273,7 @@ public class StoreStepDefinitions {
                 .doPost(Utils.getGenerateApplicationTokenURL(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
+        System.out.println("Token response: " + response.getData());
         String accessToken = Utils.extractValueFromPayload(response.getData(), "accessToken").toString();
         TestContext.set("generatedAccessToken", accessToken);
     }
@@ -167,6 +286,40 @@ public class StoreStepDefinitions {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
         HttpResponse response = SimpleHTTPClient.getInstance().doDelete(Utils.getSubscriptionURL(baseUrl,
+                actualSubscriptionId), headers);
+
+        TestContext.set("httpResponse", response);
+    }
+
+    @When("I update the subscription {string} with subscription plan {string}")
+    public void iUpdateTheSubscriptionWithSubscriptionPlan(String subscriptionId, String subscriptionPlan) throws IOException {
+
+        String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+
+        // Add application id and API id to the payload
+        String jsonPayload = Utils.resolveFromContext("subscriptionPayload").toString();
+        jsonPayload = jsonPayload.replace("\"throttlingPolicy\":\"Unlimited\"", "\"throttlingPolicy\":\"" + subscriptionPlan +"\"");
+
+        System.out.println(jsonPayload);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getSubscriptionURL(baseUrl, actualSubscriptionId),
+                headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        TestContext.set("httpResponse", response);
+
+    }
+
+    @When("I get the subscription with id {string}")
+    public void iGetSubscription(String subscriptionId) throws Exception {
+
+        String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doGet(Utils.getSubscriptionURL(baseUrl,
                 actualSubscriptionId), headers);
 
         TestContext.set("httpResponse", response);
@@ -197,8 +350,8 @@ public class StoreStepDefinitions {
      *
      * @param apiId Api to be subscribed
      */
-    @When("I have set up application with keys, subscribed to API {string}, and obtained access token")
-    public void iSetupApplicationSubscribeAndGetToken(String apiId) throws IOException, Exception {
+    @When("I have set up application with keys, subscribed to API {string}, and obtained access token for {string}")
+    public void iSetupApplicationSubscribeAndGetToken(String apiId, String subscriptionID) throws IOException, Exception {
 
         // create an application
         baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
@@ -213,7 +366,7 @@ public class StoreStepDefinitions {
         // subscribe to an api with that created application
         baseSteps.putJsonPayloadInContext("<apiSubscriptionPayload>", "{\"applicationId\": \"{{applicationId}}\"," +
                 "\"apiId\": \"{{apiId}}\",\"throttlingPolicy\": \"Bronze\"}");
-        iSubscribeToApi(apiId, "<createdAppId>", "<apiSubscriptionPayload>");
+        iSubscribeToApi(apiId, "<createdAppId>", "<apiSubscriptionPayload>", subscriptionID);
 
         // generate access token
         baseSteps.putJsonPayloadInContext("<createApplicationAccessTokenPayload>", "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
@@ -221,5 +374,60 @@ public class StoreStepDefinitions {
         iRequestAccessToken("<createdAppId>", "<createApplicationAccessTokenPayload>");
         baseSteps.theResponseStatusCodeShouldBe(200);
     }
+
+    /**
+     * Composite step definition for,
+     * Application creation - put the 'createdAppId' in context
+     * Generate credentials for application - put 'consumerKey', 'consumerSecret' , and 'keyMappingId' in context
+     */
+    @When("I have set up a application with keys")
+    public void iHaveSetUpAApplicationWithKeys() throws Exception {
+
+        // create an application
+        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
+        iCreateAnApplicationWithJsonPayload("<createAppPayload>");
+
+        // generate credentials for application
+        baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
+                "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
+        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
+        baseSteps.theResponseStatusCodeShouldBe(200);
+
+    }
+
+    /**
+     * Composite step definition for,
+     * Subscribe to a given apiId - put 'subscriptionId' in context
+     * Generate access tokens - put 'generatedAccessToken' in context
+     *
+     * @param resourceID resource to be subscribed
+     */
+    @And("I subscribe to resource {string}, with {string} and obtained access token for {string} with scope {string}")
+    public void iSubscribeToResourceAndObtainedAccessToken(String resourceID, String appId, String subscriptionID, String scope) throws Exception {
+
+        // subscribe to an api with that created application
+        baseSteps.putJsonPayloadInContext("<apiSubscriptionPayload>", "{\"applicationId\": \"{{applicationId}}\"," +
+                "\"apiId\": \"{{apiId}}\",\"throttlingPolicy\": \"Bronze\"}");
+        iSubscribeToApi(resourceID, appId, "<apiSubscriptionPayload>", subscriptionID);
+
+        // generate access token
+        String tokenPayload;
+        if (scope != null && !scope.isEmpty()) {
+            tokenPayload = "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
+                    "\"validityPeriod\": 3600," +
+                    "\"scopes\": [\"" + scope + "\"]}";
+        } else {
+            tokenPayload = "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
+                    "\"validityPeriod\": 3600}";
+        }
+
+        System.out.println("Token request payload: " + tokenPayload);
+
+        baseSteps.putJsonPayloadInContext("<createApplicationAccessTokenPayload>", tokenPayload);
+        iRequestAccessToken(appId, "<createApplicationAccessTokenPayload>");
+        baseSteps.theResponseStatusCodeShouldBe(200);
+    }
+
+
 
 }

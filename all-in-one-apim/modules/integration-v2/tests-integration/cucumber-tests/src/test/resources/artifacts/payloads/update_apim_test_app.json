@@ -1,0 +1,8 @@
+{
+  "name": "APIMTestApp",
+  "throttlingPolicy": "Unlimited",
+  "description": "Test application for scenarios",
+  "groups": [
+    "org1"
+  ]
+}
