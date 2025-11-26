@@ -55,11 +55,8 @@ Feature: Publisher API Creation and Deployment
 
     # Step 4: Publish the API
     And I publish the "apis" resource with id "<apiID>"
-    Then The lifecycle status of API "<apiID>" should be "Published"
-
-    # Step 5: Delete the created API
-    When I delete the "apis" resource with id "<apiID>"
     Then The response status code should be 200
+    Then The lifecycle status of API "<apiID>" should be "Published"
 
   Examples:
     | apiID          | apiName        | apiContext           | apiVersion|
@@ -69,3 +66,38 @@ Feature: Publisher API Creation and Deployment
     |  AsyncAPIId    |APIMAsyncTest   |apimAsyncContext      |1.0.0      |
 
 
+    Scenario: Application creation
+      When I have set up a application with keys
+
+    Scenario Outline: Invoking apis
+      When I subscribe to resource "<apiID>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
+      When I put the following JSON payload in context as "<Payload>"
+      """
+        <payload>
+      """
+      And I invoke the API resource at path "<resourcePath>" with method "<method>" using access token "<generatedAccessToken>" and payload "<Payload>"
+      Then The response status code should be 200
+
+      When I delete the subscription with id "<subscriptionID>"
+      Then The response status code should be 200
+
+      Examples:
+        | apiID      | subscriptionID       |  payload                                 | resourcePath                            | method|
+        |RestAPIId   | restSubscriptionId   | ""                                       | apiTestContext/1.0.0/customers/123/     | GET   |
+        |GraphQLAPIId| graphqlSubscriptionId|  {"query": "{languages{code name}}"}     | apiTestGraphQLContext/1.0.0             | POST  |
+
+
+    Scenario: Delete the app
+      When I delete the application with id "createdAppId"
+      Then The response status code should be 200
+
+    Scenario Outline: Delete the created resources
+      When I delete the "apis" resource with id "<apiID>"
+      Then The response status code should be 200
+
+      Examples:
+        | apiID          |
+        |  RestAPIId     |
+        |  SoapAPIId     |
+        |  GraphQLAPIId  |
+        |  AsyncAPIId    |
