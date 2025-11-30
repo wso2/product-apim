@@ -220,6 +220,10 @@ public class Utils {
         return baseUrl + Constants.GATEWAY + "server-startup-healthcheck";
     }
 
+    public static String getRevisionDeployments(String baseUrl, String resourceId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + resourceId + "/revisions?query=deployed:true";
+    }
+
     public static String getTenantMgtAdminServiceURL(String baseUrl) {
         return baseUrl + "services/TenantMgtAdminService";
     }
@@ -294,6 +298,31 @@ public class Utils {
 
     public static String getProductSearchEndpointURL(String baseUrl, String productName) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products?query=" + productName;
+    }
+
+    public static String getCommonPolicy(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies";
+    }
+
+    public static String getAPISpecificPolicy(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/operation-policies";
+    }
+
+    public static String getAPISpecificPolicyById(String baseUrl, String apiId, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/operation-policies/" + policyId;
+    }
+
+    public static String getGlobalPolicy(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "gateway-policies";
+    }
+
+    public static String getGlobalPolicyDeploy(String baseUrl, String policyMappingId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "gateway-policies/" + policyMappingId + "/deploy";
+    }
+
+
+    public static String getInternalAPIKey(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/generate-key";
     }
 
 
