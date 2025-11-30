@@ -26,6 +26,8 @@ import io.cucumber.java.en.When;
 import io.cucumber.datatable.DataTable;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
@@ -35,21 +37,19 @@ import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.io.File;
 import java.io.FileNotFoundException;
 
 public class PublisherStepDefinitions {
 
     private final String baseUrl;
+    private static final Logger logger = LoggerFactory.getLogger(PublisherStepDefinitions.class);
 
     public PublisherStepDefinitions() {
         baseUrl = TestContext.get("baseUrl").toString();
@@ -410,6 +410,70 @@ public class PublisherStepDefinitions {
 
     }
 
+    @Then("I wait until {string} revision is deployed in the gateway")
+    public void waitUntilRevisionIsDeployed(String resourceId) throws IOException {
+
+        String apiId = Utils.resolveFromContext(resourceId).toString();
+        String revisionId = Utils.resolveFromContext("revisionId").toString();
+
+        String url = Utils.getRevisionDeployments(baseUrl,apiId);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        boolean deployed = false;
+
+        while (System.currentTimeMillis() < endTime) {
+
+            try {
+                HttpResponse response =
+                        SimpleHTTPClient.getInstance().doGet(url, headers);
+
+                if (response != null && response.getResponseCode() == 200) {
+
+                    System.out.println(response.getData());
+
+                    JSONObject responseJson =
+                            new JSONObject(response.getData());
+                    JSONArray revisions =
+                            responseJson.getJSONArray("list");
+
+                    for (int i = 0; i < revisions.length(); i++) {
+
+                        JSONObject revision = revisions.getJSONObject(i);
+                        String deployedRevisionId =
+                                revision.optString("id");
+
+                        if (revisionId.equals(deployedRevisionId)) {
+                            deployed = true;
+                            logger.info("Revision {} is deployed for API {}", revisionId, apiId);
+                            Thread.sleep(10000);
+                            break;
+                        }
+                    }
+                }
+
+                if (deployed) {
+                    break;
+                }
+
+            } catch (Exception e) {
+                logger.debug("Revision {} not deployed yet – retrying", revisionId
+                );
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {
+            }
+        }
+
+        Assert.assertTrue(deployed, "Revision " + revisionId + " was not deployed within the timeout");
+    }
+
+
 //    @Given("I have a migrated API with name {string} and version {string} or I create an API as {string}")
 //    public void iHaveAMigratedAPIWithNameAndVersionOrICreateAnAPIAs(String apiName, String apiVersion, String apiID) throws IOException, InterruptedException{
 //
@@ -526,28 +590,28 @@ public class PublisherStepDefinitions {
         TestContext.set("httpResponse", response);
     }
 
-    @When("I find the document with name {string} as {string}")
-    public void iFindTheDocumentWithNameAs(String documentName, String documentID) {
+    @When("I find the {string} with name {string} as {string}")
+    public void iFindTheDocumentWithNameAs(String key,String name, String id) {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         JSONObject json = new JSONObject(response.getData());
 
         JSONArray docs = json.getJSONArray("list");
-        String foundDocId = null;
+        String foundId = null;
 
         for (int i = 0; i < docs.length(); i++) {
             JSONObject doc = docs.getJSONObject(i);
-            if (doc.has("name") && doc.getString("name").equalsIgnoreCase(documentName)) {
-                foundDocId = doc.getString("documentId");
+            if (doc.has("name") && doc.getString("name").equalsIgnoreCase(name)) {
+                foundId = doc.getString(key);
                 break;
             }
         }
 
-        if (foundDocId == null) {
-            throw new AssertionError("Document with name '" + documentName + "' not found");
+        if (foundId == null) {
+            throw new AssertionError("Resource with name '" + name + "' not found");
         }
 
-        TestContext.set(documentID, foundDocId);
+        TestContext.set(id, foundId);
     }
 
     @When("I retrieve document with {string} for {string}")
@@ -869,8 +933,11 @@ public class PublisherStepDefinitions {
         formFields.put("type", "GRAPHQL");
         formFields.put("additionalProperties", additionalProperties);
 
+        Map<String, File> files = new HashMap<>();
+        files.put("file", schemaFile);
+
         HttpResponse apiCreateResponse = SimpleHTTPClient.getInstance()
-                .doPostMultipart(Utils.getGraphQLSchema(baseUrl), headers, schemaFile, formFields);
+                .doPostMultipartWithFiles(Utils.getGraphQLSchema(baseUrl), headers, files, formFields);
 
         Assert.assertEquals(apiCreateResponse.getResponseCode(), 201, apiCreateResponse.getData());
         TestContext.set(apiID, Utils.extractValueFromPayload(apiCreateResponse.getData(), "id"));
@@ -910,5 +977,180 @@ public class PublisherStepDefinitions {
         iCreateAnAPIWithPayloadAs("api-products","<newAPIProductPayload>",productID );
 
     }
+
+    @And("I create a new common policy with spec {string} and {string} as {string}")
+    public void iCreateANewCommonPolicyWithSpecAndSynapse(String synapsePolicyJ2, String policySpecYaml, String policyId) throws IOException {
+        iCreateANewPolicyWithSpecAndSynapse(null, synapsePolicyJ2, policySpecYaml, policyId);
+    }
+
+    @And("I create a new API specific policy for api {string} with spec {string} and {string} as {string}")
+    public void iCreateANewAPISpecificPolicyWithSpecAndSynapse(String apiId, String synapsePolicyJ2, String policySpecYaml, String policyId) throws IOException {
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        iCreateANewPolicyWithSpecAndSynapse(actualApiId, synapsePolicyJ2, policySpecYaml, policyId);
+    }
+
+    /**
+     * Internal method to create either a common policy or API-specific policy
+     *
+     * @param apiId If null, creates a common policy. If provided, creates an API-specific policy.
+     * @param synapsePolicyJ2 Path to the synapse policy definition file (.j2)
+     * @param policySpecYaml Path to the policy specification YAML file
+     * @param policyId Context key to store the created policy ID
+     */
+    private void iCreateANewPolicyWithSpecAndSynapse(String apiId, String synapsePolicyJ2, String policySpecYaml, String policyId) throws IOException {
+        // Extract original filenames
+        String yamlFileName = policySpecYaml.substring(policySpecYaml.lastIndexOf('/') + 1);
+        String j2FileName = synapsePolicyJ2.substring(synapsePolicyJ2.lastIndexOf('/') + 1);
+
+        // Load policy spec YAML file
+        File policySpecFile;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(policySpecYaml)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Policy spec YAML file not found: " + policySpecYaml);
+            }
+            // Create temp file with original filename
+            policySpecFile = File.createTempFile("policy-spec-", "-" + yamlFileName);
+            policySpecFile.deleteOnExit();
+            Files.copy(inputStream, policySpecFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // Load synapse policy definition file (.j2)
+        File synapsePolicyDefinitionFile;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(synapsePolicyJ2)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Synapse policy file not found: " + synapsePolicyJ2);
+            }
+            synapsePolicyDefinitionFile = File.createTempFile("synapse-policy-", "-" + j2FileName);
+            synapsePolicyDefinitionFile.deleteOnExit();
+            Files.copy(inputStream, synapsePolicyDefinitionFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        Map<String, File> files = new HashMap<>();
+        files.put("policySpecFile", policySpecFile);
+        files.put("synapsePolicyDefinitionFile", synapsePolicyDefinitionFile);
+
+        String endpointUrl;
+        if (apiId == null || apiId.isEmpty()) {
+            // Common policy
+            endpointUrl = Utils.getCommonPolicy(baseUrl);
+        } else {
+            // API-specific policy
+            endpointUrl = Utils.getAPISpecificPolicy(baseUrl, apiId);
+        }
+
+        HttpResponse policyCreateResponse = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(endpointUrl, headers, files, null);
+
+        TestContext.set("httpResponse", policyCreateResponse);
+        System.out.printf(policyCreateResponse.getData());
+
+        // Extract and store the policy ID from response if available
+        if (policyId != null && policyCreateResponse.getResponseCode() == 201) {
+            String responseData = policyCreateResponse.getData();
+            if (responseData != null && !responseData.isEmpty()) {
+                try {
+                    JSONObject responseJson = new JSONObject(responseData);
+                    if (responseJson.has("id")) {
+                        TestContext.set(policyId, responseJson.getString("id"));
+                    }
+                } catch (Exception e) {
+                    // Ignore if policy ID extraction fails
+                }
+            }
+        }
+    }
+
+    @When("I retrieve available common policies")
+    public void iRetrieveCommonPolicies() throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getCommonPolicy(baseUrl), headers);
+
+        TestContext.set("httpResponse", response);
+    }
+
+    @When("I delete the api {string} specific policy {string}")
+    public void iDeleteTheApiSpecificPolicy(String apiId, String policyId) throws IOException {
+
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        String policyID = Utils.resolveFromContext(policyId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doDelete(Utils.getAPISpecificPolicyById(baseUrl, actualApiId, policyID), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+
+    @And("I generate internal API Key to invoke api {string}")
+    public void iGenerateInternalAPIKeyToInvokeAPIS(String apiId) throws IOException {
+
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getInternalAPIKey(baseUrl, actualApiId), headers, null, null);
+
+        TestContext.set("httpResponse", response);
+        TestContext.set("apiKey", Utils.extractValueFromPayload(response.getData(), "apikey"));
+
+    }
+
+
+    @And("I create a new global policy as {string} with {string}")
+    public void iCreateANewGlobalPolicyAs(String globalPolicyId, String policyPayload) throws IOException {
+
+        String jsonPayload = Utils.resolveFromContext(policyPayload).toString();
+        String commonPolicyId = Utils.resolveFromContext("existingPolicyId").toString();
+
+        jsonPayload = jsonPayload.replace("<id>", commonPolicyId);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getGlobalPolicy(baseUrl), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        TestContext.set("httpResponse", response);
+        System.out.println(response.getData());
+        TestContext.set(globalPolicyId, Utils.extractValueFromPayload(response.getData(), "id"));
+    }
+
+    @And("I engage the gateway policy mapping {string} to the gateways {string}")
+    public void iEngageTheGatewayPolicyMappingToTheGateways(String globalPolicyId, String payload) throws IOException, InterruptedException {
+
+        String policyId = Utils.resolveFromContext(globalPolicyId).toString();
+        String jsonPayload = Utils.resolveFromContext(payload).toString();
+
+        jsonPayload = jsonPayload.replace("{{gatewayEnvironment}}", System.getenv(Constants.GATEWAY_ENVIRONMENT));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getGlobalPolicyDeploy(baseUrl,policyId), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        TestContext.set("httpResponse", response);
+        Thread.sleep(10000);
+    }
+
 
 }
