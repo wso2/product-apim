@@ -3,6 +3,6 @@
   "displayName": "<name>",
   "description": "This Scope is to test the creation of new scope",
   "bindings": [
-
+    "admin"
   ]
 }
