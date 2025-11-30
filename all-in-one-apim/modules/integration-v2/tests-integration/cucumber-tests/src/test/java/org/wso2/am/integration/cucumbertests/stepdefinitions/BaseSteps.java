@@ -107,7 +107,7 @@ public class BaseSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", currentuser.getUserName());
         json.addProperty("password", currentuser.getPassword());
-        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage");
+        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:api_generate_key apim:gateway_policy_manage");
 
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(baseUrl), headers,
             json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -222,6 +222,15 @@ public class BaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response.getHeaders().containsKey(headerName), "Header " + headerName + " not found in response");
         Assert.assertEquals(response.getHeaders().get(headerName), expectedValue, "Header value mismatch for " + headerName);
+    }
+
+    @And("The response should not contain the header {string} with value {string}")
+    public void theResponseShouldNotContainTheHeaderWithValue(String headerName, String expectedValue) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertFalse(response.getHeaders().containsKey(headerName), "Header " + headerName + "found in response");
+        Assert.assertNotEquals(response.getHeaders().get(headerName), expectedValue, "Header value match for " + headerName);
+
     }
 
     @And("The {string} resource should reflect the updated {string} as:")
