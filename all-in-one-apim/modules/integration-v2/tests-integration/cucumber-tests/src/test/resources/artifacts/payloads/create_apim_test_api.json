@@ -38,6 +38,13 @@
       "scopes": [
 
       ]
+    },
+    {
+      "verb": "DELETE",
+      "target": "/customers/{id}",
+      "scopes": [
+
+      ]
     }
   ],
   "isDefaultVersion": true,
