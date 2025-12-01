@@ -1310,7 +1310,7 @@
         <carbon.apimgt.ui.version>9.3.111</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.32.150</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.153</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1334,7 +1334,7 @@
         <carbon.mediation.version>4.7.263</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.736</carbon.identity.version>
+        <carbon.identity.version>5.25.737</carbon.identity.version>
         <carbon.identity.governance.version>1.8.111</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.35</carbon.identity.event.handler.notification.version>
@@ -1343,7 +1343,7 @@
         <carbon.identity-user-ws.version>5.7.7</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.9.14</carbon.identity-inbound-auth-openid.version>
         <org.wso2.carbon.identity.local.auth.api.version>2.5.15</org.wso2.carbon.identity.local.auth.api.version>
-        <carbon.identity-local-auth-basicauth.version>6.7.33</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-local-auth-basicauth.version>6.7.34</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.8.13</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.7.71</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.6.8</carbon.identity-data-publisher-application-authentication.version>
