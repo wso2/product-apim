@@ -229,7 +229,7 @@ public class SimpleHTTPClient {
 
         setHeaders(headers, request);
 
-        // CRITICAL: Remove Content-Type header - let MultipartEntityBuilder set it with boundary
+        // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
         request.removeHeaders("Content-Type");
 
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -288,6 +288,62 @@ public class SimpleHTTPClient {
             EntityTemplate ent = getEntityTemplate(payload, contentType, zip);
             request.setEntity(ent);
         }
+
+        try (CloseableHttpResponse response = client.execute(request)) {
+            return constructResponse(response);
+        }
+    }
+
+    /**
+     * Send a HTTP put request with multipart/form-data to the specified URL with multiple files
+     *
+     * @param url         Target endpoint URL
+     * @param headers     Any HTTP headers that should be added to the request
+     * @param files       Map of field names to File objects (e.g., "policySpecFile" -> File)
+     * @param formFields  Additional form fields (key-value pairs)
+     * @return Returned HTTP response
+     * @throws IOException If an error occurs while making the invocation
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPutMultipartWithFiles(
+            String url, final Map<String, String> headers, final Map<String, File> files,
+            final Map<String, String> formFields) throws IOException {
+
+        HttpPut request = new HttpPut(url);
+
+        setHeaders(headers, request);
+
+        // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
+        request.removeHeaders("Content-Type");
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.STRICT);
+
+        // Add files with specific field names - preserve original filenames
+        if (files != null) {
+            for (Map.Entry<String, File> fileEntry : files.entrySet()) {
+                File file = fileEntry.getValue();
+                if (file != null) {
+                    String fileName = file.getName();
+                    builder.addBinaryBody(
+                            fileEntry.getKey(),
+                            file,
+                            ContentType.APPLICATION_OCTET_STREAM,
+                            fileName
+                    );
+                }
+            }
+        }
+
+        // Add form fields
+        if (formFields != null) {
+            for (Map.Entry<String, String> field : formFields.entrySet()) {
+                builder.addTextBody(field.getKey(), field.getValue(),
+                        ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
+            }
+        }
+
+        HttpEntity multipartEntity = builder.build();
+        request.setEntity(multipartEntity);
 
         try (CloseableHttpResponse response = client.execute(request)) {
             return constructResponse(response);

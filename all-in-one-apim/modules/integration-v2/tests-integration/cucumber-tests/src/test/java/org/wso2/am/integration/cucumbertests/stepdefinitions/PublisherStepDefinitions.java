@@ -1153,4 +1153,50 @@ public class PublisherStepDefinitions {
     }
 
 
+    @And("I retrieve {string} resource definition for {string}")
+    public void iRetrieveResourceDefinitionFor(String resourceType, String resourceId) throws IOException {
+
+        String actualResourceID = Utils.resolveFromContext(resourceId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getSwaggerURL(baseUrl, resourceType, actualResourceID), headers);
+
+        TestContext.set("httpResponse", response);
+    }
+
+
+    @And("I update the {string} resource definition with {string} for {string}")
+    public void iUpdateTheResourceDefinitionWith(String resourceType, String filepath,  String resourceId) throws IOException {
+
+        String actualResourceID = Utils.resolveFromContext(resourceId).toString();
+
+        File swaggerFile;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filepath)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("API definition file not found: " + filepath);
+            }
+
+            // Create temporary file object
+            swaggerFile = File.createTempFile("swagger", ".json");
+            swaggerFile.deleteOnExit();
+            Files.copy(inputStream, swaggerFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        Map<String, File> files = new HashMap<>();
+        files.put("apiDefinition", swaggerFile);
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPutMultipartWithFiles(Utils.getSwaggerURL(baseUrl, resourceType, actualResourceID), headers, files, null);
+
+        TestContext.set("httpResponse", response);
+    }
 }
