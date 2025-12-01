@@ -87,6 +87,29 @@ Feature: Publisher API Creation and Deployment
         |GraphQLAPIId| graphqlSubscriptionId|  {"query": "{languages{code name}}"}     | apiTestGraphQLContext/1.0.0             | POST  |
 
 
+    Scenario Outline: Invoking SOAP api
+      When I subscribe to resource "<apiID>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
+      When I put the following JSON payload in context as "<Payload>"
+      """
+            <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                <soap:Body>
+                    <CheckPhoneNumber xmlns="http://ws.cdyne.com/PhoneVerify/query">
+                    <PhoneNumber>18006785432</PhoneNumber>
+                    <LicenseKey>18006785432</LicenseKey>
+                    </CheckPhoneNumber>
+                </soap:Body>
+            </soap:Envelope>
+      """
+      And I invoke the SOAP API at path "<resourcePath>" using access token "<generatedAccessToken>" and payload "<Payload>" and soap action "<soapAction>"
+      Then The response status code should be 200
+
+      When I delete the subscription with id "<subscriptionID>"
+      Then The response status code should be 200
+
+      Examples:
+        | apiID    | subscriptionID     | Payload  | resourcePath                  | soapAction                                               |
+        | SoapAPIId| soapSubscriptionId | soapBody | apiTestSoapContext/1.0.0      |  http://ws.cdyne.com/PhoneVerify/query/CheckPhoneNumber  |
+
     Scenario: Delete the app
       When I delete the application with id "createdAppId"
       Then The response status code should be 200
