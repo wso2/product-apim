@@ -83,7 +83,7 @@ Feature: Migrated Applications
     And I put the response payload in context as "<apiPayload>"
     And I deploy the API with id "<apiId>"
     Then The response status code should be 201
-    And I wait until "<apiId>" revision is deployed in the gateway
+    And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
     # These responses should not include x-common-header since it was only applied to DELETE resource
     When I subscribe to resource "<apiId>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
@@ -133,7 +133,7 @@ Feature: Migrated Applications
     And I put the response payload in context as "<apiPayload>"
     And I deploy the API with id "<apiId>"
     Then The response status code should be 201
-    And I wait until "<apiId>" revision is deployed in the gateway
+    And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
     When I subscribe to resource "<apiId>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
@@ -182,7 +182,7 @@ Feature: Migrated Applications
     And I put the response payload in context as "<apiPayload>"
     When I deploy the API with id "<apiId>"
     Then The response status code should be 201
-    And I wait until "<apiId>" revision is deployed in the gateway
+    And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
     When I subscribe to resource "<apiId>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""

@@ -410,13 +410,13 @@ public class PublisherStepDefinitions {
 
     }
 
-    @Then("I wait until {string} revision is deployed in the gateway")
-    public void waitUntilRevisionIsDeployed(String resourceId) throws IOException {
+    @Then("I wait until {string} {string} revision is deployed in the gateway")
+    public void waitUntilRevisionIsDeployed(String resourceType, String resourceId) throws IOException {
 
-        String apiId = Utils.resolveFromContext(resourceId).toString();
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
         String revisionId = Utils.resolveFromContext("revisionId").toString();
 
-        String url = Utils.getRevisionDeployments(baseUrl,apiId);
+        String url = Utils.getRevisionDeployments(baseUrl, resourceType, actualResourceId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
@@ -448,7 +448,7 @@ public class PublisherStepDefinitions {
 
                         if (revisionId.equals(deployedRevisionId)) {
                             deployed = true;
-                            logger.info("Revision {} is deployed for API {}", revisionId, apiId);
+                            logger.info("Revision {} is deployed for API {}", revisionId, actualResourceId);
                             Thread.sleep(10000);
                             break;
                         }
@@ -978,6 +978,28 @@ public class PublisherStepDefinitions {
 
     }
 
+    @And("I update api product resource of id {string} with payload {string}")
+    public void iUpdateApiProductResourceOfIdWithPayload(String resourceId, String payload) throws IOException {
+
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
+        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String firstApiUuid = Utils.resolveFromContext("firstApiUuid").toString();
+        String secondApiUuid = Utils.resolveFromContext("secondApiUuid").toString();
+
+        jsonPayload = jsonPayload.replace("<FirstAPIId>", firstApiUuid)
+                .replace("<SecondAPIId>", secondApiUuid);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        HttpResponse apiUpdateResponse = SimpleHTTPClient.getInstance().doPut(
+                Utils.getResourceEndpointURL(baseUrl,"api-products" ,actualResourceId), headers, jsonPayload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", apiUpdateResponse);
+
+    }
+
     @And("I create a new common policy with spec {string} and {string} as {string}")
     public void iCreateANewCommonPolicyWithSpecAndSynapse(String synapsePolicyJ2, String policySpecYaml, String policyId) throws IOException {
         iCreateANewPolicyWithSpecAndSynapse(null, synapsePolicyJ2, policySpecYaml, policyId);
@@ -1199,4 +1221,6 @@ public class PublisherStepDefinitions {
 
         TestContext.set("httpResponse", response);
     }
+
+
 }

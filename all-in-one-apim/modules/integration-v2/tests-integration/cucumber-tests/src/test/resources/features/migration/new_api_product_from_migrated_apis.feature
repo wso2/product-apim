@@ -43,9 +43,14 @@ Feature: New product creation
     Then The lifecycle status of API "newAPIProductId" should be "Published"
 
     # Step 7: Subscribe and invoke
-    When I have set up application with keys, subscribed to API "newAPIProductId", and obtained access token for "subscriptionId"
-    And I invoke the API resource at path "apiTestProductContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
+    When I have set up a application with keys
+    And I subscribe to resource "newAPIProductId", with "createdAppId" and obtained access token for "subscriptionId" with scope "adp-shared-scope-with-roles, new-shared-scope"
+
+    When I invoke the API resource at path "apiTestProductContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
+
+    And I invoke the API resource at path "apiTestProductContext/1.0.0/users/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
+    Then The response status code should be 403
 
   Scenario Outline: Create new versions of migrated APIs
 
@@ -80,7 +85,6 @@ Feature: New product creation
       | apiProductID      | newVersion | defaultProperty | expectedStatus | newVersionId    | expectedLifecycle     | configType             | configValue    |
       | apiProductId      | 5.0.0      | false           | 201            | newVersionApiId | Created               |  isDefaultVersion      |     true       |
       | newAPIProductId   | 5.0.0      | false           | 201            | newVersionApiId | Created               |  isDefaultVersion      |     true       |
-
 
 
   # delete created resources

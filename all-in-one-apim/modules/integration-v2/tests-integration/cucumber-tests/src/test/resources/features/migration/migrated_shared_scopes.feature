@@ -73,7 +73,7 @@ Feature: Migrated shared scopes for existing and new apis
     And I put the response payload in context as "<apiPayload>"
     When I deploy the API with id "<apiID>"
     Then The response status code should be 201
-    And I wait until "<apiID>" revision is deployed in the gateway
+    And I wait until "apis" "<apiID>" revision is deployed in the gateway
 
     Examples:
     | apiID         | apiPayload        |
