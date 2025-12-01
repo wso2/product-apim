@@ -320,6 +320,10 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "gateway-policies/" + policyMappingId + "/deploy";
     }
 
+    public static String getSwaggerURL(String baseUrl, String resourceType, String resourceId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/swagger";
+    }
+
 
     public static String getInternalAPIKey(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/generate-key";
