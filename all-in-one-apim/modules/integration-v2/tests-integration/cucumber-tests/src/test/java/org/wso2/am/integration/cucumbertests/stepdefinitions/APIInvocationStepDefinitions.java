@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.core.options.CurlOption;
 import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -29,6 +30,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -62,6 +64,7 @@ public class APIInvocationStepDefinitions {
     public void invokeApiUsingAccessToken(String path,String httpMethod, String accessToken, String payload) throws Exception {
 
         String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
+        String actualPayload = (payload == null || payload.isEmpty()) ? "" : Utils.resolveFromContext(payload).toString();
         String endpointUrl = Utils.getAPIInvocationURL(baseGatewayUrl, path, tenant.getDomain());
 
         Map<String, String> headers = new HashMap<>();
@@ -76,13 +79,80 @@ public class APIInvocationStepDefinitions {
                 TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doDelete(endpointUrl, headers));
                 break;
             case POST:
-                TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPost(endpointUrl, headers, payload,
+                TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPost(endpointUrl, headers, actualPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON));
                 break;
             case PUT:
-                TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPut(endpointUrl, headers, payload,
+                TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPut(endpointUrl, headers, actualPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON));
                 break;
         }
+    }
+
+
+    @When("I invoke the API resource at path {string} with method {string} using internal key {string}")
+    public void invokeApiUsingInternalKey(String path, String httpMethod, String internalKey) throws Exception {
+
+        String actualKey = Utils.resolveFromContext(internalKey).toString();
+        String endpointUrl = Utils.getAPIInvocationURL(baseGatewayUrl, path, tenant.getDomain());
+
+        System.out.println(endpointUrl);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Internal-Key", actualKey);
+        System.out.println(actualKey);
+
+        CurlOption.HttpMethod method = CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase());
+        switch (method) {
+            case GET:
+                TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doGet(endpointUrl, headers));
+                break;
+            case DELETE:
+                TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doDelete(endpointUrl, headers));
+                break;
+            case POST:
+                TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPost(endpointUrl, headers, "", Constants.CONTENT_TYPES.APPLICATION_JSON));
+                break;
+            case PUT:
+                TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPut(endpointUrl, headers, "", Constants.CONTENT_TYPES.APPLICATION_JSON));
+                break;
+        }
+    }
+
+    @When("I invoke the GraphQL API resource at path {string} using access token {string} with query {string}")
+    public void invokeGraphQLApiWithQuery(String path, String accessToken, String query) throws Exception {
+        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
+        String actualQuery = Utils.resolveFromContext(query).toString();
+        String endpointUrl = Utils.getAPIInvocationURL(baseGatewayUrl, path, tenant.getDomain());
+
+        // Build GraphQL JSON payload
+        JSONObject queryObject = new JSONObject();
+        queryObject.put("query", actualQuery);
+        String payload = queryObject.toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + actualAccessToken);
+        headers.put("Content-Type", Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPost(endpointUrl, headers, payload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON));
+    }
+
+    @When("I invoke the SOAP API at path {string} using access token {string} and payload {string} and soap action {string}")
+    public void iInvokeTheSOAPAPIAtPathUsingAccessTokenAndPayloadAndSoapAction(String path, String accessToken, String payload, String soapAction) throws IOException {
+
+        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
+        String actualPayload = Utils.resolveFromContext(payload).toString();
+        String endpointUrl = Utils.getAPIInvocationURL(baseGatewayUrl, path, tenant.getDomain());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + actualAccessToken);
+        headers.put("Content-Type", Constants.CONTENT_TYPES.TEXT_XML);
+        if (soapAction != null && !soapAction.isEmpty()) {
+            headers.put("SOAPAction", soapAction);
+        }
+
+        TestContext.set("httpResponse", SimpleHTTPClient.getInstance()
+                .doPost(endpointUrl, headers, actualPayload, Constants.CONTENT_TYPES.TEXT_XML));
     }
 }
