@@ -70,6 +70,12 @@ router.get('/handler', (req, res) => {
   res.type('text/plain').send(header || '');
 });
 
+// GET /hello
+router.get('/hello', (req, res) => {
+  console.log('----invoking hello');
+  res.type('text/plain').send('Hello World');
+});
+
 // PUT /customers/
 router.put('/customers', (req, res) => {
   console.log(`----invoking updateCustomer`);

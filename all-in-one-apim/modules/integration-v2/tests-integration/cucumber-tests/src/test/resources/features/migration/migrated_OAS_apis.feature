@@ -13,12 +13,23 @@ Feature: Migrated OAS API Management
     And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiPayload>"
 
+    # Update policies for subscription
     When I update the "apis" resource "<apiID>" and "<apiPayload>" with configuration type "policies" and value:
       """
       ["Bronze","Gold","Unlimited"]
       """
     And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiPayload>"
+
+    # Update endpoints for invocations
+    When I prepare an endpoint update with "http", "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/" and "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/" as "<endpointUpdateConfig>"
+    And I update the "apis" resource "<apiID>" and "<apiPayload>" with configuration type "endpointConfig" and value:
+      """
+      <endpointUpdateConfig>
+      """
+    And I retrieve the "apis" resource with id "<apiID>"
+    And I put the response payload in context as "<apiPayload>"
+
 
     # Step 2: Verify the availability of  existing revisions
     When I get the existing revision as "existingRevisionID" for "apis" resource with "<apiID>"
@@ -43,7 +54,7 @@ Feature: Migrated OAS API Management
     When I subscribe to resource "<apiID>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     # change this to 200 if node app is implemented
-    Then The response status code should be 500
+    Then The response status code should be 200
     And I delete the subscription with id "<subscriptionID>"
 
     Examples:
