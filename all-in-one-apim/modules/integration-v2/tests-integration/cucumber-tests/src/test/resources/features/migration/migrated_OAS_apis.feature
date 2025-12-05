@@ -48,12 +48,12 @@ Feature: Migrated OAS API Management
     # Step 4: Deploy revision to gateway environment
     When I deploy revision "revisionId" of "apis" resource "<apiID>"
     Then The response status code should be 201
-    And I wait until "<apiID>" revision is deployed in the gateway
+    And I wait until "apis" "<apiID>" revision is deployed in the gateway
 
    # Step 5: Subscribe and invoke
     When I subscribe to resource "<apiID>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
-    # change this to 200 if node app is implemented
+
     Then The response status code should be 200
     And I delete the subscription with id "<subscriptionID>"
 

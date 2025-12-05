@@ -1190,6 +1190,51 @@ public class PublisherStepDefinitions {
         TestContext.set("httpResponse", response);
     }
 
+    @When("I import open api definition from {string} , additional properties from {string} and create api as {string}")
+    public void iImportOpenApiDefinitionFromAndCreateApiAs(String filepath, String additionalData, String resourceId) throws IOException {
+
+        File openapiFile;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filepath)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("API definition file not found: " + filepath);
+            }
+
+            // Create temporary file object
+            openapiFile = File.createTempFile("openapi", ".json");
+            openapiFile.deleteOnExit();
+            Files.copy(inputStream, openapiFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        File additionalPropertiesFile;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Additional properties file not found: " + additionalData);
+            }
+
+            // Create temporary file object
+            additionalPropertiesFile = File.createTempFile("data", ".json");
+            additionalPropertiesFile.deleteOnExit();
+            Files.copy(inputStream, additionalPropertiesFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+        Map<String, File> files = new HashMap<>();
+        files.put("file", openapiFile);
+        files.put("additionalProperties", additionalPropertiesFile);
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(Utils.getAPIDefinitionURL(baseUrl), headers, files, null);
+
+        TestContext.set("httpResponse", response);
+        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+        TestContext.set(resourceId, Utils.extractValueFromPayload(response.getData(), "id"));
+
+    }
+
 
     @And("I update the {string} resource definition with {string} for {string}")
     public void iUpdateTheResourceDefinitionWith(String resourceType, String filepath,  String resourceId) throws IOException {
@@ -1221,6 +1266,7 @@ public class PublisherStepDefinitions {
 
         TestContext.set("httpResponse", response);
     }
+
 
 
 }
