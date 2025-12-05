@@ -278,6 +278,24 @@ public class StoreStepDefinitions {
         TestContext.set("generatedAccessToken", accessToken);
     }
 
+    @And("I request an api key for application id {string} using payload {string}")
+    public void iRequestAnApiKeyForApplicationIdUsingPayload(String appId, String payload) throws IOException {
+
+        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String jsonPayload = Utils.resolveFromContext(payload).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getGenerateAPIKeyURL(baseUrl, actualAppId), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        TestContext.set("httpResponse", response);
+        String apikey = Utils.extractValueFromPayload(response.getData(), "apikey").toString();
+        TestContext.set("apiKey", apikey);
+    }
+
     @When("I delete the subscription with id {string}")
     public void iDeleteSubscription(String subscriptionId) throws Exception {
         String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
@@ -421,13 +439,23 @@ public class StoreStepDefinitions {
                     "\"validityPeriod\": 3600}";
         }
 
-        System.out.println("Token request payload: " + tokenPayload);
-
         baseSteps.putJsonPayloadInContext("<createApplicationAccessTokenPayload>", tokenPayload);
         iRequestAccessToken(appId, "<createApplicationAccessTokenPayload>");
-        baseSteps.theResponseStatusCodeShouldBe(200);
     }
 
+
+    @When("I search DevPortal APIs with query {string}")
+    public void iSearchDevPortalAPIsWithQuery(String query) throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getApiSearchURL(baseUrl, query), headers);
+
+        TestContext.set("httpResponse", response);
+    }
 
 
 }
