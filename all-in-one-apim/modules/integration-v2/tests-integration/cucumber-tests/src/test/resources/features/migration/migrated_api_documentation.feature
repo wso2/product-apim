@@ -16,7 +16,7 @@ Feature: Migrated API Documentation Management
     # First find the existing document with name as "existingDocumentID"
     When I retrieve all available documents for "<apiID>"
     Then The response status code should be 200
-    And I find the document with name "<documentName>" as "existingDocumentID"
+    And I find the "documentId" with name "<documentName>" as "existingDocumentID"
 
     When I retrieve document with "existingDocumentID" for "<apiID>"
     Then The response status code should be 200

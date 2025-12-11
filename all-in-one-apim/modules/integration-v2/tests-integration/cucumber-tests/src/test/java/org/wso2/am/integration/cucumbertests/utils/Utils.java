@@ -29,7 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.json.JSONObject;
-import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
@@ -182,6 +182,14 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications?query=" + applicationName;
     }
 
+    public static String getApiSearchURL(String baseUrl, String query ) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?query=" + query;
+    }
+
+    public static String getApiDocumentsURL(String baseUrl, String resourceId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + resourceId + "/documents";
+    }
+
     public static String getApplicationEndpointURL(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId;
     }
@@ -197,6 +205,10 @@ public class Utils {
     public static String getGenerateApplicationTokenURL(String baseUrl, String applicationId, String keyMappingId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
                 keyMappingId + "/generate-token";
+    }
+
+    public static String getGenerateAPIKeyURL(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION/generate" ;
     }
 
     public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
@@ -220,8 +232,8 @@ public class Utils {
         return baseUrl + Constants.GATEWAY + "server-startup-healthcheck";
     }
 
-    public static String getRevisionDeployments(String baseUrl, String resourceId) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + resourceId + "/revisions?query=deployed:true";
+    public static String getRevisionDeployments(String baseUrl, String resourceType, String resourceId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/revisions?query=deployed:true";
     }
 
     public static String getTenantMgtAdminServiceURL(String baseUrl) {
@@ -322,6 +334,10 @@ public class Utils {
 
     public static String getSwaggerURL(String baseUrl, String resourceType, String resourceId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/swagger";
+    }
+
+    public static String getAPIDefinitionURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-openapi";
     }
 
 

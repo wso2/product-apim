@@ -28,8 +28,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
-import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -339,7 +339,7 @@ public class PublisherStepDefinitions {
     }
 
     @When("I find the apiUUID of the API created with the name {string} and version {string} as {string}")
-    public void iFindTheApiUUIDOfTheAPICreatedWithTheNameAndVersionAs(String apiName, String apiVersion, String apiID) throws IOException {
+    public void iFindTheApiUUIDOfTheAPICreatedWithTheNameAndVersionAs(String apiName, String apiVersion, String apiID) throws IOException, InterruptedException {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
@@ -351,6 +351,7 @@ public class PublisherStepDefinitions {
 
         TestContext.set("httpResponse", response);
         TestContext.set(apiID, Utils.extractAPIUUID(response.getData()));
+        Thread.sleep(1000000000);
     }
 
     BaseSteps baseSteps = new BaseSteps();
@@ -472,27 +473,6 @@ public class PublisherStepDefinitions {
 
         Assert.assertTrue(deployed, "Revision " + revisionId + " was not deployed within the timeout");
     }
-
-
-//    @Given("I have a migrated API with name {string} and version {string} or I create an API as {string}")
-//    public void iHaveAMigratedAPIWithNameAndVersionOrICreateAnAPIAs(String apiName, String apiVersion, String apiID) throws IOException, InterruptedException{
-//
-//        String foundedApiId;
-//
-//        // Find the migrated api
-//        try {
-//            iFindTheApiUUIDOfTheAPICreatedWithTheNameAndVersionAs(apiName, apiVersion, apiID);
-//            foundedApiId = Utils.resolveFromContext(apiID).toString();
-//        } catch (Exception e) {
-//            foundedApiId = null;
-//        }
-//
-//        if (foundedApiId != null && !foundedApiId.isEmpty()) {
-//            TestContext.set(apiID, foundedApiId);
-//        } else{
-//            iCreateAnAPIAs(apiID);
-//        }
-//    }
 
     /**
      * Validates that the given API policies JSON contains a policy of the specified
@@ -1237,7 +1217,7 @@ public class PublisherStepDefinitions {
 
 
     @And("I update the {string} resource definition with {string} for {string}")
-    public void iUpdateTheResourceDefinitionWith(String resourceType, String filepath,  String resourceId) throws IOException {
+    public void iUpdateTheResourceDefinitionWith(String resourceType, String filepath,  String resourceId) throws IOException,InterruptedException {
 
         String actualResourceID = Utils.resolveFromContext(resourceId).toString();
 

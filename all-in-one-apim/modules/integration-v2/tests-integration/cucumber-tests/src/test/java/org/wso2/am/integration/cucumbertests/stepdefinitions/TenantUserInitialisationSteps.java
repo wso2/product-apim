@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import org.jaxen.JaxenException;
 import org.slf4j.Logger;
@@ -79,6 +80,20 @@ public class TenantUserInitialisationSteps {
         TestContext.set(Constants.SUPER_TENANT_DOMAIN, superTenant);
     }
 
+    @And("I add adpsample tenant to context")
+    public void iAddAdpsampleTenantToContext() {
+        Tenant adpTenant = new Tenant();
+        adpTenant.setDomain(Constants.ADPSAMPLE_TENANT_DOMAIN);
+        //  tenant admin
+        User admin = new User();
+        admin.setKey(Constants.ADPSAMPLE_USER_KEY);
+        admin.setUserName(Constants.ADPSAMPLE_TENANT_ADMIN_USERNAME);
+        admin.setPassword(Constants.ADPSAMPLE_TENANT_ADMIN_PASSWORD);
+        adpTenant.setTenantAdmin(admin);
+        TestContext.set(Constants.ADPSAMPLE_TENANT_DOMAIN, adpTenant);
+
+    }
+
 
     @When("I add a new tenant with the following details")
     public void addTenant(DataTable dataTable) throws IOException, JaxenException {
@@ -118,6 +133,7 @@ public class TenantUserInitialisationSteps {
                     url, payload, "urn:addTenant",
                     Constants.SUPER_TENANT_ADMIN_USERNAME, Constants.SUPER_TENANT_ADMIN_PASSWORD);
             Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+            System.out.println(response.getData());
         }
         User admin = new User();
         admin.setKey(Constants.ADMIN_USER_KEY);
@@ -145,11 +161,15 @@ public class TenantUserInitialisationSteps {
                         "</soapenv:Envelope>";
 
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
-        User tenantAdmin = tenant.getTenantAdmin();;
+        User tenantAdmin = tenant.getTenantAdmin();
+        System.out.println(tenantAdmin + tenantAdmin.getUserName() +tenantAdmin.getPassword() );
+
 
         String url = Utils.getRemoteUserStoreManagerServiceURL(baseUrl);
         HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:listUsers",
                 tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        System.out.println(url);
+        System.out.println(response.getData());
 
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         TestContext.set("existingTenantUsersResponse", response);
@@ -196,4 +216,6 @@ public class TenantUserInitialisationSteps {
         tenant.addTenantUsers(tenantUser);
         TestContext.set(tenantDomain, tenant);
     }
+
+
 }
