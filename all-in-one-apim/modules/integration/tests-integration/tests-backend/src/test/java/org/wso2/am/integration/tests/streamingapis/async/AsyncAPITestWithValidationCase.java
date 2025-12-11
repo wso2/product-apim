@@ -296,10 +296,8 @@ public class AsyncAPITestWithValidationCase extends APIMIntegrationBaseTest {
         } catch (ApiException e) {
             // Expected path — new V2 parser rejects invalid asyncapi v2 and publisher returns error
             String respBody = e.getResponseBody();
-            System.out.println("importAsyncAPIDefinition threw ApiException. HTTP code: " + e.getCode()
-                    + ", body: " + respBody);
-            Assert.assertTrue(true, "Import was rejected by new Async API V2 parser " +
-                    "(exception thrown due to invalid API).");
+            Assert.assertTrue(respBody != null && respBody.contains("Implicit OAuth Flow is missing"),
+                    "Unexpected AsyncAPI validation response; body: " + respBody);
         }
         if (response != null) {
             Assert.fail();
