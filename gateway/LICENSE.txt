@@ -447,7 +447,7 @@ org.wso2.carbon.registry.resource.ui_4.8.50.jar                                 
 org.wso2.carbon.um.ws.service_5.7.7.jar                                                             bundle         apache2
 io.dropwizard.metrics.jvm_3.2.5.jar                                                                 bundle         apache2
 org.wso2.carbon.apimgt.rest.api.common_9.32.147.jar                                                 bundle         apache2
-io.apicurio.apicurio-data-models_1.1.5.jar                                                          bundle         apache2
+io.apicurio.apicurio-data-models_2.2.2.jar                                                          bundle         apache2
 org.wso2.carbon.database.utils_2.1.5.jar                                                            bundle         apache2
 org.wso2.carbon.event.output.adapter.rdbms_5.3.27.jar                                               bundle         apache2
 org.apache.servicemix.bundles.jedis_3.3.0.1.jar                                                     bundle         apache2

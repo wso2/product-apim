@@ -442,7 +442,7 @@ org.wso2.carbon.email.mgt_1.7.33.jar                                            
 org.wso2.carbon.registry.relations.ui_4.8.36.jar                                                    bundle         apache2             
 org.eclipse.equinox.launcher_1.3.200.v20160318-1642.jar                                             bundle         epl1                
 io.dropwizard.metrics.jvm_3.2.5.jar                                                                 bundle         apache2             
-io.apicurio.apicurio-data-models_1.1.5.jar                                                          bundle         apache2             
+io.apicurio.apicurio-data-models_2.2.2.jar                                                          bundle         apache2
 org.wso2.carbon.database.utils_2.1.5.jar                                                            bundle         apache2             
 org.apache.servicemix.bundles.jedis_3.3.0.1.jar                                                     bundle         apache2             
 org.wso2.carbon.identity.oidc.session_6.13.19.jar                                                   bundle         apache2             
