@@ -20,7 +20,7 @@ Feature: Publisher API Creation and Deployment
     When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "graphQLAPIPayload"
     And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "graphQLAPIPayload" as "GraphQLAPIId"
 
-  Scenario Outline: Create an API Through the Publisher Rest API
+  Scenario Outline: Deploy an API Through the Publisher Rest API
 
     # Step 2: Verify created APIs
     When  I retrieve the "apis" resource with id "<apiID>"

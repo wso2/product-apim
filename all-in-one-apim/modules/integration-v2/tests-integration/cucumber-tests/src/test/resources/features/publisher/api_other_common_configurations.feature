@@ -105,10 +105,10 @@ Feature: API Other Common Configurations
       """
     Examples:
       | apiID        |  apiUpdatePayload | configType               | configValue                   |
-      | RestAPIId    |  RestAPIPayload   | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":[],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
-      | SoapAPIId    |  SoapAPIPayload   | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":[],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
-      | GraphQLAPIId |  graphQLAPIPayload| scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":[],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
-      | AsyncAPIId   |  AsyncAPIPayload  | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":[],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
+      | RestAPIId    |  RestAPIPayload   | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":["admin"],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
+      | SoapAPIId    |  SoapAPIPayload   | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":["admin"],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
+      | GraphQLAPIId |  graphQLAPIPayload| scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":["admin"],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
+      | AsyncAPIId   |  AsyncAPIPayload  | scopes                   |  [{"shared":true,"scope":{"displayName":"new-shared-scope","bindings":["admin"],"name":"new-shared-scope","description":"This Scope is to test the creation of new scope","id":null,"usageCount":null}}]      |
 
 
   # Step 5.3: Update the api with created scope

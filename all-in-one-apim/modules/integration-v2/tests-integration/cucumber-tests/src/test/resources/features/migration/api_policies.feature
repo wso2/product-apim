@@ -97,10 +97,15 @@ Feature: Migrated Applications
     And The response should contain the header "x-common-header" with value "x-common-value"
     And I delete the subscription with id "<subscriptionID>"
 
+    # Remove created revision
+    When I undeploy revision "revisionId" of "apis" resource "<apiId>"
+    And I Delete the "apis" resource revision with "revisionId" for "<apiId>"
+    Then The response status code should be 200
+
     Examples:
       | apiId           | apiPayload         | subscriptionID        | apiResource                        |
-      |  RestAPIId      |  RestAPIPayload    | restSubscriptionId    |/apiTestContext/1.0.0/customers/124/|
-      |  migratedAPIId  |  migratedAPIPayload| migratedSubscriptionId|/apiContext/1.0.0/customers/125/    |
+      |  RestAPIId      |  RestAPIPayload    | restSubscriptionId    |/apiTestContext/1.0.0/customers/126/|
+      |  migratedAPIId  |  migratedAPIPayload| migratedSubscriptionId|/apiContext/1.0.0/customers/127/    |
 
 
   # Step 4: Add common policy at API level
@@ -140,6 +145,11 @@ Feature: Migrated Applications
     Then The response status code should be 200
     And The response should contain the header "x-common-header" with value "x-common-value"
     And I delete the subscription with id "<subscriptionID>"
+
+    # Remove created revision
+    When I undeploy revision "revisionId" of "apis" resource "<apiId>"
+    And I Delete the "apis" resource revision with "revisionId" for "<apiId>"
+    Then The response status code should be 200
 
       Examples:
       | apiId           | apiPayload         | subscriptionID        | apiResource                        |
@@ -193,6 +203,7 @@ Feature: Migrated Applications
     When I delete the api "<apiId>" specific policy "apiLevelPolicyId"
     Then The response status code should be 200
 
+
       Examples:
         | apiId           | apiPayload         | subscriptionID        | apiResource                        |
         |  RestAPIId      |  RestAPIPayload    | restSubscriptionId    |/apiTestContext/1.0.0/customers/123/|
@@ -221,7 +232,7 @@ Feature: Migrated Applications
       And I engage the gateway policy mapping "globalPolicyId" to the gateways "gatewayPolicyPayload"
       Then The response status code should be 200
 
-  Scenario Outline:
+  Scenario Outline: Verify global policies
     When I subscribe to resource "<apiId>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200

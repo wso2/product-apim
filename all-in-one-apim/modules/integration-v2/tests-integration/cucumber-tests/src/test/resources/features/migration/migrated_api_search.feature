@@ -17,3 +17,14 @@ Feature: Search for migrated APIs in dev portal
     |provider:adp_crt_user|ADPRestAPI     | \"count\":7 |
     |api-category:adp-rest|ADPRestAPI     | \"count\":4 |
 
+  Scenario Outline: Find devportal documents
+    When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
+    And I retrieve devportal documents for "<apiID>"
+    Then The response status code should be 200
+    And The response should contain "adp-inline-doc"
+
+    Examples:
+      | apiName                  | apiVersion   | apiID         |
+      | ADPRestAPI               | 1.0.0        | RestApiId     |
+
+
