@@ -88,6 +88,8 @@ Feature: Migrated API Updates
 
 # Step 5: Modify operations by updating existing scopes to resource(refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Scopes
+    When I retrieve the "apis" resource with id "<apiID>"
+    And I put the response payload in context as "<apiUpdatePayload>"
     When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>

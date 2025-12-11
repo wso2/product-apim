@@ -92,7 +92,7 @@ Feature: Publisher API Management
       "throttlingPolicy": "Bronze"
     }
     """
-    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>"
+    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>" as "subscriptionId"
     And I retrieve the subscription for Api "<createdApiId>" by Application "<createdAppId>"
     Then The response status code should be 200
     And The subscription with id "<subscriptionId>" should be in the list of all subscriptions

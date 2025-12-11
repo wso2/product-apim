@@ -54,6 +54,7 @@ public class StoreStepDefinitions {
                 .doPost(Utils.getApplicationCreateURL(baseUrl), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
+        TestContext.set("httpResponse", applicationCreateResponse);
         Assert.assertEquals(applicationCreateResponse.getResponseCode(), 201, applicationCreateResponse.getData());
         TestContext.set("createdAppId", Utils.extractValueFromPayload(applicationCreateResponse.getData(), "applicationId"));
     }
@@ -458,4 +459,17 @@ public class StoreStepDefinitions {
     }
 
 
+    @And("I retrieve devportal documents for {string}")
+    public void iRetrieveDevportalDocumentsFor(String resourceId) throws IOException {
+        String actualApiId = Utils.resolveFromContext(resourceId).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getApiDocumentsURL(baseUrl, actualApiId), headers);
+
+        TestContext.set("httpResponse", response);
+
+    }
 }
