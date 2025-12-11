@@ -14,6 +14,7 @@ Feature: Migrated API Definition
   Scenario: Update swagger definition
     When I update the "apis" resource definition with "artifacts/payloads/ADPRestAPISwaggerDefinition.json" for "ADPRestAPIId"
     Then The response status code should be 200
+    And The response should not contain "/hello"
 
 # Step 3: Verify the update
   Scenario: Update Verification
