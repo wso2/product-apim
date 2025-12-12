@@ -56,7 +56,7 @@ public class MigratedOASAPIRunner  extends AbstractTestNGCucumberTests  {
     public Object[][] userModeDataProvider() {
         return new Object[][]{
                 {"carbon.super", "admin"}, // Super tenant admin
-//                {"adpsample.com", "admin"},
+                {"adpsample.com", "admin"},
         };
     }
 }
