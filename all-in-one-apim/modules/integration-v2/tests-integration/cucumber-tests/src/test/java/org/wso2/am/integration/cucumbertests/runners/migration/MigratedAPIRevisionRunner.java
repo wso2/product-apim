@@ -54,7 +54,14 @@ public class MigratedAPIRevisionRunner extends AbstractTestNGCucumberTests {
     @DataProvider
     public Object[][] userModeDataProvider() {
         return new Object[][]{
-                {"carbon.super", "admin"}, // Super tenant admin
+                {"carbon.super", "admin"},
+                {"adpsample.com", "admin"},
         };
     }
+
+//    @Override
+//    @DataProvider(parallel = true)
+//    public Object[][] scenarios() {
+//        return super.scenarios();
+//    }
 }
