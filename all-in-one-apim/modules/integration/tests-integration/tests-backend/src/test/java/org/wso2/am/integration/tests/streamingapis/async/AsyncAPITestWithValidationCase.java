@@ -238,7 +238,7 @@ public class AsyncAPITestWithValidationCase extends APIMIntegrationBaseTest {
         asyncApiV3Id = apidto.getId();
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(asyncApiV3Id);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
-                ASYNC_API_V2_NAME + " API creation is failed");
+                ASYNC_API_V3_NAME + " API creation is failed");
 
         String revisionUUID = null;
         // Create Revision and Deploy to Gateway
