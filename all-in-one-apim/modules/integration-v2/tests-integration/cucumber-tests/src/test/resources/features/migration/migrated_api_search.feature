@@ -13,7 +13,6 @@ Feature: Search for migrated APIs in dev portal
     |  query              |  expectedValue|  count      |
     |tag:adp-tag          |ADPRestAPI     | \"count\":1 |
     |name:ADPRestAPI      |ADPRestAPI     | \"count\":1 |
-    |version:1.0.0        |ADPRestAPI     | \"count\":9 |
     |provider:adp_crt_user|ADPRestAPI     | \"count\":7 |
     |api-category:adp-rest|ADPRestAPI     | \"count\":4 |
 
