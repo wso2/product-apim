@@ -58,10 +58,4 @@ public class MigratedAPIRevisionRunner extends AbstractTestNGCucumberTests {
                 {"adpsample.com", "admin"},
         };
     }
-
-//    @Override
-//    @DataProvider(parallel = true)
-//    public Object[][] scenarios() {
-//        return super.scenarios();
-//    }
 }
