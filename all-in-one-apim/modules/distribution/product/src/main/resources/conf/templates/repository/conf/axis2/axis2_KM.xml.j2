@@ -43,6 +43,9 @@
     <!-- Completely disable REST handling in Axis2/Synapse if the value is true -->
     <parameter name="disableREST" locked="false">false</parameter>
 
+    <!-- Configuration to disable appending the charset parameter to each part of multipart form data -->
+    <parameter name="disableSendingMultipartPartCharset" locked="false">{{message_formatter.options.disableSendingMultipartPartCharset | default(true)}}</parameter>
+
     <!-- Sandesha2 persistance storage manager -->
     <parameter name="Sandesha2StorageManager" locked="false">inmemory</parameter>
 
