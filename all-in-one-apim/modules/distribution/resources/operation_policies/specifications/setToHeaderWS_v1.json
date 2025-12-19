@@ -1,9 +1,9 @@
 {
   "category": "Mediation",
-  "name": "setToHeader",
+  "name": "setToHeaderWS",
   "version": "v1",
-  "displayName": "Set To Header",
-  "description": "This policy allows the user to set the To header",
+  "displayName": "Set To Header for Websocket",
+  "description": "This policy allows the user to set the To header for a websocket API",
   "policyAttributes": [
     {
       "name": "value",
@@ -21,6 +21,6 @@
     "Synapse"
   ],
   "supportedApiTypes": [
-    "HTTP"
+    "WS"
   ]
 }

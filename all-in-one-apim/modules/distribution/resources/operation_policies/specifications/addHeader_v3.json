@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
   "name": "addHeader",
-  "version": "v2",
+  "version": "v3",
   "displayName": "Add Header",
   "description": "This policy allows you to add a new header to the request",
   "policyAttributes": [
@@ -31,6 +31,7 @@
     "Synapse"
   ],
   "supportedApiTypes": [
-    "HTTP"
+    "HTTP",
+    "GRAPHQL"
   ]
 }
