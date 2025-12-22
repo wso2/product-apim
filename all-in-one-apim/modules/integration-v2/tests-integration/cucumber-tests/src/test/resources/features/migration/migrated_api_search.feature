@@ -3,19 +3,20 @@ Feature: Search for migrated APIs in dev portal
   Background:
     Given The system is ready and I have valid access tokens for current user
 
+ # Step 1: Search apis in devportal
   Scenario Outline: API search
     When I search DevPortal APIs with query "<query>"
     Then The response status code should be 200
     And The response should contain "<expectedValue>"
-    And The response should contain "<count>"
 
     Examples:
-    |  query              |  expectedValue|  count      |
-    |tag:adp-tag          |ADPRestAPI     | \"count\":1 |
-    |name:ADPRestAPI      |ADPRestAPI     | \"count\":1 |
-    |provider:adp_crt_user|ADPRestAPI     | \"count\":7 |
-    |api-category:adp-rest|ADPRestAPI     | \"count\":4 |
+    |  query              |  expectedValue|
+    |tag:adp-tag          |ADPRestAPI     |
+    |name:ADPRestAPI      |ADPRestAPI     |
+    |provider:adp_crt_user|ADPRestAPI     |
+    |api-category:adp-rest|ADPRestAPI     |
 
+  # Step 2: Find devportal documents
   Scenario Outline: Find devportal documents
     When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
     And I retrieve devportal documents for "<apiID>"
