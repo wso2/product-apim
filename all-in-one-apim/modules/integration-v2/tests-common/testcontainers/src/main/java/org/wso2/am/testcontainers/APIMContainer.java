@@ -24,12 +24,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
-import org.testcontainers.utility.MountableFile;
 import org.wso2.am.integration.test.utils.Constants;
 
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -104,63 +100,6 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
         withNetwork(ContainerNetwork.SHARED_NETWORK);
         // Copy the modified deployment.toml to the container
         withCopyToContainer(Transferable.of(deploymentTomlContent), getContainerTomlPath());
-
-        // === Inject custom truststore and keystore into APIM container ===
-
-        // Local file paths (coming from surefire system properties)
-        String localTruststorePath = System.getProperty("apim.truststore.path");
-        String truststorePassword = System.getProperty("apim.truststore.password");
-
-        String localKeystorePath = System.getProperty("apim.keystore.path");
-        String keystorePassword = System.getProperty("apim.keystore.password");
-
-        logger.info("truststore path from system property: {}", localTruststorePath);
-        logger.info("truststore password from system property: {}", truststorePassword != null ? "***" : "null");
-        logger.info("Keystore path from system property: {}", localKeystorePath);
-        logger.info("Keystore password from system property: {}", keystorePassword != null ? "***" : "null");
-        // Container destination paths
-        String containerBase =
-                "/home/wso2carbon/" + System.getProperty("apim.server.name") + "/repository/resources/security/";
-
-        String containerTruststorePath = containerBase + "client-truststore.jks";
-        String containerKeystorePath = containerBase + "wso2carbon.jks";
-
-        // Build JVM arguments for SSL configuration
-        StringBuilder javaOptsBuilder = new StringBuilder();
-
-        // Copy truststore (if provided)
-        if (localTruststorePath != null && !localTruststorePath.isEmpty() && Files.exists(Paths.get(localTruststorePath))) {
-            withCopyFileToContainer(
-                    MountableFile.forHostPath(localTruststorePath),
-                    containerTruststorePath
-            );
-            logger.info("Copied custom truststore to container: {} -> {}", localTruststorePath, containerTruststorePath);
-
-            if (truststorePassword != null && !truststorePassword.isEmpty()) {
-                if (javaOptsBuilder.length() > 0) {
-                    javaOptsBuilder.append(" ");
-                }
-                javaOptsBuilder.append("-Djavax.net.ssl.trustStore=").append(containerTruststorePath)
-                        .append(" -Djavax.net.ssl.trustStorePassword=").append(truststorePassword);
-            }
-        }
-
-        // Copy keystore (if provided)
-        if (localKeystorePath != null && !localKeystorePath.isEmpty() && Files.exists(Paths.get(localKeystorePath))) {
-            withCopyFileToContainer(
-                    MountableFile.forHostPath(localKeystorePath),
-                    containerKeystorePath
-            );
-            logger.info("Copied custom keystore to container: {} -> {}", localKeystorePath, containerKeystorePath);
-
-            if (keystorePassword != null && !keystorePassword.isEmpty()) {
-                if (javaOptsBuilder.length() > 0) {
-                    javaOptsBuilder.append(" ");
-                }
-                javaOptsBuilder.append("-Djavax.net.ssl.keyStore=").append(containerKeystorePath)
-                        .append(" -Djavax.net.ssl.keyStorePassword=").append(keystorePassword);
-            }
-        }
 
         if (Boolean.parseBoolean(System.getProperty(Constants.APIM_DEBUG_ENABLED))) {
             String debugPortStr = System.getProperty(Constants.APIM_DEBUG_PORT);

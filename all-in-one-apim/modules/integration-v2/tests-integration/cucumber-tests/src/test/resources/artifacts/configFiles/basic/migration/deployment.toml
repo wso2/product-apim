@@ -8,7 +8,7 @@ server_role = "default"
 [super_admin]
 username = "admin"
 password = "admin"
-create_admin_account = true
+create_admin_account = false
 
 [user_store]
 type = "database_unique_id"
@@ -137,7 +137,7 @@ enable_lightweight_apikey_generation = true
 #url = "https://localhost:${mgt.transport.https.port}/devportal"
 #enable_application_sharing = false
 #if application_sharing_type, application_sharing_impl both defined priority goes to application_sharing_impl
-#application_sharing_type = "default" #changed type, saml, default
+#application_sharing_type = "default" #changed type, saml, default #todo: check the new config for rest api
 #application_sharing_impl = "org.wso2.carbon.apimgt.impl.SAMLGroupIDExtractorImpl"
 #display_multiple_versions = false
 #display_deprecated_apis = false
@@ -150,9 +150,6 @@ enable_lightweight_apikey_generation = true
 
 #[apim.publisher]
 #enable_portal_configuration_only_mode = false
-
-[re_indexing]
-indexing = 1
 
 [apim.devportal]
 enable_cross_tenant_subscriptions = true
@@ -286,6 +283,7 @@ iat_validity_period = "1h"
 #service_url = "https://localhost:8080/transactions/records"
 #service_username = "admin"
 #service_password = "admin"
+
 
 [database.apim_db]
 type = "$env{API_MANAGER_DATABASE_TYPE}"

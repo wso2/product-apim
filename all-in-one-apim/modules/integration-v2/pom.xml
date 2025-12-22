@@ -38,7 +38,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <truststore.path>${user.dir}/client-truststore-2.jks</truststore.path>
+        <truststore.path>${user.dir}/client-truststore.jks</truststore.path>
         <truststore.password>wso2carbon</truststore.password>
         <keystore.path>${user.dir}/wso2carbon.jks</keystore.path>
         <keystore.password>wso2carbon</keystore.password>
@@ -137,10 +137,8 @@
                             <systemPropertyVariables>
                                 <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
                                 <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
-                                <apim.truststore.path>${truststore.path}</apim.truststore.path>
-                                <apim.truststore.password>${truststore.password}</apim.truststore.password>
-                                <apim.keystore.path>${keystore.path}</apim.keystore.path>
-                                <apim.keystore.password>${keystore.password}</apim.keystore.password>
+                                <javax.net.ssl.keyStore>${keystore.path}</javax.net.ssl.keyStore>
+                                <javax.net.ssl.keyStorePassword>${keystore.password}</javax.net.ssl.keyStorePassword>
                                 <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                                 <module.dir>${project.basedir}</module.dir>
                                 <apim.server.name>${apim.server.name}</apim.server.name>
@@ -202,6 +200,8 @@
                             <systemPropertyVariables>
                                 <javax.net.ssl.trustStore>${truststore.path}</javax.net.ssl.trustStore>
                                 <javax.net.ssl.trustStorePassword>${truststore.password}</javax.net.ssl.trustStorePassword>
+                                <javax.net.ssl.keyStore>${keystore.path}</javax.net.ssl.keyStore>
+                                <javax.net.ssl.keyStorePassword>${keystore.password}</javax.net.ssl.keyStorePassword>
                                 <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                                 <module.dir>${project.basedir}</module.dir>
                                 <apim.server.name>${apim.server.name}</apim.server.name>
