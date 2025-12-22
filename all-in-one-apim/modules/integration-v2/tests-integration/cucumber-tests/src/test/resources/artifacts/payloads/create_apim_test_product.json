@@ -3,7 +3,6 @@
   "context": "/apiTestProductContext",
   "version": "1.0.0",
   "description": null,
-  "provider": "admin",
   "hasThumbnail": false,
   "state": "CREATED",
   "enableSchemaValidation": false,
