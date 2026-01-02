@@ -58,6 +58,9 @@ public class BaseSteps {
         baseUrl = TestContext.get("baseUrl").toString();
     }
 
+    /**
+     * Initializes the system by retrieving the current tenant and user from the test context.
+     */
     @Given("The system is ready")
     public void theSystemIsReady() {
 
@@ -66,6 +69,9 @@ public class BaseSteps {
         logger.info("Running with user: {}", currentuser.getUserName());
     }
 
+    /**
+     * Creates a Dynamic Client Registration (DCR) application for the current user.
+     */
     @When("I have a valid DCR application for the current user")
     public void iHaveADCRApplication() throws IOException {
 
@@ -96,6 +102,9 @@ public class BaseSteps {
         TestContext.set("dcrCredentials", dcrCredentials);
     }
 
+    /**
+     * Obtains a valid Publisher API access token for the current user.
+     */
     @Given("I have a valid Publisher access token for the current user")
     public void iHaveValidPublisherAccessToken() throws Exception {
 
@@ -117,6 +126,9 @@ public class BaseSteps {
         TestContext.set("publisherAccessToken", accessToken);
     }
 
+    /**
+     * Obtains a valid Developer Portal access token for the current user.
+     */
     @Given("I have a valid Devportal access token for the current user")
     public void iHaveValidDevportalAccessToken() throws Exception {
 
@@ -138,6 +150,9 @@ public class BaseSteps {
         TestContext.set("devportalAccessToken", accessToken);
     }
 
+    /**
+     * Obtains a valid Admin access token for the current user.
+     */
     public void iHaveValidAdminAccessToken() throws Exception {
 
         Map<String, String> headers = new HashMap<>();
@@ -158,7 +173,9 @@ public class BaseSteps {
         TestContext.set("adminAccessToken", accessToken);
     }
 
-    // Composite function to Combine the above four steps to reduce length of feature definition
+    /**
+     * Composite step that combines system initialization and token retrieval.
+     */
     @Given("The system is ready and I have valid access tokens for current user")
     public void iHaveSystemAndTokens() throws Exception {
 
@@ -169,6 +186,12 @@ public class BaseSteps {
         iHaveValidAdminAccessToken();
     }
 
+    /**
+     * Loads a JSON payload from a file and stores it in the test context.
+     *
+     * @param jsonFilePath Path to the JSON file
+     * @param key Context key to store the JSON payload
+     */
     @When("I put JSON payload from file {string} in context as {string}")
     public void putJsonPayloadFromFile(String jsonFilePath, String key) throws IOException {
 
@@ -181,12 +204,23 @@ public class BaseSteps {
         }
     }
 
+    /**
+     * Stores a JSON payload in the test context.
+     *
+     * @param key Context key to store the JSON payload
+     * @param docStringJson JSON payload provided as a doc string
+     */
     @When("I put the following JSON payload in context as {string}")
     public void putJsonPayloadInContext(String key, String docStringJson)  {
 
         TestContext.set(Utils.normalizeContextKey(key), docStringJson);
     }
 
+    /**
+     * Stores the most recent HTTP response payload in the test context.
+     *
+     * @param key Context key to store the response payload
+     */
     @When("I put the response payload in context as {string}")
     public void putResponsePayloadInContext(String key) throws InterruptedException {
 
@@ -195,6 +229,11 @@ public class BaseSteps {
         Thread.sleep(Constants.INITIAL_INDEXING_TIME);
     }
 
+    /**
+     * Verifies that the HTTP response status code matches the expected value.
+     *
+     * @param expectedStatusCode The expected HTTP status code
+     */
     @Then("The response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
 
@@ -202,6 +241,11 @@ public class BaseSteps {
         Assert.assertEquals(response.getResponseCode(), expectedStatusCode, response.getData());
     }
 
+    /**
+     * Verifies that the HTTP response body contains the specified string value.
+     *
+     * @param expectedValue The string value that should be present in the response body
+     */
     @Then("The response should contain {string}")
     public void responseShouldContainFieldValue(String expectedValue) {
 
@@ -209,6 +253,11 @@ public class BaseSteps {
         Assert.assertTrue(response.getData().contains(expectedValue));
     }
 
+    /**
+     * Verifies that the HTTP response body does not contain the specified string value.
+     *
+     * @param unexpectedValue The string value that should not be present in the response body
+     */
     @Then("The response should not contain {string}")
     public void responseShouldNotContainFieldValue(String unexpectedValue) {
 
@@ -216,6 +265,12 @@ public class BaseSteps {
         Assert.assertFalse(response.getData().contains(unexpectedValue));
     }
 
+    /**
+     * Verifies that the HTTP response contains a specific header with the expected value.
+     *
+     * @param headerName The name of the HTTP header to check
+     * @param expectedValue The expected value of the header
+     */
     @Then("The response should contain the header {string} with value {string}")
     public void responseShouldContainHeaderWithValue(String headerName, String expectedValue) {
 
@@ -224,6 +279,12 @@ public class BaseSteps {
         Assert.assertEquals(response.getHeaders().get(headerName), expectedValue, "Header value mismatch for " + headerName);
     }
 
+    /**
+     * Verifies that the HTTP response does not contain a specific header with the specified value.
+     *
+     * @param headerName The name of the HTTP header to check
+     * @param expectedValue The value that should not be present in the header
+     */
     @And("The response should not contain the header {string} with value {string}")
     public void theResponseShouldNotContainTheHeaderWithValue(String headerName, String expectedValue) {
 
@@ -234,9 +295,7 @@ public class BaseSteps {
     }
 
     /**
-     * Verifies that a resource (e.g., API) reflects an updated configuration value.
-     * This step implements a retry mechanism that polls the resource endpoint until the configuration matches
-     * the expected value, accounting for eventual consistency in distributed systems.
+     * Verifies that a resource reflects an updated configuration value.
      *
      * @param resourceType The type of resource to check
      * @param config The configuration field name to verify
@@ -301,12 +360,11 @@ public class BaseSteps {
     }
 
     /**
-     * Helper method which verifies that a specific configuration field in the HTTP response matches the expected value.
-     * This method handles different data types including booleans, numbers, JSON arrays, JSON objects, and strings.
+     * Helper method that verifies a specific configuration field in the HTTP response matches the expected value.
      *
      * @param response The HTTP response containing the configuration to verify
      * @param config The configuration field name to check
-     * @param configValue The expected configuration value (as a string representation)
+     * @param configValue The expected configuration value
      */
     private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
         JSONObject json = new JSONObject(response.getData());
@@ -339,12 +397,20 @@ public class BaseSteps {
         }
     }
 
+    /**
+     * Adds a delay/wait period in the test execution.
+     *
+     * @param seconds The number of seconds to wait
+     */
     @Then("I wait for {int} seconds")
     public void waitForSeconds(int seconds) throws InterruptedException {
 
         Thread.sleep(seconds * 1000L);
     }
 
+    /**
+     * Waits for the APIM server to be ready by polling the gateway health check endpoint.
+     */
     @Then("I wait for the APIM server to be ready")
     public void waitForAPIMServerToBeReady() throws IOException, InterruptedException {
 
@@ -372,6 +438,11 @@ public class BaseSteps {
                 Constants.DEPLOYMENT_WAIT_TIME /60000 + " minutes");
     }
 
+    /**
+     * Waits for an API to be deployed in the gateway.
+     *
+     * @param apiDetailsPayload Context key containing the API details JSON payload
+     */
     @Then("I wait for deployment of the resource in {string}")
     public void waitForAPIDeployment(String apiDetailsPayload) throws IOException, InterruptedException {
 
@@ -415,6 +486,11 @@ public class BaseSteps {
         Thread.sleep(10000);
     }
 
+    /**
+     * Waits for a previous API revision to be undeployed from the gateway.
+     *
+     * @param apiDetailsPayload Context key containing the API details JSON payload
+     */
     @Then("I wait for undeployment of the previous API revision in {string}")
     public void waitForPreviousAPIRevisionUndeployment(String apiDetailsPayload) throws IOException {
 

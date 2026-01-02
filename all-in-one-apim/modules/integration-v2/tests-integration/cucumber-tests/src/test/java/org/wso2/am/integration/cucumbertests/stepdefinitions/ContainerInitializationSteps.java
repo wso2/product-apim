@@ -41,6 +41,14 @@ public class ContainerInitializationSteps {
     String callerModuleDir = ModulePathResolver.getModuleDir(ContainerInitializationSteps.class);
 
 
+    /**
+     * Initializes and starts an API Manager container with a custom deployment configuration.
+     * This step merges a base deployment.toml file (based on the active profile) with optional custom changes
+     * from a specified directory. The container is started and its URLs are stored in the test context.
+     * 
+     * @param label A label/identifier for the container instance
+     * @param tomlChangesDirPath Path to the directory containing custom deployment.toml changes
+     */
     @Given("I have initialized the API Manager container with label {string} and deployment toml changes file path at {string}")
     public void initializeAPIMContainer(String label, String tomlChangesDirPath) throws IOException, InterruptedException {
 
@@ -73,6 +81,9 @@ public class ContainerInitializationSteps {
         TestContext.set("label", label);
     }
 
+    /**
+     * Stops the API Manager container that was previously initialized.
+     */
     @Then("I stop the API Manager container")
     public void stopCustomAPIMContainer(){
 
@@ -80,11 +91,17 @@ public class ContainerInitializationSteps {
         apimContainer.stop();
     }
 
+    /**
+     * Initializes the NodeApp server container (singleton instance).
+     */
     @Given("I have initialized the NodeApp server container")
     public void initializeNodeAppServerContainer() {
         NodeAppServer.getInstance();
     }
 
+    /**
+     * Clears all data from the test context.
+     */
     @Then("I clear the context")
     public void clearContext(){
         TestContext.clear();

@@ -49,6 +49,12 @@ public class APIInvocationSteps {
         currentuser = tenant.getContextUser();
     }
 
+    /**
+     * Loads a pre-generated access token from a JSON file based on the current database type,
+     * tenant domain, and username. The token is stored in the test context for use in API invocations.
+     *
+     * @param accessTokenFilePath Path to the JSON file containing access tokens (relative to classpath resources)
+     */
     @When("I get the generated access token from file {string}")
     public void iGetTheGeneratedAccessTokenFromFile(String accessTokenFilePath) throws Exception {
 
@@ -87,6 +93,16 @@ public class APIInvocationSteps {
         TestContext.set("generatedAccessToken", accessToken);
     }
 
+    /**
+     * Invokes an API endpoint using an OAuth2 access token for authentication.
+     * Supports GET, POST, PUT, and DELETE HTTP methods. The access token is resolved from the test context
+     * and included in the Authorization header as a Bearer token.
+     * 
+     * @param path The API resource path to invoke
+     * @param httpMethod The HTTP method to use (GET, POST, PUT, or DELETE)
+     * @param accessToken Context key containing the access token to use for authentication
+     * @param payload Context key containing the request payload (optional, can be empty for GET/DELETE)
+     */
     @When("I invoke the API resource at path {string} with method {string} using access token {string} and payload {string}")
     public void invokeApiUsingAccessToken(String path,String httpMethod, String accessToken, String payload) throws Exception {
 
@@ -116,7 +132,15 @@ public class APIInvocationSteps {
         }
     }
 
-
+    /**
+     * Invokes an API endpoint using an API Key for authentication.
+     * Supports GET, POST, PUT, and DELETE HTTP methods. The API key is resolved from the test context
+     * and included in the ApiKey header.
+     * 
+     * @param path The API resource path to invoke
+     * @param httpMethod The HTTP method to use (GET, POST, PUT, or DELETE)
+     * @param apikey Context key containing the API key to use for authentication
+     */
     @When("I invoke the API resource at path {string} with method {string} using api key {string}")
     public void invokeApiUsingKey(String path, String httpMethod, String apikey) throws Exception {
 
@@ -144,6 +168,16 @@ public class APIInvocationSteps {
         }
     }
 
+    /**
+     * Invokes a SOAP API endpoint using an OAuth2 access token for authentication.
+     * This step sets the appropriate Content-Type header for SOAP (text/xml) and includes the SOAPAction header
+     * if provided. The payload should be a SOAP envelope in XML format.
+     * 
+     * @param path The SOAP API resource path to invoke
+     * @param accessToken Context key containing the access token to use for authentication
+     * @param payload Context key containing the SOAP request payload (XML format)
+     * @param soapAction The SOAPAction header value (optional, can be empty)
+     */
     @When("I invoke the SOAP API at path {string} using access token {string} and payload {string} and soap action {string}")
     public void iInvokeTheSOAPAPIAtPathUsingAccessTokenAndPayloadAndSoapAction(String path, String accessToken, String payload, String soapAction) throws IOException {
 

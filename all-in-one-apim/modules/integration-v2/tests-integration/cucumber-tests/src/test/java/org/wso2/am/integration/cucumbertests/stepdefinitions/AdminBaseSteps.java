@@ -20,6 +20,14 @@ public class AdminBaseSteps {
         baseUrl = TestContext.get("baseUrl").toString();
     }
 
+    /**
+     * Updates the API provider (owner) of an API.
+     * This is an administrative operation that changes the ownership of an API from one user to another.
+     * Requires admin access token to perform this operation.
+     * 
+     * @param providerName The username of the new API provider/owner
+     * @param apiID Context key containing the API ID whose provider needs to be updated
+     */
     @When("I update the api provider with {string} for {string}")
     public void iUpdateTheApiProviderWithFor(String providerName, String apiID) throws IOException {
 
