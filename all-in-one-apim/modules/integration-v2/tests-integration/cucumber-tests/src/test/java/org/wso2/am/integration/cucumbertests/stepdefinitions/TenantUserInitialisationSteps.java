@@ -94,7 +94,6 @@ public class TenantUserInitialisationSteps {
 
     }
 
-
     @When("I add a new tenant with the following details")
     public void addTenant(DataTable dataTable) throws IOException, JaxenException {
 
