@@ -7,7 +7,7 @@ Feature: API Versioning
 
   Scenario Outline: Full lifecycle of an API version
     # Step 1: Create base API - "createdApiId" stored in context
-    Given I have created an api and deployed it
+    Given I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
 
     # Step 2: Create a new version
     When I create a new version "<newVersion>" of "apis" resource "<createdApiId>" with default version "<defaultProperty>" as "<newVersionId>"
