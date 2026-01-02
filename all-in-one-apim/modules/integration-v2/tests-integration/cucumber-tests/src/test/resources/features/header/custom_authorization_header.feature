@@ -7,8 +7,7 @@ Feature: Custom Header Authorization
     And I have a valid Devportal access token for the current user
 
   Scenario: Create an API Through the Publisher Rest API and subscribe using an Application
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "<createApiPayload>"
-    And I create an API with payload "<createApiPayload>"
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     And I put JSON payload from file "artifacts/payloads/customHeaderTest/update_apim_test_api.json" in context as "<apiUpdatePayload>"
     And I update "apis" resource of id "<createdApiId>" with payload "<apiUpdatePayload>"
     Then The response status code should be 200
