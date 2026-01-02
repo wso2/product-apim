@@ -76,7 +76,8 @@ public class MigratedAPIVerificationRunner extends AbstractTestNGCucumberTests {
     @DataProvider
     public Object[][] userModeDataProvider() {
         return new Object[][]{
-                {"carbon.super", "admin"}, // Super tenant admin
+               {"carbon.super", "admin"}, // Super tenant admin
+               {"adpsample.com", "admin"},
         };
     }
 }
