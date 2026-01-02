@@ -22,12 +22,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.core.options.CurlOption;
 import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
+import org.wso2.carbon.automation.engine.context.beans.User;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,14 +36,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class APIInvocationStepDefinitions {
+public class APIInvocationSteps {
 
     private final String baseGatewayUrl;
     private final Tenant tenant;
-    public APIInvocationStepDefinitions() {
+    private User currentuser;
+
+    public APIInvocationSteps() {
 
         baseGatewayUrl= TestContext.get("baseGatewayUrl").toString();
         tenant = Utils.getTenantFromContext("currentTenant");
+        currentuser = tenant.getContextUser();
     }
 
     @When("I get the generated access token from file {string}")
@@ -57,7 +60,31 @@ public class APIInvocationStepDefinitions {
         String jsonContent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> accessTokensMap = objectMapper.readValue(jsonContent, new TypeReference<>() {});
-        TestContext.set("generatedAccessToken", accessTokensMap.get(System.getenv(Constants.API_MANAGER_DATABASE_TYPE)));
+
+        String dbType = System.getenv(Constants.API_MANAGER_DATABASE_TYPE);
+        if (dbType == null) {
+            throw new IllegalStateException("DB type is not set in environment variables");
+        }
+
+        String tenantDomain = tenant.getDomain();
+        String username = currentuser.getUserNameWithoutDomain();
+
+        if (tenantDomain == null || username == null) {
+            throw new IllegalStateException(
+                    "Tenant domain or username not found in TestContext. " +
+                            "tenantDomain=" + tenantDomain + ", username=" + username);
+        }
+
+        String tokenKey = dbType + "|" + tenantDomain + "|" + username;
+
+        String accessToken = accessTokensMap.get(tokenKey);
+        if (accessToken == null) {
+            throw new IllegalStateException(
+                    "No access token found for key: " + tokenKey +
+                            ". Available keys: " + accessTokensMap.keySet());
+        }
+
+        TestContext.set("generatedAccessToken", accessToken);
     }
 
     @When("I invoke the API resource at path {string} with method {string} using access token {string} and payload {string}")
@@ -90,17 +117,15 @@ public class APIInvocationStepDefinitions {
     }
 
 
-    @When("I invoke the API resource at path {string} with method {string} using internal key {string}")
-    public void invokeApiUsingInternalKey(String path, String httpMethod, String internalKey) throws Exception {
+    @When("I invoke the API resource at path {string} with method {string} using api key {string}")
+    public void invokeApiUsingKey(String path, String httpMethod, String apikey) throws Exception {
 
-        String actualKey = Utils.resolveFromContext(internalKey).toString();
+        String actualKey = Utils.resolveFromContext(apikey).toString();
         String endpointUrl = Utils.getAPIInvocationURL(baseGatewayUrl, path, tenant.getDomain());
 
-        System.out.println(endpointUrl);
-
         Map<String, String> headers = new HashMap<>();
-        headers.put("Internal-Key", actualKey);
-        System.out.println(actualKey);
+        headers.put("accept", "application/json");
+        headers.put("ApiKey", actualKey);
 
         CurlOption.HttpMethod method = CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase());
         switch (method) {
@@ -117,25 +142,6 @@ public class APIInvocationStepDefinitions {
                 TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPut(endpointUrl, headers, "", Constants.CONTENT_TYPES.APPLICATION_JSON));
                 break;
         }
-    }
-
-    @When("I invoke the GraphQL API resource at path {string} using access token {string} with query {string}")
-    public void invokeGraphQLApiWithQuery(String path, String accessToken, String query) throws Exception {
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualQuery = Utils.resolveFromContext(query).toString();
-        String endpointUrl = Utils.getAPIInvocationURL(baseGatewayUrl, path, tenant.getDomain());
-
-        // Build GraphQL JSON payload
-        JSONObject queryObject = new JSONObject();
-        queryObject.put("query", actualQuery);
-        String payload = queryObject.toString();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + actualAccessToken);
-        headers.put("Content-Type", Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", SimpleHTTPClient.getInstance().doPost(endpointUrl, headers, payload,
-                Constants.CONTENT_TYPES.APPLICATION_JSON));
     }
 
     @When("I invoke the SOAP API at path {string} using access token {string} and payload {string} and soap action {string}")
