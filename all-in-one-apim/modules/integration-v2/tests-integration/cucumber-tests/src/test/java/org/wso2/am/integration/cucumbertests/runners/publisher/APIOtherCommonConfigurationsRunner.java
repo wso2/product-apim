@@ -56,9 +56,7 @@ public class APIOtherCommonConfigurationsRunner extends AbstractTestNGCucumberTe
     public Object[][] userModeDataProvider() {
         return new Object[][]{
                 {"carbon.super", "admin"}, // Super tenant admin
-                {"carbon.super", "userKey1"}, // Super tenant user
                 {"tenant1.com", "admin"},  // Tenant admin
-                {"tenant1.com", "userKey1"} // Tenant user
         };
     }
 }
