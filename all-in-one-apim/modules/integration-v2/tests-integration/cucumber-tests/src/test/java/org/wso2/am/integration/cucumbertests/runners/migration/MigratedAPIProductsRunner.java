@@ -55,6 +55,9 @@ public class MigratedAPIProductsRunner extends AbstractTestNGCucumberTests {
     public Object[][] userModeDataProvider() {
         return new Object[][]{
                 {"carbon.super", "admin"}, // Super tenant admin
+                {"carbon.super", "userKey1"}, // Super tenant user
+                {"adpsample.com", "admin"}, // Tenant admin
+                {"adpsample.com","userKey1"}, // Tenant user
         };
     }
 }

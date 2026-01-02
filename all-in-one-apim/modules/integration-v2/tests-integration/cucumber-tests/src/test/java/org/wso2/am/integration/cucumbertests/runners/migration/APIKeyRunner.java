@@ -56,7 +56,6 @@ public class APIKeyRunner extends AbstractTestNGCucumberTests  {
     public Object[][] userModeDataProvider() {
         return new Object[][]{
                 {"carbon.super", "admin"}, // Super tenant admin
-//                {"adpsample.com", "admin"},
         };
     }
 }

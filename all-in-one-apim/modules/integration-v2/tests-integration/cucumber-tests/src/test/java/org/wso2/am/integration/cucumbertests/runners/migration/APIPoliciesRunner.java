@@ -6,6 +6,7 @@ import org.testng.annotations.*;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 
@@ -37,6 +38,9 @@ public class APIPoliciesRunner extends AbstractTestNGCucumberTests {
                 : tenant.getTenantUser(testUserKey);
         tenant.setContextUser(user);
         TestContext.set("currentTenant", tenant);
+
+        // Restart NodeApp server to ensure clean backend state for each tenant
+        NodeAppServer.getInstance().restart();
     }
 
     @AfterClass(alwaysRun = true)
@@ -55,8 +59,9 @@ public class APIPoliciesRunner extends AbstractTestNGCucumberTests {
     @DataProvider
     public Object[][] userModeDataProvider() {
         return new Object[][]{
+                // non admin users are not authorized to create policies
                 {"carbon.super", "admin"}, // Super tenant admin
-//                {"adpsample.com", "admin"},
+                {"adpsample.com", "admin"}, // Tenant admin
         };
     }
 }
