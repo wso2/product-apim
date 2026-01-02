@@ -7,7 +7,7 @@ Feature: Migrated OAS API Management
     When I have set up a application with keys
     Then The response status code should be 200
 
-  Scenario Outline: Migrated API Revision Management
+  Scenario Outline: Migrated OAS API Management
     # Step 1: Find apis and update as needed
     When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
     And I retrieve the "apis" resource with id "<apiID>"
@@ -20,6 +20,10 @@ Feature: Migrated OAS API Management
       """
     And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiPayload>"
+    And The "apis" resource should reflect the updated "policies" as:
+      """
+     ["Bronze","Gold","Unlimited"]
+      """
 
     # Update endpoints for invocations
     When I prepare an endpoint update with "http", "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/" and "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/" as "<endpointUpdateConfig>"
