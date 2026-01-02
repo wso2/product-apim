@@ -34,11 +34,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-public class StoreStepDefinitions {
+public class ApplicationBaseSteps {
 
     private final String baseUrl;
 
-    public StoreStepDefinitions() {
+    public ApplicationBaseSteps() {
 
         baseUrl = TestContext.get("baseUrl").toString();
     }
@@ -274,7 +274,6 @@ public class StoreStepDefinitions {
                 .doPost(Utils.getGenerateApplicationTokenURL(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
-        System.out.println("Token response: " + response.getData());
         String accessToken = Utils.extractValueFromPayload(response.getData(), "accessToken").toString();
         TestContext.set("generatedAccessToken", accessToken);
     }
@@ -327,7 +326,6 @@ public class StoreStepDefinitions {
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", response);
-
     }
 
     @When("I get the subscription with id {string}")
@@ -370,7 +368,7 @@ public class StoreStepDefinitions {
      * @param apiId Api to be subscribed
      */
     @When("I have set up application with keys, subscribed to API {string}, and obtained access token for {string}")
-    public void iSetupApplicationSubscribeAndGetToken(String apiId, String subscriptionID) throws IOException, Exception {
+    public void iSetupApplicationSubscribeAndGetToken(String apiId, String subscriptionID) throws Exception {
 
         // create an application
         baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
@@ -411,7 +409,6 @@ public class StoreStepDefinitions {
                 "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
         iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
         baseSteps.theResponseStatusCodeShouldBe(200);
-
     }
 
     /**
@@ -470,6 +467,5 @@ public class StoreStepDefinitions {
                 .doGet(Utils.getApiDocumentsURL(baseUrl, actualApiId), headers);
 
         TestContext.set("httpResponse", response);
-
     }
 }
