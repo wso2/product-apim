@@ -58,7 +58,7 @@
           "default" : [ ]
         } ],
         "x-auth-type" : "Application & Application User",
-        "x-throttling-tier" : "ADP10PerMin",
+        "x-throttling-tier" : "Unlimited",
         "x-wso2-application-security" : {
           "security-types" : [ "oauth2" ],
           "optional" : false

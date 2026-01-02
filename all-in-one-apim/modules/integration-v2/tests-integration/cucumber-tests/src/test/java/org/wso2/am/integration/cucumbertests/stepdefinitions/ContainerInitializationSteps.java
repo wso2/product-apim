@@ -35,10 +35,10 @@ import java.nio.file.Paths;
 
 import java.io.IOException;
 
-public class ContainerInitializationStepDefinitions {
+public class ContainerInitializationSteps {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContainerInitializationStepDefinitions.class);
-    String callerModuleDir = ModulePathResolver.getModuleDir(ContainerInitializationStepDefinitions.class);
+    private static final Logger logger = LoggerFactory.getLogger(ContainerInitializationSteps.class);
+    String callerModuleDir = ModulePathResolver.getModuleDir(ContainerInitializationSteps.class);
 
 
     @Given("I have initialized the API Manager container with label {string} and deployment toml changes file path at {string}")
