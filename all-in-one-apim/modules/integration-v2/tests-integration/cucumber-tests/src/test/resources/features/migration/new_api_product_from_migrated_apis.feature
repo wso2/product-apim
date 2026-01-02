@@ -52,9 +52,9 @@ Feature: New product creation
     And I invoke the API resource at path "apiTestProductContext/1.0.0/users/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 403
 
-  Scenario Outline: Create new versions of migrated APIs
+  Scenario Outline: Create new versions of migrated API products
 
-    # Step 1: Retrieve payload
+#    # Step 1: Retrieve payload
     When I retrieve the "api-products" resource with id "<apiProductID>"
     And I put the response payload in context as "<apiProductPayload>"
 

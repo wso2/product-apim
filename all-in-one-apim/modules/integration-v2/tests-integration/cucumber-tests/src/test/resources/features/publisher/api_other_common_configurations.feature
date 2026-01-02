@@ -6,7 +6,7 @@ Feature: API Other Common Configurations
     Given The system is ready and I have valid access tokens for current user
 
   # Step 1: Create base APIs
-  Scenario Outline: Take an existing API or creating an API
+  Scenario Outline: Creating an API
     Given I have created an api from "<payloadFile>" as "<apiID>" and deployed it
     And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
@@ -134,7 +134,6 @@ Feature: API Other Common Configurations
       | SoapAPIId        | SoapAPIPayload                    |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]        |
       | GraphQLAPIId     | graphQLAPIPayload                 |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]        |
       | AsyncAPIId       | AsyncAPIPayload                   |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"SUBSCRIBE","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":[],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
-
 
 
   # Step 5.4: Delete the created scope

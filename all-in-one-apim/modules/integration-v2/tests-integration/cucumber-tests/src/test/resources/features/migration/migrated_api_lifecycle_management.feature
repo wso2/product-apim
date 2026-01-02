@@ -15,6 +15,12 @@ Feature: Migrated API Lifecycle Management
       ["Bronze","Gold","Unlimited"]
       """
     Then The response status code should be 200
+    And I retrieve the "apis" resource with id "<apiID>"
+    And I put the response payload in context as "<apiPayload>"
+    And The "apis" resource should reflect the updated "policies" as:
+      """
+     ["Bronze","Gold","Unlimited"]
+      """
 
     # Step 3: Deploy the API
     When I deploy the API with id "<apiID>"
