@@ -33,6 +33,10 @@ Feature: Migrated Applications
       """
     And I retrieve the "apis" resource with id "<apiId>"
     And I put the response payload in context as "<apiPayload>"
+    And The "apis" resource should reflect the updated "policies" as:
+      """
+     ["Bronze","Gold","Unlimited"]
+      """
 
     When I update the "apis" resource "<apiId>" and "<apiPayload>" with configuration type "operations" and value:
     """

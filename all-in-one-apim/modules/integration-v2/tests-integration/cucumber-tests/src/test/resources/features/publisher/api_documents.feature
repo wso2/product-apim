@@ -6,7 +6,6 @@ Feature: API Documents
     Given The system is ready and I have valid access tokens for current user
 
   # Step 1: Create base APIs
-
   Scenario Outline: Create an API
     Given I have created an api from "<payloadFile>" as "<apiID>" and deployed it
     And I retrieve the "apis" resource with id "<apiID>"
