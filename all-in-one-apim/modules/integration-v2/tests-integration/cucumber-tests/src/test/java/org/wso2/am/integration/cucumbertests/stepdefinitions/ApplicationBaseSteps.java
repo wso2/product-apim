@@ -43,6 +43,12 @@ public class ApplicationBaseSteps {
         baseUrl = TestContext.get("baseUrl").toString();
     }
 
+    /**
+     * Creates a new application in the Developer Portal using a JSON payload.
+     * The created application ID is stored in the test context for use in subsequent steps.
+     * 
+     * @param payload Context key containing the application creation JSON payload
+     */
     @When("I create an application with payload {string}")
     public void iCreateAnApplicationWithJsonPayload(String payload) throws IOException {
 
@@ -59,6 +65,11 @@ public class ApplicationBaseSteps {
         TestContext.set("createdAppId", Utils.extractValueFromPayload(applicationCreateResponse.getData(), "applicationId"));
     }
 
+    /**
+     * Deletes an application by its ID.
+     *
+     * @param appId Context key containing the application ID to delete
+     */
     @When("I delete the application with id {string}")
     public void iDeleteApplication(String appId) throws IOException{
         String actualAppId = Utils.resolveFromContext(appId).toString();
@@ -71,6 +82,11 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", applicationDeleteResponse);
     }
 
+    /**
+     * Retrieves the details of a specific application by its ID.
+     *
+     * @param appId Context key containing the application ID to retrieve
+     */
     @When("I retrieve the application with id {string}")
     public void iShouldBeAbleToRetrieveApplication(String appId) throws Exception {
         String actualAppId = Utils.resolveFromContext(appId).toString();
@@ -84,6 +100,12 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", applicationRetrieveResponse);
     }
 
+    /**
+     * Searches for an application by name and stores its ID in the test context.
+     *
+     * @param applicationName The name of the application to search for
+     * @param appId Context key where the found application ID will be stored
+     */
     @When("I fetch the application with {string} as {string}")
     public void iFetchTheApplicationWithAs(String applicationName, String appId) throws IOException {
 
@@ -108,6 +130,12 @@ public class ApplicationBaseSteps {
         }
     }
 
+    /**
+     * Updates an application with a new payload.
+     *
+     * @param appId Context key containing the application ID to update
+     * @param updatePayload Context key containing the application update JSON payload
+     */
     @When("I update the application {string} with payload {string}")
     public void iUpdateTheApplicationWithPayload(String appId, String updatePayload) throws IOException {
 
@@ -125,6 +153,16 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", response);
     }
 
+    /**
+     * Creates a subscription between an application and an API.
+     * The payload is updated with the actual application ID and API ID before sending the request.
+     * The created subscription ID is stored in the test context.
+     * 
+     * @param apiId Context key containing the API ID to subscribe to
+     * @param appId Context key containing the application ID to use for subscription
+     * @param payload Context key containing the subscription creation JSON payload
+     * @param subscriptionID Context key where the created subscription ID will be stored
+     */
     @When("I subscribe to API {string} using application {string} with payload {string} as {string}")
     public void iSubscribeToApi(String apiId, String appId, String payload, String subscriptionID) throws Exception {
 
@@ -146,6 +184,12 @@ public class ApplicationBaseSteps {
         TestContext.set(subscriptionID,Utils.extractValueFromPayload(response.getData(), "subscriptionId"));
     }
 
+    /**
+     * Retrieves a subscription between a specific API and application.
+     *
+     * @param apiId Context key containing the API ID
+     * @param appId Context key containing the application ID
+     */
     @Then("I retrieve the subscription for Api {string} by Application {string}")
     public void iShouldBeAbleToRetrieveSubscription(String apiId, String appId) throws Exception {
         String actualApiId = Utils.resolveFromContext(apiId).toString();
@@ -172,6 +216,12 @@ public class ApplicationBaseSteps {
         }
     }
 
+    /**
+     * Retrieves all existing keys (OAuth2 credentials) for an application.
+     * The consumer secret and key mapping ID from the first key are extracted and stored in the test context.
+     * 
+     * @param appId Context key containing the application ID
+     */
     @When("I retrieve existing application keys for {string}")
     public void iRetrieveExistingApplicationKeys(String appId) throws IOException {
 
@@ -207,6 +257,12 @@ public class ApplicationBaseSteps {
 
     }
 
+    /**
+     * Updates the keys (OAuth2 credentials) for an application.
+     * The update payload should be stored in the test context under the key "updateKeysPayload".
+     *
+     * @param appId Context key containing the application ID
+     */
     @And("I update the keys for application with {string}")
     public void iUpdateTheKeysForApplicationWith(String appId) throws IOException, InterruptedException {
 
@@ -223,6 +279,11 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", response);
     }
 
+    /**
+     * Deletes the generated keys (OAuth2 credentials) for an application.
+     *
+     * @param appId Context key containing the application ID
+     */
     @When("I delete the generated keys for {string}")
     public void iDeleteTheGeneratedKeysFor(String appId) throws IOException {
 
@@ -237,6 +298,13 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", response);
     }
 
+    /**
+     * Generates OAuth2 client credentials (consumer key and secret) for an application.
+     * The generated consumer key, consumer secret, and key mapping ID are stored in the test context.
+     * 
+     * @param appId Context key containing the application ID
+     * @param payload Context key containing the key generation JSON payload
+     */
     @When("I generate client credentials for application id {string} with payload {string}")
     public void iGenerateClientCredentialsForApplication(String appId, String payload) throws Exception {
 
@@ -256,6 +324,14 @@ public class ApplicationBaseSteps {
         TestContext.set("keyMappingId", Utils.extractValueFromPayload(response.getData(), "keyMappingId"));
     }
 
+    /**
+     * Requests an OAuth2 access token for an application using the generated client credentials.
+     * The consumer secret from the context is injected into the payload before sending the request.
+     * The generated access token is stored in the test context.
+     * 
+     * @param appId Context key containing the application ID
+     * @param payload Context key containing the token request JSON payload
+     */
     @When("I request an access token for application id {string} using payload {string}")
     public void iRequestAccessToken(String appId, String payload) throws Exception {
 
@@ -278,6 +354,12 @@ public class ApplicationBaseSteps {
         TestContext.set("generatedAccessToken", accessToken);
     }
 
+    /**
+     * Generates an API Key for an application.
+     *
+     * @param appId Context key containing the application ID
+     * @param payload Context key containing the API key generation JSON payload
+     */
     @And("I request an api key for application id {string} using payload {string}")
     public void iRequestAnApiKeyForApplicationIdUsingPayload(String appId, String payload) throws IOException {
 
@@ -296,6 +378,11 @@ public class ApplicationBaseSteps {
         TestContext.set("apiKey", apikey);
     }
 
+    /**
+     * Deletes a subscription by its ID.
+     *
+     * @param subscriptionId Context key containing the subscription ID to delete
+     */
     @When("I delete the subscription with id {string}")
     public void iDeleteSubscription(String subscriptionId) throws Exception {
         String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
@@ -309,6 +396,13 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", response);
     }
 
+    /**
+     * Updates a subscription's throttling policy (subscription plan).
+     * The subscription payload should be stored in the test context under the key "subscriptionPayload".
+     *
+     * @param subscriptionId Context key containing the subscription ID to update
+     * @param subscriptionPlan The new throttling policy/plan (e.g., "Gold", "Silver", "Bronze", "Unlimited")
+     */
     @When("I update the subscription {string} with subscription plan {string}")
     public void iUpdateTheSubscriptionWithSubscriptionPlan(String subscriptionId, String subscriptionPlan) throws IOException {
 
@@ -328,6 +422,11 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", response);
     }
 
+    /**
+     * Retrieves the details of a specific subscription by its ID.
+     *
+     * @param subscriptionId Context key containing the subscription ID to retrieve
+     */
     @When("I get the subscription with id {string}")
     public void iGetSubscription(String subscriptionId) throws Exception {
 
@@ -342,6 +441,13 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", response);
     }
 
+    /**
+     * Verifies that a specific subscription ID exists in the list of all subscriptions.
+     * This assertion step checks the most recent HTTP response (expected to contain a list of subscriptions)
+     * to ensure the subscription was successfully created and is available.
+     * 
+     * @param subscriptionId Context key containing the subscription ID to verify
+     */
     @Then("The subscription with id {string} should be in the list of all subscriptions")
     public void subscriptionShouldBeInTheListOfAllSubscriptions(String subscriptionId) {
 
@@ -441,7 +547,12 @@ public class ApplicationBaseSteps {
         iRequestAccessToken(appId, "<createApplicationAccessTokenPayload>");
     }
 
-
+    /**
+     * Searches for APIs in the Developer Portal using a search query.
+     * The search query can include filters such as name, version, provider, etc.
+     *
+     * @param query The search query string
+     */
     @When("I search DevPortal APIs with query {string}")
     public void iSearchDevPortalAPIsWithQuery(String query) throws IOException {
 
@@ -455,7 +566,11 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", response);
     }
 
-
+    /**
+     * Retrieves all documents available for an API in the Developer Portal.
+     *
+     * @param resourceId Context key containing the API ID
+     */
     @And("I retrieve devportal documents for {string}")
     public void iRetrieveDevportalDocumentsFor(String resourceId) throws IOException {
         String actualApiId = Utils.resolveFromContext(resourceId).toString();
