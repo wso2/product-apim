@@ -23,6 +23,6 @@ Feature: Tenant and User Initialization
     And I add user "userKey1" with username "testUser11", password "testUser11" and roles "Internal/creator, Internal/publisher, Internal/subscriber" to the tenant domain "tenant1.com"
 
     When I retrieve all existing users in the tenant domain "adpsample.com"
-#    And I add user "userKey1" with username "testUser111", password "testUser111" and roles "Internal/creator, Internal/publisher, Internal/subscriber" to the tenant domain "adpsample.com"
+    And I add user "userKey1" with username "testTenantUser11", password "testTenantUser11" and roles "ADP_CREATOR, ADP_PUBLISHER, ADP_SUBSCRIBER" to the tenant domain "adpsample.com"
 
 

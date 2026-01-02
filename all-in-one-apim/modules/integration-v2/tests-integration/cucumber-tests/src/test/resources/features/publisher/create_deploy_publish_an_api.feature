@@ -5,7 +5,7 @@ Feature: Publisher API Creation and Deployment
     Given The system is ready and I have valid access tokens for current user
 
   # Step 1.1: Create Rest apis and soap apis
-  Scenario Outline: Create REST/SOAP APIs
+  Scenario Outline: Create APIs
     When I put JSON payload from file "<payloadFile>" in context as "<apiPayload>"
     And I create an "apis" resource with payload "<apiPayload>" as "<apiID>"
 
