@@ -188,10 +188,11 @@ public class BaseSteps {
     }
 
     @When("I put the response payload in context as {string}")
-    public void putResponsePayloadInContext(String key) {
+    public void putResponsePayloadInContext(String key) throws InterruptedException {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         TestContext.set(Utils.normalizeContextKey(key), response.getData());
+        Thread.sleep(Constants.INITIAL_INDEXING_TIME);
     }
 
     @Then("The response status code should be {int}")
@@ -207,7 +208,6 @@ public class BaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");;
         Assert.assertTrue(response.getData().contains(expectedValue));
     }
-
 
     @Then("The response should not contain {string}")
     public void responseShouldNotContainFieldValue(String unexpectedValue) {
@@ -233,6 +233,15 @@ public class BaseSteps {
 
     }
 
+    /**
+     * Verifies that a resource (e.g., API) reflects an updated configuration value.
+     * This step implements a retry mechanism that polls the resource endpoint until the configuration matches
+     * the expected value, accounting for eventual consistency in distributed systems.
+     *
+     * @param resourceType The type of resource to check
+     * @param config The configuration field name to verify
+     * @param configValue The expected configuration value
+     */
     @And("The {string} resource should reflect the updated {string} as:")
     public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String configValue) throws IOException, InterruptedException {
         // Get the API ID from the update response
@@ -291,6 +300,14 @@ public class BaseSteps {
         }
     }
 
+    /**
+     * Helper method which verifies that a specific configuration field in the HTTP response matches the expected value.
+     * This method handles different data types including booleans, numbers, JSON arrays, JSON objects, and strings.
+     *
+     * @param response The HTTP response containing the configuration to verify
+     * @param config The configuration field name to check
+     * @param configValue The expected configuration value (as a string representation)
+     */
     private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
         JSONObject json = new JSONObject(response.getData());
         Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
@@ -329,7 +346,7 @@ public class BaseSteps {
     }
 
     @Then("I wait for the APIM server to be ready")
-    public void waitForAPIMServerToBeReady() throws IOException {
+    public void waitForAPIMServerToBeReady() throws IOException, InterruptedException {
 
         String url = Utils.getGatewayHealthCheckURL(baseUrl);
         long currentTime = System.currentTimeMillis();
@@ -356,7 +373,7 @@ public class BaseSteps {
     }
 
     @Then("I wait for deployment of the resource in {string}")
-    public void waitForAPIDeployment(String apiDetailsPayload) throws IOException {
+    public void waitForAPIDeployment(String apiDetailsPayload) throws IOException, InterruptedException {
 
         String actualApiDetailsPayload = Utils.resolveFromContext(apiDetailsPayload).toString();
 
@@ -395,6 +412,7 @@ public class BaseSteps {
             }
         }
         Assert.assertTrue(isApiDeployed);
+        Thread.sleep(10000);
     }
 
     @Then("I wait for undeployment of the previous API revision in {string}")
