@@ -8,8 +8,7 @@ Feature: Publisher API Management
     And I have a valid Devportal access token for the current user
 
   Scenario: Create an API Through the Publisher Rest API
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "<createApiPayload>"
-    And I create an API with payload "<createApiPayload>"
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
 
   Scenario: Get the API details by ID
     When  I retrieve the "apis" resource with id "<createdApiId>"
