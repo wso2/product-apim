@@ -54,4 +54,17 @@ public class NodeAppServer {
     public static NodeAppServer getInstance() {
         return NodeAppServer.InstanceHolder.instance;
     }
+
+    public void restart() {
+        logger.info("Restarting NodeAppServer...");
+        try {
+            if (container.isRunning()) {
+                container.stop();
+            }
+        } catch (Exception e) {
+            logger.warn("Error stopping container, continuing with start: {}", e.getMessage());
+        }
+        container.start();
+        logger.info("NodeAppServer successfully restarted");
+    }
 }
