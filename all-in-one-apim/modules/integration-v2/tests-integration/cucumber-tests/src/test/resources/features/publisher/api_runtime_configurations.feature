@@ -6,7 +6,7 @@ Feature: API Runtime Configurations
     Given The system is ready and I have valid access tokens for current user
 
   # Step 1: Create base APIs
-  Scenario Outline: Take an existing API or creating an API
+  Scenario Outline: Creating an API
     Given I have created an api from "<payloadFile>" as "<apiID>" and deployed it
     And I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
@@ -37,27 +37,27 @@ Feature: API Runtime Configurations
       """
 
     Examples:
-      | apiID      |  apiUpdatePayload  | configType               | configValue          |
-      | RestAPIId  |  RestAPIPayload                  |responseCachingEnabled   | true                 |
-      | RestAPIId  |  RestAPIPayload                 |cacheTimeout             | 400                  |
-      | RestAPIId  |  RestAPIPayload                  |enableSchemaValidation   | true                 |
-      | RestAPIId  |  RestAPIPayload                 |transport                | ["http","https"]     |
-      | RestAPIId  |  RestAPIPayload                  |corsConfiguration        | {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowMethods":["GET","POST"],"accessControlAllowHeaders":["Authorization"],"accessControlAllowCredentials":true} |
-      | RestAPIId  |  RestAPIPayload                 |responseCachingEnabled   | false                |
-      | RestAPIId  |  RestAPIPayload                 |enableSchemaValidation   | false                |
-      | RestAPIId  |  RestAPIPayload                 |transport                | ["https"]            |
-      | RestAPIId  |  RestAPIPayload                  |corsConfiguration        | {"accessControlAllowOrigins":[],"accessControlAllowCredentials":false,"corsConfigurationEnabled":false,"accessControlAllowHeaders":[],"accessControlAllowMethods":[]} |
-      | SoapAPIId  |  SoapAPIPayload                  |responseCachingEnabled   | true                 |
-      | SoapAPIId  |  SoapAPIPayload                 |cacheTimeout             | 400                  |
-      | SoapAPIId  |  SoapAPIPayload                  |enableSchemaValidation   | true                 |
-      | SoapAPIId  |  SoapAPIPayload                 |transport                | ["http","https"]     |
-      | SoapAPIId  |  SoapAPIPayload                  |corsConfiguration        | {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowMethods":["GET","POST"],"accessControlAllowHeaders":["Authorization"],"accessControlAllowCredentials":true} |
-      | GraphQLAPIId  |  graphQLAPIPayload                  |responseCachingEnabled   | true                 |
-      | GraphQLAPIId  |  graphQLAPIPayload                 |cacheTimeout             | 400                  |
-      | GraphQLAPIId  |  graphQLAPIPayload                  |enableSchemaValidation   | true                 |
-      | GraphQLAPIId  |  graphQLAPIPayload                 |transport                | ["http","https"]     |
-      | GraphQLAPIId  |  graphQLAPIPayload                  |corsConfiguration        | {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowMethods":["GET","POST"],"accessControlAllowHeaders":["Authorization"],"accessControlAllowCredentials":true} |
-      | AsyncAPIId       | AsyncAPIPayload               |apiThrottlingPolicy      | "Unlimited"          |
+      | apiID         |  apiUpdatePayload   | configType               | configValue          |
+      | RestAPIId     |  RestAPIPayload     |responseCachingEnabled    | true                 |
+      | RestAPIId     |  RestAPIPayload     |cacheTimeout              | 400                  |
+      | RestAPIId     |  RestAPIPayload     |enableSchemaValidation    | true                 |
+      | RestAPIId     |  RestAPIPayload     |transport                 | ["http","https"]     |
+      | RestAPIId     |  RestAPIPayload     |corsConfiguration         | {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowMethods":["GET","POST"],"accessControlAllowHeaders":["Authorization"],"accessControlAllowCredentials":true} |
+      | RestAPIId     |  RestAPIPayload     |responseCachingEnabled    | false                |
+      | RestAPIId     |  RestAPIPayload     |enableSchemaValidation    | false                |
+      | RestAPIId     |  RestAPIPayload     |transport                 | ["https"]            |
+      | RestAPIId     |  RestAPIPayload     |corsConfiguration         | {"accessControlAllowOrigins":[],"accessControlAllowCredentials":false,"corsConfigurationEnabled":false,"accessControlAllowHeaders":[],"accessControlAllowMethods":[]} |
+      | SoapAPIId     |  SoapAPIPayload     |responseCachingEnabled    | true                 |
+      | SoapAPIId     |  SoapAPIPayload     |cacheTimeout              | 400                  |
+      | SoapAPIId     |  SoapAPIPayload     |enableSchemaValidation    | true                 |
+      | SoapAPIId     |  SoapAPIPayload     |transport                 | ["http","https"]     |
+      | SoapAPIId     |  SoapAPIPayload     |corsConfiguration         | {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowMethods":["GET","POST"],"accessControlAllowHeaders":["Authorization"],"accessControlAllowCredentials":true} |
+      | GraphQLAPIId  |  graphQLAPIPayload  |responseCachingEnabled    | true                 |
+      | GraphQLAPIId  |  graphQLAPIPayload  |cacheTimeout              | 400                  |
+      | GraphQLAPIId  |  graphQLAPIPayload  |enableSchemaValidation    | true                 |
+      | GraphQLAPIId  |  graphQLAPIPayload  |transport                 | ["http","https"]     |
+      | GraphQLAPIId  |  graphQLAPIPayload  |corsConfiguration         | {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowMethods":["GET","POST"],"accessControlAllowHeaders":["Authorization"],"accessControlAllowCredentials":true} |
+      | AsyncAPIId    | AsyncAPIPayload     |apiThrottlingPolicy       | "Unlimited"          |
 
  # Step 3: Remove created APIs
   Scenario Outline: Remove the APIs

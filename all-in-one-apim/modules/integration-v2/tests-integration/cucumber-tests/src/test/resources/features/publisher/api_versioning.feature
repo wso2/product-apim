@@ -54,23 +54,3 @@ Feature: API Versioning
       | newVersion | defaultProperty | expectedStatus | newVersionId    | expectedLifecycle |
       | 2.0.0      | false           | 201            | newVersionApiId | Created           |
       | 3.0.0      | true            | 201            | newVersionApiId2| Created           |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
