@@ -93,6 +93,7 @@ public class TenantUserInitialisationSteps {
      */
     @And("I add adpsample tenant to context")
     public void iAddAdpsampleTenantToContext() {
+
         Tenant adpTenant = new Tenant();
         adpTenant.setDomain(Constants.ADPSAMPLE_TENANT_DOMAIN);
         //  tenant admin
@@ -102,7 +103,6 @@ public class TenantUserInitialisationSteps {
         admin.setPassword(Constants.ADPSAMPLE_TENANT_ADMIN_PASSWORD);
         adpTenant.setTenantAdmin(admin);
         TestContext.set(Constants.ADPSAMPLE_TENANT_DOMAIN, adpTenant);
-
     }
 
     /**
@@ -202,7 +202,7 @@ public class TenantUserInitialisationSteps {
      * If the user already exists, this step skips creation and only adds the user to the tenant context.
      *
      * @param userKey A key identifier for the user (used for referencing in test context)
-     * @param username The username for the new user (without domain)
+     * @param username The username for the new user
      * @param password The password for the new user
      * @param roles Comma-separated list of roles to assign to the user
      * @param tenantDomain The tenant domain where the user should be created
@@ -248,6 +248,5 @@ public class TenantUserInitialisationSteps {
         tenant.addTenantUsers(tenantUser);
         TestContext.set(tenantDomain, tenant);
     }
-
 
 }

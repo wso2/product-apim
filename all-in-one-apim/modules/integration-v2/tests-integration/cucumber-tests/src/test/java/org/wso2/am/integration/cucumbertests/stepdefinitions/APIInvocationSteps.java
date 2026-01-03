@@ -53,7 +53,7 @@ public class APIInvocationSteps {
      * Loads a pre-generated access token from a JSON file based on the current database type,
      * tenant domain, and username. The token is stored in the test context for use in API invocations.
      *
-     * @param accessTokenFilePath Path to the JSON file containing access tokens (relative to classpath resources)
+     * @param accessTokenFilePath Path to the JSON file containing access tokens
      */
     @When("I get the generated access token from file {string}")
     public void iGetTheGeneratedAccessTokenFromFile(String accessTokenFilePath) throws Exception {
@@ -101,7 +101,7 @@ public class APIInvocationSteps {
      * @param path The API resource path to invoke
      * @param httpMethod The HTTP method to use (GET, POST, PUT, or DELETE)
      * @param accessToken Context key containing the access token to use for authentication
-     * @param payload Context key containing the request payload (optional, can be empty for GET/DELETE)
+     * @param payload Context key containing the request payload
      */
     @When("I invoke the API resource at path {string} with method {string} using access token {string} and payload {string}")
     public void invokeApiUsingAccessToken(String path,String httpMethod, String accessToken, String payload) throws Exception {
@@ -176,7 +176,7 @@ public class APIInvocationSteps {
      * @param path The SOAP API resource path to invoke
      * @param accessToken Context key containing the access token to use for authentication
      * @param payload Context key containing the SOAP request payload (XML format)
-     * @param soapAction The SOAPAction header value (optional, can be empty)
+     * @param soapAction The SOAPAction header value
      */
     @When("I invoke the SOAP API at path {string} using access token {string} and payload {string} and soap action {string}")
     public void iInvokeTheSOAPAPIAtPathUsingAccessTokenAndPayloadAndSoapAction(String path, String accessToken, String payload, String soapAction) throws IOException {
