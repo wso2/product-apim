@@ -57,7 +57,6 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_TOKEN_EP;
     }
 
-
     public static String getAPICreateEndpointURL(String baseUrl, String resourceType) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType;
     }
@@ -346,9 +345,6 @@ public class Utils {
     }
 
 
-
-
-
     /**
      * Extracts the API UUID
      *
@@ -488,6 +484,7 @@ public class Utils {
             builder.close();
         }
     }
+
     /**
      * Retrieves a Tenant object from the TestContext using the specified key.
      * If the key is not found or the value is not a Tenant, the method fails the test.

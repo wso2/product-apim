@@ -115,6 +115,7 @@ public class PublisherBaseSteps {
      */
     @Then("The response should contain the following api policies")
     public void theResponseShouldContainFollowingApiPolicies(DataTable dataTable) throws IOException {
+
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         String responsePayload = response.getData();
         JsonNode apiPolicies = new ObjectMapper().readTree(responsePayload).path("apiPolicies");
@@ -124,6 +125,31 @@ public class PublisherBaseSteps {
         for (Map.Entry<String, String> expectedPolicy : expectedPolicies.entrySet()) {
             validatePolicy(apiPolicies, expectedPolicy.getKey(), expectedPolicy.getValue());
         }
+    }
+
+    /**
+     * Validates that the given API policies JSON contains a policy of the specified
+     * type with the expected policy name and a non-empty policy ID.
+     *
+     * @param apiPolicies        JSON node containing API policies
+     * @param expectedPolicyName Expected policy name
+     * @param policyType         Type of policy
+     */
+    private void validatePolicy(JsonNode apiPolicies, String policyType, String expectedPolicyName) {
+
+        JsonNode receivedPolicesArray = apiPolicies.path(policyType);
+
+        boolean policyExists = false;
+        for (JsonNode node : receivedPolicesArray) {
+            String policyName = node.path("policyName").asText(null);
+            String policyId = node.path("policyId").asText(null);
+            if (expectedPolicyName.equals(policyName) && StringUtils.isNotBlank(policyId)) {
+                policyExists = true;
+                break;
+            }
+        }
+        Assert.assertTrue(policyExists, "Policy '" + expectedPolicyName + "' not found or missing policyId under apiPolicies['" + policyType
+                + "']");
     }
 
     /**
@@ -162,7 +188,8 @@ public class PublisherBaseSteps {
      * @param resourceId Context key containing the resource ID
      */
     @When("I get the existing revision as {string} for {string} resource with {string}")
-    public void iGetTheExistingRevisionAsForResourceWith(String revisionID, String resourceType, String resourceId) throws IOException, InterruptedException {
+    public void iGetTheExistingRevisionAsForResourceWith(String revisionID, String resourceType, String resourceId) throws IOException {
+
         String actualResourceId = Utils.resolveFromContext(resourceId).toString();
 
         Map<String, String> headers = new HashMap<>();
@@ -197,6 +224,7 @@ public class PublisherBaseSteps {
      */
     @When("I Delete the {string} resource revision with {string} for {string}")
     public void iDeleteTheRevisionWithFor(String resourceType,String revisionId, String resourceId) throws IOException{
+
         String actualResourceId = Utils.resolveFromContext(resourceId).toString();
         String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
 
@@ -468,7 +496,6 @@ public class PublisherBaseSteps {
     /**
      * Composite step that creates an API, creates a revision, and deploys it.
      * This step combines multiple operations of creating and deploying an API
-     * in a single step, reducing the length of feature definitions.
      *
      * @param payloadPath Path to the JSON file containing the API creation payload
      * @param apiID Context key where the created API ID will be stored
@@ -580,33 +607,6 @@ public class PublisherBaseSteps {
         Assert.assertTrue(deployed, "Revision " + revisionId + " was not deployed within the timeout");
     }
 
-
-    /**
-     * Validates that the given API policies JSON contains a policy of the specified
-     * type
-     * with the expected policy name and a non-empty policy ID.
-     *
-     * @param apiPolicies        JSON node containing API policies
-     * @param expectedPolicyName Expected policy name
-     * @param policyType         Type of policy
-     */
-    private void validatePolicy(JsonNode apiPolicies, String policyType, String expectedPolicyName) {
-
-        JsonNode receivedPolicesArray = apiPolicies.path(policyType);
-
-        boolean policyExists = false;
-        for (JsonNode node : receivedPolicesArray) {
-            String policyName = node.path("policyName").asText(null);
-            String policyId = node.path("policyId").asText(null);
-            if (expectedPolicyName.equals(policyName) && StringUtils.isNotBlank(policyId)) {
-                policyExists = true;
-                break;
-            }
-        }
-        Assert.assertTrue(policyExists, "Policy '" + expectedPolicyName + "' not found or missing policyId under apiPolicies['" + policyType
-                        + "']");
-    }
-
     /**
      * Creates a new version of an existing API or API Product.
      *
@@ -638,7 +638,7 @@ public class PublisherBaseSteps {
 
     /**
      * Prepares a document payload template by loading a base template file
-     * and replacing placeholders with the provided values (type, sourceType, and inlineContent).
+     * and replacing placeholders with the provided values.
      *
      * @param type Document type (e.g., "HOWTO", "SAMPLES")
      * @param sourceType Source type (e.g., "INLINE", "URL", "FILE")

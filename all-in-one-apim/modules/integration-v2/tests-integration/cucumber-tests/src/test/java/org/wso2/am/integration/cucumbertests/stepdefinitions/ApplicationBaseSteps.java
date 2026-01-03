@@ -43,9 +43,11 @@ public class ApplicationBaseSteps {
         baseUrl = TestContext.get("baseUrl").toString();
     }
 
+    BaseSteps baseSteps = new BaseSteps();
+
     /**
      * Creates a new application in the Developer Portal using a JSON payload.
-     * The created application ID is stored in the test context for use in subsequent steps.
+     * The created application ID is stored as "createdAppId" in the test context for use in subsequent steps.
      * 
      * @param payload Context key containing the application creation JSON payload
      */
@@ -53,6 +55,7 @@ public class ApplicationBaseSteps {
     public void iCreateAnApplicationWithJsonPayload(String payload) throws IOException {
 
         String jsonPayload = Utils.resolveFromContext(payload).toString();
+
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
@@ -72,7 +75,9 @@ public class ApplicationBaseSteps {
      */
     @When("I delete the application with id {string}")
     public void iDeleteApplication(String appId) throws IOException{
+
         String actualAppId = Utils.resolveFromContext(appId).toString();
+
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
@@ -89,6 +94,7 @@ public class ApplicationBaseSteps {
      */
     @When("I retrieve the application with id {string}")
     public void iShouldBeAbleToRetrieveApplication(String appId) throws Exception {
+
         String actualAppId = Utils.resolveFromContext(appId).toString();
 
         Map<String, String> headers = new HashMap<>();
@@ -192,6 +198,7 @@ public class ApplicationBaseSteps {
      */
     @Then("I retrieve the subscription for Api {string} by Application {string}")
     public void iShouldBeAbleToRetrieveSubscription(String apiId, String appId) throws Exception {
+
         String actualApiId = Utils.resolveFromContext(apiId).toString();
         String actualAppId = Utils.resolveFromContext(appId).toString();
 
@@ -264,7 +271,7 @@ public class ApplicationBaseSteps {
      * @param appId Context key containing the application ID
      */
     @And("I update the keys for application with {string}")
-    public void iUpdateTheKeysForApplicationWith(String appId) throws IOException, InterruptedException {
+    public void iUpdateTheKeysForApplicationWith(String appId) throws IOException {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
@@ -461,8 +468,6 @@ public class ApplicationBaseSteps {
 
         Assert.assertTrue(found, "Subscription with id " + actualSubscriptionId + " not found in the list.");
     }
-
-    BaseSteps baseSteps = new BaseSteps();
 
     /**
      * Composite step definition for,
