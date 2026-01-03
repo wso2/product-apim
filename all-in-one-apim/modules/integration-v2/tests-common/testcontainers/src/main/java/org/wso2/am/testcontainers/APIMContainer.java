@@ -47,9 +47,6 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
         String apim_db_url = System.getenv(Constants.API_MANAGER_DATABASE_URL);
         String shared_db_url = System.getenv(Constants.SHARED_DATABASE_URL);
 
-        apim_db_url = apim_db_url.replace("&", "&amp;");
-        shared_db_url = shared_db_url.replace("&", "&amp;");
-
         int offset = Constants.DEFAULT_OFFSET;
 
         // Check if parallel execution is enabled

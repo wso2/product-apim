@@ -62,7 +62,7 @@
         <apim.database.validationQuery>SELECT 1</apim.database.validationQuery>
 
         <!-- APIM server name -->
-        <apim.server.version>4.5.0</apim.server.version>
+        <apim.server.version>${project.version}</apim.server.version>
         <apim.server.name>wso2am-${apim.server.version}</apim.server.name>
 
         <!-- APIM docker image-->
