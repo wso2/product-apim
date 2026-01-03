@@ -21,9 +21,8 @@ public class AdminBaseSteps {
     }
 
     /**
-     * Updates the API provider (owner) of an API.
+     * Updates the API provider of an API.
      * This is an administrative operation that changes the ownership of an API from one user to another.
-     * Requires admin access token to perform this operation.
      * 
      * @param providerName The username of the new API provider/owner
      * @param apiID Context key containing the API ID whose provider needs to be updated
