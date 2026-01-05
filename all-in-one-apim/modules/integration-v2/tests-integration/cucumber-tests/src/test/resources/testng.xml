@@ -29,11 +29,11 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIDefinitionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIUpdateRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIVersioningRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIProviderChangeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPILifecycleRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedOASAPIRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIPoliciesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedApplicationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIProviderChangeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
         </classes>
     </test>
