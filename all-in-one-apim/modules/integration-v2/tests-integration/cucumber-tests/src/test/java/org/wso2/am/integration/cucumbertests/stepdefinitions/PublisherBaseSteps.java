@@ -1286,7 +1286,6 @@ public class PublisherBaseSteps {
                 .doPostMultipartWithFiles(endpointUrl, headers, files, null);
 
         TestContext.set("httpResponse", policyCreateResponse);
-        System.out.printf(policyCreateResponse.getData());
 
         // Extract and store the policy ID from response if available
         if (policyId != null && policyCreateResponse.getResponseCode() == 201) {
@@ -1364,7 +1363,6 @@ public class PublisherBaseSteps {
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", response);
-        System.out.println(response.getData());
         TestContext.set(globalPolicyId, Utils.extractValueFromPayload(response.getData(), "id"));
     }
 
