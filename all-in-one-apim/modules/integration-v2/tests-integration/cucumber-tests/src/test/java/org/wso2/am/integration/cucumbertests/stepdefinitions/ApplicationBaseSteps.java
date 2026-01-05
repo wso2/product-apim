@@ -419,7 +419,6 @@ public class ApplicationBaseSteps {
         String jsonPayload = Utils.resolveFromContext("subscriptionPayload").toString();
         jsonPayload = jsonPayload.replace("\"throttlingPolicy\":\"Unlimited\"", "\"throttlingPolicy\":\"" + subscriptionPlan +"\"");
 
-        System.out.println(jsonPayload);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 

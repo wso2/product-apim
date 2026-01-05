@@ -51,7 +51,14 @@ Feature: Migrated Applications
      ["Bronze","Gold","Unlimited"]
       """
     Then The response status code should be 200
-      Examples:
+    And I retrieve the "apis" resource with id "<apiID>"
+    And I put the response payload in context as "<apiPayload>"
+    And The "apis" resource should reflect the updated "policies" as:
+      """
+     ["Bronze","Gold","Unlimited"]
+      """
+
+    Examples:
       |apiID          |apiPayload        |
       |migratedAPIId  |migratedAPIPayload|
       |RestAPIId      |RestAPIPayload    |

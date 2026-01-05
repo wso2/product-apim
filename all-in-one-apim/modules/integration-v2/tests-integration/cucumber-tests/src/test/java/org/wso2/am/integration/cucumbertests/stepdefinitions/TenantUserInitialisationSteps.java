@@ -149,7 +149,6 @@ public class TenantUserInitialisationSteps {
                     url, payload, "urn:addTenant",
                     Constants.SUPER_TENANT_ADMIN_USERNAME, Constants.SUPER_TENANT_ADMIN_PASSWORD);
             Assert.assertEquals(response.getResponseCode(), 200, response.getData());
-            System.out.println(response.getData());
         }
         User admin = new User();
         admin.setKey(Constants.ADMIN_USER_KEY);
@@ -184,14 +183,10 @@ public class TenantUserInitialisationSteps {
 
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
         User tenantAdmin = tenant.getTenantAdmin();
-        System.out.println(tenantAdmin + tenantAdmin.getUserName() +tenantAdmin.getPassword() );
-
 
         String url = Utils.getRemoteUserStoreManagerServiceURL(baseUrl);
         HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:listUsers",
                 tenantAdmin.getUserName(), tenantAdmin.getPassword());
-        System.out.println(url);
-        System.out.println(response.getData());
 
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         TestContext.set("existingTenantUsersResponse", response);
