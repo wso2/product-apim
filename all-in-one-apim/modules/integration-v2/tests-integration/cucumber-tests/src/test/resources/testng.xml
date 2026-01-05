@@ -10,7 +10,7 @@
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemInitializationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.common.MigratedTenantUserInitilization"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.MigratedTenantUserInitilizationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPISearchRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateDeployPublishTestRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.ImportOASDefinitionRunner"/>
