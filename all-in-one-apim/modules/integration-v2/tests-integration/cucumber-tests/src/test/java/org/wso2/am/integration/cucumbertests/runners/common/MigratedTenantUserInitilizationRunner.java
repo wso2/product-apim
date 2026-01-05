@@ -11,5 +11,5 @@ import org.testng.annotations.Test;
 )
 
 @Test(groups = {"migrationTest"})
-public class MigratedTenantUserInitilization extends AbstractTestNGCucumberTests {
+public class MigratedTenantUserInitilizationRunner extends AbstractTestNGCucumberTests {
 }
