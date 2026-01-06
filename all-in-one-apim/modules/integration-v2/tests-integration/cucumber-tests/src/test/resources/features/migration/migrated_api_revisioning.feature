@@ -45,8 +45,3 @@ Feature: Migrated API Revision Management
      | ADPStarWarsAPI           | 1.0.0        | GraphQLApiId  |
      | ADPPhoneVerificationAPI  | 1.0.0        | SoapApiId     |
      | ADPIfElseAPI             | 1.0.0        | AsyncApiId    |
-
-
-
-
-

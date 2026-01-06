@@ -70,5 +70,3 @@ Feature: API Runtime Configurations
     | SoapAPIId     |
     | GraphQLAPIId  |
     | AsyncAPIId    |
-
-
