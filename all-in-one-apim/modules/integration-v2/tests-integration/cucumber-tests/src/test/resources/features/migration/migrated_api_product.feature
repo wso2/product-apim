@@ -109,12 +109,3 @@ Feature: Migrated API Products
     When I delete the subscription with id "<subscriptionId>"
     When I delete the application with id "<createdAppId>"
     Then The response status code should be 200
-
-
-
-
-
-
-
-
-

@@ -48,4 +48,3 @@ Feature: Migrated API Versioning
     | GraphQLApiId| 5.0.0      | false           | 201            | newVersionApiId | Created           |ADPGraphQLAPIPayload           |  isDefaultVersion      |     true       |
     | SoapApiId   | 5.0.0      | false           | 201            | newVersionApiId | Created           |ADPPhoneVerificationAPIPayload |  isDefaultVersion      |     true       |
     | AsyncApiId  | 5.0.0      | false           | 201            | newVersionApiId | Created           |ADPIfElseAPIPayload            |  isDefaultVersion      |     true       |
-
