@@ -58,7 +58,7 @@ Feature: API Other Common Configurations
       | apiID        | apiUpdatePayload | configType               | configValue                                                          |
       | RestAPIId    |RestAPIPayload    | operations               | [{"verb": "POST", "target": "/newlyAddedResource"}]                  |
       | SoapAPIId    |SoapAPIPayload    | operations               | [{"verb": "POST", "target": "/newlyAddedResource"}]                  |
-      | GraphQLAPIId |graphQLAPIPayload | operations               | [{"verb": "QUERY", "target": "newlyAddedResource"}] ]                |
+      | GraphQLAPIId |graphQLAPIPayload | operations               | [{"verb": "QUERY", "target": "newlyAddedResource"}]                  |
       | AsyncAPIId   | AsyncAPIPayload  |operations                | [{"verb": "SUBSCRIBE", "target": "/newlyAddedResource"}]             |
 
   # Step 4: Update subscription Plans
@@ -151,7 +151,4 @@ Feature: API Other Common Configurations
       | RestAPIId  |
       | SoapAPIId  |
       |GraphQLAPIId|
-
-
-
-
+      | AsyncAPIId |
