@@ -26,5 +26,3 @@ Feature: Search for migrated APIs in dev portal
     Examples:
       | apiName                  | apiVersion   | apiID         |
       | ADPRestAPI               | 1.0.0        | RestApiId     |
-
-

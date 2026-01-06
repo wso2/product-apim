@@ -49,6 +49,3 @@ Feature: Publisher API Management
   Scenario: Delete the created Application
     When I delete the application with id "createdAppId"
     Then The response status code should be 200
-
-
-

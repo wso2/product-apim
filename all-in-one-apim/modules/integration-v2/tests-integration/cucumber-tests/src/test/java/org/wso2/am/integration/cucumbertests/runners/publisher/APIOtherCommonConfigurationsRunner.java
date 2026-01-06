@@ -1,3 +1,20 @@
+/*
+ *  Copyright (c) 2026, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
 package org.wso2.am.integration.cucumbertests.runners.publisher;
 
 import io.cucumber.testng.AbstractTestNGCucumberTests;
@@ -15,7 +32,7 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 @CucumberOptions(
         features = "src/test/resources/features/publisher/api_other_common_configurations.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/apiVersioning.html" }
+        plugin = {"pretty", "html:target/cucumber-report/api-other-common-configurations.html" }
 )
 public class APIOtherCommonConfigurationsRunner extends AbstractTestNGCucumberTests {
     private String testUserDomain;
@@ -36,12 +53,12 @@ public class APIOtherCommonConfigurationsRunner extends AbstractTestNGCucumberTe
                 ? tenant.getTenantAdmin()
                 : tenant.getTenantUser(testUserKey);
         tenant.setContextUser(user);
-        TestContext.set("currentTenant", tenant);
+        TestContext.set(Constants.CURRENT_TENANT, tenant);
     }
 
     @AfterClass(alwaysRun = true)
     public void afterClass() {
-        TestContext.remove("currentTenant");
+        TestContext.remove(Constants.CURRENT_TENANT);
     }
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -55,8 +72,8 @@ public class APIOtherCommonConfigurationsRunner extends AbstractTestNGCucumberTe
     @DataProvider
     public Object[][] userModeDataProvider() {
         return new Object[][]{
-                {"carbon.super", "admin"}, // Super tenant admin
-                {"tenant1.com", "admin"},  // Tenant admin
+                {Constants.SUPER_TENANT_DOMAIN, Constants.ADMIN_USER_KEY}, // Super tenant admin
+                {Constants.NEW_TENANT_DOMAIN, Constants.NEW_TENANT_ADMIN_USER_KEY},  // Tenant admin
         };
     }
 }

@@ -74,15 +74,23 @@ public class Constants {
     public static final String DEFAULT_APIM_TOKEN_EP = "oauth2/token";
     public static final String DEFAULT_DCR_EP = "client-registration/v0.17/register";
 
+    public static final String CURRENT_TENANT ="currentTenant";
+
     public static final String SUPER_TENANT_DOMAIN = "carbon.super";
     public static final String SUPER_TENANT_ADMIN_USERNAME = "admin";
     public static final String SUPER_TENANT_ADMIN_PASSWORD = "admin";
     public static final String ADMIN_USER_KEY = "admin";
+    public static final String USER_KEY = "userKey1";
 
     public static final String ADPSAMPLE_TENANT_DOMAIN = "adpsample.com";
     public static final String ADPSAMPLE_TENANT_ADMIN_USERNAME = "admin@adpsample.com";
     public static final String ADPSAMPLE_TENANT_ADMIN_PASSWORD = "admin";
-    public static final String ADPSAMPLE_USER_KEY = "admin";
+    public static final String ADPSAMPLE_ADMIN_USER_KEY = "admin";
+    public static final String ADPSAMPLE_USER_KEY = "userKey1";
+
+    public static final String NEW_TENANT_DOMAIN = "tenant1.com";
+    public static final String NEW_TENANT_ADMIN_USER_KEY = "admin";
+    public static final String NEW_TENANT_USER_KEY = "userKey1";
 
     public static class REQUEST_HEADERS {
 

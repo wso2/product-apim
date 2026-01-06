@@ -100,4 +100,3 @@ Feature: New product creation
 
     When I delete the "apis" resource with id "newAPIId"
     Then The response status code should be 200
-

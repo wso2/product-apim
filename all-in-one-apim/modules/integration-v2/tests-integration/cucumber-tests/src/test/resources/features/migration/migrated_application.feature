@@ -153,7 +153,3 @@ Feature: Migrated Applications
   Scenario: Delete migrated application
     When I delete the application with id "migratedAppId"
     Then The response status code should be 200
-
-
-
-

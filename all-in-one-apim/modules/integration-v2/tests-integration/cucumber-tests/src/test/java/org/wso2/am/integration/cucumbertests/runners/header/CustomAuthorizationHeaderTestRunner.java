@@ -55,12 +55,12 @@ public class CustomAuthorizationHeaderTestRunner extends AbstractTestNGCucumberT
                 ? tenant.getTenantAdmin()
                 : tenant.getTenantUser(testUserKey);
         tenant.setContextUser(user);
-        TestContext.set("currentTenant", tenant);
+        TestContext.set(Constants.CURRENT_TENANT, tenant);
     }
 
     @AfterClass(alwaysRun = true)
     public void afterClass() {
-        TestContext.remove("currentTenant");
+        TestContext.remove(Constants.CURRENT_TENANT);
     }
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -74,10 +74,10 @@ public class CustomAuthorizationHeaderTestRunner extends AbstractTestNGCucumberT
     @DataProvider
     public Object[][] userModeDataProvider() {
         return new Object[][]{
-                {"carbon.super", "admin"}, // Super tenant admin
-                {"carbon.super", "userKey1"}, // Super tenant user
-                {"tenant1.com", "admin"},  // Tenant admin
-                {"tenant1.com", "userKey1"} // Tenant user
+                {Constants.SUPER_TENANT_DOMAIN, Constants.ADMIN_USER_KEY}, // Super tenant admin
+                {Constants.SUPER_TENANT_DOMAIN, Constants.USER_KEY}, // Super tenant user
+                {Constants.ADPSAMPLE_TENANT_DOMAIN, Constants.ADPSAMPLE_ADMIN_USER_KEY}, // Tenant admin
+                {Constants.ADPSAMPLE_TENANT_DOMAIN, Constants.ADPSAMPLE_USER_KEY} // Tenant user
         };
     }
 }
