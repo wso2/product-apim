@@ -1079,7 +1079,7 @@ public class PublisherBaseSteps {
             }
         }
 
-        if (scopeId == null) {
+        if (foundedScopeId == null) {
             throw new RuntimeException("Scope name not found: " + scopeName);
         }
         TestContext.set(scopeId, foundedScopeId);
@@ -1506,5 +1506,4 @@ public class PublisherBaseSteps {
 
         TestContext.set("httpResponse", response);
     }
-
 }

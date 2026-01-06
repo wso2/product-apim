@@ -33,7 +33,7 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 @CucumberOptions(
         features = "src/test/resources/features/migration/migrated_api_verification.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/createAPI.html"}
+        plugin = {"pretty", "html:target/cucumber-report/migrated-api-verification.html"}
 )
 
 @Test(groups = {"migrationTest"})
@@ -57,12 +57,12 @@ public class MigratedAPIVerificationRunner extends AbstractTestNGCucumberTests {
                 ? tenant.getTenantAdmin()
                 : tenant.getTenantUser(testUserKey);
         tenant.setContextUser(user);
-        TestContext.set("currentTenant", tenant);
+        TestContext.set(Constants.CURRENT_TENANT, tenant);
     }
 
     @AfterClass(alwaysRun = true)
     public void afterClass() {
-        TestContext.remove("currentTenant");
+        TestContext.remove(Constants.CURRENT_TENANT);
     }
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -76,8 +76,8 @@ public class MigratedAPIVerificationRunner extends AbstractTestNGCucumberTests {
     @DataProvider
     public Object[][] userModeDataProvider() {
         return new Object[][]{
-               {"carbon.super", "admin"}, // Super tenant admin
-               {"adpsample.com", "admin"}, // Tenant admin
+               {Constants.SUPER_TENANT_DOMAIN, Constants.ADMIN_USER_KEY}, // Super tenant admin
+               {Constants.ADPSAMPLE_TENANT_DOMAIN, Constants.ADPSAMPLE_ADMIN_USER_KEY}, // Tenant admin
         };
     }
 }
