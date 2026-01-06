@@ -80,7 +80,6 @@ public class APIPoliciesRunner extends AbstractTestNGCucumberTests {
     @DataProvider
     public Object[][] userModeDataProvider() {
         return new Object[][]{
-                // non admin users are not authorized to create policies
                 {Constants.SUPER_TENANT_DOMAIN, Constants.ADMIN_USER_KEY}, // Super tenant admin
                 {Constants.ADPSAMPLE_TENANT_DOMAIN, Constants.ADPSAMPLE_ADMIN_USER_KEY}, // Tenant admin
         };
