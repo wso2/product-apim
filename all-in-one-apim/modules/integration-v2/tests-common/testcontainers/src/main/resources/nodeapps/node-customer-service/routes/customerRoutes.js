@@ -31,8 +31,6 @@ for (let i = 0; i < names.length; i++) {
     customers[id] = new Customer(id, names[i]);
 }
 
-+currentId = currentId + names.length - 1;
-
 // GET /customers/{id}/
 router.get('/customers/:id', (req, res) => {
   const id = parseInt(req.params.id);
