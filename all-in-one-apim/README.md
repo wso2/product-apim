@@ -12,8 +12,7 @@
 ---
 
 WSO2 API Manager (WSO2 API-M) is a powerful platform for creating, managing, consuming, and
-monitoring web APIs. It combines tried and tested SOA best practices with modern
-day API management principles to solve a wide range of enterprise challenges
+monitoring web APIs. It combines tried and tested SOA best practices with modern-day API management principles to solve a wide range of enterprise challenges
 associated with API provisioning, governance, and integration.
 
 WSO2 API Manager consists of several loosely coupled modules.
@@ -36,7 +35,7 @@ WSO2 API Manager is based on the revolutionary WSO2 Carbon [Middleware a' la car
 framework. All the major features have been developed as reusable Carbon
 components.
 
-To learn more about WSO2 API Manager please visit http://wso2.com/products/api-manager.
+To learn more about WSO2 API Manager please visit https://wso2.com/products/api-manager.
 
 Key Features
 =============
@@ -190,10 +189,9 @@ System Requirements
 ==================================
 
 1. Minimum memory - 2GB
-2. Processor      - Pentium 800MHz or equivalent at minimum
+2. A modern multi-core processor (e.g., Intel i3 or equivalent)
 3. Java 11 or higher
-4. The Management Console requires you to enable Javascript of the Web browser,
-   with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
+4. The Management Console requires a modern web browser with JavaScript enabled (Chrome, Firefox, Edge). In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
 5. Apache Ant is required to compile and run the sample clients. Apache Ant 1.7.0
@@ -205,7 +203,7 @@ Installation & Running
 ==================================
 
 1. Extract the wso2am-4.6.0.zip and go to the 'bin' directory
-2. Run the api-manager.sh or api-manager.bat script based on you operating system.
+2. Run the api-manager.sh or api-manager.bat script based on your operating system.
 3. Access the respective WSO2 API-M interfaces
     * API Publisher web application is running at - https://localhost:9443/publisher \
   You may sign in to the Publisher using the default administrator credentials (username: admin, password: admin).
@@ -280,10 +278,10 @@ Crypto Notice
    The following provides more details on the included cryptographic
    software:
 
-* Apache Rampart   : http://ws.apache.org/rampart/
-* Apache WSS4J     : http://ws.apache.org/wss4j/
-* Apache Santuario : http://santuario.apache.org/
-* Bouncycastle     : http://www.bouncycastle.org/
+* Apache Rampart   : https://ws.apache.org/rampart/
+* Apache WSS4J     : https://ws.apache.org/wss4j/
+* Apache Santuario : https://santuario.apache.org/
+* Bouncycastle     : https://www.bouncycastle.org/
 
 --------------------------------------------------------------------------------
 (c) Copyright 2020 WSO2 Inc.
