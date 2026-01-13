@@ -1307,10 +1307,10 @@
         <carbon.analytics.common.version>5.3.27</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.111</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.119-SNAPSHOT</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.32.147</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.149-SNAPSHOT</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1541,6 +1541,11 @@
         <url-guardrail.version>1.0.0</url-guardrail.version>
         <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
         <semantic-cache.version>1.0.0</semantic-cache.version>
+        <semantic-routing.version>1.0.1-SNAPSHOT</semantic-routing.version>
+        <intelligent-model-routing.version>1.0.1-SNAPSHOT</intelligent-model-routing.version>
+
+        
+
 
         <!-- AM Policy Names -->
         <regex-guardrail.name>RegexGuardrail</regex-guardrail.name>
@@ -1556,6 +1561,8 @@
         <url-guardrail.name>URLGuardrail</url-guardrail.name>
         <word-count-guardrail.name>WordCountGuardrail</word-count-guardrail.name>
         <semantic-cache.name>SemanticCache</semantic-cache.name>
+        <semantic-routing.name>SemanticRouting</semantic-routing.name>
+        <intelligent-model-routing.name>IntelligentModelRouting</intelligent-model-routing.name>
 
         <!-- AM Policy Versions -->
         <regex-guardrail.policy.version>v1.0</regex-guardrail.policy.version>
@@ -1571,6 +1578,8 @@
         <url-guardrail.policy.version>v1.0</url-guardrail.policy.version>
         <word-count-guardrail.policy.version>v1.1</word-count-guardrail.policy.version>
         <semantic-cache.policy.version>v1.0</semantic-cache.policy.version>
+        <semantic-routing.policy.version>v1</semantic-routing.policy.version>
+        <intelligent-model-routing.policy.version>v1</intelligent-model-routing.policy.version>
     </properties>
 
 </project>

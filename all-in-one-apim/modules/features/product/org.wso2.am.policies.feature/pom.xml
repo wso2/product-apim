@@ -45,6 +45,18 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.semantic-routing</artifactId>
+            <version>${semantic-routing.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.intelligent-model-routing</artifactId>
+            <version>${intelligent-model-routing.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
             <artifactId>org.wso2.am.policies.mediation.ai.aws-bedrock-guardrail</artifactId>
             <version>${aws-bedrock-guardrail.version}</version>
             <type>jar</type>
@@ -145,6 +157,9 @@
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.url-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.word-count-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-cache</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-routing</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.model-guardrail</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.intelligent-model-routing</bundleDef>
                             </bundles>
                         </configuration>
                     </execution>
@@ -267,6 +282,30 @@
                                     <classifier>distribution</classifier>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.semantic-routing</artifactId>
+                                    <version>${semantic-routing.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.model-guardrail</artifactId>
+                                    <version>${model-guardrail.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.intelligent-model-routing</artifactId>
+                                    <version>${intelligent-model-routing.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem> 
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -333,6 +372,18 @@
                                 <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-cache-${semantic-cache.version}-distribution.zip" dest="${project.build.directory}/semantic-cache" />
                                 <move file="${project.build.directory}/semantic-cache/artifact.j2" tofile="${project.build.directory}/${semantic-cache.name}_${semantic-cache.policy.version}.j2" />
                                 <move file="${project.build.directory}/semantic-cache/policy-definition.json" tofile="${project.build.directory}/${semantic-cache.name}_${semantic-cache.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-routing-${semantic-routing.version}-distribution.zip" dest="${project.build.directory}/semantic-routing" />
+                                <move file="${project.build.directory}/semantic-routing/artifact.j2" tofile="${project.build.directory}/${semantic-routing.name}_${semantic-routing.policy.version}.j2" />
+                                <move file="${project.build.directory}/semantic-routing/policy-definition.json" tofile="${project.build.directory}/${semantic-routing.name}_${semantic-routing.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.model-guardrail-${model-guardrail.version}-distribution.zip" dest="${project.build.directory}/model-guardrail" />
+                                <move file="${project.build.directory}/model-guardrail/artifact.j2" tofile="${project.build.directory}/${model-guardrail.name}_${model-guardrail.policy.version}.j2" />
+                                <move file="${project.build.directory}/model-guardrail/policy-definition.json" tofile="${project.build.directory}/${model-guardrail.name}_${model-guardrail.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.intelligent-model-routing-${intelligent-model-routing.version}-distribution.zip" dest="${project.build.directory}/intelligent-model-routing" />
+                                <move file="${project.build.directory}/intelligent-model-routing/artifact.j2" tofile="${project.build.directory}/${intelligent-model-routing.name}_${intelligent-model-routing.policy.version}.j2" />
+                                <move file="${project.build.directory}/intelligent-model-routing/policy-definition.json" tofile="${project.build.directory}/${intelligent-model-routing.name}_${intelligent-model-routing.policy.version}.json" />
                             </target>
                         </configuration>
                         <goals><goal>run</goal></goals>
