@@ -23,12 +23,14 @@
 
         proxyPort="80"
         -->
+        {% if transport.http.enable %}
         <Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
         {% for property_name,property_value in transport.http.properties.items() %}
                    {{property_name}}="{{property_value}}"
                            {% endfor %}
         >
         </Connector>
+        {% endif %}
 
         <!--
         optional attributes:
