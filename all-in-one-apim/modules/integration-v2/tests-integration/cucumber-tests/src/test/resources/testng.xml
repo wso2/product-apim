@@ -11,7 +11,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemInitializationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.MigratedTenantUserInitilizationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPISearchRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateDeployPublishTestRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.ImportOASDefinitionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.APIRuntimeConfigurationsRunner"/>
@@ -28,6 +27,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedSharedScopesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIDefinitionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIUpdateRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPISearchRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIVersioningRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPILifecycleRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedOASAPIRunner"/>
