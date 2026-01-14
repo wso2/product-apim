@@ -22,6 +22,7 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
@@ -48,6 +49,16 @@ public class AdminBaseSteps {
     public void iUpdateTheApiProviderWithFor(String providerName, String apiID) throws IOException {
 
         String actualApiId = Utils.resolveFromContext(apiID).toString();
+
+        // Get current tenant and append tenant domain to provider name if not super tenant
+        Tenant currentTenant = Utils.getTenantFromContext(Constants.CURRENT_TENANT);
+        String tenantDomain = currentTenant.getDomain();
+
+        if (tenantDomain != null && !Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)) {
+            if (!providerName.contains("@")) {
+                providerName = providerName + "@" + tenantDomain;
+            }
+        }
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
