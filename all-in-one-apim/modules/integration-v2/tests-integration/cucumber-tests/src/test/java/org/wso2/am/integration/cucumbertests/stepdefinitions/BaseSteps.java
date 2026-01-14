@@ -307,9 +307,19 @@ public class BaseSteps {
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
         JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
         String resourceId = updateResponseJson.optString("id", null);
+        Tenant currentTenant = Utils.getTenantFromContext(Constants.CURRENT_TENANT);
+        String tenantDomain = currentTenant.getDomain();
 
         if ("endpointConfig".equals(config)){
             configValue = Utils.resolveFromContext(configValue).toString();
+        }
+
+        if ("provider".equals(config)) {
+            if (tenantDomain != null && !Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)) {
+                if (!configValue.contains("@")) {
+                    configValue = configValue + "@" + tenantDomain;
+                }
+            }
         }
 
         if (resourceId == null || resourceId.isEmpty()) {
