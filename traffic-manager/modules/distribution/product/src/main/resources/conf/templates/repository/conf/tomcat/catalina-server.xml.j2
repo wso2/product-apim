@@ -91,7 +91,9 @@
 		<!-- Authentication and Authorization valve for the rest apis and we can configure context for this in identity.xml  -->
                 <Valve className="org.wso2.carbon.identity.auth.valve.AuthenticationValve"/>
                 <Valve className="org.wso2.carbon.identity.authz.valve.AuthorizationValve"/>
+                {% if web_app.cookie_processor.same_site_cookies is not defined %}
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.SameSiteCookieValve"/>
+                {% endif %}
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.OrganizationContextRewriteValve"/>
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.TenantContextRewriteValve"/>
                 <!--Error pages -->

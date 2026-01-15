@@ -17,6 +17,10 @@
 -->
 <!-- The contents of this file will be loaded for each web application -->
 <Context useHttpOnly="true" useRelativeRedirects="false">
+    
+    {% if web_app.cookie_processor is defined %}
+    <CookieProcessor sameSiteCookies="{{web_app.cookie_processor.same_site_cookies}}"/>
+    {% endif %}
 
     <!-- Default set of monitored resources -->
 
