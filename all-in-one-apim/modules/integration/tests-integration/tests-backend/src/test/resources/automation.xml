@@ -36,7 +36,11 @@
         <!--
          Change this to true if you want to generate coverage statistics
         -->
-        <coverage>true</coverage>
+        <coverage>true<coverageEnable>true</coverageEnable>true<exclusionList>
+                <exclusion>**/demo/jaxrs/server/HelloNameService.class</exclusion>
+                
+                <exclusion>**/demo/jaxrs/server/*.class</exclusion>
+            </exclusionList>true</coverage>
         <coverageClassesRelativeDirectories>
             <coverageClassesRelativeDirectory>repository/deployment/server/webapps</coverageClassesRelativeDirectory>
             <coverageClassesRelativeDirectory>repository/components/plugins</coverageClassesRelativeDirectory>

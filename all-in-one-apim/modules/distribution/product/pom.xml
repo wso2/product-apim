@@ -455,7 +455,7 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
-                    <execution>
+                    <!--<execution>
                         <id>clean_target</id>
                         <phase>install</phase>
                         <configuration>
@@ -472,7 +472,7 @@
                         <goals>
                             <goal>run</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                     <execution>
                         <id>modify-scope-validators-product</id>
                         <phase>prepare-package</phase>
@@ -565,6 +565,30 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <!--<execution>
+                        <id>append-osgi-extra-packages</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <property name="config.ini.property" value="org.osgi.framework.system.packages.extra=javax.activation;version=&quot;1.1.1&quot;" />
+                                <property name="base.p2.path" value="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components" />
+                                
+                                <echo message="Appending extra OSGi packages to config.ini files..." />
+                                
+                                <concat destfile="${base.p2.path}/api-publisher-deprecated/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/api-key-manager-deprecated/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/api-devportal-deprecated/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/default/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/traffic-manager/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/control-plane/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/gateway-worker/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <echo message="${base.p2.path}/default/configuration/config.ini" />
+                            </tasks>
+                        </configuration>
+                    </execution>-->
                 </executions>
             </plugin>
 
@@ -810,87 +834,29 @@
                             </replacements>
                         </configuration>
                     </execution>
+                    <execution>
+            <id>append-osgi-extra-packages</id>
+            <phase>package</phase>
+            <goals>
+                <goal>replace</goal>
+            </goals>
+            <configuration>
+                <basedir>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components</basedir>
+                
+                <includes>
+                    <include>**/configuration/config.ini</include>
+                </includes>
+
+                <replacements>
+                    <replacement>
+                        <token>$</token>
+                        <value>${line.separator}org.osgi.framework.system.packages.extra=javax.activation;version="1.1.1"</value>
+                    </replacement>
+                </replacements>
+            </configuration>
+        </execution>
                 </executions>
             </plugin>
-
-            <!-- Add the scope validator to the identity.xml file -->
-            <plugin>
-                <groupId>com.google.code.maven-config-processor-plugin</groupId>
-                <artifactId>config-processor-maven-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
-                    <execution>
-                        <id>add-scope-validator</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <failOnMissingXpath>false</failOnMissingXpath>
-                            <transformations>
-                                <transformation>
-                                    <input>
-                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml
-                                    </input>
-                                    <output>
-                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml
-                                    </output>
-                                    <config>identity_config_change.xml</config>
-                                </transformation>
-                            </transformations>
-                            <namespaceContexts>
-                                <s>http://wso2.org/projects/carbon/carbon.xml</s>
-                            </namespaceContexts>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>init-claim-manager</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <failOnMissingXpath>false</failOnMissingXpath>
-                            <transformations>
-                                <transformation>
-                                    <input>
-                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
-                                    </input>
-                                    <output>
-                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
-                                    </output>
-                                    <config>user_mgt_config_change.xml</config>
-                                </transformation>
-                            </transformations>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>add-mime-types</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <failOnMissingXpath>false</failOnMissingXpath>
-                            <transformations>
-                                <transformation>
-                                    <input>
-                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
-                                    </input>
-                                    <output>
-                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
-                                    </output>
-                                    <config>tomcat_web_xml_change.xml</config>
-                                </transformation>
-                            </transformations>
-                            <namespaceContexts>
-                                <tom>http://java.sun.com/xml/ns/javaee</tom>
-                            </namespaceContexts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Skip deploying the product zip to nexus -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

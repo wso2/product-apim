@@ -44,6 +44,7 @@ import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
@@ -1023,7 +1024,15 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         //User self sign up process
         UserManagementUtils.signupUser(username, password, giveName, organization, email);
-        //APIStoreClient = new RestAPIStoreImpl(username, password, SUPER_TENANT_DOMAIN, store);
+        RestAPIStoreImpl signupUser = new RestAPIStoreImpl(username, password, "carbon.super", store);
+        // Check whether user can access application list page. only signup user can access it. Pending user cannot.
+        try {
+            ApplicationListDTO apps = signupUser.getAllApps();
+            assertFalse(true, "Signup user can access restricted pages");
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            assertTrue(true, "Signup user cannot access restricted pages");
+        }
+
         //get workflow pending requests by unauthorized user
         String workflowType = "AM_USER_SIGNUP";
         org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
@@ -1073,9 +1082,14 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(workflowStatus, WorkflowStatus.APPROVED.toString(),
                 "Workflow state should change by the authorized admin. ");
         //Login in to developer portal
-        HttpResponse loginResponse = apiStore.login(username, password);
-        assertEquals(loginResponse.getResponseCode(), 302,
-                "Failed to login to developer portal");
+        signupUser = new RestAPIStoreImpl(username, password, "carbon.super", store);
+        // Check whether user can access application list page. only signup user can access it. Pending user cannot.
+        try {
+            ApplicationListDTO apps = signupUser.getAllApps();
+            assertTrue(true, "Approved signup user can access restricted pages");
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            assertFalse(true, "Approved signup user cannot access restricted pages");
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "clean up workflow process check", dependsOnMethods =

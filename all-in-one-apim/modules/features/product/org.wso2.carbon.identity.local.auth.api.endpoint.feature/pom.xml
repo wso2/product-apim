@@ -104,7 +104,8 @@
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>carbon-p2-plugin</artifactId>
-                <version>1.5.3</version>
+                <version>${carbon.p2.plugin.version}</version>
+                <extensions>true</extensions>
                 <executions>
                     <execution>
                         <id>p2-feature-generation</id>
