@@ -218,7 +218,7 @@ Feature: Migrated Applications
   Scenario: Add Global policies
       When I retrieve available common policies
       Then The response status code should be 200
-      And I find the "id" with name "addHeader" as "existingPolicyId"
+      And I find the "id" with name "addHeader" and version "v2" as "existingPolicyId"
 
       When I put JSON payload from file "artifacts/payloads/policySpecFiles/custom_global_policy.json" in context as "globalPolicyPayload"
       And I create a new global policy as "globalPolicyId" with "globalPolicyPayload"
@@ -248,7 +248,7 @@ Feature: Migrated Applications
       |  RestAPIId      | restSubscriptionId    |/apiTestContext/1.0.0/customers/123/|
       |  migratedAPIId  | migratedSubscriptionId|/apiContext/1.0.0/customers/123/    |
 
- # Step 6: Remove global policies, undeploy to gateway
+ # Step 7: Remove global policies, undeploy to gateway
   Scenario: Remove global policy
     When I put the following JSON payload in context as "gatewayPolicyPayload"
       """
@@ -262,7 +262,7 @@ Feature: Migrated Applications
     And I engage the gateway policy mapping "globalPolicyId" to the gateways "gatewayPolicyPayload"
     Then The response status code should be 200
 
- # Step 7: Remove other created resources
+ # Step 8: Remove other created resources
   Scenario: Remove resources
     When I delete the "gateway-policies" resource with id "globalPolicyId"
     Then The response status code should be 200
