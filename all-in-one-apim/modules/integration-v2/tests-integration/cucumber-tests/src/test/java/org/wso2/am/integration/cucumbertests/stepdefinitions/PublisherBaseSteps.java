@@ -1202,6 +1202,41 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Searches for a resource ( policy etc.) by name and version
+     *
+     * @param key The field name to extract (typically "id")
+     * @param name The name of the resource to search for
+     * @param version The version of the resource to search for
+     * @param id Context key where the found ID will be stored
+     */
+    @When("I find the {string} with name {string} and version {string} as {string}")
+    public void iFindTheResourceWithNameAndVersionAs(String key, String name, String version, String id) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        JSONObject json = new JSONObject(response.getData());
+
+        JSONArray list = json.getJSONArray("list");
+        String foundId = null;
+
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject item = list.getJSONObject(i);
+            String itemName = item.optString("name", "");
+            String itemVersion = item.optString("version", "");
+
+            if (itemName.equalsIgnoreCase(name) && itemVersion.equalsIgnoreCase(version)) {
+                foundId = item.getString(key);
+                break;
+            }
+        }
+
+        if (foundId == null) {
+            throw new AssertionError("Resource with name '" + name + "' and version '" + version + "' not found");
+        }
+
+        TestContext.set(id, foundId);
+    }
+
+    /**
      * Creates a new common (shared) operation policy.
      * Common policies can be reused across multiple APIs.
      *
