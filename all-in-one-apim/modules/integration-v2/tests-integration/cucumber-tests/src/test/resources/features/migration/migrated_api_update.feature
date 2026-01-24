@@ -16,8 +16,28 @@ Feature: Migrated API Updates
       | ADPPhoneVerificationAPI  | 1.0.0        | SoapApiId     | ADPPhoneVerificationAPIPayload|
       | ADPIfElseAPI             | 1.0.0        | AsyncApiId    | ADPIfElseAPIPayload           |
 
+# Step 2: subscription tiers/plans(refer artifacts/payloads/MigratedAPIs for existing configs)
+  Scenario Outline: Update Subscription plans
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+      """
+      <configValue>
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "<apiID>"
+    And The "apis" resource should reflect the updated "<configType>" as:
+      """
+      <configValue>
+      """
 
-# Step 2: Update Runtime configurations(refer artifacts/payloads/MigratedAPIs for existing configs)
+    Examples:
+      | apiID            |  apiUpdatePayload                 | configType     | configValue                   |
+      | RestApiId        | ADPRestAPIPayload                 |policies        | ["Gold","Unlimited"]          |
+      | GraphQLApiId     | ADPGraphQLAPIPayload              |policies        | ["ADPBrass"]                  |
+      | SoapApiId        | ADPPhoneVerificationAPIPayload    |policies        | ["Gold", "ADPBrass"]          |
+      | AsyncApiId       | ADPIfElseAPIPayload               |policies        | ["AsyncSilver", "AsyncGold"]  |
+
+
+# Step 3: Update Runtime configurations(refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Runtime configurations
     When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
@@ -47,46 +67,7 @@ Feature: Migrated API Updates
    | AsyncApiId       | ADPIfElseAPIPayload               |apiThrottlingPolicy      | "Unlimited"          |
 
 
-# Step 3: Modify resources(refer artifacts/payloads/MigratedAPIs for existing configs)
-  Scenario Outline: Update Resources
-    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
-      """
-      <configValue>
-      """
-    Then The response status code should be 200
-    When I retrieve the "apis" resource with id "<apiID>"
-    And The response should contain "newlyAddedResource"
-
-    Examples:
-      | apiID            |  apiUpdatePayload                 | configType       | configValue                                             |
-      | RestApiId        | ADPRestAPIPayload                 |operations        | [{"verb": "POST", "target": "/newlyAddedResource"}]     |
-      | GraphQLApiId     | ADPGraphQLAPIPayload              |operations        | [{"verb": "QUERY", "target": "newlyAddedResource"}]     |
-      | SoapApiId        | ADPPhoneVerificationAPIPayload    |operations        | [{"verb": "POST", "target": "/newlyAddedResource"}]     |
-      | AsyncApiId       | ADPIfElseAPIPayload               |operations        | [{"verb": "SUBSCRIBE", "target": "/newlyAddedResource"}]|
-
-
-# Step 4: subscription tiers/plans(refer artifacts/payloads/MigratedAPIs for existing configs)
-  Scenario Outline: Update Subscription plans
-    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
-      """
-      <configValue>
-      """
-    Then The response status code should be 200
-    When I retrieve the "apis" resource with id "<apiID>"
-    And The "apis" resource should reflect the updated "<configType>" as:
-      """
-      <configValue>
-      """
-
-    Examples:
-      | apiID            |  apiUpdatePayload                 | configType     | configValue                   |
-      | RestApiId        | ADPRestAPIPayload                 |policies        | ["Gold","Unlimited"]          |
-      | GraphQLApiId     | ADPGraphQLAPIPayload              |policies        | ["ADPBrass"]                  |
-      | SoapApiId        | ADPPhoneVerificationAPIPayload    |policies        | ["Gold", "ADPBrass"]          |
-      | AsyncApiId       | ADPIfElseAPIPayload               |policies        | ["AsyncSilver", "AsyncGold"]  |
-
-
-# Step 5: Modify operations by updating existing scopes to resource(refer artifacts/payloads/MigratedAPIs for existing configs)
+# Step 4: Modify operations by updating existing scopes to resource(refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Scopes
     When I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
@@ -101,14 +82,14 @@ Feature: Migrated API Updates
       <configValue>
       """
 
-# Modify APIs with existing scopes
+# Modify Rest APIs with existing scopes
     Examples:
       | apiID            |  apiUpdatePayload                 | configType       | configValue                                                                                           |
-      | RestApiId        | ADPRestAPIPayload                 |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-shared-scope-without-roles"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
-      | GraphQLApiId     | ADPGraphQLAPIPayload              |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-admin"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
+      | RestApiId        | ADPRestAPIPayload                 |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-local-scope-without-roles"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
+      | GraphQLApiId     | ADPGraphQLAPIPayload              |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-admin","adp-film-subscriber"],"amznResourceTimeout":null,"authType":"Application & Application User"}]    |
 
 
-## Step 6: Custom properties (refer artifacts/payloads/MigratedAPIs for existing configs)
+# Step 5: Custom properties (refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Custom Properties
     When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
@@ -128,7 +109,7 @@ Feature: Migrated API Updates
       | SoapApiId        | ADPPhoneVerificationAPIPayload    |additionalProperties     | [{"name": "newProperty", "value": "newValue", "display": true}]|
       | AsyncApiId       | ADPIfElseAPIPayload               |additionalProperties     | [{"name": "newProperty", "value": "newValue", "display": true}]|
 
-# Step 7: Endpoint modifications(includes updates to endpoint url, configurations, and security)
+# Step 6: Endpoint modifications(includes updates to endpoint url, configurations, and security)
 # Note: artifacts/payloads/update_api_endpoint.json carries update for endpoint : urls, advanced configurations and security
 
   Scenario Outline: Update Endpoint configurations
