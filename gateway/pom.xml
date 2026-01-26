@@ -1510,6 +1510,7 @@
         <url-guardrail.version>1.0.0</url-guardrail.version>
         <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
         <semantic-cache.version>1.0.0</semantic-cache.version>
+        <content-based-model-router.version>0.0.9-SNAPSHOT</content-based-model-router.version>
     </properties>
 
 </project>

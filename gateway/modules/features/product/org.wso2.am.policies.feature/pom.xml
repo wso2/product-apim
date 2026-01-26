@@ -109,6 +109,12 @@
             <version>${semantic-cache.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.content-based-model-router</artifactId>
+            <version>${content-based-model-router.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -146,6 +152,7 @@
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.url-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.word-count-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-cache</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.content-based-model-router</bundleDef>
                             </bundles>
                         </configuration>
                     </execution>
