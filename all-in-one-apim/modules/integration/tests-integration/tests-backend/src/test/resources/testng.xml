@@ -103,10 +103,10 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
-<!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>-->
+            <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.UpdateAPINullPointerTestCase"/>
-<!--            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>-->
+            <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>-->
         </classes>
     </test>
 
@@ -359,6 +359,7 @@
     <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
         <classes>
+            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPITestSuite"/>
             <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.ThrottlingTestCase"/>
@@ -392,9 +393,9 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingConfig"/>
-<!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />-->
+            <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />-->
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingTestCase"/>
-<!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityMutualSSLCertificateChainValidationTestCase" />-->
+            <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityMutualSSLCertificateChainValidationTestCase" />-->
         </classes>
     </test>
 
@@ -467,12 +468,12 @@
         </classes>
     </test>
 
-<!--    <test name="apim-solace-broker-tests" preserve-order="true" parallel="false" group-by-instances="true">-->
-<!--        <parameter name="group" value="group2"/>-->
-<!--        <classes>-->
-<!--            <class name="org.wso2.am.integration.tests.solace.SolaceTestCase"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <!--    <test name="apim-solace-broker-tests" preserve-order="true" parallel="false" group-by-instances="true">-->
+    <!--        <parameter name="group" value="group2"/>-->
+    <!--        <classes>-->
+    <!--            <class name="org.wso2.am.integration.tests.solace.SolaceTestCase"/>-->
+    <!--        </classes>-->
+    <!--    </test>-->
 
 
     <test name="apim-revoke-one-time-token-flow-tests" preserve-order="true" parallel="false" group-by-instances="true">
@@ -495,7 +496,9 @@
     </test>
     <test name="apim-tenant-validation" preserve-order="true" parallel="false">
         <classes>
+            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPIValidationTestSuite"/>
             <class name="org.wso2.am.integration.tests.other.TenantDomainValidationTestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPITestWithValidationCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-apim-is-tenant-sync" preserve-order="true" parallel="false"
