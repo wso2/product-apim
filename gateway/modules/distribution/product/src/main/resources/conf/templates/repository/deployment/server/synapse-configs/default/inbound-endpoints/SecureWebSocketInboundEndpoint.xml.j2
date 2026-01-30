@@ -5,7 +5,7 @@
                  sequence="{{apim.wss.dispatch.sequence}}"
                  onError="{{apim.wss.dispatch.on_error.sequence}}"
                  protocol="wss"
-                 suspend="false">
+                 suspend="{{!apim.wss.enable}}">
     <parameters>
         <parameter name="inbound.ws.port">{{apim.wss.port}}</parameter>
         <parameter name="ws.outflow.dispatch.sequence">{{apim.wss.out_dispatch_seq}}</parameter>
@@ -29,6 +29,9 @@
         {% endif %}
         {%if apim.wss.pass_through_control_frames is defined %}
         <parameter name="ws.pass.through.control.frames">{{apim.wss.pass_through_control_frames}}</parameter>
+        {%endif%}
+        {%if apim.wss.subprotocol_handler is defined %}
+        <parameter name="ws.subprotocol.handler.class">{{apim.wss.subprotocol_handler}}</parameter>
         {%endif%}
     </parameters>
 </inboundEndpoint>

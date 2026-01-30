@@ -25,7 +25,7 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;

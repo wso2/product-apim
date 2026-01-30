@@ -1286,10 +1286,10 @@
         <carbon.analytics.common.version>5.3.27</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.81</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.111</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.32.113</carbon.apimgt.version>
+        <carbon.apimgt.version>9.32.153</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1302,7 +1302,7 @@
         <carbon.governance.version>4.8.37</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.9.30</carbon.kernel.version>
+        <carbon.kernel.version>4.9.33</carbon.kernel.version>
 
         <cipher.tool.version>1.1.28</cipher.tool.version>
 
@@ -1310,19 +1310,19 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.262</carbon.mediation.version>
+        <carbon.mediation.version>4.7.263</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.734</carbon.identity.version>
+        <carbon.identity.version>5.25.737</carbon.identity.version>
         <carbon.identity.governance.version>1.8.111</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.35</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.40</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.41</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.7.7</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.9.14</carbon.identity-inbound-auth-openid.version>
         <org.wso2.carbon.identity.local.auth.api.version>2.5.15</org.wso2.carbon.identity.local.auth.api.version>
-        <carbon.identity-local-auth-basicauth.version>6.7.33</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-local-auth-basicauth.version>6.7.34</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.8.13</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.7.71</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.6.8</carbon.identity-data-publisher-application-authentication.version>
@@ -1353,9 +1353,9 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.0.0-wso2v256</synapse.version>
+        <synapse.version>4.0.0-wso2v262</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v105</axis2.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v111</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v29</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
@@ -1472,15 +1472,15 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.7.16</wso2is.km.version>
-        <wso2is7.km.version>2.0.8</wso2is7.km.version>
-        <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
-        <azure.keymanager.feature.version>1.0.15</azure.keymanager.feature.version>
-        <keycloak.keymanager.feature.version>2.1.1</keycloak.keymanager.feature.version>
-        <auth0.keymanager.feature.version>1.0.7</auth0.keymanager.feature.version>
-        <pingfederate.keymanager.feature.version>1.0.7</pingfederate.keymanager.feature.version>
+        <wso2is.km.version>1.7.17</wso2is.km.version>
+        <wso2is7.km.version>2.0.9</wso2is7.km.version>
+        <okta.keymanager.feature.version>3.2.2</okta.keymanager.feature.version>
+        <azure.keymanager.feature.version>1.0.16</azure.keymanager.feature.version>
+        <keycloak.keymanager.feature.version>2.1.2</keycloak.keymanager.feature.version>
+        <auth0.keymanager.feature.version>1.0.8</auth0.keymanager.feature.version>
+        <pingfederate.keymanager.feature.version>1.0.8</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.1.8</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.2.32</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.2.33</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
         <charon3.version>4.0.23</charon3.version>
@@ -1501,10 +1501,10 @@
         <identity.branding.preference.management.version>1.0.17</identity.branding.preference.management.version>
 
         <!-- External Gateway Agent Versions -->
-        <aws.gwmanager.feature.version>1.4.0</aws.gwmanager.feature.version>
-        <azure.gwmanager.feature.version>0.6.0</azure.gwmanager.feature.version>
-        <kong.gwmanager.feature.version>0.5.0</kong.gwmanager.feature.version>
-        <envoy.gwmanager.feature.version>0.2.0</envoy.gwmanager.feature.version>
+        <aws.gwmanager.feature.version>1.4.1</aws.gwmanager.feature.version>
+        <azure.gwmanager.feature.version>1.0.0</azure.gwmanager.feature.version>
+        <kong.gwmanager.feature.version>1.0.0</kong.gwmanager.feature.version>
+        <envoy.gwmanager.feature.version>1.0.0</envoy.gwmanager.feature.version>
 
         <!-- AM Policy Bundle Versions -->
         <regex-guardrail.version>1.0.0</regex-guardrail.version>

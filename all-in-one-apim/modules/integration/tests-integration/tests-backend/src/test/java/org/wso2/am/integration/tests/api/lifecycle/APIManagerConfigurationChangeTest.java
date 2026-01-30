@@ -26,6 +26,7 @@ import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.carbon.automation.engine.context.AutomationContext;

@@ -40,6 +40,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -51,7 +52,6 @@ import org.wso2.carbon.logging.view.data.xsd.LogEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.text.ParseException;
@@ -311,7 +311,8 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         Assert.assertEquals(apiResponse.getResponseCode(), 500);
     }
 
-    @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {"testInvokeAPI"})
+    @Test(groups = { "wso2.am" }, description = "test Upload Endpoint Certificate", dependsOnMethods = {
+            "testInvokeAPIAfterRemovingCertificate" })
     public void testDeleteNotAvailableCert() {
 
         try {

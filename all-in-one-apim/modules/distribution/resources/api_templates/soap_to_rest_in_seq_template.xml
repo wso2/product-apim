@@ -17,7 +17,7 @@ $mapping.get('properties')
       var response = "";
       for (i = 0; i &lt; results.length; i++) {
         var elem = results[i];
-        response += "&lt;web:${element.paramName} xmlns:web='${namespace}'&gt;" + elem + "&lt;/web:string&gt;";
+        response += "&lt;web:${element.paramName} xmlns:web='${namespace}'&gt;" + elem + "&lt;/web:${element.paramName}&gt;";
       }
       var propertyName = "req.var.${element.propertyName}";
       mc.setProperty(propertyName, response.toString());

@@ -38,7 +38,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.internal.api.dto.RevokedEventsDTO;
 import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTDTO;
-import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTListDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -50,6 +49,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;

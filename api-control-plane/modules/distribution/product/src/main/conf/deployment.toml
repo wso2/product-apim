@@ -49,21 +49,21 @@ key_password =  "wso2carbon"
 [apim]
 gateway_type = "Regular,APK,AWS,Azure,Kong,Envoy"
 
-#[[apim.gateway.environment]]
-#name = "Default"
-#type = "hybrid"
-#gateway_type = "Regular"
-#provider = "wso2"
-#display_in_api_console = true
-#description = "This is a hybrid gateway that handles both production and sandbox token traffic."
-#show_as_token_endpoint_url = true
-#service_url = "https://localhost:${mgt.transport.https.port}/services/"
-#username= "${admin.username}"
-#password= "${admin.password}"
-#ws_endpoint = "ws://localhost:9099"
-#wss_endpoint = "wss://localhost:8099"
-#http_endpoint = "http://localhost:${http.nio.port}"
-#https_endpoint = "https://localhost:${https.nio.port}"
+[[apim.gateway.environment]]
+name = "Default"
+type = "hybrid"
+gateway_type = "Regular"
+provider = "wso2"
+display_in_api_console = true
+description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:9443/services/"
+username= "${admin.username}"
+password= "${admin.password}"
+ws_endpoint = "ws://localhost:9099"
+wss_endpoint = "wss://localhost:8099"
+http_endpoint = "http://localhost:8280"
+https_endpoint = "https://localhost:8243"
 
 #[apim.cache.gateway_token]
 #enable = true

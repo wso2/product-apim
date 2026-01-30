@@ -101,7 +101,7 @@
   "transport.passthru_https.listener.parameters.non-blocking": true,
   "transport.passthru_https.listener.parameters.httpGetProcessor": "org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor",
   "transport.passthru_https.listener.parameters.SSLVerifyClient": "optional",
-  "transport.passthru_https.listener.parameters.HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2",
+  "transport.passthru_https.listener.parameters.HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3",
   "transport.passthru_https.listener.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.listener.key_store.type": "$ref{keystore.tls.type}",
   "transport.passthru_https.listener.key_store.password": "$ref{keystore.tls.password}",
@@ -121,7 +121,7 @@
   "transport.passthru_https.sender.enable": true,
   "transport.passthru_https.sender.parameters.non-blocking": true,
   "transport.passthru_https.sender.parameters.HostnameVerifier": "DefaultAndLocalhost",
-  "transport.passthru_https.sender.parameters.HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2",
+  "transport.passthru_https.sender.parameters.HttpsProtocols": "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3",
   "transport.passthru_https.sender.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
   "transport.passthru_https.sender.key_store.type": "$ref{keystore.tls.type}",
   "transport.passthru_https.sender.key_store.password": "$ref{keystore.tls.password}",
@@ -192,6 +192,7 @@
   "n_http.rest_uri_api_regex": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "n_http.rest_uri_proxy_regex": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
   "n_http.'http.socket.reuseaddr'": "true",
+  "transport.http.enable": true,
   "transport.receiver.max_event_buffer_capacity": "10",
   "transport.receiver.type": "binary",
   "transport.thrift.receiver.enable": false,
@@ -249,7 +250,6 @@
   "apim.wss.dispatch.on_error.sequence" : "fault",
   "apim.wss.out_dispatch_seq" : "outDispatchSeq",
   "apim.wss.handler.class" : "org.wso2.carbon.apimgt.gateway.handlers.WebsocketHandler",
-  "apim.wss.subprotocol.handler.class" : "org.wso2.carbon.inbound.endpoint.protocol.websocket.subprotocols.EchoSubprotocolHandler",
   "apim.wss.dispatch.custom.sequence" : true,
   "apim.wss.outflow.dispatch.fault.sequence" : "fault",
   "apim.wss.client.side.broadcast.level" : "0",
@@ -374,52 +374,59 @@
   ],
   "resource.access_control": [
     {
-      "context" : "(.*)/keymanager-operations/user-info/claims(.*)",
-      "secure" : true,
-      "http_method" : "GET",
-      "permissions" : "/permission/admin/manage/identity/usermgt/list",
-      "scopes" : "internal_user_mgt_list"
+      "context": "(.*)/keymanager-operations/user-info/claims(.*)",
+      "secure": true,
+      "http_method": "GET",
+      "permissions": "/permission/admin/manage/identity/usermgt/list",
+      "scopes": "internal_user_mgt_list"
     },
     {
-      "context" : "(.*)/keymanager-operations/user-info/claims/generate",
-      "secure" : true,
-      "http_method" : "POST",
-      "permissions" : "/permission/admin/manage/identity/usermgt/list",
-      "scopes" : "internal_user_mgt_list"
+      "context": "(.*)/keymanager-operations/user-info/claims/generate(.*)",
+      "secure": true,
+      "http_method": "POST",
+      "permissions": "/permission/admin/manage/identity/usermgt/list",
+      "scopes": "internal_user_mgt_list"
     },
     {
-      "context" : "(.*)/keymanager-operations/dcr/register",
-      "secure" : true,
-      "http_method" : "POST",
-      "permissions" : "/permission/admin/manage/identity/applicationmgt/create",
-      "scopes" : "internal_application_mgt_create"
+      "context": "(.*)/keymanager-operations/dcr/register",
+      "secure": true,
+      "http_method": "POST",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/create",
+      "scopes": "internal_application_mgt_create"
     },
     {
-      "context" : "(.*)/keymanager-operations/dcr/register(.*)",
-      "secure" : true,
-      "http_method" : "GET",
-      "permissions" : "/permission/admin/manage/identity/applicationmgt/view",
-      "scopes" : "internal_application_mgt_view"
+      "context": "(.*)/keymanager-operations/dcr/register(.*)",
+      "secure": true,
+      "http_method": "GET",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/view",
+      "scopes": "internal_application_mgt_view"
     },
     {
-      "context" : "(.*)/keymanager-operations/dcr/register(.*)",
-      "secure" : true,
-      "http_method" : "PUT",
-      "permissions" : "/permission/admin/manage/identity/applicationmgt/update",
-      "scopes" : "internal_application_mgt_update"
+      "context": "(.*)/keymanager-operations/dcr/register(.*)",
+      "secure": true,
+      "http_method": "PUT",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/update",
+      "scopes": "internal_application_mgt_update"
     },
     {
-      "context" : "(.*)/keymanager-operations/dcr/register(.*)",
-      "secure" : true,
-      "http_method" : "DELETE",
-      "permissions" : "/permission/admin/manage/identity/applicationmgt/delete",
-      "scopes" : "internal_application_mgt_delete"
+      "context": "(.*)/keymanager-operations/dcr/register(.*)",
+      "secure": true,
+      "http_method": "POST",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/update",
+      "scopes": "internal_application_mgt_update"
     },
     {
-      "context" : "(.*)/keymanager-operations/revoke-one-time-token",
-      "secure" : true,
-      "http_method" : "POST",
-      "permissions" : "/permission/admin"
+      "context": "(.*)/keymanager-operations/dcr/register(.*)",
+      "secure": true,
+      "http_method": "DELETE",
+      "permissions": "/permission/admin/manage/identity/applicationmgt/delete",
+      "scopes": "iinternal_application_mgt_delete"
+    },
+    {
+      "context": "(.*)/keymanager-operations/revoke-one-time-token(.*)",
+      "secure": true,
+      "http_method": "POST",
+      "permissions": "/permission/admin"
     }
   ],
   "qpid.nio": false,
@@ -584,6 +591,7 @@
     "TemplateAdminService",
     "ThemeMgtService",
     "TierCacheService",
-    "WebappAdmin"
+    "WebappAdmin",
+    "NDataSourceAdmin"
   ]
 }

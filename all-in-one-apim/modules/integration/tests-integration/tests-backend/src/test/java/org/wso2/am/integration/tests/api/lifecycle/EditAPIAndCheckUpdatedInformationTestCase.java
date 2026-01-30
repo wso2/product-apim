@@ -27,6 +27,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;

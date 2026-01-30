@@ -36,7 +36,7 @@ import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;

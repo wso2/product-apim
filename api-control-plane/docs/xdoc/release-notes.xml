@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Control Plane v4.6.0-Beta - 2nd October 2025</title>
+    <title>WSO2 API Control Plane v4.6.0 - 4th November 2025</title>
 </head>
 <body>
 <div id="main-content">
-<h1>WSO2 API Control Plane 4.6.0-Beta Released!</h1>
+<h1>WSO2 API Control Plane 4.6.0 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 4.6.0-Beta of
+    The WSO2 API Manager team is pleased to announce the release of version 4.6.0 of
     the Open Source API Control Plane.
 </p>
 
@@ -77,9 +77,9 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-    <h2>Bug Fixes And Improvements in 4.6.0-Beta</h2>
+    <h2>Bug Fixes And Improvements in 4.6.0</h2>
     <ul>
-        <li>GitHub (<a href="https://github.com/wso2/api-manager/milestone/29">api-manager</a>)
+        <li>GitHub (<a href="https://github.com/wso2/api-manager/issues?q=is%3Aissue%20is%3Aclosed%20label%3AComponent%2FAPIM%20closed%3A2025-03-06..2025-10-26%20-label%3AResolution%2FInvalid%20-label%3AResolution%2FDuplicate%20-label%3A%22Resolution%2FNot%20a%20bug%22%20-label%3A%22Resolution%2FCannot%20Reproduce%22%20-label%3A%22Resolution%2FWon%E2%80%99t%20Fix%22">api-manager</a>)
         </li>
     </ul>
 

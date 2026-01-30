@@ -23,12 +23,14 @@
 
         proxyPort="80"
         -->
+        {% if transport.http.enable %}
         <Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
         {% for property_name,property_value in transport.http.properties.items() %}
                    {{property_name}}="{{property_value}}"
                            {% endfor %}
         >
         </Connector>
+        {% endif %}
 
         <!--
         optional attributes:
@@ -75,7 +77,8 @@
                 />
                 {% endif %}
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.RequestCorrelationIdValve"
-                       headerToCorrelationIdMapping="{'activityid':'Correlation-ID'}" queryToCorrelationIdMapping="{'RelayState':'Correlation-ID'}"/>
+                       headerToCorrelationIdMapping="{'activityid':'Correlation-ID'}" queryToCorrelationIdMapping="{'RelayState':'Correlation-ID'}"
+                       responseCorrelationIdHeader="{{catalina_valves.request_correlation_id_valve.response_correlation_id_header | default('X-WSO2-TraceId')}}"/>
                 <Valve className="org.wso2.carbon.identity.organization.management.tomcat.ext.tenant.resolver.CarbonContextCreatorValve"/>
                 {% if http_access_log.useLogger is sameas true %}
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.ConfigurableLoggerAccessLogValve"
@@ -91,7 +94,9 @@
 		<!-- Authentication and Authorization valve for the rest apis and we can configure context for this in identity.xml  -->
                 <Valve className="org.wso2.carbon.identity.auth.valve.AuthenticationValve"/>
                 <Valve className="org.wso2.carbon.identity.authz.valve.AuthorizationValve"/>
+                {% if web_app.cookie_processor.same_site_cookies is not defined %}
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.SameSiteCookieValve"/>
+                {% endif %}
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.OrganizationContextRewriteValve"/>
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.TenantContextRewriteValve"/>
                 <!--Error pages -->

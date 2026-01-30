@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;

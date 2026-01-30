@@ -34,7 +34,7 @@ import org.wso2.am.integration.clients.admin.api.dto.BlockingConditionStatusDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
