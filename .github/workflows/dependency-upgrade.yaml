@@ -1,0 +1,339 @@
+name: Dependency Upgrade
+
+on:
+  # schedule:
+  #   - cron: "0 1 * * 0"
+  workflow_dispatch:
+    inputs:
+      apimgtVersion:
+        description: "Override carbon-apimgt version (leave empty for latest)"
+        required: false
+        default: ""
+      kernelVersion:
+        description: "Override carbon-kernel version (leave empty for latest)"
+        required: false
+        default: ""
+      apimAppsVersion:
+        description: "Override apim-apps version (leave empty for latest)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependency-upgrade-builds
+  cancel-in-progress: true
+
+jobs:
+  upgrade-carbon-apimgt-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout product-apim
+        uses: actions/checkout@v4
+
+      - name: Resolve carbon-apimgt version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OVERRIDE: ${{ inputs.apimgtVersion }}
+        run: |
+          set -euo pipefail
+          OWNER="wso2"
+          REPO="carbon-apimgt"
+
+          if [[ -n "$OVERRIDE" ]]; then
+            TAG="$OVERRIDE"
+            echo "Override apimgt tag: $TAG"
+          else
+            TAG=$(gh api "repos/$OWNER/$REPO/tags?per_page=1" -q '.[0].name')
+          fi
+
+          VERSION="${TAG#v}"
+
+          echo "APIMGT_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "APIMGT_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Decide whether carbon-apimgt upgrade is needed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CANONICAL_POM="api-control-plane/pom.xml"
+          CURRENT=$(mvn -q -f "$CANONICAL_POM" help:evaluate \
+            -Dexpression=carbon.apimgt.version -DforceStdout)
+          TARGET="$APIMGT_VERSION"
+
+          echo "Current carbon.apimgt.version: $CURRENT"
+          echo "Target  carbon.apimgt.version: $TARGET"
+
+          if [[ "$CURRENT" == "$TARGET" ]]; then
+            echo "Already at target. Skipping."
+            exit 0
+          fi
+
+          HIGHEST=$(printf "%s\n%s\n" "$CURRENT" "$TARGET" | sort -V | tail -n1)
+          if [[ "$HIGHEST" != "$TARGET" ]]; then
+            echo "Target is not higher than current. Skipping."
+            exit 0
+          fi
+
+          echo "UPGRADE_APIMGT=true" >> "$GITHUB_ENV"
+
+      - name: Update apimgt version in all poms
+        if: env.UPGRADE_APIMGT == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$APIMGT_VERSION"
+
+          FILES=(
+            "api-control-plane/pom.xml"
+            "gateway/pom.xml"
+            "traffic-manager/pom.xml"
+            "all-in-one-apim/pom.xml"
+          )
+
+          for f in "${FILES[@]}"; do
+            sed -i "s#<carbon\.apimgt\.version>[^<]*</carbon\.apimgt\.version>#<carbon.apimgt.version>${VERSION}</carbon.apimgt.version>#g" "$f"
+          done
+
+          if git diff --quiet -- "${FILES[@]}"; then
+            echo "No APIMGT upgrade needed"
+            exit 0
+          fi
+
+      - name: Create/update PR (carbon-apimgt)
+        if: env.UPGRADE_APIMGT == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/upgrade-carbon-apimgt
+          title: "Upgrade carbon-apimgt to ${{ env.APIMGT_VERSION }}"
+          commit-message: "Upgrade carbon-apimgt to ${{ env.APIMGT_VERSION }}"
+          body: |
+            Automated carbon-apimgt upgrade.
+            Version: `${{ env.APIMGT_VERSION }}`
+          labels: dependency-upgrade
+
+  upgrade-carbon-kernel-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout product-apim
+        uses: actions/checkout@v4
+
+      - name: Resolve carbon-kernel version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OVERRIDE: ${{ inputs.kernelVersion }}
+        run: |
+          set -euo pipefail
+          OWNER="wso2"
+          REPO="carbon-kernel"
+
+          is49() { [[ "$1" =~ ^4\.9\.[0-9]+.*$ ]]; }
+
+          if [[ -n "$OVERRIDE" ]]; then
+            VERSION="${OVERRIDE#v}"
+            if ! is49 "$VERSION"; then
+              echo "Override tag must be 4.9.x"
+              exit 1
+            fi
+            TAG="$OVERRIDE"
+          else
+            VERSION=$(gh api "repos/$OWNER/$REPO/tags?per_page=100" \
+              -q '[.[].name] | map(sub("^v";"")) | map(select(startswith("4.9."))) | .[0]')
+            TAG="v$VERSION"
+          fi
+
+          echo "KERNEL_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "KERNEL_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Decide whether carbon-kernel upgrade is needed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CANONICAL_POM="api-control-plane/pom.xml"
+          CURRENT=$(mvn -q -f "$CANONICAL_POM" help:evaluate \
+            -Dexpression=carbon.kernel.version -DforceStdout)
+          TARGET="$KERNEL_VERSION"
+
+          echo "Current carbon.kernel.version: $CURRENT"
+          echo "Target  carbon.kernel.version: $TARGET"
+
+          [[ "$CURRENT" =~ ^4\.9\.[0-9]+ ]] || { echo "Current is not 4.9.x; skipping."; exit 0; }
+          [[ "$TARGET"  =~ ^4\.9\.[0-9]+ ]] || { echo "Target is not 4.9.x; skipping."; exit 0; }
+
+          if [[ "$CURRENT" == "$TARGET" ]]; then
+            echo "Already at target. Skipping."
+            exit 0
+          fi
+
+          HIGHEST=$(printf "%s\n%s\n" "$CURRENT" "$TARGET" | sort -V | tail -n1)
+          if [[ "$HIGHEST" != "$TARGET" ]]; then
+            echo "Target is not higher than current. Skipping."
+            exit 0
+          fi
+
+          echo "UPGRADE_KERNEL=true" >> "$GITHUB_ENV"
+
+      - name: Update kernel version in poms + carbon.product + filter.properties
+        if: env.UPGRADE_KERNEL == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$KERNEL_VERSION"
+
+          POMS=(
+            "api-control-plane/pom.xml"
+            "gateway/pom.xml"
+            "traffic-manager/pom.xml"
+            "all-in-one-apim/pom.xml"
+          )
+
+          PRODUCTS=(
+            "api-control-plane/modules/p2-profile/product/carbon.product"
+            "gateway/modules/p2-profile/product/carbon.product"
+            "traffic-manager/modules/p2-profile/product/carbon.product"
+            "all-in-one-apim/modules/p2-profile/product/carbon.product"
+          )
+
+          FILTERS=(
+            "api-control-plane/modules/distribution/product/src/main/assembly/filter.properties"
+            "gateway/modules/distribution/product/src/main/assembly/filter.properties"
+            "traffic-manager/modules/distribution/product/src/main/assembly/filter.properties"
+            "all-in-one-apim/modules/distribution/product/src/main/assembly/filter.properties"
+          )
+
+          # 1) Update POM property
+          for f in "${POMS[@]}"; do
+            sed -i "s#<carbon\.kernel\.version>[^<]*</carbon\.kernel\.version>#<carbon.kernel.version>${VERSION}</carbon.kernel.version>#g" "$f"
+          done
+
+          # 2) Update carbon.product (product + feature versions)
+          for f in "${PRODUCTS[@]}"; do
+            if [[ ! -f "$f" ]]; then
+              echo "Missing file: $f"
+              exit 1
+            fi
+            sed -i -E "s/(<product[^>]*\bversion=\")([^\"]+)(\")/\1${VERSION}\3/g" "$f"
+            sed -i -E "s/(<feature[^>]*\bversion=\")([^\"]+)(\")/\1${VERSION}\3/g" "$f"
+          done
+
+          # 3) Update filter.properties: replace 4.9.<digits> tokens only
+          for f in "${FILTERS[@]}"; do
+            if [[ ! -f "$f" ]]; then
+              echo "Missing file: $f"
+              exit 1
+            fi
+            sed -i -E "s/^(carbon\.version=).*/\1${VERSION}/" "$f"
+          done
+
+          # If nothing changed, stop
+          if git diff --quiet -- "${POMS[@]}" "${PRODUCTS[@]}" "${FILTERS[@]}"; then
+            echo "No KERNEL upgrade needed"
+            exit 0
+          fi
+
+      - name: Create/update PR (carbon-kernel)
+        if: env.UPGRADE_KERNEL == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/upgrade-carbon-kernel
+          title: "Upgrade carbon-kernel to ${{ env.KERNEL_VERSION }}"
+          commit-message: "Upgrade carbon-kernel to ${{ env.KERNEL_VERSION }}"
+          body: |
+            Automated carbon-kernel upgrade.
+            Version: `${{ env.KERNEL_VERSION }}`
+          labels: dependency-upgrade
+  
+  upgrade-apim-apps-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout product-apim
+        uses: actions/checkout@v4
+
+      - name: Resolve apim-apps version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OVERRIDE: ${{ inputs.apimAppsVersion }}
+        run: |
+          set -euo pipefail
+          OWNER="wso2"
+          REPO="apim-apps"
+
+          if [[ -n "$OVERRIDE" ]]; then
+            TAG="$OVERRIDE"
+            echo "Override apim-apps tag: $TAG"
+          else
+            TAG=$(gh api "repos/$OWNER/$REPO/tags?per_page=1" -q '.[0].name')
+          fi
+
+          VERSION="${TAG#v}"
+          echo "APIM_APPS_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "APIM_APPS_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Decide whether apim-apps upgrade is needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANONICAL_POM="api-control-plane/pom.xml"
+          CURRENT=$(mvn -q -f "$CANONICAL_POM" help:evaluate \
+            -Dexpression=carbon.apimgt.ui.version -DforceStdout)
+          TARGET="$APIM_APPS_VERSION"
+
+          echo "Current carbon.apimgt.ui.version: $CURRENT"
+          echo "Target  carbon.apimgt.ui.version: $TARGET"
+
+          if [[ "$CURRENT" == "$TARGET" ]]; then
+            echo "Already at target. Skipping."
+            exit 0
+          fi
+
+          HIGHEST=$(printf "%s\n%s\n" "$CURRENT" "$TARGET" | sort -V | tail -n1)
+          if [[ "$HIGHEST" != "$TARGET" ]]; then
+            echo "Target is not higher than current. Skipping."
+            exit 0
+          fi
+
+          echo "UPGRADE_APIM_APPS=true" >> "$GITHUB_ENV"
+
+      - name: Update apim-apps UI version in pom.xml files
+        if: env.UPGRADE_APIM_APPS == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$APIM_APPS_VERSION"
+
+          POMS=(
+            "api-control-plane/pom.xml"
+            "gateway/pom.xml"
+            "traffic-manager/pom.xml"
+            "all-in-one-apim/pom.xml"
+          )
+
+          for f in "${POMS[@]}"; do
+            sed -i \
+              "s#<carbon\.apimgt\.ui\.version>[^<]*</carbon\.apimgt\.ui\.version>#<carbon.apimgt.ui.version>${VERSION}</carbon.apimgt.ui.version>#g" \
+              "$f"
+          done
+
+          if git diff --quiet -- "${POMS[@]}"; then
+            echo "No apim-apps upgrade needed"
+            exit 0
+          fi
+
+      - name: Create/update PR (apim-apps)
+        if: env.UPGRADE_APIM_APPS == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/upgrade-apim-apps
+          title: "Upgrade apim-apps to ${{ env.APIM_APPS_VERSION }}"
+          commit-message: "Upgrade apim-apps to ${{ env.APIM_APPS_VERSION }}"
+          body: |
+            Automated apim-apps upgrade.
+            Version: `${{ env.APIM_APPS_VERSION }}`
+          labels: dependency-upgrade
