@@ -1235,7 +1235,7 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.orbit.org.opensaml</groupId>
-                <artifactId>opensaml</artifactId>
+                <artifactId>opensaml-jdk21</artifactId>
                 <version>${opensaml2.wso2.version}</version>
             </dependency>
 
@@ -1382,7 +1382,7 @@
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v7</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
-        <opensaml2.wso2.version>3.3.1.wso2v17</opensaml2.wso2.version>
+        <opensaml2.wso2.version>3.3.1.wso2v118</opensaml2.wso2.version>
         <transport.http.netty.version>6.3.55</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[3.1.0, 4.0.0)</imp.pkg.version.javax.servlet>
