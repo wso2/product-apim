@@ -455,7 +455,7 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
-                    <!--<execution>
+                    <execution>
                         <id>clean_target</id>
                         <phase>install</phase>
                         <configuration>
@@ -472,7 +472,7 @@
                         <goals>
                             <goal>run</goal>
                         </goals>
-                    </execution>-->
+                    </execution>
                     <execution>
                         <id>modify-scope-validators-product</id>
                         <phase>prepare-package</phase>
@@ -566,7 +566,7 @@
                         </goals>
                     </execution>
                     <!--<execution>
-                        <id>append-osgi-extra-packages</id>
+                        <id>append-osgi-extra-packages-p2</id>
                         <phase>package</phase>
                         <goals>
                             <goal>run</goal>
@@ -585,13 +585,83 @@
                                 <concat destfile="${base.p2.path}/traffic-manager/configuration/config.ini" append="true">${config.ini.property}</concat>
                                 <concat destfile="${base.p2.path}/control-plane/configuration/config.ini" append="true">${config.ini.property}</concat>
                                 <concat destfile="${base.p2.path}/gateway-worker/configuration/config.ini" append="true">${config.ini.property}</concat>
-                                <echo message="${base.p2.path}/default/configuration/config.ini" />
+                            </tasks>
+                        </configuration>
+                    </execution>
+                                        <execution>
+                        <id>append-osgi-extra-packages-dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <property name="config.ini.property" value="org.osgi.framework.system.packages.extra=javax.activation;version=&quot;1.1.1&quot;" />
+                                <property name="base.p2.path" value="${basedir}/../../distribution/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components" />
+                                
+                                <echo message="Appending extra OSGi packages to config.ini files..." />
+                                
+                                <concat destfile="${base.p2.path}/api-publisher-deprecated/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/api-key-manager-deprecated/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/api-devportal-deprecated/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/default/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/traffic-manager/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/control-plane/configuration/config.ini" append="true">${config.ini.property}</concat>
+                                <concat destfile="${base.p2.path}/gateway-worker/configuration/config.ini" append="true">${config.ini.property}</concat>
                             </tasks>
                         </configuration>
                     </execution>-->
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.2</version>
+                <executions>
+                    <!--<execution>
+                        <id>append-osgi-extra-packages-p2</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <basedir>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components</basedir>
+                            
+                            <includes>
+                                <include>**/configuration/config.ini</include>
+                            </includes>
 
+                            <replacements>
+                                <replacement>
+                                    <token>$</token>
+                                    <value>${line.separator}org.osgi.framework.system.packages.extra=javax.activation;version="1.1.1"</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>-->
+                    <execution>
+                        <id>append-osgi-extra-packages-dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <basedir>${basedir}/../../distribution/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components</basedir>
+                            
+                            <includes>
+                                <include>**/configuration/config.ini</include>
+                            </includes>
+
+                            <replacements>
+                                <replacement>
+                                    <token>$</token>
+                                    <value>${line.separator}org.osgi.framework.system.packages.extra=javax.activation;version="1.1.1"</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -834,27 +904,6 @@
                             </replacements>
                         </configuration>
                     </execution>
-                    <execution>
-            <id>append-osgi-extra-packages</id>
-            <phase>package</phase>
-            <goals>
-                <goal>replace</goal>
-            </goals>
-            <configuration>
-                <basedir>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components</basedir>
-                
-                <includes>
-                    <include>**/configuration/config.ini</include>
-                </includes>
-
-                <replacements>
-                    <replacement>
-                        <token>$</token>
-                        <value>${line.separator}org.osgi.framework.system.packages.extra=javax.activation;version="1.1.1"</value>
-                    </replacement>
-                </replacements>
-            </configuration>
-        </execution>
                 </executions>
             </plugin>
             <!-- Skip deploying the product zip to nexus -->
