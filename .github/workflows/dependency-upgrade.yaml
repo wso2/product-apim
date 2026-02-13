@@ -17,6 +17,10 @@ on:
         description: "Override apim-apps version (leave empty for latest)"
         required: false
         default: ""
+      synapseVersion:
+        description: "Override wso2-synapse tag/version (leave empty for latest)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -40,7 +44,7 @@ jobs:
           OVERRIDE: ${{ inputs.apimgtVersion }}
         run: |
           set -euo pipefail
-          OWNER="wso2"
+          OWNER="pasant9"
           REPO="carbon-apimgt"
 
           if [[ -n "$OVERRIDE" ]]; then
@@ -129,7 +133,7 @@ jobs:
           OVERRIDE: ${{ inputs.kernelVersion }}
         run: |
           set -euo pipefail
-          OWNER="wso2"
+          OWNER="pasant9"
           REPO="carbon-kernel"
 
           is49() { [[ "$1" =~ ^4\.9\.[0-9]+.*$ ]]; }
@@ -262,7 +266,7 @@ jobs:
           OVERRIDE: ${{ inputs.apimAppsVersion }}
         run: |
           set -euo pipefail
-          OWNER="wso2"
+          OWNER="pasant9"
           REPO="apim-apps"
 
           if [[ -n "$OVERRIDE" ]]; then
@@ -337,3 +341,140 @@ jobs:
             Automated apim-apps upgrade.
             Version: `${{ env.APIM_APPS_VERSION }}`
           labels: dependency-upgrade
+
+  upgrade-wso2-synapse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout product-apim
+        uses: actions/checkout@v4
+
+      - name: Resolve wso2-synapse version (tag)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OVERRIDE: ${{ inputs.synapseVersion }}
+        run: |
+          set -euo pipefail
+          OWNER="PasanT9"
+          REPO="wso2-synapse"
+
+          if [[ -n "$OVERRIDE" ]]; then
+            TAG="$OVERRIDE"
+            echo "Override synapse tag: $TAG"
+          else
+            TAG=$(gh api "repos/$OWNER/$REPO/tags?per_page=1" -q '.[0].name')
+          fi
+
+          VERSION="${TAG#v}"
+          echo "SYNAPSE_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "SYNAPSE_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Checkout wso2-synapse to read axis2/axiom versions
+        uses: actions/checkout@v4
+        with:
+          repository: PasanT9/wso2-synapse
+          ref: ${{ env.SYNAPSE_TAG }}
+          path: _synapse
+          fetch-depth: 1
+
+      - name: Extract axis2/axiom versions from wso2-synapse pom.xml
+        shell: bash
+        run: |
+          set -euo pipefail
+          POM="_synapse/pom.xml"
+
+          # Using Maven itself to evaluate properties is the most robust vs grep/sed
+          AXIS2=$(mvn -q -f "$POM" help:evaluate -Dexpression=axis2.version -DforceStdout)
+          AXIOM=$(mvn -q -f "$POM" help:evaluate -Dexpression=axiom.version -DforceStdout)
+
+          echo "SYNAPSE_AXIS2_VERSION=$AXIS2" >> "$GITHUB_ENV"
+          echo "SYNAPSE_AXIOM_VERSION=$AXIOM" >> "$GITHUB_ENV"
+
+          echo "Synapse tag/version : $SYNAPSE_TAG / $SYNAPSE_VERSION"
+          echo "axis2.version       : $AXIS2"
+          echo "axiom.version       : $AXIOM"
+
+      - name: Decide whether synapse+axis2+axiom upgrade is needed (atomic)
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANONICAL_POM="api-control-plane/pom.xml"
+
+          CUR_SYN=$(mvn -q -f "$CANONICAL_POM" help:evaluate -Dexpression=synapse.version -DforceStdout)
+          CUR_A2=$(mvn -q -f "$CANONICAL_POM" help:evaluate -Dexpression=axis2.wso2.version -DforceStdout)
+          CUR_AX=$(mvn -q -f "$CANONICAL_POM" help:evaluate -Dexpression=axiom.wso2.version -DforceStdout)
+
+          T_SYN="$SYNAPSE_VERSION"
+          T_A2="$SYNAPSE_AXIS2_VERSION"
+          T_AX="$SYNAPSE_AXIOM_VERSION"
+
+          echo "Current synapse/axis2/axiom : $CUR_SYN / $CUR_A2 / $CUR_AX"
+          echo "Target  synapse/axis2/axiom : $T_SYN / $T_A2 / $T_AX"
+
+          # If all same -> skip
+          if [[ "$CUR_SYN" == "$T_SYN" && "$CUR_A2" == "$T_A2" && "$CUR_AX" == "$T_AX" ]]; then
+            echo "Already at target trio. Skipping."
+            exit 0
+          fi
+
+          # Require each target to be >= current, and at least one strictly higher
+          higher_or_equal() {
+            local cur="$1" tgt="$2"
+            local highest
+            highest=$(printf "%s\n%s\n" "$cur" "$tgt" | sort -V | tail -n1)
+            [[ "$highest" == "$tgt" ]]
+          }
+
+          higher_or_equal "$CUR_SYN" "$T_SYN" || { echo "Target synapse is lower; skipping."; exit 0; }
+          higher_or_equal "$CUR_A2"  "$T_A2"  || { echo "Target axis2 is lower; skipping."; exit 0; }
+          higher_or_equal "$CUR_AX"  "$T_AX"  || { echo "Target axiom is lower; skipping."; exit 0; }
+
+          if [[ "$CUR_SYN" == "$T_SYN" && "$CUR_A2" == "$T_A2" && "$CUR_AX" == "$T_AX" ]]; then
+            echo "No change after checks; skipping."
+            exit 0
+          fi
+
+          echo "UPGRADE_SYNAPSE_STACK=true" >> "$GITHUB_ENV"
+
+      - name: Update synapse+axis2+axiom versions in poms (atomic)
+        if: env.UPGRADE_SYNAPSE_STACK == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SYN="$SYNAPSE_VERSION"
+          A2="$SYNAPSE_AXIS2_VERSION"
+          AX="$SYNAPSE_AXIOM_VERSION"
+
+          POMS=(
+            "api-control-plane/pom.xml"
+            "gateway/pom.xml"
+            "traffic-manager/pom.xml"
+            "all-in-one-apim/pom.xml"
+          )
+
+          for f in "${POMS[@]}"; do
+            sed -i "s#<synapse\.version>[^<]*</synapse\.version>#<synapse.version>${SYN}</synapse.version>#g" "$f"
+            sed -i "s#<axis2\.wso2\.version>[^<]*</axis2\.wso2\.version>#<axis2.wso2.version>${A2}</axis2.wso2.version>#g" "$f"
+            sed -i "s#<axiom\.wso2\.version>[^<]*</axiom\.wso2\.version>#<axiom.wso2.version>${AX}</axiom.wso2.version>#g" "$f"
+          done
+
+          if git diff --quiet -- "${POMS[@]}"; then
+            echo "No synapse stack upgrade needed"
+            exit 0
+          fi
+
+      - name: Create/update PR (synapse stack)
+        if: env.UPGRADE_SYNAPSE_STACK == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/upgrade-synapse-stack
+          title: "Upgrade synapse stack to ${{ env.SYNAPSE_VERSION }}"
+          commit-message: "Upgrade synapse stack to ${{ env.SYNAPSE_VERSION }}"
+          body: |
+            Automated synapse stack upgrade.
+            synapse.version: `${{ env.SYNAPSE_VERSION }}`
+            axis2.wso2.version: `${{ env.SYNAPSE_AXIS2_VERSION }}`
+            axiom.wso2.version: `${{ env.SYNAPSE_AXIOM_VERSION }}`
+          labels: dependency-upgrade
+
