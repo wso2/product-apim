@@ -213,7 +213,7 @@
   "realm_manager.data_source": "SHARED_DB",
   "realm_manager.properties.isCascadeDeleteEnabled": true,
   "realm_manager.properties.initializeNewClaimManager": true,
-  "transport.https.properties.maxHttpHeaderSize": "12288",
+  "transport.https.properties.maxHttpHeaderSize": "15288",
   "apim.oauth_config.enable_jwt_for_portals": true,
   "oauth.add_tenant_domain_to_access_token": true,
   "tasks.client_dispatch_address": "https://localhost:9443",
