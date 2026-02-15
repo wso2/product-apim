@@ -1177,10 +1177,10 @@
                                     <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <!--<feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.xacml.mediator.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
-                                </feature>-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediator.publishevent.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2600,10 +2600,10 @@
                                     <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <!--<feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.xacml.mediator.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
-                                </feature>-->
+                                </feature>
                                 <!-- Consent Management dependency -->
                                 <feature>
                                     <id>org.wso2.carbon.consent.mgt.server.feature.group</id>
