@@ -334,9 +334,10 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt.ui:apim.ui.apps.portals:${carbon.apimgt.ui.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
+                                <!-- TODO check why this is added in TM-->
+                                <!--<featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
+                                </featureArtifactDef>-->
                                 <featureArtifactDef>
                                     org.wso2.am.tm:org.wso2.am.tm.multitenancy.dashboard.ui.feature:${project.version}
                                 </featureArtifactDef>
@@ -1061,7 +1062,8 @@
                                     <id>org.wso2.carbon.identity.cors.server.feature.group</id>
                                     <version>${identity.carbon.auth.rest.version}</version>
                                 </feature>
-                                <!--<feature> TODO check why this is added in TM
+                                <!-- TODO check why this is added in TM-->
+                                <!--<feature> 
                                     <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>-->
