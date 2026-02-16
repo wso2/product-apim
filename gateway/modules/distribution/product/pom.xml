@@ -382,7 +382,34 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.2</version>
+                <executions>
+                    <execution>
+                        <id>append-osgi-extra-packages-dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <basedir>${basedir}/../../distribution/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components</basedir>
+                            
+                            <includes>
+                                <include>**/configuration/config.ini</include>
+                            </includes>
 
+                            <replacements>
+                                <replacement>
+                                    <token>$</token>
+                                    <value>${line.separator}org.osgi.framework.system.packages.extra=javax.activation;version="1.1.1"</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -608,84 +635,6 @@
                                     <value>jdbc/WSO2AM_DB</value>
                                 </replacement>
                             </replacements>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Add the scope validator to the identity.xml file -->
-            <plugin>
-                <groupId>com.google.code.maven-config-processor-plugin</groupId>
-                <artifactId>config-processor-maven-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
-                    <execution>
-                        <id>add-scope-validator</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <failOnMissingXpath>false</failOnMissingXpath>
-                            <transformations>
-                                <transformation>
-                                    <input>
-                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml
-                                    </input>
-                                    <output>
-                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml
-                                    </output>
-                                    <config>identity_config_change.xml</config>
-                                </transformation>
-                            </transformations>
-                            <namespaceContexts>
-                                <s>http://wso2.org/projects/carbon/carbon.xml</s>
-                            </namespaceContexts>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>init-claim-manager</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <failOnMissingXpath>false</failOnMissingXpath>
-                            <transformations>
-                                <transformation>
-                                    <input>
-                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
-                                    </input>
-                                    <output>
-                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
-                                    </output>
-                                    <config>user_mgt_config_change.xml</config>
-                                </transformation>
-                            </transformations>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>add-mime-types</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <failOnMissingXpath>false</failOnMissingXpath>
-                            <transformations>
-                                <transformation>
-                                    <input>
-                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
-                                    </input>
-                                    <output>
-                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
-                                    </output>
-                                    <config>tomcat_web_xml_change.xml</config>
-                                </transformation>
-                            </transformations>
-                            <namespaceContexts>
-                                <tom>http://java.sun.com/xml/ns/javaee</tom>
-                            </namespaceContexts>
                         </configuration>
                     </execution>
                 </executions>

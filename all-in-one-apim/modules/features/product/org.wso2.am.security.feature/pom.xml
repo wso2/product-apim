@@ -33,7 +33,7 @@
     <dependencies>
         <dependency>
             <groupId>org.wso2.orbit.org.opensaml</groupId>
-            <artifactId>opensaml</artifactId>
+            <artifactId>opensaml-jdk21</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.santuario</groupId>
@@ -46,6 +46,7 @@
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>carbon-p2-plugin</artifactId>
+                <extensions>true</extensions>
                 <executions>
                     <execution>
                         <id>4-p2-feature-generation</id>
@@ -63,7 +64,7 @@
                             </adviceFile>
                             <bundles>
                                 <bundleDef>
-                                    org.wso2.orbit.org.opensaml:opensaml
+                                    org.wso2.orbit.org.opensaml:opensaml-jdk21
                                 </bundleDef>
                                 <bundleDef>
                                     org.apache.santuario:xmlsec

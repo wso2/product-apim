@@ -102,6 +102,7 @@
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>carbon-p2-plugin</artifactId>
+                <extensions>true</extensions>
                 <executions>
                     <execution>
                         <id>2-p2-repo-generation</id>
@@ -116,12 +117,12 @@
                             <publishArtifacts>true</publishArtifacts>
                             <publishArtifactRepository>true</publishArtifactRepository>
                             <featureArtifacts>
-                                <featureArtifactDef>
+                                <!--<featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediation.ui.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediation.ui.feature:${carbon.mediation.version}
-                                </featureArtifactDef>
+                                </featureArtifactDef>-->
                                 <featureArtifactDef>
                                     org.wso2.carbon.commons:org.wso2.carbon.tenant.mgt.common.feature:${carbon.commons.version}
                                 </featureArtifactDef>
@@ -333,9 +334,10 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt.ui:apim.ui.apps.portals:${carbon.apimgt.ui.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
+                                <!-- TODO check why this is added in TM-->
+                                <!--<featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
+                                </featureArtifactDef>-->
                                 <featureArtifactDef>
                                     org.wso2.am.tm:org.wso2.am.tm.multitenancy.dashboard.ui.feature:${project.version}
                                 </featureArtifactDef>
@@ -561,9 +563,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediator.cache.server.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
+                                <!--<featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.identity.xacml.mediator.feature:${carbon.mediation.version}
-                                </featureArtifactDef>
+                                </featureArtifactDef>-->
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediator.publishevent.server.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
@@ -1060,10 +1062,11 @@
                                     <id>org.wso2.carbon.identity.cors.server.feature.group</id>
                                     <version>${identity.carbon.auth.rest.version}</version>
                                 </feature>
-                                <feature>
+                                <!-- TODO check why this is added in TM-->
+                                <!--<feature> 
                                     <id>org.wso2.carbon.apimgt.internal.service.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
-                                </feature>
+                                </feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.throttle.policy.deployer.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
