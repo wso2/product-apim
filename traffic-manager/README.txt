@@ -29,7 +29,7 @@ System Requirements
 Installation & Running
 ==================================
 
-1. Extract the wso2am-tm-4.6.0.zip and go to the 'bin' directory
+1. Extract the wso2am-tm-4.7.0-SNAPSHOT.zip and go to the 'bin' directory
 2. Run the traffic-manager.sh or traffic-manager.bat script based on you operating system.
 3. Access the respective WSO2 APIM-TM interfaces
     * Management Console running at - https://localhost:9443/carbon

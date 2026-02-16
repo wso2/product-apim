@@ -23,7 +23,7 @@
     <groupId>org.wso2.am.acp</groupId>
     <artifactId>am-acp-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.6.0-SNAPSHOT</version>
+    <version>4.7.0-SNAPSHOT</version>
     <name>WSO2 API Control Plane - Aggregator Module</name>
     <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Control Plane</description>
@@ -1282,10 +1282,10 @@
         <carbon.analytics.common.version>5.3.30</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.111</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.129</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.0</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.2</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 

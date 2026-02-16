@@ -46,7 +46,7 @@ System Requirements
 Installation & Running
 ==================================
 
-1. Extract the wso2am-universal-gw-4.6.0.zip and go to the 'bin' directory
+1. Extract the wso2am-universal-gw-4.7.0-SNAPSHOT.zip and go to the 'bin' directory
 2. Run the gateway.sh or gateway.bat script based on you operating system.
 3. Access the respective WSO2 API-GW interfaces
     * Management Console running at - https://localhost:9443/carbon \
