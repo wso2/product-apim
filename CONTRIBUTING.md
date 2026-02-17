@@ -27,8 +27,8 @@ To build the WSO2 API Manager distribution from source, follow these steps:
 
 WSO2 API Manager is built with many components. The source code for each component resides in its own repository. The two main components used within the product are:
 
-Core API Manager component: https://github.com/wso2/carbon-apimgt
-UI components: https://github.com/wso2/apim-apps
+- Core API Manager component: https://github.com/wso2/carbon-apimgt
+- UI components: https://github.com/wso2/apim-apps
 
 Most product-related issues need to be fixed in these two components. Instructions for building each component can be found in the README files of their respective repositories.
 
@@ -52,8 +52,10 @@ After updating the version, rebuild the product-apim repository.
 https://github.com/wso2/carbon-apimgt/tree/v9.31.86
 4. Load the source code into your IDE.
 5. Start the product in debug mode:
-   - Navigate to wso2am-4.5.0/bin/
-   - Run: `./api-manager.sh -debug 5005`
+   - Navigate to `wso2am-4.5.0/bin/`
+   - Run:
+   - On Linux/macOS: `./api-manager.sh -debug 5005`
+   - On Windows: `./api-manager.bat -debug 5005` 
 6. Connect to the server using your IDE’s remote debug option.
 
 ## Contributing Code
