@@ -182,7 +182,7 @@ Documentation
 ==============
 
 Online product documentation is available at:
-        https://apim.docs.wso2.com/en/4.6.0/
+        https://apim.docs.wso2.com/en/4.7.0/
 
 Support
 ==================================
