@@ -20,7 +20,7 @@
     <parent>
         <artifactId>am-gw-features</artifactId>
         <groupId>org.wso2.am.gw</groupId>
-        <version>4.7.0-gw-m1</version>
+        <version>4.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
