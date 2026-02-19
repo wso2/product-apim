@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.am.tm</groupId>
         <artifactId>am-tm-parent</artifactId>
-        <version>4.7.0-SNAPSHOT</version>
+        <version>4.7.0-m1</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
