@@ -1392,7 +1392,7 @@
         <carbon.automation.version>4.4.10</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <testng.version>6.11</testng.version>
-        <org.apache.cxf.version>3.6.8</org.apache.cxf.version>
+        <org.apache.cxf.version>3.6.9</org.apache.cxf.version>
         <org.springframework.version>5.1.13.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.96</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.13</org.codehaus.jackson.version>
