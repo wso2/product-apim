@@ -21,6 +21,8 @@
   "database.mb.store_db.pool_options.testOnBorrow": "true",
   "database.mb.store_db.pool_options.validationInterval": "30000",
   "database.mb.store_db.pool_options.defaultAutoCommit": "false",
+  "oauth.enable_legacy_session_bound_token_behaviour": true,
+  "oauth.allow_session_bound_tokens_after_idle_session_expiry": false,
   "oauth.introspect.allow_cross_tenant": true,
   "oauth.token_validation.refresh_token_validity": "1d",
   "oauth.scope_validator.xacml.enable": false,
