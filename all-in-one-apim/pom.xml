@@ -1300,13 +1300,13 @@
 
         <project.scm.id>scm-server</project.scm.id>
 
-        <carbon.analytics.common.version>5.3.30</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.4.1</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
         <carbon.apimgt.ui.version>9.3.129</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.8</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.10</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1438,7 +1438,7 @@
         <!-- MB Features -->
 
         <carbon.messaging.version>3.3.40</carbon.messaging.version>
-        <carbon.event-processing.version>2.3.20</carbon.event-processing.version>
+        <carbon.event-processing.version>2.3.21</carbon.event-processing.version>
         <andes.version>3.3.36</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
