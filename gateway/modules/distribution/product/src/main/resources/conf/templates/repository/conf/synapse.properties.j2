@@ -52,4 +52,7 @@ synapse.endpoint.http.oauth.token.endpoint.trust.store.type={{apim.mediator_conf
 {% if apim.mediator_config.oauth.trust_store.password is defined %}
 synapse.endpoint.http.oauth.token.endpoint.trust.store.password={{apim.mediator_config.oauth.trust_store.password}}
 {% endif %}
+{% if apim.mediator_config.oauth.disable_retry_message_building is defined %}
+synapse.endpoint.http.oauth.token.retry.message.building.disabled={{apim.mediator_config.oauth.disable_retry_message_building}}
+{% endif %}
 {% endif %}
