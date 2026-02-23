@@ -341,24 +341,32 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     }
 
     private void waitForSSLProfileReload() throws RemoteException, InterruptedException {
-        LogEvent[] logEvents = new LogEvent[0];
+
+        LogEvent[] logEvents;
+        // Initial wait for the event to likely happen
         Thread.sleep(60000);
-        logEvents = logViewerClient.getAllRemoteSystemLogs();
+
         int retryAttempt = 0;
         boolean isSSProfileReloaded = false;
+
         while (retryAttempt < 5 && !isSSProfileReloaded) {
+            // FIX: Fetch logs INSIDE the loop to get the latest updates
+            logEvents = logViewerClient.getAllRemoteSystemLogs();
+
             for (LogEvent logEvent : logEvents) {
-                if (logEvent.getMessage()
-                        .contains("PassThroughHttpSender reloading SSL Config")) {
+                if (logEvent.getMessage().contains("PassThroughHttpSender reloading SSL Config")) {
                     isSSProfileReloaded = true;
                     log.info("SSLProfile has been reloaded successfully");
                     logViewerClient.clearLogs();
                     break;
                 }
             }
-            retryAttempt++;
-            log.info("SSLProfile has not been reloaded. Retry attempt - " + retryAttempt);
-            Thread.sleep(12000);
+
+            if (!isSSProfileReloaded) {
+                retryAttempt++;
+                log.info("SSLProfile has not been reloaded. Retry attempt - " + retryAttempt);
+                Thread.sleep(12000); // Wait before fetching logs again
+            }
         }
     }
 
