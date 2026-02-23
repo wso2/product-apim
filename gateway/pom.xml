@@ -1514,8 +1514,8 @@
         <url-guardrail.version>1.0.0</url-guardrail.version>
         <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
         <semantic-cache.version>1.0.0</semantic-cache.version>
-        <semantic-routing.version>1.0.1-SNAPSHOT</semantic-routing.version>
-        <intelligent-model-routing.version>1.0.1-SNAPSHOT</intelligent-model-routing.version>
+        <semantic-routing.version>0.0.9-SNAPSHOT</semantic-routing.version>
+        <intelligent-model-routing.version>0.0.9-SNAPSHOT</intelligent-model-routing.version>
         
     </properties>
 
