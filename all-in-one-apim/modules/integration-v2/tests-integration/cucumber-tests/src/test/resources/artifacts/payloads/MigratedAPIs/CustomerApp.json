@@ -1,0 +1,17 @@
+{
+  "name": "CustomerApp",
+  "throttlingPolicy": "Unlimited",
+  "description": "Test app for scenarios",
+  "tokenType": "JWT",
+  "status": "APPROVED",
+  "groups": [],
+  "subscriptionCount": 1,
+  "keys": [],
+  "attributes": {},
+  "subscriptionScopes": [],
+  "owner": "admin",
+  "hashEnabled": false,
+  "createdTime": "1755757299000",
+  "updatedTime": "1755757299000",
+  "visibility": "PRIVATE"
+}

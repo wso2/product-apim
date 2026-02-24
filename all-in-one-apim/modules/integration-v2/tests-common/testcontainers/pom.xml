@@ -32,6 +32,8 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipCertificateFetch>true</skipCertificateFetch>
+        <!-- Docker extra hosts for host.docker.internal resolution (needed on Linux/CI) -->
+        <docker.extra.hosts></docker.extra.hosts>
     </properties>
 
     <dependencies>
@@ -64,6 +66,22 @@
                                 <argument>-m</argument>
                                 <argument>http.server</argument>
                                 <argument>8000</argument>
+                                <argument>--bind</argument>
+                                <argument>0.0.0.0</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>wait-for-server</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>for i in {1..30}; do if curl -s http://localhost:8000/ &gt; /dev/null 2&gt;&amp;1; then echo "HTTP server is ready"; exit 0; fi; echo "Waiting for HTTP server... ($i/30)"; sleep 1; done; echo "HTTP server failed to start"; exit 1</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -90,16 +108,10 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>docker</executable>
+                            <executable>bash</executable>
                             <arguments>
-                                <argument>build</argument>
-                                <argument>https://github.com/wso2/docker-apim.git#master:dockerfiles/jdk17/ubuntu/apim</argument>
-                                <argument>-t</argument>
-                                <argument>${apim.docker.image.name}</argument>
-                                <argument>--build-arg</argument>
-                                <argument>WSO2_SERVER=${apim.server.name}</argument>
-                                <argument>--build-arg</argument>
-                                <argument>WSO2_SERVER_DIST_URL=http://host.docker.internal:8000/${apim.server.name}.zip</argument>
+                                <argument>-c</argument>
+                                <argument>docker build ${docker.extra.hosts} https://github.com/wso2/docker-apim.git#master:dockerfiles/jdk17/ubuntu/apim -t ${apim.docker.image.name} --build-arg WSO2_SERVER=${apim.server.name} --build-arg WSO2_SERVER_DIST_URL=http://host.docker.internal:8000/${apim.server.name}.zip</argument>
                             </arguments>
                         </configuration>
                     </execution>

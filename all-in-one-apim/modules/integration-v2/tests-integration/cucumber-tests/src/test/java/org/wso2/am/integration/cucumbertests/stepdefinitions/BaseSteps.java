@@ -18,10 +18,13 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import com.google.gson.JsonObject;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -42,7 +45,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class BaseSteps {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseSteps.class);
@@ -56,6 +58,9 @@ public class BaseSteps {
         baseUrl = TestContext.get("baseUrl").toString();
     }
 
+    /**
+     * Initializes the system by retrieving the current tenant and user from the test context.
+     */
     @Given("The system is ready")
     public void theSystemIsReady() {
 
@@ -64,6 +69,9 @@ public class BaseSteps {
         logger.info("Running with user: {}", currentuser.getUserName());
     }
 
+    /**
+     * Creates a Dynamic Client Registration (DCR) application for the current user.
+     */
     @When("I have a valid DCR application for the current user")
     public void iHaveADCRApplication() throws IOException {
 
@@ -94,6 +102,9 @@ public class BaseSteps {
         TestContext.set("dcrCredentials", dcrCredentials);
     }
 
+    /**
+     * Obtains a valid Publisher API access token for the current user.
+     */
     @Given("I have a valid Publisher access token for the current user")
     public void iHaveValidPublisherAccessToken() throws Exception {
 
@@ -105,7 +116,7 @@ public class BaseSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", currentuser.getUserName());
         json.addProperty("password", currentuser.getPassword());
-        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update");
+        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:api_generate_key apim:gateway_policy_manage");
 
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(baseUrl), headers,
             json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -115,6 +126,9 @@ public class BaseSteps {
         TestContext.set("publisherAccessToken", accessToken);
     }
 
+    /**
+     * Obtains a valid Developer Portal access token for the current user.
+     */
     @Given("I have a valid Devportal access token for the current user")
     public void iHaveValidDevportalAccessToken() throws Exception {
 
@@ -136,6 +150,48 @@ public class BaseSteps {
         TestContext.set("devportalAccessToken", accessToken);
     }
 
+    /**
+     * Obtains a valid Admin access token for the current user.
+     */
+    public void iHaveValidAdminAccessToken() throws Exception {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + TestContext.get("dcrCredentials").toString());
+
+        // create json payload to obtain admin access token
+        JsonObject json = new JsonObject();
+        json.addProperty("grant_type", "password");
+        json.addProperty("username", currentuser.getUserName());
+        json.addProperty("password", currentuser.getPassword());
+        json.addProperty("scope", "apim:admin apim:tier_view apim:api_provider_change");
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(baseUrl), headers,
+                json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+
+        String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
+        TestContext.set("adminAccessToken", accessToken);
+    }
+
+    /**
+     * Composite step that combines system initialization and token retrieval.
+     */
+    @Given("The system is ready and I have valid access tokens for current user")
+    public void iHaveSystemAndTokens() throws Exception {
+
+        theSystemIsReady();
+        iHaveADCRApplication();
+        iHaveValidPublisherAccessToken();
+        iHaveValidDevportalAccessToken();
+        iHaveValidAdminAccessToken();
+    }
+
+    /**
+     * Loads a JSON payload from a file and stores it in the test context.
+     *
+     * @param jsonFilePath Path to the JSON file
+     * @param key Context key to store the JSON payload
+     */
     @When("I put JSON payload from file {string} in context as {string}")
     public void putJsonPayloadFromFile(String jsonFilePath, String key) throws IOException {
 
@@ -148,20 +204,36 @@ public class BaseSteps {
         }
     }
 
+    /**
+     * Stores a JSON payload in the test context.
+     *
+     * @param key Context key to store the JSON payload
+     * @param docStringJson JSON payload provided as a doc string
+     */
     @When("I put the following JSON payload in context as {string}")
     public void putJsonPayloadInContext(String key, String docStringJson)  {
 
         TestContext.set(Utils.normalizeContextKey(key), docStringJson);
     }
 
+    /**
+     * Stores the most recent HTTP response payload in the test context.
+     *
+     * @param key Context key to store the response payload
+     */
     @When("I put the response payload in context as {string}")
-    public void putResponsePayloadInContext(String key) {
+    public void putResponsePayloadInContext(String key) throws InterruptedException {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         TestContext.set(Utils.normalizeContextKey(key), response.getData());
+        Thread.sleep(Constants.INITIAL_INDEXING_TIME);
     }
 
-
+    /**
+     * Verifies that the HTTP response status code matches the expected value.
+     *
+     * @param expectedStatusCode The expected HTTP status code
+     */
     @Then("The response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
 
@@ -169,6 +241,11 @@ public class BaseSteps {
         Assert.assertEquals(response.getResponseCode(), expectedStatusCode, response.getData());
     }
 
+    /**
+     * Verifies that the HTTP response body contains the specified string value.
+     *
+     * @param expectedValue The string value that should be present in the response body
+     */
     @Then("The response should contain {string}")
     public void responseShouldContainFieldValue(String expectedValue) {
 
@@ -176,6 +253,11 @@ public class BaseSteps {
         Assert.assertTrue(response.getData().contains(expectedValue));
     }
 
+    /**
+     * Verifies that the HTTP response body does not contain the specified string value.
+     *
+     * @param unexpectedValue The string value that should not be present in the response body
+     */
     @Then("The response should not contain {string}")
     public void responseShouldNotContainFieldValue(String unexpectedValue) {
 
@@ -183,6 +265,12 @@ public class BaseSteps {
         Assert.assertFalse(response.getData().contains(unexpectedValue));
     }
 
+    /**
+     * Verifies that the HTTP response contains a specific header with the expected value.
+     *
+     * @param headerName The name of the HTTP header to check
+     * @param expectedValue The expected value of the header
+     */
     @Then("The response should contain the header {string} with value {string}")
     public void responseShouldContainHeaderWithValue(String headerName, String expectedValue) {
 
@@ -191,14 +279,150 @@ public class BaseSteps {
         Assert.assertEquals(response.getHeaders().get(headerName), expectedValue, "Header value mismatch for " + headerName);
     }
 
+    /**
+     * Verifies that the HTTP response does not contain a specific header with the specified value.
+     *
+     * @param headerName The name of the HTTP header to check
+     * @param expectedValue The value that should not be present in the header
+     */
+    @And("The response should not contain the header {string} with value {string}")
+    public void theResponseShouldNotContainTheHeaderWithValue(String headerName, String expectedValue) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertFalse(response.getHeaders().containsKey(headerName), "Header " + headerName + "found in response");
+        Assert.assertNotEquals(response.getHeaders().get(headerName), expectedValue, "Header value match for " + headerName);
+
+    }
+
+    /**
+     * Verifies that a resource reflects an updated configuration value.
+     *
+     * @param resourceType The type of resource to check
+     * @param config The configuration field name to verify
+     * @param configValue The expected configuration value
+     */
+    @And("The {string} resource should reflect the updated {string} as:")
+    public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String configValue) throws IOException, InterruptedException {
+        // Get the API ID from the update response
+        HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
+        JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
+        String resourceId = updateResponseJson.optString("id", null);
+        Tenant currentTenant = Utils.getTenantFromContext(Constants.CURRENT_TENANT);
+        String tenantDomain = currentTenant.getDomain();
+
+        if ("endpointConfig".equals(config)){
+            configValue = Utils.resolveFromContext(configValue).toString();
+        }
+
+        if ("provider".equals(config)) {
+            if (tenantDomain != null && !Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)) {
+                if (!configValue.contains("@")) {
+                    configValue = configValue + "@" + tenantDomain;
+                }
+            }
+        }
+
+        if (resourceId == null || resourceId.isEmpty()) {
+            verifyConfigurationInResponse(updateResponse, config, configValue);
+            return;
+        }
+
+        // Retry mechanism: retrieve the API and check until the configuration matches
+        int maxRetries = 20;
+        int delayMs = 3000;
+        boolean configMatches = false;
+        HttpResponse retrievedResponse = null;
+
+        for (int i = 0; i < maxRetries; i++) {
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                    "Bearer " + TestContext.get("publisherAccessToken").toString());
+
+            retrievedResponse = SimpleHTTPClient.getInstance().doGet(
+                    Utils.getResourceEndpointURL(baseUrl,resourceType,resourceId), headers);
+
+            if (retrievedResponse.getResponseCode() == 200) {
+                try {
+                    verifyConfigurationInResponse(retrievedResponse, config, configValue);
+                    configMatches = true;
+                    break;
+                } catch (AssertionError e) {
+                    // Configuration doesn't match yet, retry
+                    if (i < maxRetries - 1) {
+                        Thread.sleep(delayMs);
+                    } else {
+                        throw e;
+                    }
+                }
+            } else {
+                if (i == 0) {
+                    verifyConfigurationInResponse(updateResponse, config, configValue);
+                    return;
+                }
+                Thread.sleep(delayMs);
+            }
+        }
+
+        // Final fall back
+        if (!configMatches) {
+            verifyConfigurationInResponse(updateResponse, config, configValue);
+        }
+    }
+
+    /**
+     * Helper method that verifies a specific configuration field in the HTTP response matches the expected value.
+     *
+     * @param response The HTTP response containing the configuration to verify
+     * @param config The configuration field name to check
+     * @param configValue The expected configuration value
+     */
+    private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
+        JSONObject json = new JSONObject(response.getData());
+        Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
+
+        Object actualValue = json.get(config);
+
+        // Handle JSON true/false, numbers, or strings
+        if (actualValue instanceof Boolean) {
+            Assert.assertEquals(actualValue.toString(), configValue,
+                    "Expected boolean " + configValue + " but got " + actualValue);
+        } else if (actualValue instanceof Number) {
+            Assert.assertEquals(String.valueOf(actualValue), configValue,
+                    "Expected numeric " + configValue + " but got " + actualValue);
+        } else if (actualValue instanceof JSONArray) {
+            JSONArray expectedArray = new JSONArray(configValue);
+            JSONArray actualArray = (JSONArray) actualValue;
+
+            Assert.assertEquals(actualArray.toString(), expectedArray.toString(),
+                    "Expected array " + expectedArray + " but got " + actualArray);
+        } else if (actualValue instanceof JSONObject) {
+            JSONObject expectedObject = new JSONObject(configValue);
+            JSONObject actualObject = (JSONObject) actualValue;
+
+            Assert.assertTrue(actualObject.similar(expectedObject), "Expected JSON object:\n" + expectedObject
+                    + "\nbut got:\n" + actualObject);
+        } else {
+            Assert.assertEquals(actualValue, configValue,
+                    "Expected string " + configValue + " but got " + actualValue);
+        }
+    }
+
+    /**
+     * Adds a delay/wait period in the test execution.
+     *
+     * @param seconds The number of seconds to wait
+     */
     @Then("I wait for {int} seconds")
     public void waitForSeconds(int seconds) throws InterruptedException {
 
         Thread.sleep(seconds * 1000L);
     }
 
+    /**
+     * Waits for the APIM server to be ready by polling the gateway health check endpoint.
+     */
     @Then("I wait for the APIM server to be ready")
-    public void waitForAPIMServerToBeReady() throws IOException {
+    public void waitForAPIMServerToBeReady() throws IOException, InterruptedException {
 
         String url = Utils.getGatewayHealthCheckURL(baseUrl);
         long currentTime = System.currentTimeMillis();
@@ -224,8 +448,13 @@ public class BaseSteps {
                 Constants.DEPLOYMENT_WAIT_TIME /60000 + " minutes");
     }
 
-    @Then("I wait for deployment of the API in {string}")
-    public void waitForAPIDeployment(String apiDetailsPayload) throws IOException {
+    /**
+     * Waits for an API to be deployed in the gateway.
+     *
+     * @param apiDetailsPayload Context key containing the API details JSON payload
+     */
+    @Then("I wait for deployment of the resource in {string}")
+    public void waitForAPIDeployment(String apiDetailsPayload) throws IOException, InterruptedException {
 
         String actualApiDetailsPayload = Utils.resolveFromContext(apiDetailsPayload).toString();
 
@@ -264,8 +493,14 @@ public class BaseSteps {
             }
         }
         Assert.assertTrue(isApiDeployed);
+        Thread.sleep(10000);
     }
 
+    /**
+     * Waits for a previous API revision to be undeployed from the gateway.
+     *
+     * @param apiDetailsPayload Context key containing the API details JSON payload
+     */
     @Then("I wait for undeployment of the previous API revision in {string}")
     public void waitForPreviousAPIRevisionUndeployment(String apiDetailsPayload) throws IOException {
 
@@ -302,4 +537,5 @@ public class BaseSteps {
             }
         }
     }
+
 }

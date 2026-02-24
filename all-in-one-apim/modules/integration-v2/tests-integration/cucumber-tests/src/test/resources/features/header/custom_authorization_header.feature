@@ -7,10 +7,9 @@ Feature: Custom Header Authorization
     And I have a valid Devportal access token for the current user
 
   Scenario: Create an API Through the Publisher Rest API and subscribe using an Application
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "<createApiPayload>"
-    And I create an API with payload "<createApiPayload>"
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     And I put JSON payload from file "artifacts/payloads/customHeaderTest/update_apim_test_api.json" in context as "<apiUpdatePayload>"
-    And I update API of id "<createdApiId>" with payload "<apiUpdatePayload>"
+    And I update "apis" resource of id "<createdApiId>" with payload "<apiUpdatePayload>"
     Then The response status code should be 200
     And I put the following JSON payload in context as "<createRevisionPayload>"
     """
@@ -18,7 +17,7 @@ Feature: Custom Header Authorization
       "description":"Initial Revision"
     }
     """
-    And I make a request to create a revision for API "<createdApiId>" with payload "<createRevisionPayload>"
+    And I make a request to create a revision for "apis" resource "<createdApiId>" with payload "<createRevisionPayload>"
     And I put the following JSON payload in context as "<deployRevisionPayload>"
     """
     [
@@ -29,13 +28,13 @@ Feature: Custom Header Authorization
       }
     ]
     """
-    And I make a request to deploy revision "<revisionId>" of API "<createdApiId>" with payload "<deployRevisionPayload>"
+    And I make a request to deploy revision "<revisionId>" of "apis" resource "<createdApiId>" with payload "<deployRevisionPayload>"
     Then The response status code should be 201
-    And  I retrieve the API with id "<createdApiId>"
+    And  I retrieve the "apis" resource with id "<createdApiId>"
     Then The response status code should be 200
     And I put the response payload in context as "<retrievedApiPayload>"
-    And I wait for deployment of the API in "<retrievedApiPayload>"
-    And I publish the API with id "<createdApiId>"
+    And I wait for deployment of the resource in "<retrievedApiPayload>"
+    And I publish the "apis" resource with id "<createdApiId>"
     Then The lifecycle status of API "<createdApiId>" should be "Published"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "<createAppPayload>"
     When I create an application with payload "<createAppPayload>"
@@ -47,7 +46,7 @@ Feature: Custom Header Authorization
       "throttlingPolicy": "Bronze"
     }
     """
-    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>"
+    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>" as "subscriptionId"
 
   Scenario: Invoke API using custom authentication header named Test-Custom-Header
     And I put the following JSON payload in context as "<generateApplicationKeysPayload>"
@@ -78,5 +77,5 @@ Feature: Custom Header Authorization
     Then The response status code should be 200
     And I delete the application with id "<createdAppId>"
     Then The response status code should be 200
-    And I delete the API with id "<createdApiId>"
+    And I delete the "apis" resource with id "<createdApiId>"
     Then The response status code should be 200

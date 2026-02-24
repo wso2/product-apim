@@ -1,0 +1,12 @@
+{
+  "id": "<scopeID>",
+  "name": "adp-shared-scope-with-roles",
+  "displayName": "ADP Shared Scope with Roles",
+  "description": "Shared scope with role mapping",
+  "bindings": [
+    "ADP_CREATOR",
+    "ADP_SUBSCRIBER",
+    "admin"
+  ],
+  "usageCount": 0
+}

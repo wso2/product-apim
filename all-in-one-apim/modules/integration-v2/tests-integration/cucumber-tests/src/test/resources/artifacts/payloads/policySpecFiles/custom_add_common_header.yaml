@@ -1,0 +1,20 @@
+type: operation_policy_specification
+version: v4.5.0
+data:
+  category: Mediation
+  name: custom_add_common_header
+  version: v1
+  displayName: custom_add_common_header
+  description: This is a new common policy.
+  applicableFlows:
+   - request
+   - response
+   - fault
+  supportedGateways:
+   - Synapse
+  supportedApiTypes:
+   - HTTP
+   - SOAP
+   - SOAPTOREST
+   - GRAPHQL
+  policyAttributes: []
