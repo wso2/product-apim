@@ -1282,7 +1282,7 @@
         <carbon.analytics.common.version>5.4.2</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.129</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.131</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>9.33.12</carbon.apimgt.version>
@@ -1516,7 +1516,7 @@
         <url-guardrail.version>1.0.0</url-guardrail.version>
         <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
         <semantic-cache.version>1.0.0</semantic-cache.version>
-        <content-based-model-router.version>0.0.9-SNAPSHOT</content-based-model-router.version>
+        <content-based-model-router.version>1.0.1</content-based-model-router.version>
 
         <!-- AM Policy Names -->
         <regex-guardrail.name>RegexGuardrail</regex-guardrail.name>
