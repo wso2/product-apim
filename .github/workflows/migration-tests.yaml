@@ -58,17 +58,17 @@ jobs:
           echo "Current carbon-apimgt version: $CURRENT"
           echo "CURRENT_CARBON_APIMGT_VERSION=$CURRENT" >> $GITHUB_ENV
 
-      - name: Update pom.xml with latest carbon-apimgt version
-        if: env.LATEST_CARBON_APIMGT_VERSION != '' && env.LATEST_CARBON_APIMGT_VERSION != env.CURRENT_CARBON_APIMGT_VERSION
-        working-directory: all-in-one-apim
-        run: |
-          echo "Updating ${CARBON_APIMGT_VERSION_PROPERTY} from ${CURRENT_CARBON_APIMGT_VERSION} to ${LATEST_CARBON_APIMGT_VERSION}"
-
-          mvn -B \
-            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
-            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
-            -DnewVersion=${LATEST_CARBON_APIMGT_VERSION} \
-            -DgenerateBackupPoms=false
+#      - name: Update pom.xml with latest carbon-apimgt version
+#        if: env.LATEST_CARBON_APIMGT_VERSION != '' && env.LATEST_CARBON_APIMGT_VERSION != env.CURRENT_CARBON_APIMGT_VERSION
+#        working-directory: all-in-one-apim
+#        run: |
+#          echo "Updating ${CARBON_APIMGT_VERSION_PROPERTY} from ${CURRENT_CARBON_APIMGT_VERSION} to ${LATEST_CARBON_APIMGT_VERSION}"
+#
+#          mvn -B \
+#            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
+#            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
+#            -DnewVersion=${LATEST_CARBON_APIMGT_VERSION} \
+#            -DgenerateBackupPoms=false
 
       - name: Build APIM distribution
         working-directory: all-in-one-apim
