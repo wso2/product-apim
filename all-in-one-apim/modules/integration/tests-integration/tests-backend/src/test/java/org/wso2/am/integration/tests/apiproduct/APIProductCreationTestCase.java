@@ -397,16 +397,19 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         APICategoryDTO categoryDTO = new APICategoryDTO();
         String provider = user.getUserName();
         String name = UUID.randomUUID().toString();
-        String context = "/" + UUID.randomUUID();
+        String context = "/" + UUID.randomUUID().toString();
         String version = "1.0.0";
 
-        categoryDTO.setName("Marketing");
+        String categoryName = "Marketing-" + UUID.randomUUID().toString().substring(0, 8);
+        categoryDTO.setName(categoryName);
         categoryDTO.setDescription("Marketing category for testing");
         try {
             restAPIAdmin.addApiCategory(categoryDTO);
         } catch (org.wso2.am.integration.clients.admin.ApiException e) {
             //Assert the Status Code
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            Assert.assertTrue(
+                e.getResponseBody() != null && e.getResponseBody().contains("already exists"),
+                "Unexpected error creating category: " + e.getResponseBody());
         }
         
         List<APIDTO> apisToBeUsed = new ArrayList<>();
@@ -418,10 +421,11 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         List<String> apiProductCategories = new ArrayList<>();
-        apiProductCategories.add("Marketing");
+        apiProductCategories.add(categoryName);
         apiProductDTO.setCategories(apiProductCategories);
-        restAPIPublisher.updateAPIProduct(apiProductDTO);
-        apiProductDTO = restAPIPublisher.getApiProduct(apiProductDTO.getId());
+        ApiResponse<APIProductDTO> updateResponse = restAPIPublisher.updateAPIProduct(apiProductDTO);
+        Assert.assertEquals(updateResponse.getStatusCode(), HttpStatus.SC_OK);
+        apiProductDTO = updateResponse.getData();
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
@@ -430,19 +434,19 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         // Verify categories before publish
         List<String> categoriesBeforePublish = apiProductDTO.getCategories();
         Assert.assertNotNull(categoriesBeforePublish);
-        Assert.assertTrue(categoriesBeforePublish.contains("Marketing"));
+        Assert.assertTrue(categoriesBeforePublish.contains(categoryName));
         
         apiProductDTO = publishAPIProduct(apiProductDTO.getId());
 
         List<String> categoriesInPublisherAPI = apiProductDTO.getCategories();
         Assert.assertNotNull(categoriesInPublisherAPI);
-        Assert.assertTrue(categoriesInPublisherAPI.contains("Marketing"));
+        Assert.assertTrue(categoriesInPublisherAPI.contains(categoryName));
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
                 apiProductTestHelper.verifyApiProductInPortal(apiProductDTO);
         List<String> categoriesInReceivedAPI = apiDTO.getCategories();
         Assert.assertNotNull(categoriesInReceivedAPI);
-        Assert.assertTrue(categoriesInReceivedAPI.contains("Marketing"));
+        Assert.assertTrue(categoriesInReceivedAPI.contains(categoryName));
     }
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
