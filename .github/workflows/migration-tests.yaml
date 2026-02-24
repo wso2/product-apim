@@ -1,0 +1,1061 @@
+name: APIM Database Migration Tests
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  update-and-build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    outputs:
+      latest_version: ${{ env.LATEST_CARBON_APIMGT_VERSION }}
+      current_version: ${{ env.CURRENT_CARBON_APIMGT_VERSION }}
+
+    env:
+      CARBON_APIMGT_REPO: https://github.com/wso2/carbon-apimgt.git
+      CARBON_APIMGT_VERSION_PROPERTY: carbon.apimgt.version
+
+    steps:
+      - name: Checkout product-apim
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+          cache: maven
+
+      - name: Find latest carbon-apimgt version tag
+        id: find_version
+        run: |
+          git ls-remote --tags "$CARBON_APIMGT_REPO" \
+            | awk '{print $2}' \
+            | grep -E 'refs/tags/v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sed 's#refs/tags/##' \
+            | sed 's/^v//' \
+            | sort -V \
+            | tail -n1 > latest_carbon_apimgt_version.txt
+
+          LATEST=$(cat latest_carbon_apimgt_version.txt)
+          echo "Latest carbon-apimgt version: $LATEST"
+          echo "LATEST_CARBON_APIMGT_VERSION=$LATEST" >> $GITHUB_ENV
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+
+      - name: Read current carbon-apimgt version from Maven
+        working-directory: all-in-one-apim
+        run: |
+          CURRENT=$(mvn -q \
+            -Dexpression=${CARBON_APIMGT_VERSION_PROPERTY} \
+            -DforceStdout \
+            help:evaluate 2>/dev/null || true)
+
+          echo "Current carbon-apimgt version: $CURRENT"
+          echo "CURRENT_CARBON_APIMGT_VERSION=$CURRENT" >> $GITHUB_ENV
+
+      - name: Update pom.xml with latest carbon-apimgt version
+        if: env.LATEST_CARBON_APIMGT_VERSION != '' && env.LATEST_CARBON_APIMGT_VERSION != env.CURRENT_CARBON_APIMGT_VERSION
+        working-directory: all-in-one-apim
+        run: |
+          echo "Updating ${CARBON_APIMGT_VERSION_PROPERTY} from ${CURRENT_CARBON_APIMGT_VERSION} to ${LATEST_CARBON_APIMGT_VERSION}"
+
+          mvn -B \
+            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
+            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
+            -DnewVersion=${LATEST_CARBON_APIMGT_VERSION} \
+            -DgenerateBackupPoms=false
+
+      - name: Build APIM distribution
+        working-directory: all-in-one-apim
+        run: |
+          mvn -B clean install -Dmaven.test.skip=true
+
+      - name: Upload APIM distribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apim-distribution
+          path: all-in-one-apim/modules/distribution/product/target/wso2am-4.6.0-SNAPSHOT.zip
+          if-no-files-found: error
+
+  prepare-and-migrate:
+    needs: update-and-build
+    runs-on: ubuntu-latest
+
+    services:
+      apim_db:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: WSO2AM_APIMGT_DB
+          MYSQL_USER: apim_user
+          MYSQL_PASSWORD: apimpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -prootpass"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      shared_db:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: WSO2AM_COMMON_DB
+          MYSQL_USER: shared_user
+          MYSQL_PASSWORD: sharedpass
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -prootpass"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      # API Manager Database (apim_db)
+      API_MANAGER_DATABASE_TYPE: mysql
+      API_MANAGER_DATABASE_DRIVER: com.mysql.cj.jdbc.Driver
+      API_MANAGER_DATABASE_URL: "jdbc:mysql://host.docker.internal:3306/WSO2AM_APIMGT_DB?allowPublicKeyRetrieval=true&amp;useSSL=false"
+      API_MANAGER_DATABASE_USERNAME: apim_user
+      API_MANAGER_DATABASE_PASSWORD: apimpass
+      API_MANAGER_DATABASE_VALIDATION_QUERY: SELECT 1
+      # Shared Database (shared_db)
+      SHARED_DATABASE_TYPE: mysql
+      SHARED_DATABASE_DRIVER: com.mysql.cj.jdbc.Driver
+      SHARED_DATABASE_URL: "jdbc:mysql://host.docker.internal:3307/WSO2AM_COMMON_DB?allowPublicKeyRetrieval=true&amp;useSSL=false"
+      SHARED_DATABASE_USERNAME: shared_user
+      SHARED_DATABASE_PASSWORD: sharedpass
+      SHARED_DATABASE_VALIDATION_QUERY: SELECT 1
+
+    steps:
+      - name: Checkout master-new-test-framework branch
+        uses: actions/checkout@v4
+        with:
+          ref: master-new-test-framework
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+          cache: maven
+
+      - name: Download APIM distribution artifact (built from master)
+        uses: actions/download-artifact@v4
+        with:
+          name: apim-distribution
+          path: ./artifacts
+
+      - name: Find and extract distribution archive
+        run: |
+          # Look for wso2am-4.6.0-SNAPSHOT.zip (built from master branch)
+          DIST_ARCHIVE=$(find artifacts -name "wso2am-4.6.0-SNAPSHOT.zip" | head -n1)
+          if [ -z "$DIST_ARCHIVE" ]; then
+            echo "wso2am-4.6.0-SNAPSHOT.zip not found in artifacts"
+            ls -la artifacts/
+            exit 1
+          fi
+          
+          echo "Found archive: $DIST_ARCHIVE"
+          echo "DIST_ARCHIVE=$DIST_ARCHIVE" >> $GITHUB_ENV
+          
+          # Extract to temp directory
+          mkdir -p unpacked-dist
+          unzip -q "$DIST_ARCHIVE" -d unpacked-dist
+          
+          # Find the extracted directory (should be wso2am-4.6.0-SNAPSHOT)
+          EXTRACTED_DIR=$(find unpacked-dist -maxdepth 1 -type d -name "wso2am-*" | head -n1)
+          if [ -z "$EXTRACTED_DIR" ]; then
+            echo "Extracted directory not found"
+            ls -la unpacked-dist/
+            exit 1
+          fi
+          echo "EXTRACTED_DIR=$EXTRACTED_DIR" >> $GITHUB_ENV
+
+      - name: Add JDBC driver to distribution
+        run: |
+          REPO_LIB_DIR="$EXTRACTED_DIR/repository/components/lib"
+          JDBC_URL="https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.30/mysql-connector-java-8.0.30.jar"
+          
+          mkdir -p "$REPO_LIB_DIR"
+          wget -q -O mysql-connector-java-8.0.30.jar "$JDBC_URL"
+          mv mysql-connector-java-8.0.30.jar "$REPO_LIB_DIR"
+          echo "JDBC driver added to $REPO_LIB_DIR"
+
+      - name: Replace keystore and truststore of distribution
+        run: |
+          SECURITY_DIR="$EXTRACTED_DIR/repository/resources/security"
+          mkdir -p "$SECURITY_DIR"
+          
+          # Delete existing keystore and truststore files
+          rm -f "$SECURITY_DIR"/*.jks "$SECURITY_DIR"/*.p12
+          
+          # Copy new keystore and truststore files from master-new-test-framework branch
+          cp all-in-one-apim/modules/integration-v2/client-truststore.jks "$SECURITY_DIR/"
+          cp all-in-one-apim/modules/integration-v2/wso2carbon.jks "$SECURITY_DIR/"
+          
+          echo "Keystore and truststore files replaced in $SECURITY_DIR"
+
+      - name: Configure deployment.toml with MySQL database settings
+        run: |
+          DEPLOYMENT_TOML="$EXTRACTED_DIR/repository/conf/deployment.toml"
+          
+          # Backup original deployment.toml
+          cp "$DEPLOYMENT_TOML" "$DEPLOYMENT_TOML.backup"
+          
+          # Read the original file and remove existing sections
+          # Remove existing database.apim_db, database.shared_db, apim.gateway.environment, and apim.sync_runtime_artifacts.gateway sections
+          awk '
+            /^\[database\.apim_db\]/ { skip=1; next }
+            /^\[database\.shared_db\]/ { skip=1; next }
+            /^\[\[apim\.gateway\.environment\]\]/ { skip=1; next }
+            /^\[apim\.sync_runtime_artifacts\.gateway\]/ { skip=1; next }
+            /^\[\[/ && skip { skip=0; print; next }
+            /^\[/ && skip { skip=0; print; next }
+            skip { next }
+            !skip { print }
+          ' "$DEPLOYMENT_TOML.backup" > "$DEPLOYMENT_TOML.tmp"
+          
+          # Append MySQL database configurations and gateway environment using environment variables
+          cat >> "$DEPLOYMENT_TOML.tmp" << 'EOF'
+
+          # Database configurations for migration testing
+          [database.apim_db]
+          type = "$env{API_MANAGER_DATABASE_TYPE}"
+          driver = "$env{API_MANAGER_DATABASE_DRIVER}"
+          url = "$env{API_MANAGER_DATABASE_URL}"
+          username = "$env{API_MANAGER_DATABASE_USERNAME}"
+          password = "$env{API_MANAGER_DATABASE_PASSWORD}"
+          validationQuery = "$env{API_MANAGER_DATABASE_VALIDATION_QUERY}"
+
+          [database.shared_db]
+          type = "$env{SHARED_DATABASE_TYPE}"
+          driver = "$env{SHARED_DATABASE_DRIVER}"
+          url = "$env{SHARED_DATABASE_URL}"
+          username = "$env{SHARED_DATABASE_USERNAME}"
+          password = "$env{SHARED_DATABASE_PASSWORD}"
+          validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
+
+          # Gateway environment configuration
+          [[apim.gateway.environment]]
+          name = "Production and Sandbox"
+          type = "hybrid"
+          gateway_type = "Regular"
+          provider = "wso2"
+          display_in_api_console = true
+          description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+          show_as_token_endpoint_url = true
+          service_url = "https://localhost:${mgt.transport.https.port}/services/"
+          username= "${admin.username}"
+          password= "${admin.password}"
+          ws_endpoint = "ws://localhost:9099"
+          wss_endpoint = "wss://localhost:8099"
+          http_endpoint = "http://localhost:${http.nio.port}"
+          https_endpoint = "https://localhost:${https.nio.port}"
+          websub_event_receiver_http_endpoint = "http://localhost:9021"
+          websub_event_receiver_https_endpoint = "https://localhost:8021"
+
+          [apim.sync_runtime_artifacts.gateway]
+          gateway_labels = ["Production and Sandbox", "Default"]
+          EOF
+          
+          mv "$DEPLOYMENT_TOML.tmp" "$DEPLOYMENT_TOML"
+          
+          echo "deployment.toml configured with MySQL database settings and gateway environment"
+          echo "=== Updated deployment.toml ==="
+          tail -30 "$DEPLOYMENT_TOML"
+
+      - name: Re-zip distribution
+        run: |
+          # Get the version from the extracted directory name
+          DIST_NAME=$(basename "$EXTRACTED_DIR")
+          TARGET_DIR="all-in-one-apim/modules/distribution/product/target"
+          mkdir -p "$TARGET_DIR"
+          
+          # Get absolute path to ensure we're working from the right location
+          WORKSPACE=$(pwd)
+          TARGET_PATH="$WORKSPACE/$TARGET_DIR/$DIST_NAME.zip"
+          
+          cd unpacked-dist
+          zip -r "$TARGET_PATH" "$DIST_NAME"
+          cd "$WORKSPACE"
+          
+          echo "Created: $TARGET_PATH"
+          ls -lh "$TARGET_PATH"
+          
+          # Verify the file exists
+          if [ ! -f "$TARGET_PATH" ]; then
+            echo "ERROR: Zip file was not created at $TARGET_PATH"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client python3 python3-pip
+
+          # Docker is already available in GitHub Actions runners
+          docker --version
+
+      - name: Wait for DBs to be ready
+        run: |
+          echo "Waiting for databases..."
+          for i in {1..60}; do
+            if mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -prootpass --silent 2>/dev/null; then
+              echo "apim_db is ready"
+              break
+            fi
+            echo "Waiting for apim_db... ($i/60)"
+            sleep 2
+          done
+          
+          for i in {1..60}; do
+            if mysqladmin ping -h 127.0.0.1 -P 3307 -uroot -prootpass --silent 2>/dev/null; then
+              echo "shared_db is ready"
+              break
+            fi
+            echo "Waiting for shared_db... ($i/60)"
+            sleep 2
+          done
+
+      - name: Configure MySQL character set and collation
+        run: |
+          echo "Configuring MySQL databases with latin1 character set and collation..."
+          
+          # Configure APIM database
+          mysql -h 127.0.0.1 -P 3306 -uroot -prootpass <<EOF
+          ALTER DATABASE WSO2AM_APIMGT_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+          EOF
+          
+          # Configure Shared database
+          mysql -h 127.0.0.1 -P 3307 -uroot -prootpass <<EOF
+          ALTER DATABASE WSO2AM_COMMON_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+          EOF
+          
+          echo "MySQL databases configured successfully"
+
+      - name: Download APIM 3.2.0 database dumps from Google Drive
+        run: |
+          mkdir -p .github/DB_DUMPS
+          echo "Using checked-in APIM 3.2.0 DB dumps from .github/DB_DUMPS"
+          # Verify files exist
+          ls -lh .github/DB_DUMPS/
+          test -f .github/DB_DUMPS/apim_db_320_dump.sql
+          test -f .github/DB_DUMPS/shared_db_320_dump.sql
+
+      - name: Restore APIM DB dump (3.2.0)
+        run: |
+          APIM_DB_CONTAINER=$(docker ps \
+            --filter "ancestor=mysql:8.0" \
+            --filter "publish=3306" \
+            --format "{{.ID}}" | head -n 1)
+          
+          echo "APIM DB container: ${APIM_DB_CONTAINER}"
+          
+          test -f .github/DB_DUMPS/apim_db_320_dump.sql
+          
+          # Copy SQL inside container
+          docker cp .github/DB_DUMPS/apim_db_320_dump.sql ${APIM_DB_CONTAINER}:/apim_db_dump.sql
+          
+          # Restore dump
+          docker exec -i ${APIM_DB_CONTAINER} \
+            bash -c "cat /apim_db_dump.sql | mysql -uapim_user -papimpass WSO2AM_APIMGT_DB"
+          
+          echo "APIM DB dump restored successfully"
+
+      - name: Restore Shared DB dump (3.2.0)
+        run: |
+          SHARED_DB_CONTAINER=$(docker ps \
+            --filter "ancestor=mysql:8.0" \
+            --filter "publish=3307" \
+            --format "{{.ID}}" | head -n 1)
+          
+          echo "Shared DB container: ${SHARED_DB_CONTAINER}"
+          
+          test -f .github/DB_DUMPS/shared_db_320_dump.sql
+          
+          docker cp .github/DB_DUMPS/shared_db_320_dump.sql ${SHARED_DB_CONTAINER}:/shared_db_dump.sql
+          
+          docker exec -i ${SHARED_DB_CONTAINER} \
+            bash -c "cat /shared_db_dump.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
+          
+          echo "Shared DB dump restored successfully"
+
+      - name: Run MySQL script for shared_db
+        run: |
+          SHARED_DB_CONTAINER=$(docker ps \
+            --filter "ancestor=mysql:8.0" \
+            --filter "publish=3307" \
+            --format "{{.ID}}" | head -n 1)
+          
+          echo "Using checked-in MySQL script for shared_db from .github/DB_SCRIPTS"
+          mkdir -p .github/DB_SCRIPTS
+          test -f .github/DB_SCRIPTS/shared_db_script.sql
+          
+          echo "Running MySQL script on shared_db container..."
+          docker cp .github/DB_SCRIPTS/shared_db_script.sql ${SHARED_DB_CONTAINER}:/shared_db_script.sql
+          docker exec -i ${SHARED_DB_CONTAINER} \
+            bash -c "cat /shared_db_script.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
+          
+          echo "MySQL script executed successfully"
+
+      - name: Build Docker image for APIM
+        run: |
+          DIST_PATH="all-in-one-apim/modules/distribution/product/target/wso2am-4.6.0-SNAPSHOT.zip"
+          
+          # Create a temporary directory for Docker build context
+          mkdir -p docker-build-context
+          cp "$DIST_PATH" docker-build-context/
+          
+          # Create Dockerfile
+          cat > docker-build-context/Dockerfile << 'DOCKERFILE'
+          FROM eclipse-temurin:11-jdk
+          
+          # Install required packages
+          RUN apt-get update && \
+              apt-get install -y unzip && \
+              rm -rf /var/lib/apt/lists/*
+          
+          # Create wso2carbon user
+          RUN groupadd -r wso2carbon && \
+              useradd -r -g wso2carbon -m -s /bin/bash wso2carbon
+          
+          # Set working directory
+          WORKDIR /home/wso2carbon
+          
+          # Copy and extract APIM distribution
+          COPY wso2am-*.zip /tmp/
+          RUN unzip -q /tmp/wso2am-*.zip -d /home/wso2carbon/ && \
+              rm /tmp/wso2am-*.zip && \
+              mv /home/wso2carbon/wso2am-* /home/wso2carbon/wso2am && \
+              chown -R wso2carbon:wso2carbon /home/wso2carbon
+          
+          # Set environment variables
+          ENV CARBON_HOME=/home/wso2carbon/wso2am
+          ENV JAVA_HOME=/opt/java/openjdk
+          
+          # Expose ports
+          EXPOSE 9443 9763 8243 8280
+          
+          # Switch to wso2carbon user
+          USER wso2carbon
+          
+          # Set working directory
+          WORKDIR $CARBON_HOME
+          
+          # Start APIM server (will be overridden by CMD in docker run)
+          CMD ["bin/api-manager.sh"]
+          DOCKERFILE
+          
+          # Build Docker image
+          cd docker-build-context
+          docker build -t wso2am-migration:latest .
+          
+          echo "Docker image built successfully"
+          docker images | grep wso2am-migration
+
+      - name: Identity Migration - Download and Setup
+        env:
+          IDENTITY_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2is-migration-1.1.175.zip"
+        run: |
+          echo "=== Step 1: Identity Migration Setup ==="
+          
+          # Download Identity migration zip
+          echo "Downloading Identity migration resources..."
+          mkdir -p .github/MIGRATION_RESOURCES
+          curl -fSL "$IDENTITY_MIGRATION_S3_URL" -o .github/MIGRATION_RESOURCES/identity-migration.zip
+          
+          # Unzip
+          unzip -q .github/MIGRATION_RESOURCES/identity-migration.zip -d .github/MIGRATION_RESOURCES/identity-migration
+          
+          echo "Identity migration resources downloaded and extracted"
+
+      - name: Identity Migration - Copy Resources and Run
+        run: |
+          echo "=== Step 2: Identity Migration Execution ==="
+          
+          # First, verify the extracted structure locally
+          echo "=== Verifying extracted migration zip structure ==="
+          find .github/MIGRATION_RESOURCES/identity-migration -type f -name "migration-config.yaml" | head -5
+          find .github/MIGRATION_RESOURCES/identity-migration -type d -name "migration-resources" | head -5
+          find .github/MIGRATION_RESOURCES/identity-migration -name "org.wso2.carbon.is.migration-*.jar" | head -5
+          
+          # Find migration-resources folder and IS migration jar
+          MIGRATION_RESOURCES=$(find .github/MIGRATION_RESOURCES/identity-migration -type d -name "migration-resources" | head -n1)
+          if [ -z "$MIGRATION_RESOURCES" ]; then
+            echo "Error: migration-resources folder not found"
+            echo "Extracted structure:"
+            ls -la .github/MIGRATION_RESOURCES/identity-migration/
+            exit 1
+          fi
+          
+          # Verify migration-config.yaml exists in the source
+          if [ ! -f "$MIGRATION_RESOURCES/migration-config.yaml" ]; then
+            echo "Error: migration-config.yaml not found in $MIGRATION_RESOURCES"
+            echo "Contents of migration-resources:"
+            ls -la "$MIGRATION_RESOURCES/"
+            exit 1
+          fi
+          
+          echo "✓ Found migration-resources at: $MIGRATION_RESOURCES"
+          echo "✓ Found migration-config.yaml at: $MIGRATION_RESOURCES/migration-config.yaml"
+          
+          # Find IS migration jar
+          IS_MIGRATION_JAR=$(find .github/MIGRATION_RESOURCES/identity-migration -name "org.wso2.carbon.is.migration-*.jar" | head -n1)
+          if [ -z "$IS_MIGRATION_JAR" ]; then
+            echo "Error: IS migration jar not found"
+            find .github/MIGRATION_RESOURCES/identity-migration -type f -name "*.jar" | head -5
+            exit 1
+          fi
+          
+          echo "✓ Found IS migration jar at: $IS_MIGRATION_JAR"
+          
+          # Start container in detached mode
+          CONTAINER_ID=$(docker run -d \
+            --name wso2am-identity-migration \
+            --add-host=host.docker.internal:host-gateway \
+            -e API_MANAGER_DATABASE_TYPE="$API_MANAGER_DATABASE_TYPE" \
+            -e API_MANAGER_DATABASE_DRIVER="$API_MANAGER_DATABASE_DRIVER" \
+            -e API_MANAGER_DATABASE_URL="$API_MANAGER_DATABASE_URL" \
+            -e API_MANAGER_DATABASE_USERNAME="$API_MANAGER_DATABASE_USERNAME" \
+            -e API_MANAGER_DATABASE_PASSWORD="$API_MANAGER_DATABASE_PASSWORD" \
+            -e API_MANAGER_DATABASE_VALIDATION_QUERY="$API_MANAGER_DATABASE_VALIDATION_QUERY" \
+            -e SHARED_DATABASE_TYPE="$SHARED_DATABASE_TYPE" \
+            -e SHARED_DATABASE_DRIVER="$SHARED_DATABASE_DRIVER" \
+            -e SHARED_DATABASE_URL="$SHARED_DATABASE_URL" \
+            -e SHARED_DATABASE_USERNAME="$SHARED_DATABASE_USERNAME" \
+            -e SHARED_DATABASE_PASSWORD="$SHARED_DATABASE_PASSWORD" \
+            -e SHARED_DATABASE_VALIDATION_QUERY="$SHARED_DATABASE_VALIDATION_QUERY" \
+            wso2am-migration:latest \
+            sleep infinity)
+          
+          echo "Container started: $CONTAINER_ID"
+          sleep 3
+          
+          echo "Copying migration-resources folder to container..."
+          # Ensure target directory exists
+          docker exec $CONTAINER_ID mkdir -p /home/wso2carbon/wso2am/migration-resources
+          # Copy the entire migration-resources directory contents into APIM home
+          docker cp "$MIGRATION_RESOURCES/." $CONTAINER_ID:/home/wso2carbon/wso2am/migration-resources/
+          
+          echo "Verifying migration-resources in container..."
+          docker exec $CONTAINER_ID bash -c '
+            echo "=== migration-resources contents ==="
+            ls -la /home/wso2carbon/wso2am/migration-resources/ | head -20
+            if [ ! -f /home/wso2carbon/wso2am/migration-resources/migration-config.yaml ]; then
+              echo "✗ migration-config.yaml not found in /home/wso2carbon/wso2am/migration-resources"
+              echo "Files in migration-resources:"
+              ls -la /home/wso2carbon/wso2am/migration-resources/
+              exit 1
+            else
+              echo "✓ migration-config.yaml found in /home/wso2carbon/wso2am/migration-resources"
+            fi
+          '
+          
+          echo "Copying IS migration jar to container..."
+          docker exec $CONTAINER_ID mkdir -p /home/wso2carbon/wso2am/repository/components/dropins
+          docker cp "$IS_MIGRATION_JAR" $CONTAINER_ID:/home/wso2carbon/wso2am/repository/components/dropins/
+          
+          echo "Starting Identity migration..."
+          docker exec -d $CONTAINER_ID bash -c \
+          "cd /home/wso2carbon/wso2am && bin/api-manager.sh -Dmigrate -Dcomponent=identity"
+          
+          echo ""
+          echo "=== Waiting for logs to be created ==="
+          
+          # Wait up to 1 minute for the log file to appear
+          timeout 60 bash -c '
+          until docker exec '"$CONTAINER_ID"' test -f /home/wso2carbon/wso2am/repository/logs/wso2carbon.log; do
+          sleep 2
+          done
+          ' || true
+        
+          echo ""
+          echo "=== Streaming Identity Migration Logs ==="
+          echo "----------------------------------------------------"
+        
+          # Stream full logs for exactly 6 minutes
+          timeout 360 docker exec -i $CONTAINER_ID bash -c \
+            "tail -F /home/wso2carbon/wso2am/repository/logs/wso2carbon.log" || true
+          
+          echo ""
+          echo "=== Log streaming finished ==="
+          
+          echo ""
+          echo "=== Final Logs (Last 500 lines) ==="
+          docker exec $CONTAINER_ID bash -c \
+            "tail -500 /home/wso2carbon/wso2am/repository/logs/wso2carbon.log 2>/dev/null || echo 'Log file not found'" || true
+            
+          echo ""
+          echo "=== Stopping API Manager ==="
+          docker exec $CONTAINER_ID pkill -f "api-manager.sh" || true
+          sleep 5
+          
+          echo ""
+          echo "=== Removing Identity Migration Resources ==="
+          docker exec -u root $CONTAINER_ID bash -c "
+          rm -rf /home/wso2carbon/wso2am/migration-resources || true
+          rm -f /home/wso2carbon/wso2am/repository/components/dropins/org.wso2.carbon.is.migration-*.jar || true
+          "
+        
+          echo ""
+          echo "=== Stopping and Removing Container ==="
+            docker stop $CONTAINER_ID
+            docker rm $CONTAINER_ID
+            
+            echo ""
+            echo "Identity migration run completed"
+
+      - name: APIM Migration - Download and Setup
+        env:
+          APIM_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2am-migration-4.6.0.zip"
+        run: |
+          echo "=== Step 3: APIM Migration Setup ==="
+          
+          # Download APIM migration zip
+          echo "Downloading APIM migration resources..."
+          mkdir -p .github/MIGRATION_RESOURCES
+          curl -fSL "$APIM_MIGRATION_S3_URL" -o .github/MIGRATION_RESOURCES/apim-migration.zip
+          
+          # Unzip
+          unzip -q .github/MIGRATION_RESOURCES/apim-migration.zip -d .github/MIGRATION_RESOURCES/apim-migration
+          
+          echo "APIM migration resources downloaded and extracted"
+#
+      - name: APIM Migration - Pre-Migration
+        run: |
+          echo "=== Step 4: APIM Pre-Migration ==="
+          
+          # First, verify the extracted structure locally
+          echo "=== Verifying extracted APIM migration zip structure ==="
+          find .github/MIGRATION_RESOURCES/apim-migration -type f -name "migration-config.yaml" | head -5
+          find .github/MIGRATION_RESOURCES/apim-migration -type d -name "migration-resources" | head -5
+          find .github/MIGRATION_RESOURCES/apim-migration -name "org.wso2.carbon.apimgt.migrate.client-*.jar" | head -5
+          
+          # Find migration-resources folder and APIM migration jar
+          MIGRATION_RESOURCES=$(find .github/MIGRATION_RESOURCES/apim-migration -type d -name "migration-resources" | head -n1)
+          if [ -z "$MIGRATION_RESOURCES" ]; then
+            echo "Error: migration-resources folder not found"
+            echo "Extracted structure:"
+            ls -la .github/MIGRATION_RESOURCES/apim-migration/
+            exit 1
+          fi
+          
+          # Verify migration-config.yaml exists in the source (if it exists for APIM migration)
+          if [ -f "$MIGRATION_RESOURCES/migration-config.yaml" ]; then
+            echo "✓ Found migration-config.yaml at: $MIGRATION_RESOURCES/migration-config.yaml"
+          else
+            echo "Note: migration-config.yaml not found in APIM migration-resources (may not be required)"
+          fi
+          
+          echo "✓ Found migration-resources at: $MIGRATION_RESOURCES"
+          
+          # Find APIM migration jar
+          APIM_MIGRATION_JAR=$(find .github/MIGRATION_RESOURCES/apim-migration -name "org.wso2.carbon.apimgt.migrate.client-*.jar" | head -n1)
+          if [ -z "$APIM_MIGRATION_JAR" ]; then
+            echo "Error: APIM migration jar not found"
+            find .github/MIGRATION_RESOURCES/apim-migration -type f -name "*.jar" | head -5
+            exit 1
+          fi
+          
+          echo "✓ Found APIM migration jar at: $APIM_MIGRATION_JAR"
+          
+          # Start container in detached mode
+          CONTAINER_ID=$(docker run -d \
+            --name wso2am-apim-premigration \
+            --add-host=host.docker.internal:host-gateway \
+            -e API_MANAGER_DATABASE_TYPE="$API_MANAGER_DATABASE_TYPE" \
+            -e API_MANAGER_DATABASE_DRIVER="$API_MANAGER_DATABASE_DRIVER" \
+            -e API_MANAGER_DATABASE_URL="$API_MANAGER_DATABASE_URL" \
+            -e API_MANAGER_DATABASE_USERNAME="$API_MANAGER_DATABASE_USERNAME" \
+            -e API_MANAGER_DATABASE_PASSWORD="$API_MANAGER_DATABASE_PASSWORD" \
+            -e API_MANAGER_DATABASE_VALIDATION_QUERY="$API_MANAGER_DATABASE_VALIDATION_QUERY" \
+            -e SHARED_DATABASE_TYPE="$SHARED_DATABASE_TYPE" \
+            -e SHARED_DATABASE_DRIVER="$SHARED_DATABASE_DRIVER" \
+            -e SHARED_DATABASE_URL="$SHARED_DATABASE_URL" \
+            -e SHARED_DATABASE_USERNAME="$SHARED_DATABASE_USERNAME" \
+            -e SHARED_DATABASE_PASSWORD="$SHARED_DATABASE_PASSWORD" \
+            -e SHARED_DATABASE_VALIDATION_QUERY="$SHARED_DATABASE_VALIDATION_QUERY" \
+            wso2am-migration:latest \
+            sleep infinity)
+          
+          echo "Container started: $CONTAINER_ID"
+          sleep 3
+          
+          echo "Copying migration-resources folder to container..."
+          # Ensure target directory exists
+          docker exec $CONTAINER_ID mkdir -p /home/wso2carbon/wso2am/migration-resources
+          # Copy the entire migration-resources directory contents into APIM home
+          docker cp "$MIGRATION_RESOURCES/." $CONTAINER_ID:/home/wso2carbon/wso2am/migration-resources/
+          
+          echo "Verifying migration-resources in container..."
+          docker exec $CONTAINER_ID bash -c '
+            echo "=== migration-resources contents ==="
+            ls -la /home/wso2carbon/wso2am/migration-resources/ | head -20
+          '
+          
+          echo "Copying APIM migration jar to container..."
+          docker exec $CONTAINER_ID mkdir -p /home/wso2carbon/wso2am/repository/components/dropins
+          docker cp "$APIM_MIGRATION_JAR" $CONTAINER_ID:/home/wso2carbon/wso2am/repository/components/dropins/
+          
+          echo "Starting APIM pre-migration..."
+          docker exec -d $CONTAINER_ID bash -c \
+          "cd /home/wso2carbon/wso2am && bin/api-manager.sh -Dmigrate -DmigrateFromVersion=3.2.0 -DrunPreMigration"
+          
+          echo ""
+          echo "=== Waiting for logs to be created ==="
+          
+          # Wait up to 1 minute for the log file to appear
+          timeout 60 bash -c '
+          until docker exec '"$CONTAINER_ID"' test -f /home/wso2carbon/wso2am/repository/logs/wso2carbon.log; do
+          sleep 2
+          done
+          ' || true
+          
+          echo ""
+          echo "=== Streaming APIM Pre-Migration Logs ==="
+          echo "----------------------------------------------------"
+          
+          # Stream full logs for exactly 6 minutes
+          timeout 360 docker exec -i $CONTAINER_ID bash -c \
+            "tail -F /home/wso2carbon/wso2am/repository/logs/wso2carbon.log" || true
+          
+          echo ""
+          echo "=== Log streaming finished ==="
+          
+          echo ""
+          echo "=== Final Logs (Last 500 lines) ==="
+          docker exec $CONTAINER_ID bash -c \
+            "tail -500 /home/wso2carbon/wso2am/repository/logs/wso2carbon.log 2>/dev/null || echo 'Log file not found'" || true
+          
+          echo ""
+          echo "=== Stopping API Manager ==="
+          docker exec $CONTAINER_ID pkill -f "api-manager.sh" || true
+          sleep 5
+          
+          echo ""
+          echo "=== Removing APIM Pre-Migration Resources ==="
+          docker exec -u root $CONTAINER_ID bash -c "
+          rm -rf /home/wso2carbon/wso2am/migration-resources || true
+          rm -f /home/wso2carbon/wso2am/repository/components/dropins/org.wso2.carbon.apimgt.migrate.client-*.jar || true
+          "
+          
+          echo ""
+          echo "=== Stopping and Removing Container ==="
+          docker stop $CONTAINER_ID
+          docker rm $CONTAINER_ID
+          
+          echo ""
+          echo "APIM pre-migration run completed"
+
+      - name: APIM Migration - Run Migration
+        run: |
+          echo "=== Step 5: APIM Migration ==="
+          
+          # First, verify the extracted structure locally
+          echo "=== Verifying extracted APIM migration zip structure ==="
+          find .github/MIGRATION_RESOURCES/apim-migration -type f -name "migration-config.yaml" | head -5
+          find .github/MIGRATION_RESOURCES/apim-migration -type d -name "migration-resources" | head -5
+          find .github/MIGRATION_RESOURCES/apim-migration -name "org.wso2.carbon.apimgt.migrate.client-*.jar" | head -5
+          
+          # Find migration-resources folder and APIM migration jar
+          MIGRATION_RESOURCES=$(find .github/MIGRATION_RESOURCES/apim-migration -type d -name "migration-resources" | head -n1)
+          if [ -z "$MIGRATION_RESOURCES" ]; then
+            echo "Error: migration-resources folder not found"
+            echo "Extracted structure:"
+            ls -la .github/MIGRATION_RESOURCES/apim-migration/
+            exit 1
+          fi
+          
+          # Verify migration-config.yaml exists in the source (if it exists for APIM migration)
+          if [ -f "$MIGRATION_RESOURCES/migration-config.yaml" ]; then
+            echo "✓ Found migration-config.yaml at: $MIGRATION_RESOURCES/migration-config.yaml"
+          else
+            echo "Note: migration-config.yaml not found in APIM migration-resources (may not be required)"
+          fi
+          
+          echo "✓ Found migration-resources at: $MIGRATION_RESOURCES"
+          
+          # Find APIM migration jar
+          APIM_MIGRATION_JAR=$(find .github/MIGRATION_RESOURCES/apim-migration -name "org.wso2.carbon.apimgt.migrate.client-*.jar" | head -n1)
+          if [ -z "$APIM_MIGRATION_JAR" ]; then
+            echo "Error: APIM migration jar not found"
+            find .github/MIGRATION_RESOURCES/apim-migration -type f -name "*.jar" | head -5
+            exit 1
+          fi
+          
+          echo "✓ Found APIM migration jar at: $APIM_MIGRATION_JAR"
+          
+          # Start container in detached mode
+          CONTAINER_ID=$(docker run -d \
+            --name wso2am-apim-migration \
+            --add-host=host.docker.internal:host-gateway \
+            -e API_MANAGER_DATABASE_TYPE="$API_MANAGER_DATABASE_TYPE" \
+            -e API_MANAGER_DATABASE_DRIVER="$API_MANAGER_DATABASE_DRIVER" \
+            -e API_MANAGER_DATABASE_URL="$API_MANAGER_DATABASE_URL" \
+            -e API_MANAGER_DATABASE_USERNAME="$API_MANAGER_DATABASE_USERNAME" \
+            -e API_MANAGER_DATABASE_PASSWORD="$API_MANAGER_DATABASE_PASSWORD" \
+            -e API_MANAGER_DATABASE_VALIDATION_QUERY="$API_MANAGER_DATABASE_VALIDATION_QUERY" \
+            -e SHARED_DATABASE_TYPE="$SHARED_DATABASE_TYPE" \
+            -e SHARED_DATABASE_DRIVER="$SHARED_DATABASE_DRIVER" \
+            -e SHARED_DATABASE_URL="$SHARED_DATABASE_URL" \
+            -e SHARED_DATABASE_USERNAME="$SHARED_DATABASE_USERNAME" \
+            -e SHARED_DATABASE_PASSWORD="$SHARED_DATABASE_PASSWORD" \
+            -e SHARED_DATABASE_VALIDATION_QUERY="$SHARED_DATABASE_VALIDATION_QUERY" \
+            wso2am-migration:latest \
+            sleep infinity)
+          
+          echo "Container started: $CONTAINER_ID"
+          sleep 3
+          
+          echo "Copying migration-resources folder to container..."
+          # Ensure target directory exists
+          docker exec $CONTAINER_ID mkdir -p /home/wso2carbon/wso2am/migration-resources
+          # Copy migration-resources directory contents
+          docker cp "$MIGRATION_RESOURCES/." $CONTAINER_ID:/home/wso2carbon/wso2am/migration-resources/
+          
+          echo "Verifying migration-resources in container..."
+          docker exec $CONTAINER_ID bash -c '
+            echo "=== migration-resources contents ==="
+            ls -la /home/wso2carbon/wso2am/migration-resources/ | head -20
+          '
+          
+          echo "Copying APIM migration jar to container..."
+          docker exec $CONTAINER_ID mkdir -p /home/wso2carbon/wso2am/repository/components/dropins
+          docker cp "$APIM_MIGRATION_JAR" $CONTAINER_ID:/home/wso2carbon/wso2am/repository/components/dropins/
+          
+          echo "Starting APIM migration..."
+          docker exec -d $CONTAINER_ID bash -c \
+          "cd /home/wso2carbon/wso2am && bin/api-manager.sh -Dmigrate -DmigrateFromVersion=3.2.0"
+          
+          echo ""
+          echo "=== Waiting for logs to be created ==="
+          
+          # Wait up to 1 minute for the log file to appear
+          timeout 60 bash -c '
+          until docker exec '"$CONTAINER_ID"' test -f /home/wso2carbon/wso2am/repository/logs/wso2carbon.log; do
+          sleep 2
+          done
+          ' || true
+          
+          echo ""
+          echo "=== Streaming APIM Migration Logs ==="
+          echo "----------------------------------------------------"
+          
+          # Stream full logs for exactly 10 minutes
+          timeout 600 docker exec -i $CONTAINER_ID bash -c \
+            "tail -F /home/wso2carbon/wso2am/repository/logs/wso2carbon.log" || true
+          
+          echo ""
+          echo "=== Log streaming finished ==="
+          
+          echo ""
+          echo "=== Final Logs (Last 500 lines) ==="
+          docker exec $CONTAINER_ID bash -c \
+            "tail -500 /home/wso2carbon/wso2am/repository/logs/wso2carbon.log 2>/dev/null || echo 'Log file not found'" || true
+          
+          echo ""
+          echo "=== Stopping API Manager ==="
+          docker exec $CONTAINER_ID pkill -f "api-manager.sh" || true
+          sleep 5
+          
+          echo ""
+          echo "=== Removing APIM Migration Resources ==="
+          docker exec -u root $CONTAINER_ID bash -c "
+          rm -rf /home/wso2carbon/wso2am/migration-resources || true
+          rm -f /home/wso2carbon/wso2am/repository/components/dropins/org.wso2.carbon.apimgt.migrate.client-*.jar || true
+          "
+          
+          echo ""
+          echo "=== Stopping and Removing Container ==="
+          docker stop $CONTAINER_ID
+          docker rm $CONTAINER_ID
+          
+          echo ""
+          echo "APIM migration run completed"
+
+      - name: Re-indexing - Configure and Run
+        run: |
+          echo "=== Step 6: Re-indexing API Artifacts ==="
+          
+          # Start container in detached mode
+          CONTAINER_ID=$(docker run -d \
+            --name wso2am-reindexing \
+            --add-host=host.docker.internal:host-gateway \
+            -e API_MANAGER_DATABASE_TYPE="$API_MANAGER_DATABASE_TYPE" \
+            -e API_MANAGER_DATABASE_DRIVER="$API_MANAGER_DATABASE_DRIVER" \
+            -e API_MANAGER_DATABASE_URL="$API_MANAGER_DATABASE_URL" \
+            -e API_MANAGER_DATABASE_USERNAME="$API_MANAGER_DATABASE_USERNAME" \
+            -e API_MANAGER_DATABASE_PASSWORD="$API_MANAGER_DATABASE_PASSWORD" \
+            -e API_MANAGER_DATABASE_VALIDATION_QUERY="$API_MANAGER_DATABASE_VALIDATION_QUERY" \
+            -e SHARED_DATABASE_TYPE="$SHARED_DATABASE_TYPE" \
+            -e SHARED_DATABASE_DRIVER="$SHARED_DATABASE_DRIVER" \
+            -e SHARED_DATABASE_URL="$SHARED_DATABASE_URL" \
+            -e SHARED_DATABASE_USERNAME="$SHARED_DATABASE_USERNAME" \
+            -e SHARED_DATABASE_PASSWORD="$SHARED_DATABASE_PASSWORD" \
+            -e SHARED_DATABASE_VALIDATION_QUERY="$SHARED_DATABASE_VALIDATION_QUERY" \
+            wso2am-migration:latest \
+            sleep infinity)
+          
+          echo "Container started: $CONTAINER_ID"
+          sleep 3
+          
+          # Configure deployment.toml for re-indexing
+          echo "Configuring deployment.toml for re-indexing..."
+          DEPLOYMENT_TOML="/home/wso2carbon/wso2am/repository/conf/deployment.toml"
+          
+          # Remove existing indexing section and re_indexing line if they exist
+          docker exec $CONTAINER_ID bash -c "sed -i '/^\[indexing\]/,/^\[/ { /^\[indexing\]/d; /^re_indexing/d; }' $DEPLOYMENT_TOML 2>/dev/null || true" 2>&1
+          docker exec $CONTAINER_ID bash -c "sed -i '/^re_indexing/d' $DEPLOYMENT_TOML 2>/dev/null || true" 2>&1
+          
+          # Add indexing section at the end of the file
+          docker exec $CONTAINER_ID bash -c "echo '' >> $DEPLOYMENT_TOML && echo '[indexing]' >> $DEPLOYMENT_TOML && echo 're_indexing = 1' >> $DEPLOYMENT_TOML" 2>&1
+          
+          # Verify the configuration
+          echo "=== Updated deployment.toml (indexing section) ==="
+          docker exec $CONTAINER_ID bash -c "grep -A 2 '^\[indexing\]' $DEPLOYMENT_TOML" 2>&1
+          
+          # Delete solr directory if it exists
+          echo "Checking for solr directory..."
+          if docker exec $CONTAINER_ID bash -c "test -d /home/wso2carbon/wso2am/solr"; then
+            echo "Deleting existing solr directory..."
+            docker exec -u root $CONTAINER_ID bash -c "rm -rf /home/wso2carbon/wso2am/solr" 2>&1
+            echo "Solr directory deleted"
+          else
+            echo "Solr directory does not exist, skipping deletion"
+          fi
+          
+          # Start API Manager for re-indexing
+          echo "Starting API Manager for re-indexing..."
+          docker exec -d $CONTAINER_ID bash -c \
+          "cd /home/wso2carbon/wso2am && bin/api-manager.sh"
+          
+          echo ""
+          echo "=== Waiting for logs to be created ==="
+          
+          # Wait up to 1 minute for the log file to appear
+          timeout 60 bash -c '
+          until docker exec '"$CONTAINER_ID"' test -f /home/wso2carbon/wso2am/repository/logs/wso2carbon.log; do
+          sleep 2
+          done
+          ' || true
+          
+          echo ""
+          echo "=== Streaming Re-indexing Logs ==="
+          echo "----------------------------------------------------"
+          
+          # Stream full logs for exactly 10 minutes
+          timeout 600 docker exec -i $CONTAINER_ID bash -c \
+            "tail -F /home/wso2carbon/wso2am/repository/logs/wso2carbon.log" || true
+          
+          echo ""
+          echo "=== Log streaming finished ==="
+          
+          echo ""
+          echo "=== Final Logs (Last 500 lines) ==="
+          docker exec $CONTAINER_ID bash -c \
+            "tail -500 /home/wso2carbon/wso2am/repository/logs/wso2carbon.log 2>/dev/null || echo 'Log file not found'" || true
+          
+          echo ""
+          echo "=== Stopping API Manager ==="
+          docker exec $CONTAINER_ID pkill -f "api-manager.sh" || true
+          sleep 5
+          
+          echo ""
+          echo "=== Stopping and Removing Container ==="
+          docker stop $CONTAINER_ID
+          docker rm $CONTAINER_ID
+          
+          echo ""
+          echo "Re-indexing run completed"
+
+      - name: Wait 10 minutes after re-indexing (DB prep)
+        run: sleep 600
+
+      - name: Run Integration Tests on Migrated Databases
+        working-directory: all-in-one-apim/modules/integration-v2
+        env:
+          MAVEN_OPTS: "-Djansi.force=true -Djansi.passthrough=true -Dstyle.color=always"
+          TERM: xterm-256color
+          GATEWAY_ENVIRONMENT: Production and Sandbox
+          APIM_TEST_CONTAINERS_PARALLEL_ENABLED: False
+          PARALLEL_THREAD_COUNT: 1
+          DOCKER_BUILDKIT: 1
+        run: |
+          echo "=== Starting Integration Tests on Migrated Databases ==="
+          echo "Running tests against databases that have been migrated from APIM 3.2.0"
+          echo "Maven will start the HTTP server automatically via pom.xml"
+          echo "Using --add-host=host.docker.internal:host-gateway for Linux compatibility"
+          echo ""
+          echo "=== Final file check before Maven ==="
+          if [ -f "../distribution/product/target/wso2am-4.6.0-SNAPSHOT.zip" ]; then
+            echo "✓ File exists before Maven execution"
+            ls -lh "../distribution/product/target/wso2am-4.6.0-SNAPSHOT.zip"
+          else
+            echo "✗ ERROR: File missing before Maven execution"
+            exit 1
+          fi
+
+          export DOCKER_BUILDKIT=1
+          mvn -B clean install \
+            -Pmigration \
+            -DskipBenchMarkTest=true \
+            -DskipRestartTests=true \
+            -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-test-reports
+          path: |
+            all-in-one-apim/modules/integration-v2/tests-integration/**/target/surefire-reports/**
+          if-no-files-found: warn
+
+  version-bump:
+    needs: [update-and-build, prepare-and-migrate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      CARBON_APIMGT_VERSION_PROPERTY: carbon.apimgt.version
+    steps:
+      - name: Checkout build branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+          cache: maven
+
+      - name: Update pom.xml and push version bump
+        if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
+        working-directory: all-in-one-apim
+        run: |
+          LATEST="${{ needs.update-and-build.outputs.latest_version }}"
+          echo "Bumping ${CARBON_APIMGT_VERSION_PROPERTY} from ${{ needs.update-and-build.outputs.current_version }} to $LATEST"
+          mvn -B \
+            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
+            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
+            -DnewVersion=$LATEST \
+            -DgenerateBackupPoms=false
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -am "chore: bump carbon-apimgt to $LATEST"
+          git push origin HEAD:${GITHUB_REF#refs/heads/}
