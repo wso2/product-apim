@@ -1285,7 +1285,7 @@
         <carbon.apimgt.ui.version>9.3.129</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.12</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.13</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1306,7 +1306,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.8.3</carbon.mediation.version>
+        <carbon.mediation.version>4.8.4</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.27.0</carbon.identity.version>
@@ -1383,7 +1383,7 @@
         <waffle-jna.version>1.6.wso2v7</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
         <opensaml2.wso2.version>3.3.1.wso2v118</opensaml2.wso2.version>
-        <transport.http.netty.version>6.3.55</transport.http.netty.version>
+        <transport.http.netty.version>6.3.60</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[3.1.0, 4.0.0)</imp.pkg.version.javax.servlet>
 
