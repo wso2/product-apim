@@ -1306,7 +1306,7 @@
         <carbon.apimgt.ui.version>9.3.129</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.13</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.15</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1327,24 +1327,24 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.8.4</carbon.mediation.version>
+        <carbon.mediation.version>4.8.5</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.27.0</carbon.identity.version>
+        <carbon.identity.version>5.27.3</carbon.identity.version>
         <carbon.identity.governance.version>1.14.0</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.0</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.43</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.45</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.10.0</carbon.identity-user-ws.version>
-        <carbon.identity-inbound-auth-openid.version>5.12.0</carbon.identity-inbound-auth-openid.version>
+        <carbon.identity-inbound-auth-openid.version>5.12.1</carbon.identity-inbound-auth-openid.version>
         <org.wso2.carbon.identity.local.auth.api.version>2.5.15</org.wso2.carbon.identity.local.auth.api.version>
         <carbon.identity-local-auth-basicauth.version>6.10.0</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.11.0</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.11.1</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.10.0</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.9.0</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.4</carbon.extension.identity.oauth2.grantType.jwt.version>
-        <carbon.identity.carbon.auth.saml2.version>5.11.0</carbon.identity.carbon.auth.saml2.version>
+        <carbon.identity.carbon.auth.saml2.version>5.11.1</carbon.identity.carbon.auth.saml2.version>
         <identity.apps.version>1.6.383</identity.apps.version>
         <identity.oauth.addons.version>2.7.0</identity.oauth.addons.version>
 
@@ -1370,10 +1370,10 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.1.0-wso2v5</synapse.version>
+        <synapse.version>4.1.0-wso2v23</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v111</axis2.wso2.version>
-        <axiom.wso2.version>1.2.11-wso2v29</axiom.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v120</axis2.wso2.version>
+        <axiom.wso2.version>1.2.11-wso2v34</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
@@ -1403,7 +1403,7 @@
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v7</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
-        <opensaml2.wso2.version>3.3.1.wso2v118</opensaml2.wso2.version>
+        <opensaml2.wso2.version>3.3.1.wso2v120</opensaml2.wso2.version>
         <transport.http.netty.version>6.3.60</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[3.1.0, 4.0.0)</imp.pkg.version.javax.servlet>
