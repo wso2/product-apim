@@ -13,6 +13,7 @@ jobs:
     outputs:
       latest_version: ${{ env.LATEST_CARBON_APIMGT_VERSION }}
       current_version: ${{ env.CURRENT_CARBON_APIMGT_VERSION }}
+      dist_path: ${{ steps.find_dist.outputs.dist_path }}
 
     env:
       CARBON_APIMGT_REPO: https://github.com/wso2/carbon-apimgt.git
@@ -75,11 +76,22 @@ jobs:
         run: |
           mvn -B clean install -Dmaven.test.skip=true
 
+      - name: Find built APIM distribution
+        id: find_dist
+        run: |
+          DIST_PATH=$(find all-in-one-apim/modules/distribution/product/target \
+            -maxdepth 1 -type f -name "wso2am-*-SNAPSHOT.zip" | head -n1)
+          if [ -z "$DIST_PATH" ]; then
+            echo "Distribution zip (wso2am-*-SNAPSHOT.zip) not found"
+            exit 1
+          fi
+          echo "dist_path=$DIST_PATH" >> "$GITHUB_OUTPUT"
+
       - name: Upload APIM distribution artifact
         uses: actions/upload-artifact@v4
         with:
           name: apim-distribution
-          path: all-in-one-apim/modules/distribution/product/target/wso2am-4.6.0-SNAPSHOT.zip
+          path: ${{ steps.find_dist.outputs.dist_path }}
           if-no-files-found: error
 
   prepare-and-migrate:
@@ -155,10 +167,10 @@ jobs:
 
       - name: Find and extract distribution archive
         run: |
-          # Look for wso2am-4.6.0-SNAPSHOT.zip (built from master branch)
-          DIST_ARCHIVE=$(find artifacts -name "wso2am-4.6.0-SNAPSHOT.zip" | head -n1)
+          # Look for wso2am-*-SNAPSHOT.zip (built from master branch)
+          DIST_ARCHIVE=$(find artifacts -name "wso2am-*-SNAPSHOT.zip" | head -n1)
           if [ -z "$DIST_ARCHIVE" ]; then
-            echo "wso2am-4.6.0-SNAPSHOT.zip not found in artifacts"
+            echo "wso2am-*-SNAPSHOT.zip not found in artifacts"
             ls -la artifacts/
             exit 1
           fi
@@ -408,7 +420,12 @@ jobs:
 
       - name: Build Docker image for APIM
         run: |
-          DIST_PATH="all-in-one-apim/modules/distribution/product/target/wso2am-4.6.0-SNAPSHOT.zip"
+          DIST_PATH=$(find all-in-one-apim/modules/distribution/product/target \
+            -maxdepth 1 -type f -name "wso2am-*-SNAPSHOT.zip" | head -n1)
+          if [ -z "$DIST_PATH" ]; then
+            echo "Distribution zip not found in all-in-one-apim/modules/distribution/product/target"
+            exit 1
+          fi
           
           # Create a temporary directory for Docker build context
           mkdir -p docker-build-context
@@ -995,11 +1012,12 @@ jobs:
           echo "Using --add-host=host.docker.internal:host-gateway for Linux compatibility"
           echo ""
           echo "=== Final file check before Maven ==="
-          if [ -f "../distribution/product/target/wso2am-4.6.0-SNAPSHOT.zip" ]; then
+          ZIP_PATH=$(find ../distribution/product/target -maxdepth 1 -name "wso2am-*-SNAPSHOT.zip" 2>/dev/null | head -n1)
+          if [ -n "$ZIP_PATH" ] && [ -f "$ZIP_PATH" ]; then
             echo "✓ File exists before Maven execution"
-            ls -lh "../distribution/product/target/wso2am-4.6.0-SNAPSHOT.zip"
+            ls -lh "$ZIP_PATH"
           else
-            echo "✗ ERROR: File missing before Maven execution"
+            echo "✗ ERROR: wso2am-*-SNAPSHOT.zip not found in distribution/product/target"
             exit 1
           fi
 
@@ -1040,22 +1058,22 @@ jobs:
           java-version: "11"
           cache: maven
 
-      - name: Update pom.xml and push version bump
-        if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
-        working-directory: all-in-one-apim
-        run: |
-          LATEST="${{ needs.update-and-build.outputs.latest_version }}"
-          echo "Bumping ${CARBON_APIMGT_VERSION_PROPERTY} from ${{ needs.update-and-build.outputs.current_version }} to $LATEST"
-          mvn -B \
-            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
-            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
-            -DnewVersion=$LATEST \
-            -DgenerateBackupPoms=false
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
-          git commit -am "chore: bump carbon-apimgt to $LATEST"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+#      - name: Update pom.xml and push version bump
+#        if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
+#        working-directory: all-in-one-apim
+#        run: |
+#          LATEST="${{ needs.update-and-build.outputs.latest_version }}"
+#          echo "Bumping ${CARBON_APIMGT_VERSION_PROPERTY} from ${{ needs.update-and-build.outputs.current_version }} to $LATEST"
+#          mvn -B \
+#            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
+#            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
+#            -DnewVersion=$LATEST \
+#            -DgenerateBackupPoms=false
+#          git config user.name "github-actions[bot]"
+#          git config user.email "github-actions[bot]@users.noreply.github.com"
+#          if git diff --quiet; then
+#            echo "No changes to commit."
+#            exit 0
+#          fi
+#          git commit -am "chore: bump carbon-apimgt to $LATEST"
+#          git push origin HEAD:${GITHUB_REF#refs/heads/}
