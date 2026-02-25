@@ -581,6 +581,7 @@
   "apim.ai.failover_configurations.default_request_timeout": "30",
   "apim.mcp.enable": true,
   "apim.devportal.mode": "HYBRID",
+  "apim.devportal.url_generation_secret": "Ncp/fE6nPl+wifoGKP3UGcFzhKxqASwDaR4ivKj5s6E=",
   "admin_service.deny_list": [
     "ClassMediatorAdmin",
     "CommandMediatorAdmin",
