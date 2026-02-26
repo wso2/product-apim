@@ -1,0 +1,512 @@
+# Automated Dependency Upgrade Workflow for WSO2 API Manager
+#
+# This workflow automatically checks for and upgrades the following dependencies:
+# - carbon-apimgt: Core API management functionality
+# - carbon-kernel: WSO2 Carbon platform foundation (4.9.x series)
+# - apim-apps: UI components for API Manager
+# - wso2-synapse: ESB engine with axis2 and axiom dependencies
+#
+# Creates a single PR when updates are available and needed
+
+name: Dependency Upgrade
+
+on:
+  # schedule:
+  #   - cron: "0 1 * * 0"
+  workflow_dispatch:
+    inputs:
+      apimgtVersion:
+        description: "Override carbon-apimgt version (leave empty for latest)"
+        required: false
+        default: ""
+        type: string
+      kernelVersion:
+        description: "Override carbon-kernel version (leave empty for latest)"
+        required: false
+        default: ""
+        type: string
+      apimAppsVersion:
+        description: "Override apim-apps version (leave empty for latest)"
+        required: false
+        default: ""
+        type: string
+      synapseVersion:
+        description: "Override wso2-synapse version (leave empty for latest)"
+        required: false
+        default: ""
+        type: string
+      dryRun:
+        description: "Dry run mode - only check for updates without creating PR"
+        required: false
+        default: false
+        type: boolean
+      debug:
+        description: "Enable debug logging"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependency-upgrade-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEBUG: ${{ inputs.debug == true && 'true' || 'false' }}
+      DRY_RUN: ${{ inputs.dryRun == true && 'true' || 'false' }}
+
+      # Repository configurations
+      APIMGT_REPO: "wso2/carbon-apimgt"
+      KERNEL_REPO: "wso2/carbon-kernel"
+      APIM_APPS_REPO: "wso2/apim-apps"
+      SYNAPSE_REPO: "wso2/wso2-synapse"
+
+      # Files to update in product-apim
+      CANONICAL_POM: "api-control-plane/pom.xml"
+      POM_FILES: "api-control-plane/pom.xml gateway/pom.xml traffic-manager/pom.xml all-in-one-apim/pom.xml"
+
+      # Kernel-specific non-POM files to update
+      KERNEL_CARBON_PRODUCTS: "api-control-plane/modules/p2-profile/product/carbon.product gateway/modules/p2-profile/product/carbon.product traffic-manager/modules/p2-profile/product/carbon.product all-in-one-apim/modules/p2-profile/product/carbon.product"
+      KERNEL_FILTER_PROPERTIES: "api-control-plane/modules/distribution/product/src/main/assembly/filter.properties gateway/modules/distribution/product/src/main/assembly/filter.properties traffic-manager/modules/distribution/product/src/main/assembly/filter.properties all-in-one-apim/modules/distribution/product/src/main/assembly/filter.properties"
+
+    steps:
+      - name: Checkout product-apim
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Setup Java and tools
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "11"
+          cache: "maven"
+
+      - name: Install additional tools
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libxml2-utils
+
+      - name: Validate inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          validate_version() {
+            local version="$1"
+            local name="$2"
+            # Allow semver-ish + suffix like 4.1.0-wso2v14
+            if [[ -n "$version" ]] && [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then
+              echo "::error::Invalid version format for $name: $version"
+              exit 1
+            fi
+          }
+
+          validate_version "${{ inputs.apimgtVersion }}" "carbon-apimgt"
+          validate_version "${{ inputs.kernelVersion }}" "carbon-kernel"
+          validate_version "${{ inputs.apimAppsVersion }}" "apim-apps"
+          validate_version "${{ inputs.synapseVersion }}" "wso2-synapse"
+
+          if [[ "${DEBUG:-false}" == "true" ]]; then
+            echo "::notice::Debug mode enabled"
+          fi
+          echo "::notice::Dry run mode: ${DRY_RUN:-false}"
+
+      # ----------------------------
+      # 1) Resolve versions (all)
+      # ----------------------------
+      - name: Resolve dependency versions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          debug_log() { [[ "${DEBUG:-false}" == "true" ]] && echo "::debug::$1" || true; }
+
+          retry_gh_api() {
+            local url="$1"
+            local jq_filter="$2"
+            local max_retries=3
+            local retry_count=0
+
+            while [[ $retry_count -lt $max_retries ]]; do
+              if result=$(gh api "$url" -q "$jq_filter" 2>/dev/null); then
+                echo "$result"
+                return 0
+              fi
+              retry_count=$((retry_count + 1))
+              debug_log "API call failed, retrying ($retry_count/$max_retries): $url"
+              sleep $((retry_count * 2))
+            done
+
+            echo "::error::Failed to fetch from GitHub API after $max_retries retries: $url"
+            return 1
+          }
+
+          resolve_latest_tag() {
+            local repo="$1"
+            local override="$2"
+            if [[ -n "$override" ]]; then
+              echo "$override"
+            else
+              retry_gh_api "repos/$repo/tags?per_page=1" '.[0].name'
+            fi
+          }
+
+          resolve_kernel_version() {
+            local repo="$1"
+            local override="$2"
+            if [[ -n "$override" ]]; then
+              local version="${override#v}"
+              if [[ ! "$version" =~ ^4\.9\.[0-9]+.*$ ]]; then
+                echo "::error::Override kernel version must be 4.9.x series: $version"
+                exit 1
+              fi
+              echo "$version"
+            else
+              retry_gh_api "repos/$repo/tags?per_page=100" \
+                '[.[].name] | map(sub("^v";"")) | map(select(startswith("4.9."))) | .[0]'
+            fi
+          }
+
+          APIMGT_TAG=$(resolve_latest_tag "$APIMGT_REPO" "${{ inputs.apimgtVersion }}")
+          echo "APIMGT_VERSION=${APIMGT_TAG#v}" >> "$GITHUB_ENV"
+
+          KERNEL_VERSION=$(resolve_kernel_version "$KERNEL_REPO" "${{ inputs.kernelVersion }}")
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> "$GITHUB_ENV"
+
+          APIM_APPS_TAG=$(resolve_latest_tag "$APIM_APPS_REPO" "${{ inputs.apimAppsVersion }}")
+          echo "APIM_APPS_VERSION=${APIM_APPS_TAG#v}" >> "$GITHUB_ENV"
+
+          SYNAPSE_TAG=$(resolve_latest_tag "$SYNAPSE_REPO" "${{ inputs.synapseVersion }}")
+          echo "SYNAPSE_TAG=$SYNAPSE_TAG" >> "$GITHUB_ENV"
+          echo "SYNAPSE_VERSION=${SYNAPSE_TAG#v}" >> "$GITHUB_ENV"
+
+          echo "::notice::Resolved versions:"
+          echo "::notice::  carbon-apimgt: ${APIMGT_TAG#v}"
+          echo "::notice::  carbon-kernel: $KERNEL_VERSION"
+          echo "::notice::  apim-apps: ${APIM_APPS_TAG#v}"
+          echo "::notice::  wso2-synapse: ${SYNAPSE_TAG#v}"
+
+      - name: Checkout wso2-synapse for axis2/axiom versions
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.SYNAPSE_REPO }}
+          ref: ${{ env.SYNAPSE_TAG }}
+          path: _synapse
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract axis2/axiom versions from synapse pom.xml
+        shell: bash
+        run: |
+          set -euo pipefail
+          debug_log() { [[ "${DEBUG:-false}" == "true" ]] && echo "::debug::$1" || true; }
+
+          POM="_synapse/pom.xml"
+          if [[ ! -f "$POM" ]]; then
+            echo "::error::Synapse pom.xml not found at $POM"
+            exit 1
+          fi
+
+          debug_log "Extracting axis2/axiom versions from $POM"
+          AXIS2=$(mvn -q -f "$POM" help:evaluate -Dexpression=axis2.version -DforceStdout 2>/dev/null || true)
+          AXIOM=$(mvn -q -f "$POM" help:evaluate -Dexpression=axiom.version -DforceStdout 2>/dev/null || true)
+
+          if [[ -z "$AXIS2" || -z "$AXIOM" ]]; then
+            echo "::error::Failed to extract axis2/axiom from synapse pom.xml (axis2='$AXIS2', axiom='$AXIOM')"
+            exit 1
+          fi
+
+          echo "SYNAPSE_AXIS2_VERSION=$AXIS2" >> "$GITHUB_ENV"
+          echo "SYNAPSE_AXIOM_VERSION=$AXIOM" >> "$GITHUB_ENV"
+
+          echo "::notice::  axis2: $AXIS2"
+          echo "::notice::  axiom: $AXIOM"
+          
+      - name: Cleanup temporary synapse checkout
+        shell: bash
+        run: |
+          rm -rf _synapse
+
+      # ----------------------------
+      # 2) Apply updates
+      # ----------------------------
+      - name: Update dependency versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          debug_log() { [[ "${DEBUG:-false}" == "true" ]] && echo "::debug::$1" || true; }
+
+          get_current_version() {
+            local pom="$1"
+            local property="$2"
+            mvn -q -f "$pom" help:evaluate -Dexpression="$property" -DforceStdout 2>/dev/null
+          }
+
+          is_version_higher() {
+            local current="$1"
+            local target="$2"
+            [[ "$target" == "$(printf "%s\n%s\n" "$current" "$target" | sort -V | tail -n1)" ]]
+          }
+
+          update_property_in_poms() {
+            local property="$1"
+            local new_value="$2"
+            shift 2
+            local files=("$@")
+
+            for file in "${files[@]}"; do
+              if [[ ! -f "$file" ]]; then
+                echo "::warning::POM not found, skipping: $file"
+                continue
+              fi
+              debug_log "Updating <$property> in $file to $new_value"
+              sed -i "s#<${property}>[^<]*</${property}>#<${property}>${new_value}</${property}>#g" "$file"
+            done
+          }
+
+          # Convert space-separated strings to arrays
+          read -ra POM_FILES_ARRAY <<< "$POM_FILES"
+          read -ra KERNEL_PRODUCTS_ARRAY <<< "$KERNEL_CARBON_PRODUCTS"
+          read -ra KERNEL_FILTERS_ARRAY <<< "$KERNEL_FILTER_PROPERTIES"
+
+          # 1) carbon-apimgt
+          CURRENT_APIMGT=$(get_current_version "$CANONICAL_POM" "carbon.apimgt.version" || true)
+          if [[ -z "$CURRENT_APIMGT" ]]; then
+            echo "::error::Unable to resolve current carbon.apimgt.version from $CANONICAL_POM"
+            exit 1
+          fi
+
+          if [[ "$CURRENT_APIMGT" == "$APIMGT_VERSION" ]]; then
+            echo "::notice::carbon-apimgt unchanged ($CURRENT_APIMGT)"
+          elif is_version_higher "$CURRENT_APIMGT" "$APIMGT_VERSION"; then
+            echo "::notice::Updating carbon-apimgt: $CURRENT_APIMGT → $APIMGT_VERSION"
+            [[ "$DRY_RUN" == "true" ]] || update_property_in_poms "carbon.apimgt.version" "$APIMGT_VERSION" "${POM_FILES_ARRAY[@]}"
+          else
+            echo "::notice::carbon-apimgt target not higher, skipping ($CURRENT_APIMGT ≥ $APIMGT_VERSION)"
+          fi
+
+          # 2) carbon-kernel (POM + carbon.product + filter.properties)
+          CURRENT_KERNEL=$(get_current_version "$CANONICAL_POM" "carbon.kernel.version" || true)
+          if [[ -z "$CURRENT_KERNEL" ]]; then
+            echo "::error::Unable to resolve current carbon.kernel.version from $CANONICAL_POM"
+            exit 1
+          fi
+
+          if [[ ! "$CURRENT_KERNEL" =~ ^4\.9\.[0-9]+ ]] || [[ ! "$KERNEL_VERSION" =~ ^4\.9\.[0-9]+ ]]; then
+            echo "::warning::Kernel versions not in 4.9.x series, skipping (current: $CURRENT_KERNEL, target: $KERNEL_VERSION)"
+          elif [[ "$CURRENT_KERNEL" == "$KERNEL_VERSION" ]]; then
+            echo "::notice::carbon-kernel unchanged ($CURRENT_KERNEL)"
+          elif is_version_higher "$CURRENT_KERNEL" "$KERNEL_VERSION"; then
+            echo "::notice::Updating carbon-kernel everywhere: $CURRENT_KERNEL → $KERNEL_VERSION"
+
+            if [[ "$DRY_RUN" != "true" ]]; then
+              # 2.1 Update POM property
+              update_property_in_poms "carbon.kernel.version" "$KERNEL_VERSION" "${POM_FILES_ARRAY[@]}"
+
+              # 2.2 Update carbon.product (product + feature versions)
+              for f in "${KERNEL_PRODUCTS_ARRAY[@]}"; do
+                if [[ ! -f "$f" ]]; then
+                  echo "::error::Missing file: $f"
+                  exit 1
+                fi
+                debug_log "Updating product/feature versions in $f to $KERNEL_VERSION"
+                sed -i -E "s/(<product[^>]*\bversion=\")([^\"]+)(\")/\1${KERNEL_VERSION}\3/g" "$f"
+                sed -i -E "s/(<feature[^>]*\bversion=\")([^\"]+)(\")/\1${KERNEL_VERSION}\3/g" "$f"
+              done
+
+              # 2.3 Update filter.properties carbon.version
+              for f in "${KERNEL_FILTERS_ARRAY[@]}"; do
+                if [[ ! -f "$f" ]]; then
+                  echo "::error::Missing file: $f"
+                  exit 1
+                fi
+                debug_log "Updating carbon.version in $f to $KERNEL_VERSION"
+                # Only update the carbon.version line
+                sed -i -E "s/^(carbon\.version=).*/\1${KERNEL_VERSION}/" "$f"
+              done
+            fi
+          else
+            echo "::notice::carbon-kernel target not higher, skipping ($CURRENT_KERNEL ≥ $KERNEL_VERSION)"
+          fi
+
+          # 3) apim-apps UI
+          CURRENT_UI=$(get_current_version "$CANONICAL_POM" "carbon.apimgt.ui.version" || true)
+          if [[ -z "$CURRENT_UI" ]]; then
+            echo "::error::Unable to resolve current carbon.apimgt.ui.version from $CANONICAL_POM"
+            exit 1
+          fi
+
+          if [[ "$CURRENT_UI" == "$APIM_APPS_VERSION" ]]; then
+            echo "::notice::apim-apps unchanged ($CURRENT_UI)"
+          elif is_version_higher "$CURRENT_UI" "$APIM_APPS_VERSION"; then
+            echo "::notice::Updating apim-apps UI: $CURRENT_UI → $APIM_APPS_VERSION"
+            [[ "$DRY_RUN" == "true" ]] || update_property_in_poms "carbon.apimgt.ui.version" "$APIM_APPS_VERSION" "${POM_FILES_ARRAY[@]}"
+          else
+            echo "::notice::apim-apps target not higher, skipping ($CURRENT_UI ≥ $APIM_APPS_VERSION)"
+          fi
+
+          # 4) synapse + axis2 + axiom (always align to synapse POM when synapse changes)
+          CURRENT_SYNAPSE=$(get_current_version "$CANONICAL_POM" "synapse.version" || true)
+          CURRENT_AXIS2=$(get_current_version "$CANONICAL_POM" "axis2.wso2.version" || true)
+          CURRENT_AXIOM=$(get_current_version "$CANONICAL_POM" "axiom.wso2.version" || true)
+
+          if [[ -z "$CURRENT_SYNAPSE" || -z "$CURRENT_AXIS2" || -z "$CURRENT_AXIOM" ]]; then
+            echo "::error::Unable to resolve current synapse/axis2/axiom versions from $CANONICAL_POM"
+            exit 1
+          fi
+
+          T_SYN="$SYNAPSE_VERSION"
+          T_A2="$SYNAPSE_AXIS2_VERSION"
+          T_AX="$SYNAPSE_AXIOM_VERSION"
+
+          echo "::notice::Synapse trio current: $CURRENT_SYNAPSE / $CURRENT_AXIS2 / $CURRENT_AXIOM"
+          echo "::notice::Synapse trio target : $T_SYN / $T_A2 / $T_AX"
+
+          # Skip only if all three already match
+          if [[ "$CURRENT_SYNAPSE" == "$T_SYN" && "$CURRENT_AXIS2" == "$T_A2" && "$CURRENT_AXIOM" == "$T_AX" ]]; then
+            echo "::notice::synapse trio unchanged"
+          else
+            # Only prevent *synapse* downgrade (optional, but sensible)
+            if ! is_version_higher "$CURRENT_SYNAPSE" "$T_SYN"; then
+              echo "::notice::Target synapse is lower; skipping."
+              exit 0
+            fi
+
+            echo "::notice::Updating synapse trio to match synapse POM:"
+            echo "::notice::  synapse: $CURRENT_SYNAPSE → $T_SYN"
+            echo "::notice::  axis2  : $CURRENT_AXIS2 → $T_A2"
+            echo "::notice::  axiom  : $CURRENT_AXIOM → $T_AX"
+
+            if [[ "$DRY_RUN" != "true" ]]; then
+              update_property_in_poms "synapse.version" "$T_SYN" "${POM_FILES_ARRAY[@]}"
+              update_property_in_poms "axis2.wso2.version" "$T_A2" "${POM_FILES_ARRAY[@]}"
+              update_property_in_poms "axiom.wso2.version" "$T_AX" "${POM_FILES_ARRAY[@]}"
+            fi
+          fi
+
+
+
+      # ----------------------------
+      # 3) Validate changes and prepare PR
+      # ----------------------------
+      - name: Validate updated files
+        if: env.DRY_RUN != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          debug_log() { [[ "${DEBUG:-false}" == "true" ]] && echo "::debug::$1" || true; }
+
+          for pom in $POM_FILES; do
+            if [[ -f "$pom" ]]; then
+              debug_log "Validating XML syntax: $pom"
+              xmllint --noout "$pom" >/dev/null 2>&1 || { echo "::error::Invalid XML syntax in $pom"; exit 1; }
+            fi
+          done
+
+          debug_log "Running Maven validate on $CANONICAL_POM"
+          mvn -q validate -f "$CANONICAL_POM" >/dev/null 2>&1 || { echo "::error::Maven validation failed"; exit 1; }
+
+          echo "::notice::All updated files passed validation"
+
+      - name: Check for changes and generate summary
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "::notice::Dry run completed - no actual changes made"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --quiet; then
+            echo "::notice::No changes detected"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "summary=No dependency updates required" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Changes detected, will create/update PR"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+
+            SUMMARY="## Dependency Updates\n\n"
+            SUMMARY+="The following dependencies have been updated:\n\n"
+
+            SUMMARY+="### Versions\n"
+            SUMMARY+="- **carbon-apimgt**: \`${{ env.APIMGT_VERSION }}\`\n"
+            SUMMARY+="- **carbon-kernel**: \`${{ env.KERNEL_VERSION }}\`\n"
+            SUMMARY+="- **apim-apps (UI)**: \`${{ env.APIM_APPS_VERSION }}\`\n"
+            SUMMARY+="- **synapse**: \`${{ env.SYNAPSE_VERSION }}\`\n"
+            SUMMARY+="  - axis2: \`${{ env.SYNAPSE_AXIS2_VERSION }}\`\n"
+            SUMMARY+="  - axiom: \`${{ env.SYNAPSE_AXIOM_VERSION }}\`\n\n"
+
+            SUMMARY+="### Modified Files\n"
+            git diff --name-only | while read -r file; do
+              SUMMARY+="- \`$file\`\n"
+            done
+            SUMMARY+="\n"
+
+            SUMMARY+="### Validation\n"
+            SUMMARY+="✅ XML syntax validation passed\n"
+            SUMMARY+="✅ Maven validation passed\n\n"
+            SUMMARY+="_Generated by automated dependency upgrade workflow_"
+
+            echo "summary<<EOF" >> "$GITHUB_OUTPUT"
+            echo -e "$SUMMARY" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ----------------------------
+      # 4) Create PR
+      # ----------------------------
+      - name: Create or update dependency upgrade PR
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dependency-upgrade
+          title: "Automated dependency upgrade"
+          commit-message: |
+            Update dependencies
+
+            - carbon-apimgt: ${{ env.APIMGT_VERSION }}
+            - carbon-kernel: ${{ env.KERNEL_VERSION }}
+            - apim-apps: ${{ env.APIM_APPS_VERSION }}
+            - synapse: ${{ env.SYNAPSE_VERSION }}
+          body: ${{ steps.changes.outputs.summary }}
+          labels: |
+            dependencies
+            automated
+          assignees: ${{ github.actor }}
+          draft: false
+          delete-branch: true
+
+      - name: Workflow summary
+        shell: bash
+        run: |
+          echo "## Dependency Upgrade Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Mode**: $([[ '${{ env.DRY_RUN }}' == 'true' ]] && echo 'Dry Run' || echo 'Full Run')" >> $GITHUB_STEP_SUMMARY
+          echo "**Debug**: ${{ env.DEBUG }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Resolved Versions" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| carbon-apimgt | \`${{ env.APIMGT_VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| carbon-kernel | \`${{ env.KERNEL_VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| apim-apps | \`${{ env.APIM_APPS_VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| synapse | \`${{ env.SYNAPSE_VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| axis2 | \`${{ env.SYNAPSE_AXIS2_VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| axiom | \`${{ env.SYNAPSE_AXIOM_VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Changes Made**: ${{ steps.changes.outputs.changed }}" >> $GITHUB_STEP_SUMMARY
