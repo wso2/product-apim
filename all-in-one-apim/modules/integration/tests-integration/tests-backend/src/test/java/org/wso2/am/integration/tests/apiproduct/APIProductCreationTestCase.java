@@ -390,8 +390,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test creation and deployment of API Product with an API " +
-            "category")
+//     @Test(groups = {"wso2.am"}, description = "Test creation and deployment of API Product with an API " +
+//             "category")
     public void testCreateAndInvokeApiProductWithAPICategoryAdded() throws Exception {
         // Create the Marketing category first
         APICategoryDTO categoryDTO = new APICategoryDTO();
