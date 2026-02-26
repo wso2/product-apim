@@ -1516,6 +1516,9 @@
         <url-guardrail.version>1.0.0</url-guardrail.version>
         <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
         <semantic-cache.version>1.0.0</semantic-cache.version>
+        <semantic-routing.version>0.0.9-SNAPSHOT</semantic-routing.version>
+        <intelligent-model-routing.version>0.0.9-SNAPSHOT</intelligent-model-routing.version>
+
 
         <!-- AM Policy Names -->
         <regex-guardrail.name>RegexGuardrail</regex-guardrail.name>
@@ -1531,6 +1534,9 @@
         <url-guardrail.name>URLGuardrail</url-guardrail.name>
         <word-count-guardrail.name>WordCountGuardrail</word-count-guardrail.name>
         <semantic-cache.name>SemanticCache</semantic-cache.name>
+        <semantic-routing.name>SemanticRouting</semantic-routing.name>
+        <intelligent-model-routing.name>IntelligentModelRouting</intelligent-model-routing.name>   
+        
 
         <!-- AM Policy Versions -->
         <regex-guardrail.policy.version>v1.0</regex-guardrail.policy.version>
@@ -1546,6 +1552,8 @@
         <url-guardrail.policy.version>v1.0</url-guardrail.policy.version>
         <word-count-guardrail.policy.version>v1.1</word-count-guardrail.policy.version>
         <semantic-cache.policy.version>v1.0</semantic-cache.policy.version>
+        <semantic-routing.policy.version>v1</semantic-routing.policy.version>
+        <intelligent-model-routing.policy.version>v1</intelligent-model-routing.policy.version>
     </properties>
 
 </project>

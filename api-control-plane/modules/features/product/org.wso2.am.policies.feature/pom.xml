@@ -172,6 +172,22 @@
                                     <classifier>distribution</classifier>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.semantic-routing</artifactId>
+                                    <version>${semantic-routing.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.intelligent-model-routing</artifactId>
+                                    <version>${intelligent-model-routing.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -238,6 +254,14 @@
                                 <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-cache-${semantic-cache.version}-distribution.zip" dest="${project.build.directory}/semantic-cache" />
                                 <move file="${project.build.directory}/semantic-cache/artifact.j2" tofile="${project.build.directory}/${semantic-cache.name}_${semantic-cache.policy.version}.j2" />
                                 <move file="${project.build.directory}/semantic-cache/policy-definition.json" tofile="${project.build.directory}/${semantic-cache.name}_${semantic-cache.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-routing-${semantic-routing.version}-distribution.zip" dest="${project.build.directory}/semantic-routing" />
+                                <move file="${project.build.directory}/semantic-routing/artifact.j2" tofile="${project.build.directory}/${semantic-routing.name}_${semantic-routing.policy.version}.j2" />
+                                <move file="${project.build.directory}/semantic-routing/policy-definition.json" tofile="${project.build.directory}/${semantic-routing.name}_${semantic-routing.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.intelligent-model-routing-${intelligent-model-routing.version}-distribution.zip" dest="${project.build.directory}/intelligent-model-routing" />
+                                <move file="${project.build.directory}/intelligent-model-routing/artifact.j2" tofile="${project.build.directory}/${intelligent-model-routing.name}_${intelligent-model-routing.policy.version}.j2" />
+                                <move file="${project.build.directory}/intelligent-model-routing/policy-definition.json" tofile="${project.build.directory}/${intelligent-model-routing.name}_${intelligent-model-routing.policy.version}.json" />
                             </target>
                         </configuration>
                         <goals><goal>run</goal></goals>
