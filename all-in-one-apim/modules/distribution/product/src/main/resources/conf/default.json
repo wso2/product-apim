@@ -590,6 +590,7 @@
   "apim.basic_authenticator.max_wait_millis": "30000",
   "apim.mcp.enable": true,
   "apim.devportal.mode": "HYBRID",
+  "apim.devportal.url_generation_secret": "Ncp/fE6nPl+wifoGKP3UGcFzhKxqASwDaR4ivKj5s6E=",
   "admin_service.deny_list": [
     "ClassMediatorAdmin",
     "CommandMediatorAdmin",
