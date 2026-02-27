@@ -119,6 +119,8 @@ if [ -z "$JAVACMD" ] ; then
   fi
 fi
 
+
+# Check minimum JDK version (21)
 if [ ! -x "$JAVACMD" ] ; then
   echo "Error: JAVA_HOME is not defined correctly."
   echo " CARBON cannot execute $JAVACMD"
@@ -128,6 +130,16 @@ fi
 # if JAVA_HOME is not set we're not happy
 if [ -z "$JAVA_HOME" ]; then
   echo "You must set the JAVA_HOME variable before running CARBON."
+  exit 1
+fi
+
+# Check JDK version
+JAVA_VERSION_OUTPUT=$($JAVACMD -version 2>&1)
+JAVA_VERSION=$(echo "$JAVA_VERSION_OUTPUT" | awk -F '"' '/version/ {print $2}')
+JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION | awk -F. '{if ($1 == "1") {print $2} else {print $1}}')
+if [ "$JAVA_MAJOR_VERSION" -lt 21 ]; then
+  echo "WSO2 API Manager requires a minimum of JDK 21."
+  echo "Detected JDK version: $JAVA_VERSION_OUTPUT"
   exit 1
 fi
 
@@ -321,9 +333,13 @@ echo "Using Java memory options: $JVM_MEM_OPTS"
 
 JAVA_VER_BASED_OPTS="--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED "
 
+
 if [ $java_version_formatted -ge 1700 ]; then
-    JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED"
+  JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED"
 fi
+
+# Suppress foreign Linker warnings
+JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --enable-native-access=ALL-UNNAMED"
 
 # start diagnostic tool in background in diagnostic-tool/bin/diagnostic
 "$CARBON_HOME"/diagnostics-tool/bin/diagnostics.sh &
