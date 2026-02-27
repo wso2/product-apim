@@ -178,13 +178,12 @@ set CMD=RUN %*
 :checkJdk21
 PATH %PATH%;%JAVA_HOME%\bin\
 for /f tokens^=2-5^ delims^=.-_^" %%j in ('java -fullversion 2^>^&1') do set "JAVA_VERSION=%%j%%k"
-if %JAVA_VERSION% LSS 110 goto unknownJdk
-if %JAVA_VERSION% GTR 210 goto unknownJdk
+if %JAVA_VERSION% LSS 210 goto unknownJdk
 goto jdk21
 
 :unknownJdk
 echo Starting WSO2 Carbon (in unsupported JDK)
-echo [ERROR] CARBON is supported only between JDK 11 and JDK 21
+echo [ERROR] WSO2 API Manager requires a minimum of JDK 21.
 goto jdk21
 
 :jdk21
@@ -211,6 +210,7 @@ if %JAVA_VERSION% GEQ 110 set CARBON_CLASSPATH=".\lib\endorsed\*";%CARBON_CLASSP
 if %JAVA_VERSION% LEQ 18 set JAVA_VER_BASED_OPTS=-Djava.endorsed.dirs=".\lib\endorsed";"%JAVA_HOME%\jre\lib\endorsed";"%JAVA_HOME%\lib\endorsed"
 if %JAVA_VERSION% GEQ 110 set JAVA_VER_BASED_OPTS=--add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED  --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED
 set JAVA_VER_BASED_OPTS=%JAVA_VER_BASED_OPTS% -Djdk.util.zip.disableZip64ExtraFieldValidation=true -Djdk.nio.zipfs.allowDotZipEntry=true
+set JAVA_VER_BASED_OPTS=%JAVA_VER_BASED_OPTS% --enable-native-access=ALL-UNNAMED
 
 set CMD_LINE_ARGS=-Xbootclasspath/a:%CARBON_XBOOTCLASSPATH% -Xms256m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="%CARBON_HOME%\repository\logs\heap-dump.hprof"
 set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dcom.sun.management.jmxremote -classpath %CARBON_CLASSPATH% %JAVA_OPTS% %JAVA_VER_BASED_OPTS%
