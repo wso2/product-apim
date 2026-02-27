@@ -1303,34 +1303,34 @@
         <carbon.analytics.common.version>5.4.2</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.129</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.133</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.15</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.19</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.9.2</carbon.registry.version>
+        <carbon.registry.version>4.9.4</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.9.0</carbon.governance.version>
+        <carbon.governance.version>4.9.2</carbon.governance.version>
 
         <!--carbon versions-->
         <carbon.kernel.version>4.11.1</carbon.kernel.version>
 
         <cipher.tool.version>1.1.28</cipher.tool.version>
 
-        <carbon.commons.version>4.13.1</carbon.commons.version>
+        <carbon.commons.version>4.13.2</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.8.5</carbon.mediation.version>
+        <carbon.mediation.version>4.8.6</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.27.3</carbon.identity.version>
+        <carbon.identity.version>5.27.6</carbon.identity.version>
         <carbon.identity.governance.version>1.14.0</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.0</carbon.identity.event.handler.notification.version>
@@ -1345,7 +1345,7 @@
         <carbon.identity-data-publisher-application-authentication.version>5.9.0</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.4</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.11.1</carbon.identity.carbon.auth.saml2.version>
-        <identity.apps.version>1.6.383</identity.apps.version>
+        <identity.apps.version>1.6.384</identity.apps.version>
         <identity.oauth.addons.version>2.7.0</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
@@ -1356,7 +1356,7 @@
         <carbon.deployment.version>4.11.24</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.13.1</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.13.3</carbon.multitenancy.version>
 
         <siddhi.version>3.2.15</siddhi.version>
 
@@ -1439,7 +1439,7 @@
 
         <carbon.messaging.version>3.3.40</carbon.messaging.version>
         <carbon.event-processing.version>2.3.22</carbon.event-processing.version>
-        <andes.version>3.3.36</andes.version>
+        <andes.version>3.3.37</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
@@ -1489,7 +1489,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.7.18</wso2is.km.version>
+        <wso2is.km.version>1.7.19</wso2is.km.version>
         <wso2is7.km.version>2.0.12</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.2</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.16</azure.keymanager.feature.version>
