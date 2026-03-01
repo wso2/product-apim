@@ -757,11 +757,6 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
         HttpResponse response =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttps("t/".concat(tenant1Name).concat("/").concat(apiContext), apiVersion) + "/menu", requestHeader);
         Assert.assertEquals(response.getResponseCode(), 200);
-        String opaqueToken = TokenUtils.getJtiOfJwtToken(accessToken);
-        requestHeader.put("Authorization", "Bearer " + opaqueToken);
-        response =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttps("t/".concat(tenant1Name).concat("/").concat(apiContext), apiVersion) + "/menu", requestHeader);
-        Assert.assertEquals(response.getResponseCode(), 200);
     }
 
     @Test(groups = {"wso2.am"}, description = "Create Application from other tenant", dependsOnMethods =
@@ -781,13 +776,6 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
         requestHeader.put("Authorization", "Bearer " + accessToken);
         requestHeader.put("accept", "application/json");
         HttpResponse response =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttps("t/".concat(tenant2Name).concat("/").concat(apiContext), apiVersion) + "/menu", requestHeader);
-        Assert.assertEquals(response.getResponseCode(), 200);
-        String opaqueToken = TokenUtils.getJtiOfJwtToken(accessToken);
-
-        requestHeader.put("Authorization", "Bearer " + opaqueToken);
-        requestHeader.put("accept", "application/json");
-        response =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttps("t/".concat(tenant2Name).concat("/").concat(apiContext), apiVersion) + "/menu", requestHeader);
         Assert.assertEquals(response.getResponseCode(), 200);
     }

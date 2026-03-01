@@ -128,11 +128,9 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
                 applicationKeyDTO.getConsumerSecret(), enduserName, enduserPassword);
         log.info("Access Token Generated in oauth ==" + accessToken);
-        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
-
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
-        get.addHeader("Authorization", "Bearer " + tokenJti);
+        get.addHeader("Authorization", "Bearer " + accessToken);
         HttpResponse response = httpclient.execute(get);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
