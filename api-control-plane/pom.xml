@@ -1516,6 +1516,7 @@
         <url-guardrail.version>1.0.0</url-guardrail.version>
         <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
         <semantic-cache.version>1.0.0</semantic-cache.version>
+        <semantic-tool-filtering.version>1.0.0</semantic-tool-filtering.version>
         <content-based-model-router.version>1.0.1</content-based-model-router.version>
 
         <!-- AM Policy Names -->
@@ -1532,6 +1533,7 @@
         <url-guardrail.name>URLGuardrail</url-guardrail.name>
         <word-count-guardrail.name>WordCountGuardrail</word-count-guardrail.name>
         <semantic-cache.name>SemanticCache</semantic-cache.name>
+        <semantic-tool-filtering.name>SemanticToolFiltering</semantic-tool-filtering.name>
         <content-based-model-router.name>ContentBasedModelRouter</content-based-model-router.name>
 
         <!-- AM Policy Versions -->
@@ -1548,6 +1550,7 @@
         <url-guardrail.policy.version>v1.0</url-guardrail.policy.version>
         <word-count-guardrail.policy.version>v1.1</word-count-guardrail.policy.version>
         <semantic-cache.policy.version>v1.0</semantic-cache.policy.version>
+        <semantic-tool-filtering.policy.version>v1.0</semantic-tool-filtering.policy.version>
         <content-based-model-router.policy.version>v1.0</content-based-model-router.policy.version>
     </properties>
 
