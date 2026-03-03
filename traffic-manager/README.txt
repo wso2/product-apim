@@ -18,13 +18,13 @@ System Requirements
 
 1. Minimum memory - 2GB
 2. Processor      - Pentium 800MHz or equivalent at minimum
-3. Java 11 or higher
+3. Java 21
 4. The Management Console requires you to enable Javascript of the Web browser,
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
 5. To build WSO2 Traffic Manager from the Source distribution, it is necessary that you have
-   JDK 11 version and Maven 3.0.4 or later
+   JDK 21 version and Maven 3.0.4 or later
 
 Installation & Running
 ==================================
