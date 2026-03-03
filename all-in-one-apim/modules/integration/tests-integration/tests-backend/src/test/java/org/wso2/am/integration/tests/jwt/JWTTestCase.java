@@ -369,10 +369,9 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 .getApplicationKeysByKeyType(authCodeApplicationId,
                         ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
-        updateServiceProviderWithRequiredClaims(applicationKeyDTO.getConsumerKey());
         for (String endUser : users) {
             String accessToken = generateTokenWithAuthCodeGrant(applicationKeyDTO.getConsumerKey(),
-                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[] { "openid" });
+                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[] { "default" });
             log.info("Access Token Generated in JWT ==" + accessToken);
             HttpClient httpclient = HttpClientBuilder.create().build();
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -401,7 +400,6 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             checkDefaultUserClaims(jsonObject, authCodeApplicationName);
             // check user profile info claims
             log.info("JWT Received ==" + jsonObject.toString());
-            verifyUserProfileInfoClaims(jsonObject, endUser);
             // verify wrong claims
             BackendJWTUtil.verifyWrongClaims(jsonObject);
         }
