@@ -1,4 +1,5 @@
 # Database configurations for migration testing
+
 [database.apim_db]
 type = "$env{API_MANAGER_DATABASE_TYPE}"
 driver = "$env{API_MANAGER_DATABASE_DRIVER}"
