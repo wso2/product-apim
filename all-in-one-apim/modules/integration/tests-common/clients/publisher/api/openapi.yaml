@@ -26514,6 +26514,7 @@ components:
         apiVersion: 1.0.0
         builtInSupport: true
         configurations: configurations
+        deprecated: false
         name: OpenAI
         description: OpenAI LLM
         id: ece92bdc-e1e6-325c-b6f4-656208a041e9
@@ -26546,12 +26547,17 @@ components:
         apiDefinition:
           description: OpenAPI specification
           type: string
+        deprecated:
+          description: Indicates if the LLM provider is deprecated
+          example: false
+          type: boolean
       title: AIServiceProviderResponse
       type: object
     AIServiceProviderSummaryResponse:
       example:
         apiVersion: 1.0.0
         builtInSupport: true
+        deprecated: false
         name: open-ai
         description: OpenAI LLM Provider
         id: ece92bdc-e1e6-325c-b6f4-656208a041e9
@@ -26577,6 +26583,10 @@ components:
           example: OpenAI LLM Provider
           maxLength: 1023
           type: string
+        deprecated:
+          description: Indicates if the LLM provider is deprecated
+          example: false
+          type: boolean
       title: AIServiceProviderSummaryResponse
       type: object
     AIServiceProviderSummaryResponseList:
@@ -26585,11 +26595,13 @@ components:
         list:
         - apiVersion: 1.0.0
           builtInSupport: true
+          deprecated: false
           name: open-ai
           description: OpenAI LLM Provider
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
         - apiVersion: 1.0.0
           builtInSupport: true
+          deprecated: false
           name: open-ai
           description: OpenAI LLM Provider
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9

@@ -14846,6 +14846,10 @@ components:
         apiDefinition:
           type: string
           description: OpenAPI specification
+        deprecated:
+          type: boolean
+          description: Indicates if the LLM provider is deprecated
+          example: false
     AIServiceProviderSummaryResponse:
       title: AIServiceProviderSummaryResponse
       type: object
@@ -14871,6 +14875,10 @@ components:
           maxLength: 1023
           type: string
           example: OpenAI LLM Provider
+        deprecated:
+          type: boolean
+          description: Indicates if the LLM provider is deprecated
+          example: false
     AIServiceProviderSummaryResponseList:
       title: AIServiceProviderSummaryResponseList
       type: object

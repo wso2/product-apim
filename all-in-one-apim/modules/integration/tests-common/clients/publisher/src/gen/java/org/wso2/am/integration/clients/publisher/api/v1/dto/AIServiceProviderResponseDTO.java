@@ -57,6 +57,10 @@ public class AIServiceProviderResponseDTO {
         @SerializedName(SERIALIZED_NAME_API_DEFINITION)
             private String apiDefinition;
 
+        public static final String SERIALIZED_NAME_DEPRECATED = "deprecated";
+        @SerializedName(SERIALIZED_NAME_DEPRECATED)
+            private Boolean deprecated;
+
 
         public AIServiceProviderResponseDTO id(String id) {
         
@@ -219,6 +223,29 @@ public class AIServiceProviderResponseDTO {
     }
 
 
+        public AIServiceProviderResponseDTO deprecated(Boolean deprecated) {
+        
+        this.deprecated = deprecated;
+        return this;
+        }
+
+    /**
+        * Indicates if the LLM provider is deprecated
+    * @return deprecated
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "Indicates if the LLM provider is deprecated")
+    
+    public Boolean isDeprecated() {
+        return deprecated;
+    }
+
+
+    public void setDeprecated(Boolean deprecated) {
+        this.deprecated = deprecated;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -234,12 +261,13 @@ public class AIServiceProviderResponseDTO {
             Objects.equals(this.builtInSupport, aiServiceProviderResponse.builtInSupport) &&
             Objects.equals(this.description, aiServiceProviderResponse.description) &&
             Objects.equals(this.configurations, aiServiceProviderResponse.configurations) &&
-            Objects.equals(this.apiDefinition, aiServiceProviderResponse.apiDefinition);
+            Objects.equals(this.apiDefinition, aiServiceProviderResponse.apiDefinition) &&
+            Objects.equals(this.deprecated, aiServiceProviderResponse.deprecated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, apiVersion, builtInSupport, description, configurations, apiDefinition);
+        return Objects.hash(id, name, apiVersion, builtInSupport, description, configurations, apiDefinition, deprecated);
     }
 
 
@@ -254,6 +282,7 @@ sb.append("class AIServiceProviderResponseDTO {\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    configurations: ").append(toIndentedString(configurations)).append("\n");
     sb.append("    apiDefinition: ").append(toIndentedString(apiDefinition)).append("\n");
+    sb.append("    deprecated: ").append(toIndentedString(deprecated)).append("\n");
 sb.append("}");
 return sb.toString();
 }
