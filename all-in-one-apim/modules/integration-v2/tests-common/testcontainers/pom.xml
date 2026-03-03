@@ -111,7 +111,7 @@
                             <executable>bash</executable>
                             <arguments>
                                 <argument>-c</argument>
-                                <argument>docker build ${docker.extra.hosts} https://github.com/wso2/docker-apim.git#master:dockerfiles/jdk17/ubuntu/apim -t ${apim.docker.image.name} --build-arg WSO2_SERVER=${apim.server.name} --build-arg WSO2_SERVER_DIST_URL=http://host.docker.internal:8000/${apim.server.name}.zip</argument>
+                                <argument>docker build ${docker.extra.hosts} https://github.com/wso2/docker-apim.git#master:dockerfiles/ubuntu/apim -t ${apim.docker.image.name} --build-arg WSO2_SERVER=${apim.server.name} --build-arg WSO2_SERVER_DIST_URL=http://host.docker.internal:8000/${apim.server.name}.zip</argument>
                             </arguments>
                         </configuration>
                     </execution>
