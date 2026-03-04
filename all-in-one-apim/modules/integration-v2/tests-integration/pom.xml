@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>integration-v2</artifactId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -32,8 +32,8 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipCertificateFetch>true</skipCertificateFetch>
     </properties>
