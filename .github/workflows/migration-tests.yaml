@@ -2,6 +2,9 @@ name: APIM Database Migration Tests
 
 on:
   workflow_dispatch: {}
+  schedule:
+    # Run nightly at 00:00 UTC
+    - cron: '0 0 * * *'
 
 jobs:
   update-and-build:
@@ -29,7 +32,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "11"
+          java-version: "21"
           cache: maven
 
       - name: Find latest carbon-apimgt version tag
@@ -59,17 +62,17 @@ jobs:
           echo "Current carbon-apimgt version: $CURRENT"
           echo "CURRENT_CARBON_APIMGT_VERSION=$CURRENT" >> $GITHUB_ENV
 
-#      - name: Update pom.xml with latest carbon-apimgt version
-#        if: env.LATEST_CARBON_APIMGT_VERSION != '' && env.LATEST_CARBON_APIMGT_VERSION != env.CURRENT_CARBON_APIMGT_VERSION
-#        working-directory: all-in-one-apim
-#        run: |
-#          echo "Updating ${CARBON_APIMGT_VERSION_PROPERTY} from ${CURRENT_CARBON_APIMGT_VERSION} to ${LATEST_CARBON_APIMGT_VERSION}"
-#
-#          mvn -B \
-#            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
-#            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
-#            -DnewVersion=${LATEST_CARBON_APIMGT_VERSION} \
-#            -DgenerateBackupPoms=false
+      - name: Update pom.xml with latest carbon-apimgt version
+        if: env.LATEST_CARBON_APIMGT_VERSION != '' && env.LATEST_CARBON_APIMGT_VERSION != env.CURRENT_CARBON_APIMGT_VERSION
+        working-directory: all-in-one-apim
+        run: |
+          echo "Updating ${CARBON_APIMGT_VERSION_PROPERTY} from ${CURRENT_CARBON_APIMGT_VERSION} to ${LATEST_CARBON_APIMGT_VERSION}"
+
+          mvn -B \
+            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
+            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
+            -DnewVersion=${LATEST_CARBON_APIMGT_VERSION} \
+            -DgenerateBackupPoms=false
 
       - name: Build APIM distribution
         working-directory: all-in-one-apim
@@ -156,7 +159,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "11"
+          java-version: "21"
           cache: maven
 
       - name: Download APIM distribution artifact (built from master)
@@ -234,49 +237,9 @@ jobs:
             skip { next }
             !skip { print }
           ' "$DEPLOYMENT_TOML.backup" > "$DEPLOYMENT_TOML.tmp"
-          
-          # Append MySQL database configurations and gateway environment using environment variables
-          cat >> "$DEPLOYMENT_TOML.tmp" << 'EOF'
 
-          # Database configurations for migration testing
-          [database.apim_db]
-          type = "$env{API_MANAGER_DATABASE_TYPE}"
-          driver = "$env{API_MANAGER_DATABASE_DRIVER}"
-          url = "$env{API_MANAGER_DATABASE_URL}"
-          username = "$env{API_MANAGER_DATABASE_USERNAME}"
-          password = "$env{API_MANAGER_DATABASE_PASSWORD}"
-          validationQuery = "$env{API_MANAGER_DATABASE_VALIDATION_QUERY}"
-
-          [database.shared_db]
-          type = "$env{SHARED_DATABASE_TYPE}"
-          driver = "$env{SHARED_DATABASE_DRIVER}"
-          url = "$env{SHARED_DATABASE_URL}"
-          username = "$env{SHARED_DATABASE_USERNAME}"
-          password = "$env{SHARED_DATABASE_PASSWORD}"
-          validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
-
-          # Gateway environment configuration
-          [[apim.gateway.environment]]
-          name = "Production and Sandbox"
-          type = "hybrid"
-          gateway_type = "Regular"
-          provider = "wso2"
-          display_in_api_console = true
-          description = "This is a hybrid gateway that handles both production and sandbox token traffic."
-          show_as_token_endpoint_url = true
-          service_url = "https://localhost:${mgt.transport.https.port}/services/"
-          username= "${admin.username}"
-          password= "${admin.password}"
-          ws_endpoint = "ws://localhost:9099"
-          wss_endpoint = "wss://localhost:8099"
-          http_endpoint = "http://localhost:${http.nio.port}"
-          https_endpoint = "https://localhost:${https.nio.port}"
-          websub_event_receiver_http_endpoint = "http://localhost:9021"
-          websub_event_receiver_https_endpoint = "https://localhost:8021"
-
-          [apim.sync_runtime_artifacts.gateway]
-          gateway_labels = ["Production and Sandbox", "Default"]
-          EOF
+          # Append MySQL database configurations and gateway environment from static template
+          cat .github/WORKFLOW_ARTIFACTS/migration-deployment.toml >> "$DEPLOYMENT_TOML.tmp"
           
           mv "$DEPLOYMENT_TOML.tmp" "$DEPLOYMENT_TOML"
           
@@ -336,31 +299,27 @@ jobs:
             echo "Waiting for shared_db... ($i/60)"
             sleep 2
           done
-
-      - name: Configure MySQL character set and collation
-        run: |
-          echo "Configuring MySQL databases with latin1 character set and collation..."
           
           # Configure APIM database
           mysql -h 127.0.0.1 -P 3306 -uroot -prootpass <<EOF
           ALTER DATABASE WSO2AM_APIMGT_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;
           EOF
-          
+
           # Configure Shared database
           mysql -h 127.0.0.1 -P 3307 -uroot -prootpass <<EOF
           ALTER DATABASE WSO2AM_COMMON_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;
           EOF
-          
+
           echo "MySQL databases configured successfully"
 
       - name: Download APIM 3.2.0 database dumps from Google Drive
         run: |
-          mkdir -p .github/DB_DUMPS
-          echo "Using checked-in APIM 3.2.0 DB dumps from .github/DB_DUMPS"
+          mkdir -p .github/WORKFLOW_ARTIFACTS/DB_DUMPS
+          echo "Using checked-in APIM 3.2.0 DB dumps from .github/WORKFLOW_ARTIFACTS/DB_DUMPS"
           # Verify files exist
-          ls -lh .github/DB_DUMPS/
-          test -f .github/DB_DUMPS/apim_db_320_dump.sql
-          test -f .github/DB_DUMPS/shared_db_320_dump.sql
+          ls -lh .github/WORKFLOW_ARTIFACTS/DB_DUMPS/
+          test -f .github/WORKFLOW_ARTIFACTS/DB_DUMPS/apim_db_320_dump.sql
+          test -f .github/WORKFLOW_ARTIFACTS/DB_DUMPS/shared_db_320_dump.sql
 
       - name: Restore APIM DB dump (3.2.0)
         run: |
@@ -371,10 +330,10 @@ jobs:
           
           echo "APIM DB container: ${APIM_DB_CONTAINER}"
           
-          test -f .github/DB_DUMPS/apim_db_320_dump.sql
+          test -f .github/WORKFLOW_ARTIFACTS/DB_DUMPS/apim_db_320_dump.sql
           
           # Copy SQL inside container
-          docker cp .github/DB_DUMPS/apim_db_320_dump.sql ${APIM_DB_CONTAINER}:/apim_db_dump.sql
+          docker cp .github/WORKFLOW_ARTIFACTS/DB_DUMPS/apim_db_320_dump.sql ${APIM_DB_CONTAINER}:/apim_db_dump.sql
           
           # Restore dump
           docker exec -i ${APIM_DB_CONTAINER} \
@@ -391,9 +350,9 @@ jobs:
           
           echo "Shared DB container: ${SHARED_DB_CONTAINER}"
           
-          test -f .github/DB_DUMPS/shared_db_320_dump.sql
+          test -f .github/WORKFLOW_ARTIFACTS/DB_DUMPS/shared_db_320_dump.sql
           
-          docker cp .github/DB_DUMPS/shared_db_320_dump.sql ${SHARED_DB_CONTAINER}:/shared_db_dump.sql
+          docker cp .github/WORKFLOW_ARTIFACTS/DB_DUMPS/shared_db_320_dump.sql ${SHARED_DB_CONTAINER}:/shared_db_dump.sql
           
           docker exec -i ${SHARED_DB_CONTAINER} \
             bash -c "cat /shared_db_dump.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
@@ -407,76 +366,58 @@ jobs:
             --filter "publish=3307" \
             --format "{{.ID}}" | head -n 1)
           
-          echo "Using checked-in MySQL script for shared_db from .github/DB_SCRIPTS"
-          mkdir -p .github/DB_SCRIPTS
-          test -f .github/DB_SCRIPTS/shared_db_script.sql
+          echo "Using checked-in MySQL script for shared_db from .github/WORKFLOW_ARTIFACTS/DB_SCRIPTS"
+          mkdir -p .github/WORKFLOW_ARTIFACTS/DB_SCRIPTS
+          test -f .github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/shared_db_script.sql
           
           echo "Running MySQL script on shared_db container..."
-          docker cp .github/DB_SCRIPTS/shared_db_script.sql ${SHARED_DB_CONTAINER}:/shared_db_script.sql
+          docker cp .github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/shared_db_script.sql ${SHARED_DB_CONTAINER}:/shared_db_script.sql
           docker exec -i ${SHARED_DB_CONTAINER} \
             bash -c "cat /shared_db_script.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
           
           echo "MySQL script executed successfully"
 
       - name: Build Docker image for APIM
+        env:
+          APIM_SERVER_NAME: wso2am
         run: |
+          set -e
+
+          # Find the locally built APIM distribution zip
           DIST_PATH=$(find all-in-one-apim/modules/distribution/product/target \
             -maxdepth 1 -type f -name "wso2am-*-SNAPSHOT.zip" | head -n1)
           if [ -z "$DIST_PATH" ]; then
             echo "Distribution zip not found in all-in-one-apim/modules/distribution/product/target"
             exit 1
           fi
-          
-          # Create a temporary directory for Docker build context
-          mkdir -p docker-build-context
-          cp "$DIST_PATH" docker-build-context/
-          
-          # Create Dockerfile
-          cat > docker-build-context/Dockerfile << 'DOCKERFILE'
-          FROM eclipse-temurin:11-jdk
-          
-          # Install required packages
-          RUN apt-get update && \
-              apt-get install -y unzip && \
-              rm -rf /var/lib/apt/lists/*
-          
-          # Create wso2carbon user
-          RUN groupadd -r wso2carbon && \
-              useradd -r -g wso2carbon -m -s /bin/bash wso2carbon
-          
-          # Set working directory
-          WORKDIR /home/wso2carbon
-          
-          # Copy and extract APIM distribution
-          COPY wso2am-*.zip /tmp/
-          RUN unzip -q /tmp/wso2am-*.zip -d /home/wso2carbon/ && \
-              rm /tmp/wso2am-*.zip && \
-              mv /home/wso2carbon/wso2am-* /home/wso2carbon/wso2am && \
-              chown -R wso2carbon:wso2carbon /home/wso2carbon
-          
-          # Set environment variables
-          ENV CARBON_HOME=/home/wso2carbon/wso2am
-          ENV JAVA_HOME=/opt/java/openjdk
-          
-          # Expose ports
-          EXPOSE 9443 9763 8243 8280
-          
-          # Switch to wso2carbon user
-          USER wso2carbon
-          
-          # Set working directory
-          WORKDIR $CARBON_HOME
-          
-          # Start APIM server (will be overridden by CMD in docker run)
-          CMD ["bin/api-manager.sh"]
-          DOCKERFILE
-          
-          # Build Docker image
-          cd docker-build-context
-          docker build -t wso2am-migration:latest .
-          
+
+          echo "Using APIM distribution: $DIST_PATH"
+
+          # Start a temporary HTTP server to expose the zip
+          DIST_DIR="all-in-one-apim/modules/distribution/product/target"
+          cd "$DIST_DIR"
+          python3 -m http.server 8000 &
+          SERVER_PID=$!
+          cd - >/dev/null
+
+          sleep 3
+
+          ZIP_NAME=$(basename "$DIST_PATH")
+          DOCKER_EXTRA_HOSTS="--add-host=host.docker.internal:host-gateway"
+
+          # Build Docker image using official docker-apim Ubuntu Dockerfile,
+          docker build \
+            $DOCKER_EXTRA_HOSTS \
+            https://github.com/wso2/docker-apim.git#master:dockerfiles/ubuntu/apim \
+            -t wso2am-migration:latest \
+            --build-arg WSO2_SERVER="${APIM_SERVER_NAME}" \
+            --build-arg WSO2_SERVER_DIST_URL="http://host.docker.internal:8000/${ZIP_NAME}"
+
+          # Stop the temporary HTTP server
+          kill "$SERVER_PID" || true
+
           echo "Docker image built successfully"
-          docker images | grep wso2am-migration
+          docker images | grep wso2am-migration || true
 
       - name: Identity Migration - Download and Setup
         env:
@@ -536,6 +477,7 @@ jobs:
           
           # Start container in detached mode
           CONTAINER_ID=$(docker run -d \
+            --entrypoint "" \
             --name wso2am-identity-migration \
             --add-host=host.docker.internal:host-gateway \
             -e API_MANAGER_DATABASE_TYPE="$API_MANAGER_DATABASE_TYPE" \
@@ -686,6 +628,7 @@ jobs:
           
           # Start container in detached mode
           CONTAINER_ID=$(docker run -d \
+            --entrypoint "" \
             --name wso2am-apim-premigration \
             --add-host=host.docker.internal:host-gateway \
             -e API_MANAGER_DATABASE_TYPE="$API_MANAGER_DATABASE_TYPE" \
@@ -812,6 +755,7 @@ jobs:
           
           # Start container in detached mode
           CONTAINER_ID=$(docker run -d \
+            --entrypoint "" \
             --name wso2am-apim-migration \
             --add-host=host.docker.internal:host-gateway \
             -e API_MANAGER_DATABASE_TYPE="$API_MANAGER_DATABASE_TYPE" \
@@ -904,6 +848,7 @@ jobs:
           
           # Start container in detached mode
           CONTAINER_ID=$(docker run -d \
+            --entrypoint "" \
             --name wso2am-reindexing \
             --add-host=host.docker.internal:host-gateway \
             -e API_MANAGER_DATABASE_TYPE="$API_MANAGER_DATABASE_TYPE" \
@@ -1055,25 +1000,25 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "11"
+          java-version: "21"
           cache: maven
 
-#      - name: Update pom.xml and push version bump
-#        if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
-#        working-directory: all-in-one-apim
-#        run: |
-#          LATEST="${{ needs.update-and-build.outputs.latest_version }}"
-#          echo "Bumping ${CARBON_APIMGT_VERSION_PROPERTY} from ${{ needs.update-and-build.outputs.current_version }} to $LATEST"
-#          mvn -B \
-#            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
-#            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
-#            -DnewVersion=$LATEST \
-#            -DgenerateBackupPoms=false
-#          git config user.name "github-actions[bot]"
-#          git config user.email "github-actions[bot]@users.noreply.github.com"
-#          if git diff --quiet; then
-#            echo "No changes to commit."
-#            exit 0
-#          fi
-#          git commit -am "chore: bump carbon-apimgt to $LATEST"
-#          git push origin HEAD:${GITHUB_REF#refs/heads/}
+      - name: Update pom.xml and push version bump
+        if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
+        working-directory: all-in-one-apim
+        run: |
+          LATEST="${{ needs.update-and-build.outputs.latest_version }}"
+          echo "Bumping ${CARBON_APIMGT_VERSION_PROPERTY} from ${{ needs.update-and-build.outputs.current_version }} to $LATEST"
+          mvn -B \
+            org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
+            -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
+            -DnewVersion=$LATEST \
+            -DgenerateBackupPoms=false
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -am "chore: bump carbon-apimgt to $LATEST"
+          git push origin HEAD:${GITHUB_REF#refs/heads/}
