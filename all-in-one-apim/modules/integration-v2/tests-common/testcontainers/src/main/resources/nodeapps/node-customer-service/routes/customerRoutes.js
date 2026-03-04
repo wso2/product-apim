@@ -23,7 +23,13 @@ let customers = {};
 let currentId = 123;
 
 // Initialize with one customer
-customers[currentId] = new Customer(currentId, 'John');
+//customers[currentId] = new Customer(currentId, 'John');
+const names = ['John', 'Alice', 'Bob', 'John', 'Alice', 'Bob'];
+
+for (let i = 0; i < names.length; i++) {
+    const id = currentId + i;  // 123, 124, 125
+    customers[id] = new Customer(id, names[i]);
+}
 
 // GET /customers/{id}/
 router.get('/customers/:id', (req, res) => {
@@ -61,6 +67,12 @@ router.get('/handler', (req, res) => {
   const header = req.header('Iwasat');
   console.log(`----invoking handler handler handler`);
   res.type('text/plain').send(header || '');
+});
+
+// GET /hello
+router.get('/hello', (req, res) => {
+  console.log('----invoking hello');
+  res.type('text/plain').send('Hello World');
 });
 
 // PUT /customers/

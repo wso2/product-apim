@@ -8,11 +8,10 @@ Feature: Publisher API Management
     And I have a valid Devportal access token for the current user
 
   Scenario: Create an API Through the Publisher Rest API
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "<createApiPayload>"
-    And I create an API with payload "<createApiPayload>"
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
 
   Scenario: Get the API details by ID
-    When  I retrieve the API with id "<createdApiId>"
+    When  I retrieve the "apis" resource with id "<createdApiId>"
     Then The response status code should be 200
     And The response should contain "APIMTest"
     And The response should contain "apiTestContext"
@@ -22,9 +21,9 @@ Feature: Publisher API Management
 
   Scenario: Update API with the description and tiersCollection
     When I put JSON payload from file "artifacts/payloads/update_apim_test_api.json" in context as "<apiUpdatePayload>"
-    And I update API of id "<createdApiId>" with payload "<apiUpdatePayload>"
+    And I update "apis" resource of id "<createdApiId>" with payload "<apiUpdatePayload>"
     Then The response status code should be 200
-    And I retrieve the API with id "<createdApiId>"
+    And I retrieve the "apis" resource with id "<createdApiId>"
     Then The response status code should be 200
     And The response should contain "Updated description for the created API"
     And The response should contain "Gold"
@@ -33,9 +32,9 @@ Feature: Publisher API Management
 
   Scenario: Ensure API update does not change the API name
     When I put JSON payload from file "artifacts/payloads/rename_apim_test_api.json" in context as "<apiUpdatePayload>"
-    And I update API of id "<createdApiId>" with payload "<apiUpdatePayload>"
+    And I update "apis" resource of id "<createdApiId>" with payload "<apiUpdatePayload>"
     Then The response status code should be 200
-    And I retrieve the API with id "<createdApiId>"
+    And I retrieve the "apis" resource with id "<createdApiId>"
     Then The response should contain "APIMTest"
     But The response should not contain "APIMTestRenamed"
 
@@ -46,7 +45,7 @@ Feature: Publisher API Management
       "description":"Initial Revision"
     }
     """
-    And I make a request to create a revision for API "<createdApiId>" with payload "<createRevisionPayload>"
+    And  I make a request to create a revision for "apis" resource "<createdApiId>" with payload "<createRevisionPayload>"
     And I put the following JSON payload in context as "<deployRevisionPayload>"
     """
     [
@@ -57,11 +56,11 @@ Feature: Publisher API Management
       }
     ]
     """
-    And I make a request to deploy revision "<revisionId>" of API "<createdApiId>" with payload "<deployRevisionPayload>"
+    And I make a request to deploy revision "<revisionId>" of "apis" resource "<createdApiId>" with payload "<deployRevisionPayload>"
     Then The response status code should be 201
     Then The lifecycle status of API "<createdApiId>" should be "Created"
-    And I wait for deployment of the API in "<retrievedApiPayload>"
-    And I publish the API with id "<createdApiId>"
+    And I wait for deployment of the resource in "<retrievedApiPayload>"
+    And I publish the "apis" resource with id "<createdApiId>"
     Then The lifecycle status of API "<createdApiId>" should be "Published"
 
   Scenario: Subscribe to the API using an application
@@ -92,7 +91,7 @@ Feature: Publisher API Management
       "throttlingPolicy": "Bronze"
     }
     """
-    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>"
+    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>" as "subscriptionId"
     And I retrieve the subscription for Api "<createdApiId>" by Application "<createdAppId>"
     Then The response status code should be 200
     And The subscription with id "<subscriptionId>" should be in the list of all subscriptions
@@ -121,5 +120,5 @@ Feature: Publisher API Management
     Then The response status code should be 200
 
   Scenario: Delete the created API
-    When I delete the API with id "<createdApiId>"
+    When I delete the "apis" resource with id "<createdApiId>"
     Then The response status code should be 200

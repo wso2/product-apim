@@ -26,7 +26,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.wso2.am.integration.test.utils.Constants;
 
-
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,6 +46,9 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
 
         String apim_db_url = System.getenv(Constants.API_MANAGER_DATABASE_URL);
         String shared_db_url = System.getenv(Constants.SHARED_DATABASE_URL);
+
+        apim_db_url = apim_db_url.replace("&", "&amp;");
+        shared_db_url = shared_db_url.replace("&", "&amp;");
 
         int offset = Constants.DEFAULT_OFFSET;
 
@@ -94,6 +96,9 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
         withEnv(Constants.SHARED_DATABASE_PASSWORD, System.getenv(Constants.SHARED_DATABASE_PASSWORD));
         withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
                 SHARED_DATABASE_VALIDATION_QUERY));
+
+        // Add host.docker.internal mapping for Linux compatibility (needed for accessing host services)
+        withExtraHost("host.docker.internal", "host-gateway");
 
         withNetwork(ContainerNetwork.SHARED_NETWORK);
         // Copy the modified deployment.toml to the container

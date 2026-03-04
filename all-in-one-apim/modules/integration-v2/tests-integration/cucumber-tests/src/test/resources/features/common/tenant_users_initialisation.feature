@@ -1,6 +1,6 @@
 Feature: Tenant and User Initialization
 
-  Scenario: Add super tenant
+  Scenario: Add tenants
     And I add super tenant to context
 
   Scenario: Add tenants

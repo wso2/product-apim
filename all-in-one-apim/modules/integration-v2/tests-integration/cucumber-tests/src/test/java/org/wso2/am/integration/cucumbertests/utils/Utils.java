@@ -29,7 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.json.JSONObject;
-import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
@@ -57,21 +57,32 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_TOKEN_EP;
     }
 
-
-    public static String getAPICreateEndpointURL(String baseUrl) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis";
+    public static String getAPICreateEndpointURL(String baseUrl, String resourceType) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType;
     }
 
-    public static String getAPIEndpointURL(String baseUrl, String apiId) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId;
+    public static String getResourceEndpointURL(String baseUrl, String resourceType, String resourceId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId;
     }
 
-    public static String getAPIRevisionURL(String baseUrl, String apiId) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/revisions";
+    public static String getRevisionURL(String baseUrl, String resourceType, String resourceId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/revisions";
     }
 
-    public static String getAPIRevisionDeploymentURL(String baseUrl, String apiId, String revisionId) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/deploy-revision?revisionId=" + revisionId;
+    public static String getRevisionDeploymentURL(String baseUrl, String resourceType, String resourceId, String revisionId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/deploy-revision?revisionId=" + revisionId;
+    }
+
+    public static String getRevisionUnDeploymentURL(String baseUrl, String resourceType, String apiId, String revisionId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + apiId + "/undeploy-revision?revisionId=" + revisionId;
+    }
+
+    public static String getRevisionRestoreURL(String baseUrl, String resourceType, String apiId, String revisionId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + apiId + "/restore-revision?revisionId=" + revisionId;
+    }
+
+    public static String getRevisionByID(String baseUrl, String resourceType, String apiId, String revisionID) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + apiId + "/revisions/" + revisionID;
     }
 
     public static String getAPISearchEndpointURL(String baseUrl, String query, Integer limit, Integer offset) {
@@ -95,15 +106,19 @@ public class Utils {
         return urlBuilder.toString();
     }
 
-    public static String getChangeLifecycleURL(String baseUrl, String apiId, String action, String lifecycleChecklist) {
+    public static String getChangeLifecycleURL(String baseUrl, String resourceType, String apiId, String action, String lifecycleChecklist) {
 
         if (StringUtils.isBlank(apiId) || StringUtils.isBlank(action)) {
-            throw new IllegalArgumentException("API ID and Action must be provided.");
+            throw new IllegalArgumentException("ID and Action must be provided.");
         }
+
+        String idParam = "apis".equals(resourceType) ? "apiId" : "apiProductId";
 
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
                 .append(Constants.DEFAULT_APIM_API_DEPLOYER)
-                .append("apis/change-lifecycle?apiId=")
+                .append(resourceType)
+                .append("/change-lifecycle?")
+                .append(idParam).append("=")
                 .append(URLEncoder.encode(apiId, StandardCharsets.UTF_8))
                 .append("&action=")
                 .append(URLEncoder.encode(action, StandardCharsets.UTF_8));
@@ -113,7 +128,7 @@ public class Utils {
             String encodedChecklist = URLEncoder.encode(lifecycleChecklist, StandardCharsets.UTF_8);
             urlBuilder.append("&lifecycleChecklist=").append(encodedChecklist);
         }
-        log.info("Change API Lifecycle URL: " + urlBuilder);
+        log.info("Change Lifecycle URL: " + urlBuilder);
         return urlBuilder.toString();
     }
 
@@ -162,6 +177,18 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications";
     }
 
+    public static String getApplicationSearchURL(String baseUrl, String applicationName ) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications?query=" + applicationName;
+    }
+
+    public static String getApiSearchURL(String baseUrl, String query ) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?query=" + query;
+    }
+
+    public static String getApiDocumentsURL(String baseUrl, String resourceId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + resourceId + "/documents";
+    }
+
     public static String getApplicationEndpointURL(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId;
     }
@@ -170,9 +197,21 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/generate-keys";
     }
 
+    public static String getApplicationAllKeys(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys" ;
+    }
+
     public static String getGenerateApplicationTokenURL(String baseUrl, String applicationId, String keyMappingId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
                 keyMappingId + "/generate-token";
+    }
+
+    public static String getGenerateAPIKeyURL(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION/generate" ;
+    }
+
+    public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" + keyMappingId;
     }
 
     public static String getAPIInvocationURL(String baseGatewayUrl, String resourcePath, String tenantDomain) {
@@ -192,6 +231,10 @@ public class Utils {
         return baseUrl + Constants.GATEWAY + "server-startup-healthcheck";
     }
 
+    public static String getRevisionDeployments(String baseUrl, String resourceType, String resourceId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/revisions?query=deployed:true";
+    }
+
     public static String getTenantMgtAdminServiceURL(String baseUrl) {
         return baseUrl + "services/TenantMgtAdminService";
     }
@@ -202,6 +245,103 @@ public class Utils {
 
     public static String getRemoteUserStoreManagerServiceURL(String baseUrl) {
         return baseUrl + "services/RemoteUserStoreManagerService";
+    }
+
+    public static String getNewAPIVersionURL(String baseUrl, String resourceType, String newVersion, Boolean defaultVersion, String apiId) {
+
+        String endpointPath;
+        String idParameterName;
+
+        if ("api-products".equals(resourceType)) {
+            endpointPath = "/copy-api-products";
+            idParameterName = "apiProductId";
+        } else {
+            // Default to APIs
+            endpointPath = "/copy-api";
+            idParameterName = "apiId";
+        }
+
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + endpointPath +
+                "?newVersion=" + URLEncoder.encode(newVersion, StandardCharsets.UTF_8) +
+                "&defaultVersion=" + defaultVersion +
+                "&" + idParameterName + "=" + URLEncoder.encode(apiId, StandardCharsets.UTF_8);
+    }
+
+    public static String getAPIDocuments(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents";
+    }
+
+    public static String getAPIDocument(String baseUrl, String apiId, String documentId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents/" + documentId;
+    }
+
+    public static String getAPIDocumentContent(String baseUrl, String apiId, String documentId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents/" + documentId + "/content";
+    }
+
+    public static String getSubscriptionBlockingURL(String baseUrl, String subscriptionID) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/block-subscription?subscriptionId=" + subscriptionID + "&blockState=BLOCKED";
+    }
+
+    public static String getSubscriptionUnBlockingURL(String baseUrl, String subscriptionID) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/unblock-subscription?subscriptionId=" + subscriptionID + "&blockState=BLOCKED";
+    }
+
+    public static String getSubscriptions(String baseUrl, String resourceID) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions?apiId=" + resourceID;
+    }
+
+    public static String getAPIScopes(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "scopes";
+    }
+
+    public static String getAPIScopesById(String baseUrl, String scopeId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "scopes/" + scopeId;
+    }
+
+    public static String getGraphQLSchema(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-graphql-schema";
+    }
+
+    public static String getAPIProvider(String baseUrl,String apiId, String providerName ) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "apis/" + apiId + "/change-provider?provider=" + providerName;
+    }
+
+    public static String getProductSearchEndpointURL(String baseUrl, String productName) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products?query=" + productName;
+    }
+
+    public static String getCommonPolicy(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies";
+    }
+
+    public static String getAPISpecificPolicy(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/operation-policies";
+    }
+
+    public static String getAPISpecificPolicyById(String baseUrl, String apiId, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/operation-policies/" + policyId;
+    }
+
+    public static String getGlobalPolicy(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "gateway-policies";
+    }
+
+    public static String getGlobalPolicyDeploy(String baseUrl, String policyMappingId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "gateway-policies/" + policyMappingId + "/deploy";
+    }
+
+    public static String getSwaggerURL(String baseUrl, String resourceType, String resourceId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/swagger";
+    }
+
+    public static String getAPIDefinitionURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-openapi";
+    }
+
+
+    public static String getInternalAPIKey(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/generate-key";
     }
 
 
@@ -344,6 +484,7 @@ public class Utils {
             builder.close();
         }
     }
+
     /**
      * Retrieves a Tenant object from the TestContext using the specified key.
      * If the key is not found or the value is not a Tenant, the method fails the test.
@@ -361,4 +502,6 @@ public class Utils {
         }
         return (Tenant) value;
     }
+
+
 }

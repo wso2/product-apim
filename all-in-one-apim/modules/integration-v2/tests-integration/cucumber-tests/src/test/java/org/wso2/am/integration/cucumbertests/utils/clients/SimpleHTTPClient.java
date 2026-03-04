@@ -40,6 +40,11 @@ import org.apache.http.ssl.TrustStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.integration.test.utils.Constants;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.HttpEntity;
+import java.io.File;
 
 
 import javax.net.ssl.SSLContext;
@@ -162,6 +167,62 @@ public class SimpleHTTPClient {
     }
 
     /**
+     * Send a HTTP POST request with multipart/form-data to the specified URL with multiple files
+     *
+     * @param url         Target endpoint URL
+     * @param headers     Any HTTP headers that should be added to the request
+     * @param files       Map of field names to File objects (e.g., "policySpecFile" -> File)
+     * @param formFields  Additional form fields (key-value pairs)
+     * @return Returned HTTP response
+     * @throws IOException If an error occurs while making the invocation
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPostMultipartWithFiles(
+            String url, final Map<String, String> headers, final Map<String, File> files,
+            final Map<String, String> formFields) throws IOException {
+
+        HttpPost request = new HttpPost(url);
+
+        setHeaders(headers, request);
+
+        // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
+        request.removeHeaders("Content-Type");
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.STRICT);
+
+        // Add files with specific field names - preserve original filenames
+        if (files != null) {
+            for (Map.Entry<String, File> fileEntry : files.entrySet()) {
+                File file = fileEntry.getValue();
+                if (file != null) {
+                    String fileName = file.getName();
+                    builder.addBinaryBody(
+                            fileEntry.getKey(),
+                            file,
+                            ContentType.APPLICATION_OCTET_STREAM,
+                            fileName
+                    );
+                }
+            }
+        }
+
+        // Add form fields
+        if (formFields != null) {
+            for (Map.Entry<String, String> field : formFields.entrySet()) {
+                builder.addTextBody(field.getKey(), field.getValue(),
+                        ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
+            }
+        }
+
+        HttpEntity multipartEntity = builder.build();
+        request.setEntity(multipartEntity);
+
+        try (CloseableHttpResponse response = client.execute(request)) {
+            return constructResponse(response);
+        }
+    }
+
+    /**
      * Send a HTTP PUT request to the specified URL
      *
      * @param url         Target endpoint URL
@@ -189,6 +250,61 @@ public class SimpleHTTPClient {
         }
     }
 
+    /**
+     * Send a HTTP put request with multipart/form-data to the specified URL with multiple files
+     *
+     * @param url         Target endpoint URL
+     * @param headers     Any HTTP headers that should be added to the request
+     * @param files       Map of field names to File objects (e.g., "policySpecFile" -> File)
+     * @param formFields  Additional form fields (key-value pairs)
+     * @return Returned HTTP response
+     * @throws IOException If an error occurs while making the invocation
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPutMultipartWithFiles(
+            String url, final Map<String, String> headers, final Map<String, File> files,
+            final Map<String, String> formFields) throws IOException {
+
+        HttpPut request = new HttpPut(url);
+
+        setHeaders(headers, request);
+
+        // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
+        request.removeHeaders("Content-Type");
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.STRICT);
+
+        // Add files with specific field names - preserve original filenames
+        if (files != null) {
+            for (Map.Entry<String, File> fileEntry : files.entrySet()) {
+                File file = fileEntry.getValue();
+                if (file != null) {
+                    String fileName = file.getName();
+                    builder.addBinaryBody(
+                            fileEntry.getKey(),
+                            file,
+                            ContentType.APPLICATION_OCTET_STREAM,
+                            fileName
+                    );
+                }
+            }
+        }
+
+        // Add form fields
+        if (formFields != null) {
+            for (Map.Entry<String, String> field : formFields.entrySet()) {
+                builder.addTextBody(field.getKey(), field.getValue(),
+                        ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
+            }
+        }
+
+        HttpEntity multipartEntity = builder.build();
+        request.setEntity(multipartEntity);
+
+        try (CloseableHttpResponse response = client.execute(request)) {
+            return constructResponse(response);
+        }
+    }
 
     /**
      * Send a HTTP PATCH request to the specified URL
