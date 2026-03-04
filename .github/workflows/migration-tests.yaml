@@ -1,6 +1,9 @@
 name: APIM Database Migration Tests
 
 on:
+  pull_request:
+    branches:
+      - master
   workflow_dispatch: {}
   schedule:
     # Run nightly at 00:00 UTC
