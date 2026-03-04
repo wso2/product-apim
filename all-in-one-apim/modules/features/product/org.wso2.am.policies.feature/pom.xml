@@ -297,6 +297,7 @@
                                     <classifier>distribution</classifier>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
