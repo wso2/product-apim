@@ -486,9 +486,6 @@
     <!--             Global Engaged Modules                -->
     <!-- ================================================= -->
 
-    <!-- Comment this out to disable Addressing -->
-    <module ref="addressing"/>
-
     {% for module in server.globally_engaged_modules %}
     <module ref="{{module}}"/>
     {% endfor %}
