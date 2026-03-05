@@ -253,8 +253,9 @@
     <!--             Global Engaged Modules                -->
     <!-- ================================================= -->
 
-    <!-- Comment this out to disable Addressing -->
-    <module ref="addressing"/>
+    {% for module in server.globally_engaged_modules %}
+    <module ref="{{module}}"/>
+    {% endfor %}
 
     <!--
     Uncomment out the following entry if SOAP (text/xml and application/soap+xml) messages
