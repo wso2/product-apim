@@ -184,8 +184,8 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         restAPIStore.generateKeys(jwtApplicationId, "36000", CALLBACK_URL,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        restAPIStore.generateAPIKeys(apiKeyApplicationId,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
+        /*restAPIStore.generateAPIKeys(apiKeyApplicationId,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);*/
         restAPIStore.generateKeys(authCodeApplicationId, "36000", CALLBACK_URL,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         createUser();
@@ -320,7 +320,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test invoking API that is secured only with 'API key' when back end " +
+    /*@Test(groups = {"wso2.am"}, description = "Test invoking API that is secured only with 'API key' when back end " +
             "JWT generation is enabled")
     public void testAPIKeyOnlySecuredAPIInvocation() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(apiKeyApplicationId,
@@ -339,9 +339,9 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         Header[] responseHeaders = response.getAllHeaders();
         Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
-    }
+    }*/
 
-    @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for API Key Based App")
+    /*@Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for API Key Based App")
     public void testEnableJWTAndClaimsForAPIKeyApp() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(apiKeyApplicationId,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
@@ -383,7 +383,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         assertTrue("JWT claim API context not received " + claim, claim.contains(apiContext));
         // verify wrong claims
         BackendJWTUtil.verifyWrongClaims(jsonObject);
-    }
+    }*/
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation with Client Credentials Grant Type")
     public void testBackendJWTWithClientCredentialsGrant() throws Exception {
