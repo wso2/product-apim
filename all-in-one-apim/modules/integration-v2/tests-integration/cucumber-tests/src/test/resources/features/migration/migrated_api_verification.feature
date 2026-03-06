@@ -15,6 +15,7 @@ Feature: Migrated API Verification
     And I get the generated access token from file "artifacts/accessTokens/api_invocation_access_tokens.json"
     And I invoke the API resource at path "/apiContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
+    And The response should contain the header "x-response-header" with value "x-res-value"
 
     When I update "apis" resource of id "<selectedApiId>" with payload "<retrievedApiPayload>"
     Then The response status code should be 200
