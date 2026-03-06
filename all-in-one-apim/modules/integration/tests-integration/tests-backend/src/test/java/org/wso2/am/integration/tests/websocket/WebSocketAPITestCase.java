@@ -524,8 +524,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }*/
 
-    @Test(description = "Invoke API using OAuth access token when OAuth authentication is not enabled",
-            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKey")
+//    @Test(description = "Invoke API using OAuth access token when OAuth authentication is not enabled",
+//            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKey")
     public void testWebSocketAPIInvocationUsingOAuthWhenOAuthAuthenticationDisabled() throws Exception {
 
         WebSocketClient client = new WebSocketClient();

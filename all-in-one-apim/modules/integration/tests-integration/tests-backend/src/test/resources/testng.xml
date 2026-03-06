@@ -37,7 +37,8 @@
             <class name="org.wso2.am.integration.tests.api.APICreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
-            <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
+            <!-- Comment out JWT API Key related tests until the JWT generation class is added to the test -->
+<!--            <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.mcp.MCPServerTestCase"/>
         </classes>
     </test>

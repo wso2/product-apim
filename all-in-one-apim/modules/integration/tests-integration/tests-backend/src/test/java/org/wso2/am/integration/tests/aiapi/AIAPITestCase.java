@@ -280,7 +280,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     /**
      * Test Unsecured AI API invocation
      */
-    /*@Test(groups = {"wso2.am"}, description = "Test AI API invocation",
+    @Test(groups = {"wso2.am"}, description = "Test AI API invocation",
             dependsOnMethods = "testUnsecuredAiApiCreationAndPublish")
     public void testUnsecuredAiApiInvocation() throws Exception {
         apiKey = subscribeToApiAndGenerateKey(unsecuredApiId);
@@ -294,7 +294,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Unsecured AI API invocation failed");
         assertEquals(serviceResponse.getData(), model1Response, "Unsecured AI API response mismatch");
-    }*/
+    }
 
     /**
      * Updates the created AI service provider with apikey auth configurations and verifies the update.
@@ -334,7 +334,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     /**
      * Test Mistral AI API invocation
      */
-    /*@Test(groups = {"wso2.am"}, description = "Test AI API invocation",
+    @Test(groups = {"wso2.am"}, description = "Test AI API invocation",
             dependsOnMethods = "testSecuredAiApiCreationAndPublish")
     public void testSecuredAiApiInvocation() throws Exception {
         // Note: Use existing API key from previous test to avoid regeneration
@@ -356,7 +356,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
         assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "AI API invocation failed");
         assertEquals(serviceResponse.getData(), model1Response, "AI API response mismatch");
-    }*/
+    }
 
     /**
      * Test endpoint addition to Mistral AI API - handles multiple endpoints (production and sandbox)
@@ -1037,7 +1037,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      * @return API key
      * @throws Exception if subscription or key generation fails
      */
-    /*(String apiId) throws Exception {
+    private String subscribeToApiAndGenerateKey(String apiId) throws Exception {
         // Subscribe to API
         SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
@@ -1048,7 +1048,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1, null, null);
         assertNotNull(apiKeyDTO, "API Key should not be null");
         return apiKeyDTO.getApikey();
-    }*/
+    }
 
     /**
      * Create a temporary file with the given content
