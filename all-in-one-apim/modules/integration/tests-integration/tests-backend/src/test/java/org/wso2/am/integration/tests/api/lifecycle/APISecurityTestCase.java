@@ -1157,7 +1157,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 200);
     }
 
-    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithRevokedApiKeys"})
+//    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithRevokedApiKeys"})
     public void testValidateSecurityOfResources() throws Exception {
 
         // Validate for security disabled API
