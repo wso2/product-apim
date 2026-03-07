@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
-    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
@@ -68,7 +68,7 @@ jobs:
       with:
         flags: integration_tests
   run-benchmark-test:
-    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-latest
     steps:
       - name: Run hostname
         run: hostname
@@ -97,7 +97,7 @@ jobs:
   show-report:
     if: ${{ always() && !cancelled() }}
     needs: build
-    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/download-artifact@v4
         with:
