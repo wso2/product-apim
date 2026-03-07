@@ -55,8 +55,8 @@
   "oauth.grant_type.uma_ticket.allow_public_client": true,
   "oauth.grant_type.uma_ticket.grant_handler": "org.wso2.carbon.identity.oauth.uma.grant.UMA2GrantHandler",
   "oauth.grant_type.uma_ticket.grant_validator": "org.wso2.carbon.identity.oauth.uma.grant.GrantValidator",
-  "oauth.revoked_token_headers_in_response.enable": true,
-  "oauth.token_persistence.enable": true,
+  "oauth.revoked_token_headers_in_response.enable": false,
+  "oauth.token_persistence.enable": false,
   "apim.token.validation.enforce_type_header_validation": false,
   "system.parameter.'org.wso2.CipherTransformation'": "RSA/ECB/OAEPwithSHA1andMGF1Padding",
   "server.userAgent": "WSO2 AM 4.7.0",
@@ -93,6 +93,12 @@
       "link": "https://am.cloud.wso2.com",	
       "description": "API Manager in the cloud"	
     }	
+  ],
+  "oauth.extensions.token_types": [
+    {
+      "name": "JWT",
+      "issuer": "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
+    }
   ],
   "transport.passthru_http.listener.enable": true,
   "transport.passthru_http.listener.parameters.port": "8280",
@@ -209,6 +215,9 @@
   "realm_manager.data_source": "SHARED_DB",
   "realm_manager.properties.isCascadeDeleteEnabled": true,
   "realm_manager.properties.initializeNewClaimManager": true,
+  "transport.https.properties.maxHttpHeaderSize": "15288",
+  "apim.oauth_config.enable_jwt_for_portals": true,
+  "oauth.add_tenant_domain_to_access_token": true,
   "tasks.client_dispatch_address": "https://localhost:9443",
   "tasks.server_address": "https://localhost:9443",
   "identity.entitlement.policy_point.pip.attribute_designators": [
