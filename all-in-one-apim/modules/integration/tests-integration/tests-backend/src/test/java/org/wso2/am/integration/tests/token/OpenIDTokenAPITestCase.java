@@ -97,9 +97,7 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testGenerateAccessTokenWithOpenIdScope")
     public void testCallUserInfoApiWithOpenIdAccessToken() throws Exception {
         Map<String, String> requestHeaders = new HashMap<String, String>();
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        requestHeaders.put("Authorization", "Bearer " + tokenJti);
-
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         HttpResponse userInfoResponse = HTTPSClientUtils.doGet(keyManagerHTTPSURL
                 + "oauth2/userinfo?schema=openid", requestHeaders);
         Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
