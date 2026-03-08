@@ -95,12 +95,6 @@
       "description": "API Manager in the cloud"	
     }	
   ],
-  "oauth.extensions.token_types": [
-    {
-      "name": "JWT",
-      "issuer": "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
-    }
-  ],
   "transport.passthru_http.listener.enable": true,
   "transport.passthru_http.listener.parameters.port": "8280",
   "transport.passthru_http.listener.parameters.non-blocking": true,
