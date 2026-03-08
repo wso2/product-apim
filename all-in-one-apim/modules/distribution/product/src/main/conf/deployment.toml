@@ -73,6 +73,13 @@ websub_event_receiver_https_endpoint = "https://localhost:8021"
 [apim.sync_runtime_artifacts.gateway]
 gateway_labels =["Default"]
 
+[transport.https.properties]
+maxHttpHeaderSize = "15288"
+
+[[oauth.extensions.token_types]]
+name = "JWT"
+issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
+
 #[apim.cache.gateway_token]
 #enable = true
 #expiry_time = "900s"
