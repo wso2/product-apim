@@ -47,7 +47,6 @@ public class TokenPersistenceJWTTestSuite extends APIManagerLifecycleBaseTest {
     @AfterTest(alwaysRun = true)
     public void restoreConfiguration() throws Exception {
 
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

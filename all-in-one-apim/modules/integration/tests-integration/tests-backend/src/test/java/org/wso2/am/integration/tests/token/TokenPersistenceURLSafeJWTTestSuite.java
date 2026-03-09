@@ -47,7 +47,6 @@ public class TokenPersistenceURLSafeJWTTestSuite extends APIManagerLifecycleBase
     @AfterTest(alwaysRun = true)
     public void restoreConfiguration() throws Exception {
 
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

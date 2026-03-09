@@ -55,7 +55,6 @@ public class TokenPersistenceExternalIDPJWTTestSuite extends APIManagerLifecycle
     @AfterTest(alwaysRun = true)
     public void restoreConfiguration() throws Exception {
 
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.restoreToLastConfiguration();
     }
 
