@@ -111,6 +111,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
     private String jwtApplicationName = "FederatedJWTAppForJWTTest";
     private String endpointURL;
     private String jwtApplicationId;
+    private String jwtApplicationSecret;
     private String apiId;
     private int idpPort;
     private String callbackUrl = "https://localhost:9943/services/Version";
@@ -180,6 +181,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         //generate keys
         ApplicationKeyDTO applicationKeyDTO1 = restAPIStore.generateKeys(jwtApplicationId, "36000", callbackUrl,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        jwtApplicationSecret = applicationKeyDTO1.getConsumerSecret();
         createUser();
         configureIDP();
         createClaimMapping();
@@ -237,7 +239,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         updateServiceProviderWithRequiredClaims(applicationKeyDTO.getConsumerKey());
         for (String endUser : users) {
             String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
-                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[]{"openid"});
+                    jwtApplicationSecret, endUser, enduserPassword, user, new String[]{"openid"});
             log.info("Access Token Generated in JWT ==" + accessToken);
             HttpClient httpclient = HttpClientBuilder.create().build();
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -299,7 +301,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
                 restAPIStore.getApplicationKeysByKeyType(jwtApplicationId,
                         ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
-        String accessToken = generateTokenFromFederation(applicationKeyDTO);
+        String accessToken = generateTokenFromFederation(applicationKeyDTO, jwtApplicationSecret);
         log.info("Access Token Generated in JWT ==" + accessToken);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -383,7 +385,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
                         Assert.assertTrue(locationHeader.getValue().contains(callbackUrl + "?code="));
                         String code = getURLParameter(locationHeader.getValue(), "code");
                         return generateAuthCodeToken(applicationKeyDTO.getConsumerKey(),
-                                applicationKeyDTO.getConsumerSecret(), code);
+                                consumerSecret, code);
                     }
                 }
             }

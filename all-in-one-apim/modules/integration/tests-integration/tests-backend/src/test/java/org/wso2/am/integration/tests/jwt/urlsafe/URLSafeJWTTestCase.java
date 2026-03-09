@@ -72,6 +72,7 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
     String enduserName = "subscriberUser3";
     String enduserPassword = "password@123";
     private String jwtApplicationId;
+    private String jwtApplicationSecret;
     private String apiId;
     URL tokenEndpointURL;
 
@@ -99,8 +100,9 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         //generate keys
-        restAPIStore.generateKeys(jwtApplicationId, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        ApplicationKeyDTO jwtApplicationKeyDTO = restAPIStore.generateKeys(jwtApplicationId, "36000",
+                "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        jwtApplicationSecret = jwtApplicationKeyDTO.getConsumerSecret();
         createUser();
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -114,7 +116,7 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
                         ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
         String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
-                applicationKeyDTO.getConsumerSecret(), enduserName, enduserPassword);
+                jwtApplicationSecret, enduserName, enduserPassword);
         log.info("Acess Token Generated in JWT ==" + accessToken);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
