@@ -1313,7 +1313,7 @@
         <carbon.identity.governance.version>1.14.0</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.0</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.14.0</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.14.2</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.10.0</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.12.1</carbon.identity-inbound-auth-openid.version>
@@ -1468,7 +1468,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.8.0</wso2is.km.version>
+        <wso2is.km.version>1.8.1</wso2is.km.version>
         <wso2is7.km.version>2.1.0</wso2is7.km.version>
         <okta.keymanager.feature.version>3.3.0</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.1.0</azure.keymanager.feature.version>
