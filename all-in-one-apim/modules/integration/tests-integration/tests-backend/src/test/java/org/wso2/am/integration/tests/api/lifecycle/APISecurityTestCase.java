@@ -54,7 +54,6 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
