@@ -1298,15 +1298,15 @@
         <carbon.governance.version>4.9.3</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.11.2</carbon.kernel.version>
+        <carbon.kernel.version>4.11.3</carbon.kernel.version>
 
-        <cipher.tool.version>1.1.28</cipher.tool.version>
+        <cipher.tool.version>1.1.29</cipher.tool.version>
 
         <carbon.commons.version>4.13.2</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.8.7</carbon.mediation.version>
+        <carbon.mediation.version>4.8.8</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.27.6</carbon.identity.version>
@@ -1351,7 +1351,7 @@
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <synapse.version>4.1.0-wso2v5</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v111</axis2.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v121</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v29</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
