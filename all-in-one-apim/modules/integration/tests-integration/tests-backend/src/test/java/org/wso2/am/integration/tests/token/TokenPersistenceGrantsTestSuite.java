@@ -47,7 +47,9 @@ public class TokenPersistenceGrantsTestSuite extends APIManagerLifecycleBaseTest
     @AfterTest(alwaysRun = true)
     public void restoreConfiguration() throws Exception {
 
-        serverConfigurationManager.restoreToLastConfiguration();
+        if (serverConfigurationManager != null) {
+            serverConfigurationManager.restoreToLastConfiguration();
+        }
     }
 
 }
