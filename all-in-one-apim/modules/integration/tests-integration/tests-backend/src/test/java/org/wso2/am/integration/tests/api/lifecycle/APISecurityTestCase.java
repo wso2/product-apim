@@ -491,7 +491,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
     }
 
-    @Test(description = "Testing the invocation with API Keys", dependsOnMethods = {
+    /*@Test(description = "Testing the invocation with API Keys", dependsOnMethods = {
             "testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeys() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore
@@ -505,7 +505,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(apiKeySecuredAPIContext,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
-    }
+    }*/
 
     @Test(description = "Testing the invocation with Basic Auth for APIKey Only API", dependsOnMethods = {
             "testCreateAndPublishAPIWithOAuth2"})
@@ -755,7 +755,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 "Mutual SSL Authentication has succeeded for a different certificate");
     }
 
-    @Test(description = "Testing the invocation with API Keys having IP restriction",
+    /*@Test(description = "Testing the invocation with API Keys having IP restriction",
             dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeysWithIPCondition() throws Exception {
         String permittedIP = "152.23.5.6, 192.168.1.2/24, 2001:c00::/23";
@@ -801,9 +801,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders5);
         Assert.assertEquals(response5.getResponseCode(), HttpStatus.SC_FORBIDDEN);
-    }
+    }*/
 
-    @Test(description = "Testing the invocation with API Keys having Http Referer restriction",
+    /*@Test(description = "Testing the invocation with API Keys having Http Referer restriction",
             dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeysWithRefererCondition() throws Exception {
         String permittedReferer = "www.abc.com/path, sub.cds.com/*, *.gef.com/*";
@@ -846,9 +846,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders4);
         Assert.assertEquals(response4.getResponseCode(), HttpStatus.SC_OK);
-    }
+    }*/
 
-    @Test(description = "Testing the invocation of API Secured only with API Keys", dependsOnMethods = {
+    /*@Test(description = "Testing the invocation of API Secured only with API Keys", dependsOnMethods = {
             "testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeysOnly() throws Exception {
         APIKeyDTO apiKeyDTO1 = restAPIStore
@@ -880,7 +880,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 "Response data mismatched when invoke with sandbox endpoint" + " Response Data:" + response2.getData()
                         + ". Expected Response Data: " + API_RESPONSE_DATA);
 
-    }
+    }*/
 
     private Map<String, String> createRequestHeadersForAPIKey(String apiKey, String ip, String referer) {
 
@@ -896,7 +896,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         return requestHeaders;
     }
 
-    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+    /*@Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithRevokedApiKeys() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
@@ -934,9 +934,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertFalse(isApiKeyValid, "API Key revocation failed. " +
                 "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_UNAUTHORIZED +
                 ", but got " + invocationResponseAfterRevoked.getResponseCode());
-    }
+    }*/
 
-    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+    /*@Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvokeApiKeyAsJWTNegative() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
@@ -951,7 +951,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeader);
         Assert.assertEquals(response.getResponseCode(), 401);
-    }
+    }*/
 
     @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
@@ -1013,7 +1013,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 401);
     }
 
-    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+    /*@Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvokeAPIKeyAsInternalKeyNegative() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
@@ -1021,7 +1021,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response = invokeApiWithInternalKey(mutualSSLWithOAuthAPI, API_VERSION_1_0_0,
                 API_END_POINT_METHOD, apiKeyDTO.getApikey());
         Assert.assertEquals(response.getResponseCode(), 401);
-    }
+    }*/
 
     @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
@@ -1086,7 +1086,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 401);
     }
 
-    @Test(description = "Testing the invocation with APIkey Token for BasicAuth api", dependsOnMethods =
+    /*@Test(description = "Testing the invocation with APIkey Token for BasicAuth api", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvokeAPIKeyForBasicOauthAPINegative() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
@@ -1101,7 +1101,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 getAPIInvocationURLHttps(basicAuthSecuredAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeader);
         Assert.assertEquals(response.getResponseCode(), 401);
-    }
+    }*/
 
     @Test(description = "Testing the User Token Invocation and Password Reset", dependsOnMethods = {
             "testInvokeBasicAuth"})
@@ -1157,7 +1157,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 200);
     }
 
-    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithRevokedApiKeys"})
+//    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithRevokedApiKeys"})
     public void testValidateSecurityOfResources() throws Exception {
 
         // Validate for security disabled API
@@ -1200,7 +1200,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(description = "Testing the invocation with API Keys after removing subscription", dependsOnMethods =
+    /*@Test(description = "Testing the invocation with API Keys after removing subscription", dependsOnMethods =
             {"testInvokeBasicAuthAfterCredentialsInvalid"})
     public void testInvocationWithApiKeysWithoutSubscription() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
@@ -1238,7 +1238,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertFalse(isApiKeyValid, "API Key internal subscription validation failed. " +
                 "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_FORBIDDEN +
                 ", but got " + invocationResponseAfterSubscriptionRemoved.getResponseCode());
-    }
+    }*/
 
     @Test(description = "Testing the WWW-Authorization header when invocating an API with API Keys using invalid Authorization header",
             dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})

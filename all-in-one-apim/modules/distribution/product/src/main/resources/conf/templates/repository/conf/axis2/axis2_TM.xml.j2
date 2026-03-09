@@ -17,9 +17,12 @@
 <axisconfig name="AxisJava2.0" xmlns:svns="http://org.wso2.securevault/configuration">
 
     <!-- ================================================= -->
-    <!-- Globally engaged modules -->
+    <!--             Global Engaged Modules                -->
     <!-- ================================================= -->
-    <module ref="addressing"/>
+
+    {% for module in server.globally_engaged_modules %}
+    <module ref="{{module}}"/>
+    {% endfor %}
 
     <!-- ================================================= -->
     <!-- Parameters -->

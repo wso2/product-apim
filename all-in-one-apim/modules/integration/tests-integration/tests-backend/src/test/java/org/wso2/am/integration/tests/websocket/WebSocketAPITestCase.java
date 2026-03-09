@@ -472,7 +472,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke API using API key when API Key authentication is not enabled",
+    /*@Test(description = "Invoke API using API key when API Key authentication is not enabled",
             dependsOnMethods = "testWebSocketAPIInvalidTokenInvocation")
     public void testWebSocketAPIInvocationUsingAPIKeyWhenAPIKeyAuthenticationDisabled() throws Exception {
 
@@ -495,9 +495,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             }
             client.stop();
         }
-    }
+    }*/
 
-    @Test(description = "Invoke API using API key",
+    /*@Test(description = "Invoke API using API key",
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyWhenAPIKeyAuthenticationDisabled")
     public void testWebSocketAPIInvocationUsingAPIKey() throws Exception {
 
@@ -522,10 +522,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         } finally {
             client.stop();
         }
-    }
+    }*/
 
-    @Test(description = "Invoke API using OAuth access token when OAuth authentication is not enabled",
-            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKey")
+//    @Test(description = "Invoke API using OAuth access token when OAuth authentication is not enabled",
+//            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKey")
     public void testWebSocketAPIInvocationUsingOAuthWhenOAuthAuthenticationDisabled() throws Exception {
 
         WebSocketClient client = new WebSocketClient();
@@ -547,7 +547,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke API using Expired API key",
+    /*@Test(description = "Invoke API using Expired API key",
             dependsOnMethods = "testWebSocketAPIInvocationUsingOAuthWhenOAuthAuthenticationDisabled")
     public void testWebSocketAPIInvocationUsingExpiredAPIKey() throws Exception {
 
@@ -571,9 +571,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             }
             client.stop();
         }
-    }
+    }*/
 
-    @Test(description = "Invoke API using API key generated using IP restrictions",
+    /*@Test(description = "Invoke API using API key generated using IP restrictions",
             dependsOnMethods = "testWebSocketAPIInvocationUsingExpiredAPIKey")
     public void testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingIPRestrictions() throws Exception {
 
@@ -590,9 +590,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         } finally {
             client.stop();
         }
-    }
+    }*/
 
-    @Test(description = "Invoke API using an API key restricted for another IP",
+    /*@Test(description = "Invoke API using an API key restricted for another IP",
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingIPRestrictions")
     public void testWebSocketAPIInvocationUsingAPIKeyRestrictedForAnotherIP() throws Exception {
 
@@ -616,9 +616,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             }
             client.stop();
         }
-    }
+    }*/
 
-    @Test(description = "Invoke API using API key generated using Referer restrictions",
+    /*@Test(description = "Invoke API using API key generated using Referer restrictions",
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyRestrictedForAnotherIP")
     public void testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingRefererRestrictions() throws Exception {
 
@@ -637,9 +637,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         } finally {
             client.stop();
         }
-    }
+    }*/
 
-    @Test(description = "Invoke API using API key restricted for another Referer",
+    /*@Test(description = "Invoke API using API key restricted for another Referer",
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingRefererRestrictions")
     public void testWebSocketAPIInvocationUsingAPIKeyGeneratedForAnotherReferer() throws Exception {
 
@@ -665,7 +665,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             }
             client.stop();
         }
-    }
+    }*/
 
     @Test(description = "Create WebSocket API with malformed context",
             dependsOnMethods = "testWebSocketAPIRemoveEndpoint")

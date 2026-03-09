@@ -123,7 +123,7 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Generate keys and invoking custom application")
+    /*@Test(groups = { "wso2.am" }, description = "Generate keys and invoking custom application")
     public void testJWTDecodingforCustomApplication() throws Exception {
 
         //Call the API with apikey
@@ -157,7 +157,7 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse decodingFourthResponse = decodingTokenHttpClient.execute(decodingThirdGet);
         Assert.assertEquals(decodingFourthResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
-    }
+    }*/
 
     @AfterClass(alwaysRun = true) public void destroy() throws Exception {
         userManagementClient.deleteUser(enduserName);

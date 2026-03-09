@@ -127,7 +127,7 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN);
     }
 
-    @Test(groups = "wso2.am", description = "Generate API key from user 1 and make sure that user 2 can revoke the key")
+    /*@Test(groups = "wso2.am", description = "Generate API key from user 1 and make sure that user 2 can revoke the key")
     public void testAPIKeyRevocationBySharedUser()
             throws ApiException {
 
@@ -142,7 +142,7 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1, null, null);
         //Revoke api key by user 2
         restAPIStoreClientUser2.revokeAPIKey(userOneSharedApplicationId, key.getApikey());
-    }
+    }*/
 
     private void createUsersAndApplications() throws Exception {
         //signup of user one

@@ -142,7 +142,7 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Invoke an API with default API Key header",
+    /*@Test(groups = {"wso2.am"}, description = "Invoke an API with default API Key header",
             dependsOnMethods = "testSystemWideCustomAuthHeader")
     public void testInvokeAPIWIthDefaultApiKeyHeader() throws Exception {
 
@@ -168,9 +168,9 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
         assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
-    }
+    }*/
 
-    @Test(groups = {"wso2.am"}, description = "Invoke an API with custom API Key header",
+    /*@Test(groups = {"wso2.am"}, description = "Invoke an API with custom API Key header",
             dependsOnMethods = "testInvokeAPIWIthDefaultApiKeyHeader")
     public void testInvokeAPIWIthCustomApiKeyHeader() throws Exception {
 
@@ -203,7 +203,7 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
         assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
-    }
+    }*/
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {

@@ -314,10 +314,8 @@
     </transportSender>
 
     <!-- ================================================= -->
-    <!-- Global Modules  -->
+    <!--             Global Engaged Modules                -->
     <!-- ================================================= -->
-    <!-- Comment this to disable Addressing -->
-    <module ref="addressing"/>
 
     <!--Configuring module , providing parameters for modules whether they refer or not-->
     <!--<moduleConfig name="addressing">-->
