@@ -100,8 +100,10 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     String enduserPassword = "password@123";
     private String oauthApplicationId;
     private String jwtApplicationId;
+    private String jwtApplicationSecret;
     private String apiKeyApplicationId;
     private String authCodeApplicationId;
+    private String authCodeApplicationSecret;
     private String apiId;
     private String api2Id;
     URL tokenEndpointURL;
@@ -170,8 +172,9 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.AUTHORIZATION_CODE);
         //generate keys
-        restAPIStore.generateKeys(jwtApplicationId, "36000", CALLBACK_URL,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        ApplicationKeyDTO jwtApplicationKeyDTO = restAPIStore.generateKeys(jwtApplicationId, "36000",
+                CALLBACK_URL, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        jwtApplicationSecret = jwtApplicationKeyDTO.getConsumerSecret();
         ApplicationDTO applicationDetailsDTO = restAPIStore.getApplicationById(authCodeApplicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
@@ -189,8 +192,9 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 .subscribedApis(buildSubscribedApiEntry(apiName, apiContext, apiVersion, TIER_GOLD))
                 .build();
         String apiKey = new JWTGenerator().generateToken(tokenInfo);
-        restAPIStore.generateKeys(authCodeApplicationId, "36000", CALLBACK_URL,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        ApplicationKeyDTO authCodeApplicationKeyDTO = restAPIStore.generateKeys(authCodeApplicationId, "36000",
+                CALLBACK_URL, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        authCodeApplicationSecret = authCodeApplicationKeyDTO.getConsumerSecret();
         createUser();
         createClaimMapping();
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
@@ -219,7 +223,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         updateServiceProviderWithRequiredClaims(applicationKeyDTO.getConsumerKey());
         for (String endUser : users) {
             String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
-                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[]{"openid"});
+                    jwtApplicationSecret, endUser, enduserPassword, user, new String[]{"openid"});
             log.info("Access Token Generated in JWT ==" + accessToken);
             HttpClient httpclient = HttpClientBuilder.create().build();
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -369,7 +373,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 .getApplicationKeysByKeyType(jwtApplicationId, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
         String accessToken = generateTokenWithClientCredentialsGrant(applicationKeyDTO.getConsumerKey(),
-                applicationKeyDTO.getConsumerSecret(), new String[] { "default" });
+                jwtApplicationSecret, new String[] { "default" });
         log.info("Access Token Generated in JWT ==" + accessToken);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -416,7 +420,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
         for (String endUser : users) {
             String accessToken = generateTokenWithAuthCodeGrant(applicationKeyDTO.getConsumerKey(),
-                    applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[] { "default" });
+                    authCodeApplicationSecret, endUser, enduserPassword, user, new String[] { "default" });
             log.info("Access Token Generated in JWT ==" + accessToken);
             HttpClient httpclient = HttpClientBuilder.create().build();
             HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
