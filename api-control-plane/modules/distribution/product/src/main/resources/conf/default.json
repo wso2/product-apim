@@ -196,6 +196,7 @@
   "n_http.rest_uri_proxy_regex": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
   "n_http.'http.socket.reuseaddr'": "true",
   "transport.http.enable": true,
+  "transport.https.properties.maxHttpHeaderSize": "15288",
   "transport.receiver.max_event_buffer_capacity": "10",
   "transport.receiver.type": "binary",
   "transport.thrift.receiver.enable": false,
