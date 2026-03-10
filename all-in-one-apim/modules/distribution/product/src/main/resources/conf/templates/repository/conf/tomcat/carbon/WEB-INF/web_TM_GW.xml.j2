@@ -36,12 +36,6 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
 
-    <!-- OWASP CSRFGuard servlet that serves dynamic token injection JavaScript-->
-    <servlet>
-        <servlet-name>JavaScriptServlet</servlet-name>
-        <servlet-class>org.owasp.csrfguard.servlet.JavaScriptServlet</servlet-class>
-    </servlet>
-
     <servlet-mapping>
         <servlet-name>bridgeservlet</servlet-name>
         <url-pattern>/*</url-pattern>
@@ -54,11 +48,6 @@
         <url-pattern>*.jsp</url-pattern>
     </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>JavaScriptServlet</servlet-name>
-        <url-pattern>/carbon/admin/js/csrfPrevention.js</url-pattern>
-    </servlet-mapping>
-
     <!--This is for performing the character encoding in the JSPs. -->
     <filter>
         <filter-name>CharsetFilter</filter-name>
@@ -67,12 +56,6 @@
             <param-name>requestEncoding</param-name>
             <param-value>UTF-8</param-value>
         </init-param>
-    </filter>
-
-    <!-- OWASP CSRFGuard filter used to validate CSRF token-->
-    <filter>
-        <filter-name>CSRFGuard</filter-name>
-        <filter-class>org.owasp.csrfguard.CsrfGuardFilter</filter-class>
     </filter>
 
     <!-- Tomcat http header security filter -->
@@ -138,20 +121,12 @@
  <url-pattern>/thriftAuthenticator/*</url-pattern>
  </filter-mapping>
 
- <filter-mapping>
- <filter-name>CSRFGuard</filter-name>
- <url-pattern>/*</url-pattern>
- </filter-mapping>
+
 
 
     <!-- OWASP CSRFGuard context listener used to read CSRF configuration -->
     <listener>
         <listener-class>org.owasp.csrfguard.CsrfGuardServletContextListener</listener-class>
-    </listener>
-
-    <!-- OWASP CSRFGuard session listener used to generate per-session CSRF token -->
-    <listener>
-        <listener-class>org.owasp.csrfguard.CsrfGuardHttpSessionListener</listener-class>
     </listener>
 
 
