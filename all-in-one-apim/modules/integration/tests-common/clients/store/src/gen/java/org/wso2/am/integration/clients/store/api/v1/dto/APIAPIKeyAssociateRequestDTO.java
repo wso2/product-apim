@@ -25,89 +25,60 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* APIKeyGenerateRequestDTO
+* APIAPIKeyAssociateRequestDTO
 */
 
-public class APIKeyGenerateRequestDTO {
-        public static final String SERIALIZED_NAME_KEY_NAME = "keyName";
-        @SerializedName(SERIALIZED_NAME_KEY_NAME)
-            private String keyName;
+public class APIAPIKeyAssociateRequestDTO {
+        public static final String SERIALIZED_NAME_KEY_U_U_I_D = "keyUUID";
+        @SerializedName(SERIALIZED_NAME_KEY_U_U_I_D)
+            private String keyUUID;
 
-        public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
-        @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
-            private Integer validityPeriod;
-
-        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
-        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-            private Object additionalProperties;
+        public static final String SERIALIZED_NAME_APPLICATION_U_U_I_D = "applicationUUID";
+        @SerializedName(SERIALIZED_NAME_APPLICATION_U_U_I_D)
+            private String applicationUUID;
 
 
-        public APIKeyGenerateRequestDTO keyName(String keyName) {
+        public APIAPIKeyAssociateRequestDTO keyUUID(String keyUUID) {
         
-        this.keyName = keyName;
+        this.keyUUID = keyUUID;
         return this;
         }
 
     /**
-        * API Key name
-    * @return keyName
+        * The UUID of the API key
+    * @return keyUUID
     **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "Test_Key", value = "API Key name")
+      @ApiModelProperty(required = true, value = "The UUID of the API key")
     
-    public String getKeyName() {
-        return keyName;
+    public String getKeyUUID() {
+        return keyUUID;
     }
 
 
-    public void setKeyName(String keyName) {
-        this.keyName = keyName;
+    public void setKeyUUID(String keyUUID) {
+        this.keyUUID = keyUUID;
     }
 
 
-        public APIKeyGenerateRequestDTO validityPeriod(Integer validityPeriod) {
+        public APIAPIKeyAssociateRequestDTO applicationUUID(String applicationUUID) {
         
-        this.validityPeriod = validityPeriod;
+        this.applicationUUID = applicationUUID;
         return this;
         }
 
     /**
-        * API key validity period
-    * @return validityPeriod
+        * The UUID of the Application to be associated
+    * @return applicationUUID
     **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "3600", value = "API key validity period")
+      @ApiModelProperty(required = true, value = "The UUID of the Application to be associated")
     
-    public Integer getValidityPeriod() {
-        return validityPeriod;
+    public String getApplicationUUID() {
+        return applicationUUID;
     }
 
 
-    public void setValidityPeriod(Integer validityPeriod) {
-        this.validityPeriod = validityPeriod;
-    }
-
-
-        public APIKeyGenerateRequestDTO additionalProperties(Object additionalProperties) {
-        
-        this.additionalProperties = additionalProperties;
-        return this;
-        }
-
-    /**
-        * Additional parameters if Authorization server needs any
-    * @return additionalProperties
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "Additional parameters if Authorization server needs any")
-    
-    public Object getAdditionalProperties() {
-        return additionalProperties;
-    }
-
-
-    public void setAdditionalProperties(Object additionalProperties) {
-        this.additionalProperties = additionalProperties;
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
     }
 
 
@@ -119,25 +90,23 @@ public class APIKeyGenerateRequestDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            APIKeyGenerateRequestDTO apIKeyGenerateRequest = (APIKeyGenerateRequestDTO) o;
-            return Objects.equals(this.keyName, apIKeyGenerateRequest.keyName) &&
-            Objects.equals(this.validityPeriod, apIKeyGenerateRequest.validityPeriod) &&
-            Objects.equals(this.additionalProperties, apIKeyGenerateRequest.additionalProperties);
+            APIAPIKeyAssociateRequestDTO apIAPIKeyAssociateRequest = (APIAPIKeyAssociateRequestDTO) o;
+            return Objects.equals(this.keyUUID, apIAPIKeyAssociateRequest.keyUUID) &&
+            Objects.equals(this.applicationUUID, apIAPIKeyAssociateRequest.applicationUUID);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(keyName, validityPeriod, additionalProperties);
+        return Objects.hash(keyUUID, applicationUUID);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class APIKeyGenerateRequestDTO {\n");
-    sb.append("    keyName: ").append(toIndentedString(keyName)).append("\n");
-    sb.append("    validityPeriod: ").append(toIndentedString(validityPeriod)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+sb.append("class APIAPIKeyAssociateRequestDTO {\n");
+    sb.append("    keyUUID: ").append(toIndentedString(keyUUID)).append("\n");
+    sb.append("    applicationUUID: ").append(toIndentedString(applicationUUID)).append("\n");
 sb.append("}");
 return sb.toString();
 }

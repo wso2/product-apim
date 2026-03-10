@@ -2509,6 +2509,550 @@ paths:
       - lang: Curl
         source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
       x-accepts: application/json
+  /apis/{apiId}/api-keys/generate:
+    post:
+      description: |
+        Generate a self contained API Key for the API
+      operationId: generateApiBoundApiKey
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIAPIKeyGenerateRequest'
+        description: |
+          API Key generation request object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKey'
+          description: |
+            OK.
+            Api key generated.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Generate API Key
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/apis/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/generate"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /apis/{apiId}/api-keys/regenerate:
+    post:
+      description: |
+        Regenerate a self contained API Key for the API specified by the key UUID
+      operationId: regenerateAPIBoundAPIKey
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIKeyRenewRequest'
+        description: |
+          API Key renewal request object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKey'
+          description: |
+            OK.
+            Api key regenerated successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Regenerate API Key
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/apis/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/regenerate"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /apis/{apiId}/api-keys:
+    get:
+      description: |
+        Retrieve self contained API Key(s) for the API.
+      operationId: getAPIBoundAPIKeys
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIAPIKeyList'
+          description: |
+            OK.
+            API key(s) of a given API are returned.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Get API Key(s) of a Given API
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X GET "https://localhost:9443/api/am/devportal/v3/apis/16cd2684-9657-4a01-a956-4efd89e96077/api-keys"'
+      x-accepts: application/json
+  /apis/{apiId}/api-keys/revoke:
+    post:
+      description: |
+        Revoke a self contained API Key for the API specified by the key UUID
+      operationId: revokeAPIBoundAPIKey
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIAPIKeyRevokeRequest'
+        description: |
+          API Key revocation request object
+        required: true
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Api key revoked successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Revoke API Key
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/apis/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/revoke"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /apis/{apiId}/api-keys/associate:
+    post:
+      description: |
+        Create an association for a self contained API Key for the API
+      operationId: associateAPIKey
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIAPIKeyAssociateRequest'
+        description: |
+          API Key association request object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKeyAssociation'
+          description: |
+            OK.
+            Api key associated successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Create an association for the API Key
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/apis/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/associate"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /apis/{apiId}/api-keys/dissociate:
+    post:
+      description: |
+        Remove an association a self contained API Key for the API specified by the key UUID
+      operationId: dissociateAPIKey
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIKeyDissociateRequest'
+        description: |
+          API Key dissociation request object
+        required: true
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Removed association for the Api key successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Remove an Association for the API Key
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/apis/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/dissociate"'
+      x-contentType: application/json
+      x-accepts: application/json
   /mcp-servers:
     get:
       description: "This operation provides you a list of available MCP servers qualifying\
@@ -6267,6 +6811,7 @@ paths:
     post:
       description: |
         Generate a self contained API Key for the application
+      operationId: applicationsApplicationIdApiKeysKeyTypeGeneratePost
       parameters:
       - description: |
           Application Identifier consisting of the UUID of the Application.
@@ -6314,7 +6859,7 @@ paths:
                 $ref: '#/components/schemas/APIKey'
           description: |
             OK.
-            apikey generated.
+            Api key generated.
         "400":
           content:
             application/json:
@@ -6360,17 +6905,220 @@ paths:
         - apim:api_key
       summary: Generate API Key
       tags:
-      - API Keys
+      - APIKeys
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
       x-contentType: application/json
+      x-accepts: application/json
+  /applications/{applicationId}/api-keys/{keyType}/regenerate:
+    post:
+      description: |
+        Regenerate a self contained API Key for the application specified by the key UUID
+      operationId: regenerateAppBoundAPIKey
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          enum:
+          - PRODUCTION
+          - SANDBOX
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIKeyRenewRequest'
+        description: |
+          API Key renewal request object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKey'
+          description: |
+            OK.
+            Api key regenerated successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Regenerate API Key
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/regenerate"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /applications/{applicationId}/api-keys/{keyType}:
+    get:
+      description: |
+        Retrieve self contained API Key(s) for the application specifying the key type in the URI.
+      operationId: getAppBoundAPIKeys
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          enum:
+          - PRODUCTION
+          - SANDBOX
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKeyList'
+          description: |
+            OK.
+            API key(s) of given type are returned.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Get API Key(s) of a Given Type
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X GET "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION"'
       x-accepts: application/json
   /applications/{applicationId}/api-keys/{keyType}/revoke:
     post:
       description: |
         Revoke a self contained API Key for the application
+      operationId: applicationsApplicationIdApiKeysKeyTypeRevokePost
       parameters:
       - description: |
           Application Identifier consisting of the UUID of the Application.
@@ -6409,13 +7157,13 @@ paths:
               $ref: '#/components/schemas/APIKeyRevokeRequest'
         description: |
           API Key revoke request object
-        required: false
+        required: true
       responses:
         "200":
           content: {}
           description: |
             OK.
-            apikey revoked successfully.
+            Api key revoked successfully.
         "400":
           content:
             application/json:
@@ -6449,12 +7197,413 @@ paths:
         - apim:api_key
       summary: Revoke API Key
       tags:
-      - API Keys
+      - APIKeys
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
       x-contentType: application/json
+      x-accepts: application/json
+  /applications/{applicationId}/api-keys/{keyType}/subscriptions:
+    get:
+      description: |
+        Retrieve subscribed APIs with non-associated API Key(s) for the application specifying the key type in the URI.
+      operationId: getSubscribedAPIsWithAPIKeys
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          enum:
+          - PRODUCTION
+          - SANDBOX
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscribedAPIWithApiKeyList'
+          description: |
+            OK.
+            Subscribed APIs along with the non-associated API key(s) of given type are returned.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Get Subscribed APIs with API Key(s) of a Given Type
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X GET "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/subscriptions"'
+      x-accepts: application/json
+  /applications/{applicationId}/api-keys/{keyType}/associate:
+    post:
+      description: |
+        Create an association to a self contained API Key for the application
+      operationId: associateAPIKeyToApp
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          enum:
+          - PRODUCTION
+          - SANDBOX
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppAPIKeyAssociateRequest'
+        description: |
+          API Key association request object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKeyAssociation'
+          description: |
+            OK.
+            Api key associated successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Associate an API Key to the Application
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/associate"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /applications/{applicationId}/api-keys/{keyType}/dissociate:
+    post:
+      description: |
+        Remove the association to a self contained API Key for the application
+      operationId: dissociateAPIKeyFromApp
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          enum:
+          - PRODUCTION
+          - SANDBOX
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIKeyDissociateRequest'
+        description: |
+          API Key dissociation request object
+        required: true
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Removed association for the API key successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Remove the association of the API Key to the Application
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/dissociate"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /applications/{applicationId}/api-keys/{keyType}/associations:
+    get:
+      description: |
+        Retrieve API key associations for the application specifying the key type in the URI.
+      operationId: getAPIKeyAssociationsForApp
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          enum:
+          - PRODUCTION
+          - SANDBOX
+          type: string
+        style: simple
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKeyAssociationList'
+          description: |
+            OK.
+            API key associations of given type are returned.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:subscribe
+        - apim:app_manage
+        - apim:api_key
+      summary: Get API Key associations of a Given Type
+      tags:
+      - APIKeys
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X GET "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/associations"'
       x-accepts: application/json
   /applications/export:
     get:
@@ -10551,18 +11700,278 @@ components:
       type: object
     APIKey:
       example:
-        validityTime: 3600
+        validityPeriod: 3600
         apikey: eyJoZWxsbyI6IndvcmxkIn0=.eyJ3c28yIjoiYXBpbSJ9.eyJ3c28yIjoic2lnbmF0dXJlIn0=
+        keyName: Test_Key
       properties:
+        keyName:
+          description: API Key name
+          example: Test_Key
+          type: string
         apikey:
           description: API Key
           example: eyJoZWxsbyI6IndvcmxkIn0=.eyJ3c28yIjoiYXBpbSJ9.eyJ3c28yIjoic2lnbmF0dXJlIn0=
           type: string
-        validityTime:
+        validityPeriod:
           example: 3600
           format: int32
           type: integer
       title: API Key details to invoke APIs
+      type: object
+    APIKeyAssociation:
+      example:
+        apiName: NotificationAPI
+        keyName: Test_Key
+        applicationName: DefaultApplication
+      properties:
+        keyName:
+          description: API Key name
+          example: Test_Key
+          type: string
+        apiName:
+          description: API name
+          example: NotificationAPI
+          type: string
+        applicationName:
+          description: Application name
+          example: DefaultApplication
+          type: string
+      title: API Key association
+      type: object
+    APIKeyAssociationInfo:
+      example:
+        validityPeriod: 3600
+        lastUsed: 2026-02-06 23:45:07
+        apiName: NotificationAPI
+        keyName: Test_Key
+        keyUUID: keyUUID
+        apiUUID: apiUUID
+        issuedOn: 2026-02-06 23:45:07
+      properties:
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+        keyName:
+          description: API Key name
+          example: Test_Key
+          type: string
+        apiName:
+          description: API name
+          example: NotificationAPI
+          type: string
+        apiUUID:
+          description: The UUID of the API
+          type: string
+        issuedOn:
+          description: Created Time
+          example: 2026-02-06 23:45:07
+          type: string
+        validityPeriod:
+          example: 3600
+          format: int32
+          type: integer
+        lastUsed:
+          description: Last used time as epoch milliseconds (string), or `NOT_USED`
+            if never used.
+          example: 2026-02-06 23:45:07
+          type: string
+      title: API Key association
+      type: object
+    APIKeyInfo:
+      example:
+        validityPeriod: 3600
+        lastUsed: 2026-02-06 23:45:07
+        keyName: Test_Key
+        keyUUID: keyUUID
+        issuedOn: 2026-02-06 23:45:07
+      properties:
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+        keyName:
+          description: API Key name
+          example: Test_Key
+          type: string
+        issuedOn:
+          description: Created Time
+          example: 2026-02-06 23:45:07
+          type: string
+        validityPeriod:
+          example: 3600
+          format: int32
+          type: integer
+        lastUsed:
+          description: Last used time as epoch milliseconds (string), or `NOT_USED`
+            if never used.
+          example: 2026-02-06 23:45:07
+          type: string
+      title: API Key details to invoke APIs
+      type: object
+    APIWithKeyInfo:
+      example:
+        apiName: NotificationAPI
+        keyName: Test_Key
+        keyUUID: keyUUID
+        apiUUID: apiUUID
+      properties:
+        keyName:
+          description: API Key name
+          example: Test_Key
+          type: string
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+        apiName:
+          description: API name
+          example: NotificationAPI
+          type: string
+        apiUUID:
+          description: The UUID of the associated API
+          type: string
+      title: API with API Key
+      type: object
+    APIAPIKeyInfo:
+      example:
+        validityPeriod: 3600
+        lastUsed: 2026-02-06 23:45:07
+        keyName: Test_Key
+        associatedApp: DefaultApplication
+        keyUUID: keyUUID
+        issuedOn: 2026-02-06 23:45:07
+      properties:
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+        keyName:
+          description: API Key name
+          example: Test_Key
+          type: string
+        associatedApp:
+          description: Associated application
+          example: DefaultApplication
+          type: string
+        issuedOn:
+          description: Created Time
+          example: 2026-02-06 23:45:07
+          type: string
+        validityPeriod:
+          example: 3600
+          format: int32
+          type: integer
+        lastUsed:
+          description: Last used time as epoch milliseconds (string), or `NOT_USED`
+            if never used.
+          example: 2026-02-06 23:45:07
+          type: string
+      title: API Key details to invoke APIs
+      type: object
+    APIAPIKeyList:
+      example:
+        count: 1
+        list:
+        - validityPeriod: 3600
+          lastUsed: 2026-02-06 23:45:07
+          keyName: Test_Key
+          associatedApp: DefaultApplication
+          keyUUID: keyUUID
+          issuedOn: 2026-02-06 23:45:07
+        - validityPeriod: 3600
+          lastUsed: 2026-02-06 23:45:07
+          keyName: Test_Key
+          associatedApp: DefaultApplication
+          keyUUID: keyUUID
+          issuedOn: 2026-02-06 23:45:07
+      properties:
+        count:
+          description: |
+            Number of API keys returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/APIAPIKeyInfo'
+          type: array
+      title: API Keys List
+      type: object
+    APIKeyList:
+      example:
+        count: 1
+        list:
+        - validityPeriod: 3600
+          lastUsed: 2026-02-06 23:45:07
+          keyName: Test_Key
+          keyUUID: keyUUID
+          issuedOn: 2026-02-06 23:45:07
+        - validityPeriod: 3600
+          lastUsed: 2026-02-06 23:45:07
+          keyName: Test_Key
+          keyUUID: keyUUID
+          issuedOn: 2026-02-06 23:45:07
+      properties:
+        count:
+          description: |
+            Number of API keys returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/APIKeyInfo'
+          type: array
+      title: API Keys List
+      type: object
+    SubscribedAPIWithApiKeyList:
+      example:
+        count: 1
+        list:
+        - apiName: NotificationAPI
+          keyName: Test_Key
+          keyUUID: keyUUID
+          apiUUID: apiUUID
+        - apiName: NotificationAPI
+          keyName: Test_Key
+          keyUUID: keyUUID
+          apiUUID: apiUUID
+      properties:
+        count:
+          description: |
+            Number of subscribed APIs with API keys returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/APIWithKeyInfo'
+          type: array
+      title: Subscribed APIs with non-associated API keys
+      type: object
+    APIKeyAssociationList:
+      example:
+        count: 1
+        list:
+        - validityPeriod: 3600
+          lastUsed: 2026-02-06 23:45:07
+          apiName: NotificationAPI
+          keyName: Test_Key
+          keyUUID: keyUUID
+          apiUUID: apiUUID
+          issuedOn: 2026-02-06 23:45:07
+        - validityPeriod: 3600
+          lastUsed: 2026-02-06 23:45:07
+          apiName: NotificationAPI
+          keyName: Test_Key
+          keyUUID: keyUUID
+          apiUUID: apiUUID
+          issuedOn: 2026-02-06 23:45:07
+      properties:
+        count:
+          description: |
+            Number of API key associations returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/APIKeyAssociationInfo'
+          type: array
+      title: API Key Associations List
       type: object
     ApplicationKey:
       example:
@@ -10833,10 +12242,29 @@ components:
           type: object
       title: Application access token generation request object
       type: object
-    APIKeyGenerateRequest:
+    ApplicationThrottleReset:
       properties:
+        userName:
+          description: The username for which the throttle policy needs to be reset
+          example: admin
+          type: string
+      title: Reset application level throttling
+      type: object
+    APIAPIKeyGenerateRequest:
+      properties:
+        keyName:
+          description: API Key name
+          example: Test_Key
+          type: string
+        keyType:
+          description: Type of the API key
+          enum:
+          - PRODUCTION
+          - SANDBOX
+          example: PRODUCTION
+          type: string
         validityPeriod:
-          description: Token validity period
+          description: API key validity period
           example: 3600
           format: int32
           type: integer
@@ -10846,20 +12274,91 @@ components:
           type: object
       title: API Key generation request object
       type: object
-    ApplicationThrottleReset:
+    APIKeyGenerateRequest:
       properties:
-        userName:
-          description: The username for which the throttle policy needs to be reset
-          example: admin
+        keyName:
+          description: API Key name
+          example: Test_Key
           type: string
-      title: Reset application level throttling
+        validityPeriod:
+          description: API key validity period
+          example: 3600
+          format: int32
+          type: integer
+        additionalProperties:
+          description: Additional parameters if Authorization server needs any
+          properties: {}
+          type: object
+      title: API Key generation request object
+      type: object
+    APIKeyRenewRequest:
+      properties:
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+      required:
+      - keyUUID
+      title: API Key renewal request object
+      type: object
+    APIAPIKeyAssociateRequest:
+      properties:
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+        applicationUUID:
+          description: The UUID of the Application to be associated
+          type: string
+      required:
+      - applicationUUID
+      - keyUUID
+      title: API Key association request object
+      type: object
+    APIKeyDissociateRequest:
+      properties:
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+      required:
+      - keyUUID
+      title: API Key dissociation request object
+      type: object
+    AppAPIKeyAssociateRequest:
+      properties:
+        apiUUID:
+          description: The unique identifier of the API.
+          example: 2962f3bb-8330-438e-baee-0ee1d6434ba4
+          type: string
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+      required:
+      - apiUUID
+      - keyUUID
+      title: API Key association request object
       type: object
     APIKeyRevokeRequest:
+      oneOf:
+      - required:
+        - apikey
+      - required:
+        - keyUUID
       properties:
         apikey:
           description: API Key to revoke
           example: eyJoZWxsbyI6IndvcmxkIn0=.eyJ3c28yIjoiYXBpbSJ9.eyJ3c28yIjoic2lnbmF0dXJlIn0=
           type: string
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+      title: API Key revoke request object
+      type: object
+    APIAPIKeyRevokeRequest:
+      properties:
+        keyUUID:
+          description: The UUID of the API key
+          type: string
+      required:
+      - keyUUID
       title: API Key revoke request object
       type: object
     ScopeInfo:
