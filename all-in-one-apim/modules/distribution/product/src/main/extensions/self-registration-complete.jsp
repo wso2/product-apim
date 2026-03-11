@@ -74,106 +74,107 @@
 
 <!doctype html>
 <html lang="en-US">
-<head>
-    <%
-        File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
-        if (headerFile.exists()) {
-    %>
-    <jsp:include page="extensions/header.jsp"/>
-    <% } else { %>
-    <jsp:directive.include file="includes/header.jsp"/>
-    <% } %>
-</head>
-<body>
-    <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
-        <layout:component componentName="ProductHeader" >
-        </layout:component>
-        <layout:component componentName="MainSection" >
-        </layout:component>
-        <layout:component componentName="ProductFooter" >
-        </layout:component>
-    </layout:main>
-    <div class="ui tiny modal notify">
-        <div class="header">
-            <h4>
-                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Information")%>
-            </h4>
-        </div>
-        <div class="content">
-            <% if (StringUtils.isNotBlank(confirm) && confirm.equals("true")) {%>
-            <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Successfully.confirmed")%>
-            </p>
-            <%
-            } else {
-                if (isEmailNotificationEnabled) {
-            %>
-            <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Confirmation.sent.to.mail")%>
-            </p>
-            <% } else {%>
-            <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
-                    "User.registration.completed.successfully")%>
-            </p>
-            <%
-                    }
-                }
-            %>
-        </div>
-        <div class="actions">
-            <button type="button" class="ui primary button cancel" data-dismiss="modal">
-                <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Close")%>
-            </button>
-        </div>
-        <form id="callbackForm" name="callbackForm" method="post" action="/commonauth">
-            <div>
-                <input type="hidden" name="username" value="<%=Encode.forHtmlAttribute(fullyQualifiedUsername)%>"/>
+    <head>
+        <%
+            File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
+            if (headerFile.exists()) {
+        %>
+        <jsp:include page="extensions/header.jsp"/>
+        <% } else { %>
+        <jsp:directive.include file="includes/header.jsp"/>
+        <% } %>
+    </head>
+    <body>
+        <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>"
+                     data="<%= layoutData %>">
+            <layout:component componentName="ProductHeader">
+            </layout:component>
+            <layout:component componentName="MainSection">
+            </layout:component>
+            <layout:component componentName="ProductFooter">
+            </layout:component>
+        </layout:main>
+        <div class="ui tiny modal notify">
+            <div class="header">
+                <h4>
+                    <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Information")%>
+                </h4>
             </div>
-            <div>
-                <input type="hidden" name="sessionDataKey" value="<%=Encode.forHtmlAttribute(sessionDataKey)%>"/>
-            </div>
-        </form>
-    </div>
-</div>
-
-<%-- footer --%>
-<%
-    File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
-    if (footerFile.exists()) {
-%>
-<jsp:include page="extensions/footer.jsp"/>
-<% } else { %>
-<jsp:directive.include file="includes/footer.jsp"/>
-<% } %>
-
-   <script type="application/javascript">
-        $(document).ready(function () {
-            $('.notify').modal({
-                onHide: function () {
-                    <%
-                        try {
-                            if (hasAutoLoginCookie && isSessionDataKeyPresent &&
-                            StringUtils.isNotBlank(fullyQualifiedUsername)) {
-                    %>
-                    document.callbackForm.submit();
-                    <%
-                        } else {
-                    %>
-                    location.href = "<%= IdentityManagementEndpointUtil.encodeURL(callback)%>";
-                    <%
-                            }
-                    } catch (MalformedURLException e) {
-                        request.setAttribute("error", true);
-                        request.setAttribute("errorMsg", "Invalid callback URL found in the request.");
-                        request.getRequestDispatcher("error.jsp").forward(request, response);
-                        return;
+            <div class="content">
+                <% if (StringUtils.isNotBlank(confirm) && confirm.equals("true")) {%>
+                <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Successfully.confirmed")%>
+                </p>
+                <%
+                } else {
+                    if (isEmailNotificationEnabled) {
+                %>
+                <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Confirmation.sent.to.mail")%>
+                </p>
+                <% } else {%>
+                <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
+                        "User.registration.completed.successfully")%>
+                </p>
+                <%
+                        }
                     }
-                    %>
-                },
-                blurring: true,
-                detachable: true,
-                closable: false,
-                centered: true,
-            }).modal("show");
-        });
-    </script>
+                %>
+            </div>
+            <div class="actions">
+                <button type="button" class="ui primary button cancel" data-dismiss="modal">
+                    <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Close")%>
+                </button>
+            </div>
+            <form id="callbackForm" name="callbackForm" method="post" action="/commonauth">
+                <div>
+                    <input type="hidden" name="username" value="<%=Encode.forHtmlAttribute(fullyQualifiedUsername)%>"/>
+                </div>
+                <div>
+                    <input type="hidden" name="sessionDataKey" value="<%=Encode.forHtmlAttribute(sessionDataKey)%>"/>
+                </div>
+            </form>
+        </div>
+        </div>
+
+        <%-- footer --%>
+        <%
+            File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
+            if (footerFile.exists()) {
+        %>
+        <jsp:include page="extensions/footer.jsp"/>
+        <% } else { %>
+        <jsp:directive.include file="includes/footer.jsp"/>
+        <% } %>
+
+        <script type="application/javascript">
+            $(document).ready(function () {
+                $('.notify').modal({
+                    onHide: function () {
+                        <%
+                            try {
+                                if (hasAutoLoginCookie && isSessionDataKeyPresent &&
+                                StringUtils.isNotBlank(fullyQualifiedUsername)) {
+                        %>
+                        document.callbackForm.submit();
+                        <%
+                            } else {
+                        %>
+                        location.href = "<%= IdentityManagementEndpointUtil.encodeURL(callback)%>";
+                        <%
+                                }
+                        } catch (MalformedURLException e) {
+                            request.setAttribute("error", true);
+                            request.setAttribute("errorMsg", "Invalid callback URL found in the request.");
+                            request.getRequestDispatcher("error.jsp").forward(request, response);
+                            return;
+                        }
+                        %>
+                    },
+                    blurring: true,
+                    detachable: true,
+                    closable: false,
+                    centered: true,
+                }).modal("show");
+            });
+        </script>
     </body>
 </html>
