@@ -229,6 +229,9 @@
             <UserInfoEndpointResponseBuilder>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoJSONResponseBuilder</UserInfoEndpointResponseBuilder>
             <SkipUserConsent>false</SkipUserConsent>
         </OpenIDConnect>
+        <Callback>
+            <EnforceLiteralCharacters>true</EnforceLiteralCharacters>
+        </Callback>
     </OAuth>
     <MultifactorAuthentication>
         <!--Enable>false</Enable-->
