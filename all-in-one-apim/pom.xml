@@ -1410,7 +1410,7 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.4.10</carbon.automation.version>
+        <carbon.automation.version>4.5.3</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <testng.version>6.11</testng.version>
         <org.apache.cxf.version>3.6.10</org.apache.cxf.version>
