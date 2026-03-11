@@ -231,6 +231,7 @@ set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dorg.ops4j.pax.logging.eventAdminEnabled="fal
 :runJava
 echo JAVA_HOME environment variable is set to %JAVA_HOME%
 echo CARBON_HOME environment variable is set to %CARBON_HOME%
+"%JAVA_HOME%\bin\java" -cp "%CARBON_HOME%\bin\*" org.wso2.carbon.apimgt.encryption.key.generator.EncryptionKeyGenerator "%CARBON_HOME%\repository\conf"
 "%JAVA_HOME%\bin\java" %CMD_LINE_ARGS% org.wso2.carbon.bootstrap.Bootstrap %CMD%
 if "%ERRORLEVEL%"=="121" goto runJava
 :end

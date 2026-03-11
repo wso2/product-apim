@@ -102,3 +102,6 @@ iat_validity_period = "1h"
 required=true
 name="PropertyName"
 description="Property Description"
+
+[encryption]
+key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
