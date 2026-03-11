@@ -58,6 +58,7 @@
   "oauth.revoked_token_headers_in_response.enable": false,
   "oauth.token_persistence.enable": false,
   "oauth.multiple_client_secrets.enable": true,
+  "oauth.callback.enforce_literal_characters": true,
   "apim.token.validation.enforce_type_header_validation": false,
   "system.parameter.'org.wso2.CipherTransformation'": "AES/GCM/NoPadding",
   "encryption.internal_crypto_provider": "org.wso2.carbon.crypto.provider.SymmetricKeyInternalCryptoProvider",
