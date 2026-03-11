@@ -55,6 +55,6 @@ public class RestAPIInternalImpl {
                     .findFirst()
                     .orElse(0);
         }
-        return 0;
+        return -1;
     }
 }
