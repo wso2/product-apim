@@ -25,13 +25,64 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* APIKeyGenerateRequestDTO
+* APIAPIKeyGenerateRequestDTO
 */
 
-public class APIKeyGenerateRequestDTO {
+public class APIAPIKeyGenerateRequestDTO {
         public static final String SERIALIZED_NAME_KEY_NAME = "keyName";
         @SerializedName(SERIALIZED_NAME_KEY_NAME)
             private String keyName;
+
+            /**
+* Type of the API key
+*/
+    @JsonAdapter(KeyTypeEnum.Adapter.class)
+public enum KeyTypeEnum {
+        PRODUCTION("PRODUCTION"),
+        
+        SANDBOX("SANDBOX");
+
+private String value;
+
+KeyTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static KeyTypeEnum fromValue(String value) {
+    for (KeyTypeEnum b : KeyTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<KeyTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final KeyTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public KeyTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return KeyTypeEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_KEY_TYPE = "keyType";
+        @SerializedName(SERIALIZED_NAME_KEY_TYPE)
+            private KeyTypeEnum keyType;
 
         public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
         @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
@@ -42,7 +93,7 @@ public class APIKeyGenerateRequestDTO {
             private Object additionalProperties;
 
 
-        public APIKeyGenerateRequestDTO keyName(String keyName) {
+        public APIAPIKeyGenerateRequestDTO keyName(String keyName) {
         
         this.keyName = keyName;
         return this;
@@ -65,7 +116,30 @@ public class APIKeyGenerateRequestDTO {
     }
 
 
-        public APIKeyGenerateRequestDTO validityPeriod(Integer validityPeriod) {
+        public APIAPIKeyGenerateRequestDTO keyType(KeyTypeEnum keyType) {
+        
+        this.keyType = keyType;
+        return this;
+        }
+
+    /**
+        * Type of the API key
+    * @return keyType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "PRODUCTION", value = "Type of the API key")
+    
+    public KeyTypeEnum getKeyType() {
+        return keyType;
+    }
+
+
+    public void setKeyType(KeyTypeEnum keyType) {
+        this.keyType = keyType;
+    }
+
+
+        public APIAPIKeyGenerateRequestDTO validityPeriod(Integer validityPeriod) {
         
         this.validityPeriod = validityPeriod;
         return this;
@@ -88,7 +162,7 @@ public class APIKeyGenerateRequestDTO {
     }
 
 
-        public APIKeyGenerateRequestDTO additionalProperties(Object additionalProperties) {
+        public APIAPIKeyGenerateRequestDTO additionalProperties(Object additionalProperties) {
         
         this.additionalProperties = additionalProperties;
         return this;
@@ -119,23 +193,25 @@ public class APIKeyGenerateRequestDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            APIKeyGenerateRequestDTO apIKeyGenerateRequest = (APIKeyGenerateRequestDTO) o;
-            return Objects.equals(this.keyName, apIKeyGenerateRequest.keyName) &&
-            Objects.equals(this.validityPeriod, apIKeyGenerateRequest.validityPeriod) &&
-            Objects.equals(this.additionalProperties, apIKeyGenerateRequest.additionalProperties);
+            APIAPIKeyGenerateRequestDTO apIAPIKeyGenerateRequest = (APIAPIKeyGenerateRequestDTO) o;
+            return Objects.equals(this.keyName, apIAPIKeyGenerateRequest.keyName) &&
+            Objects.equals(this.keyType, apIAPIKeyGenerateRequest.keyType) &&
+            Objects.equals(this.validityPeriod, apIAPIKeyGenerateRequest.validityPeriod) &&
+            Objects.equals(this.additionalProperties, apIAPIKeyGenerateRequest.additionalProperties);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(keyName, validityPeriod, additionalProperties);
+        return Objects.hash(keyName, keyType, validityPeriod, additionalProperties);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class APIKeyGenerateRequestDTO {\n");
+sb.append("class APIAPIKeyGenerateRequestDTO {\n");
     sb.append("    keyName: ").append(toIndentedString(keyName)).append("\n");
+    sb.append("    keyType: ").append(toIndentedString(keyType)).append("\n");
     sb.append("    validityPeriod: ").append(toIndentedString(validityPeriod)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
 sb.append("}");

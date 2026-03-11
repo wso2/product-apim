@@ -23,91 +23,67 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyInfoDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* APIKeyGenerateRequestDTO
+* APIKeyListDTO
 */
 
-public class APIKeyGenerateRequestDTO {
-        public static final String SERIALIZED_NAME_KEY_NAME = "keyName";
-        @SerializedName(SERIALIZED_NAME_KEY_NAME)
-            private String keyName;
+public class APIKeyListDTO {
+        public static final String SERIALIZED_NAME_COUNT = "count";
+        @SerializedName(SERIALIZED_NAME_COUNT)
+            private Integer count;
 
-        public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
-        @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
-            private Integer validityPeriod;
-
-        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
-        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-            private Object additionalProperties;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<APIKeyInfoDTO> list = null;
 
 
-        public APIKeyGenerateRequestDTO keyName(String keyName) {
+        public APIKeyListDTO count(Integer count) {
         
-        this.keyName = keyName;
+        this.count = count;
         return this;
         }
 
     /**
-        * API Key name
-    * @return keyName
+        * Number of API keys returned. 
+    * @return count
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "Test_Key", value = "API Key name")
+      @ApiModelProperty(example = "1", value = "Number of API keys returned. ")
     
-    public String getKeyName() {
-        return keyName;
+    public Integer getCount() {
+        return count;
     }
 
 
-    public void setKeyName(String keyName) {
-        this.keyName = keyName;
+    public void setCount(Integer count) {
+        this.count = count;
     }
 
 
-        public APIKeyGenerateRequestDTO validityPeriod(Integer validityPeriod) {
+        public APIKeyListDTO list(List<APIKeyInfoDTO> list) {
         
-        this.validityPeriod = validityPeriod;
+        this.list = list;
         return this;
         }
 
     /**
-        * API key validity period
-    * @return validityPeriod
+        * Get list
+    * @return list
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "3600", value = "API key validity period")
+      @ApiModelProperty(value = "")
     
-    public Integer getValidityPeriod() {
-        return validityPeriod;
+    public List<APIKeyInfoDTO> getList() {
+        return list;
     }
 
 
-    public void setValidityPeriod(Integer validityPeriod) {
-        this.validityPeriod = validityPeriod;
-    }
-
-
-        public APIKeyGenerateRequestDTO additionalProperties(Object additionalProperties) {
-        
-        this.additionalProperties = additionalProperties;
-        return this;
-        }
-
-    /**
-        * Additional parameters if Authorization server needs any
-    * @return additionalProperties
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "Additional parameters if Authorization server needs any")
-    
-    public Object getAdditionalProperties() {
-        return additionalProperties;
-    }
-
-
-    public void setAdditionalProperties(Object additionalProperties) {
-        this.additionalProperties = additionalProperties;
+    public void setList(List<APIKeyInfoDTO> list) {
+        this.list = list;
     }
 
 
@@ -119,25 +95,23 @@ public class APIKeyGenerateRequestDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            APIKeyGenerateRequestDTO apIKeyGenerateRequest = (APIKeyGenerateRequestDTO) o;
-            return Objects.equals(this.keyName, apIKeyGenerateRequest.keyName) &&
-            Objects.equals(this.validityPeriod, apIKeyGenerateRequest.validityPeriod) &&
-            Objects.equals(this.additionalProperties, apIKeyGenerateRequest.additionalProperties);
+            APIKeyListDTO apIKeyList = (APIKeyListDTO) o;
+            return Objects.equals(this.count, apIKeyList.count) &&
+            Objects.equals(this.list, apIKeyList.list);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(keyName, validityPeriod, additionalProperties);
+        return Objects.hash(count, list);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class APIKeyGenerateRequestDTO {\n");
-    sb.append("    keyName: ").append(toIndentedString(keyName)).append("\n");
-    sb.append("    validityPeriod: ").append(toIndentedString(validityPeriod)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+sb.append("class APIKeyListDTO {\n");
+    sb.append("    count: ").append(toIndentedString(count)).append("\n");
+    sb.append("    list: ").append(toIndentedString(list)).append("\n");
 sb.append("}");
 return sb.toString();
 }

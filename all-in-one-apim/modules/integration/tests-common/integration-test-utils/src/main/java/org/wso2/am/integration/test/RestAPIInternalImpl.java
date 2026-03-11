@@ -4,6 +4,8 @@ import org.wso2.am.integration.clients.internal.ApiClient;
 import org.wso2.am.integration.clients.internal.ApiException;
 import org.wso2.am.integration.clients.internal.api.RetrievingWebhooksSubscriptionsApi;
 import org.wso2.am.integration.clients.internal.api.RevokeJwt_Api;
+import org.wso2.am.integration.clients.internal.api.SubscriptionValidationApi;
+import org.wso2.am.integration.clients.internal.api.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.internal.api.dto.RevokedEventsDTO;
 import org.wso2.am.integration.clients.internal.api.dto.WebhooksSubscriptionsListDTO;
 
@@ -14,6 +16,7 @@ public class RestAPIInternalImpl {
     RevokeJwt_Api revokedListAPI = new RevokeJwt_Api();
     ApiClient apiClient = new ApiClient();
     RetrievingWebhooksSubscriptionsApi webhooksSubscriptionsApi = new RetrievingWebhooksSubscriptionsApi();
+    SubscriptionValidationApi subscriptionValidationApi = new SubscriptionValidationApi();
     String tenantDomain;
 
     public RestAPIInternalImpl(String username, String password, String tenantDomain) {
@@ -28,6 +31,7 @@ public class RestAPIInternalImpl {
         revokedListAPI.setApiClient(apiClient);
         this.tenantDomain = tenantDomain;
         webhooksSubscriptionsApi.setApiClient(apiClient);
+        subscriptionValidationApi.setApiClient(apiClient);
     }
 
     public RevokedEventsDTO retrieveRevokedList() throws ApiException {
@@ -36,5 +40,21 @@ public class RestAPIInternalImpl {
 
     public WebhooksSubscriptionsListDTO retrieveWebhooksSubscriptions() throws ApiException {
         return webhooksSubscriptionsApi.webhooksSubscriptionsGet(tenantDomain);
+    }
+
+    public ApplicationListDTO getApplications(String xWSO2Tenant, Integer appId) throws ApiException {
+        return subscriptionValidationApi.applicationsGet(xWSO2Tenant, appId);
+    }
+
+    public int getApplicationIdByUUID(String tenantDomain, String appUUID) throws ApiException {
+        ApplicationListDTO applicationListDTO = subscriptionValidationApi.applicationsGet(tenantDomain, null);
+        if (applicationListDTO != null && applicationListDTO.getList() != null) {
+            return applicationListDTO.getList().stream()
+                    .filter(app -> appUUID.equals(app.getUuid()))
+                    .mapToInt(app -> app.getId())
+                    .findFirst()
+                    .orElse(0);
+        }
+        return -1;
     }
 }
