@@ -1304,7 +1304,7 @@
                                 </feature>
                                 <feature>
                                     <id>asgardeo.key.manager.feature.group</id>
-                                    <version>${asgardeo.key.manager.feature.version}</version>
+                                    <version>${asgardeo.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>azure.key.manager.feature.group</id>
