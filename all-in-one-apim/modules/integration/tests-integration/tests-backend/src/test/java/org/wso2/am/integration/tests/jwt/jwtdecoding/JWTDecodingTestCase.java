@@ -33,18 +33,19 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
 import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
 import org.wso2.carbon.user.core.UserStoreException;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
@@ -123,15 +124,28 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
 
-    /*@Test(groups = { "wso2.am" }, description = "Generate keys and invoking custom application")
+    @Test(groups = { "wso2.am" }, description = "Generate keys and invoking custom application")
     public void testJWTDecodingforCustomApplication() throws Exception {
 
         //Call the API with apikey
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(decodingApplicationId,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(decodingApplicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
         HttpClient decodingKeyHttpClient = HttpClientBuilder.create().build();
         HttpGet decodingFirstGet = new HttpGet(getAPIInvocationURLHttp(decodingApiContext, apiVersion));
-        decodingFirstGet.addHeader("apikey", apiKeyDTO.getApikey());
+        decodingFirstGet.addHeader("apikey", apiKey);
         HttpResponse decodingFirstResponse = decodingKeyHttpClient.execute(decodingFirstGet);
         Assert.assertEquals(decodingFirstResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
@@ -157,7 +171,7 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse decodingFourthResponse = decodingTokenHttpClient.execute(decodingThirdGet);
         Assert.assertEquals(decodingFourthResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
-    }*/
+    }
 
     @AfterClass(alwaysRun = true) public void destroy() throws Exception {
         userManagementClient.deleteUser(enduserName);

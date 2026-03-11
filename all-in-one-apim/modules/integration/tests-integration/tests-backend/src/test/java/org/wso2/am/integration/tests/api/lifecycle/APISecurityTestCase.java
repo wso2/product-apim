@@ -42,7 +42,6 @@ import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -56,6 +55,7 @@ import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
+import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -65,6 +65,7 @@ import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilExcepti
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
 import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
 import org.wso2.carbon.user.core.UserStoreException;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -491,21 +492,31 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
     }
 
-    /*@Test(description = "Testing the invocation with API Keys", dependsOnMethods = {
+    @Test(description = "Testing the invocation with API Keys", dependsOnMethods = {
             "testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeys() throws Exception {
-        APIKeyDTO apiKeyDTO = restAPIStore
-                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                        -1, null, null);
-
-        assertNotNull(apiKeyDTO, "API Key generation failed");
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "text/xml");
-        requestHeaders.put("apikey", apiKeyDTO.getApikey());
+        requestHeaders.put("apikey", apiKey);
         HttpResponse response = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(apiKeySecuredAPIContext,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
-    }*/
+    }
 
     @Test(description = "Testing the invocation with Basic Auth for APIKey Only API", dependsOnMethods = {
             "testCreateAndPublishAPIWithOAuth2"})
@@ -755,39 +766,49 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 "Mutual SSL Authentication has succeeded for a different certificate");
     }
 
-    /*@Test(description = "Testing the invocation with API Keys having IP restriction",
+    @Test(description = "Testing the invocation with API Keys having IP restriction",
             dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeysWithIPCondition() throws Exception {
         String permittedIP = "152.23.5.6, 192.168.1.2/24, 2001:c00::/23";
-        APIKeyDTO apiKeyDTO = restAPIStore
-                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                        -1, permittedIP, null);
-
-        assertNotNull(apiKeyDTO, "API Key generation failed");
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(permittedIP)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
 
         // a permitted ipv4 address
-        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(), "152.23.5.6", null);
+        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(apiKey, "152.23.5.6", null);
         HttpResponse response1 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders1);
         Assert.assertEquals(response1.getResponseCode(), HttpStatus.SC_OK);
 
         // a permitted ipv4 address
-        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(), "192.168.1.6", null);
+        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(apiKey, "192.168.1.6", null);
         HttpResponse response2 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders2);
         Assert.assertEquals(response2.getResponseCode(), HttpStatus.SC_OK);
 
         // a forbidden ipv4 address
-        Map<String, String> requestHeaders3 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(), "192.168.5.6", null);
+        Map<String, String> requestHeaders3 = createRequestHeadersForAPIKey(apiKey, "192.168.5.6", null);
         HttpResponse response3 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders3);
         Assert.assertEquals(response3.getResponseCode(), HttpStatus.SC_FORBIDDEN);
 
         // a permitted ipv6 address
-        Map<String, String> requestHeaders4 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+        Map<String, String> requestHeaders4 = createRequestHeadersForAPIKey(apiKey,
                 "2001:c00:0:0:0:0:c:4", null);
         HttpResponse response4 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
@@ -795,26 +816,36 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response4.getResponseCode(), HttpStatus.SC_OK);
 
         // a forbidden ipv6 address
-        Map<String, String> requestHeaders5 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+        Map<String, String> requestHeaders5 = createRequestHeadersForAPIKey(apiKey,
                 "2061:c00:0:0:0:0:0:0", null);
         HttpResponse response5 = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders5);
         Assert.assertEquals(response5.getResponseCode(), HttpStatus.SC_FORBIDDEN);
-    }*/
+    }
 
-    /*@Test(description = "Testing the invocation with API Keys having Http Referer restriction",
+    @Test(description = "Testing the invocation with API Keys having Http Referer restriction",
             dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeysWithRefererCondition() throws Exception {
         String permittedReferer = "www.abc.com/path, sub.cds.com/*, *.gef.com/*";
-        APIKeyDTO apiKeyDTO = restAPIStore
-                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                        -1, null, permittedReferer);
-
-        assertNotNull(apiKeyDTO, "API Key generation failed");
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(permittedReferer)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
 
         // matches against a permitted referer which matches an exact referer path
-        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(apiKey,
                 null, "www.abc.com/path");
         HttpResponse response1 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
@@ -822,7 +853,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response1.getResponseCode(), HttpStatus.SC_OK);
 
         // does not match against any permitted referer
-        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(apiKey,
                 null, "www.abc.com/path2");
         HttpResponse response2 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
@@ -830,7 +861,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response2.getResponseCode(), HttpStatus.SC_FORBIDDEN);
 
         // matches against permitted referer which matches urls of a specific sub domain using a wild card
-        Map<String, String> requestHeaders3 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+        Map<String, String> requestHeaders3 = createRequestHeadersForAPIKey(apiKey,
                 null, "sub.cds.com/path1/path2");
         HttpResponse response3 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
@@ -840,37 +871,58 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         // matches against permitted referer which matches urls of a specific sub domain of any domain
         // using wild cards
-        Map<String, String> requestHeaders4 = createRequestHeadersForAPIKey(apiKeyDTO.getApikey(),
+        Map<String, String> requestHeaders4 = createRequestHeadersForAPIKey(apiKey,
                 null, "example.gef.com/path1");
         HttpResponse response4 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders4);
         Assert.assertEquals(response4.getResponseCode(), HttpStatus.SC_OK);
-    }*/
+    }
 
-    /*@Test(description = "Testing the invocation of API Secured only with API Keys", dependsOnMethods = {
+    @Test(description = "Testing the invocation of API Secured only with API Keys", dependsOnMethods = {
             "testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeysOnly() throws Exception {
-        APIKeyDTO apiKeyDTO1 = restAPIStore
-                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1,
-                        null, null);
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo productionTokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String productionApiKey = new JWTGenerator().generateToken(productionTokenInfo);
 
-        assertNotNull(apiKeyDTO1, "API Key generation failed");
         // matches against a permitted referer which matches an exact referer path
-        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(apiKeyDTO1.getApikey(), null, null);
+        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(productionApiKey, null, null);
         HttpResponse response1 = HTTPSClientUtils
                 .doGet(getAPIInvocationURLHttps(apiKeySecuredAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                         requestHeaders1);
         Assert.assertEquals(response1.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api with production endpoint");
 
-        APIKeyDTO apiKeyDTO2 = restAPIStore
-                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX.toString(), -1,
-                        null, null);
+        JWTGenerator.JwtTokenInfo sandboxTokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("SANDBOX")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String sandboxApiKey = new JWTGenerator().generateToken(sandboxTokenInfo);
 
-        assertNotNull(apiKeyDTO2, "API Key generation failed");
         // matches against a permitted referer which matches an exact referer path
-        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(apiKeyDTO1.getApikey(), null, null);
+        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(sandboxApiKey, null, null);
         HttpResponse response2 = HTTPSClientUtils
                 .doGet(getAPIInvocationURLHttps(apiKeySecuredAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                         requestHeaders2);
@@ -880,7 +932,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 "Response data mismatched when invoke with sandbox endpoint" + " Response Data:" + response2.getData()
                         + ". Expected Response Data: " + API_RESPONSE_DATA);
 
-    }*/
+    }
 
     private Map<String, String> createRequestHeadersForAPIKey(String apiKey, String ip, String referer) {
 
@@ -896,17 +948,29 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         return requestHeaders;
     }
 
-    /*@Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithRevokedApiKeys() throws Exception {
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
-                .PRODUCTION.toString(), -1, null, null);
-        assertNotNull(apiKeyDTO, "API Key generation failed");
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
 
-        restAPIStore.revokeAPIKey(applicationId, apiKeyDTO.getApikey());
+        restAPIStore.revokeAPIKey(applicationId, apiKey);
 
         Map<String, String> requestHeader = new HashMap<>();
-        requestHeader.put("apikey", apiKeyDTO.getApikey());
+        requestHeader.put("apikey", apiKey);
         requestHeader.put("accept", "text/xml");
 
         boolean isApiKeyValid = true;
@@ -934,15 +998,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertFalse(isApiKeyValid, "API Key revocation failed. " +
                 "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_UNAUTHORIZED +
                 ", but got " + invocationResponseAfterRevoked.getResponseCode());
-    }*/
+    }
 
-    /*@Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvokeApiKeyAsJWTNegative() throws Exception {
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
-                .PRODUCTION.toString(), -1, null, null);
-        assertNotNull(apiKeyDTO, "API Key generation failed");
-
         Map<String, String> requestHeader = new HashMap<>();
         requestHeader.put("apikey", accessToken);
         requestHeader.put("accept", "text/xml");
@@ -951,7 +1011,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeader);
         Assert.assertEquals(response.getResponseCode(), 401);
-    }*/
+    }
 
     @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
@@ -1013,15 +1073,28 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 401);
     }
 
-    /*@Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvokeAPIKeyAsInternalKeyNegative() throws Exception {
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
-                .PRODUCTION.toString(), -1, null, null);
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
         HttpResponse response = invokeApiWithInternalKey(mutualSSLWithOAuthAPI, API_VERSION_1_0_0,
-                API_END_POINT_METHOD, apiKeyDTO.getApikey());
+                API_END_POINT_METHOD, apiKey);
         Assert.assertEquals(response.getResponseCode(), 401);
-    }*/
+    }
 
     @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
@@ -1086,22 +1159,34 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 401);
     }
 
-    /*@Test(description = "Testing the invocation with APIkey Token for BasicAuth api", dependsOnMethods =
+    @Test(description = "Testing the invocation with APIkey Token for BasicAuth api", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvokeAPIKeyForBasicOauthAPINegative() throws Exception {
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
-                .PRODUCTION.toString(), -1, null, null);
-        assertNotNull(apiKeyDTO, "API Key generation failed");
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
 
         Map<String, String> requestHeader = new HashMap<>();
-        requestHeader.put("apikey", apiKeyDTO.getApikey());
+        requestHeader.put("apikey", apiKey);
         requestHeader.put("accept", "text/xml");
 
         HttpResponse response = HTTPSClientUtils.doGet(
                 getAPIInvocationURLHttps(basicAuthSecuredAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeader);
         Assert.assertEquals(response.getResponseCode(), 401);
-    }*/
+    }
 
     @Test(description = "Testing the User Token Invocation and Password Reset", dependsOnMethods = {
             "testInvokeBasicAuth"})
@@ -1157,7 +1242,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 200);
     }
 
-//    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithRevokedApiKeys"})
+    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithRevokedApiKeys"})
     public void testValidateSecurityOfResources() throws Exception {
 
         // Validate for security disabled API
@@ -1200,17 +1285,29 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    /*@Test(description = "Testing the invocation with API Keys after removing subscription", dependsOnMethods =
+    @Test(description = "Testing the invocation with API Keys after removing subscription", dependsOnMethods =
             {"testInvokeBasicAuthAfterCredentialsInvalid"})
     public void testInvocationWithApiKeysWithoutSubscription() throws Exception {
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
-                .PRODUCTION.toString(), -1, null, null);
-        assertNotNull(apiKeyDTO, "API Key generation failed");
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
 
         restAPIStore.removeSubscription(subscriptionDTO);
 
         Map<String, String> requestHeader = new HashMap<>();
-        requestHeader.put("apikey", apiKeyDTO.getApikey());
+        requestHeader.put("apikey", apiKey);
         requestHeader.put("accept", "text/xml");
 
         boolean isApiKeyValid = true;
@@ -1238,7 +1335,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertFalse(isApiKeyValid, "API Key internal subscription validation failed. " +
                 "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_FORBIDDEN +
                 ", but got " + invocationResponseAfterSubscriptionRemoved.getResponseCode());
-    }*/
+    }
 
     @Test(description = "Testing the WWW-Authorization header when invocating an API with API Keys using invalid Authorization header",
             dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})

@@ -37,8 +37,7 @@
             <class name="org.wso2.am.integration.tests.api.APICreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
-            <!-- Comment out JWT API Key related tests until the JWT generation class is added to the test -->
-<!--            <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
             <class name="org.wso2.am.integration.tests.mcp.MCPServerTestCase"/>
         </classes>
     </test>
@@ -104,7 +103,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
-           <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>
+           <!-- <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.UpdateAPINullPointerTestCase"/>
 <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>-->

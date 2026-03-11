@@ -1477,6 +1477,11 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+        <!-- Encryption Key Generator File -->
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/bin/org.wso2.carbon.apimgt.encryption.key.generator-${carbon.apimgt.version}.jar</source>
+            <outputDirectory>wso2am-acp-${pom.version}/bin</outputDirectory>
+        </file>
 
         <!-- Cipher Tool Files -->
         <file>

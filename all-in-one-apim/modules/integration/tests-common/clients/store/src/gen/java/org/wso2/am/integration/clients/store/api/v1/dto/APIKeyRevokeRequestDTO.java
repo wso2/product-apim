@@ -33,6 +33,10 @@ public class APIKeyRevokeRequestDTO {
         @SerializedName(SERIALIZED_NAME_APIKEY)
             private String apikey;
 
+        public static final String SERIALIZED_NAME_KEY_U_U_I_D = "keyUUID";
+        @SerializedName(SERIALIZED_NAME_KEY_U_U_I_D)
+            private String keyUUID;
+
 
         public APIKeyRevokeRequestDTO apikey(String apikey) {
         
@@ -57,6 +61,29 @@ public class APIKeyRevokeRequestDTO {
     }
 
 
+        public APIKeyRevokeRequestDTO keyUUID(String keyUUID) {
+        
+        this.keyUUID = keyUUID;
+        return this;
+        }
+
+    /**
+        * The UUID of the API key
+    * @return keyUUID
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "The UUID of the API key")
+    
+    public String getKeyUUID() {
+        return keyUUID;
+    }
+
+
+    public void setKeyUUID(String keyUUID) {
+        this.keyUUID = keyUUID;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -66,12 +93,13 @@ public class APIKeyRevokeRequestDTO {
         return false;
         }
             APIKeyRevokeRequestDTO apIKeyRevokeRequest = (APIKeyRevokeRequestDTO) o;
-            return Objects.equals(this.apikey, apIKeyRevokeRequest.apikey);
+            return Objects.equals(this.apikey, apIKeyRevokeRequest.apikey) &&
+            Objects.equals(this.keyUUID, apIKeyRevokeRequest.keyUUID);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(apikey);
+        return Objects.hash(apikey, keyUUID);
     }
 
 
@@ -80,6 +108,7 @@ public String toString() {
 StringBuilder sb = new StringBuilder();
 sb.append("class APIKeyRevokeRequestDTO {\n");
     sb.append("    apikey: ").append(toIndentedString(apikey)).append("\n");
+    sb.append("    keyUUID: ").append(toIndentedString(keyUUID)).append("\n");
 sb.append("}");
 return sb.toString();
 }

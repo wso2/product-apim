@@ -30,14 +30,14 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,9 +127,9 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN);
     }
 
-    /*@Test(groups = "wso2.am", description = "Generate API key from user 1 and make sure that user 2 can revoke the key")
+    @Test(groups = "wso2.am", description = "Generate API key from user 1 and make sure that user 2 can revoke the key")
     public void testAPIKeyRevocationBySharedUser()
-            throws ApiException {
+            throws Exception {
 
         //Check for application availability
         List<ApplicationInfoDTO> user1AllAppsList = restAPIStoreClientUser1.getAllApps().getList();
@@ -138,11 +138,24 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(applicationDTO.getName(), SHARED_APPLICATION_NAME);
 
         //Generate api key by user 1
-        APIKeyDTO key = restAPIStoreClientUser1.generateAPIKeys(userOneSharedApplicationId,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1, null, null);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(USER_ONE)
+                .sub(USER_ONE)
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600000)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
         //Revoke api key by user 2
-        restAPIStoreClientUser2.revokeAPIKey(userOneSharedApplicationId, key.getApikey());
-    }*/
+        restAPIStoreClientUser2.revokeAPIKey(userOneSharedApplicationId, apiKey);
+    }
 
     private void createUsersAndApplications() throws Exception {
         //signup of user one

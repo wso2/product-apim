@@ -38,7 +38,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -63,6 +62,7 @@ import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
 import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
 import org.wso2.carbon.user.core.UserStoreException;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -184,8 +184,23 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         restAPIStore.generateKeys(jwtApplicationId, "36000", CALLBACK_URL,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        /*restAPIStore.generateAPIKeys(apiKeyApplicationId,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);*/
+        ApplicationDTO applicationDetailsDTO = restAPIStore.getApplicationById(authCodeApplicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .sub(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDetailsDTO.getApplicationId())
+                .applicationName(applicationDetailsDTO.getName())
+                .applicationOwner(applicationDetailsDTO.getOwner())
+                .applicationTier(applicationDetailsDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDetailsDTO.getApplicationId()))
+                .subscribedApis(buildSubscribedApiEntry(apiName, apiContext, apiVersion, TIER_GOLD))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
         restAPIStore.generateKeys(authCodeApplicationId, "36000", CALLBACK_URL,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         createUser();
@@ -320,17 +335,32 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    /*@Test(groups = {"wso2.am"}, description = "Test invoking API that is secured only with 'API key' when back end " +
+    @Test(groups = {"wso2.am"}, description = "Test invoking API that is secured only with 'API key' when back end " +
             "JWT generation is enabled")
     public void testAPIKeyOnlySecuredAPIInvocation() throws Exception {
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(apiKeyApplicationId,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(apiKeyApplicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .sub(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .subscribedApis(buildSubscribedApiEntry(api2Name, api2Context, apiVersion, TIER_GOLD))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
 
-        assertNotNull(apiKeyDTO, "API Key generation failed");
-        log.info("Access Token Generated in JWT ==" + apiKeyDTO.getApikey());
+        assertNotNull(apiKey, "API Key generation failed");
+        log.info("Access Token Generated in JWT ==" + apiKey);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(api2Context, apiVersion));
-        get.addHeader("apikey", apiKeyDTO.getApikey());
+        get.addHeader("apikey", apiKey);
         HttpResponse response = httpclient.execute(get);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
@@ -339,19 +369,34 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         Header[] responseHeaders = response.getAllHeaders();
         Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
-    }*/
+    }
 
-    /*@Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for API Key Based App")
+    @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for API Key Based App")
     public void testEnableJWTAndClaimsForAPIKeyApp() throws Exception {
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(apiKeyApplicationId,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(apiKeyApplicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .sub(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .subscribedApis(buildSubscribedApiEntry(apiName, apiContext, apiVersion, TIER_GOLD))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
 
-        assertNotNull(apiKeyDTO, "API Key generation failed");
+        assertNotNull(apiKey, "API Key generation failed");
 
-        log.info("Access Token Generated in JWT ==" + apiKeyDTO.getApikey());
+        log.info("Access Token Generated in JWT ==" + apiKey);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
-        get.addHeader("apikey", apiKeyDTO.getApikey());
+        get.addHeader("apikey", apiKey);
         HttpResponse response = httpclient.execute(get);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
@@ -383,7 +428,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         assertTrue("JWT claim API context not received " + claim, claim.contains(apiContext));
         // verify wrong claims
         BackendJWTUtil.verifyWrongClaims(jsonObject);
-    }*/
+    }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation with Client Credentials Grant Type")
     public void testBackendJWTWithClientCredentialsGrant() throws Exception {
@@ -715,6 +760,23 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
      * @param endUser username of end user
      * @throws JSONException if JSON payload is malformed
      */
+    private List<Map<String, Object>> buildSubscribedApiEntry(String name, String context, String version, String tier) {
+        String tenantDomain = MultitenantUtils.getTenantDomain(user.getUserName());
+        String apiContextPath = "carbon.super".equals(tenantDomain)
+                ? "/" + context
+                : "/t/" + tenantDomain + "/" + context;
+        Map<String, Object> entry = new HashMap<>();
+        entry.put("name", name);
+        entry.put("context", apiContextPath);
+        entry.put("version", version);
+        entry.put("publisher", providerName);
+        entry.put("subscriptionTier", tier);
+        entry.put("subscriberTenantDomain", tenantDomain);
+        List<Map<String, Object>> list = new ArrayList<>();
+        list.add(entry);
+        return list;
+    }
+
     private void verifyUserProfileInfoClaims(JSONObject decodedJWTJSONObject, String endUser) throws JSONException {
 
         String claim = decodedJWTJSONObject.getString("http://wso2.org/claims/givenname");

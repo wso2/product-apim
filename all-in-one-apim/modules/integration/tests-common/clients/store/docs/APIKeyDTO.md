@@ -6,8 +6,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**keyName** | **String** | API Key name |  [optional]
 **apikey** | **String** | API Key |  [optional]
-**validityTime** | **Integer** |  |  [optional]
+**validityPeriod** | **Integer** |  |  [optional]
 
 
 

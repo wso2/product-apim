@@ -71,3 +71,6 @@ sp_name_regex = "^[\\sa-zA-Z0-9._-]*$"
 
 [database.local]
 url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+
+[encryption]
+key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
