@@ -49,7 +49,6 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -422,9 +421,8 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testAppId5, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
         log.info("Access Token response without scope: " + accessToken);
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
                 "Response code is not as expected");
@@ -448,8 +446,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         accessTokenGenerationResponse = new JSONObject(response.getData());
         log.info("Access Token response with scope: " + response.getData());
         accessToken = accessTokenGenerationResponse.getString("access_token");
-        tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Response code is not as expected");

@@ -111,6 +111,12 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.semantic-tool-filtering</artifactId>
+            <version>${semantic-tool-filtering.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
             <artifactId>org.wso2.am.policies.mediation.ai.content-based-model-router</artifactId>
             <version>${content-based-model-router.version}</version>
             <type>jar</type>
@@ -152,6 +158,7 @@
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.url-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.word-count-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-cache</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-tool-filtering</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.content-based-model-router</bundleDef>
                             </bundles>
                         </configuration>
@@ -277,6 +284,14 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.semantic-tool-filtering</artifactId>
+                                    <version>${semantic-tool-filtering.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
                                     <artifactId>org.wso2.am.policies.mediation.ai.content-based-model-router</artifactId>
                                     <version>${content-based-model-router.version}</version>
                                     <type>zip</type>
@@ -349,6 +364,10 @@
                                 <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-cache-${semantic-cache.version}-distribution.zip" dest="${project.build.directory}/semantic-cache" />
                                 <move file="${project.build.directory}/semantic-cache/artifact.j2" tofile="${project.build.directory}/${semantic-cache.name}_${semantic-cache.policy.version}.j2" />
                                 <move file="${project.build.directory}/semantic-cache/policy-definition.json" tofile="${project.build.directory}/${semantic-cache.name}_${semantic-cache.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-tool-filtering-${semantic-tool-filtering.version}-distribution.zip" dest="${project.build.directory}/semantic-tool-filtering" />
+                                <move file="${project.build.directory}/semantic-tool-filtering/artifact.j2" tofile="${project.build.directory}/${semantic-tool-filtering.name}_${semantic-tool-filtering.policy.version}.j2" />
+                                <move file="${project.build.directory}/semantic-tool-filtering/policy-definition.json" tofile="${project.build.directory}/${semantic-tool-filtering.name}_${semantic-tool-filtering.policy.version}.json" />
 
                                 <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.content-based-model-router-${content-based-model-router.version}-distribution.zip" dest="${project.build.directory}/content-based-model-router" />
                                 <move file="${project.build.directory}/content-based-model-router/artifact.j2" tofile="${project.build.directory}/${content-based-model-router.name}_${content-based-model-router.policy.version}.j2" />

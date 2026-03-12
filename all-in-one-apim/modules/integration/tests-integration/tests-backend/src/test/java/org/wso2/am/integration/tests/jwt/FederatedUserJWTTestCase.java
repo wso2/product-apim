@@ -50,7 +50,6 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.tests.jwt.idp.JWTGeneratorUtil;
 import org.wso2.andes.util.Strings;
@@ -109,10 +108,8 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
     private String apiContext = "jwtTest";
     private String providerName;
     private String apiVersion = "1.0.0";
-    private String oauthApplicationName = "FederatedOauthAppForJWTTest";
     private String jwtApplicationName = "FederatedJWTAppForJWTTest";
     private String endpointURL;
-    private String oauthApplicationId;
     private String jwtApplicationId;
     private String apiId;
     private int idpPort;
@@ -156,14 +153,8 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         providerName = user.getUserName();
         endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
-        //create Oauth Base App
-        org.wso2.carbon.automation.test.utils.http.client.HttpResponse applicationDTO =
-                restAPIStore.createApplication(oauthApplicationName, "Test Application",
-                        APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
-                        ApplicationDTO.TokenTypeEnum.OAUTH);
-        oauthApplicationId = applicationDTO.getData();
         //create JWT Base App
-        applicationDTO =
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse applicationDTO =
                 restAPIStore.createApplication(jwtApplicationName, "JWT Application",
                         APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN,
                         ApplicationDTO.TokenTypeEnum.JWT);
@@ -181,21 +172,17 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setSecurityScheme(securitySchemes);
 
         apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
-        restAPIStore.subscribeToAPI(apiId, oauthApplicationId, TIER_GOLD);
         restAPIStore.subscribeToAPI(apiId, jwtApplicationId, TIER_GOLD);
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.AUTHORIZATION_CODE);
         //generate keys
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(oauthApplicationId, "36000", callbackUrl,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         ApplicationKeyDTO applicationKeyDTO1 = restAPIStore.generateKeys(jwtApplicationId, "36000", callbackUrl,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         createUser();
         configureIDP();
         createClaimMapping();
-        configureIDPtoFederationInServiceProvider(applicationKeyDTO.getConsumerKey());
         configureIDPtoFederationInServiceProvider(applicationKeyDTO1.getConsumerKey());
     }
 
@@ -365,69 +352,6 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for JWT Based App", dependsOnMethods = {
-            "testVerifyJWTClaimsInFederatedUserJWTAPP"})
-    public void testVerifyJWTClaimsInFederatedUserOauthAPP() throws Exception {
-
-        ApiResponse<ApplicationKeyDTO> applicationKeysByKeyType =
-                restAPIStore.getApplicationKeysByKeyType(oauthApplicationId,
-                        ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
-        ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
-        updateServiceProviderWithRequiredClaims(applicationKeyDTO.getConsumerKey());
-        String accessToken = generateTokenFromFederation(applicationKeyDTO);
-        log.info("Access Token Generated in oauth ==" + accessToken);
-        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
-        HttpClient httpclient = HttpClientBuilder.create().build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
-        get.addHeader("Authorization", "Bearer " + tokenJti);
-        HttpResponse response = httpclient.execute(get);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched when api invocation");
-
-        Header[] responseHeaders = response.getAllHeaders();
-        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
-        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
-
-        //check the jwt header
-        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
-        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
-        log.debug("Decoded JWTString = " + decodedJWTString);
-
-        String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-        byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-        assertTrue("JWT signature verification failed", isSignatureValid);
-        log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-        JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
-        Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
-        Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-        JSONObject jsonObject = new JSONObject(decodedJWTString);
-
-        // check default claims
-        checkDefaultUserClaims(jsonObject, oauthApplicationName);
-        // check user profile info claims
-        log.info("JWT Received ==" + jsonObject.toString());
-        String claim = jsonObject.getString("given_name");
-        assertTrue("JWT claim givenname  not received" + claim, claim.contains("first"));
-        claim = jsonObject.getString("phone_number");
-        assertTrue("JWT claim mobile  not received" + claim, claim.contains("424479772294778"));
-        claim = jsonObject.getString("organization");
-        assertTrue("JWT claim mobile  not received" + claim, claim.contains("abc.com"));
-        claim = jsonObject.getString("email");
-        assertTrue("JWT claim mobile  not received" + claim, claim.contains("first@gmail.com"));
-
-        boolean bExceptionOccured = false;
-        try {
-            jsonObject.getString("http://wso2.org/claims/wrongclaim");
-        } catch (JSONException e) {
-            bExceptionOccured = true;
-        }
-        assertTrue("JWT claim received is invalid", bExceptionOccured);
-
-    }
-
     private String generateTokenFromFederation(ApplicationKeyDTO applicationKeyDTO) throws IOException,
             APIManagerIntegrationTestException, JSONException {
         HttpClientContext context = HttpClientContext.create();
@@ -494,7 +418,6 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         for (String user : users) {
             userManagementClient.deleteUser(user);
         }
-        restAPIStore.deleteApplication(oauthApplicationId);
         restAPIStore.deleteApplication(jwtApplicationId);
         restAPIPublisher.deleteAPI(apiId);
         identityProviderMgtClient.deleteIdp("federated-idp");

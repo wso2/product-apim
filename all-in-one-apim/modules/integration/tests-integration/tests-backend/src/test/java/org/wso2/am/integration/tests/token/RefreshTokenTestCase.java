@@ -31,7 +31,6 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -139,8 +138,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         //Check Access Token
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        requestHeaders.put("Authorization", "Bearer " + tokenJti);
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         requestHeaders.put("accept", "text/xml");
 
         String apiUrl = getAPIInvocationURLHttp("refreshTokenTestAPI/1.0.0/customers/123");
@@ -169,8 +167,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         requestHeaders = new HashMap<String, String>();
         //Check with new Access Token
-        tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        requestHeaders.put("Authorization", "Bearer " + tokenJti);
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         requestHeaders.put("accept", "text/xml");
         httpResponse = HttpRequestUtil.doGet(apiUrl, requestHeaders);
 

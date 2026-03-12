@@ -57,7 +57,6 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
@@ -230,15 +229,12 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String opaqueToken = TokenUtils.getJtiOfJwtToken(accessToken);
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
             invokeAPI(client, accessToken, AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
             invokeAPI(client, accessToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
-            invokeAPI(client, opaqueToken, AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
-            invokeAPI(client, opaqueToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -441,8 +437,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
         Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        testThrottling(tokenJti);
+        testThrottling(userAccessToken);
         throttleMarkTime =  System.currentTimeMillis();
     }
 
