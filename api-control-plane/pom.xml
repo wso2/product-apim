@@ -1285,7 +1285,7 @@
         <carbon.apimgt.ui.version>9.3.139</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.44</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.45</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1298,7 +1298,7 @@
         <carbon.governance.version>4.9.3</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.11.6</carbon.kernel.version>
+        <carbon.kernel.version>4.11.7</carbon.kernel.version>
 
         <cipher.tool.version>1.1.29</cipher.tool.version>
 
@@ -1354,7 +1354,6 @@
         <axis2.wso2.version>1.6.1-wso2v121</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v34</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
-        <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
         <javax.servlet.version>3.0.0.v201112011016</javax.servlet.version>
         <javax.servlet.jsp.version>${version.javax.servlet.jsp}</javax.servlet.jsp.version>
@@ -1430,7 +1429,6 @@
         <jackson-version>2.16.1</jackson-version>
         <jodatime-version>2.10.6</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
-        <log4j.version>1.2.13</log4j.version>
         <com.squareup.okhttp.version>2.7.5</com.squareup.okhttp.version>
         <com.google.code.gson.version>2.9.1</com.google.code.gson.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -1456,7 +1454,7 @@
         <config.mapper.version>1.0.25</config.mapper.version>
 
         <!-- Diagnostic Tool Dependencies -->
-        <diagnostics.tool.version>1.0.17</diagnostics.tool.version>
+        <diagnostics.tool.version>1.0.19</diagnostics.tool.version>
 
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.14.0</identity.outbound.auth.oidc.version>
