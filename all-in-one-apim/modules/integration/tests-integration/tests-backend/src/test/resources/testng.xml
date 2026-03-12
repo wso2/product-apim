@@ -561,8 +561,7 @@
 
     <test name="apim-integration-token-persistence-tests-external-idp-jwt" preserve-order="true" parallel="false"
           group-by-instances="true">
-        <parameter name="group" value="group5
-"/>
+        <parameter name="group" value="group5"/>
         <classes>
             <class name="org.wso2.am.integration.tests.token.TokenPersistenceExternalIDPJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
