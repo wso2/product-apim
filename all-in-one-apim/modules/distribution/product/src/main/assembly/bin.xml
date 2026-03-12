@@ -621,6 +621,10 @@
                 <exclude>accountrecoveryendpoint/self-registration-username-request.jsp</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-with-verification.jsp</exclude>
                 <exclude>accountrecoveryendpoint/error.jsp</exclude>
+                <exclude>accountrecoveryendpoint/lite-user-confirm.jsp</exclude>
+                <exclude>accountrecoveryendpoint/self-registration-process.jsp</exclude>
+                <exclude>accountrecoveryendpoint/self-registration-with-verification-confirm.jsp</exclude>
+                <exclude>accountrecoveryendpoint/username-recovery-complete.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -652,6 +656,10 @@
                 <include>self-registration-username-request.jsp</include>
                 <include>self-registration-with-verification.jsp</include>
                 <include>error.jsp</include>
+                <include>lite-user-confirm.jsp</include>
+                <include>self-registration-process.jsp</include>
+                <include>self-registration-with-verification-confirm.jsp</include>
+                <include>username-recovery-complete.jsp</include>
             </includes>
         </fileSet>
 

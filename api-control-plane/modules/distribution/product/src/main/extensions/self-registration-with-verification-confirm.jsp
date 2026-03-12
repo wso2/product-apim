@@ -133,6 +133,7 @@
 
         request.setAttribute("callback", callback);
         request.setAttribute("confirm", "true");
+        request.setAttribute("userTenantDomain", user.getTenantDomain());
         request.getRequestDispatcher("self-registration-complete.jsp").forward(request, response);
     } catch (Exception e) {
         IdentityManagementEndpointUtil.addErrorInformation(request, e);
