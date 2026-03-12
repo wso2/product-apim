@@ -354,8 +354,8 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
-    private String generateTokenFromFederation(ApplicationKeyDTO applicationKeyDTO) throws IOException,
-            APIManagerIntegrationTestException, JSONException {
+    private String generateTokenFromFederation(ApplicationKeyDTO applicationKeyDTO, String consumerSecret)
+            throws IOException, APIManagerIntegrationTestException, JSONException {
         HttpClientContext context = HttpClientContext.create();
         HttpGet httpGet =
                 new HttpGet(authorizeURL + "?response_type=code&state=&client_id" + "="
