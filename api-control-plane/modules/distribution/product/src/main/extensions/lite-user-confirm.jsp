@@ -83,12 +83,14 @@
         validationRequest.setCode(confirmationKey);
         validationRequest.setProperties(properties);
         CodeIntrospectResponse codeIntrospectResponse = liteRegisterApi.introspectCode(validationRequest);
+        String userTenantDomain;
 
         if ((codeIntrospectResponse != null) && (codeIntrospectResponse.getUser() != null)
                 && (codeIntrospectResponse.getUser().getUsername() != null)) {
             User user = codeIntrospectResponse.getUser();
             String username = user.getUsername();
             callback = callback + "?confirmation=" + confirmationKey + "&username=" + user.getUsername();
+            userTenantDomain = user.getTenantDomain();
         } else {
             request.setAttribute("error", true);
             request.setAttribute("errorMsg",
@@ -100,6 +102,7 @@
 
         request.setAttribute("callback", callback);
         request.setAttribute("confirmLiteReg", "true");
+        request.setAttribute("userTenantDomain", userTenantDomain);
         request.getRequestDispatcher("self-registration-complete.jsp").forward(request, response);
     } catch (ApiException e) {
         IdentityManagementEndpointUtil.addErrorInformation(request, e);
