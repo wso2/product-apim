@@ -39,7 +39,6 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -218,8 +217,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         //Check Access Token
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        requestHeaders.put("Authorization", "Bearer " + tokenJti);
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         requestHeaders.put("accept", "text/xml");
 
         HttpResponse httpResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
@@ -238,8 +236,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
         requestHeaders = new HashMap<String, String>();
         //Check with new Access Token
-        tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        requestHeaders.put("Authorization", "Bearer " + tokenJti);
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         requestHeaders.put("accept", "text/xml");
         httpResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
 
@@ -271,8 +268,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
         String sandboxAccessToken = applicationKeyDTO.getToken().getAccessToken();
         Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
-        String sandTokenJti = TokenUtils.getJtiOfJwtToken(sandboxAccessToken);
-        requestHeadersSandBox.put("Authorization", "Bearer " + sandTokenJti);
+        requestHeadersSandBox.put("Authorization", "Bearer " + sandboxAccessToken);
         requestHeadersSandBox.put("accept", "text/xml");
         HttpResponse youTubeResponseSandBox = HttpRequestUtil.doGet(gatewayUrl, requestHeadersSandBox);
         log.info("Response " + youTubeResponseSandBox);
@@ -293,8 +289,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
         Map<String, String> requestHeaders = new HashMap<String, String>();
         //Check User Access Token
-        String accessTokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        requestHeaders.put("Authorization", "Bearer " + accessTokenJti);
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         requestHeaders.put("accept", "text/xml");
         Thread.sleep(2000);
 

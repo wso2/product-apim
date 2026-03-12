@@ -52,7 +52,6 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.streamingapis.StreamingApiTestUtils;
 import org.wso2.am.integration.tests.streamingapis.serversentevents.client.SimpleSseReceiver;
 import org.wso2.am.integration.tests.streamingapis.serversentevents.server.SseServlet;
@@ -303,8 +302,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
         Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        testThrottling(tokenJti);
+        testThrottling(userAccessToken);
     }
 
     private void testThrottling(String accessToken) throws Exception {

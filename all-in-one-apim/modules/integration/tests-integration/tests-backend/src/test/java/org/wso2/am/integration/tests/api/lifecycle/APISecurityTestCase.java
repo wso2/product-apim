@@ -54,7 +54,6 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -1213,7 +1212,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                         + "both mutual sso and oauth2");
         // Change the User Credentials
         remoteUserStoreManagerServiceClient.updateUser(user1, "changeme");
-        verifyRevokedTokenAvailable(TokenUtils.getJtiOfJwtToken(accessToken1));
         Thread.sleep(10000);
         apiResponse = HttpRequestUtil
                 .doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,

@@ -38,6 +38,18 @@ key_password =  "wso2carbon"
 [apim]
 gateway_type = "Regular,APK,AWS"
 
+[apim.oauth_config]
+enable_jwt_for_portals = false
+
+[oauth]
+add_tenant_domain_to_access_token = false
+
+[oauth.token_persistence]
+enable = true
+
+[oauth.revoked_token_headers_in_response]
+enable = true
+
 [[apim.gateway.environment]]
 name = "Default"
 type = "hybrid"
@@ -100,9 +112,8 @@ DevAccountName = "devPortTestEnv"
 #[apim.cache.tags]
 #expiry_time = "2m"
 
-[apim.analytics]
-enable = true
-type = "elk"
+#[apim.analytics]
+#enable = false
 #store_api_url = "https://localhost:7444"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
@@ -132,15 +143,17 @@ type = "elk"
 #key_validation_handler_type = "custom"
 #key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
-#[apim.jwt]
-#enable = true
-#encoding = "base64" # base64,base64url
+[apim.jwt]
+enable = true
+encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
-#claim_dialect = "http://wso2.org/claims"
+claim_dialect = "http://wso2.org/claims"
 #header = "X-JWT-Assertion"
 #signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+[apim.jwt.gateway_generator]
+excluded_claims = ["http://idp.org/claims/mobileno"]
 
 #[apim.oauth_config]
 #enable_outbound_auth_header = false
@@ -258,11 +271,11 @@ subscriptions=["POST_ADD_USER"]
 passthru_https.listener.ssl_profile_interval = 6000
 passthru_https.sender.ssl_profile.interval = 6000
 
-[security_audit]
-api_token="b57973cf-b74c-4ade-921d-ece83251eceb"
-collection_id="f73b8171-4f71-499b-891a-d34aa71f2d45"
-base_url="https://localhost:9943/am-auditApi-sample/api/auditapi"
-global=true
+[apim.jwt_authenitcation]
+subscription_validation_via_km = true
+
+[apimgt.mutual_ssl]
+enable_client_validation = false
 
 [apim.certificate_reloader]
 period = "1m"
@@ -283,11 +296,4 @@ password = "${admin.password}"
 
 [apim.sync_runtime_artifacts.gateway.skip_list]
 apis = ["admin--git2231head_v1.0.0.xml","admin--PizzaShackAPI_v1.0.0.xml","admin--ScriptMediatorAPI_v1.0.xml",
-    "APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml","JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml","schemaValidationAPI.xml", "BackendCORS.xml"]
-
-[encryption]
-key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
-
-[[oauth.extensions.token_types]]
-name = "JWT"
-issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
+"APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml","JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml","schemaValidationAPI.xml", "BackendCORS.xml"]

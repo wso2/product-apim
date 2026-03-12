@@ -43,9 +43,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -214,13 +212,12 @@ public class WebSocketAPIInvocationWithTracingTestCase extends APIMIntegrationBa
         applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, tokenJti, WebSocketAPITestCase.AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
-            invokeAPI(client, tokenJti, WebSocketAPITestCase.AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
+            invokeAPI(client, accessToken, WebSocketAPITestCase.AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
+            invokeAPI(client, accessToken, WebSocketAPITestCase.AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");

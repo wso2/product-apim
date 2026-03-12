@@ -36,7 +36,6 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -129,8 +128,7 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 
         String invokeURL = getAPIInvocationURLHttps(apiContext);
         Map<String, String> requestHeaders = new HashMap<String, String>();
-        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         log.info("=============================== Headers : " + requestHeaders);
         log.info("=============================== invokeURL : " + invokeURL);
 

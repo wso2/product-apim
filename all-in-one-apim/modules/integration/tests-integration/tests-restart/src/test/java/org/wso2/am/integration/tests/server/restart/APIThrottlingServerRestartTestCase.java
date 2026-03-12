@@ -25,17 +25,13 @@ import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,8 +57,7 @@ public class APIThrottlingServerRestartTestCase extends APIManagerLifecycleBaseT
 
         String invokeURL = getAPIInvocationURLHttps("api_throttle");
         Map<String, String> requestHeaders = new HashMap<>();
-        String tokenJti = TokenUtils.getJtiOfJwtToken(apiThrottleAccessToken);
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + apiThrottleAccessToken);
         log.info("=============================== Headers : " + requestHeaders);
         log.info("=============================== invokeURL : " + invokeURL);
 

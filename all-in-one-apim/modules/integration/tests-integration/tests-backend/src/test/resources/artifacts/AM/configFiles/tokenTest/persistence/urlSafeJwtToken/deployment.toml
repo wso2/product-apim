@@ -38,8 +38,17 @@ key_password =  "wso2carbon"
 [apim]
 gateway_type = "Regular,APK,AWS"
 
-[apim.key_manager]
-enable_lightweight_apikey_generation = false
+[apim.oauth_config]
+enable_jwt_for_portals = false
+
+[oauth]
+add_tenant_domain_to_access_token = false
+
+[oauth.token_persistence]
+enable = true
+
+[oauth.revoked_token_headers_in_response]
+enable = true
 
 [[apim.gateway.environment]]
 name = "Default"
@@ -76,9 +85,10 @@ Organization = "TestWSO2"
 DisplayName = "Developer portal Test Environment"
 DevAccountName = "devPortTestEnv"
 
-[apim.devportal]
-enable_application_sharing = true
-application_sharing_type = "default"
+[apim.jwt]
+enable = true
+encoding = "base64url" # base64,base64url
+enable_user_claims = true
 
 [apim.cors]
 allow_origins = "*"
@@ -86,15 +96,9 @@ allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
 allow_credentials = false
 
-[[event_handler]]
-name="userPostSelfRegistration"
-subscriptions=["POST_ADD_USER"]
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
 passthru_https.sender.ssl_profile.interval = 6000
-
-[apim.certificate_reloader]
-period = "1m"
 
 [database.local]
 url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
@@ -114,12 +118,25 @@ password = "${admin.password}"
 apis = ["admin--git2231head_v1.0.0.xml","admin--PizzaShackAPI_v1.0.0.xml","admin--ScriptMediatorAPI_v1.0.xml",
 "APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml","JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml","schemaValidationAPI.xml", "BackendCORS.xml"]
 
-[apimgt.mutual_ssl]
-enable_certificate_chain_validation = true
+[apim.devportal]
+enable_empty_values_in_application_attributes = false
 
-[encryption]
-key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
+[[apim.devportal.application_attributes]]
+required=false
+hidden=false
+name="Optional attribute"
+description="Description of Optional attribute"
 
-[[oauth.extensions.token_types]]
-name = "JWT"
-issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
+[[apim.devportal.application_attributes]]
+required=true
+hidden=false
+default="Yes"
+name="Sandbox access required"
+description="Does this Application require access to APIs in the Sandbox environment ? (Yes or No)"
+
+[[apim.devportal.application_attributes]]
+required=true
+hidden=false
+default="Yes"
+name="Production access required"
+description="Does this Application require access to APIs in the Production environment ? (Yes or No)"
