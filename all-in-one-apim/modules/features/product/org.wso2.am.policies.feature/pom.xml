@@ -289,6 +289,7 @@
                                     <type>zip</type>
                                     <classifier>distribution</classifier>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.wso2.am.policies</groupId>
                                     <artifactId>org.wso2.am.policies.mediation.ai.content-based-model-router</artifactId>
@@ -296,7 +297,6 @@
                                     <type>zip</type>
                                     <classifier>distribution</classifier>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
-                                </artifactItem>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
