@@ -1315,6 +1315,7 @@ components:
           enum:
           - REST_API
           - ASYNC_API
+          - MCP
           example: REST_API
           type: string
         documentationLink:
@@ -1383,6 +1384,7 @@ components:
           enum:
           - REST_API
           - ASYNC_API
+          - MCP
           example: REST_API
           type: string
         documentationLink:
@@ -1710,6 +1712,7 @@ components:
           status: COMPLIANT
           info:
             owner: admin
+            extendedType: REST_API
             name: Test API
             type: API
             version: 1.0.0
@@ -1727,6 +1730,7 @@ components:
           status: COMPLIANT
           info:
             owner: admin
+            extendedType: REST_API
             name: Test API
             type: API
             version: 1.0.0
@@ -1794,6 +1798,7 @@ components:
         status: COMPLIANT
         info:
           owner: admin
+          extendedType: REST_API
           name: Test API
           type: API
           version: 1.0.0
@@ -1898,6 +1903,7 @@ components:
         status: COMPLIANT
         info:
           owner: admin
+          extendedType: REST_API
           name: Test API
           type: API
           version: 1.0.0
@@ -1933,6 +1939,7 @@ components:
           status: COMPLIANT
           info:
             owner: admin
+            extendedType: REST_API
             name: Test API
             type: API
             version: 1.0.0
@@ -1940,6 +1947,7 @@ components:
           status: COMPLIANT
           info:
             owner: admin
+            extendedType: REST_API
             name: Test API
             type: API
             version: 1.0.0
@@ -2013,6 +2021,7 @@ components:
         status: COMPLIANT
         info:
           owner: admin
+          extendedType: REST_API
           name: Test API
           type: API
           version: 1.0.0
@@ -2211,6 +2220,7 @@ components:
       description: Detailed information about an artifact.
       example:
         owner: admin
+        extendedType: REST_API
         name: Test API
         type: API
         version: 1.0.0
@@ -2224,6 +2234,14 @@ components:
           enum:
           - API
           example: API
+          type: string
+        extendedType:
+          description: Extended type of the artifact.
+          enum:
+          - REST_API
+          - ASYNC_API
+          - MCP
+          example: REST_API
           type: string
         version:
           description: Version of the artifact.
