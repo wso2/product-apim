@@ -595,6 +595,7 @@
   "apim.basic_authenticator.max_active": "100",
   "apim.basic_authenticator.max_wait_millis": "30000",
   "apim.mcp.enable": true,
+  "apim.mediation.enable_secure_xml_processing": true,
   "apim.devportal.mode": "HYBRID",
   "admin_service.deny_list": [
     "ClassMediatorAdmin",

@@ -588,6 +588,7 @@
   "apim.ai.failover_configurations.failover_endpoints_limit": "10",
   "apim.ai.failover_configurations.default_request_timeout": "30",
   "apim.mcp.enable": true,
+  "apim.mediation.enable_secure_xml_processing": true,
   "apim.devportal.mode": "HYBRID",
   "admin_service.deny_list": [
     "ClassMediatorAdmin",
