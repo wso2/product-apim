@@ -72,6 +72,7 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
     String enduserPassword = "password@123";
     URL tokenEndpointURL;
     private String decodingApplicationId;
+    private String decodingApplicationSecret;
     private String decodingApiId;
 
     @Factory(dataProvider = "userModeDataProvider") public JWTDecodingTestCase(TestUserMode userMode) {
@@ -117,8 +118,9 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         //generate keys
-        restAPIStore.generateKeys(decodingApplicationId, "36000", "",
+        ApplicationKeyDTO decodingApplicationKeyDTO = restAPIStore.generateKeys(decodingApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        decodingApplicationSecret = decodingApplicationKeyDTO.getConsumerSecret();
         createUser();
         waitForAPIDeploymentSync(user.getUserName(), decodingApiRequest.getName(), decodingApiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -159,7 +161,7 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
                 decodingApplicationId, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
         String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
-                applicationKeyDTO.getConsumerSecret(), enduserName, enduserPassword);
+                decodingApplicationSecret, enduserName, enduserPassword);
         log.info("Acess Token Generated in JWT ==" + accessToken);
         HttpClient decodingTokenHttpClient = HttpClientBuilder.create().build();
         HttpGet decodingThirdGet = new HttpGet(getAPIInvocationURLHttp(decodingApiContext, apiVersion));
