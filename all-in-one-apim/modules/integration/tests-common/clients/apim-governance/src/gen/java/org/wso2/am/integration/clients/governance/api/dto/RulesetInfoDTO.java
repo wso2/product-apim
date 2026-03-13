@@ -151,7 +151,9 @@ public static RuleTypeEnum fromValue(String value) {
 public enum ArtifactTypeEnum {
         REST_API("REST_API"),
         
-        ASYNC_API("ASYNC_API");
+        ASYNC_API("ASYNC_API"),
+        
+        MCP("MCP");
 
 private String value;
 
