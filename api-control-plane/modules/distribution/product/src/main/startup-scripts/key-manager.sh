@@ -334,6 +334,8 @@ cleanup() {
 }
 trap 'cleanup' EXIT INT
 
+"$JAVACMD" -cp "$CARBON_HOME/bin/*" org.wso2.carbon.apimgt.encryption.key.generator.EncryptionKeyGenerator "$CARBON_HOME/repository/conf"
+
 while [ "$status" = "$START_EXIT_STATUS" ]
 do
     $JAVACMD \

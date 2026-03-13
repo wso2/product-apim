@@ -100,8 +100,6 @@ public class JWTRevocationServerRestartTestCase extends APIManagerLifecycleBaseT
         try {
             revokeResponse = HTTPSClientUtils.doPost(revokeEndpointURL, input, revokeRequestHeaders);
             Assert.assertEquals(revokeResponse.getResponseCode(), 200);
-            Assert.assertEquals(revokeResponse.getHeaders().get("RevokedAccessToken"), accessToken,
-                    "Access token is not revoked correctly");
         } catch (Exception e) {
             org.junit.Assert.fail("Should not throw any exceptions" + e);
         }

@@ -49,7 +49,6 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
 import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.User;
@@ -209,16 +208,14 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertTrue("admin1234".equals(endpointSecurityModel.get("username")));
         Assert.assertTrue("".equals(endpointSecurityModel.get("password")));
         Assert.assertTrue("basic".equalsIgnoreCase((String) endpointSecurityModel.get("type")));
-        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + productionApplication.getToken().getAccessToken());
         HttpResponse productionResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(productionResponse.getResponseCode(), 200);
         Map<String, String> headers = productionResponse.getHeaders();
         Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
                 .concat(Base64.encode("admin1234".concat(":").concat("admin123#QA").getBytes())));
-        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + sandboxApplication.getToken().getAccessToken());
         HttpResponse sandboxResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
@@ -274,15 +271,13 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertTrue("sandboxusername".equals(endpointSecurityModel.get("username")));
         Assert.assertTrue("".equals(endpointSecurityModel.get("password")));
         Assert.assertTrue("basic".equalsIgnoreCase((String) endpointSecurityModel.get("type")));
-        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + productionApplication.getToken().getAccessToken());
         HttpResponse productionResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(productionResponse.getResponseCode(), 200);
         Map<String, String> headers = productionResponse.getHeaders();
         Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "");
-        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + sandboxApplication.getToken().getAccessToken());
         HttpResponse sandboxResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
@@ -351,16 +346,14 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertTrue("production1234".equals(productionMap.get("username")));
         Assert.assertTrue("".equals(productionMap.get("password")));
         Assert.assertTrue("basic".equalsIgnoreCase((String) productionMap.get("type")));
-        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + productionApplication.getToken().getAccessToken());
         HttpResponse productionResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(productionResponse.getResponseCode(), 200);
         Map<String, String> headers = productionResponse.getHeaders();
         Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
                 .concat(Base64.encode("production1234".concat(":").concat("admin123#dev").getBytes())));
-        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + sandboxApplication.getToken().getAccessToken());
         HttpResponse sandboxResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
@@ -419,8 +412,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 applicationKeyBeanProduction.getConsumerKey());
         Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"), "");
 
-        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + productionApplication.getToken().getAccessToken());
         HttpResponse productionResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(productionResponse.getResponseCode(), 200);
@@ -436,8 +428,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(productionResponse2.getResponseCode(), 200);
 
-        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + sandboxApplication.getToken().getAccessToken());
         HttpResponse sandboxResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
@@ -569,8 +560,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 applicationKeyBeanProduction.getConsumerKey());
         Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"), "");
 
-        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + productionApplication.getToken().getAccessToken());
         HttpResponse productionResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(productionResponse.getResponseCode(), 200);
@@ -586,8 +576,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(productionResponse2.getResponseCode(), 200);
 
-        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+        requestHeadersGet.put("Authorization", "Bearer " + sandboxApplication.getToken().getAccessToken());
         HttpResponse sandboxResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(sandboxResponse.getResponseCode(), 200);

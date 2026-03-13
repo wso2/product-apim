@@ -169,6 +169,28 @@
                             <overWriteSnapshots>true</overWriteSnapshots>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-encryption-key-generator-jar-to-bin</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.encryption.key.generator</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/bin</outputDirectory>
+                                    <destFileName>org.wso2.carbon.apimgt.encryption.key.generator-${carbon.apimgt.version}.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 

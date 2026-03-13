@@ -32,11 +32,13 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -142,16 +144,27 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched");
     }
 
-    /*@Test(groups = {"wso2.am"}, description = "Invoke an API with default API Key header",
+    @Test(groups = {"wso2.am"}, description = "Invoke an API with default API Key header",
             dependsOnMethods = "testSystemWideCustomAuthHeader")
     public void testInvokeAPIWIthDefaultApiKeyHeader() throws Exception {
 
         // Genarate API Keys for the application
-        APIKeyDTO apiKeyDTO = restAPIStore
-                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                        -1, null, null);
-        assertNotNull(apiKeyDTO, "API Key generation failed");
-        String apiKey = apiKeyDTO.getApikey();
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
+        assertNotNull(apiKey, "API Key generation failed");
 
         // Test whether a request can be made with the default API Key header
         Map<String, String> requestHeaders1 = new HashMap<>();
@@ -168,18 +181,29 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
         assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
-    }*/
+    }
 
-    /*@Test(groups = {"wso2.am"}, description = "Invoke an API with custom API Key header",
+    @Test(groups = {"wso2.am"}, description = "Invoke an API with custom API Key header",
             dependsOnMethods = "testInvokeAPIWIthDefaultApiKeyHeader")
     public void testInvokeAPIWIthCustomApiKeyHeader() throws Exception {
 
         // Genarate API Keys for the application
-        APIKeyDTO apiKeyDTO = restAPIStore
-                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                        -1, null, null);
-        assertNotNull(apiKeyDTO, "API Key generation failed");
-        String apiKey = apiKeyDTO.getApikey();
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(3600)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String apiKey = new JWTGenerator().generateToken(tokenInfo);
+        assertNotNull(apiKey, "API Key generation failed");
 
         // Update the API with custom API Key header
         APIDTO apidto = restAPIPublisher.getAPIByID(apiId);
@@ -203,7 +227,7 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
         assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
-    }*/
+    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {

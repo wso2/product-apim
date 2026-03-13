@@ -27,10 +27,21 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
+import org.wso2.am.integration.clients.store.api.v1.dto.APIAPIKeyAssociateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIAPIKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIAPIKeyListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIAPIKeyRevokeRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyAssociationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyAssociationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDissociateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyRenewRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyRevokeRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.AppAPIKeyAssociateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscribedAPIWithApiKeyListDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -69,7 +80,7 @@ public class ApiKeysApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Api key generated.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
@@ -141,7 +152,7 @@ public class ApiKeysApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Api key generated.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
@@ -164,7 +175,7 @@ public class ApiKeysApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Api key generated.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
@@ -189,7 +200,7 @@ public class ApiKeysApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Api key generated.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
@@ -206,20 +217,20 @@ public class ApiKeysApi {
      * Build call for applicationsApplicationIdApiKeysKeyTypeRevokePost
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyRevokeRequestDTO API Key revoke request object  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param apIKeyRevokeRequestDTO API Key revoke request object  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. apikey revoked successfully.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Api key revoked successfully.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call applicationsApplicationIdApiKeysKeyTypeRevokePostCall(String applicationId, String keyType, String ifMatch, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call applicationsApplicationIdApiKeysKeyTypeRevokePostCall(String applicationId, String keyType, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = apIKeyRevokeRequestDTO;
 
         // create path and map variables
@@ -255,7 +266,7 @@ public class ApiKeysApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(String applicationId, String keyType, String ifMatch, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(String applicationId, String keyType, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'applicationId' is set
         if (applicationId == null) {
@@ -267,8 +278,13 @@ public class ApiKeysApi {
             throw new ApiException("Missing the required parameter 'keyType' when calling applicationsApplicationIdApiKeysKeyTypeRevokePost(Async)");
         }
         
+        // verify the required parameter 'apIKeyRevokeRequestDTO' is set
+        if (apIKeyRevokeRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIKeyRevokeRequestDTO' when calling applicationsApplicationIdApiKeysKeyTypeRevokePost(Async)");
+        }
+        
 
-        okhttp3.Call localVarCall = applicationsApplicationIdApiKeysKeyTypeRevokePostCall(applicationId, keyType, ifMatch, apIKeyRevokeRequestDTO, _callback);
+        okhttp3.Call localVarCall = applicationsApplicationIdApiKeysKeyTypeRevokePostCall(applicationId, keyType, apIKeyRevokeRequestDTO, ifMatch, _callback);
         return localVarCall;
 
     }
@@ -278,19 +294,19 @@ public class ApiKeysApi {
      * Revoke a self contained API Key for the application 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyRevokeRequestDTO API Key revoke request object  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param apIKeyRevokeRequestDTO API Key revoke request object  (optional)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. apikey revoked successfully.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Api key revoked successfully.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public void applicationsApplicationIdApiKeysKeyTypeRevokePost(String applicationId, String keyType, String ifMatch, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO) throws ApiException {
-        applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo(applicationId, keyType, ifMatch, apIKeyRevokeRequestDTO);
+    public void applicationsApplicationIdApiKeysKeyTypeRevokePost(String applicationId, String keyType, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO, String ifMatch) throws ApiException {
+        applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo(applicationId, keyType, apIKeyRevokeRequestDTO, ifMatch);
     }
 
     /**
@@ -298,20 +314,20 @@ public class ApiKeysApi {
      * Revoke a self contained API Key for the application 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyRevokeRequestDTO API Key revoke request object  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param apIKeyRevokeRequestDTO API Key revoke request object  (optional)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. apikey revoked successfully.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Api key revoked successfully.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo(String applicationId, String keyType, String ifMatch, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO) throws ApiException {
-        okhttp3.Call localVarCall = applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(applicationId, keyType, ifMatch, apIKeyRevokeRequestDTO, null);
+    public ApiResponse<Void> applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo(String applicationId, String keyType, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(applicationId, keyType, apIKeyRevokeRequestDTO, ifMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -320,22 +336,1714 @@ public class ApiKeysApi {
      * Revoke a self contained API Key for the application 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyRevokeRequestDTO API Key revoke request object  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param apIKeyRevokeRequestDTO API Key revoke request object  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. apikey revoked successfully.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Api key revoked successfully.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call applicationsApplicationIdApiKeysKeyTypeRevokePostAsync(String applicationId, String keyType, String ifMatch, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call applicationsApplicationIdApiKeysKeyTypeRevokePostAsync(String applicationId, String keyType, APIKeyRevokeRequestDTO apIKeyRevokeRequestDTO, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(applicationId, keyType, ifMatch, apIKeyRevokeRequestDTO, _callback);
+        okhttp3.Call localVarCall = applicationsApplicationIdApiKeysKeyTypeRevokePostValidateBeforeCall(applicationId, keyType, apIKeyRevokeRequestDTO, ifMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for associateAPIKey
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyAssociateRequestDTO API Key association request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key associated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call associateAPIKeyCall(String apiId, APIAPIKeyAssociateRequestDTO apIAPIKeyAssociateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIAPIKeyAssociateRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/api-keys/associate"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call associateAPIKeyValidateBeforeCall(String apiId, APIAPIKeyAssociateRequestDTO apIAPIKeyAssociateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling associateAPIKey(Async)");
+        }
+        
+        // verify the required parameter 'apIAPIKeyAssociateRequestDTO' is set
+        if (apIAPIKeyAssociateRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIAPIKeyAssociateRequestDTO' when calling associateAPIKey(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = associateAPIKeyCall(apiId, apIAPIKeyAssociateRequestDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Create an association for the API Key
+     * Create an association for a self contained API Key for the API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyAssociateRequestDTO API Key association request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return APIKeyAssociationDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key associated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIKeyAssociationDTO associateAPIKey(String apiId, APIAPIKeyAssociateRequestDTO apIAPIKeyAssociateRequestDTO, String ifMatch) throws ApiException {
+        ApiResponse<APIKeyAssociationDTO> localVarResp = associateAPIKeyWithHttpInfo(apiId, apIAPIKeyAssociateRequestDTO, ifMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Create an association for the API Key
+     * Create an association for a self contained API Key for the API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyAssociateRequestDTO API Key association request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;APIKeyAssociationDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key associated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIKeyAssociationDTO> associateAPIKeyWithHttpInfo(String apiId, APIAPIKeyAssociateRequestDTO apIAPIKeyAssociateRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = associateAPIKeyValidateBeforeCall(apiId, apIAPIKeyAssociateRequestDTO, ifMatch, null);
+        Type localVarReturnType = new TypeToken<APIKeyAssociationDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Create an association for the API Key (asynchronously)
+     * Create an association for a self contained API Key for the API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyAssociateRequestDTO API Key association request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key associated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call associateAPIKeyAsync(String apiId, APIAPIKeyAssociateRequestDTO apIAPIKeyAssociateRequestDTO, String ifMatch, final ApiCallback<APIKeyAssociationDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = associateAPIKeyValidateBeforeCall(apiId, apIAPIKeyAssociateRequestDTO, ifMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIKeyAssociationDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for associateAPIKeyToApp
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param appAPIKeyAssociateRequestDTO API Key association request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key associated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call associateAPIKeyToAppCall(String applicationId, String keyType, AppAPIKeyAssociateRequestDTO appAPIKeyAssociateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = appAPIKeyAssociateRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/api-keys/{keyType}/associate"
+            .replaceAll("\\{" + "applicationId" + "\\}", localVarApiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyType" + "\\}", localVarApiClient.escapeString(keyType.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call associateAPIKeyToAppValidateBeforeCall(String applicationId, String keyType, AppAPIKeyAssociateRequestDTO appAPIKeyAssociateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling associateAPIKeyToApp(Async)");
+        }
+        
+        // verify the required parameter 'keyType' is set
+        if (keyType == null) {
+            throw new ApiException("Missing the required parameter 'keyType' when calling associateAPIKeyToApp(Async)");
+        }
+        
+        // verify the required parameter 'appAPIKeyAssociateRequestDTO' is set
+        if (appAPIKeyAssociateRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'appAPIKeyAssociateRequestDTO' when calling associateAPIKeyToApp(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = associateAPIKeyToAppCall(applicationId, keyType, appAPIKeyAssociateRequestDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Associate an API Key to the Application
+     * Create an association to a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param appAPIKeyAssociateRequestDTO API Key association request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return APIKeyAssociationDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key associated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIKeyAssociationDTO associateAPIKeyToApp(String applicationId, String keyType, AppAPIKeyAssociateRequestDTO appAPIKeyAssociateRequestDTO, String ifMatch) throws ApiException {
+        ApiResponse<APIKeyAssociationDTO> localVarResp = associateAPIKeyToAppWithHttpInfo(applicationId, keyType, appAPIKeyAssociateRequestDTO, ifMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Associate an API Key to the Application
+     * Create an association to a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param appAPIKeyAssociateRequestDTO API Key association request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;APIKeyAssociationDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key associated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIKeyAssociationDTO> associateAPIKeyToAppWithHttpInfo(String applicationId, String keyType, AppAPIKeyAssociateRequestDTO appAPIKeyAssociateRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = associateAPIKeyToAppValidateBeforeCall(applicationId, keyType, appAPIKeyAssociateRequestDTO, ifMatch, null);
+        Type localVarReturnType = new TypeToken<APIKeyAssociationDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Associate an API Key to the Application (asynchronously)
+     * Create an association to a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param appAPIKeyAssociateRequestDTO API Key association request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key associated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call associateAPIKeyToAppAsync(String applicationId, String keyType, AppAPIKeyAssociateRequestDTO appAPIKeyAssociateRequestDTO, String ifMatch, final ApiCallback<APIKeyAssociationDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = associateAPIKeyToAppValidateBeforeCall(applicationId, keyType, appAPIKeyAssociateRequestDTO, ifMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIKeyAssociationDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for dissociateAPIKey
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIKeyDissociateRequestDTO API Key dissociation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Removed association for the Api key successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call dissociateAPIKeyCall(String apiId, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIKeyDissociateRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/api-keys/dissociate"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call dissociateAPIKeyValidateBeforeCall(String apiId, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling dissociateAPIKey(Async)");
+        }
+        
+        // verify the required parameter 'apIKeyDissociateRequestDTO' is set
+        if (apIKeyDissociateRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIKeyDissociateRequestDTO' when calling dissociateAPIKey(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = dissociateAPIKeyCall(apiId, apIKeyDissociateRequestDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Remove an Association for the API Key
+     * Remove an association a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIKeyDissociateRequestDTO API Key dissociation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Removed association for the Api key successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void dissociateAPIKey(String apiId, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch) throws ApiException {
+        dissociateAPIKeyWithHttpInfo(apiId, apIKeyDissociateRequestDTO, ifMatch);
+    }
+
+    /**
+     * Remove an Association for the API Key
+     * Remove an association a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIKeyDissociateRequestDTO API Key dissociation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Removed association for the Api key successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> dissociateAPIKeyWithHttpInfo(String apiId, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = dissociateAPIKeyValidateBeforeCall(apiId, apIKeyDissociateRequestDTO, ifMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Remove an Association for the API Key (asynchronously)
+     * Remove an association a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIKeyDissociateRequestDTO API Key dissociation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Removed association for the Api key successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call dissociateAPIKeyAsync(String apiId, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = dissociateAPIKeyValidateBeforeCall(apiId, apIKeyDissociateRequestDTO, ifMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for dissociateAPIKeyFromApp
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyDissociateRequestDTO API Key dissociation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Removed association for the API key successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call dissociateAPIKeyFromAppCall(String applicationId, String keyType, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIKeyDissociateRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/api-keys/{keyType}/dissociate"
+            .replaceAll("\\{" + "applicationId" + "\\}", localVarApiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyType" + "\\}", localVarApiClient.escapeString(keyType.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call dissociateAPIKeyFromAppValidateBeforeCall(String applicationId, String keyType, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling dissociateAPIKeyFromApp(Async)");
+        }
+        
+        // verify the required parameter 'keyType' is set
+        if (keyType == null) {
+            throw new ApiException("Missing the required parameter 'keyType' when calling dissociateAPIKeyFromApp(Async)");
+        }
+        
+        // verify the required parameter 'apIKeyDissociateRequestDTO' is set
+        if (apIKeyDissociateRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIKeyDissociateRequestDTO' when calling dissociateAPIKeyFromApp(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = dissociateAPIKeyFromAppCall(applicationId, keyType, apIKeyDissociateRequestDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Remove the association of the API Key to the Application
+     * Remove the association to a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyDissociateRequestDTO API Key dissociation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Removed association for the API key successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void dissociateAPIKeyFromApp(String applicationId, String keyType, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch) throws ApiException {
+        dissociateAPIKeyFromAppWithHttpInfo(applicationId, keyType, apIKeyDissociateRequestDTO, ifMatch);
+    }
+
+    /**
+     * Remove the association of the API Key to the Application
+     * Remove the association to a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyDissociateRequestDTO API Key dissociation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Removed association for the API key successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> dissociateAPIKeyFromAppWithHttpInfo(String applicationId, String keyType, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = dissociateAPIKeyFromAppValidateBeforeCall(applicationId, keyType, apIKeyDissociateRequestDTO, ifMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Remove the association of the API Key to the Application (asynchronously)
+     * Remove the association to a self contained API Key for the application 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyDissociateRequestDTO API Key dissociation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Removed association for the API key successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call dissociateAPIKeyFromAppAsync(String applicationId, String keyType, APIKeyDissociateRequestDTO apIKeyDissociateRequestDTO, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = dissociateAPIKeyFromAppValidateBeforeCall(applicationId, keyType, apIKeyDissociateRequestDTO, ifMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for generateApiBoundApiKey
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyGenerateRequestDTO API Key generation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key generated.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call generateApiBoundApiKeyCall(String apiId, APIAPIKeyGenerateRequestDTO apIAPIKeyGenerateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIAPIKeyGenerateRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/api-keys/generate"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call generateApiBoundApiKeyValidateBeforeCall(String apiId, APIAPIKeyGenerateRequestDTO apIAPIKeyGenerateRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling generateApiBoundApiKey(Async)");
+        }
+        
+        // verify the required parameter 'apIAPIKeyGenerateRequestDTO' is set
+        if (apIAPIKeyGenerateRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIAPIKeyGenerateRequestDTO' when calling generateApiBoundApiKey(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = generateApiBoundApiKeyCall(apiId, apIAPIKeyGenerateRequestDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Generate API Key
+     * Generate a self contained API Key for the API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyGenerateRequestDTO API Key generation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return APIKeyDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key generated.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIKeyDTO generateApiBoundApiKey(String apiId, APIAPIKeyGenerateRequestDTO apIAPIKeyGenerateRequestDTO, String ifMatch) throws ApiException {
+        ApiResponse<APIKeyDTO> localVarResp = generateApiBoundApiKeyWithHttpInfo(apiId, apIAPIKeyGenerateRequestDTO, ifMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Generate API Key
+     * Generate a self contained API Key for the API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyGenerateRequestDTO API Key generation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;APIKeyDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key generated.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIKeyDTO> generateApiBoundApiKeyWithHttpInfo(String apiId, APIAPIKeyGenerateRequestDTO apIAPIKeyGenerateRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = generateApiBoundApiKeyValidateBeforeCall(apiId, apIAPIKeyGenerateRequestDTO, ifMatch, null);
+        Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Generate API Key (asynchronously)
+     * Generate a self contained API Key for the API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyGenerateRequestDTO API Key generation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key generated.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call generateApiBoundApiKeyAsync(String apiId, APIAPIKeyGenerateRequestDTO apIAPIKeyGenerateRequestDTO, String ifMatch, final ApiCallback<APIKeyDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = generateApiBoundApiKeyValidateBeforeCall(apiId, apIAPIKeyGenerateRequestDTO, ifMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIBoundAPIKeys
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key(s) of a given API are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIBoundAPIKeysCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/api-keys"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIBoundAPIKeysValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIBoundAPIKeys(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIBoundAPIKeysCall(apiId, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get API Key(s) of a Given API
+     * Retrieve self contained API Key(s) for the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return APIAPIKeyListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key(s) of a given API are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIAPIKeyListDTO getAPIBoundAPIKeys(String apiId, String ifNoneMatch) throws ApiException {
+        ApiResponse<APIAPIKeyListDTO> localVarResp = getAPIBoundAPIKeysWithHttpInfo(apiId, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get API Key(s) of a Given API
+     * Retrieve self contained API Key(s) for the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return ApiResponse&lt;APIAPIKeyListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key(s) of a given API are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIAPIKeyListDTO> getAPIBoundAPIKeysWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIBoundAPIKeysValidateBeforeCall(apiId, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<APIAPIKeyListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get API Key(s) of a Given API (asynchronously)
+     * Retrieve self contained API Key(s) for the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key(s) of a given API are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIBoundAPIKeysAsync(String apiId, String ifNoneMatch, final ApiCallback<APIAPIKeyListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIBoundAPIKeysValidateBeforeCall(apiId, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIAPIKeyListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIKeyAssociationsForApp
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key associations of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIKeyAssociationsForAppCall(String applicationId, String keyType, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/api-keys/{keyType}/associations"
+            .replaceAll("\\{" + "applicationId" + "\\}", localVarApiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyType" + "\\}", localVarApiClient.escapeString(keyType.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIKeyAssociationsForAppValidateBeforeCall(String applicationId, String keyType, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling getAPIKeyAssociationsForApp(Async)");
+        }
+        
+        // verify the required parameter 'keyType' is set
+        if (keyType == null) {
+            throw new ApiException("Missing the required parameter 'keyType' when calling getAPIKeyAssociationsForApp(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIKeyAssociationsForAppCall(applicationId, keyType, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get API Key associations of a Given Type
+     * Retrieve API key associations for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return APIKeyAssociationListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key associations of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIKeyAssociationListDTO getAPIKeyAssociationsForApp(String applicationId, String keyType, String ifNoneMatch) throws ApiException {
+        ApiResponse<APIKeyAssociationListDTO> localVarResp = getAPIKeyAssociationsForAppWithHttpInfo(applicationId, keyType, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get API Key associations of a Given Type
+     * Retrieve API key associations for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return ApiResponse&lt;APIKeyAssociationListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key associations of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIKeyAssociationListDTO> getAPIKeyAssociationsForAppWithHttpInfo(String applicationId, String keyType, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIKeyAssociationsForAppValidateBeforeCall(applicationId, keyType, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<APIKeyAssociationListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get API Key associations of a Given Type (asynchronously)
+     * Retrieve API key associations for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key associations of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIKeyAssociationsForAppAsync(String applicationId, String keyType, String ifNoneMatch, final ApiCallback<APIKeyAssociationListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIKeyAssociationsForAppValidateBeforeCall(applicationId, keyType, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIKeyAssociationListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAppBoundAPIKeys
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key(s) of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAppBoundAPIKeysCall(String applicationId, String keyType, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/api-keys/{keyType}"
+            .replaceAll("\\{" + "applicationId" + "\\}", localVarApiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyType" + "\\}", localVarApiClient.escapeString(keyType.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAppBoundAPIKeysValidateBeforeCall(String applicationId, String keyType, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling getAppBoundAPIKeys(Async)");
+        }
+        
+        // verify the required parameter 'keyType' is set
+        if (keyType == null) {
+            throw new ApiException("Missing the required parameter 'keyType' when calling getAppBoundAPIKeys(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAppBoundAPIKeysCall(applicationId, keyType, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get API Key(s) of a Given Type
+     * Retrieve self contained API Key(s) for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return APIKeyListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key(s) of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIKeyListDTO getAppBoundAPIKeys(String applicationId, String keyType, String ifNoneMatch) throws ApiException {
+        ApiResponse<APIKeyListDTO> localVarResp = getAppBoundAPIKeysWithHttpInfo(applicationId, keyType, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get API Key(s) of a Given Type
+     * Retrieve self contained API Key(s) for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return ApiResponse&lt;APIKeyListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key(s) of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIKeyListDTO> getAppBoundAPIKeysWithHttpInfo(String applicationId, String keyType, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAppBoundAPIKeysValidateBeforeCall(applicationId, keyType, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<APIKeyListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get API Key(s) of a Given Type (asynchronously)
+     * Retrieve self contained API Key(s) for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API key(s) of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAppBoundAPIKeysAsync(String applicationId, String keyType, String ifNoneMatch, final ApiCallback<APIKeyListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAppBoundAPIKeysValidateBeforeCall(applicationId, keyType, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIKeyListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getSubscribedAPIsWithAPIKeys
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Subscribed APIs along with the non-associated API key(s) of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getSubscribedAPIsWithAPIKeysCall(String applicationId, String keyType, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/api-keys/{keyType}/subscriptions"
+            .replaceAll("\\{" + "applicationId" + "\\}", localVarApiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyType" + "\\}", localVarApiClient.escapeString(keyType.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getSubscribedAPIsWithAPIKeysValidateBeforeCall(String applicationId, String keyType, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling getSubscribedAPIsWithAPIKeys(Async)");
+        }
+        
+        // verify the required parameter 'keyType' is set
+        if (keyType == null) {
+            throw new ApiException("Missing the required parameter 'keyType' when calling getSubscribedAPIsWithAPIKeys(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getSubscribedAPIsWithAPIKeysCall(applicationId, keyType, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Subscribed APIs with API Key(s) of a Given Type
+     * Retrieve subscribed APIs with non-associated API Key(s) for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return SubscribedAPIWithApiKeyListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Subscribed APIs along with the non-associated API key(s) of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public SubscribedAPIWithApiKeyListDTO getSubscribedAPIsWithAPIKeys(String applicationId, String keyType, String ifNoneMatch) throws ApiException {
+        ApiResponse<SubscribedAPIWithApiKeyListDTO> localVarResp = getSubscribedAPIsWithAPIKeysWithHttpInfo(applicationId, keyType, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Subscribed APIs with API Key(s) of a Given Type
+     * Retrieve subscribed APIs with non-associated API Key(s) for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return ApiResponse&lt;SubscribedAPIWithApiKeyListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Subscribed APIs along with the non-associated API key(s) of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<SubscribedAPIWithApiKeyListDTO> getSubscribedAPIsWithAPIKeysWithHttpInfo(String applicationId, String keyType, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getSubscribedAPIsWithAPIKeysValidateBeforeCall(applicationId, keyType, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<SubscribedAPIWithApiKeyListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Subscribed APIs with API Key(s) of a Given Type (asynchronously)
+     * Retrieve subscribed APIs with non-associated API Key(s) for the application specifying the key type in the URI. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Subscribed APIs along with the non-associated API key(s) of given type are returned.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getSubscribedAPIsWithAPIKeysAsync(String applicationId, String keyType, String ifNoneMatch, final ApiCallback<SubscribedAPIWithApiKeyListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getSubscribedAPIsWithAPIKeysValidateBeforeCall(applicationId, keyType, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<SubscribedAPIWithApiKeyListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for regenerateAPIBoundAPIKey
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIKeyRenewRequestDTO API Key renewal request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key regenerated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call regenerateAPIBoundAPIKeyCall(String apiId, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIKeyRenewRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/api-keys/regenerate"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call regenerateAPIBoundAPIKeyValidateBeforeCall(String apiId, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling regenerateAPIBoundAPIKey(Async)");
+        }
+        
+        // verify the required parameter 'apIKeyRenewRequestDTO' is set
+        if (apIKeyRenewRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIKeyRenewRequestDTO' when calling regenerateAPIBoundAPIKey(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = regenerateAPIBoundAPIKeyCall(apiId, apIKeyRenewRequestDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Regenerate API Key
+     * Regenerate a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIKeyRenewRequestDTO API Key renewal request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return APIKeyDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key regenerated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIKeyDTO regenerateAPIBoundAPIKey(String apiId, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch) throws ApiException {
+        ApiResponse<APIKeyDTO> localVarResp = regenerateAPIBoundAPIKeyWithHttpInfo(apiId, apIKeyRenewRequestDTO, ifMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Regenerate API Key
+     * Regenerate a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIKeyRenewRequestDTO API Key renewal request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;APIKeyDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key regenerated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIKeyDTO> regenerateAPIBoundAPIKeyWithHttpInfo(String apiId, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = regenerateAPIBoundAPIKeyValidateBeforeCall(apiId, apIKeyRenewRequestDTO, ifMatch, null);
+        Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Regenerate API Key (asynchronously)
+     * Regenerate a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIKeyRenewRequestDTO API Key renewal request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key regenerated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call regenerateAPIBoundAPIKeyAsync(String apiId, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch, final ApiCallback<APIKeyDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = regenerateAPIBoundAPIKeyValidateBeforeCall(apiId, apIKeyRenewRequestDTO, ifMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for regenerateAppBoundAPIKey
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyRenewRequestDTO API Key renewal request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key regenerated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call regenerateAppBoundAPIKeyCall(String applicationId, String keyType, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIKeyRenewRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/api-keys/{keyType}/regenerate"
+            .replaceAll("\\{" + "applicationId" + "\\}", localVarApiClient.escapeString(applicationId.toString()))
+            .replaceAll("\\{" + "keyType" + "\\}", localVarApiClient.escapeString(keyType.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call regenerateAppBoundAPIKeyValidateBeforeCall(String applicationId, String keyType, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling regenerateAppBoundAPIKey(Async)");
+        }
+        
+        // verify the required parameter 'keyType' is set
+        if (keyType == null) {
+            throw new ApiException("Missing the required parameter 'keyType' when calling regenerateAppBoundAPIKey(Async)");
+        }
+        
+        // verify the required parameter 'apIKeyRenewRequestDTO' is set
+        if (apIKeyRenewRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIKeyRenewRequestDTO' when calling regenerateAppBoundAPIKey(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = regenerateAppBoundAPIKeyCall(applicationId, keyType, apIKeyRenewRequestDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Regenerate API Key
+     * Regenerate a self contained API Key for the application specified by the key UUID 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyRenewRequestDTO API Key renewal request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return APIKeyDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key regenerated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIKeyDTO regenerateAppBoundAPIKey(String applicationId, String keyType, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch) throws ApiException {
+        ApiResponse<APIKeyDTO> localVarResp = regenerateAppBoundAPIKeyWithHttpInfo(applicationId, keyType, apIKeyRenewRequestDTO, ifMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Regenerate API Key
+     * Regenerate a self contained API Key for the application specified by the key UUID 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyRenewRequestDTO API Key renewal request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;APIKeyDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key regenerated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIKeyDTO> regenerateAppBoundAPIKeyWithHttpInfo(String applicationId, String keyType, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = regenerateAppBoundAPIKeyValidateBeforeCall(applicationId, keyType, apIKeyRenewRequestDTO, ifMatch, null);
+        Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Regenerate API Key (asynchronously)
+     * Regenerate a self contained API Key for the application specified by the key UUID 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param keyType **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).  (required)
+     * @param apIKeyRenewRequestDTO API Key renewal request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key regenerated successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call regenerateAppBoundAPIKeyAsync(String applicationId, String keyType, APIKeyRenewRequestDTO apIKeyRenewRequestDTO, String ifMatch, final ApiCallback<APIKeyDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = regenerateAppBoundAPIKeyValidateBeforeCall(applicationId, keyType, apIKeyRenewRequestDTO, ifMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for revokeAPIBoundAPIKey
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyRevokeRequestDTO API Key revocation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key revoked successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call revokeAPIBoundAPIKeyCall(String apiId, APIAPIKeyRevokeRequestDTO apIAPIKeyRevokeRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIAPIKeyRevokeRequestDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/api-keys/revoke"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call revokeAPIBoundAPIKeyValidateBeforeCall(String apiId, APIAPIKeyRevokeRequestDTO apIAPIKeyRevokeRequestDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling revokeAPIBoundAPIKey(Async)");
+        }
+        
+        // verify the required parameter 'apIAPIKeyRevokeRequestDTO' is set
+        if (apIAPIKeyRevokeRequestDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIAPIKeyRevokeRequestDTO' when calling revokeAPIBoundAPIKey(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = revokeAPIBoundAPIKeyCall(apiId, apIAPIKeyRevokeRequestDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Revoke API Key
+     * Revoke a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyRevokeRequestDTO API Key revocation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key revoked successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void revokeAPIBoundAPIKey(String apiId, APIAPIKeyRevokeRequestDTO apIAPIKeyRevokeRequestDTO, String ifMatch) throws ApiException {
+        revokeAPIBoundAPIKeyWithHttpInfo(apiId, apIAPIKeyRevokeRequestDTO, ifMatch);
+    }
+
+    /**
+     * Revoke API Key
+     * Revoke a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyRevokeRequestDTO API Key revocation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key revoked successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> revokeAPIBoundAPIKeyWithHttpInfo(String apiId, APIAPIKeyRevokeRequestDTO apIAPIKeyRevokeRequestDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = revokeAPIBoundAPIKeyValidateBeforeCall(apiId, apIAPIKeyRevokeRequestDTO, ifMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Revoke API Key (asynchronously)
+     * Revoke a self contained API Key for the API specified by the key UUID 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param apIAPIKeyRevokeRequestDTO API Key revocation request object  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Api key revoked successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call revokeAPIBoundAPIKeyAsync(String apiId, APIAPIKeyRevokeRequestDTO apIAPIKeyRevokeRequestDTO, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = revokeAPIBoundAPIKeyValidateBeforeCall(apiId, apIAPIKeyRevokeRequestDTO, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
