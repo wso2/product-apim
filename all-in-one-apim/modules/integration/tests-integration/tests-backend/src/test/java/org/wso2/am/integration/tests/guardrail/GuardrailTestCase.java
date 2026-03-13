@@ -64,11 +64,16 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -118,7 +123,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
     // Server Configuration
     private ServerConfigurationManager serverConfigurationManager;
-        private File generatedDeploymentToml;
 
     // Test State
     private Map<String, String> policyMap;
@@ -143,18 +147,17 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        
-        super.init(userMode);
+
         resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
 
-        // Reserve the WireMock port before applying config so the embedding_endpoint URL is known
-        endpointPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
-        assertNotEquals(endpointPort, -1,
-                "No available port in the range " + MockServerUtils.httpsPortLowerRange + "-" +
-                        MockServerUtils.httpsPortUpperRange + " was found");
+        // Read deployment.toml settings without modifying the file.
+        loadEmbeddingProviderSettings();
 
-        // Apply deployment.toml with the dynamic WireMock embedding endpoint and restart the server
+        // Apply deployment.toml directly and restart the server.
         applyEmbeddingProviderConfiguration();
+
+                // Initialize clients after the restart so they point to the active server.
+                super.init(userMode);
 
         policyMap = restAPIPublisher.getAllCommonOperationPolicies();
         ApplicationDTO appDTO = restAPIStore.addApplication(GEMINI_APP_NAME,
@@ -165,45 +168,88 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Reads the deployment.toml template, substitutes the embedding endpoint with the WireMock URL,
-     * and applies the configuration (which restarts the server so the change takes effect).
+         * Reads deployment.toml values required by the test, without modifying the file.
      */
-    private void applyEmbeddingProviderConfiguration() throws Exception {
+        private void loadEmbeddingProviderSettings() throws Exception {
         String tomlContent = readFile(resourcePath + "deployment.toml");
         String configuredEmbeddingModel = extractTomlValue(tomlContent, "embedding_model");
         if (configuredEmbeddingModel != null && !configuredEmbeddingModel.isEmpty()) {
             embeddingModel = configuredEmbeddingModel;
         }
 
-        String wiremockEmbeddingUrl = "http://localhost:" + endpointPort
-                + MISTRAL_API_ENDPOINT + MISTRAL_EMBEDDING_RESOURCE;
-
-        // Replace by TOML key names so this works even if default values change.
-        tomlContent = tomlContent
-                .replaceAll("(?m)^\\s*embedding_endpoint\\s*=\\s*\"[^\"]*\"\\s*$",
-                        "embedding_endpoint = \"" + wiremockEmbeddingUrl + "\"")
-                .replaceAll("(?m)^\\s*apikey\\s*=\\s*\"[^\"]*\"\\s*$",
-                        "apikey = \"test-mock-mistral-key\"");
-
-        // Use a stable directory in the module target path. JVM temp may point to carbontmp,
-        // which can be cleaned during restart and cause NoSuchFileException while applying config.
-        File tempTomlDir = new File(System.getProperty("user.dir"), "target" + File.separator + "guardrail-config");
-        if (!tempTomlDir.exists() && !tempTomlDir.mkdirs()) {
-            throw new IOException("Failed to create temporary guardrail config directory: " + tempTomlDir);
+                String configuredEmbeddingEndpoint = extractTomlValue(tomlContent, "embedding_endpoint");
+                if (configuredEmbeddingEndpoint != null && !configuredEmbeddingEndpoint.isEmpty()) {
+                        try {
+                                URI endpointUri = URI.create(configuredEmbeddingEndpoint);
+                                String host = endpointUri.getHost();
+                                int port = endpointUri.getPort();
+                                if (("localhost".equals(host) || "127.0.0.1".equals(host)) && port > 0) {
+                                        endpointPort = port;
+                                        return;
+                                }
+                                log.info("embedding_endpoint in deployment.toml is not localhost with an explicit port; " +
+                                                "using a dynamic WireMock port instead: " + configuredEmbeddingEndpoint);
+                        } catch (Exception e) {
+                                log.warn("Invalid embedding_endpoint in deployment.toml: " + configuredEmbeddingEndpoint, e);
+                        }
         }
 
-        generatedDeploymentToml = File.createTempFile("guardrail-deployment", ".toml", tempTomlDir);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(generatedDeploymentToml))) {
-            writer.write(tomlContent);
+                endpointPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
+                assertNotEquals(endpointPort, -1,
+                                "No available port in the range " + MockServerUtils.httpsPortLowerRange + "-" +
+                                                MockServerUtils.httpsPortUpperRange + " was found");
         }
+
+        /**
+         * Applies deployment.toml directly and restarts the server so the change takes effect.
+         */
+        private void applyEmbeddingProviderConfiguration() throws Exception {
+                File deploymentToml = new File(resourcePath + "deployment.toml");
+                if (!deploymentToml.exists()) {
+                        throw new IOException("deployment.toml file not found: " + deploymentToml.getAbsolutePath());
+                }
+                File targetDeploymentToml = resolveServerDeploymentToml();
 
         AutomationContext superTenantKeyManagerContext = new AutomationContext(
                 APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigurationManager.applyConfiguration(generatedDeploymentToml);
+                serverConfigurationManager.applyConfiguration(deploymentToml, targetDeploymentToml, true, true);
     }
+
+        private File resolveServerDeploymentToml() throws IOException {
+                String carbonHome = ServerConfigurationManager.getCarbonHome();
+                if (carbonHome == null || carbonHome.isEmpty()) {
+                        carbonHome = System.getProperty("carbon.home");
+                }
+
+                if (carbonHome != null && !carbonHome.isEmpty()) {
+                        File deploymentToml = new File(carbonHome + File.separator + "repository" + File.separator + "conf" +
+                                        File.separator + "deployment.toml");
+                        if (deploymentToml.exists()) {
+                                return deploymentToml;
+                        }
+                }
+
+                Path targetPath = new File(System.getProperty("user.dir"), "target").toPath();
+                if (Files.exists(targetPath)) {
+                        try (Stream<Path> paths = Files.walk(targetPath, 6)) {
+                                Path deploymentToml = paths
+                                                .filter(Files::isRegularFile)
+                                                .filter(path -> path.toString().contains("carbontmp"))
+                                                .filter(path -> path.toString().endsWith(File.separator + "repository" + File.separator +
+                                                                "conf" + File.separator + "deployment.toml"))
+                                                .max(Comparator.comparingLong(path -> path.toFile().lastModified()))
+                                                .orElse(null);
+                                if (deploymentToml != null) {
+                                        return deploymentToml.toFile();
+                                }
+                        }
+                }
+
+                throw new IOException("Unable to resolve active server deployment.toml location");
+        }
 
         private String extractTomlValue(String tomlContent, String key) {
                 Pattern pattern = Pattern.compile("(?m)^\\s*" + Pattern.quote(key) + "\\s*=\\s*\"([^\"]*)\"\\s*$");
@@ -233,10 +279,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         if (serverConfigurationManager != null) {
             serverConfigurationManager.restoreToLastConfiguration();
         }
-                if (generatedDeploymentToml != null && generatedDeploymentToml.exists() &&
-                                !generatedDeploymentToml.delete()) {
-                        log.warn("Unable to delete generated deployment file: " + generatedDeploymentToml.getAbsolutePath());
-                }
     }
 
         private void startWiremockServer() throws Exception {
