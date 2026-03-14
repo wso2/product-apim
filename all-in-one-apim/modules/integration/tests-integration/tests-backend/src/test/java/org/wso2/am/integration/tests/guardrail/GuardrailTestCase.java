@@ -11,7 +11,7 @@
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
+ * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
  */
@@ -19,44 +19,37 @@
 package org.wso2.am.integration.tests.guardrail;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
-import com.google.gson.Gson;
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderSummaryResponseDTO;
+import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderSummaryResponseListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.test.ClientAuthenticator;
-import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
-import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.MockServerUtils;
 import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.Response;
@@ -64,426 +57,425 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.stream.Stream;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
- * Guardrail Test Case
+ * Guardrail test case that validates the Gemini AI API path and mocked Mistral embedding backend.
  */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
-    private static final Log log = LogFactory.getLog(GuardrailTestCase.class);
+	private static final Log log = LogFactory.getLog(GuardrailTestCase.class);
 
-    // Mock Backend Endpoint Constants
-    private static final String MISTRAL_API_ENDPOINT = "/mistral";
-    private static final String MISTRAL_EMBEDDING_RESOURCE = "/v1/embeddings";
-    private static final String GEMINI_API_ENDPOINT = "/gemini";
-    private static final String GEMINI_GENERATE_RESOURCE = "/v1beta/models/gemini-pro:generateContent";
+	private static final String API_NAME = "geminiAPI";
+	private static final String API_VERSION = "1.0.0";
+	private static final String API_CONTEXT = "geminiAPI";
+	private static final String GEMINI_API_RESOURCE = "/v1beta/models/gemini-pro:generateContent";
 
-    // Gemini API Constants
-    private static final String ENDPOINT_HOST = "http://localhost";
-    private static final String GEMINI_API_CONTEXT = "geminiAPI";
-    private static final String GEMINI_API_VERSION = "1.0.0";
-    private static final String GEMINI_APP_NAME = "GeminiGuardrailApp";
-    private static final String GEMINI_DEF_FILE = "gemini-def.json";
-    private static final String GEMINI_ADD_PROPS_FILE = "gemini-add-props.json";
-    private static final String MOCK_REQUEST_BODY_FILE = "mockrequestbody.json";
+	private static final int MOCK_BACKEND_PORT = 9977;
+	private static final String MOCK_BACKEND_HOST = "http://localhost";
+	private static final String GEMINI_BACKEND_BASE_PATH = "/gemini";
+	private static final String MISTRAL_EMBEDDINGS_ENDPOINT = "https://api.mistral.ai/v1/embeddings";
+	private static final String MISTRAL_EMBEDDINGS_RESOURCE = "/v1/embeddings";
+	private static final String MISTRAL_EMBEDDINGS_MOCK_URL = MOCK_BACKEND_HOST + ":" + MOCK_BACKEND_PORT
+			+ MISTRAL_EMBEDDINGS_RESOURCE;
+	private static final String MISTRAL_EMBEDDINGS_MODEL = "mistral-embed";
+	private static final String MISTRAL_INPUT_1 = "I'm planning a corporate retreat in Denver for next weekend. Can you find the weather forecast, book a conference room for 15 people, find a highly-rated catering service that offers vegan options, and then email the itinerary to my assistant at sarah@company.com?";
+	private static final String MISTRAL_INPUT_2 = "Get current weather and 7-day forecast for a location.";
+	private static final String MISTRAL_API_KEY = "mock-mistral-api-key";
 
-    // Policy Constants
-    private static final String SEMANTIC_TOOL_FILTERING_POLICY = "SemanticToolFiltering";
+	private static final String APPLICATION_NAME = "Guardrail-Test-Application";
+	private static final String GEMINI_MOCK_RESPONSE_TEXT = "Mock Gemini response from test backend";
 
-    // Tool names that must be present in the Gemini request's function_declarations
-    private static final List<String> REQUIRED_GEMINI_TOOL_NAMES = Arrays.asList(
-            "get_weather", "book_venue", "find_restaurants");
+	private static final String GEMINI_DEFINITION_FILE = "gemini-def.json";
+	private static final String GEMINI_ADD_PROPS_FILE = "gemini-add-props.json";
+	private static final String MOCK_REQUEST_BODY_FILE = "mockrequestbody.json";
+	private static final String MOCK_EMBEDDINGS_FILE = "mockembeddings.json";
 
-    // WireMock Instance Variables
-    private String resourcePath;
-    private WireMockServer wireMockServer;
-    private int endpointPort;
+	private String resourcePath;
+	private String geminiApiId;
+	private String applicationId;
+	private String apiKey;
 
-    // Server Configuration
-    private ServerConfigurationManager serverConfigurationManager;
+	private String mockRequestBody;
+	private String mistralEmbeddingsRequestBody;
+	private String mockEmbeddingsPayload;
+	private String mockGeminiResponse;
 
-    // Test State
-    private Map<String, String> policyMap;
-    private String applicationId;
-    private String apiKey;
-    private String geminiApiId;
-        private String embeddingModel = "mistral-embed";
-    @Factory(dataProvider = "userModeDataProvider")
-    public GuardrailTestCase(TestUserMode userMode) {
+	private WireMockServer wireMockServer;
 
-        this.userMode = userMode;
-    }
+	@Factory(dataProvider = "userModeDataProvider")
+	public GuardrailTestCase(TestUserMode userMode) {
 
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
+		this.userMode = userMode;
+	}
 
-        return new Object[][]{
-                {TestUserMode.SUPER_TENANT_ADMIN},
-                {TestUserMode.TENANT_ADMIN},
-        };
-    }
+	@DataProvider
+	public static Object[][] userModeDataProvider() {
 
-    @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
+		return new Object[][]{
+				{TestUserMode.SUPER_TENANT_ADMIN},
+				{TestUserMode.TENANT_ADMIN},
+		};
+	}
 
-        resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
+	@BeforeClass(alwaysRun = true)
+	public void setEnvironment() throws Exception {
 
-        // Read deployment.toml settings without modifying the file.
-        loadEmbeddingProviderSettings();
+		super.init(userMode);
+		initializeTestData();
+		startMockBackends();
+		applicationId = createTestApplication();
+		geminiApiId = createAndPublishGeminiAiApi();
+		apiKey = subscribeToApiAndGenerateKey(geminiApiId);
+	}
 
-        // Apply deployment.toml directly and restart the server.
-        applyEmbeddingProviderConfiguration();
+	@Test(groups = {"wso2.am"}, description = "Invoke Gemini AI API through APIM and verify backend capture")
+	public void testGeminiAiApiInvocationWithMockBackend() throws Exception {
 
-                // Initialize clients after the restart so they point to the active server.
-                super.init(userMode);
+		Map<String, String> requestHeaders = new HashMap<>();
+		requestHeaders.put("ApiKey", apiKey);
+		requestHeaders.put("Content-Type", "application/json");
 
-        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
-        ApplicationDTO appDTO = restAPIStore.addApplication(GEMINI_APP_NAME,
-                APIThrottlingTier.UNLIMITED.getState(), "", "Gemini guardrail test app");
-        applicationId = appDTO.getApplicationId();
-        assertNotNull(applicationId, "Application ID should not be null");
-        startWiremockServer();
-    }
+		HttpResponse serviceResponse = invokeGeminiWithGatewayPathFallback(requestHeaders);
 
-    /**
-         * Reads deployment.toml values required by the test, without modifying the file.
-     */
-        private void loadEmbeddingProviderSettings() throws Exception {
-        String tomlContent = readFile(resourcePath + "deployment.toml");
-        String configuredEmbeddingModel = extractTomlValue(tomlContent, "embedding_model");
-        if (configuredEmbeddingModel != null && !configuredEmbeddingModel.isEmpty()) {
-            embeddingModel = configuredEmbeddingModel;
-        }
+		assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
+				"Gemini AI API invocation failed");
 
-                String configuredEmbeddingEndpoint = extractTomlValue(tomlContent, "embedding_endpoint");
-                if (configuredEmbeddingEndpoint != null && !configuredEmbeddingEndpoint.isEmpty()) {
-                        try {
-                                URI endpointUri = URI.create(configuredEmbeddingEndpoint);
-                                String host = endpointUri.getHost();
-                                int port = endpointUri.getPort();
-                                if (("localhost".equals(host) || "127.0.0.1".equals(host)) && port > 0) {
-                                        endpointPort = port;
-                                        return;
-                                }
-                                log.info("embedding_endpoint in deployment.toml is not localhost with an explicit port; " +
-                                                "using a dynamic WireMock port instead: " + configuredEmbeddingEndpoint);
-                        } catch (Exception e) {
-                                log.warn("Invalid embedding_endpoint in deployment.toml: " + configuredEmbeddingEndpoint, e);
-                        }
-        }
+		JSONObject responseJson = new JSONObject(serviceResponse.getData());
+		String responseText = responseJson.getJSONArray("candidates")
+				.getJSONObject(0)
+				.getJSONObject("content")
+				.getJSONArray("parts")
+				.getJSONObject(0)
+				.getString("text");
+		assertEquals(responseText, GEMINI_MOCK_RESPONSE_TEXT,
+				"Unexpected Gemini mock backend response payload");
 
-                endpointPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
-                assertNotEquals(endpointPort, -1,
-                                "No available port in the range " + MockServerUtils.httpsPortLowerRange + "-" +
-                                                MockServerUtils.httpsPortUpperRange + " was found");
-        }
+		List<LoggedRequest> geminiRequests = wireMockServer.findAll(
+				postRequestedFor(urlEqualTo(GEMINI_BACKEND_BASE_PATH + GEMINI_API_RESOURCE)));
+		assertFalse(geminiRequests.isEmpty(), "Gemini mock backend did not receive a request");
 
-        /**
-         * Applies deployment.toml directly and restarts the server so the change takes effect.
-         */
-        private void applyEmbeddingProviderConfiguration() throws Exception {
-                File deploymentToml = new File(resourcePath + "deployment.toml");
-                if (!deploymentToml.exists()) {
-                        throw new IOException("deployment.toml file not found: " + deploymentToml.getAbsolutePath());
-                }
-                File targetDeploymentToml = resolveServerDeploymentToml();
+		boolean foundExpectedGeminiRequest = false;
+		for (LoggedRequest request : geminiRequests) {
+			if (request.getBodyAsString().contains("function_declarations")
+					&& request.getBodyAsString().contains("corporate retreat in Denver")) {
+				foundExpectedGeminiRequest = true;
+				break;
+			}
+		}
+		assertTrue(foundExpectedGeminiRequest,
+				"Gemini mock backend request did not contain the expected guardrail request payload");
+	}
 
-        AutomationContext superTenantKeyManagerContext = new AutomationContext(
-                APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-                serverConfigurationManager.applyConfiguration(deploymentToml, targetDeploymentToml, true, true);
-    }
+	@Test(groups = {"wso2.am"}, description = "Call mocked Mistral embedding backend and validate embedding response",
+			dependsOnMethods = "testGeminiAiApiInvocationWithMockBackend")
+	public void testMistralEmbeddingsMockBackend() throws Exception {
 
-        private File resolveServerDeploymentToml() throws IOException {
-                String carbonHome = ServerConfigurationManager.getCarbonHome();
-                if (carbonHome == null || carbonHome.isEmpty()) {
-                        carbonHome = System.getProperty("carbon.home");
-                }
+		Map<String, String> requestHeaders = new HashMap<>();
+		requestHeaders.put("Content-Type", "application/json");
+		requestHeaders.put("Authorization", "Bearer " + MISTRAL_API_KEY);
 
-                if (carbonHome != null && !carbonHome.isEmpty()) {
-                        File deploymentToml = new File(carbonHome + File.separator + "repository" + File.separator + "conf" +
-                                        File.separator + "deployment.toml");
-                        if (deploymentToml.exists()) {
-                                return deploymentToml;
-                        }
-                }
+		String mockedEmbeddingsUrl = getMockUrlForEndpoint(MISTRAL_EMBEDDINGS_ENDPOINT);
+		HttpResponse embeddingsResponse = HttpRequestUtil.doPost(new URL(mockedEmbeddingsUrl),
+				mistralEmbeddingsRequestBody, requestHeaders);
 
-                Path targetPath = new File(System.getProperty("user.dir"), "target").toPath();
-                if (Files.exists(targetPath)) {
-                        try (Stream<Path> paths = Files.walk(targetPath, 6)) {
-                                Path deploymentToml = paths
-                                                .filter(Files::isRegularFile)
-                                                .filter(path -> path.toString().contains("carbontmp"))
-                                                .filter(path -> path.toString().endsWith(File.separator + "repository" + File.separator +
-                                                                "conf" + File.separator + "deployment.toml"))
-                                                .max(Comparator.comparingLong(path -> path.toFile().lastModified()))
-                                                .orElse(null);
-                                if (deploymentToml != null) {
-                                        return deploymentToml.toFile();
-                                }
-                        }
-                }
+		assertEquals(embeddingsResponse.getResponseCode(), HttpStatus.SC_OK,
+				"Mistral embeddings mock backend invocation failed");
 
-                throw new IOException("Unable to resolve active server deployment.toml location");
-        }
+		JSONArray expectedEmbeddings = new JSONArray(mockEmbeddingsPayload);
+		JSONArray actualEmbeddings = new JSONArray(embeddingsResponse.getData());
 
-        private String extractTomlValue(String tomlContent, String key) {
-                Pattern pattern = Pattern.compile("(?m)^\\s*" + Pattern.quote(key) + "\\s*=\\s*\"([^\"]*)\"\\s*$");
-                Matcher matcher = pattern.matcher(tomlContent);
-                if (matcher.find()) {
-                        return matcher.group(1);
-                }
-                return null;
-        }
+		assertEquals(actualEmbeddings.length(), expectedEmbeddings.length(),
+				"Embedding record count mismatch");
 
-    @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws Exception {
-        if (geminiApiId != null) {
-            undeployAndDeleteAPIRevisionsUsingRest(geminiApiId, restAPIPublisher);
-            restAPIPublisher.deleteAPI(geminiApiId);
-        }
-        if (applicationId != null) {
-            restAPIStore.deleteApplication(applicationId);
-        }
-        if (wireMockServer != null) {
-            try {
-                wireMockServer.stop();
-            } catch (Exception e) {
-                log.warn("Error stopping WireMock server: " + e.getMessage());
-            }
-        }
-        if (serverConfigurationManager != null) {
-            serverConfigurationManager.restoreToLastConfiguration();
-        }
-    }
+		JSONObject expectedFirstRecord = expectedEmbeddings.getJSONObject(0);
+		JSONObject actualFirstRecord = actualEmbeddings.getJSONObject(0);
 
-        private void startWiremockServer() throws Exception {
+		assertEquals(actualFirstRecord.getString("text"), expectedFirstRecord.getString("text"),
+				"Embedding text mismatch in first record");
+		assertEquals(actualFirstRecord.getString("source"), expectedFirstRecord.getString("source"),
+				"Embedding source mismatch in first record");
+		assertEquals(actualFirstRecord.getBoolean("is_user_query"), expectedFirstRecord.getBoolean("is_user_query"),
+				"Embedding is_user_query mismatch in first record");
 
-        // endpointPort is already set in setEnvironment() before the config was applied
-        wireMockServer = new WireMockServer(options()
-                .port(endpointPort)
-                .extensions(new ResponseTemplateTransformer(true)));
+		JSONArray expectedVector = expectedFirstRecord.getJSONArray("embedding");
+		JSONArray actualVector = actualFirstRecord.getJSONArray("embedding");
+		assertEquals(actualVector.length(), expectedVector.length(),
+				"Embedding vector length mismatch in first record");
+		assertEquals(actualVector.getDouble(0), expectedVector.getDouble(0), 0.0,
+				"Embedding vector first value mismatch in first record");
 
-        // Load mock embeddings and create a stub per text entry
-        String mockEmbeddingsJson = readFile(resourcePath + "mockembeddings.json");
-        JSONArray embeddingsArray = new JSONArray(mockEmbeddingsJson);
-        for (int i = 0; i < embeddingsArray.length(); i++) {
-            JSONObject entry = embeddingsArray.getJSONObject(i);
-            String text = entry.getString("text");
-            JSONArray embedding = entry.getJSONArray("embedding");
+		List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
+				postRequestedFor(urlEqualTo(MISTRAL_EMBEDDINGS_RESOURCE)));
+		assertFalse(embeddingRequests.isEmpty(), "Mistral embeddings endpoint did not receive a request");
 
-            JSONObject responseBody = new JSONObject();
-            responseBody.put("object", "list");
-            responseBody.put("model", embeddingModel);
+		boolean foundExpectedEmbeddingRequest = false;
+		for (LoggedRequest request : embeddingRequests) {
+			JSONObject requestJson = new JSONObject(request.getBodyAsString());
+			JSONArray inputArray = requestJson.optJSONArray("input");
+			boolean hasExpectedInputArray = inputArray != null && inputArray.length() == 2
+					&& MISTRAL_INPUT_1.equals(inputArray.optString(0))
+					&& MISTRAL_INPUT_2.equals(inputArray.optString(1));
 
-            JSONObject embeddingObj = new JSONObject();
-            embeddingObj.put("object", "embedding");
-            embeddingObj.put("embedding", embedding);
-            embeddingObj.put("index", 0);
-            responseBody.put("data", new JSONArray().put(embeddingObj));
+			if (MISTRAL_EMBEDDINGS_MODEL.equals(requestJson.optString("model"))
+					&& hasExpectedInputArray
+					&& ("Bearer " + MISTRAL_API_KEY).equals(request.getHeader("Authorization"))) {
+				foundExpectedEmbeddingRequest = true;
+				break;
+			}
+		}
+		assertTrue(foundExpectedEmbeddingRequest,
+				"Mistral embeddings backend request did not match expected model, input array, and auth header");
+		assertEquals(mockedEmbeddingsUrl, MISTRAL_EMBEDDINGS_MOCK_URL,
+				"Mocked embeddings URL should match the configured Mistral endpoint path");
+	}
 
-            JSONObject usage = new JSONObject();
-            usage.put("prompt_tokens", text.split("\\s+").length);
-            usage.put("total_tokens", text.split("\\s+").length);
-            responseBody.put("usage", usage);
+	@AfterClass(alwaysRun = true)
+	public void cleanUpArtifacts() throws Exception {
+		if (applicationId != null) {
+			try {
+				restAPIStore.deleteApplication(applicationId);
+			} catch (Exception e) {
+				log.warn("Error while deleting application " + applicationId + ": " + e.getMessage());
+			}
+		}
 
-            wireMockServer.stubFor(WireMock.post(urlEqualTo(MISTRAL_API_ENDPOINT + MISTRAL_EMBEDDING_RESOURCE))
-                    .withRequestBody(matchingJsonPath("$.input", containing(text)))
-                    .willReturn(aResponse()
-                            .withStatus(200)
-                            .withHeader("Content-Type", "application/json")
-                            .withBody(responseBody.toString())));
-        }
+		if (geminiApiId != null) {
+			try {
+				undeployAndDeleteAPIRevisionsUsingRest(geminiApiId, restAPIPublisher);
+			} catch (Exception e) {
+				log.warn("Error while undeploying revisions for API " + geminiApiId + ": " + e.getMessage());
+			}
 
-        // Stub for Gemini generateContent API — requires all tool names in function_declarations
-        MappingBuilder geminiStub = WireMock.post(urlEqualTo(GEMINI_API_ENDPOINT + GEMINI_GENERATE_RESOURCE));
-        // for (String toolName : REQUIRED_GEMINI_TOOL_NAMES) {
-        //     geminiStub = geminiStub.withRequestBody(matchingJsonPath(
-        //             "$.tools[0].function_declarations[?(@.name == '" + toolName + "')]"));
-        // }
-        // Check number of tools is 3 to ensure the policy's limit parameter is working
-        geminiStub = geminiStub.withRequestBody(matchingJsonPath("$.tools[0].function_declarations", matchingJsonPath("$[?(@.length() == 3)]")));
-        wireMockServer.stubFor(geminiStub
-                .atPriority(1)
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"Claude Monet\"}],"
-                                + "\"role\":\"model\"},\"finishReason\":\"STOP\",\"index\":0}],"
-                                + "\"usageMetadata\":{\"promptTokenCount\":12,\"candidatesTokenCount\":5,"
-                                + "\"totalTokenCount\":17},\"modelVersion\":\"gemini-pro\"}")));
+			try {
+				restAPIPublisher.deleteAPI(geminiApiId);
+			} catch (Exception e) {
+				log.warn("Error while deleting API " + geminiApiId + ": " + e.getMessage());
+			}
+		}
 
-        // Fallback stub — required tools missing from request
-        wireMockServer.stubFor(WireMock.post(urlEqualTo(GEMINI_API_ENDPOINT + GEMINI_GENERATE_RESOURCE))
-                .atPriority(2)
-                .willReturn(aResponse()
-                        .withStatus(422)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"error\":{\"code\":422,"
-                                + "\"message\":\"Required tool declarations missing from request\","
-                                + "\"status\":\"UNPROCESSABLE_ENTITY\"}}"))); 
+		if (wireMockServer != null) {
+			try {
+				wireMockServer.stop();
+			} catch (Exception e) {
+				log.warn("Error while stopping WireMock backend: " + e.getMessage());
+			}
+		}
+	}
 
-        try {
-            wireMockServer.start();
-            log.info("WireMock server started successfully on port " + endpointPort);
-        } catch (Exception e) {
-            log.error("Failed to start WireMock server on port " + endpointPort + ": " + e.getMessage(), e);
-            throw e;
-        }
-    }
+	private void initializeTestData() throws Exception {
 
-    /**
-     * Creates a Gemini AI API with the SemanticToolFiltering policy on the request flow.
-     * Verifies that a request containing all required tool declarations is routed and returns HTTP 200.
-     */
-    @Test(groups = {"wso2.am"}, description = "Test Gemini AI API with Semantic Tool Filtering policy")
-    public void testSemanticToolFilteringWithGeminiApi() throws Exception {
-        // Create and publish the Gemini AI API
-        geminiApiId = createAndPublishGeminiApi();
-        assertNotNull(geminiApiId, "Gemini API ID should not be null");
+		resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
+		mockRequestBody = readFile(resourcePath + MOCK_REQUEST_BODY_FILE);
+		mistralEmbeddingsRequestBody = buildMistralEmbeddingsRequestBody();
+		mockEmbeddingsPayload = readFile(resourcePath + MOCK_EMBEDDINGS_FILE);
+		mockGeminiResponse = "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\""
+				+ GEMINI_MOCK_RESPONSE_TEXT + "\"}]}}]}";
+	}
 
-        // Fetch the API and attach the SemanticToolFiltering policy
-        assertNotNull(policyMap.get(SEMANTIC_TOOL_FILTERING_POLICY),
-                "SemanticToolFiltering policy not found in common policies");
+	private void startMockBackends() {
 
-        HttpResponse getAPIResponse = restAPIPublisher.getAPI(geminiApiId);
-        assertEquals(getAPIResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Failed to retrieve Gemini API");
-        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+		wireMockServer = new WireMockServer(options().port(MOCK_BACKEND_PORT));
 
-        Map<String, Object> policyParams = new HashMap<>();
-        policyParams.put("selectionMode", "By Rank");
-        policyParams.put("limit", "3");
-        policyParams.put("queryJSONPath", "$.contents[0].parts[0].text");
-        policyParams.put("toolsJSONPath", "$.tools[0].function_declarations");
+		wireMockServer.stubFor(WireMock.post(urlEqualTo(GEMINI_BACKEND_BASE_PATH + GEMINI_API_RESOURCE))
+				.withRequestBody(matchingJsonPath("$.contents[0].parts[0].text"))
+				.withRequestBody(matchingJsonPath("$.tools[0].function_declarations[0].name",
+						equalTo("get_weather")))
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Type", "application/json")
+						.withBody(mockGeminiResponse)));
 
-        OperationPolicyDTO policyDTO = new OperationPolicyDTO();
-        policyDTO.setPolicyName(SEMANTIC_TOOL_FILTERING_POLICY);
-        policyDTO.setPolicyVersion("v1.0");
-        policyDTO.setPolicyId(policyMap.get(SEMANTIC_TOOL_FILTERING_POLICY));
-        policyDTO.setParameters(policyParams);
+		wireMockServer.stubFor(WireMock.post(urlEqualTo(MISTRAL_EMBEDDINGS_RESOURCE))
+				.withHeader("Authorization", equalTo("Bearer " + MISTRAL_API_KEY))
+				.withRequestBody(matchingJsonPath("$.model", equalTo(MISTRAL_EMBEDDINGS_MODEL)))
+				.withRequestBody(matchingJsonPath("$.input[0]", equalTo(MISTRAL_INPUT_1)))
+				.withRequestBody(matchingJsonPath("$.input[1]", equalTo(MISTRAL_INPUT_2)))
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("Content-Type", "application/json")
+						.withBody(mockEmbeddingsPayload)));
 
-        List<OperationPolicyDTO> requestPolicies = new ArrayList<>();
-        requestPolicies.add(policyDTO);
+		wireMockServer.start();
+		log.info("Guardrail mock backend started on port " + MOCK_BACKEND_PORT);
+	}
 
-        APIOperationPoliciesDTO operationPoliciesDTO = new APIOperationPoliciesDTO();
-        operationPoliciesDTO.setRequest(requestPolicies);
-        operationPoliciesDTO.setResponse(new ArrayList<>());
-        operationPoliciesDTO.setFault(new ArrayList<>());
-        apidto.setApiPolicies(operationPoliciesDTO);
+	private String createTestApplication() throws Exception {
 
-        restAPIPublisher.updateAPI(apidto);
-        createAPIRevisionAndDeployUsingRest(geminiApiId, restAPIPublisher);
-        waitForAPIDeployment();
+		ApplicationDTO applicationDTO = restAPIStore.addApplication(APPLICATION_NAME,
+				APIThrottlingTier.UNLIMITED.getState(), "", "guardrail-test");
+		String appId = applicationDTO.getApplicationId();
+		assertNotNull(appId, "Application ID should not be null");
+		return appId;
+	}
 
-        // Subscribe and generate API key
-        apiKey = subscribeToApiAndGenerateKey(geminiApiId);
+	private String createAndPublishGeminiAiApi() throws Exception {
 
-        // Invoke API with the mock request body (contains 5 tools; policy should filter to 3)
-        String requestPayload = readFile(resourcePath + MOCK_REQUEST_BODY_FILE);
-        Map<String, String> headers = new HashMap<>();
-        headers.put("ApiKey", apiKey);
-        headers.put("Content-Type", "application/json");
-        String invokeURL = getAPIInvocationURLHttp(GEMINI_API_CONTEXT, GEMINI_API_VERSION)
-                + GEMINI_GENERATE_RESOURCE;
+		String apiDefinition = readFile(resourcePath + GEMINI_DEFINITION_FILE);
+		String additionalProperties = readFile(resourcePath + GEMINI_ADD_PROPS_FILE);
+		JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
+		resolveAndSetGeminiProviderConfiguration(additionalPropertiesObj);
 
-        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, headers, requestPayload);
-        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Gemini API invocation with SemanticToolFiltering policy failed");
-    }
+		JSONObject endpointConfig = additionalPropertiesObj.getJSONObject("endpointConfig");
+		JSONObject productionEndpoints = new JSONObject();
+		productionEndpoints.put("url", MOCK_BACKEND_HOST + ":" + MOCK_BACKEND_PORT + GEMINI_BACKEND_BASE_PATH);
+		endpointConfig.put("production_endpoints", productionEndpoints);
+		additionalPropertiesObj.put("endpointConfig", endpointConfig);
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
+		File definitionFile = getTempFileWithContent(apiDefinition);
+		APIDTO apidto = restAPIPublisher.importOASDefinition(definitionFile, additionalPropertiesObj.toString());
+		String createdApiId = apidto.getId();
 
-    private String createAndPublishGeminiApi() throws Exception {
-        String apiDefinition = readFile(resourcePath + GEMINI_DEF_FILE);
-        String additionalProperties = readFile(resourcePath + GEMINI_ADD_PROPS_FILE);
-        JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
+		HttpResponse createdApiResponse = restAPIPublisher.getAPI(createdApiId);
+		assertEquals(createdApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+				"Failed to create Gemini AI API");
 
-        // Inject the dynamic WireMock endpoint URL
-        JSONObject endpointConfig = additionalPropertiesObj.getJSONObject("endpointConfig");
-        JSONObject productionEndpoints = new JSONObject();
-        productionEndpoints.put("url", ENDPOINT_HOST + ":" + endpointPort + GEMINI_API_ENDPOINT);
-        endpointConfig.put("production_endpoints", productionEndpoints);
-        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+		String revisionUUID = createAPIRevisionAndDeployUsingRest(createdApiId, restAPIPublisher);
+		assertNotNull(revisionUUID, "Revision UUID should not be null");
 
-        File file = getTempFileWithContent(apiDefinition);
-        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
-        String apiId = apidto.getId();
+		HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(createdApiId, false);
+		assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK,
+				"Failed to publish Gemini AI API");
 
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId);
-        assertEquals(createdApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Failed to create Gemini AI API");
+		waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
+				APIMIntegrationConstants.IS_API_EXISTS);
+		return createdApiId;
+	}
 
-        String revisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-        assertNotNull(revisionUUID, "Revision UUID should not be null");
+	private void resolveAndSetGeminiProviderConfiguration(JSONObject additionalPropertiesObj) throws Exception {
 
-        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId, false);
-        assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK, "Failed to publish Gemini API");
+		ApiResponse<AIServiceProviderSummaryResponseListDTO> providersResponse = restAPIAdmin.getAIServiceProviders();
+		assertEquals(providersResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
+				"Failed to retrieve AI service providers for Gemini configuration");
 
-        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
-        return apiId;
-    }
+		assertNotNull(providersResponse.getData(), "AI service provider list response should not be null");
+		List<AIServiceProviderSummaryResponseDTO> providerList = providersResponse.getData().getList();
+		assertNotNull(providerList, "AI service provider list should not be null");
 
-    private String subscribeToApiAndGenerateKey(String apiId) throws Exception {
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
-        assertNotNull(subscriptionDTO, "API subscription should not be null");
+		AIServiceProviderSummaryResponseDTO geminiProvider = null;
+		for (AIServiceProviderSummaryResponseDTO provider : providerList) {
+			if (provider != null && provider.getName() != null &&
+					(provider.getName().equalsIgnoreCase("Gemini") ||
+							provider.getName().toLowerCase().contains("gemini"))) {
+				geminiProvider = provider;
+				break;
+			}
+		}
 
-        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
-        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
-                .endUsername(user.getUserName())
-                .issuer(keyManagerHTTPSURL + "oauth2/token")
-                .validityPeriod(3600)
-                .keyType("PRODUCTION")
-                .permittedIP(null)
-                .permittedReferer(null)
-                .applicationUUID(applicationDTO.getApplicationId())
-                .applicationName(applicationDTO.getName())
-                .applicationOwner(applicationDTO.getOwner())
-                .applicationTier(applicationDTO.getThrottlingPolicy())
-                .applicationId(restAPIInternal.getApplicationIdByUUID(
-                        MultitenantUtils.getTenantDomain(user.getUserName()),
-                        applicationDTO.getApplicationId()))
-                .build();
-        String key = new JWTGenerator().generateToken(tokenInfo);
-        assertNotNull(key, "API Key should not be null");
-        return key;
-    }
+		assertNotNull(geminiProvider, "Gemini AI service provider is not available in predefined providers");
+		assertNotNull(geminiProvider.getApiVersion(), "Gemini AI service provider API version should not be null");
 
-    private File getTempFileWithContent(String content) throws IOException {
-        File temp = File.createTempFile("swagger", ".json");
-        temp.deleteOnExit();
-        BufferedWriter out = new BufferedWriter(new FileWriter(temp));
-        out.write(content);
-        out.close();
-        return temp;
-    }
+		JSONObject subtypeConfiguration = additionalPropertiesObj.optJSONObject("subtypeConfiguration");
+		if (subtypeConfiguration == null) {
+			subtypeConfiguration = new JSONObject();
+			additionalPropertiesObj.put("subtypeConfiguration", subtypeConfiguration);
+		}
+		subtypeConfiguration.put("subtype", "AIAPI");
 
+		JSONObject configuration = subtypeConfiguration.optJSONObject("configuration");
+		if (configuration == null) {
+			configuration = new JSONObject();
+			subtypeConfiguration.put("configuration", configuration);
+		}
+		configuration.put("llmProviderName", geminiProvider.getName());
+		configuration.put("llmProviderApiVersion", geminiProvider.getApiVersion());
+
+		log.info("Resolved Gemini provider config - Name: " + geminiProvider.getName() + ", Version: "
+				+ geminiProvider.getApiVersion());
+	}
+
+	private String subscribeToApiAndGenerateKey(String apiId) throws Exception {
+
+		SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, applicationId,
+				APIMIntegrationConstants.API_TIER.UNLIMITED);
+		assertNotNull(subscriptionDTO, "API subscription should not be null");
+
+		ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
+		JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+				.endUsername(user.getUserName())
+				.issuer(keyManagerHTTPSURL + "oauth2/token")
+				.validityPeriod(3600)
+				.keyType("PRODUCTION")
+				.permittedIP(null)
+				.permittedReferer(null)
+				.applicationUUID(applicationDTO.getApplicationId())
+				.applicationName(applicationDTO.getName())
+				.applicationOwner(applicationDTO.getOwner())
+				.applicationTier(applicationDTO.getThrottlingPolicy())
+				.applicationId(restAPIInternal.getApplicationIdByUUID(
+						MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+				.build();
+
+		String generatedApiKey = new JWTGenerator().generateToken(tokenInfo);
+		assertNotNull(generatedApiKey, "API Key should not be null");
+		return generatedApiKey;
+	}
+
+	private File getTempFileWithContent(String content) throws IOException {
+
+		File tempDirectory = new File(System.getProperty("user.dir"), "target/guardrail-temp");
+		if (!tempDirectory.exists() && !tempDirectory.mkdirs()) {
+			throw new IOException("Failed to create temporary directory: " + tempDirectory.getAbsolutePath());
+		}
+
+		File tempFile = File.createTempFile("guardrail-api-", ".json", tempDirectory);
+		tempFile.deleteOnExit();
+
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+			writer.write(content);
+		}
+		return tempFile;
+	}
+
+	private String getMockUrlForEndpoint(String endpointUrl) throws Exception {
+
+		URL endpoint = new URL(endpointUrl);
+		return MOCK_BACKEND_HOST + ":" + MOCK_BACKEND_PORT + endpoint.getPath();
+	}
+
+	private String buildMistralEmbeddingsRequestBody() throws JSONException {
+
+		JSONObject requestBody = new JSONObject();
+		requestBody.put("model", MISTRAL_EMBEDDINGS_MODEL);
+		requestBody.put("input", new JSONArray().put(MISTRAL_INPUT_1).put(MISTRAL_INPUT_2));
+		return requestBody.toString();
+	}
+
+	private HttpResponse invokeGeminiWithGatewayPathFallback(Map<String, String> requestHeaders) throws Exception {
+
+		String versionedInvokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + GEMINI_API_RESOURCE;
+		HttpResponse response = HTTPSClientUtils.doPost(versionedInvokeURL, requestHeaders, mockRequestBody);
+
+		if (response.getResponseCode() == HttpStatus.SC_NOT_FOUND) {
+			String unversionedInvokeURL = getAPIInvocationURLHttp(API_CONTEXT) + GEMINI_API_RESOURCE;
+			HttpResponse fallbackResponse = HTTPSClientUtils.doPost(unversionedInvokeURL, requestHeaders, mockRequestBody);
+
+			if (fallbackResponse.getResponseCode() == HttpStatus.SC_OK) {
+				log.info("Gemini invocation succeeded with unversioned gateway path: " + unversionedInvokeURL);
+				return fallbackResponse;
+			}
+
+			log.warn("Gemini invocation failed for both gateway paths. Versioned URL status: "
+					+ response.getResponseCode() + ", Unversioned URL status: " + fallbackResponse.getResponseCode());
+			return fallbackResponse;
+		}
+
+		return response;
+	}
 }

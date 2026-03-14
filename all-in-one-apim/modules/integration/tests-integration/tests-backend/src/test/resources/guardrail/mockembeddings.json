@@ -1031,7 +1031,7 @@
     ]
   },
   {
-    "text": "get_weather: Get current weather and 7-day forecast for a location.",
+    "text": "Get current weather and 7-day forecast for a location.",
     "source": "tool",
     "is_user_query": false,
     "tool_name": "get_weather",
