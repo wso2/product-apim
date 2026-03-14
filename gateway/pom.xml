@@ -1282,15 +1282,15 @@
         <carbon.analytics.common.version>5.4.3</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.143</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.146</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.49</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.54</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.9.4</carbon.registry.version>
+        <carbon.registry.version>4.9.5</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
@@ -1309,11 +1309,11 @@
         <carbon.mediation.version>4.8.8</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.27.8</carbon.identity.version>
+        <carbon.identity.version>5.27.9</carbon.identity.version>
         <carbon.identity.governance.version>1.14.0</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.0</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.14.3</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.14.4</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.9.0</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.10.0</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.12.1</carbon.identity-inbound-auth-openid.version>
@@ -1349,7 +1349,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.1.0-wso2v23</synapse.version>
+        <synapse.version>4.1.0-wso2v28</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v121</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v34</axiom.wso2.version>
