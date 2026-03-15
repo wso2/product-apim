@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.guardrail;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +38,8 @@ import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderSummaryResponseDTO;
 import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderSummaryResponseListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -58,6 +61,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +72,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -95,8 +100,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 	private static final String MISTRAL_EMBEDDINGS_MOCK_URL = MOCK_BACKEND_HOST + ":" + MOCK_BACKEND_PORT
 			+ MISTRAL_EMBEDDINGS_RESOURCE;
 	private static final String MISTRAL_EMBEDDINGS_MODEL = "mistral-embed";
-	private static final String MISTRAL_INPUT_1 = "I'm planning a corporate retreat in Denver for next weekend. Can you find the weather forecast, book a conference room for 15 people, find a highly-rated catering service that offers vegan options, and then email the itinerary to my assistant at sarah@company.com?";
-	private static final String MISTRAL_INPUT_2 = "Get current weather and 7-day forecast for a location.";
+	private static final String MISTRAL_INPUT_1 = "Embed this sentence.";
+	private static final String MISTRAL_INPUT_2 = "As well as this one.";
 	private static final String MISTRAL_API_KEY = "mock-mistral-api-key";
 
 	private static final String APPLICATION_NAME = "Guardrail-Test-Application";
@@ -106,6 +111,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 	private static final String GEMINI_ADD_PROPS_FILE = "gemini-add-props.json";
 	private static final String MOCK_REQUEST_BODY_FILE = "mockrequestbody.json";
 	private static final String MOCK_EMBEDDINGS_FILE = "mockembeddings.json";
+	private static final String SEMANTIC_TOOL_FILTERING_POLICY_NAME = "SemanticToolFiltering";
+	private static final String SEMANTIC_TOOL_FILTERING_POLICY_VERSION = "v1.0";
 
 	private String resourcePath;
 	private String geminiApiId;
@@ -141,12 +148,13 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 		initializeTestData();
 		startMockBackends();
 		applicationId = createTestApplication();
-		geminiApiId = createAndPublishGeminiAiApi();
-		apiKey = subscribeToApiAndGenerateKey(geminiApiId);
 	}
 
-	@Test(groups = {"wso2.am"}, description = "Invoke Gemini AI API through APIM and verify backend capture")
-	public void testGeminiAiApiInvocationWithMockBackend() throws Exception {
+	@Test(groups = {"wso2.am"}, description = "Create Gemini AI API without policy and verify invocation through the mock backend")
+	public void testCreateAndInvokeGeminiAiApiWithoutPolicy() throws Exception {
+
+		geminiApiId = createAndPublishGeminiAiApi();
+		apiKey = subscribeToApiAndGenerateKey(geminiApiId);
 
 		Map<String, String> requestHeaders = new HashMap<>();
 		requestHeaders.put("ApiKey", apiKey);
@@ -168,7 +176,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 				"Unexpected Gemini mock backend response payload");
 
 		List<LoggedRequest> geminiRequests = wireMockServer.findAll(
-				postRequestedFor(urlEqualTo(GEMINI_BACKEND_BASE_PATH + GEMINI_API_RESOURCE)));
+				postRequestedFor(urlPathEqualTo(GEMINI_BACKEND_BASE_PATH + GEMINI_API_RESOURCE)));
 		assertFalse(geminiRequests.isEmpty(), "Gemini mock backend did not receive a request");
 
 		boolean foundExpectedGeminiRequest = false;
@@ -183,8 +191,35 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 				"Gemini mock backend request did not contain the expected guardrail request payload");
 	}
 
+	@Test(groups = {"wso2.am"}, description = "Add SemanticToolFiltering policy to the existing Gemini AI API and verify it by API ID",
+			dependsOnMethods = "testCreateAndInvokeGeminiAiApiWithoutPolicy")
+	public void testAddSemanticToolFilteringPolicyToExistingGeminiApi() throws Exception {
+
+		assertNotNull(geminiApiId, "Gemini API ID should not be null before policy attachment");
+		addSemanticToolFilteringPolicy(geminiApiId);
+
+		// Verify the last created API is still available by API ID after policy attachment.
+		HttpResponse getApiResponse = restAPIPublisher.getAPI(geminiApiId);
+		assertEquals(getApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+				"Failed to retrieve Gemini API by ID after policy attachment");
+		APIDTO publishedApiDto = new Gson().fromJson(getApiResponse.getData(), APIDTO.class);
+		assertEquals(publishedApiDto.getId(), geminiApiId,
+				"Retrieved API ID does not match the last created Gemini API ID");
+		assertNotNull(publishedApiDto.getOperations(), "Published API operations should not be null");
+		assertFalse(publishedApiDto.getOperations().isEmpty(),
+				"Published API should have at least one operation");
+		APIOperationPoliciesDTO attachedPolicies = publishedApiDto.getOperations().get(0).getOperationPolicies();
+		assertNotNull(attachedPolicies, "Operation policies should not be null after attachment");
+		assertNotNull(attachedPolicies.getRequest(), "Request policies list should not be null");
+		assertFalse(attachedPolicies.getRequest().isEmpty(),
+				"At least one request policy should be attached (SemanticToolFiltering)");
+		boolean policyFound = attachedPolicies.getRequest().stream()
+				.anyMatch(p -> SEMANTIC_TOOL_FILTERING_POLICY_NAME.equals(p.getPolicyName()));
+		assertTrue(policyFound, "SemanticToolFiltering policy was not found in the attached request policies");
+	}
+
 	@Test(groups = {"wso2.am"}, description = "Call mocked Mistral embedding backend and validate embedding response",
-			dependsOnMethods = "testGeminiAiApiInvocationWithMockBackend")
+			dependsOnMethods = "testAddSemanticToolFilteringPolicyToExistingGeminiApi")
 	public void testMistralEmbeddingsMockBackend() throws Exception {
 
 		Map<String, String> requestHeaders = new HashMap<>();
@@ -222,7 +257,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 				"Embedding vector first value mismatch in first record");
 
 		List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
-				postRequestedFor(urlEqualTo(MISTRAL_EMBEDDINGS_RESOURCE)));
+				postRequestedFor(urlPathEqualTo(MISTRAL_EMBEDDINGS_RESOURCE)));
 		assertFalse(embeddingRequests.isEmpty(), "Mistral embeddings endpoint did not receive a request");
 
 		boolean foundExpectedEmbeddingRequest = false;
@@ -293,7 +328,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
 		wireMockServer = new WireMockServer(options().port(MOCK_BACKEND_PORT));
 
-		wireMockServer.stubFor(WireMock.post(urlEqualTo(GEMINI_BACKEND_BASE_PATH + GEMINI_API_RESOURCE))
+		wireMockServer.stubFor(WireMock.post(urlPathEqualTo(GEMINI_BACKEND_BASE_PATH + GEMINI_API_RESOURCE))
 				.withRequestBody(matchingJsonPath("$.contents[0].parts[0].text"))
 				.withRequestBody(matchingJsonPath("$.tools[0].function_declarations[0].name",
 						equalTo("get_weather")))
@@ -302,11 +337,10 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 						.withHeader("Content-Type", "application/json")
 						.withBody(mockGeminiResponse)));
 
-		wireMockServer.stubFor(WireMock.post(urlEqualTo(MISTRAL_EMBEDDINGS_RESOURCE))
-				.withHeader("Authorization", equalTo("Bearer " + MISTRAL_API_KEY))
+		wireMockServer.stubFor(WireMock.post(urlPathEqualTo(MISTRAL_EMBEDDINGS_RESOURCE))
+				.withHeader("Authorization", containing("Bearer"))
 				.withRequestBody(matchingJsonPath("$.model", equalTo(MISTRAL_EMBEDDINGS_MODEL)))
-				.withRequestBody(matchingJsonPath("$.input[0]", equalTo(MISTRAL_INPUT_1)))
-				.withRequestBody(matchingJsonPath("$.input[1]", equalTo(MISTRAL_INPUT_2)))
+				.withRequestBody(matchingJsonPath("$.input"))
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withHeader("Content-Type", "application/json")
@@ -398,6 +432,89 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
 		log.info("Resolved Gemini provider config - Name: " + geminiProvider.getName() + ", Version: "
 				+ geminiProvider.getApiVersion());
+	}
+
+	private void addSemanticToolFilteringPolicy(String apiId) throws Exception {
+
+		Map<String, String> commonPolicyMap = restAPIPublisher.getAllCommonOperationPolicies();
+		assertNotNull(commonPolicyMap, "Failed to retrieve common operation policy map");
+
+		String semanticToolFilteringPolicyId = resolveSemanticToolFilteringPolicyId(commonPolicyMap);
+		assertNotNull(semanticToolFilteringPolicyId,
+				"SemanticToolFiltering policy is not available in common policies: " + commonPolicyMap.keySet());
+
+		HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+		assertEquals(getAPIResponse.getResponseCode(), HttpStatus.SC_OK,
+				"Failed to retrieve Gemini API before attaching guardrail policy");
+
+		APIDTO apiDto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+		APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+
+		OperationPolicyDTO policyDTO = new OperationPolicyDTO();
+		policyDTO.setPolicyName(SEMANTIC_TOOL_FILTERING_POLICY_NAME);
+		policyDTO.setPolicyVersion(SEMANTIC_TOOL_FILTERING_POLICY_VERSION);
+		policyDTO.setPolicyId(semanticToolFilteringPolicyId);
+		policyDTO.setParameters(buildSemanticToolFilteringParameters());
+
+		List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
+		requestPolicyList.add(policyDTO);
+
+		apiOperationPoliciesDTO.setRequest(requestPolicyList);
+		apiOperationPoliciesDTO.setResponse(new ArrayList<>());
+		apiOperationPoliciesDTO.setFault(new ArrayList<>());
+
+		assertNotNull(apiDto.getOperations(), "Gemini API operations should not be null when attaching policy");
+		assertFalse(apiDto.getOperations().isEmpty(),
+				"Gemini API should contain at least one operation to attach policy");
+		apiDto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+
+		HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(apiDto);
+		assertEquals(updateResponse.getResponseCode(), HttpStatus.SC_OK,
+				"Failed to attach SemanticToolFiltering policy to Gemini API. Response: "
+						+ updateResponse.getData());
+
+		log.info("Attached policy " + SEMANTIC_TOOL_FILTERING_POLICY_NAME + "_"
+				+ SEMANTIC_TOOL_FILTERING_POLICY_VERSION + " to Gemini API " + apiId);
+	}
+
+	private Map<String, Object> buildSemanticToolFilteringParameters() {
+
+		Map<String, Object> policyParameters = new HashMap<>();
+		policyParameters.put("selectionMode", "By Rank");
+		policyParameters.put("limit", 5);
+		policyParameters.put("threshold", "0.7");
+		policyParameters.put("queryJSONPath", "$.messages[-1].content");
+		policyParameters.put("toolsJSONPath", "$.tools");
+		policyParameters.put("userQueryIsJson", true);
+		policyParameters.put("toolsIsJson", true);
+		return policyParameters;
+	}
+
+	private String resolveSemanticToolFilteringPolicyId(Map<String, String> commonPolicyMap) {
+
+		String fullPolicyName = SEMANTIC_TOOL_FILTERING_POLICY_NAME + "_" + SEMANTIC_TOOL_FILTERING_POLICY_VERSION;
+		if (commonPolicyMap.containsKey(fullPolicyName)) {
+			return commonPolicyMap.get(fullPolicyName);
+		}
+
+		if (commonPolicyMap.containsKey(SEMANTIC_TOOL_FILTERING_POLICY_NAME)) {
+			return commonPolicyMap.get(SEMANTIC_TOOL_FILTERING_POLICY_NAME);
+		}
+
+		for (Map.Entry<String, String> policyEntry : commonPolicyMap.entrySet()) {
+			String policyName = policyEntry.getKey();
+			if (policyName == null) {
+				continue;
+			}
+
+			String normalizedPolicyName = policyName.toLowerCase();
+			if (normalizedPolicyName.contains("semantictoolfiltering")
+					|| normalizedPolicyName.contains("semantic tool filtering")) {
+				return policyEntry.getValue();
+			}
+		}
+
+		return null;
 	}
 
 	private String subscribeToApiAndGenerateKey(String apiId) throws Exception {

@@ -1,0 +1,86 @@
+{
+  "category": "Mediation",
+  "name": "SemanticToolFiltering",
+  "displayName": "Semantic Tool Filtering",
+  "version": "v1.0",
+  "description": "Dynamically filters the tools provided within an API request based on their semantic relevance to the user query. Extracts both the query and tool definitions from the incoming payload, generates embeddings, performs similarity search, and replaces the tools array with a filtered subset.",
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    {
+      "subType": "AIAPI",
+      "apiType": "HTTP"
+    }
+  ],
+  "policyAttributes": [
+    {
+      "name": "selectionMode",
+      "displayName": "Selection Mode",
+      "description": "Method used to filter tools. 'By Rank' selects a fixed number of the most relevant tools. 'By Threshold' selects all tools exceeding a specific similarity score.",
+      "type": "Enum",
+      "allowedValues": ["By Rank", "By Threshold"],
+      "defaultValue": "By Rank",
+      "required": true
+    },
+    {
+      "name": "limit",
+      "displayName": "Limit",
+      "description": "The number of most relevant tools to include (used if selectionMode is 'By Rank').",
+      "type": "Integer",
+      "validationRegex": "^[1-9][0-9]*$",
+      "defaultValue": "5",
+      "allowedValues": [],
+      "required": false
+    },
+    {
+      "name": "threshold",
+      "displayName": "Similarity Threshold",
+      "description": "Similarity threshold for filtering (0.0 to 1.0). Only tools with a score above this value are included (used if selectionMode is 'By Threshold').",
+      "type": "String",
+      "defaultValue": "0.7",
+      "validationRegex": "^(1(\\.0)?|0(\\.\\d+)?)$",
+      "allowedValues": [],
+      "required": false
+    },
+    {
+      "name": "queryJSONPath",
+      "displayName": "Query JSON Path",
+      "description": "JSONPath expression to extract the user's query from the request body.",
+      "type": "String",
+      "defaultValue": "$.messages[-1].content",
+      "allowedValues": [],
+      "required": false
+    },
+    {
+      "name": "toolsJSONPath",
+      "displayName": "Tools JSON Path",
+      "description": "JSONPath expression to extract the tools array from the request body (used when toolsIsJson is true).",
+      "type": "String",
+      "defaultValue": "$.tools",
+      "allowedValues": [],
+      "required": false
+    },
+    {
+      "name": "userQueryIsJson",
+      "displayName": "User Query Is JSON",
+      "description": "When true, extract user query using JSONPath. When false, extract from text using <userq>...</userq> tags.",
+      "type": "Boolean",
+      "defaultValue": "true",
+      "allowedValues": [],
+      "required": false
+    },
+    {
+      "name": "toolsIsJson",
+      "displayName": "Tools Is JSON",
+      "description": "When true, extract tools using JSONPath (JSON format). When false, extract tools from text using <toolname>...</toolname> and <tooldescription>...</tooldescription> tags.",
+      "type": "Boolean",
+      "defaultValue": "true",
+      "allowedValues": [],
+      "required": false
+    }
+  ]
+}
