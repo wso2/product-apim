@@ -47,7 +47,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
@@ -58,7 +57,7 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
+import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -69,6 +68,7 @@ import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import org.wso2.carbon.utils.xml.StringUtils;
 
 import javax.ws.rs.core.Response;
@@ -81,8 +81,6 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertEquals;
@@ -231,15 +229,12 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String opaqueToken = TokenUtils.getJtiOfJwtToken(accessToken);
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
             invokeAPI(client, accessToken, AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
             invokeAPI(client, accessToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
-            invokeAPI(client, opaqueToken, AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
-            invokeAPI(client, opaqueToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -442,8 +437,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
         Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        testThrottling(tokenJti);
+        testThrottling(userAccessToken);
         throttleMarkTime =  System.currentTimeMillis();
     }
 
@@ -476,9 +470,21 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testWebSocketAPIInvalidTokenInvocation")
     public void testWebSocketAPIInvocationUsingAPIKeyWhenAPIKeyAuthenticationDisabled() throws Exception {
 
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
-                PRODUCTION.toString(), -1, null, null);
-        String accessToken = apiKeyDTO.getApikey();
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000000)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String accessToken = new JWTGenerator().generateToken(tokenInfo);
         WebSocketClient client = new WebSocketClient();
         boolean apiInvocationFailed = false;
         try {
@@ -509,9 +515,22 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         apidto.setSecurityScheme(securityScheme);
         restAPIPublisher.updateAPI(apidto);
         Thread.sleep(1000); // Delay is needed to propagate changes to the components
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
-                PRODUCTION.toString(), -1, null, null);
-        String accessToken = apiKeyDTO.getApikey();
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .sub(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000000)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String accessToken = new JWTGenerator().generateToken(tokenInfo);
         WebSocketClient client = new WebSocketClient();
         try {
             invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
@@ -551,9 +570,21 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testWebSocketAPIInvocationUsingOAuthWhenOAuthAuthenticationDisabled")
     public void testWebSocketAPIInvocationUsingExpiredAPIKey() throws Exception {
 
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
-                PRODUCTION.toString(), 1, null, null);
-        String accessToken = apiKeyDTO.getApikey();
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(1)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String accessToken = new JWTGenerator().generateToken(tokenInfo);
         WebSocketClient client = new WebSocketClient();
         boolean apiInvocationFailed = false;
         try {
@@ -577,10 +608,21 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testWebSocketAPIInvocationUsingExpiredAPIKey")
     public void testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingIPRestrictions() throws Exception {
 
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
-                PRODUCTION.toString(), -1, "192.168.1.2, 152.12.0.0/13, 2002:eb8::2, 1001:ab8::/44," +
-                " 127.0.0.1", null);
-        String accessToken = apiKeyDTO.getApikey();
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000000)
+                .keyType("PRODUCTION")
+                .permittedIP("192.168.1.2, 152.12.0.0/13, 2002:eb8::2, 1001:ab8::/44, 127.0.0.1")
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String accessToken = new JWTGenerator().generateToken(tokenInfo);
         WebSocketClient client = new WebSocketClient();
         try {
             invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
@@ -596,10 +638,21 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingIPRestrictions")
     public void testWebSocketAPIInvocationUsingAPIKeyRestrictedForAnotherIP() throws Exception {
 
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
-                PRODUCTION.toString(), -1, "192.168.1.2, 152.12.0.0/13, 2002:eb8::2, 1001:ab8::/44," +
-                " 1.1.1.1", null);
-        String accessToken = apiKeyDTO.getApikey();
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000000)
+                .keyType("PRODUCTION")
+                .permittedIP("192.168.1.2, 152.12.0.0/13, 2002:eb8::2, 1001:ab8::/44, 1.1.1.1")
+                .permittedReferer(null)
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String accessToken = new JWTGenerator().generateToken(tokenInfo);
         WebSocketClient client = new WebSocketClient();
         boolean apiInvocationFailed = false;
         try {
@@ -622,12 +675,23 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyRestrictedForAnotherIP")
     public void testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingRefererRestrictions() throws Exception {
 
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
-                PRODUCTION.toString(), -1, null, "www.example.com/path, " +
-                "sub.example.com/*, *.example.com/*, www.wso2.com");
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000000)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer("www.example.com/path, sub.example.com/*, *.example.com/*, www.wso2.com")
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String accessToken = new JWTGenerator().generateToken(tokenInfo);
         HttpHeaders headers = new DefaultHttpHeaders();
         headers.add("Referer", "www.wso2.com");
-        String accessToken = apiKeyDTO.getApikey();
         WebSocketClient client = new WebSocketClient();
         try {
             invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, headers, apiEndPoint);
@@ -643,12 +707,23 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingRefererRestrictions")
     public void testWebSocketAPIInvocationUsingAPIKeyGeneratedForAnotherReferer() throws Exception {
 
-        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
-                PRODUCTION.toString(), -1, null, "www.example.com/path, " +
-                "sub.example.com/*, *.example.com/*, www.wso2.com");
+        ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
+        JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
+                .endUsername(user.getUserName())
+                .issuer(keyManagerHTTPSURL + "oauth2/token")
+                .validityPeriod(36000000)
+                .keyType("PRODUCTION")
+                .permittedIP(null)
+                .permittedReferer("www.example.com/path, sub.example.com/*, *.example.com/*, www.wso2.com")
+                .applicationUUID(applicationDTO.getApplicationId())
+                .applicationName(applicationDTO.getName())
+                .applicationOwner(applicationDTO.getOwner())
+                .applicationTier(applicationDTO.getThrottlingPolicy())
+                .applicationId(restAPIInternal.getApplicationIdByUUID(MultitenantUtils.getTenantDomain(user.getUserName()), applicationDTO.getApplicationId()))
+                .build();
+        String accessToken = new JWTGenerator().generateToken(tokenInfo);
         HttpHeaders headers = new DefaultHttpHeaders();
         headers.add("Referer", "www.wso2.org");
-        String accessToken = apiKeyDTO.getApikey();
         WebSocketClient client = new WebSocketClient();
         boolean apiInvocationFailed = false;
         try {

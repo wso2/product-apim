@@ -88,7 +88,7 @@ passthru_https.sender.ssl_profile.interval = 6000
 period = "1m"
 
 [database.local]
-url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1"
 
 [[event_listener]]
 id = "token_revocation"
@@ -110,3 +110,10 @@ remote_tracer.enable = true
 remote_tracer.name = "jaeger"
 remote_tracer.hostname = "localhost"
 remote_tracer.port = 14250
+
+[encryption]
+key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
+
+[[oauth.extensions.token_types]]
+name = "JWT"
+issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"

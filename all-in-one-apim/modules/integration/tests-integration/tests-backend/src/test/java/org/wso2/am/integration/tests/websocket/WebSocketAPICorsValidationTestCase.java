@@ -52,7 +52,6 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;

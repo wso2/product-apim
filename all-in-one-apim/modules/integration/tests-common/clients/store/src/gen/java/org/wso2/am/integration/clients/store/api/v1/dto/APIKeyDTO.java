@@ -29,13 +29,40 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 */
 
 public class APIKeyDTO {
+        public static final String SERIALIZED_NAME_KEY_NAME = "keyName";
+        @SerializedName(SERIALIZED_NAME_KEY_NAME)
+            private String keyName;
+
         public static final String SERIALIZED_NAME_APIKEY = "apikey";
         @SerializedName(SERIALIZED_NAME_APIKEY)
             private String apikey;
 
-        public static final String SERIALIZED_NAME_VALIDITY_TIME = "validityTime";
-        @SerializedName(SERIALIZED_NAME_VALIDITY_TIME)
-            private Integer validityTime;
+        public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
+        @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
+            private Integer validityPeriod;
+
+
+        public APIKeyDTO keyName(String keyName) {
+        
+        this.keyName = keyName;
+        return this;
+        }
+
+    /**
+        * API Key name
+    * @return keyName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Test_Key", value = "API Key name")
+    
+    public String getKeyName() {
+        return keyName;
+    }
+
+
+    public void setKeyName(String keyName) {
+        this.keyName = keyName;
+    }
 
 
         public APIKeyDTO apikey(String apikey) {
@@ -61,26 +88,26 @@ public class APIKeyDTO {
     }
 
 
-        public APIKeyDTO validityTime(Integer validityTime) {
+        public APIKeyDTO validityPeriod(Integer validityPeriod) {
         
-        this.validityTime = validityTime;
+        this.validityPeriod = validityPeriod;
         return this;
         }
 
     /**
-        * Get validityTime
-    * @return validityTime
+        * Get validityPeriod
+    * @return validityPeriod
     **/
         @javax.annotation.Nullable
       @ApiModelProperty(example = "3600", value = "")
     
-    public Integer getValidityTime() {
-        return validityTime;
+    public Integer getValidityPeriod() {
+        return validityPeriod;
     }
 
 
-    public void setValidityTime(Integer validityTime) {
-        this.validityTime = validityTime;
+    public void setValidityPeriod(Integer validityPeriod) {
+        this.validityPeriod = validityPeriod;
     }
 
 
@@ -93,13 +120,14 @@ public class APIKeyDTO {
         return false;
         }
             APIKeyDTO apIKey = (APIKeyDTO) o;
-            return Objects.equals(this.apikey, apIKey.apikey) &&
-            Objects.equals(this.validityTime, apIKey.validityTime);
+            return Objects.equals(this.keyName, apIKey.keyName) &&
+            Objects.equals(this.apikey, apIKey.apikey) &&
+            Objects.equals(this.validityPeriod, apIKey.validityPeriod);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(apikey, validityTime);
+        return Objects.hash(keyName, apikey, validityPeriod);
     }
 
 
@@ -107,8 +135,9 @@ public class APIKeyDTO {
 public String toString() {
 StringBuilder sb = new StringBuilder();
 sb.append("class APIKeyDTO {\n");
+    sb.append("    keyName: ").append(toIndentedString(keyName)).append("\n");
     sb.append("    apikey: ").append(toIndentedString(apikey)).append("\n");
-    sb.append("    validityTime: ").append(toIndentedString(validityTime)).append("\n");
+    sb.append("    validityPeriod: ").append(toIndentedString(validityPeriod)).append("\n");
 sb.append("}");
 return sb.toString();
 }

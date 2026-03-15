@@ -29,6 +29,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 */
 
 public class APIKeyGenerateRequestDTO {
+        public static final String SERIALIZED_NAME_KEY_NAME = "keyName";
+        @SerializedName(SERIALIZED_NAME_KEY_NAME)
+            private String keyName;
+
         public static final String SERIALIZED_NAME_VALIDITY_PERIOD = "validityPeriod";
         @SerializedName(SERIALIZED_NAME_VALIDITY_PERIOD)
             private Integer validityPeriod;
@@ -38,6 +42,29 @@ public class APIKeyGenerateRequestDTO {
             private Object additionalProperties;
 
 
+        public APIKeyGenerateRequestDTO keyName(String keyName) {
+        
+        this.keyName = keyName;
+        return this;
+        }
+
+    /**
+        * API Key name
+    * @return keyName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Test_Key", value = "API Key name")
+    
+    public String getKeyName() {
+        return keyName;
+    }
+
+
+    public void setKeyName(String keyName) {
+        this.keyName = keyName;
+    }
+
+
         public APIKeyGenerateRequestDTO validityPeriod(Integer validityPeriod) {
         
         this.validityPeriod = validityPeriod;
@@ -45,11 +72,11 @@ public class APIKeyGenerateRequestDTO {
         }
 
     /**
-        * Token validity period
+        * API key validity period
     * @return validityPeriod
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "3600", value = "Token validity period")
+      @ApiModelProperty(example = "3600", value = "API key validity period")
     
     public Integer getValidityPeriod() {
         return validityPeriod;
@@ -93,13 +120,14 @@ public class APIKeyGenerateRequestDTO {
         return false;
         }
             APIKeyGenerateRequestDTO apIKeyGenerateRequest = (APIKeyGenerateRequestDTO) o;
-            return Objects.equals(this.validityPeriod, apIKeyGenerateRequest.validityPeriod) &&
+            return Objects.equals(this.keyName, apIKeyGenerateRequest.keyName) &&
+            Objects.equals(this.validityPeriod, apIKeyGenerateRequest.validityPeriod) &&
             Objects.equals(this.additionalProperties, apIKeyGenerateRequest.additionalProperties);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(validityPeriod, additionalProperties);
+        return Objects.hash(keyName, validityPeriod, additionalProperties);
     }
 
 
@@ -107,6 +135,7 @@ public class APIKeyGenerateRequestDTO {
 public String toString() {
 StringBuilder sb = new StringBuilder();
 sb.append("class APIKeyGenerateRequestDTO {\n");
+    sb.append("    keyName: ").append(toIndentedString(keyName)).append("\n");
     sb.append("    validityPeriod: ").append(toIndentedString(validityPeriod)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
 sb.append("}");

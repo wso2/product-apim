@@ -20,7 +20,7 @@
     <parent>
         <artifactId>am-gw-features</artifactId>
         <groupId>org.wso2.am.gw</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -109,6 +109,18 @@
             <version>${semantic-cache.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.semantic-tool-filtering</artifactId>
+            <version>${semantic-tool-filtering.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.content-based-model-router</artifactId>
+            <version>${content-based-model-router.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -116,6 +128,7 @@
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>carbon-p2-plugin</artifactId>
+                <extensions>true</extensions>
                 <executions>
                     <execution>
                         <id>4-p2-feature-generation</id>
@@ -145,6 +158,8 @@
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.url-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.word-count-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-cache</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-tool-filtering</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.content-based-model-router</bundleDef>
                             </bundles>
                         </configuration>
                     </execution>

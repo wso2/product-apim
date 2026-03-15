@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-styles-parent</artifactId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -78,17 +78,12 @@
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.equinox</groupId>
+            <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.equinox.http.servlet</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.equinox</groupId>
-            <artifactId>org.eclipse.equinox.http.helper</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.equinox</groupId>
+            <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.equinox.jsp.jasper</artifactId>
         </dependency>
 

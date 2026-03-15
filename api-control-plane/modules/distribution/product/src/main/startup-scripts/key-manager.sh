@@ -234,9 +234,9 @@ fi
 # ---------- Handle the SSL Issue with proper JDK version --------------------
 java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
 java_version_formatted=$(echo "$java_version" | awk -F. '{printf("%02d%02d",$1,$2);}')
-if [ $java_version_formatted -lt 1100 ] || [ $java_version_formatted -gt 2100 ]; then
+if [ $java_version_formatted -lt 2100 ]; then
    echo " Starting WSO2 Carbon (in unsupported JDK)"
-   echo " [ERROR] CARBON is supported only between JDK 11 and JDK 21"
+   echo " [ERROR] WSO2 API Manager requires a minimum of JDK 21."
 fi
 
 CARBON_XBOOTCLASSPATH=""
@@ -334,6 +334,8 @@ cleanup() {
 }
 trap 'cleanup' EXIT INT
 
+"$JAVACMD" -cp "$CARBON_HOME/bin/*" org.wso2.carbon.apimgt.encryption.key.generator.EncryptionKeyGenerator "$CARBON_HOME/repository/conf"
+
 while [ "$status" = "$START_EXIT_STATUS" ]
 do
     $JAVACMD \
@@ -342,6 +344,7 @@ do
     -XX:+HeapDumpOnOutOfMemoryError \
     -XX:HeapDumpPath="$CARBON_HOME/repository/logs/heap-dump.hprof" \
     $JAVA_OPTS \
+    --enable-native-access=ALL-UNNAMED \
     -Dcom.sun.management.jmxremote \
     -classpath "$CARBON_CLASSPATH" \
     $JAVA_VER_BASED_OPTS \

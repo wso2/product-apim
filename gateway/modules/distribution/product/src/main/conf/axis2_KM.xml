@@ -440,9 +440,6 @@
     <!--             Global Engaged Modules                -->
     <!-- ================================================= -->
 
-    <!-- Comment this out to disable Addressing -->
-    <module ref="addressing"/>
-
     <!--
     Uncomment out the following entry if SOAP (text/xml and application/soap+xml) messages
     are processed through the message relay.

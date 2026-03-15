@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wso2.am.acp</groupId>
         <artifactId>am-acp-p2-profile-gen-parent</artifactId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -102,6 +102,7 @@
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>carbon-p2-plugin</artifactId>
+                <extensions>true</extensions>
                 <executions>
                     <execution>
                         <id>2-p2-repo-generation</id>
@@ -118,6 +119,9 @@
                             <featureArtifacts>
                                 <featureArtifactDef>
                                     org.wso2.carbon.commons:org.wso2.carbon.tenant.mgt.common.feature:${carbon.commons.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.commons:org.wso2.carbon.uuid.generator.feature:${carbon.commons.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon:org.wso2.carbon.core.feature:${carbon.kernel.version}
@@ -592,6 +596,10 @@
                                 <featureArtifactDef>
                                     org.wso2.km.ext.okta:okta.key.manager.feature:${okta.keymanager.feature.version}
                                 </featureArtifactDef>
+                                <!-- Asgardeo KeyManager Feature-->
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.asgardeo:asgardeo.key.manager.feature:${asgardeo.keymanager.feature.version}
+                                </featureArtifactDef>
                                 <!-- Azure KeyManager Feature -->
                                 <featureArtifactDef>
                                     org.wso2.km.ext.azure:feature:${azure.keymanager.feature.version}
@@ -749,6 +757,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.feature.group</id>
+                                    <version>${carbon.commons.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uuid.generator.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
@@ -1289,6 +1301,10 @@
                                 <feature>
                                     <id>okta.key.manager.feature.group</id>
                                     <version>${okta.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>asgardeo.key.manager.feature.group</id>
+                                    <version>${asgardeo.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>azure.key.manager.feature.group</id>
