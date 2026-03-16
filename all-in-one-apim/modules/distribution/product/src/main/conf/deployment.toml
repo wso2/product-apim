@@ -50,7 +50,7 @@ key_password =  "wso2carbon"
 #key_password =  "wso2carbon"
 
 [apim]
-gateway_type = "Regular,APK,AWS,Azure,Kong,Envoy"
+gateway_type = "Regular,APK,AWS,Azure,Kong,Envoy,Platform"
 
 [[apim.gateway.environment]]
 name = "Default"
@@ -69,6 +69,14 @@ http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 websub_event_receiver_http_endpoint = "http://localhost:9021"
 websub_event_receiver_https_endpoint = "https://localhost:8021"
+
+# Connect self-hosted platform gateways to this APIM.
+# [[apim.platform_gateway.connect]]
+# registration_token = ""
+# name = ""
+# display_name = ""
+# description = ""
+# url = ""
 
 [apim.sync_runtime_artifacts.gateway]
 gateway_labels =["Default"]
