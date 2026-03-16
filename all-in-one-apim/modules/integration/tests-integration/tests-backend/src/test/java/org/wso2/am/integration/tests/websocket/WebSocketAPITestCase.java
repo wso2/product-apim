@@ -543,8 +543,32 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke API using OAuth access token when OAuth authentication is not enabled",
+    @Test(description = "Invoke WebSocket API using opaque API key",
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKey")
+    public void testWebSocketAPIInvocationUsingOpaqueAPIKey() throws Exception {
+
+        // Start at a fresh minute to avoid carrying over websocket throttle counters from previous tests.
+        waitUntilClockMinute();
+
+        String opaqueApiKey = restAPIStore.generateAPIKeys(appId, "PRODUCTION", 3600, null, null,
+                "testWebSocketAPIInvocationUsingOpaqueAPIKey").getApikey();
+        Assert.assertNotNull(opaqueApiKey, "Opaque API key generation failed");
+        WebSocketClient client = new WebSocketClient();
+        try {
+            invokeAPI(client, opaqueApiKey, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
+            // Run the query-param invocation in a fresh throttle window.
+            waitUntilClockMinute();
+            invokeAPI(client, opaqueApiKey, AUTH_IN.APIKEY_QUERY, null, apiEndPoint);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using OAuth access token when OAuth authentication is not enabled",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingOpaqueAPIKey")
     public void testWebSocketAPIInvocationUsingOAuthWhenOAuthAuthenticationDisabled() throws Exception {
 
         WebSocketClient client = new WebSocketClient();
@@ -634,8 +658,30 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke API using an API key restricted for another IP",
+    @Test(description = "Invoke WebSocket API using opaque API key generated with IP restrictions",
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingIPRestrictions")
+    public void testWebSocketAPIInvocationUsingOpaqueAPIKeyWithIPRestrictions() throws Exception {
+
+        // Start at a fresh minute to avoid carrying over websocket throttle counters from previous tests.
+        waitUntilClockMinute();
+
+        String opaqueApiKey = restAPIStore.generateAPIKeys(appId, "PRODUCTION", 3600,
+                "192.168.1.2, 152.12.0.0/13, 2002:eb8::2, 1001:ab8::/44, 127.0.0.1", null,
+                "testWebSocketAPIInvocationUsingOpaqueAPIKeyWithIPRestrictions").getApikey();
+        Assert.assertNotNull(opaqueApiKey, "Opaque API key generation failed");
+        WebSocketClient client = new WebSocketClient();
+        try {
+            invokeAPI(client, opaqueApiKey, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using an API key restricted for another IP",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingOpaqueAPIKeyWithIPRestrictions")
     public void testWebSocketAPIInvocationUsingAPIKeyRestrictedForAnotherIP() throws Exception {
 
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
@@ -703,8 +749,32 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke API using API key restricted for another Referer",
+    @Test(description = "Invoke WebSocket API using opaque API key generated with Referer restrictions",
             dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingRefererRestrictions")
+    public void testWebSocketAPIInvocationUsingOpaqueAPIKeyWithRefererRestrictions() throws Exception {
+
+        // Start at a fresh minute to avoid carrying over websocket throttle counters from previous tests.
+        waitUntilClockMinute();
+        
+        String opaqueApiKey = restAPIStore.generateAPIKeys(appId, "PRODUCTION", 3600, null,
+                "www.example.com/path, sub.example.com/*, *.example.com/*, www.wso2.com",
+                "testWebSocketAPIInvocationUsingOpaqueAPIKeyWithRefererRestrictions").getApikey();
+        Assert.assertNotNull(opaqueApiKey, "Opaque API key generation failed");
+        HttpHeaders refererHeaders = new DefaultHttpHeaders();
+        refererHeaders.add("Referer", "www.wso2.com");
+        WebSocketClient client = new WebSocketClient();
+        try {
+            invokeAPI(client, opaqueApiKey, AUTH_IN.APIKEY_HEADER, refererHeaders, apiEndPoint);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using API key restricted for another Referer",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingOpaqueAPIKeyWithRefererRestrictions")
     public void testWebSocketAPIInvocationUsingAPIKeyGeneratedForAnotherReferer() throws Exception {
 
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
