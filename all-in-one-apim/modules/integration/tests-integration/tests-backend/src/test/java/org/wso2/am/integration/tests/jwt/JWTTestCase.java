@@ -371,6 +371,33 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test invoking API key-only secured API with opaque key when back end " +
+            "JWT generation is enabled")
+    public void testOpaqueAPIKeyOnlySecuredAPIInvocation() throws Exception {
+        String opaqueApiKey = restAPIStore.generateAPIKeys(apiKeyApplicationId, "PRODUCTION", 3600, null, null,
+                "testOpaqueAPIKeyOnlySecuredAPIInvocation").getApikey();
+        assertNotNull(opaqueApiKey, "Opaque API Key generation failed");
+
+        // Retry until the opaque key propagates to the gateway cache
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(api2Context, apiVersion));
+        get.addHeader("apikey", opaqueApiKey);
+        HttpResponse response;
+        int counter = 1;
+        do {
+            Thread.sleep(1000L);
+            response = httpclient.execute(get);
+            counter++;
+        } while (response.getStatusLine().getStatusCode() != Response.Status.OK.getStatusCode() && counter < 25);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation with opaque key");
+
+        //check JWT headers
+        Header[] responseHeaders = response.getAllHeaders();
+        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
+    }
+
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for API Key Based App")
     public void testEnableJWTAndClaimsForAPIKeyApp() throws Exception {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(apiKeyApplicationId);
@@ -428,6 +455,32 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         assertTrue("JWT claim API context not received " + claim, claim.contains(apiContext));
         // verify wrong claims
         BackendJWTUtil.verifyWrongClaims(jsonObject);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for API Key Based App with opaque key")
+    public void testOpaqueAPIKeyForAPIKeyApp() throws Exception {
+        String opaqueApiKey = restAPIStore.generateAPIKeys(apiKeyApplicationId, "PRODUCTION", 3600, null, null,
+                "testOpaqueAPIKeyForAPIKeyApp").getApikey();
+        assertNotNull(opaqueApiKey, "Opaque API Key generation failed");
+
+        // Retry until the opaque key propagates to the gateway cache
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
+        get.addHeader("apikey", opaqueApiKey);
+        HttpResponse response;
+        int counter = 1;
+        do {
+            Thread.sleep(1000L);
+            response = httpclient.execute(get);
+            counter++;
+        } while (response.getStatusLine().getStatusCode() != Response.Status.OK.getStatusCode() && counter < 25);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation with opaque key");
+
+        //check JWT assertion header is present
+        Header[] responseHeaders = response.getAllHeaders();
+        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation with Client Credentials Grant Type")

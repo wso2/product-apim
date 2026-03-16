@@ -42,6 +42,8 @@ import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -516,6 +518,21 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(apiKeySecuredAPIContext,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
+
+        // Opaque API key — retry until the key propagates to the gateway cache
+        String opaqueApiKey = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, null, "testInvocationWithApiKeys").getApikey();
+        Map<String, String> opaqueRequestHeaders = new HashMap<>();
+        opaqueRequestHeaders.put("accept", "text/xml");
+        opaqueRequestHeaders.put("apikey", opaqueApiKey);
+        HttpResponse opaqueResponse;
+        int opaqueCounter = 1;
+        do {
+            Thread.sleep(1000L);
+            opaqueResponse = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(apiKeySecuredAPIContext,
+                    API_VERSION_1_0_0) + API_END_POINT_METHOD, opaqueRequestHeaders);
+            opaqueCounter++;
+        } while (opaqueResponse.getResponseCode() != HttpStatus.SC_OK && opaqueCounter < 25);
+        Assert.assertEquals(opaqueResponse.getResponseCode(), HttpStatus.SC_OK);
     }
 
     @Test(description = "Testing the invocation with Basic Auth for APIKey Only API", dependsOnMethods = {
@@ -822,6 +839,35 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders5);
         Assert.assertEquals(response5.getResponseCode(), HttpStatus.SC_FORBIDDEN);
+
+        // Opaque API key with the same IP restrictions — retry first permitted-IP call until key propagates
+        String opaqueApiKeyWithIP = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, permittedIP, null, "testInvocationWithApiKeysWithIPCondition").getApikey();
+        HttpResponse opaqueResponse1;
+        int opaqueCounter = 1;
+        do {
+            Thread.sleep(1000L);
+            opaqueResponse1 = HTTPSClientUtils.doGet(
+                    getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                    createRequestHeadersForAPIKey(opaqueApiKeyWithIP, "152.23.5.6", null));
+            opaqueCounter++;
+        } while (opaqueResponse1.getResponseCode() != HttpStatus.SC_OK && opaqueCounter < 25);
+        Assert.assertEquals(opaqueResponse1.getResponseCode(), HttpStatus.SC_OK);
+        HttpResponse opaqueResponse2 = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                createRequestHeadersForAPIKey(opaqueApiKeyWithIP, "192.168.1.6", null));
+        Assert.assertEquals(opaqueResponse2.getResponseCode(), HttpStatus.SC_OK);
+        HttpResponse opaqueResponse3 = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                createRequestHeadersForAPIKey(opaqueApiKeyWithIP, "192.168.5.6", null));
+        Assert.assertEquals(opaqueResponse3.getResponseCode(), HttpStatus.SC_FORBIDDEN);
+        HttpResponse opaqueResponse4 = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                createRequestHeadersForAPIKey(opaqueApiKeyWithIP, "2001:c00:0:0:0:0:c:4", null));
+        Assert.assertEquals(opaqueResponse4.getResponseCode(), HttpStatus.SC_OK);
+        HttpResponse opaqueResponse5 = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                createRequestHeadersForAPIKey(opaqueApiKeyWithIP, "2061:c00:0:0:0:0:0:0", null));
+        Assert.assertEquals(opaqueResponse5.getResponseCode(), HttpStatus.SC_FORBIDDEN);
     }
 
     @Test(description = "Testing the invocation with API Keys having Http Referer restriction",
@@ -877,6 +923,31 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders4);
         Assert.assertEquals(response4.getResponseCode(), HttpStatus.SC_OK);
+
+        // Opaque API key with the same referer restrictions — retry first permitted-referer call until key propagates
+        String opaqueApiKeyWithReferer = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, permittedReferer, "testInvocationWithApiKeysWithRefererCondition").getApikey();
+        HttpResponse opaqueRefResponse1;
+        int opaqueCounter = 1;
+        do {
+            Thread.sleep(1000L);
+            opaqueRefResponse1 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
+                    API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                    createRequestHeadersForAPIKey(opaqueApiKeyWithReferer, null, "www.abc.com/path"));
+            opaqueCounter++;
+        } while (opaqueRefResponse1.getResponseCode() != HttpStatus.SC_OK && opaqueCounter < 25);
+        Assert.assertEquals(opaqueRefResponse1.getResponseCode(), HttpStatus.SC_OK);
+        HttpResponse opaqueRefResponse2 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                createRequestHeadersForAPIKey(opaqueApiKeyWithReferer, null, "www.abc.com/path2"));
+        Assert.assertEquals(opaqueRefResponse2.getResponseCode(), HttpStatus.SC_FORBIDDEN);
+        HttpResponse opaqueRefResponse3 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                createRequestHeadersForAPIKey(opaqueApiKeyWithReferer, null, "sub.cds.com/path1/path2"));
+        Assert.assertEquals(opaqueRefResponse3.getResponseCode(), HttpStatus.SC_OK);
+        HttpResponse opaqueRefResponse4 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                createRequestHeadersForAPIKey(opaqueApiKeyWithReferer, null, "example.gef.com/path1"));
+        Assert.assertEquals(opaqueRefResponse4.getResponseCode(), HttpStatus.SC_OK);
     }
 
     @Test(description = "Testing the invocation of API Secured only with API Keys", dependsOnMethods = {
@@ -930,6 +1001,36 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched when invoke api with sandbox endpoint");
         Assert.assertTrue(response2.getData().contains(API_RESPONSE_DATA),
                 "Response data mismatched when invoke with sandbox endpoint" + " Response Data:" + response2.getData()
+                        + ". Expected Response Data: " + API_RESPONSE_DATA);
+
+        // Opaque API keys — retry until keys propagate to gateway cache
+        String opaqueProductionApiKey = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, null, "testInvocationWithApiKeysOnly").getApikey();
+        HttpResponse opaqueProductionResponse;
+        int opaqueCounter = 1;
+        do {
+            Thread.sleep(1000L);
+            opaqueProductionResponse = HTTPSClientUtils
+                    .doGet(getAPIInvocationURLHttps(apiKeySecuredAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                            createRequestHeadersForAPIKey(opaqueProductionApiKey, null, null));
+            opaqueCounter++;
+        } while (opaqueProductionResponse.getResponseCode() != HTTP_RESPONSE_CODE_OK && opaqueCounter < 25);
+        Assert.assertEquals(opaqueProductionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api with opaque production key");
+
+        String opaqueSandboxApiKey = restAPIStore.generateAPIKeys(applicationId, "SANDBOX", 3600, null, null, "testInvocationWithApiKeysOnly").getApikey();
+        HttpResponse opaqueSandboxResponse;
+        int opaqueSandboxCounter = 1;
+        do {
+            Thread.sleep(1000L);
+            opaqueSandboxResponse = HTTPSClientUtils
+                    .doGet(getAPIInvocationURLHttps(apiKeySecuredAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                            createRequestHeadersForAPIKey(opaqueSandboxApiKey, null, null));
+            opaqueSandboxCounter++;
+        } while (opaqueSandboxResponse.getResponseCode() != HTTP_RESPONSE_CODE_OK && opaqueSandboxCounter < 25);
+        Assert.assertEquals(opaqueSandboxResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api with opaque sandbox key");
+        Assert.assertTrue(opaqueSandboxResponse.getData().contains(API_RESPONSE_DATA),
+                "Response data mismatched when invoke with opaque sandbox key" + " Response Data:" + opaqueSandboxResponse.getData()
                         + ". Expected Response Data: " + API_RESPONSE_DATA);
 
     }
@@ -998,6 +1099,42 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertFalse(isApiKeyValid, "API Key revocation failed. " +
                 "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_UNAUTHORIZED +
                 ", but got " + invocationResponseAfterRevoked.getResponseCode());
+
+        // Opaque API key revocation
+        String opaqueApiKey = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, null, "testInvocationWithRevokedApiKeys").getApikey();
+        APIKeyListDTO apiKeyListDTO = restAPIStore.getAPIKeys(applicationId, "PRODUCTION");
+        String opaqueApiKeyUUID = apiKeyListDTO.getList().stream()
+                .filter(k -> "testInvocationWithRevokedApiKeys".equals(k.getKeyName()))
+                .map(APIKeyInfoDTO::getKeyUUID)
+                .findFirst()
+                .orElseThrow(() -> new APIManagerIntegrationTestException("Could not find API key with name 'testInvocationWithRevokedApiKeys'"));
+        restAPIStore.revokeAPIKeyByKeyUUID(applicationId, "PRODUCTION", opaqueApiKeyUUID);
+        boolean isOpaqueApiKeyValid = true;
+        HttpResponse invocationOpaqueAfterRevoked = null;
+        int opaqueCounter = 1;
+        Map<String, String> opaqueRequestHeader = new HashMap<>();
+        opaqueRequestHeader.put("apikey", opaqueApiKey);
+        opaqueRequestHeader.put("accept", "text/xml");
+        do {
+            Thread.sleep(1000L);
+            invocationOpaqueAfterRevoked = HTTPSClientUtils.doGet(
+                    getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                    opaqueRequestHeader);
+            int opaqueResponseCode = invocationOpaqueAfterRevoked.getResponseCode();
+            if (opaqueResponseCode == HTTP_RESPONSE_CODE_UNAUTHORIZED) {
+                isOpaqueApiKeyValid = false;
+            } else if (opaqueResponseCode == HTTP_RESPONSE_CODE_OK) {
+                isOpaqueApiKeyValid = true;
+            } else {
+                throw new APIManagerIntegrationTestException("Unexpected response received when invoking the API. " +
+                        "Response received :" + invocationOpaqueAfterRevoked.getData() + ":" +
+                        invocationOpaqueAfterRevoked.getResponseMessage());
+            }
+            opaqueCounter++;
+        } while (isOpaqueApiKeyValid && opaqueCounter < 25);
+        Assert.assertFalse(isOpaqueApiKeyValid, "Opaque API Key revocation failed. " +
+                "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_UNAUTHORIZED +
+                ", but got " + invocationOpaqueAfterRevoked.getResponseCode());
     }
 
     @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
@@ -1094,6 +1231,12 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response = invokeApiWithInternalKey(mutualSSLWithOAuthAPI, API_VERSION_1_0_0,
                 API_END_POINT_METHOD, apiKey);
         Assert.assertEquals(response.getResponseCode(), 401);
+
+        // Opaque API key used as internal key — should also return 401
+        String opaqueApiKey = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, null, "testInvokeAPIKeyAsInternalKeyNegative").getApikey();
+        HttpResponse opaqueResponse = invokeApiWithInternalKey(mutualSSLWithOAuthAPI, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, opaqueApiKey);
+        Assert.assertEquals(opaqueResponse.getResponseCode(), 401);
     }
 
     @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
@@ -1186,6 +1329,16 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 getAPIInvocationURLHttps(basicAuthSecuredAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeader);
         Assert.assertEquals(response.getResponseCode(), 401);
+
+        // Opaque API key on basic-auth-only API — should also return 401
+        String opaqueApiKey = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, null, "testInvokeAPIKeyForBasicOauthAPINegative").getApikey();
+        Map<String, String> opaqueRequestHeader = new HashMap<>();
+        opaqueRequestHeader.put("apikey", opaqueApiKey);
+        opaqueRequestHeader.put("accept", "text/xml");
+        HttpResponse opaqueResponse = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(basicAuthSecuredAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                opaqueRequestHeader);
+        Assert.assertEquals(opaqueResponse.getResponseCode(), 401);
     }
 
     @Test(description = "Testing the User Token Invocation and Password Reset", dependsOnMethods = {
@@ -1335,6 +1488,35 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertFalse(isApiKeyValid, "API Key internal subscription validation failed. " +
                 "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_FORBIDDEN +
                 ", but got " + invocationResponseAfterSubscriptionRemoved.getResponseCode());
+
+        // Opaque API key — subscription already removed, should also be rejected
+        String opaqueApiKey = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, null, "testInvocationWithApiKeysWithoutSubscription").getApikey();
+        boolean isOpaqueApiKeyValid = true;
+        HttpResponse opaqueInvocationResponse = null;
+        int opaqueCounter = 1;
+        Map<String, String> opaqueRequestHeader = new HashMap<>();
+        opaqueRequestHeader.put("apikey", opaqueApiKey);
+        opaqueRequestHeader.put("accept", "text/xml");
+        do {
+            Thread.sleep(1000L);
+            opaqueInvocationResponse = HTTPSClientUtils.doGet(
+                    getAPIInvocationURLHttps(apiKeySecuredAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                    opaqueRequestHeader);
+            int opaqueResponseCode = opaqueInvocationResponse.getResponseCode();
+            if (opaqueResponseCode == HTTP_RESPONSE_CODE_FORBIDDEN) {
+                isOpaqueApiKeyValid = false;
+            } else if (opaqueResponseCode == HTTP_RESPONSE_CODE_OK) {
+                isOpaqueApiKeyValid = true;
+            } else {
+                throw new APIManagerIntegrationTestException("Unexpected response received when invoking the API. " +
+                        "Response received :" + opaqueInvocationResponse.getData() + ":" +
+                        opaqueInvocationResponse.getResponseMessage());
+            }
+            opaqueCounter++;
+        } while (isOpaqueApiKeyValid && opaqueCounter < 5);
+        Assert.assertFalse(isOpaqueApiKeyValid, "Opaque API Key internal subscription validation failed. " +
+                "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_FORBIDDEN +
+                ", but got " + opaqueInvocationResponse.getResponseCode());
     }
 
     @Test(description = "Testing the WWW-Authorization header when invocating an API with API Keys using invalid Authorization header",

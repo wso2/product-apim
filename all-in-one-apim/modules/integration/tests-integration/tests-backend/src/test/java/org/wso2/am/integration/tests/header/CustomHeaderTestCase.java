@@ -24,7 +24,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -183,8 +182,39 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Invoke an API with custom API Key header",
+    @Test(groups = {"wso2.am"}, description = "Invoke an API with default API Key header using opaque key",
             dependsOnMethods = "testInvokeAPIWIthDefaultApiKeyHeader")
+    public void testInvokeAPIWIthDefaultApiKeyHeaderWithOpaqueKey() throws Exception {
+
+        String opaqueApiKey = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, null,
+                "testInvokeAPIWIthDefaultApiKeyHeaderWithOpaqueKey").getApikey();
+        assertNotNull(opaqueApiKey, "Opaque API Key generation failed");
+
+        // Retry until the opaque key propagates to the gateway cache
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("accept", APPLICATION_JSON_CONTENT);
+        requestHeaders1.put(DEFAULT_API_KEY_HEADER, opaqueApiKey);
+        HttpResponse apiResponse1;
+        int counter = 1;
+        do {
+            Thread.sleep(1000L);
+            apiResponse1 = HttpRequestUtil.doGet(invocationUrl, requestHeaders1);
+            counter++;
+        } while (apiResponse1.getResponseCode() != Response.Status.OK.getStatusCode() && counter < 25);
+        assertEquals(apiResponse1.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+
+        // Test whether the 401 Unauthorized Response is returned with incorrect API Key header
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("accept", APPLICATION_JSON_CONTENT);
+        requestHeaders2.put(CUSTOM_API_KEY_HEADER, opaqueApiKey);
+        HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
+        assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke an API with custom API Key header",
+            dependsOnMethods = "testInvokeAPIWIthDefaultApiKeyHeaderWithOpaqueKey")
     public void testInvokeAPIWIthCustomApiKeyHeader() throws Exception {
 
         // Genarate API Keys for the application
@@ -224,6 +254,37 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         Map<String, String> requestHeaders2 = new HashMap<>();
         requestHeaders2.put("accept", APPLICATION_JSON_CONTENT);
         requestHeaders2.put(DEFAULT_API_KEY_HEADER, apiKey);
+        HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
+        assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke an API with custom API Key header using opaque key",
+            dependsOnMethods = "testInvokeAPIWIthCustomApiKeyHeader")
+    public void testInvokeAPIWIthCustomApiKeyHeaderWithOpaqueKey() throws Exception {
+
+        String opaqueApiKey = restAPIStore.generateAPIKeys(applicationId, "PRODUCTION", 3600, null, null,
+                "testInvokeAPIWIthCustomApiKeyHeaderWithOpaqueKey").getApikey();
+        assertNotNull(opaqueApiKey, "Opaque API Key generation failed");
+
+        // Retry until the opaque key propagates to the gateway cache
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("accept", APPLICATION_JSON_CONTENT);
+        requestHeaders1.put(CUSTOM_API_KEY_HEADER, opaqueApiKey);
+        HttpResponse apiResponse1;
+        int counter = 1;
+        do {
+            Thread.sleep(1000L);
+            apiResponse1 = HttpRequestUtil.doGet(invocationUrl, requestHeaders1);
+            counter++;
+        } while (apiResponse1.getResponseCode() != Response.Status.OK.getStatusCode() && counter < 25);
+        assertEquals(apiResponse1.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+
+        // Test whether the 401 Unauthorized Response is returned with default API Key header
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("accept", APPLICATION_JSON_CONTENT);
+        requestHeaders2.put(DEFAULT_API_KEY_HEADER, opaqueApiKey);
         HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
         assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");

@@ -17,6 +17,8 @@
 package org.wso2.am.integration.test.impl;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -604,9 +606,14 @@ public class RestAPIStoreImpl {
     }
 
     public APIKeyListDTO getAPIKeys(String applicationId, String keyType) throws ApiException {
-        ApiResponse<APIKeyListDTO> response = apiKeysApi.getAppBoundAPIKeysWithHttpInfo(applicationId, keyType, null);
+        okhttp3.Call call = apiKeysApi.getAppBoundAPIKeysCall(applicationId, keyType, null, null);
+        Type listType = new TypeToken<List<APIKeyInfoDTO>>(){}.getType();
+        ApiResponse<List<APIKeyInfoDTO>> response = apiKeysApi.getApiClient().execute(call, listType);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
-        return response.getData();
+        APIKeyListDTO result = new APIKeyListDTO();
+        result.setList(response.getData());
+        result.setCount(response.getData() != null ? response.getData().size() : 0);
+        return result;
     }
 
     public void revokeAPIKey(String applicationId, String apiKey) throws ApiException {
