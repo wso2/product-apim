@@ -28,6 +28,23 @@ file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
 
+[apim]
+gateway_type = "Regular,APK,AWS"
+
+[[apim.gateway.environment]]
+name = "Default"
+type = "hybrid"
+provider = "wso2"
+display_in_api_console = true
+description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:${mgt.transport.https.port}/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
+
 # key manager implementation
 #[apim.key_manager]
 #service_url = "https://localhost:9443/services/"
@@ -89,9 +106,12 @@ allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","apikey","Internal-Key"]
 allow_credentials = false
 
+[encryption]
+key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
+
 [apim.ai.embedding_provider]
 type = "mistral"
 [apim.ai.embedding_provider.properties]
-apikey = "<your-mistral-api-key>"
-embedding_endpoint = "https://api.mistral.ai/v1/embeddings"
+apikey = "mock-mistral-api-key"
+embedding_endpoint = "http://localhost:18080/mock-ai/v1/embeddings"
 embedding_model = "mistral-embed"
