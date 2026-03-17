@@ -175,6 +175,34 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched when api invocation");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Invoke API with opaque API key for JWT decoding test",
+            dependsOnMethods = "testJWTDecodingforCustomApplication")
+    public void testJWTDecodingforCustomApplicationWithOpaqueKey() throws Exception {
+
+        String opaqueApiKey = restAPIStore.generateAPIKeys(decodingApplicationId, "PRODUCTION", 3600, null, null,
+                "testJWTDecodingforCustomApplicationWithOpaqueKey").getApikey();
+
+        // Retry until the opaque key propagates to the gateway cache
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet getRequest = new HttpGet(getAPIInvocationURLHttp(decodingApiContext, apiVersion));
+        getRequest.addHeader("apikey", opaqueApiKey);
+        HttpResponse firstResponse;
+        int counter = 1;
+        do {
+            Thread.sleep(1000L);
+            firstResponse = httpClient.execute(getRequest);
+            counter++;
+        } while (firstResponse.getStatusLine().getStatusCode() != Response.Status.OK.getStatusCode() && counter < 25);
+        Assert.assertEquals(firstResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation with opaque key");
+
+        // Repeat to verify consistent behaviour (mirrors JWT test pattern)
+        Thread.sleep(1000);
+        HttpResponse secondResponse = httpClient.execute(getRequest);
+        Assert.assertEquals(secondResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation with opaque key (second call)");
+    }
+
     @AfterClass(alwaysRun = true) public void destroy() throws Exception {
         userManagementClient.deleteUser(enduserName);
         restAPIStore.deleteApplication(decodingApplicationId);

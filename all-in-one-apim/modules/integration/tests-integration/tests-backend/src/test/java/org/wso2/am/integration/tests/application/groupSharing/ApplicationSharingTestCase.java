@@ -28,6 +28,8 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -155,6 +157,32 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         String apiKey = new JWTGenerator().generateToken(tokenInfo);
         //Revoke api key by user 2
         restAPIStoreClientUser2.revokeAPIKey(userOneSharedApplicationId, apiKey);
+    }
+
+    @Test(groups = "wso2.am", description = "Generate opaque API key from user 1 and make sure that user 2 can revoke the key",
+            dependsOnMethods = "testAPIKeyRevocationBySharedUser")
+    public void testOpaqueAPIKeyRevocationBySharedUser() throws Exception {
+        final String keyName = "testOpaqueAPIKeyRevocationBySharedUser";
+
+        //Check for application availability
+        ApplicationDTO applicationDTO = restAPIStoreClientUser1.getApplicationById(userOneSharedApplicationId);
+        Assert.assertNotNull(applicationDTO);
+        Assert.assertEquals(applicationDTO.getName(), SHARED_APPLICATION_NAME);
+
+        //Generate opaque api key by user 1
+        String opaqueApiKey = restAPIStoreClientUser1.generateAPIKeys(userOneSharedApplicationId, "PRODUCTION", 3600,
+                null, null, keyName).getApikey();
+        Assert.assertNotNull(opaqueApiKey, "Opaque API Key generation failed");
+
+        //Revoke opaque api key by user 2 via key UUID.
+        APIKeyListDTO apiKeyListDTO = restAPIStoreClientUser2.getAPIKeys(userOneSharedApplicationId, "PRODUCTION");
+        String opaqueApiKeyUUID = apiKeyListDTO.getList().stream()
+                .filter(k -> keyName.equals(k.getKeyName()))
+                .map(APIKeyInfoDTO::getKeyUUID)
+                .findFirst()
+                .orElse(null);
+        Assert.assertNotNull(opaqueApiKeyUUID, "Could not find API key UUID for generated opaque API key");
+        restAPIStoreClientUser2.revokeAPIKeyByKeyUUID(userOneSharedApplicationId, "PRODUCTION", opaqueApiKeyUUID);
     }
 
     private void createUsersAndApplications() throws Exception {
