@@ -50,7 +50,7 @@ key_password =  "wso2carbon"
 #key_password =  "wso2carbon"
 
 [apim]
-gateway_type = "Regular,APK,AWS,Azure,Kong,Envoy,Platform"
+gateway_type = "Regular,APK,AWS,Azure,Kong,Envoy,Universal"
 
 [[apim.gateway.environment]]
 name = "Default"
