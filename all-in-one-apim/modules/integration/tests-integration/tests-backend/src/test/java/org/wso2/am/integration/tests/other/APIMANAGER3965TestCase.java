@@ -89,7 +89,8 @@ public class APIMANAGER3965TestCase extends APIManagerLifecycleBaseTest {
         assertEquals(serviceResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                      "Response code mismatched when api invocation");
         assertEquals(accessControlAllowOrigin, "*", "Access Control allow origin values get mismatched in option Call");
-        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction,Authorization",
+        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction," +
+                        "Authorization,ApiKey",
                      "Access Control allow Headers values get mismatched in option Call");
         assertTrue(accessControlAllowMethods.contains("GET")
                    && !accessControlAllowMethods.contains("POST")
@@ -161,7 +162,8 @@ public class APIMANAGER3965TestCase extends APIManagerLifecycleBaseTest {
         assertEquals(accessControlAllowOrigin, "http://localhost:8080",
                      "Access Control allow origin values get mismatched in option " +
                      "Call");
-        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction,Authorization",
+        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction," +
+                        "Authorization,ApiKey",
                      "Access Control allow Headers values get mismatched in option Call");
         assertTrue(accessControlAllowMethods.contains("GET")
                    && !accessControlAllowMethods.contains("POST")
