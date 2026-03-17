@@ -1287,7 +1287,7 @@
         <carbon.apimgt.ui.version>9.3.146</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.54</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.56</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1300,7 +1300,7 @@
         <carbon.governance.version>4.9.3</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.11.7</carbon.kernel.version>
+        <carbon.kernel.version>4.11.8</carbon.kernel.version>
 
         <cipher.tool.version>1.1.29</cipher.tool.version>
 
@@ -1311,11 +1311,11 @@
         <carbon.mediation.version>4.8.8</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.27.9</carbon.identity.version>
+        <carbon.identity.version>5.27.10</carbon.identity.version>
         <carbon.identity.governance.version>1.14.1</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.0</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.14.4</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.14.5</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.9.0</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.10.0</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.12.1</carbon.identity-inbound-auth-openid.version>
