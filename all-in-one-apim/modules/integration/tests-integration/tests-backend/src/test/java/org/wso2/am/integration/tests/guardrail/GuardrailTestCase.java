@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.guardrail;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +36,9 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.AIServiceProviderResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -42,6 +46,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.jwt.JWTGenerator;
+import org.wso2.am.admin.clients.mediation.SynapseConfigAdminClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -49,6 +54,7 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.FileManager;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.nio.file.Files;
@@ -60,6 +66,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +121,11 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private static final String EMBEDDING_MODEL_NAME = "mistral-embed";
     private static final String REQUESTED_TOOL_TEXT = "Get current weather and 7-day forecast for a location.";
     private static final String REQUESTED_QUERY_TEXT_SNIPPET = "corporate retreat in Denver";
+    private static final String SEMANTIC_TOOL_FILTERING_POLICY_NAME = "SemanticToolFiltering";
+    private static final String SEMANTIC_TOOL_FILTERING_POLICY_VERSION = "v1.0";
+    private static final String SEMANTIC_TOOL_FILTERING_POLICY_CLASS =
+        "org.wso2.apim.policies.mediation.ai.semantic.tool.filtering.SemanticToolFiltering";
+    private static final int SEMANTIC_TOOL_FILTERING_TOOL_LIMIT = 2;
 
     // -----------------------------------------------------------------------
     // AI service provider constants
@@ -136,6 +148,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private static final String RESPONSE_FILE        = "mistral-response.json";
     private static final String EMBEDDINGS_RESPONSE_FILE = "mockembeddings.json";
     private static final String PROVIDER_CONFIG_FILE = "ai-service-provider-config-no-auth.json";
+    private static final String LOG4J2_PROPERTIES_FILE = "log4j2.properties";
+    private static final String CONFIG_PATH = "repository/conf";
 
     // -----------------------------------------------------------------------
     // Instance variables
@@ -150,9 +164,10 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private String mockEmbeddingsResponse;
     /** JSON payload that the test client sends to the gateway. */
     private String requestPayload;
+    private Map<String, String> policyMap;
     private WireMockServer wireMockServer;
     private int mockPort;
-	private ServerConfigurationManager serverConfigurationManager;
+    private ServerConfigurationManager serverConfigurationManager;
     // -----------------------------------------------------------------------
     // TestNG factory / data-provider
     // -----------------------------------------------------------------------
@@ -178,16 +193,21 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
 
         String sourceTomlPath = resolveGuardrailDeploymentTomlPath();
+    String sourceLog4j2Path = resolveGuardrailLog4j2Path();
         log.info("###===### Applying source deployment.toml: " + sourceTomlPath);
+    log.info("###===### Applying source log4j2.properties: " + sourceLog4j2Path);
 
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(sourceTomlPath));
+    String carbonConfPath = serverConfigurationManager.getCarbonHome() + File.separator + CONFIG_PATH;
+    FileManager.copyFile(new File(sourceLog4j2Path), carbonConfPath + File.separator + LOG4J2_PROPERTIES_FILE);
         serverConfigurationManager.restartGracefully();
 
         resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
+        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
 
         // Load request payload and pre-render the expected response
         requestPayload = readFile(resourcePath + PAYLOAD_FILE);
@@ -236,6 +256,13 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         }
         if (wireMockServer != null && wireMockServer.isRunning()) {
             wireMockServer.stop();
+        }
+        try {
+            if (serverConfigurationManager != null) {
+                serverConfigurationManager.restoreToLastConfiguration();
+            }
+        } catch (Exception e) {
+            log.warn("###===### Could not restore server configuration: " + e.getMessage());
         }
     }
 
@@ -366,6 +393,36 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         throw new IOException("Guardrail deployment.toml not found. Tried: " + attempted);
     }
 
+    private String resolveGuardrailLog4j2Path() throws IOException {
+        String amResourceCandidate = getAMResourceLocation() + File.separator + "guardrail"
+            + File.separator + LOG4J2_PROPERTIES_FILE;
+        String basedir = System.getProperty("basedir");
+        String basedirCandidate = basedir == null ? null
+            : basedir + File.separator + "src" + File.separator + "test" + File.separator
+            + "resources" + File.separator + "guardrail" + File.separator + LOG4J2_PROPERTIES_FILE;
+        String relativeCandidate = "src" + File.separator + "test" + File.separator + "resources"
+            + File.separator + "guardrail" + File.separator + LOG4J2_PROPERTIES_FILE;
+
+        String[] candidates = basedirCandidate == null
+            ? new String[]{amResourceCandidate, relativeCandidate}
+            : new String[]{amResourceCandidate, basedirCandidate, relativeCandidate};
+
+        StringBuilder attempted = new StringBuilder();
+        for (String candidate : candidates) {
+            File candidateFile = new File(candidate);
+            String absolutePath = candidateFile.getAbsolutePath();
+            if (attempted.length() > 0) {
+                attempted.append(", ");
+            }
+            attempted.append(absolutePath);
+            if (candidateFile.exists() && candidateFile.isFile()) {
+                return candidateFile.getCanonicalPath();
+            }
+        }
+
+        throw new IOException("Guardrail log4j2.properties not found. Tried: " + attempted);
+    }
+
     @Test(groups = {"wso2.am"}, enabled = true, description = "Verify mock backend server started")
     public void testMockBackendServerStarted() {
         assertNotNull(wireMockServer, "WireMock server should be initialized");
@@ -402,6 +459,144 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 embeddingRequests.get(0).getBodyAsString());
         }
     }
+
+        @Test(groups = {"wso2.am"}, enabled = true,
+            dependsOnMethods = {"testAIRequestForwardedToMockBackend", "testMockEmbeddingsProviderResponse"},
+            description = "Attach Semantic Tool Filtering policy to the AI API and deploy")
+        public void testAttachSemanticToolFilteringPolicyToAiApi() throws Exception {
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(aiApiId);
+        assertEquals(getAPIResponse.getResponseCode(), HttpStatus.SC_OK,
+            "Failed to retrieve AI API before policy attachment");
+
+        APIDTO apiDto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        String policyId = policyMap.get(SEMANTIC_TOOL_FILTERING_POLICY_NAME);
+        assertNotNull(policyId, "Unable to find common policy: " + SEMANTIC_TOOL_FILTERING_POLICY_NAME);
+
+        Map<String, Object> policyAttributes = new HashMap<>();
+        policyAttributes.put("selectionMode", "By Rank");
+        policyAttributes.put("limit", String.valueOf(SEMANTIC_TOOL_FILTERING_TOOL_LIMIT));
+        policyAttributes.put("queryJSONPath", "$.contents[-1].parts[0].text");
+        policyAttributes.put("toolsJSONPath", "$.tools[0].function_declarations");
+        policyAttributes.put("userQueryIsJson", "true");
+        policyAttributes.put("toolsIsJson", "true");
+
+        OperationPolicyDTO semanticToolFilteringPolicy = new OperationPolicyDTO();
+        semanticToolFilteringPolicy.setPolicyName(SEMANTIC_TOOL_FILTERING_POLICY_NAME);
+        semanticToolFilteringPolicy.setPolicyVersion(SEMANTIC_TOOL_FILTERING_POLICY_VERSION);
+        semanticToolFilteringPolicy.setPolicyType("common");
+        semanticToolFilteringPolicy.setPolicyId(policyId);
+        semanticToolFilteringPolicy.setParameters(policyAttributes);
+
+        List<OperationPolicyDTO> requestPolicies = new ArrayList<>();
+        requestPolicies.add(semanticToolFilteringPolicy);
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(requestPolicies);
+        apiOperationPoliciesDTO.setResponse(new ArrayList<>());
+        apiOperationPoliciesDTO.setFault(new ArrayList<>());
+
+        boolean operationPolicyAttached = false;
+        if (apiDto.getOperations() != null) {
+            for (APIOperationsDTO operation : apiDto.getOperations()) {
+                if (CHAT_RESOURCE.equals(operation.getTarget()) && "POST".equalsIgnoreCase(operation.getVerb())) {
+                    operation.setOperationPolicies(apiOperationPoliciesDTO);
+                    operationPolicyAttached = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(operationPolicyAttached,
+            "Unable to find POST " + CHAT_RESOURCE + " operation to attach Semantic Tool Filtering policy");
+
+        HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(apiDto);
+        assertEquals(updateResponse.getResponseCode(), HttpStatus.SC_OK,
+            "Failed to update AI API with Semantic Tool Filtering policy. Response: " + updateResponse.getData());
+
+        String revisionUUID = createAPIRevisionAndDeployUsingRest(aiApiId, restAPIPublisher);
+        assertNotNull(revisionUUID, "Revision UUID must not be null after policy attachment");
+        log.info("###===### Deployed new API revision after policy attachment. Revision UUID: " + revisionUUID);
+        waitForAPIDeploymentSync(apiDto.getProvider(), apiDto.getName(), apiDto.getVersion(),
+            APIMIntegrationConstants.IS_API_EXISTS);
+
+        HttpResponse updatedAPIResponse = restAPIPublisher.getAPI(aiApiId);
+        assertEquals(updatedAPIResponse.getResponseCode(), HttpStatus.SC_OK,
+            "Failed to retrieve AI API after policy attachment");
+
+        APIDTO updatedApiDto = new Gson().fromJson(updatedAPIResponse.getData(), APIDTO.class);
+        boolean policyAttached = false;
+        if (updatedApiDto.getOperations() != null) {
+            for (APIOperationsDTO operation : updatedApiDto.getOperations()) {
+                if (CHAT_RESOURCE.equals(operation.getTarget()) && "POST".equalsIgnoreCase(operation.getVerb())
+                    && operation.getOperationPolicies() != null
+                    && operation.getOperationPolicies().getRequest() != null) {
+                    for (OperationPolicyDTO requestPolicy : operation.getOperationPolicies().getRequest()) {
+                        if (SEMANTIC_TOOL_FILTERING_POLICY_NAME.equals(requestPolicy.getPolicyName())) {
+                            policyAttached = true;
+                            break;
+                        }
+                    }
+                }
+                if (policyAttached) {
+                    break;
+                }
+            }
+        }
+        assertTrue(policyAttached,
+            "Semantic Tool Filtering policy should be attached to POST " + CHAT_RESOURCE + " request flow");
+        }
+
+        @Test(groups = {"wso2.am"}, enabled = true,
+            dependsOnMethods = "testAttachSemanticToolFilteringPolicyToAiApi",
+            description = "Invoke AI API and verify tool filtering via embeddings usage and forwarded request")
+        public void testSemanticToolFilteringPolicyInvocation() throws Exception {
+        wireMockServer.resetRequests();
+
+        JSONObject originalRequestJson = new JSONObject(requestPayload);
+        int originalToolCount = originalRequestJson.getJSONArray("tools")
+            .getJSONObject(0)
+            .getJSONArray("function_declarations")
+            .length();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("ApiKey", apiKey);
+        headers.put("Content-Type", "application/json");
+
+        String gatewayUrl = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + CHAT_RESOURCE;
+        HttpResponse response = invokeGatewayWithRetryOnNotFound(gatewayUrl, headers, requestPayload, 12, 5000L);
+
+        assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
+            "Expected HTTP 200 when invoking AI API with Semantic Tool Filtering policy. Response body: "
+                + response.getData());
+        assertEquals(response.getData(), mockResponse,
+            "Gateway response should match mock backend response after policy execution");
+
+        List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
+            postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
+        assertTrue(!embeddingRequests.isEmpty(),
+            "Expected at least one embeddings request when Semantic Tool Filtering policy is applied");
+
+        List<LoggedRequest> chatRequests = wireMockServer.findAll(
+            postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
+        assertEquals(chatRequests.size(), 1,
+            "Expected exactly one forwarded chat request to the mock AI backend");
+
+        JSONObject filteredRequestJson = new JSONObject(chatRequests.get(0).getBodyAsString());
+        int filteredToolCount = filteredRequestJson.getJSONArray("tools")
+            .getJSONObject(0)
+            .getJSONArray("function_declarations")
+            .length();
+
+        assertTrue(filteredToolCount <= SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
+            "Filtered tools count should be <= " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT +
+                " but found: " + filteredToolCount);
+        assertTrue(filteredToolCount < originalToolCount,
+            "Filtered tools count should be lower than original count. Original: " + originalToolCount +
+                ", Filtered: " + filteredToolCount);
+
+        log.info("###===### Semantic Tool Filtering verification passed. Original tools: " + originalToolCount
+            + ", Filtered tools: " + filteredToolCount + ", Embeddings requests: " + embeddingRequests.size());
+        }
 
     // -----------------------------------------------------------------------
     // Private helpers
@@ -580,6 +775,92 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     /**
      * Writes {@code content} to a temporary file and schedules it for deletion on JVM exit.
      */
+    private HttpResponse invokeGatewayWithRetryOnNotFound(String gatewayUrl, Map<String, String> headers,
+            String payload, int maxAttempts, long retryIntervalMillis) throws Exception {
+        HttpResponse response = null;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            response = HTTPSClientUtils.doPost(gatewayUrl, headers, payload);
+            if (response.getResponseCode() == HttpStatus.SC_OK) {
+                return response;
+            }
+
+            if (response.getResponseCode() != HttpStatus.SC_NOT_FOUND || attempt == maxAttempts) {
+                return response;
+            }
+
+            log.info("###===### AI API invocation returned 404 after policy attachment. Retrying attempt "
+                + attempt + "/" + maxAttempts + " in " + retryIntervalMillis + " ms. URL: " + gatewayUrl);
+            Thread.sleep(retryIntervalMillis);
+        }
+        return response;
+    }
+
+    private void assertSemanticToolFilteringMediatorDeployedToGateway() throws Exception {
+        AutomationContext adminContext = null;
+        String backendUrl = null;
+
+        if (gatewayContextMgt != null && gatewayContextMgt.getContextUrls() != null) {
+            backendUrl = gatewayContextMgt.getContextUrls().getBackEndUrl();
+            adminContext = gatewayContextMgt;
+        }
+        if (backendUrl == null && keyManagerContext != null && keyManagerContext.getContextUrls() != null) {
+            backendUrl = keyManagerContext.getContextUrls().getBackEndUrl();
+            adminContext = keyManagerContext;
+        }
+        if (backendUrl == null && superTenantKeyManagerContext != null
+            && superTenantKeyManagerContext.getContextUrls() != null) {
+            backendUrl = superTenantKeyManagerContext.getContextUrls().getBackEndUrl();
+            adminContext = superTenantKeyManagerContext;
+        }
+
+        if (backendUrl == null || backendUrl.trim().isEmpty() || adminContext == null) {
+            log.warn("###===### Skipping Synapse runtime verification for SemanticToolFiltering: "
+                + "no valid backend admin URL in current test environment");
+            return;
+        }
+
+        SynapseConfigAdminClient synapseConfigAdminClient;
+        try {
+            String gatewaySession = createSession(adminContext);
+            synapseConfigAdminClient = new SynapseConfigAdminClient(backendUrl, gatewaySession);
+        } catch (Exception e) {
+            log.warn("###===### Skipping Synapse runtime verification for SemanticToolFiltering: "
+                + "unable to initialize SynapseConfigAdminClient at " + backendUrl + ". Cause: " + e.getMessage());
+            return;
+        }
+
+        String expectedMediatorClassFragment = "class name=\"" + SEMANTIC_TOOL_FILTERING_POLICY_CLASS + "\"";
+        boolean mediatorFound = false;
+        String lastSynapseConfig = null;
+
+        int maxAttempts = 12;
+        long retryIntervalMillis = 5000L;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                lastSynapseConfig = synapseConfigAdminClient.getConfiguration();
+            } catch (Exception e) {
+                log.warn("###===### Skipping Synapse runtime verification for SemanticToolFiltering: "
+                    + "failed to read Synapse configuration from " + backendUrl + ". Cause: " + e.getMessage());
+                return;
+            }
+            if (lastSynapseConfig != null
+                && lastSynapseConfig.contains(expectedMediatorClassFragment)
+                && lastSynapseConfig.contains("name=\"" + API_CONTEXT + "--v" + API_VERSION + "\"")) {
+                mediatorFound = true;
+                break;
+            }
+
+            log.info("###===### SemanticToolFiltering mediator not yet visible in Synapse config. Retrying "
+                + attempt + "/" + maxAttempts);
+            Thread.sleep(retryIntervalMillis);
+        }
+
+        assertTrue(mediatorFound,
+            "SemanticToolFiltering mediator was not found in deployed Synapse config after policy attachment. "
+                + "Expected fragment: " + expectedMediatorClassFragment
+                + ". Last config size: " + (lastSynapseConfig == null ? 0 : lastSynapseConfig.length()));
+    }
+
     private File writeTempFile(String content) throws IOException {
         File temp = File.createTempFile("ai-api-test", ".json");
         temp.deleteOnExit();
