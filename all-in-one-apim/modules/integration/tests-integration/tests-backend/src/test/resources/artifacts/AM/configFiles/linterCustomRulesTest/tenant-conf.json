@@ -106,6 +106,10 @@
         "Roles": "admin"
       },
       {
+        "Name": "apim:app_settings_change",
+        "Roles": "admin"
+      },
+      {
         "Name": "apim:app_import_export",
         "Roles": "admin,Internal/devops"
       },
