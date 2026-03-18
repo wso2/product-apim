@@ -357,6 +357,7 @@
   "static_configuration.versioning_tags.enable": false,
   "static_configuration.versioning_ratings.enable": false,
   "version_resources.on_change": false,
+  "tenant_context.session_manager": "org.wso2.carbon.webapp.mgt.CarbonTomcatSessionManager",
   "tenant_context.rewrite.webapps": [
     "/api/identity/user/v1.0/",
     "/api/identity/consent-mgt/v1.0/",
@@ -373,7 +374,8 @@
     "/api/users/v2/me/webauthn",
     "/api/",
     "/user-portal/",
-    "/keymanager-operations/"
+    "/keymanager-operations/",
+    "/authenticationendpoint/"
   ],
   "resource.access_control": [
     {
