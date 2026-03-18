@@ -30,6 +30,7 @@
   "transport.http.preserve_http_user_agent": "passthru_http.'http.user.agent.preserve'",
   "transport.http.preserve_http_server_name": "passthru_http.http.server.preserve",
   "transport.http.preserve_http_headers": "passthru_http.'http.headers.preserve'",
+  "transport.http.expected_max_queueing_time_for_message_discard_worker": "passthru_http.\u0027expected_max_queueing_time_for_message_discard_worker\u0027",
   "transport.http.max_message_size_bytes": "passthru_http.''valid.max.message.size.in.bytes'",
   "transport.http.listener.port": "transport.passthru_http.listener.parameters.port",
   "transport.http.listener.wsdl_epr_prefix": "transport.passthru_http.listener.parameters.WSDLEPRPrefix",
