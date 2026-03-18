@@ -1496,21 +1496,21 @@
         <identity.branding.preference.management.version>1.1.0</identity.branding.preference.management.version>
 
         <!-- AM Policy Bundle Versions -->
-        <regex-guardrail.version>1.0.0</regex-guardrail.version>
-        <aws-bedrock-guardrail.version>1.1.0</aws-bedrock-guardrail.version>
-        <azure-content-safety-guardrail.version>1.0.1</azure-content-safety-guardrail.version>
-        <content-length-guardrail.version>1.0.0</content-length-guardrail.version>
-        <json-schema-guardrail.version>1.0.0</json-schema-guardrail.version>
-        <pii-masking-regex.version>1.0.0</pii-masking-regex.version>
-        <prompt-decorator.version>1.0.0</prompt-decorator.version>
-        <prompt-template.version>1.0.0</prompt-template.version>
-        <semantic-prompt-guard.version>1.0.0</semantic-prompt-guard.version>
-        <sentence-count-guardrail.version>1.0.0</sentence-count-guardrail.version>
-        <url-guardrail.version>1.0.0</url-guardrail.version>
-        <word-count-guardrail.version>1.1.0</word-count-guardrail.version>
-        <semantic-cache.version>1.0.0</semantic-cache.version>
-        <semantic-tool-filtering.version>1.0.0</semantic-tool-filtering.version>
-        <content-based-model-router.version>1.0.1</content-based-model-router.version>
+        <regex-guardrail.version>1.1.1</regex-guardrail.version>
+        <aws-bedrock-guardrail.version>1.2.1</aws-bedrock-guardrail.version>
+        <azure-content-safety-guardrail.version>1.1.1</azure-content-safety-guardrail.version>
+        <content-length-guardrail.version>1.1.1</content-length-guardrail.version>
+        <json-schema-guardrail.version>1.1.1</json-schema-guardrail.version>
+        <pii-masking-regex.version>1.1.1</pii-masking-regex.version>
+        <prompt-decorator.version>1.1.1</prompt-decorator.version>
+        <prompt-template.version>1.1.1</prompt-template.version>
+        <semantic-prompt-guard.version>1.1.1</semantic-prompt-guard.version>
+        <sentence-count-guardrail.version>1.1.1</sentence-count-guardrail.version>
+        <url-guardrail.version>1.1.1</url-guardrail.version>
+        <word-count-guardrail.version>1.2.1</word-count-guardrail.version>
+        <semantic-cache.version>1.1.1</semantic-cache.version>
+        <semantic-tool-filtering.version>1.1.1</semantic-tool-filtering.version>
+        <content-based-model-router.version>1.1.1</content-based-model-router.version>
     </properties>
 
 </project>
