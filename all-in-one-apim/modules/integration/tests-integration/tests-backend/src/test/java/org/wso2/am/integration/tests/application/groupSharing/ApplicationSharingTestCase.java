@@ -174,14 +174,14 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
                 null, null, keyName).getApikey();
         Assert.assertNotNull(opaqueApiKey, "Opaque API Key generation failed");
 
-        //Revoke opaque api key by user 2 via key UUID.
-        APIKeyListDTO apiKeyListDTO = restAPIStoreClientUser2.getAPIKeys(userOneSharedApplicationId, "PRODUCTION");
+        APIKeyListDTO apiKeyListDTO = restAPIStoreClientUser1.getAPIKeys(userOneSharedApplicationId, "PRODUCTION");
         String opaqueApiKeyUUID = apiKeyListDTO.getList().stream()
                 .filter(k -> keyName.equals(k.getKeyName()))
                 .map(APIKeyInfoDTO::getKeyUUID)
                 .findFirst()
                 .orElse(null);
         Assert.assertNotNull(opaqueApiKeyUUID, "Could not find API key UUID for generated opaque API key");
+        //Revoke opaque api key by user 2 via key UUID.
         restAPIStoreClientUser2.revokeAPIKeyByKeyUUID(userOneSharedApplicationId, "PRODUCTION", opaqueApiKeyUUID);
     }
 

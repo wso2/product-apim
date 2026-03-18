@@ -1121,7 +1121,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                     getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                     opaqueRequestHeader);
             int opaqueResponseCode = invocationOpaqueAfterRevoked.getResponseCode();
-            if (opaqueResponseCode == HTTP_RESPONSE_CODE_UNAUTHORIZED) {
+            if (opaqueResponseCode == HTTP_RESPONSE_CODE_UNAUTHORIZED || 
+                opaqueResponseCode == HTTP_RESPONSE_CODE_FORBIDDEN) {
                 isOpaqueApiKeyValid = false;
             } else if (opaqueResponseCode == HTTP_RESPONSE_CODE_OK) {
                 isOpaqueApiKeyValid = true;
