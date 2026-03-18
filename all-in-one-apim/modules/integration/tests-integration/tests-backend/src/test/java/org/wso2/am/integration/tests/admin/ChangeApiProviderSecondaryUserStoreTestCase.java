@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2026, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -52,18 +52,21 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+import org.wso2.carbon.um.ws.api.stub.ClaimValue;
+import org.wso2.carbon.utils.ServerConstants;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -76,7 +79,7 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
+public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
     private RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
@@ -89,14 +92,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
     private String description = "This is test API create by API manager integration test";
     private String APIVersion = "1.0.0";
     private String apiID;
-    private String newUser = "peter123";
     private String firstUserName = "admin";
-    private String newUserPass = "test123";
-    private String[] newUserRoles = {
-            APIMIntegrationConstants.APIM_INTERNAL_ROLE.CREATOR,
-            APIMIntegrationConstants.APIM_INTERNAL_ROLE.PUBLISHER,
-            APIMIntegrationConstants.APIM_INTERNAL_ROLE.SUBSCRIBER
-    };
     private String APPLICATION_NAME = "testApplicationForProviderChange";
     private String applicationId;
     private String TIER_GOLD = "Gold";
@@ -133,8 +129,13 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
     private String graphqlApplicationId;
     private String graphqlSchemaDefinition;
 
+    // Secondary user store constants
+    private String SECONDARY_USER = "SECONDARY/testUser1";
+    private String SECONDARY_USER_PASSWORD = "password123";
+    String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
+
     @Factory(dataProvider = "userModeDataProvider")
-    public ChangeApiProviderTestCase(TestUserMode userMode) {
+    public ChangeApiProviderSecondaryUserStoreTestCase(TestUserMode userMode) {
 
         this.userMode = userMode;
     }
@@ -142,8 +143,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
 
-        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},};
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN}};
     }
 
     @BeforeClass(alwaysRun = true)
@@ -153,7 +153,6 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         publisherURLHttp = getPublisherURLHttp();
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 createSession(keyManagerContext));
-        userManagementClient.addUser(newUser, newUserPass, newUserRoles, newUser);
         restAPIStore =
                 new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                         storeContext.getContextTenant().getContextUser().getPassword(),
@@ -163,9 +162,35 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         // Load SOAP request payload
         soapPayload = readFile(getAMResourceLocation() + File.separator + "soap" + File.separator
                 + "checkPhoneNumberRequestBody.xml");
+
+        // Configure secondary user store
+        AutomationContext superTenantKeyManagerContext = new AutomationContext(
+                APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME, APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                userMode);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+        File secondaryUserStoreFile = new File(
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator
+                        + "caseInsensitiveUsername" + File.separator + "secondary.xml");
+        File targetSecondaryUserStoreFile = new File(carbonHome + File.separator + "repository"
+                + File.separator + "deployment" + File.separator + "server" + File.separator + "userstores"
+                + File.separator + "secondary.xml");
+        serverConfigurationManager.applyConfiguration(secondaryUserStoreFile, targetSecondaryUserStoreFile,
+                true, false);
+
+        remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
+
+        // Add secondary user store user with publisher and creator roles
+        remoteUserStoreManagerServiceClient.addUser(SECONDARY_USER, SECONDARY_USER_PASSWORD,
+                new String[]{APIMIntegrationConstants.APIM_INTERNAL_ROLE.CREATOR,
+                        APIMIntegrationConstants.APIM_INTERNAL_ROLE.PUBLISHER,
+                        APIMIntegrationConstants.APIM_INTERNAL_ROLE.SUBSCRIBER}, new ClaimValue[]{},
+                "default", false);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Calling API with invalid token")
+    @Test(groups = {"wso2.am"}, description = "Test changing API provider to secondary user store user")
     public void ChangeApiProvider() throws Exception {
         String providerName = user.getUserName();
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(apiEndPointUrl));
@@ -245,7 +270,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         scopeDTO.setName(scopeName);
         scopeDTO.setDisplayName("Test Scope Display Name");
         scopeDTO.setDescription("This is a test scope");
-        java.util.List<String> bindings = new java.util.ArrayList<>();
+        List<String> bindings = new ArrayList<>();
         bindings.add("admin");
         scopeDTO.setBindings(bindings);
 
@@ -253,7 +278,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         apiScopeDTO.setScope(scopeDTO);
         apiScopeDTO.setShared(false);
 
-        java.util.List<APIScopeDTO> scopeList = new java.util.ArrayList<>();
+        List<APIScopeDTO> scopeList = new ArrayList<>();
         scopeList.add(apiScopeDTO);
         apiDtoForScope.setScopes(scopeList);
         restAPIPublisher.updateAPI(apiDtoForScope, apiID);
@@ -265,46 +290,29 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(apiWithScope.getScopes().get(0).getScope().getName(), scopeName,
                 "Scope name should match");
 
-        // Update provider of the api
+        // Update provider of the api to secondary user store user
         String tenantDomain = user.getUserDomain();
         restAPIAdminClient = new RestAPIAdminImpl(firstUserName, firstUserName, tenantDomain,
                 adminURLHttps);
-        String newProviderName = tenantDomain.equals("carbon.super") ? newUser : newUser + "@" + tenantDomain;
-        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newProviderName, apiID);
+        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(SECONDARY_USER, apiID);
         Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
 
         // Verify the provider was actually changed
         APIDTO apiAfterProviderChange = restAPIPublisher.getAPIByID(apiID);
-        Assert.assertEquals(apiAfterProviderChange.getProvider(), newProviderName,
-                "API provider should be changed to " + newProviderName);
+        Assert.assertEquals(apiAfterProviderChange.getProvider(), SECONDARY_USER,
+                "API provider should be changed to " + SECONDARY_USER);
 
         // Get API using revision ID after provider change
         APIDTO apiByRevision = restAPIPublisher.getAPIByID(revisionUUID);
         Assert.assertNotNull(apiByRevision, "API retrieved by revision should not be null");
         Assert.assertEquals(apiByRevision.getProvider(), originalProvider,
-                "API provider from revision should match new provider");
+                "API provider from revision should match original provider");
 
         // Get swagger using revision ID after provider change
         String swaggerByRevision = restAPIPublisher.getSwaggerByID(revisionUUID);
         Assert.assertNotNull(swaggerByRevision, "Swagger retrieved by revision should not be null");
         Assert.assertTrue(swaggerByRevision.length() > 0,
                 "Swagger retrieved by revision should not be empty");
-
-        // Negative test: Try to change provider to a user in a different tenant domain
-        // This should fail with 400 and tenant mismatch error
-        String crossTenantProvider = tenantDomain.equals("carbon.super") ? firstUserName + "@wso2.com" : firstUserName;
-        try {
-            restAPIAdminClient.changeApiProvider(crossTenantProvider, apiID);
-            Assert.fail("Provider change to different tenant should fail with 400");
-        } catch (org.wso2.am.integration.clients.admin.ApiException e) {
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
-                    "Cross-tenant provider change should return 400");
-            String responseBody = e.getResponseBody();
-            Assert.assertTrue(responseBody.contains("901409"),
-                    "Error response should contain code 901409");
-            Assert.assertTrue(responseBody.contains("Tenant mismatch"),
-                    "Error response should contain 'Tenant mismatch' message");
-        }
 
         // Undeploy the existing revision first
         List<APIRevisionDeployUndeployRequest> undeployList = new ArrayList<>();
@@ -540,7 +548,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         updatedScopeDTO.setName(scopeName);
         updatedScopeDTO.setDisplayName("Updated");
         updatedScopeDTO.setDescription("");
-        java.util.List<String> updatedBindings = new java.util.ArrayList<>();
+        List<String> updatedBindings = new ArrayList<>();
         updatedBindings.add("admin");
         updatedBindings.add("Internal/creator");
         updatedScopeDTO.setBindings(updatedBindings);
@@ -549,7 +557,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         updatedApiScopeDTO.setScope(updatedScopeDTO);
         updatedApiScopeDTO.setShared(false);
 
-        java.util.List<APIScopeDTO> updatedScopeList = new java.util.ArrayList<>();
+        List<APIScopeDTO> updatedScopeList = new ArrayList<>();
         updatedScopeList.add(updatedApiScopeDTO);
         apiDtoForScopeUpdate.setScopes(updatedScopeList);
         restAPIPublisher.updateAPI(apiDtoForScopeUpdate, apiID);
@@ -558,7 +566,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         APIDTO apiWithUpdatedScope = restAPIPublisher.getAPIByID(apiID);
         Assert.assertNotNull(apiWithUpdatedScope.getScopes(), "Scopes should not be null after update");
         Assert.assertEquals(apiWithUpdatedScope.getScopes().size(), 1, "Should have one scope after update");
-        java.util.List<String> updatedScopeBindings = apiWithUpdatedScope.getScopes().get(0).getScope().getBindings();
+        List<String> updatedScopeBindings = apiWithUpdatedScope.getScopes().get(0).getScope().getBindings();
         Assert.assertNotNull(updatedScopeBindings, "Scope bindings should not be null");
         Assert.assertTrue(updatedScopeBindings.contains("Internal/creator"),
                 "Scope bindings should contain 'Internal/creator' role");
@@ -599,9 +607,8 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         soapApiId = apidto.getId();
 
         Assert.assertEquals(apidto.getName(), SOAP_API_NAME);
-        String expectedContext = user.getUserDomain().equals("carbon.super") ?
-                "/" + SOAP_API_CONTEXT : "/t/" + user.getUserDomain() + "/" + SOAP_API_CONTEXT;
-        Assert.assertEquals(apidto.getContext(), expectedContext);
+        // Super tenant context path
+        Assert.assertEquals(apidto.getContext(), "/" + SOAP_API_CONTEXT);
 
         // Create Revision and Deploy to Gateway
         String soapApiRevisionUUID = createAPIRevisionAndDeployUsingRest(soapApiId, restAPIPublisher);
@@ -645,18 +652,17 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
                         soapApiInvokeResponse.getResponseCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR,
                 "SOAP API invocation failed unexpectedly before provider change");
 
-        // Update provider of the SOAP API
+        // Update provider of the SOAP API to secondary user store user
         String tenantDomainSoap = user.getUserDomain();
         restAPIAdminClient = new RestAPIAdminImpl(firstUserName, firstUserName, tenantDomainSoap,
                 adminURLHttps);
-        String newProviderNameSoap = tenantDomainSoap.equals("carbon.super") ? newUser : newUser + "@" + tenantDomainSoap;
-        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newProviderNameSoap, soapApiId);
+        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(SECONDARY_USER, soapApiId);
         Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
 
         // Verify the provider was actually changed
         APIDTO apiAfterProviderChangeSoap = restAPIPublisher.getAPIByID(soapApiId);
-        Assert.assertEquals(apiAfterProviderChangeSoap.getProvider(), newProviderNameSoap,
-                "SOAP API provider should be changed to " + newProviderNameSoap);
+        Assert.assertEquals(apiAfterProviderChangeSoap.getProvider(), SECONDARY_USER,
+                "SOAP API provider should be changed to " + SECONDARY_USER);
 
         // Undeploy the existing revision first
         List<APIRevisionDeployUndeployRequest> undeployList = new ArrayList<>();
@@ -743,9 +749,8 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         soapToRestApiId = apidto.getId();
 
         Assert.assertEquals(apidto.getName(), SOAPTOREST_API_NAME);
-        String expectedContextSoapToRest = user.getUserDomain().equals("carbon.super") ?
-                "/" + SOAPTOREST_API_CONTEXT : "/t/" + user.getUserDomain() + "/" + SOAPTOREST_API_CONTEXT;
-        Assert.assertEquals(apidto.getContext(), expectedContextSoapToRest);
+        // Super tenant context path
+        Assert.assertEquals(apidto.getContext(), "/" + SOAPTOREST_API_CONTEXT);
 
         // Create Revision and Deploy to Gateway
         String soapToRestRevisionUUID = createAPIRevisionAndDeployUsingRest(soapToRestApiId, restAPIPublisher);
@@ -807,18 +812,17 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         Assert.assertFalse(resourcePoliciesOutBefore.isEmpty(),
                 "Out-sequences should not be empty before provider change");
 
-        // Update provider of the SOAPTOREST API
+        // Update provider of the SOAPTOREST API to secondary user store user
         String tenantDomainSoapToRest = user.getUserDomain();
         restAPIAdminClient = new RestAPIAdminImpl(firstUserName, firstUserName, tenantDomainSoapToRest,
                 adminURLHttps);
-        String newProviderNameSoapToRest = tenantDomainSoapToRest.equals("carbon.super") ? newUser : newUser + "@" + tenantDomainSoapToRest;
-        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newProviderNameSoapToRest, soapToRestApiId);
+        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(SECONDARY_USER, soapToRestApiId);
         Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
 
         // Verify the provider was actually changed
         APIDTO apiAfterProviderChangeSoapToRest = restAPIPublisher.getAPIByID(soapToRestApiId);
-        Assert.assertEquals(apiAfterProviderChangeSoapToRest.getProvider(), newProviderNameSoapToRest,
-                "SOAPTOREST API provider should be changed to " + newProviderNameSoapToRest);
+        Assert.assertEquals(apiAfterProviderChangeSoapToRest.getProvider(), SECONDARY_USER,
+                "SOAPTOREST API provider should be changed to " + SECONDARY_USER);
 
         // Undeploy the existing revision first
         List<APIRevisionDeployUndeployRequest> undeployList = new ArrayList<>();
@@ -995,9 +999,8 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         graphqlApiId = apidto.getId();
 
         Assert.assertEquals(apidto.getName(), GRAPHQL_API_NAME);
-        String expectedContext = user.getUserDomain().equals("carbon.super") ?
-                "/" + GRAPHQL_API_CONTEXT : "/t/" + user.getUserDomain() + "/" + GRAPHQL_API_CONTEXT;
-        Assert.assertEquals(apidto.getContext(), expectedContext);
+        // Super tenant context path
+        Assert.assertEquals(apidto.getContext(), "/" + GRAPHQL_API_CONTEXT);
 
         // 2. Create Revision and Deploy to Gateway
         String graphqlApiRevisionUUID = createAPIRevisionAndDeployUsingRest(graphqlApiId, restAPIPublisher);
@@ -1038,12 +1041,11 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(graphqlApiInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "GraphQL API invocation failed before provider change");
 
-        // 6. Update provider of the GraphQL API
+        // 6. Update provider of the GraphQL API to secondary user store user
         String tenantDomainGraphQL = user.getUserDomain();
         restAPIAdminClient = new RestAPIAdminImpl(firstUserName, firstUserName, tenantDomainGraphQL,
                 adminURLHttps);
-        String newProviderNameGraphQL = tenantDomainGraphQL.equals("carbon.super") ? newUser : newUser + "@" + tenantDomainGraphQL;
-        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newProviderNameGraphQL, graphqlApiId);
+        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(SECONDARY_USER, graphqlApiId);
         Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
 
         // Undeploy the existing revision first
@@ -1065,8 +1067,8 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
 
         // Verify the provider was actually changed
         APIDTO apiAfterProviderChangeGraphQL = restAPIPublisher.getAPIByID(graphqlApiId);
-        Assert.assertEquals(apiAfterProviderChangeGraphQL.getProvider(), newProviderNameGraphQL,
-                "GraphQL API provider should be changed to " + newProviderNameGraphQL);
+        Assert.assertEquals(apiAfterProviderChangeGraphQL.getProvider(), SECONDARY_USER,
+                "GraphQL API provider should be changed to " + SECONDARY_USER);
 
         // Get GraphQL schema definition after provider change
         GraphQLSchemaDTO schema = restAPIPublisher.getGraphqlSchemaDefinition(graphqlApiId);
@@ -1151,9 +1153,15 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         if (graphqlApiId != null) {
             restAPIPublisher.deleteAPI(graphqlApiId);
         }
-        if (newUser != null) {
-            userManagementClient.deleteUser(newUser);
+
+        // Delete secondary user store user
+        if (remoteUserStoreManagerServiceClient != null) {
+            remoteUserStoreManagerServiceClient.deleteUser(SECONDARY_USER);
         }
+
         super.cleanUp();
+        if (serverConfigurationManager != null) {
+            serverConfigurationManager.restoreToLastConfiguration();
+        }
     }
 }
