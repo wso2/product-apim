@@ -66,7 +66,7 @@ http_endpoint = "http://localhost:8280"
 https_endpoint = "https://localhost:8243"
 
 [apim.universal_gateway]
-version = "0.9.0"
+version = "0.11.0"
 
 [[oauth.extensions.token_types]]
 name = "JWT"

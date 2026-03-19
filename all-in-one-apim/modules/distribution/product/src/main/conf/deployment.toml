@@ -71,7 +71,7 @@ websub_event_receiver_http_endpoint = "http://localhost:9021"
 websub_event_receiver_https_endpoint = "https://localhost:8021"
 
 [apim.universal_gateway]
-version = "0.9.0"
+version = "0.11.0"
 
 [apim.sync_runtime_artifacts.gateway]
 gateway_labels =["Default"]
