@@ -70,16 +70,8 @@ https_endpoint = "https://localhost:${https.nio.port}"
 websub_event_receiver_http_endpoint = "http://localhost:9021"
 websub_event_receiver_https_endpoint = "https://localhost:8021"
 
-# Connect WSO2 Universal Gateways to this APIM.
 [apim.universal_gateway]
 version = "0.9.0"
-
-# [[apim.universal_gateway.connect]]
-# registration_token = ""
-# name = ""
-# display_name = ""
-# description = ""
-# url = ""
 
 [apim.sync_runtime_artifacts.gateway]
 gateway_labels =["Default"]
