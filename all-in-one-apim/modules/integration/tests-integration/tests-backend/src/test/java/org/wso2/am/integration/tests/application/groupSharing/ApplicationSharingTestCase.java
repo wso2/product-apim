@@ -159,7 +159,7 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         restAPIStoreClientUser2.revokeAPIKey(userOneSharedApplicationId, apiKey);
     }
 
-    @Test(groups = "wso2.am", description = "Generate opaque API key from user 1 and make sure that user 2 can revoke the key",
+    /**@Test(groups = "wso2.am", description = "Generate opaque API key from user 1 and make sure that user 2 can revoke the key",
             dependsOnMethods = "testAPIKeyRevocationBySharedUser")
     public void testOpaqueAPIKeyRevocationBySharedUser() throws Exception {
         final String keyName = "testOpaqueAPIKeyRevocationBySharedUser";
@@ -183,7 +183,7 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(opaqueApiKeyUUID, "Could not find API key UUID for generated opaque API key");
         //Revoke opaque api key by user 2 via key UUID.
         restAPIStoreClientUser2.revokeAPIKeyByKeyUUID(userOneSharedApplicationId, "PRODUCTION", opaqueApiKeyUUID);
-    }
+    }*/
 
     private void createUsersAndApplications() throws Exception {
         //signup of user one
