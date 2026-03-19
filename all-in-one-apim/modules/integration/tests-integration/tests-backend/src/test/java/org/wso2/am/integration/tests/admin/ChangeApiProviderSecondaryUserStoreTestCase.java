@@ -282,6 +282,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         scopeList.add(apiScopeDTO);
         apiDtoForScope.setScopes(scopeList);
         restAPIPublisher.updateAPI(apiDtoForScope, apiID);
+        waitForAPIDeployment();
 
         // Verify scope was added
         APIDTO apiWithScope = restAPIPublisher.getAPIByID(apiID);
@@ -340,6 +341,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         String updatedDescription = "This is an updated description after provider change";
         apiDto.setDescription(updatedDescription);
         restAPIPublisher.updateAPI(apiDto, apiID);
+        waitForAPIDeployment();
 
         // Step 2: Verify the description was updated
         APIDTO updatedApiDto = restAPIPublisher.getAPIByID(apiID);
@@ -355,6 +357,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         businessInfoDto.setTechnicalOwnerEmail("architecture@pizzashack.com");
         apiDtoForBusinessInfo.setBusinessInformation(businessInfoDto);
         restAPIPublisher.updateAPI(apiDtoForBusinessInfo, apiID);
+        waitForAPIDeployment();
 
         // Step 4: Verify the business information was updated
         APIDTO updatedApiWithBusinessInfo = restAPIPublisher.getAPIByID(apiID);
@@ -377,6 +380,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         APIDTO apiDtoForTier = restAPIPublisher.getAPIByID(apiID);
         apiDtoForTier.getPolicies().add(TIER_GOLD);
         restAPIPublisher.updateAPI(apiDtoForTier, apiID);
+        waitForAPIDeployment();
 
         // Step 6: Verify the subscription tier was added
         APIDTO updatedApiWithTier = restAPIPublisher.getAPIByID(apiID);
@@ -529,6 +533,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         sandboxEndpoint.replace("url", updatedEndpointUrl);
         apiDtoForEndpoint.setEndpointConfig(endpointConfigJson);
         restAPIPublisher.updateAPI(apiDtoForEndpoint, apiID);
+        waitForAPIDeployment();
 
         // Step 16: Verify the API endpoint was updated
         APIDTO updatedApiWithEndpoint = restAPIPublisher.getAPIByID(apiID);
@@ -561,6 +566,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         updatedScopeList.add(updatedApiScopeDTO);
         apiDtoForScopeUpdate.setScopes(updatedScopeList);
         restAPIPublisher.updateAPI(apiDtoForScopeUpdate, apiID);
+        waitForAPIDeployment();
 
         // Step 18: Verify the local scope was updated
         APIDTO apiWithUpdatedScope = restAPIPublisher.getAPIByID(apiID);
