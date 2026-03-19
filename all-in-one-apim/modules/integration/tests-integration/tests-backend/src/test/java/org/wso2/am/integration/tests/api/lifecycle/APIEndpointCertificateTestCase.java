@@ -344,7 +344,7 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
         LogEvent[] logEvents;
         // Initial wait for the event to likely happen
-        Thread.sleep(65000);
+        Thread.sleep(60000);
 
         int retryAttempt = 0;
         boolean isSSProfileReloaded = false;
