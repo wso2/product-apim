@@ -112,7 +112,6 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + CONFIG_DIR + File.separator + ENDPOINT_CERTIFICATE_RESOURCE_PATH
                 + File.separator + DEPLOYMENT_FILE));
-        super.init(userMode);
         securedEndpointHost = InetAddress.getLocalHost().getHostName();
         int lowerPortLimit = 9950;
         int upperPortLimit = 9999;
