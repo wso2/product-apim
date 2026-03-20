@@ -759,6 +759,7 @@
             </outputDirectory>
             <includes>
                 <include>internal#data#v1.war</include>
+                <include>internal#gateway.war</include>
             </includes>
         </fileSet>
         <fileSet>
