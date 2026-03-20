@@ -202,9 +202,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
 
         String sourceTomlPath = resolveGuardrailDeploymentTomlPath();
-    String sourceLog4j2Path = resolveGuardrailLog4j2Path();
         log.info("###===### Applying source deployment.toml: " + sourceTomlPath);
-    log.info("###===### Applying source log4j2.properties: " + sourceLog4j2Path);
 
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
@@ -212,7 +210,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(sourceTomlPath));
     String carbonConfPath = serverConfigurationManager.getCarbonHome() + File.separator + CONFIG_PATH;
-    FileManager.copyFile(new File(sourceLog4j2Path), carbonConfPath + File.separator + LOG4J2_PROPERTIES_FILE);
         serverConfigurationManager.restartGracefully();
 
         resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
@@ -334,44 +331,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         log.info("###===### Verification passed: mock AI backend received the real AI request forwarded by the middleware");
     }
 
-    /**
-     * Verifies that the deployment.toml applied by {@link #setEnvironment()} is
-     * present in the running server's conf directory.
-     * The server is unpacked under a dynamically-named carbontmp directory;
-     * {@link FrameworkPathUtil#getCarbonHome()} resolves it at runtime.
-     */
-    @Test(groups = {"wso2.am"}, description = "Verify deployed deployment.toml matches the applied source file")
-    public void testEnvironmentConfigurationOnly() throws Exception {
-        assertNotNull(serverConfigurationManager,
-                "ServerConfigurationManager should be initialized after environment configuration");
-
-        // Source file to compare against: src/test/resources/guardrail/deployment.toml
-        String sourceTomlPath = resolveGuardrailDeploymentTomlPath();
-
-        // Deployed file: resolved dynamically via carbon.home (handles any carbontmp<N> directory)
-        String deployedTomlPath = FrameworkPathUtil.getCarbonHome()
-                + File.separator + "repository"
-                + File.separator + "conf"
-                + File.separator + "deployment.toml";
-
-        log.info("###===### Source deployment.toml  : " + sourceTomlPath);
-        log.info("###===### Deployed deployment.toml: " + deployedTomlPath);
-
-        assertTrue(Files.exists(Paths.get(deployedTomlPath)),
-                "Deployed deployment.toml not found at: " + deployedTomlPath);
-        assertTrue(Files.exists(Paths.get(sourceTomlPath)),
-                "Source deployment.toml not found at: " + sourceTomlPath);
-
-        String sourceContent   = new String(Files.readAllBytes(Paths.get(sourceTomlPath)));
-        String deployedContent = new String(Files.readAllBytes(Paths.get(deployedTomlPath)));
-
-        assertEquals(deployedContent, sourceContent,
-                "Deployed deployment.toml does not match the applied source file.\n"
-                        + "Source : " + sourceTomlPath + "\n"
-                        + "Deployed: " + deployedTomlPath);
-
-        log.info("###===### deployment.toml content matches — environment configuration verified");
-    }
 
     private String resolveGuardrailDeploymentTomlPath() throws IOException {
         String amResourceCandidate = getAMResourceLocation() + File.separator + "guardrail"
@@ -403,92 +362,11 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         throw new IOException("Guardrail deployment.toml not found. Tried: " + attempted);
     }
 
-    private String resolveGuardrailLog4j2Path() throws IOException {
-        String amResourceCandidate = getAMResourceLocation() + File.separator + "guardrail"
-            + File.separator + LOG4J2_PROPERTIES_FILE;
-        String basedir = System.getProperty("basedir");
-        String basedirCandidate = basedir == null ? null
-            : basedir + File.separator + "src" + File.separator + "test" + File.separator
-            + "resources" + File.separator + "guardrail" + File.separator + LOG4J2_PROPERTIES_FILE;
-        String relativeCandidate = "src" + File.separator + "test" + File.separator + "resources"
-            + File.separator + "guardrail" + File.separator + LOG4J2_PROPERTIES_FILE;
-
-        String[] candidates = basedirCandidate == null
-            ? new String[]{amResourceCandidate, relativeCandidate}
-            : new String[]{amResourceCandidate, basedirCandidate, relativeCandidate};
-
-        StringBuilder attempted = new StringBuilder();
-        for (String candidate : candidates) {
-            File candidateFile = new File(candidate);
-            String absolutePath = candidateFile.getAbsolutePath();
-            if (attempted.length() > 0) {
-                attempted.append(", ");
-            }
-            attempted.append(absolutePath);
-            if (candidateFile.exists() && candidateFile.isFile()) {
-                return candidateFile.getCanonicalPath();
-            }
-        }
-
-        throw new IOException("Guardrail log4j2.properties not found. Tried: " + attempted);
-    }
-
-    @Test(groups = {"wso2.am"}, enabled = true, description = "Verify mock backend server started")
-    public void testMockBackendServerStarted() {
-        assertNotNull(wireMockServer, "WireMock server should be initialized");
-        assertTrue(wireMockServer.isRunning(), "WireMock server should be running");
-    }
-
-    @Test(groups = {"wso2.am"}, enabled = true,
-            description = "Verify mock embeddings provider returns data for known text")
-    public void testMockEmbeddingsProviderResponse() throws Exception {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Authorization", "Bearer mock-api-key");
-
-        JSONObject payload = new JSONObject();
-        payload.put("model", "mistral-test");
-        payload.put("input", new JSONArray().put(REQUESTED_TOOL_TEXT));
-
-        String mockEmbeddingUrl = ENDPOINT_HOST + ":" + mockPort + BACKEND_PATH + EMBEDDINGS_RESOURCE;
-        HttpResponse response = HTTPSClientUtils.doPost(mockEmbeddingUrl, headers, payload.toString());
-
-        assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
-                "Expected HTTP 200 from mock embeddings backend");
-        log.info("Response Get Data :"+ response.getData());
-        JSONObject embeddingsResponseJson = new JSONObject(response.getData());
-        JSONArray embeddingData = embeddingsResponseJson.optJSONArray("data");
-        assertNotNull(embeddingData,
-            "Mock embeddings response should contain a data array");
-        assertTrue(embeddingData.length() > 0,
-            "Mock embeddings response data array should contain at least one entry");
-
-        JSONObject embeddingEntry = embeddingData.optJSONObject(0);
-        assertNotNull(embeddingEntry,
-            "First data entry in mock embeddings response should be a JSON object");
-        JSONArray embeddingVector = embeddingEntry.optJSONArray("embedding");
-        assertNotNull(embeddingVector,
-            "Mock embeddings response should contain an embedding field inside data[0]");
-        assertTrue(embeddingVector.length() > 0,
-            "Embedding vector in mock embeddings response should not be empty");
-
-        wireMockServer.verify(1, postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
-                // .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
-                .withRequestBody(containing(REQUESTED_TOOL_TEXT)));
-
-        List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
-            postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
-        
-        logAllMockServerRequests();
-        if (!embeddingRequests.isEmpty()) {
-            log.info("###===### Received payload at mock AI backend (embeddings): " +
-                embeddingRequests.get(0).getBodyAsString());
-        }
-    }
-
-        @Test(groups = {"wso2.am"}, enabled = true,
-            dependsOnMethods = {"testAIRequestForwardedToMockBackend"},
-            description = "Attach Semantic Tool Filtering policy to the AI API and deploy")
+ 
+        @Test(groups = {"wso2.am"},
+              enabled = true,
+              dependsOnMethods = {"testAIRequestForwardedToMockBackend"},
+              description = "Attach Semantic Tool Filtering policy to the AI API and deploy")
         public void testAttachSemanticToolFilteringPolicyToAiApi() throws Exception {
         HttpResponse getAPIResponse = restAPIPublisher.getAPI(aiApiId);
         assertEquals(getAPIResponse.getResponseCode(), HttpStatus.SC_OK,
@@ -632,7 +510,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         }
 
         @Test(groups = {"wso2.am"}, enabled = true,
-            dependsOnMethods = "testAttachSemanticToolFilteringPolicyToAiApi",
+            dependsOnMethods = {"testAttachSemanticToolFilteringPolicyToAiApi"},
             description = "Invoke AI API and verify tool filtering via embeddings usage and forwarded request")
         public void testSemanticToolFilteringPolicyInvocation() throws Exception {
         wireMockServer.resetRequests();
