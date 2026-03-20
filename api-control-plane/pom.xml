@@ -1295,7 +1295,7 @@
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.9.3</carbon.governance.version>
+        <carbon.governance.version>4.9.4</carbon.governance.version>
 
         <!--carbon versions-->
         <carbon.kernel.version>4.11.8</carbon.kernel.version>
@@ -1306,7 +1306,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.8.8</carbon.mediation.version>
+        <carbon.mediation.version>4.8.10</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.27.11</carbon.identity.version>
