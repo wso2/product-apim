@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.guardrail;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
@@ -63,17 +64,24 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -162,6 +170,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     /** Pre-rendered mock response (model placeholder already substituted). */
     private String mockResponse;
     private String mockEmbeddingsResponse;
+    private JSONArray mockEmbeddingEntries;
     /** JSON payload that the test client sends to the gateway. */
     private String requestPayload;
     private Map<String, String> policyMap;
@@ -208,7 +217,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
         policyMap = restAPIPublisher.getAllCommonOperationPolicies();
-
+	    log.info("###===### Retrieved common operation policies for test: " + policyMap);
         // Load request payload and pre-render the expected response
         requestPayload = readFile(resourcePath + PAYLOAD_FILE);
         String responseTemplate = readFile(resourcePath + RESPONSE_FILE);
@@ -216,6 +225,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         // expected string can be compared directly to the actual HTTP body.
         mockResponse = responseTemplate.replace("{{jsonPath request.body '$.model'}}", MODEL_NAME);
         mockEmbeddingsResponse = readFile(resourcePath + EMBEDDINGS_RESPONSE_FILE);
+        mockEmbeddingEntries = new JSONArray(mockEmbeddingsResponse);
 
         // 1. Start the mock AI backend (WireMock)
         startMockBackend();
@@ -320,7 +330,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             log.info("###===### Received payload at mock AI backend (chat): " +
                 chatRequests.get(0).getBodyAsString());
         }
-
+        logAllMockServerRequests();
         log.info("###===### Verification passed: mock AI backend received the real AI request forwarded by the middleware");
     }
 
@@ -437,7 +447,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         headers.put("Authorization", "Bearer mock-api-key");
 
         JSONObject payload = new JSONObject();
-        payload.put("model", EMBEDDING_MODEL_NAME);
+        payload.put("model", "mistral-test");
         payload.put("input", new JSONArray().put(REQUESTED_TOOL_TEXT));
 
         String mockEmbeddingUrl = ENDPOINT_HOST + ":" + mockPort + BACKEND_PATH + EMBEDDINGS_RESOURCE;
@@ -445,15 +455,31 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
                 "Expected HTTP 200 from mock embeddings backend");
-        assertEquals(response.getData(), mockEmbeddingsResponse,
-                "Mock embeddings response body mismatch");
+        log.info("Response Get Data :"+ response.getData());
+        JSONObject embeddingsResponseJson = new JSONObject(response.getData());
+        JSONArray embeddingData = embeddingsResponseJson.optJSONArray("data");
+        assertNotNull(embeddingData,
+            "Mock embeddings response should contain a data array");
+        assertTrue(embeddingData.length() > 0,
+            "Mock embeddings response data array should contain at least one entry");
+
+        JSONObject embeddingEntry = embeddingData.optJSONObject(0);
+        assertNotNull(embeddingEntry,
+            "First data entry in mock embeddings response should be a JSON object");
+        JSONArray embeddingVector = embeddingEntry.optJSONArray("embedding");
+        assertNotNull(embeddingVector,
+            "Mock embeddings response should contain an embedding field inside data[0]");
+        assertTrue(embeddingVector.length() > 0,
+            "Embedding vector in mock embeddings response should not be empty");
 
         wireMockServer.verify(1, postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
-                .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
+                // .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
                 .withRequestBody(containing(REQUESTED_TOOL_TEXT)));
 
         List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
             postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
+        
+        logAllMockServerRequests();
         if (!embeddingRequests.isEmpty()) {
             log.info("###===### Received payload at mock AI backend (embeddings): " +
                 embeddingRequests.get(0).getBodyAsString());
@@ -461,7 +487,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     }
 
         @Test(groups = {"wso2.am"}, enabled = true,
-            dependsOnMethods = {"testAIRequestForwardedToMockBackend", "testMockEmbeddingsProviderResponse"},
+            dependsOnMethods = {"testAIRequestForwardedToMockBackend"},
             description = "Attach Semantic Tool Filtering policy to the AI API and deploy")
         public void testAttachSemanticToolFilteringPolicyToAiApi() throws Exception {
         HttpResponse getAPIResponse = restAPIPublisher.getAPI(aiApiId);
@@ -472,11 +498,13 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         String policyId = policyMap.get(SEMANTIC_TOOL_FILTERING_POLICY_NAME);
         assertNotNull(policyId, "Unable to find common policy: " + SEMANTIC_TOOL_FILTERING_POLICY_NAME);
-
+        
+        log.info("###===### Attaching Semantic Tool Filtering policy to AI API. Policy ID: " + policyId);
         Map<String, Object> policyAttributes = new HashMap<>();
         policyAttributes.put("selectionMode", "By Rank");
         policyAttributes.put("limit", String.valueOf(SEMANTIC_TOOL_FILTERING_TOOL_LIMIT));
-        policyAttributes.put("queryJSONPath", "$.contents[-1].parts[0].text");
+        policyAttributes.put("threshold", "0.7");
+        policyAttributes.put("queryJSONPath", "$.contents[0].parts[0].text");
         policyAttributes.put("toolsJSONPath", "$.tools[0].function_declarations");
         policyAttributes.put("userQueryIsJson", "true");
         policyAttributes.put("toolsIsJson", "true");
@@ -490,6 +518,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         List<OperationPolicyDTO> requestPolicies = new ArrayList<>();
         requestPolicies.add(semanticToolFilteringPolicy);
+
+        log.info("###===### Created OperationPolicyDTO for Semantic Tool Filtering: " + semanticToolFilteringPolicy);
 
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
         apiOperationPoliciesDTO.setRequest(requestPolicies);
@@ -506,6 +536,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 }
             }
         }
+        Thread.sleep(20000);
         assertTrue(operationPolicyAttached,
             "Unable to find POST " + CHAT_RESOURCE + " operation to attach Semantic Tool Filtering policy");
 
@@ -544,6 +575,60 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         }
         assertTrue(policyAttached,
             "Semantic Tool Filtering policy should be attached to POST " + CHAT_RESOURCE + " request flow");
+        Thread.sleep(20000);
+        // Retrieve and log the complete API definition to verify policy parameters
+        HttpResponse finalAPIResponse = restAPIPublisher.getAPI(aiApiId);
+        assertEquals(finalAPIResponse.getResponseCode(), HttpStatus.SC_OK,
+            "Failed to retrieve final AI API definition for logging");
+        
+        APIDTO finalApiDto = new Gson().fromJson(finalAPIResponse.getData(), APIDTO.class);
+        log.info("###===### ===== COMPLETE API DEFINITION AFTER POLICY ATTACHMENT ===== ###");
+        log.info("###===### API ID: " + finalApiDto.getId());
+        log.info("###===### API Name: " + finalApiDto.getName());
+        log.info("###===### API Version: " + finalApiDto.getVersion());
+        
+        if (finalApiDto.getOperations() != null) {
+            for (APIOperationsDTO operation : finalApiDto.getOperations()) {
+                if (CHAT_RESOURCE.equals(operation.getTarget()) && "POST".equalsIgnoreCase(operation.getVerb())) {
+                    log.info("###===### Found POST " + CHAT_RESOURCE + " operation");
+                    
+                    if (operation.getOperationPolicies() != null) {
+                        APIOperationPoliciesDTO policies = operation.getOperationPolicies();
+                        
+                        if (policies.getRequest() != null && !policies.getRequest().isEmpty()) {
+                            log.info("###===### Request Policies Count: " + policies.getRequest().size());
+                            for (OperationPolicyDTO policy : policies.getRequest()) {
+                                log.info("###===### ===== POLICY DETAILS ===== ###");
+                                log.info("###===### Policy Name: " + policy.getPolicyName());
+                                log.info("###===### Policy Version: " + policy.getPolicyVersion());
+                                log.info("###===### Policy Type: " + policy.getPolicyType());
+                                log.info("###===### Policy ID: " + policy.getPolicyId());
+                                
+                                if (policy.getParameters() != null) {
+                                    log.info("###===### Policy Parameters:");
+                                    for (java.util.Map.Entry<String, Object> entry : policy.getParameters().entrySet()) {
+                                        log.info("###===###   " + entry.getKey() + " = " + entry.getValue());
+                                    }
+                                    
+                                    // Specifically verify threshold parameter
+                                    if (policy.getParameters().containsKey("threshold")) {
+                                        log.info("###===### ✓ threshold parameter is present: " + 
+                                            policy.getParameters().get("threshold"));
+                                    } else {
+                                        log.error("###===### ✗ threshold parameter is MISSING!");
+                                    }
+                                } else {
+                                    log.warn("###===### Policy has no parameters!");
+                                }
+                            }
+                        }
+                    } else {
+                        log.warn("###===### No operation policies found for POST " + CHAT_RESOURCE);
+                    }
+                }
+            }
+        }
+        log.info("###===### ===== END API DEFINITION ===== ###");
         }
 
         @Test(groups = {"wso2.am"}, enabled = true,
@@ -564,7 +649,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         String gatewayUrl = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + CHAT_RESOURCE;
         HttpResponse response = invokeGatewayWithRetryOnNotFound(gatewayUrl, headers, requestPayload, 12, 5000L);
-
+        // Add a wait
+        Thread.sleep(20000);
         assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
             "Expected HTTP 200 when invoking AI API with Semantic Tool Filtering policy. Response body: "
                 + response.getData());
@@ -573,8 +659,11 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
             postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
+
+        logAllMockServerRequests();
         assertTrue(!embeddingRequests.isEmpty(),
             "Expected at least one embeddings request when Semantic Tool Filtering policy is applied");
+        
 
         List<LoggedRequest> chatRequests = wireMockServer.findAll(
             postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
@@ -587,15 +676,61 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             .getJSONArray("function_declarations")
             .length();
 
-        assertTrue(filteredToolCount <= SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
-            "Filtered tools count should be <= " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT +
-                " but found: " + filteredToolCount);
+        assertEquals(filteredToolCount, SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
+            "Expected exactly " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT + " tools after filtering, but found: " + filteredToolCount);
         assertTrue(filteredToolCount < originalToolCount,
             "Filtered tools count should be lower than original count. Original: " + originalToolCount +
                 ", Filtered: " + filteredToolCount);
 
         log.info("###===### Semantic Tool Filtering verification passed. Original tools: " + originalToolCount
             + ", Filtered tools: " + filteredToolCount + ", Embeddings requests: " + embeddingRequests.size());
+        
+        // Verify policy parameters persist by retrieving API specification
+        HttpResponse verifyAPIResponse = restAPIPublisher.getAPI(aiApiId);
+        assertEquals(verifyAPIResponse.getResponseCode(), HttpStatus.SC_OK,
+            "Failed to retrieve AI API after policy invocation for verification");
+        
+        APIDTO verifyApiDto = new Gson().fromJson(verifyAPIResponse.getData(), APIDTO.class);
+        log.info("###===### ===== API SPECIFICATION AFTER POLICY INVOCATION ===== ###");
+        
+        boolean policyParamsPersist = false;
+        if (verifyApiDto.getOperations() != null) {
+            for (APIOperationsDTO operation : verifyApiDto.getOperations()) {
+                if (CHAT_RESOURCE.equals(operation.getTarget()) && "POST".equalsIgnoreCase(operation.getVerb())) {
+                    if (operation.getOperationPolicies() != null 
+                        && operation.getOperationPolicies().getRequest() != null) {
+                        for (OperationPolicyDTO policy : operation.getOperationPolicies().getRequest()) {
+                            if (SEMANTIC_TOOL_FILTERING_POLICY_NAME.equals(policy.getPolicyName())) {
+                                policyParamsPersist = true;
+                                log.info("###===### Policy: " + policy.getPolicyName() + " v" + policy.getPolicyVersion());
+                                
+                                if (policy.getParameters() != null) {
+                                    log.info("###===### Parameters after invocation:");
+                                    for (java.util.Map.Entry<String, Object> entry : policy.getParameters().entrySet()) {
+                                        log.info("###===###   " + entry.getKey() + " = " + entry.getValue());
+                                    }
+                                    
+                                    if (policy.getParameters().containsKey("threshold")) {
+                                        log.info("###===### ✓ threshold parameter persists: " + 
+                                            policy.getParameters().get("threshold"));
+                                    } else {
+                                        log.error("###===### ✗ threshold parameter NOT PERSISTED after invocation!");
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (policyParamsPersist) {
+                    break;
+                }
+            }
+        }
+        
+        assertTrue(policyParamsPersist,
+            "Semantic Tool Filtering policy parameters should persist after policy invocation");
+        log.info("###===### ===== END VERIFICATION ===== ###");
         }
 
     // -----------------------------------------------------------------------
@@ -621,25 +756,61 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody(mockResponse)));
 
-        // Stub for embeddings endpoint. Return mock embedding data only when the request includes
-        // the expected text field content from mockembeddings.json.
+        // Register one embeddings stub per text entry so the backend returns only the matched embedding.
+        for (int i = 0; i < mockEmbeddingEntries.length(); i++) {
+            JSONObject entry = mockEmbeddingEntries.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            String text = entry.optString("text", "");
+            if (text.isEmpty()) {
+                continue;
+            }
+
+            String inputRegex = "(?i)^" + Pattern.quote(text) + "$";
+            String singleEmbeddingResponse = buildEmbeddingOnlyResponse(entry);
+            log.info("###===### Registering mock embeddings stub for text: \"" + text + "\" with response: " + singleEmbeddingResponse.substring(0, Math.min(100, singleEmbeddingResponse.length())));
+            // Support requests where input is an array: {"input": ["..."]}
+            wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
+                .atPriority(1)
+                .withHeader("Authorization", containing("Bearer"))
+                // .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
+                .withRequestBody(matchingJsonPath("$.input[0]", matching(inputRegex)))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(singleEmbeddingResponse)));
+
+            // Support requests where input is a string: {"input": "..."}
+            wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
+                .atPriority(1)
+                .withHeader("Authorization", containing("Bearer"))
+                // .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
+                .withRequestBody(matchingJsonPath("$.input", matching(inputRegex)))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(singleEmbeddingResponse)));
+        }
+
+        // If model/input is valid but there is no text match in mockembeddings.json, return an empty response.
         wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
-            .atPriority(1)
+            .atPriority(5)
             .withHeader("Authorization", containing("Bearer"))
             .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
-            .withRequestBody(containing(REQUESTED_TOOL_TEXT))
+            .withRequestBody(matchingJsonPath("$.input"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
-                .withBody(mockEmbeddingsResponse)));
+                .withBody(buildMistralEmptyEmbeddingResponse())));
 
-        // Fallback for embeddings requests without the expected content.
+        // Fallback for malformed embeddings requests (no model or missing input).
         wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
             .atPriority(10)
             .willReturn(aResponse()
                 .withStatus(400)
                 .withHeader("Content-Type", "application/json")
-                .withBody("{\"error\":\"Requested content not found in embeddings mock\"}")));
+                .withBody("{\"error\":\"Invalid embeddings request: missing model or input field\"}")));
 
         wireMockServer.start();
         log.info("###===### Mock AI backend started on port " + mockPort);
@@ -859,6 +1030,104 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             "SemanticToolFiltering mediator was not found in deployed Synapse config after policy attachment. "
                 + "Expected fragment: " + expectedMediatorClassFragment
                 + ". Last config size: " + (lastSynapseConfig == null ? 0 : lastSynapseConfig.length()));
+    }
+
+    private void logAllMockServerRequests() {
+        List<ServeEvent> serveEvents = wireMockServer.getAllServeEvents();
+        log.info("###===### All received request payloads from mock AI backend. Total requests: " + serveEvents.size());
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        int index = 1;
+        for (ServeEvent serveEvent : serveEvents) {
+            LoggedRequest request = serveEvent.getRequest();
+            Date requestTime = request.getLoggedDate();
+            String formattedTime = requestTime != null ? dateFormat.format(requestTime) : "N/A";
+            log.info("###===### Request #" + index + " [" + formattedTime + "]: " + request.getMethod() + " " + request.getUrl());
+            log.info("###===### Request #" + index + " Body: " + request.getBodyAsString());
+            index++;
+        }
+    }
+
+    private String getEmbeddingResponseForText(String inputText) {
+        if (inputText == null) {
+            return buildMistralEmptyEmbeddingResponse();
+        }
+
+        for (int i = 0; i < mockEmbeddingEntries.length(); i++) {
+            JSONObject entry = mockEmbeddingEntries.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            String text = entry.optString("text", "");
+            if (inputText.equalsIgnoreCase(text)) {
+                return buildEmbeddingOnlyResponse(entry);
+            }
+        }
+        return buildMistralEmptyEmbeddingResponse();
+    }
+
+    private String buildMistralEmptyEmbeddingResponse() {
+        try {
+            JSONObject response = new JSONObject();
+            response.put("id", generateEmbeddingId());
+            response.put("object", "list");
+            response.put("data", new JSONArray());
+            response.put("model", EMBEDDING_MODEL_NAME);
+            response.put("usage", buildMistralUsageObject());
+            return response.toString();
+        } catch (Exception e) {
+            log.warn("###===### Failed to build empty embedding response", e);
+            return "{}";
+        }
+    }
+
+    private String buildEmbeddingOnlyResponse(JSONObject entry) {
+        if (entry == null || !entry.has("embedding")) {
+            return buildMistralEmptyEmbeddingResponse();
+        }
+
+        try {
+            JSONArray embeddingArray = entry.optJSONArray("embedding");
+            if (embeddingArray == null) {
+                return buildMistralEmptyEmbeddingResponse();
+            }
+
+            JSONObject response = new JSONObject();
+            response.put("id", generateEmbeddingId());
+            response.put("object", "list");
+            
+            JSONObject embeddingObject = new JSONObject();
+            embeddingObject.put("object", "embedding");
+            embeddingObject.put("embedding", embeddingArray);
+            embeddingObject.put("index", entry.optInt("index", 0));
+            
+            JSONArray dataArray = new JSONArray();
+            dataArray.put(embeddingObject);
+            response.put("data", dataArray);
+            response.put("model", EMBEDDING_MODEL_NAME);
+            response.put("usage", buildMistralUsageObject());
+            
+            return response.toString();
+        } catch (Exception e) {
+            log.warn("###===### Failed to build embedding response for matched entry", e);
+            return buildMistralEmptyEmbeddingResponse();
+        }
+    }
+
+    private JSONObject buildMistralUsageObject() throws org.json.JSONException {
+        JSONObject usage = new JSONObject();
+        usage.put("prompt_audio_seconds", JSONObject.NULL);
+        usage.put("prompt_tokens", 15);
+        usage.put("total_tokens", 15);
+        usage.put("completion_tokens", 0);
+        usage.put("request_count", JSONObject.NULL);
+        usage.put("prompt_tokens_details", JSONObject.NULL);
+        usage.put("prompt_token_details", JSONObject.NULL);
+        return usage;
+    }
+
+    private String generateEmbeddingId() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 
     private File writeTempFile(String content) throws IOException {

@@ -2063,7 +2063,7 @@
     ]
   },
   {
-    "text": "book_venue: Reserve a conference room or meeting space.",
+    "text": "Reserve a conference room or meeting space.",
     "source": "tool",
     "is_user_query": false,
     "tool_name": "book_venue",
@@ -3095,7 +3095,7 @@
     ]
   },
   {
-    "text": "find_restaurants: Locate dining options based on cuisine and dietary needs.",
+    "text": "Locate dining options based on cuisine and dietary needs.",
     "source": "tool",
     "is_user_query": false,
     "tool_name": "find_restaurants",
@@ -4127,7 +4127,7 @@
     ]
   },
   {
-    "text": "calendar_add: Create a new event on the user's primary calendar.",
+    "text": "Create a new event on the user's primary calendar.",
     "source": "tool",
     "is_user_query": false,
     "tool_name": "calendar_add",
@@ -5159,7 +5159,7 @@
     ]
   },
   {
-    "text": "send_email: Send an email to a specific recipient.",
+    "text": "Send an email to a specific recipient.",
     "source": "tool",
     "is_user_query": false,
     "tool_name": "send_email",
