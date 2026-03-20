@@ -253,6 +253,9 @@ properties.port = "9412"
 [apim.open_tracer.log_tracer]
 enable = true
 
+[encryption]
+key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
+
 #data bridge config
 #[transport.receiver]
 #type = "binary"
@@ -519,6 +522,3 @@ http_method = "all"
 context = "(.*)/APIStatusMonitor(.*)"
 secure = false
 http_method = "all"
-
-[encryption]
-key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"

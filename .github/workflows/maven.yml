@@ -24,6 +24,8 @@ jobs:
             segment: group3
           - id: 4
             segment: group4
+          - id: 5
+            segment: group5
       fail-fast: false
     steps:
     - name: Run hostname
