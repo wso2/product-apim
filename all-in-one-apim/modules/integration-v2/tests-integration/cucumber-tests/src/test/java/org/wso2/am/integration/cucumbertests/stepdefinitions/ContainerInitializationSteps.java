@@ -67,6 +67,11 @@ public class ContainerInitializationSteps {
             tomlContent = Utils.mergeToml(baseTomlPath, tomlChangesPath);
         }
 
+        // Append encryption config to the deployment.toml in the expected format
+        String encryptionTomlPath = Paths.get(callerModuleDir, Constants.ENCRYPTION_TOML_PATH).toString();
+        String encryptionTomlContent = Files.readString(Path.of(encryptionTomlPath));
+        tomlContent = tomlContent + System.lineSeparator() + System.lineSeparator() + encryptionTomlContent;
+
         APIMContainer apimContainer = new APIMContainer(label, tomlContent);
         apimContainer.start();
         TestContext.set("apimContainer", apimContainer);
