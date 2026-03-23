@@ -202,8 +202,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
 
         String sourceTomlPath = resolveGuardrailDeploymentTomlPath();
-        log.info("###===### Applying source deployment.toml: " + sourceTomlPath);
-
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
@@ -214,7 +212,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
         policyMap = restAPIPublisher.getAllCommonOperationPolicies();
-	    log.info("###===### Retrieved common operation policies for test: " + policyMap);
         // Load request payload and pre-render the expected response
         requestPayload = readFile(resourcePath + PAYLOAD_FILE);
         String responseTemplate = readFile(resourcePath + RESPONSE_FILE);
@@ -244,7 +241,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 restAPIStore.deleteApplication(applicationId);
             }
         } catch (Exception e) {
-            log.warn("###===### Could not delete application: " + e.getMessage());
+            log.warn("Could not delete application: " + e.getMessage());
         }
         try {
             if (aiApiId != null) {
@@ -252,14 +249,14 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 restAPIPublisher.deleteAPI(aiApiId);
             }
         } catch (Exception e) {
-            log.warn("###===### Could not delete AI API: " + e.getMessage());
+            log.warn("Could not delete AI API: " + e.getMessage());
         }
         try {
             if (aiServiceProviderId != null) {
                 restAPIAdmin.deleteAIServiceProvider(aiServiceProviderId);
             }
         } catch (Exception e) {
-            log.warn("###===### Could not delete AI service provider: " + e.getMessage());
+            log.warn("Could not delete AI service provider: " + e.getMessage());
         }
         if (wireMockServer != null && wireMockServer.isRunning()) {
             wireMockServer.stop();
@@ -269,7 +266,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 serverConfigurationManager.restoreToLastConfiguration();
             }
         } catch (Exception e) {
-            log.warn("###===### Could not restore server configuration: " + e.getMessage());
+            log.warn("Could not restore server configuration: " + e.getMessage());
         }
     }
 
@@ -302,7 +299,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         // Middleware URL: resolved by the test framework (handles tenant prefix automatically)
         String gatewayUrl = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + CHAT_RESOURCE;
-        log.info("###===### Invoking middleware gateway URL: " + gatewayUrl);
 
         // --- Invoke ---
         HttpResponse response = HTTPSClientUtils.doPost(gatewayUrl, headers, requestPayload);
@@ -324,11 +320,9 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         List<LoggedRequest> chatRequests = wireMockServer.findAll(
             postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
         if (!chatRequests.isEmpty()) {
-            log.info("###===### Received payload at mock AI backend (chat): " +
-                chatRequests.get(0).getBodyAsString());
+            log.info("Received payload at mock AI backend");
         }
         logAllMockServerRequests();
-        log.info("###===### Verification passed: mock AI backend received the real AI request forwarded by the middleware");
     }
 
 
@@ -377,7 +371,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         String policyId = policyMap.get(SEMANTIC_TOOL_FILTERING_POLICY_NAME);
         assertNotNull(policyId, "Unable to find common policy: " + SEMANTIC_TOOL_FILTERING_POLICY_NAME);
         
-        log.info("###===### Attaching Semantic Tool Filtering policy to AI API. Policy ID: " + policyId);
         Map<String, Object> policyAttributes = new HashMap<>();
         policyAttributes.put("selectionMode", "By Rank");
         policyAttributes.put("limit", String.valueOf(SEMANTIC_TOOL_FILTERING_TOOL_LIMIT));
@@ -397,7 +390,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         List<OperationPolicyDTO> requestPolicies = new ArrayList<>();
         requestPolicies.add(semanticToolFilteringPolicy);
 
-        log.info("###===### Created OperationPolicyDTO for Semantic Tool Filtering: " + semanticToolFilteringPolicy);
 
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
         apiOperationPoliciesDTO.setRequest(requestPolicies);
@@ -424,7 +416,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         String revisionUUID = createAPIRevisionAndDeployUsingRest(aiApiId, restAPIPublisher);
         assertNotNull(revisionUUID, "Revision UUID must not be null after policy attachment");
-        log.info("###===### Deployed new API revision after policy attachment. Revision UUID: " + revisionUUID);
         waitForAPIDeploymentSync(apiDto.getProvider(), apiDto.getName(), apiDto.getVersion(),
             APIMIntegrationConstants.IS_API_EXISTS);
 
@@ -468,13 +459,11 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         if (finalApiDto.getOperations() != null) {
             for (APIOperationsDTO operation : finalApiDto.getOperations()) {
                 if (CHAT_RESOURCE.equals(operation.getTarget()) && "POST".equalsIgnoreCase(operation.getVerb())) {
-                    log.info("###===### Found POST " + CHAT_RESOURCE + " operation");
                     
                     if (operation.getOperationPolicies() != null) {
                         APIOperationPoliciesDTO policies = operation.getOperationPolicies();
                         
                         if (policies.getRequest() != null && !policies.getRequest().isEmpty()) {
-                            log.info("###===### Request Policies Count: " + policies.getRequest().size());
                             for (OperationPolicyDTO policy : policies.getRequest()) {
                                 log.info("###===### ===== POLICY DETAILS ===== ###");
                                 log.info("###===### Policy Name: " + policy.getPolicyName());
@@ -483,7 +472,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                                 log.info("###===### Policy ID: " + policy.getPolicyId());
                                 
                                 if (policy.getParameters() != null) {
-                                    log.info("###===### Policy Parameters:");
                                     for (java.util.Map.Entry<String, Object> entry : policy.getParameters().entrySet()) {
                                         log.info("###===###   " + entry.getKey() + " = " + entry.getValue());
                                     }
@@ -506,7 +494,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 }
             }
         }
-        log.info("###===### ===== END API DEFINITION ===== ###");
         }
 
         @Test(groups = {"wso2.am"}, enabled = true,
@@ -569,7 +556,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             "Failed to retrieve AI API after policy invocation for verification");
         
         APIDTO verifyApiDto = new Gson().fromJson(verifyAPIResponse.getData(), APIDTO.class);
-        log.info("###===### ===== API SPECIFICATION AFTER POLICY INVOCATION ===== ###");
         
         boolean policyParamsPersist = false;
         if (verifyApiDto.getOperations() != null) {
@@ -580,10 +566,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                         for (OperationPolicyDTO policy : operation.getOperationPolicies().getRequest()) {
                             if (SEMANTIC_TOOL_FILTERING_POLICY_NAME.equals(policy.getPolicyName())) {
                                 policyParamsPersist = true;
-                                log.info("###===### Policy: " + policy.getPolicyName() + " v" + policy.getPolicyVersion());
                                 
                                 if (policy.getParameters() != null) {
-                                    log.info("###===### Parameters after invocation:");
                                     for (java.util.Map.Entry<String, Object> entry : policy.getParameters().entrySet()) {
                                         log.info("###===###   " + entry.getKey() + " = " + entry.getValue());
                                     }
@@ -608,7 +592,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         
         assertTrue(policyParamsPersist,
             "Semantic Tool Filtering policy parameters should persist after policy invocation");
-        log.info("###===### ===== END VERIFICATION ===== ###");
         }
 
     // -----------------------------------------------------------------------
@@ -647,12 +630,10 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
             String inputRegex = "(?i)^" + Pattern.quote(text) + "$";
             String singleEmbeddingResponse = buildEmbeddingOnlyResponse(entry);
-            log.info("###===### Registering mock embeddings stub for text: \"" + text + "\" with response: " + singleEmbeddingResponse.substring(0, Math.min(100, singleEmbeddingResponse.length())));
             // Support requests where input is an array: {"input": ["..."]}
             wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
                 .atPriority(1)
                 .withHeader("Authorization", containing("Bearer"))
-                // .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
                 .withRequestBody(matchingJsonPath("$.input[0]", matching(inputRegex)))
                 .willReturn(aResponse()
                     .withStatus(200)
@@ -663,7 +644,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
                 .atPriority(1)
                 .withHeader("Authorization", containing("Bearer"))
-                // .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
                 .withRequestBody(matchingJsonPath("$.input", matching(inputRegex)))
                 .willReturn(aResponse()
                     .withStatus(200)
@@ -691,11 +671,11 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 .withBody("{\"error\":\"Invalid embeddings request: missing model or input field\"}")));
 
         wireMockServer.start();
-        log.info("###===### Mock AI backend started on port " + mockPort);
+        log.info("Mock AI backend started on port " + mockPort);
         String mockBaseUrl = ENDPOINT_HOST + ":" + mockPort + BACKEND_PATH;
-        log.info("###===### Mock backend base URL: " + mockBaseUrl);
-        log.info("###===### Mock chat endpoint: " + mockBaseUrl + CHAT_RESOURCE);
-        log.info("###===### Mock embeddings endpoint: " + mockBaseUrl + EMBEDDINGS_RESOURCE);
+        log.info("Mock backend base URL: " + mockBaseUrl);
+        log.info("Mock chat endpoint: " + mockBaseUrl + CHAT_RESOURCE);
+        log.info("Mock embeddings endpoint: " + mockBaseUrl + EMBEDDINGS_RESOURCE);
     }
 
     /**
@@ -719,7 +699,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 "Failed to register mock AI service provider");
         aiServiceProviderId = createResponse.getData().getId();
         assertNotNull(aiServiceProviderId, "AI service provider ID must not be null");
-        log.info("###===### Registered AI service provider: " + PROVIDER_NAME + " (id=" + aiServiceProviderId + ")");
     }
 
     /**
@@ -767,7 +746,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         APIDTO apidto = restAPIPublisher.importOASDefinition(defFile, additionalProps.toString());
         aiApiId = apidto.getId();
         assertNotNull(aiApiId, "AI API ID must not be null after creation");
-        log.info("###===### Created AI API in middleware: " + API_NAME + " (id=" + aiApiId + ")");
 
         // Deploy revision to the gateway
         String revisionUUID = createAPIRevisionAndDeployUsingRest(aiApiId, restAPIPublisher);
@@ -780,7 +758,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-        log.info("###===### AI API is published and available at the middleware gateway URL");
     }
 
     /**
@@ -818,7 +795,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 .build();
         apiKey = new JWTGenerator().generateToken(tokenInfo);
         assertNotNull(apiKey, "API key must not be null");
-        log.info("###===### Consumer application created and API key generated for: " + APP_NAME);
     }
 
     /**
@@ -837,9 +813,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 return response;
             }
 
-            log.info("###===### AI API invocation returned 404 after policy attachment. Retrying attempt "
-                + attempt + "/" + maxAttempts + " in " + retryIntervalMillis + " ms. URL: " + gatewayUrl);
-            Thread.sleep(retryIntervalMillis);
+           Thread.sleep(retryIntervalMillis);
         }
         return response;
     }
@@ -863,7 +837,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         }
 
         if (backendUrl == null || backendUrl.trim().isEmpty() || adminContext == null) {
-            log.warn("###===### Skipping Synapse runtime verification for SemanticToolFiltering: "
+            log.warn("Skipping Synapse runtime verification for SemanticToolFiltering: "
                 + "no valid backend admin URL in current test environment");
             return;
         }
@@ -873,7 +847,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             String gatewaySession = createSession(adminContext);
             synapseConfigAdminClient = new SynapseConfigAdminClient(backendUrl, gatewaySession);
         } catch (Exception e) {
-            log.warn("###===### Skipping Synapse runtime verification for SemanticToolFiltering: "
+            log.warn("Skipping Synapse runtime verification for SemanticToolFiltering: "
                 + "unable to initialize SynapseConfigAdminClient at " + backendUrl + ". Cause: " + e.getMessage());
             return;
         }
@@ -888,7 +862,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             try {
                 lastSynapseConfig = synapseConfigAdminClient.getConfiguration();
             } catch (Exception e) {
-                log.warn("###===### Skipping Synapse runtime verification for SemanticToolFiltering: "
+                log.warn("Skipping Synapse runtime verification for SemanticToolFiltering: "
                     + "failed to read Synapse configuration from " + backendUrl + ". Cause: " + e.getMessage());
                 return;
             }
@@ -899,8 +873,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 break;
             }
 
-            log.info("###===### SemanticToolFiltering mediator not yet visible in Synapse config. Retrying "
-                + attempt + "/" + maxAttempts);
             Thread.sleep(retryIntervalMillis);
         }
 
@@ -912,7 +884,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
     private void logAllMockServerRequests() {
         List<ServeEvent> serveEvents = wireMockServer.getAllServeEvents();
-        log.info("###===### All received request payloads from mock AI backend. Total requests: " + serveEvents.size());
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         int index = 1;
@@ -920,8 +891,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             LoggedRequest request = serveEvent.getRequest();
             Date requestTime = request.getLoggedDate();
             String formattedTime = requestTime != null ? dateFormat.format(requestTime) : "N/A";
-            log.info("###===### Request #" + index + " [" + formattedTime + "]: " + request.getMethod() + " " + request.getUrl());
-            log.info("###===### Request #" + index + " Body: " + request.getBodyAsString());
             index++;
         }
     }
@@ -954,7 +923,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             response.put("usage", buildMistralUsageObject());
             return response.toString();
         } catch (Exception e) {
-            log.warn("###===### Failed to build empty embedding response", e);
             return "{}";
         }
     }
@@ -987,7 +955,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             
             return response.toString();
         } catch (Exception e) {
-            log.warn("###===### Failed to build embedding response for matched entry", e);
             return buildMistralEmptyEmbeddingResponse();
         }
     }
