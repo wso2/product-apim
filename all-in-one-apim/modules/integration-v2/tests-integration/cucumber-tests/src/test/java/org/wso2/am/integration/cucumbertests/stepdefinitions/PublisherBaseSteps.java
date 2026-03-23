@@ -633,6 +633,7 @@ public class PublisherBaseSteps {
                 .doPost(Utils.getNewAPIVersionURL(baseUrl, resourceType, newVersion, defaultVersion, actualResourceID), headers, null, null);
 
         TestContext.set("httpResponse", apiNewVersionResponse);
+        Assert.assertEquals(apiNewVersionResponse.getResponseCode(), 201, apiNewVersionResponse.getData());
         TestContext.set(newVersionID, Utils.extractValueFromPayload(apiNewVersionResponse.getData(), "id"));
     }
 

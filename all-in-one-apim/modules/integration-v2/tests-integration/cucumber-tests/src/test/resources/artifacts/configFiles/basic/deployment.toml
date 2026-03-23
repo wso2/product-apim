@@ -13,6 +13,9 @@ create_admin_account = true
 [user_store]
 type = "database_unique_id"
 
+[keystore]
+userstore_password_encryption = "InternalKeyStore"
+
 [keystore.tls]
 file_name =  "wso2carbon.jks"
 type =  "JKS"
@@ -290,3 +293,6 @@ url = "$env{SHARED_DATABASE_URL}"
 username = "$env{SHARED_DATABASE_USERNAME}"
 password = "$env{SHARED_DATABASE_PASSWORD}"
 validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
+
+[system.parameter]
+"org.wso2.CipherTransformation"="RSA/ECB/OAEPwithSHA1andMGF1Padding"
