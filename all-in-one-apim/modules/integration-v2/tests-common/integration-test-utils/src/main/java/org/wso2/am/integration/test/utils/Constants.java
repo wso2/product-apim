@@ -39,6 +39,7 @@ public class Constants {
     public  static final String DEFAULT_PROFILE = "default";
     public static final String DEFAULT_TOML_PATH = "src/test/resources/artifacts/configFiles/basic/deployment.toml";
     public static final String MIGRATION_TOML_PATH = "src/test/resources/artifacts/configFiles/basic/migration/deployment.toml";
+    public static final String ENCRYPTION_TOML_PATH = "src/test/resources/artifacts/configFiles/basic/encryption/deployment.toml";
 
     public static final String GATEWAY_ENVIRONMENT = "GATEWAY_ENVIRONMENT";
     public static final String APIM_TEST_CONTAINERS_PARALLEL_ENABLED = "APIM_TEST_CONTAINERS_PARALLEL_ENABLED";
