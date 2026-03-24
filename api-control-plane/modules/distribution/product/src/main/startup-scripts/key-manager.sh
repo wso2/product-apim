@@ -191,7 +191,7 @@ if [ "$CMD" = "--debug" ]; then
     echo "Warning !!!. User specified JAVA_OPTS will be ignored, once you give the --debug option."
   fi
   CMD="RUN"
-  JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$PORT"
+  JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:$PORT"
   echo "Please start the remote debugging client to continue..."
 elif [ "$CMD" = "start" ]; then
   if [ -e "$CARBON_HOME/wso2carbon.pid" ]; then
@@ -234,9 +234,9 @@ fi
 # ---------- Handle the SSL Issue with proper JDK version --------------------
 java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
 java_version_formatted=$(echo "$java_version" | awk -F. '{printf("%02d%02d",$1,$2);}')
-if [ $java_version_formatted -lt 2100 ]; then
+if [ $java_version_formatted -lt 2100 ] || [ $java_version_formatted -gt 2500 ]; then
    echo " Starting WSO2 Carbon (in unsupported JDK)"
-   echo " [ERROR] WSO2 API Manager requires a minimum of JDK 21."
+   echo " [ERROR] CARBON is supported only between JDK 21 and JDK 25"
 fi
 
 CARBON_XBOOTCLASSPATH=""
@@ -322,6 +322,10 @@ JAVA_VER_BASED_OPTS="--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java
 
 if [ $java_version_formatted -ge 1700 ]; then
     JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED"
+fi
+
+if [ $java_version_formatted -ge 2500 ]; then
+    JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --sun-misc-unsafe-memory-access=allow"
 fi
 
 # start diagnostic tool in background in diagnostic-tool/bin/diagnostic
