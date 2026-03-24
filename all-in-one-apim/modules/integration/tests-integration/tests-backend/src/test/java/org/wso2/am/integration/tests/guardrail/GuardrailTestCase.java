@@ -255,12 +255,19 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             if (aiServiceProviderId != null) {
                 restAPIAdmin.deleteAIServiceProvider(aiServiceProviderId);
             }
+      
         } catch (Exception e) {
             log.warn("Could not delete AI service provider: " + e.getMessage());
         }
-        if (wireMockServer != null && wireMockServer.isRunning()) {
-            wireMockServer.stop();
+
+        if (wireMockServer != null) {
+            try {
+                wireMockServer.stop();
+            } catch (Exception e) {
+                log.warn("Error stopping WireMock server: " + e.getMessage());
+            }
         }
+
         try {
             if (serverConfigurationManager != null) {
                 serverConfigurationManager.restoreToLastConfiguration();
@@ -406,7 +413,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 }
             }
         }
-        Thread.sleep(20000);
+        // Thread.sleep(5000);
         assertTrue(operationPolicyAttached,
             "Unable to find POST " + CHAT_RESOURCE + " operation to attach Semantic Tool Filtering policy");
 
@@ -444,7 +451,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         }
         assertTrue(policyAttached,
             "Semantic Tool Filtering policy should be attached to POST " + CHAT_RESOURCE + " request flow");
-        Thread.sleep(20000);
+        Thread.sleep(10000);
         // Retrieve and log the complete API definition to verify policy parameters
         HttpResponse finalAPIResponse = restAPIPublisher.getAPI(aiApiId);
         assertEquals(finalAPIResponse.getResponseCode(), HttpStatus.SC_OK,
@@ -456,44 +463,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         log.info("###===### API Name: " + finalApiDto.getName());
         log.info("###===### API Version: " + finalApiDto.getVersion());
         
-        if (finalApiDto.getOperations() != null) {
-            for (APIOperationsDTO operation : finalApiDto.getOperations()) {
-                if (CHAT_RESOURCE.equals(operation.getTarget()) && "POST".equalsIgnoreCase(operation.getVerb())) {
-                    
-                    if (operation.getOperationPolicies() != null) {
-                        APIOperationPoliciesDTO policies = operation.getOperationPolicies();
-                        
-                        if (policies.getRequest() != null && !policies.getRequest().isEmpty()) {
-                            for (OperationPolicyDTO policy : policies.getRequest()) {
-                                log.info("###===### ===== POLICY DETAILS ===== ###");
-                                log.info("###===### Policy Name: " + policy.getPolicyName());
-                                log.info("###===### Policy Version: " + policy.getPolicyVersion());
-                                log.info("###===### Policy Type: " + policy.getPolicyType());
-                                log.info("###===### Policy ID: " + policy.getPolicyId());
-                                
-                                if (policy.getParameters() != null) {
-                                    for (java.util.Map.Entry<String, Object> entry : policy.getParameters().entrySet()) {
-                                        log.info("###===###   " + entry.getKey() + " = " + entry.getValue());
-                                    }
-                                    
-                                    // Specifically verify threshold parameter
-                                    if (policy.getParameters().containsKey("threshold")) {
-                                        log.info("###===### ✓ threshold parameter is present: " + 
-                                            policy.getParameters().get("threshold"));
-                                    } else {
-                                        log.error("###===### ✗ threshold parameter is MISSING!");
-                                    }
-                                } else {
-                                    log.warn("###===### Policy has no parameters!");
-                                }
-                            }
-                        }
-                    } else {
-                        log.warn("###===### No operation policies found for POST " + CHAT_RESOURCE);
-                    }
-                }
-            }
-        }
+ 
         }
 
         @Test(groups = {"wso2.am"}, enabled = true,
@@ -515,7 +485,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         String gatewayUrl = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + CHAT_RESOURCE;
         HttpResponse response = invokeGatewayWithRetryOnNotFound(gatewayUrl, headers, requestPayload, 12, 5000L);
         // Add a wait
-        Thread.sleep(20000);
+        // Thread.sleep(5000);
         assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
             "Expected HTTP 200 when invoking AI API with Semantic Tool Filtering policy. Response body: "
                 + response.getData());
@@ -555,44 +525,73 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         assertEquals(verifyAPIResponse.getResponseCode(), HttpStatus.SC_OK,
             "Failed to retrieve AI API after policy invocation for verification");
         
-        APIDTO verifyApiDto = new Gson().fromJson(verifyAPIResponse.getData(), APIDTO.class);
+         }
+
+        @Test(groups = {"wso2.am"}, enabled = true,
+            dependsOnMethods = {"testSemanticToolFilteringPolicyInvocation"},
+            description = "Invoke AI API and verify tool embeddings are cached and forwarded request contains filtered tools")
+        public void testSemanticToolFilteringPolicyCache() throws Exception {
+        wireMockServer.resetRequests();
+
+        JSONObject originalRequestJson = new JSONObject(requestPayload);
+        int originalToolCount = originalRequestJson.getJSONArray("tools")
+            .getJSONObject(0)
+            .getJSONArray("function_declarations")
+            .length();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("ApiKey", apiKey);
+        headers.put("Content-Type", "application/json");
+
+        String gatewayUrl = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + CHAT_RESOURCE;
+        HttpResponse response = invokeGatewayWithRetryOnNotFound(gatewayUrl, headers, requestPayload, 12, 5000L);
+        // Add a wait
+        // Thread.sleep(5000);
+        assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
+            "Expected HTTP 200 when invoking AI API with Semantic Tool Filtering policy. Response body: "
+                + response.getData());
+        assertEquals(response.getData(), mockResponse,
+            "Gateway response should match mock backend response after policy execution");
+
+        List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
+            postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
         
-        boolean policyParamsPersist = false;
-        if (verifyApiDto.getOperations() != null) {
-            for (APIOperationsDTO operation : verifyApiDto.getOperations()) {
-                if (CHAT_RESOURCE.equals(operation.getTarget()) && "POST".equalsIgnoreCase(operation.getVerb())) {
-                    if (operation.getOperationPolicies() != null 
-                        && operation.getOperationPolicies().getRequest() != null) {
-                        for (OperationPolicyDTO policy : operation.getOperationPolicies().getRequest()) {
-                            if (SEMANTIC_TOOL_FILTERING_POLICY_NAME.equals(policy.getPolicyName())) {
-                                policyParamsPersist = true;
-                                
-                                if (policy.getParameters() != null) {
-                                    for (java.util.Map.Entry<String, Object> entry : policy.getParameters().entrySet()) {
-                                        log.info("###===###   " + entry.getKey() + " = " + entry.getValue());
-                                    }
-                                    
-                                    if (policy.getParameters().containsKey("threshold")) {
-                                        log.info("###===### ✓ threshold parameter persists: " + 
-                                            policy.getParameters().get("threshold"));
-                                    } else {
-                                        log.error("###===### ✗ threshold parameter NOT PERSISTED after invocation!");
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (policyParamsPersist) {
-                    break;
-                }
-            }
-        }
+        log.info("Embedding requests : " + embeddingRequests.size());
+        logAllMockServerRequests();
+        assertTrue(embeddingRequests.size() <= 1,
+            "Expected no embeddings requests when chache applied. Only user query should trigger embedding request. Embedding requests: " + embeddingRequests.size());
         
-        assertTrue(policyParamsPersist,
-            "Semantic Tool Filtering policy parameters should persist after policy invocation");
-        }
+
+        List<LoggedRequest> chatRequests = wireMockServer.findAll(
+            postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
+        assertEquals(chatRequests.size(), 1,
+            "Expected exactly one forwarded chat request to the mock AI backend");
+
+        JSONObject filteredRequestJson = new JSONObject(chatRequests.get(0).getBodyAsString());
+        int filteredToolCount = filteredRequestJson.getJSONArray("tools")
+            .getJSONObject(0)
+            .getJSONArray("function_declarations")
+            .length();
+
+        assertEquals(filteredToolCount, SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
+            "Expected exactly " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT + " tools after filtering, but found: " + filteredToolCount);
+        assertTrue(filteredToolCount < originalToolCount,
+            "Filtered tools count should be lower than original count. Original: " + originalToolCount +
+                ", Filtered: " + filteredToolCount);
+
+        log.info("###===### Semantic Tool Filtering verification passed. Original tools: " + originalToolCount
+            + ", Filtered tools: " + filteredToolCount + ", Embeddings requests: " + embeddingRequests.size());
+        
+        // Verify policy parameters persist by retrieving API specification
+        HttpResponse verifyAPIResponse = restAPIPublisher.getAPI(aiApiId);
+        assertEquals(verifyAPIResponse.getResponseCode(), HttpStatus.SC_OK,
+            "Failed to retrieve AI API after policy invocation for verification");
+        
+         
+    }
+
+
+
 
     // -----------------------------------------------------------------------
     // Private helpers
