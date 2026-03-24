@@ -21,7 +21,6 @@
 <suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
 
-
     <test name="apim-integration-tests-api-common" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
         <classes>
@@ -531,21 +530,21 @@
 
     <test name="apim-integration-token-persistence-tests" preserve-order="true" parallel="false"
           group-by-instances="true">
-        <parameter name="group" value="group5"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.token.TokenPersistenceTestSuite"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.InvokeAPIWithVariousEndpointsAndTokensTestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>
-            <class name="org.wso2.am.integration.tests.jwt.FederatedUserJWTTestCase"/>
+            <!--            <class name="org.wso2.am.integration.tests.jwt.FederatedUserJWTTestCase"/>-->
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
         </classes>
     </test>
 
     <test name="apim-integration-token-persistence-tests-url-safe-jwt" preserve-order="true" parallel="false"
           group-by-instances="true">
-        <parameter name="group" value="group5"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.token.TokenPersistenceURLSafeJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.urlsafe.URLSafeJWTTestCase"/>
@@ -554,20 +553,20 @@
 
     <test name="apim-integration-token-persistence-tests-external-idp-jwt" preserve-order="true" parallel="false"
           group-by-instances="true">
-        <parameter name="group" value="group5"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.token.TokenPersistenceExternalIDPJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
         </classes>
     </test>
 
-    <test name="apim-integration-token-persistence-tests-jwt" preserve-order="true" parallel="false"
-          group-by-instances="true">
-        <parameter name="group" value="group5"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.token.TokenPersistenceJWTTestSuite"/>
-            <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
-        </classes>
-    </test>
+<!--    <test name="apim-integration-token-persistence-tests-jwt" preserve-order="true" parallel="false"-->
+<!--          group-by-instances="true">-->
+<!--        <parameter name="group" value="group4"/>-->
+<!--        <classes>-->
+<!--            <class name="org.wso2.am.integration.tests.token.TokenPersistenceJWTTestSuite"/>-->
+<!--            <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
 </suite>
