@@ -60,6 +60,8 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.Response;
@@ -206,10 +208,14 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         log.info("###===### Starting test setup. Selected mock backend port: " + mockPort);
         wireMockServer = new WireMockServer(options().port(mockPort));
 
-        sourceTomlPath = resolveGuardrailDeploymentTomlPath();
-        log.info("###===### Source path :"+sourceTomlPath);
-        // Update toml file adding port
-        updateTomlFileWithMockPort(sourceTomlPath, mockPort,18080);
+        Path originalTomlPath = Paths.get(resolveGuardrailDeploymentTomlPath());
+        Path tempDir = Files.createTempDirectory("guardrail-deployment-");
+        Path patchedTomlPath = tempDir.resolve("deployment.toml");
+        Files.copy(originalTomlPath, patchedTomlPath, StandardCopyOption.REPLACE_EXISTING);
+        sourceTomlPath = patchedTomlPath.toString();
+        log.info("###===### Source path :" + sourceTomlPath);
+        // Update temp toml file (keeps filename as deployment.toml) adding port
+        updateTomlFileWithMockPort(sourceTomlPath, mockPort, MOCK_BACKEND_PORT);
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
