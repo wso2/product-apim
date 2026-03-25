@@ -1,4 +1,3 @@
-
 <!--
   ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
@@ -43,7 +42,6 @@
             <class name="org.wso2.am.integration.tests.guardrail.GuardrailTestCase"/>
         </classes>
     </test>
-
 
     <!--Separate group is introduced due to change of backend endpoints-->
     <test name="apim-integration-tests-api-change-endpoint" preserve-order="true" parallel="false" group-by-instances="true">
@@ -531,4 +529,3 @@
         </classes>
     </test>-->
 </suite>
-

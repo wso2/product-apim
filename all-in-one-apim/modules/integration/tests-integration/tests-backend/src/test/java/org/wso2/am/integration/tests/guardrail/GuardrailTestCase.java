@@ -86,6 +86,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import org.wso2.am.integration.test.utils.MockServerUtils;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
@@ -167,6 +168,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private String apiKey;
     private String aiServiceProviderId;
     private String resourcePath;
+    private String sourceTomlPath;
     /** Pre-rendered mock response (model placeholder already substituted). */
     private String mockResponse;
     private String mockEmbeddingsResponse;
@@ -200,8 +202,14 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        mockPort = MockServerUtils.getAvailablePort(MockServerUtils.LOCALHOST, true);
+        log.info("###===### Starting test setup. Selected mock backend port: " + mockPort);
+        wireMockServer = new WireMockServer(options().port(mockPort));
 
-        String sourceTomlPath = resolveGuardrailDeploymentTomlPath();
+        sourceTomlPath = resolveGuardrailDeploymentTomlPath();
+        log.info("###===### Source path :"+sourceTomlPath);
+        // Update toml file adding port
+        updateTomlFileWithMockPort(sourceTomlPath, mockPort,18080);
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
@@ -222,7 +230,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         mockEmbeddingEntries = new JSONArray(mockEmbeddingsResponse);
 
         // 1. Start the mock AI backend (WireMock)
-        startMockBackend();
+        startMockBackend(mockPort);
 
         // 2. Register a custom AI service provider pointing to the mock backend
         registerAiServiceProvider();
@@ -236,6 +244,11 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() {
+        try {
+        updateTomlFileWithMockPort(sourceTomlPath, 18080,mockPort);
+        } catch (Exception e) {
+            log.warn("Could not reset mock backend port in deployment.toml: " + e.getMessage());
+        }
         try {
             if (applicationId != null) {
                 restAPIStore.deleteApplication(applicationId);
@@ -263,6 +276,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         if (wireMockServer != null) {
             try {
                 wireMockServer.stop();
+                wireMockServer = null;
+                ensurePortIsReleased(mockPort);
             } catch (Exception e) {
                 log.warn("Error stopping WireMock server: " + e.getMessage());
             }
@@ -275,6 +290,31 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         } catch (Exception e) {
             log.warn("Could not restore server configuration: " + e.getMessage());
         }
+    }
+
+    private void ensurePortIsReleased(int port) {
+    for (int i = 0; i < 5; i++) {
+        try (java.net.ServerSocket serverSocket = new java.net.ServerSocket(port)) {
+            serverSocket.setReuseAddress(true);
+            log.info("###===### Port " + port + " is now free.");
+            return; // Success, port is free
+        } catch (java.io.IOException e) {
+            log.warn("###===### Port " + port + " still in use, waiting... (Attempt " + (i + 1) + ")");
+            try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+        }
+    }
+}
+
+    public void updateTomlFileWithMockPort(String sourceTomlPath, int newPort,int oldPort) throws IOException {
+        String content = new String(Files.readAllBytes(Paths.get(sourceTomlPath)));
+        String updatedContent = content;
+        
+        // Replace <number> placeholder in embedding_endpoint (more robust regex pattern)
+        // Handles: localhost:<number>, localhost:<any_number>, or variations with <...>
+        updatedContent = updatedContent.replaceAll(String.valueOf(oldPort), String.valueOf(newPort));
+        
+        Files.write(Paths.get(sourceTomlPath), updatedContent.getBytes());
+        log.info("Updated deployment.toml with mock backend port: " + mockPort);
     }
 
     // -----------------------------------------------------------------------
@@ -601,10 +641,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
      * Starts a WireMock HTTP server that acts as the mock AI backend.
      * Registers a stub for POST requests to the chat-completions resource.
      */
-    private void startMockBackend() {
-        mockPort = MOCK_BACKEND_PORT;
+    private void startMockBackend(int mockPort) {
 
-        wireMockServer = new WireMockServer(options().port(mockPort));
 
         // Stub: POST /mock-ai/v1/chat/completions → 200 OK with mock AI response
         wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE))
