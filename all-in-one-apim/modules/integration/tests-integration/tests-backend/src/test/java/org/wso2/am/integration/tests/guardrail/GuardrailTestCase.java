@@ -221,8 +221,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(sourceTomlPath));
-    String carbonConfPath = serverConfigurationManager.getCarbonHome() + File.separator + CONFIG_PATH;
         serverConfigurationManager.restartGracefully();
+        super.init(userMode);
 
         resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
         policyMap = restAPIPublisher.getAllCommonOperationPolicies();
