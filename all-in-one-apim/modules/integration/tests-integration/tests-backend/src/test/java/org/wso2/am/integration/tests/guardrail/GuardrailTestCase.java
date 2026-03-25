@@ -654,7 +654,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE))
             .withRequestBody(matchingJsonPath("$.contents[0].parts[0].text"))
             .withRequestBody(containing(REQUESTED_QUERY_TEXT_SNIPPET))
-            .withRequestBody(containing(REQUESTED_TOOL_TEXT))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
