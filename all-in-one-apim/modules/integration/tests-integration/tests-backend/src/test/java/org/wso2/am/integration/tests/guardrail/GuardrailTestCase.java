@@ -320,7 +320,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         updatedContent = updatedContent.replaceAll(String.valueOf(oldPort), String.valueOf(newPort));
         
         Files.write(Paths.get(sourceTomlPath), updatedContent.getBytes());
-        log.info("Updated deployment.toml with mock backend port: " + mockPort);
+        log.info("Updated deployment.toml with mock backend port: " + newPort);
     }
 
     // -----------------------------------------------------------------------
