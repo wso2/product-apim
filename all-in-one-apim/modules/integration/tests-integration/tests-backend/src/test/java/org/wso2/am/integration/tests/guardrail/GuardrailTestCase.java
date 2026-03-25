@@ -128,7 +128,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private static final String CHAT_RESOURCE = "/v1/chat/completions";
     private static final String EMBEDDINGS_RESOURCE = "/v1/embeddings";
     private static final String ENDPOINT_HOST = "http://localhost";
-    private static final int MOCK_BACKEND_PORT = 18080;
+    private static final int PLACEHOLDER_BACKEND_PORT = 18080;
     private static final String EMBEDDING_MODEL_NAME = "mistral-embed";
     private static final String REQUESTED_TOOL_TEXT = "Get current weather and 7-day forecast for a location.";
     private static final String REQUESTED_QUERY_TEXT_SNIPPET = "corporate retreat in Denver";
@@ -215,7 +215,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         sourceTomlPath = patchedTomlPath.toString();
         log.info("###===### Source path :" + sourceTomlPath);
         // Update temp toml file (keeps filename as deployment.toml) adding port
-        updateTomlFileWithMockPort(sourceTomlPath, mockPort, MOCK_BACKEND_PORT);
+        updateTomlFileWithMockPort(sourceTomlPath, mockPort, PLACEHOLDER_BACKEND_PORT);
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
