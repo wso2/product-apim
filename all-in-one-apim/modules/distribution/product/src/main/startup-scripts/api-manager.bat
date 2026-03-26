@@ -120,7 +120,7 @@ shift
 set DEBUG_PORT=%1
 if "%DEBUG_PORT%"=="" goto noDebugPort
 if not "%JAVA_OPTS%"=="" echo Warning !!!. User specified JAVA_OPTS will be ignored, once you give the --debug option.
-set JAVA_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%DEBUG_PORT%
+set JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:%DEBUG_PORT%
 echo Please start the remote debugging client to continue...
 goto findJdk
 
@@ -179,11 +179,12 @@ set CMD=RUN %*
 PATH %PATH%;%JAVA_HOME%\bin\
 for /f tokens^=2-5^ delims^=.-_^" %%j in ('java -fullversion 2^>^&1') do set "JAVA_VERSION=%%j%%k"
 if %JAVA_VERSION% LSS 210 goto unknownJdk
+if %JAVA_VERSION% GTR 250 goto unknownJdk
 goto jdk21
 
 :unknownJdk
 echo Starting WSO2 Carbon (in unsupported JDK)
-echo [ERROR] WSO2 API Manager requires a minimum of JDK 21.
+echo [ERROR] CARBON is supported only between JDK 21 and JDK 25
 goto jdk21
 
 :jdk21
@@ -211,6 +212,8 @@ if %JAVA_VERSION% LEQ 18 set JAVA_VER_BASED_OPTS=-Djava.endorsed.dirs=".\lib\end
 if %JAVA_VERSION% GEQ 110 set JAVA_VER_BASED_OPTS=--add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED  --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED
 set JAVA_VER_BASED_OPTS=%JAVA_VER_BASED_OPTS% -Djdk.util.zip.disableZip64ExtraFieldValidation=true -Djdk.nio.zipfs.allowDotZipEntry=true
 set JAVA_VER_BASED_OPTS=%JAVA_VER_BASED_OPTS% --enable-native-access=ALL-UNNAMED
+
+if %JAVA_VERSION% GEQ 250 set JAVA_VER_BASED_OPTS=%JAVA_VER_BASED_OPTS% --sun-misc-unsafe-memory-access=allow
 
 set CMD_LINE_ARGS=-Xbootclasspath/a:%CARBON_XBOOTCLASSPATH% -Xms256m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="%CARBON_HOME%\repository\logs\heap-dump.hprof"
 set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dcom.sun.management.jmxremote -classpath %CARBON_CLASSPATH% %JAVA_OPTS% %JAVA_VER_BASED_OPTS%
