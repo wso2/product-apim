@@ -182,6 +182,22 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.semantic-model-routing</artifactId>
+                                    <version>${semantic-model-routing.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
+                                    <artifactId>org.wso2.am.policies.mediation.ai.intelligent-model-routing</artifactId>
+                                    <version>${intelligent-model-routing.version}</version>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.am.policies</groupId>
                                     <artifactId>org.wso2.am.policies.mediation.ai.content-based-model-router</artifactId>
                                     <version>${content-based-model-router.version}</version>
                                     <type>zip</type>
@@ -258,6 +274,14 @@
                                 <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-tool-filtering-${semantic-tool-filtering.version}-distribution.zip" dest="${project.build.directory}/semantic-tool-filtering" />
                                 <move file="${project.build.directory}/semantic-tool-filtering/artifact.j2" tofile="${project.build.directory}/${semantic-tool-filtering.name}_${semantic-tool-filtering.policy.version}.j2" />
                                 <move file="${project.build.directory}/semantic-tool-filtering/policy-definition.json" tofile="${project.build.directory}/${semantic-tool-filtering.name}_${semantic-tool-filtering.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.semantic-model-routing-${semantic-model-routing.version}-distribution.zip" dest="${project.build.directory}/semantic-model-routing" />
+                                <move file="${project.build.directory}/semantic-model-routing/artifact.j2" tofile="${project.build.directory}/${semantic-model-routing.name}_${semantic-model-routing.policy.version}.j2" />
+                                <move file="${project.build.directory}/semantic-model-routing/policy-definition.json" tofile="${project.build.directory}/${semantic-model-routing.name}_${semantic-model-routing.policy.version}.json" />
+
+                                <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.intelligent-model-routing-${intelligent-model-routing.version}-distribution.zip" dest="${project.build.directory}/intelligent-model-routing" />
+                                <move file="${project.build.directory}/intelligent-model-routing/artifact.j2" tofile="${project.build.directory}/${intelligent-model-routing.name}_${intelligent-model-routing.policy.version}.j2" />
+                                <move file="${project.build.directory}/intelligent-model-routing/policy-definition.json" tofile="${project.build.directory}/${intelligent-model-routing.name}_${intelligent-model-routing.policy.version}.json" />
 
                                 <unzip src="${project.build.directory}/org.wso2.am.policies.mediation.ai.content-based-model-router-${content-based-model-router.version}-distribution.zip" dest="${project.build.directory}/content-based-model-router" />
                                 <move file="${project.build.directory}/content-based-model-router/artifact.j2" tofile="${project.build.directory}/${content-based-model-router.name}_${content-based-model-router.policy.version}.j2" />
