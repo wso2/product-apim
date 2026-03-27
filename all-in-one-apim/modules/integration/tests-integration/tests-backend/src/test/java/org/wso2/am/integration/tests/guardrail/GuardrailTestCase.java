@@ -137,6 +137,12 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private static final String SEMANTIC_TOOL_FILTERING_POLICY_CLASS =
         "org.wso2.apim.policies.mediation.ai.semantic.tool.filtering.SemanticToolFiltering";
     private static final int SEMANTIC_TOOL_FILTERING_TOOL_LIMIT = 2;
+    private static final String SHARED_DUMMY_BACKEND_SYNAPSE_CONFIG =
+            "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                    + File.separator + "dummy_api.xml";
+    private static final String SHARED_DUMMY_BACKEND_HEALTHCHECK_PATH = "response/pets";
+    private static final int SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS = 12;
+    private static final long SHARED_GATEWAY_RELOAD_RETRY_INTERVAL_MILLIS = 5000L;
 
     // -----------------------------------------------------------------------
     // AI service provider constants
@@ -171,6 +177,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private String aiServiceProviderId;
     private String resourcePath;
     private String sourceTomlPath;
+    private Path temporaryTomlDirectory;
     /** Pre-rendered mock response (model placeholder already substituted). */
     private String mockResponse;
     private String mockEmbeddingsResponse;
@@ -181,6 +188,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private WireMockServer wireMockServer;
     private int mockPort;
     private ServerConfigurationManager serverConfigurationManager;
+    private boolean serverRestartedWithGuardrailConfig;
     // -----------------------------------------------------------------------
     // TestNG factory / data-provider
     // -----------------------------------------------------------------------
@@ -209,8 +217,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         wireMockServer = new WireMockServer(options().port(mockPort));
 
         Path originalTomlPath = Paths.get(resolveGuardrailDeploymentTomlPath());
-        Path tempDir = Files.createTempDirectory("guardrail-deployment-");
-        Path patchedTomlPath = tempDir.resolve("deployment.toml");
+        temporaryTomlDirectory = Files.createTempDirectory("guardrail-deployment-");
+        Path patchedTomlPath = temporaryTomlDirectory.resolve("deployment.toml");
         Files.copy(originalTomlPath, patchedTomlPath, StandardCopyOption.REPLACE_EXISTING);
         sourceTomlPath = patchedTomlPath.toString();
         log.info("###===### Source path :" + sourceTomlPath);
@@ -222,7 +230,9 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(sourceTomlPath));
         serverConfigurationManager.restartGracefully();
+        serverRestartedWithGuardrailConfig = true;
         super.init(userMode);
+        reloadSharedGatewayTestArtifactsAfterServerRestart();
 
         resourcePath = TestConfigurationProvider.getResourceLocation() + "guardrail" + File.separator;
         policyMap = restAPIPublisher.getAllCommonOperationPolicies();
@@ -249,78 +259,185 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() {
-        try {
-        updateTomlFileWithMockPort(sourceTomlPath, 18080,mockPort);
-        } catch (Exception e) {
-            log.warn("Could not reset mock backend port in deployment.toml: " + e.getMessage());
-        }
+    public void cleanUpArtifacts() throws Exception {
+        List<String> cleanupFailures = new ArrayList<>();
+
         try {
             if (applicationId != null) {
                 restAPIStore.deleteApplication(applicationId);
             }
         } catch (Exception e) {
-            log.warn("Could not delete application: " + e.getMessage());
+            recordCleanupFailure(cleanupFailures, "delete Guardrail application", e);
         }
+
         try {
             if (aiApiId != null) {
                 undeployAndDeleteAPIRevisionsUsingRest(aiApiId, restAPIPublisher);
                 restAPIPublisher.deleteAPI(aiApiId);
             }
         } catch (Exception e) {
-            log.warn("Could not delete AI API: " + e.getMessage());
+            recordCleanupFailure(cleanupFailures, "delete Guardrail AI API", e);
         }
+
         try {
             if (aiServiceProviderId != null) {
                 restAPIAdmin.deleteAIServiceProvider(aiServiceProviderId);
             }
-      
         } catch (Exception e) {
-            log.warn("Could not delete AI service provider: " + e.getMessage());
+            recordCleanupFailure(cleanupFailures, "delete Guardrail AI service provider", e);
+        }
+
+        try {
+            if (restAPIStore != null && restAPIPublisher != null) {
+                super.cleanUp();
+            }
+        } catch (Exception e) {
+            recordCleanupFailure(cleanupFailures, "run shared APIM cleanup", e);
         }
 
         if (wireMockServer != null) {
             try {
-                wireMockServer.stop();
-                wireMockServer = null;
+                log.info("###===### Cleaning up WireMock server on port " + mockPort);
+                wireMockServer.resetAll();
+                if (wireMockServer.isRunning()) {
+                    wireMockServer.stop();
+                }
                 ensurePortIsReleased(mockPort);
+                log.info("###===### WireMock server stopped and port " + mockPort + " released");
             } catch (Exception e) {
-                log.warn("Error stopping WireMock server: " + e.getMessage());
+                recordCleanupFailure(cleanupFailures, "stop Guardrail WireMock server", e);
+            } finally {
+                wireMockServer = null;
             }
         }
 
         try {
-            if (serverConfigurationManager != null) {
+            if (serverConfigurationManager != null && serverRestartedWithGuardrailConfig) {
                 serverConfigurationManager.restoreToLastConfiguration();
+                serverRestartedWithGuardrailConfig = false;
+                super.init(userMode);
+                reloadSharedGatewayTestArtifactsAfterServerRestart();
             }
         } catch (Exception e) {
-            log.warn("Could not restore server configuration: " + e.getMessage());
+            recordCleanupFailure(cleanupFailures, "restore API Manager configuration", e);
+        }
+
+        try {
+            deleteTemporaryTomlFiles();
+        } catch (Exception e) {
+            recordCleanupFailure(cleanupFailures, "delete temporary Guardrail config files", e);
+        }
+
+        if (!cleanupFailures.isEmpty()) {
+            Assert.fail("Guardrail cleanup failed: " + String.join(" | ", cleanupFailures));
         }
     }
 
     private void ensurePortIsReleased(int port) {
-    for (int i = 0; i < 5; i++) {
-        try (java.net.ServerSocket serverSocket = new java.net.ServerSocket(port)) {
-            serverSocket.setReuseAddress(true);
-            log.info("###===### Port " + port + " is now free.");
-            return; // Success, port is free
-        } catch (java.io.IOException e) {
-            log.warn("###===### Port " + port + " still in use, waiting... (Attempt " + (i + 1) + ")");
-            try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+        for (int i = 0; i < 5; i++) {
+            try (java.net.ServerSocket serverSocket = new java.net.ServerSocket(port)) {
+                serverSocket.setReuseAddress(true);
+                log.info("###===### Port " + port + " is now free.");
+                return;
+            } catch (java.io.IOException e) {
+                log.warn("###===### Port " + port + " still in use, waiting... (Attempt " + (i + 1) + ")");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ignored) {
+                }
+            }
         }
     }
-}
 
-    public void updateTomlFileWithMockPort(String sourceTomlPath, int newPort,int oldPort) throws IOException {
+    private void reloadSharedGatewayTestArtifactsAfterServerRestart() throws Exception {
+        if (isSharedDummyBackendAvailable()) {
+            return;
+        }
+
+        Exception lastFailure = null;
+        for (int attempt = 1; attempt <= SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS; attempt++) {
+            try {
+                reloadSharedDummyBackendSynapseConfig();
+                waitForSharedDummyBackendAvailability();
+                return;
+            } catch (Exception e) {
+                lastFailure = e;
+                if (attempt == SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS) {
+                    break;
+                }
+                log.warn("Failed to reload shared gateway test artifacts after restart. Attempt " + attempt
+                        + " of " + SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS + ". Retrying in "
+                        + SHARED_GATEWAY_RELOAD_RETRY_INTERVAL_MILLIS + " ms", e);
+                Thread.sleep(SHARED_GATEWAY_RELOAD_RETRY_INTERVAL_MILLIS);
+            }
+        }
+
+        throw new Exception("Unable to reload shared gateway test artifacts after Guardrail restarted APIM",
+                lastFailure);
+    }
+
+    private boolean isSharedDummyBackendAvailable() {
+        try {
+            HttpResponse response = HTTPSClientUtils.doGet(
+                    getGatewayURLNhttps() + SHARED_DUMMY_BACKEND_HEALTHCHECK_PATH, new HashMap<>());
+            return response != null && response.getResponseCode() == HttpStatus.SC_OK;
+        } catch (Exception e) {
+            log.info("Shared dummy backend is not yet available after restart: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void reloadSharedDummyBackendSynapseConfig() throws Exception {
+        String gatewayManagementSessionCookie = createSession(gatewayContextMgt);
+        loadSynapseConfigurationFromClasspath(SHARED_DUMMY_BACKEND_SYNAPSE_CONFIG,
+                gatewayContextMgt, gatewayManagementSessionCookie);
+    }
+
+    private void waitForSharedDummyBackendAvailability() throws Exception {
+        String backendHealthCheckUrl = getGatewayURLNhttps() + SHARED_DUMMY_BACKEND_HEALTHCHECK_PATH;
+        HttpResponse lastResponse = null;
+        for (int attempt = 1; attempt <= SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS; attempt++) {
+            lastResponse = HTTPSClientUtils.doGet(backendHealthCheckUrl, new HashMap<>());
+            if (lastResponse != null && lastResponse.getResponseCode() == HttpStatus.SC_OK) {
+                return;
+            }
+
+            if (attempt < SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS) {
+                Thread.sleep(SHARED_GATEWAY_RELOAD_RETRY_INTERVAL_MILLIS);
+            }
+        }
+
+        String responseCode = lastResponse == null ? "null" : String.valueOf(lastResponse.getResponseCode());
+        String responseBody = lastResponse == null ? "null" : lastResponse.getData();
+        throw new Exception("Shared dummy backend health check failed for " + backendHealthCheckUrl
+                + ". Last response code: " + responseCode + ", response: " + responseBody);
+    }
+
+    private void updateTomlFileWithMockPort(String sourceTomlPath, int newPort, int oldPort) throws IOException {
         String content = new String(Files.readAllBytes(Paths.get(sourceTomlPath)));
         String updatedContent = content;
-        
-        // Replace <number> placeholder in embedding_endpoint (more robust regex pattern)
-        // Handles: localhost:<number>, localhost:<any_number>, or variations with <...>
+
         updatedContent = updatedContent.replaceAll(String.valueOf(oldPort), String.valueOf(newPort));
-        
+
         Files.write(Paths.get(sourceTomlPath), updatedContent.getBytes());
         log.info("Updated deployment.toml with mock backend port: " + newPort);
+    }
+
+    private void deleteTemporaryTomlFiles() throws IOException {
+        if (sourceTomlPath != null) {
+            Files.deleteIfExists(Paths.get(sourceTomlPath));
+            sourceTomlPath = null;
+        }
+        if (temporaryTomlDirectory != null) {
+            Files.deleteIfExists(temporaryTomlDirectory);
+            temporaryTomlDirectory = null;
+        }
+    }
+
+    private void recordCleanupFailure(List<String> cleanupFailures, String action, Exception e) {
+        String message = action + " failed: " + e.getMessage();
+        cleanupFailures.add(message);
+        log.warn(message, e);
     }
 
     // -----------------------------------------------------------------------
@@ -654,6 +771,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE))
             .withRequestBody(matchingJsonPath("$.contents[0].parts[0].text"))
             .withRequestBody(containing(REQUESTED_QUERY_TEXT_SNIPPET))
+            // .withRequestBody(containing(REQUESTED_TOOL_TEXT))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
