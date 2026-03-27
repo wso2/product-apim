@@ -26,8 +26,8 @@
         "eslint-plugin-import": "^2.9.0",
         "eslint-plugin-jest": "^22.6.4",
         "eslint-plugin-react": "v7.13.0",
-        "jest": "^24.8.0",
-        "jest-puppeteer": "^4.2.0",
+        "jest": "^30.0.4",
+        "jest-puppeteer": "^11.0.0",
         "puppeteer": "^1.17.0",
         "webpack": "v4.28.4",
         "webpack-cli": "^3.3.2"
