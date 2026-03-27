@@ -406,3 +406,20 @@ context = "(.*)/APIStatusMonitor(.*)"
 secure = false
 http_method = "all"
 
+[[apim.devportal.application_attributes]]
+name = "External Reference ID"
+description = "Used for internal billing tracking"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Technical Contact"
+description = "Email address of the primary developer or lead"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Department Name"
+description = "The department owning this app"
+required = false
+hidden = false

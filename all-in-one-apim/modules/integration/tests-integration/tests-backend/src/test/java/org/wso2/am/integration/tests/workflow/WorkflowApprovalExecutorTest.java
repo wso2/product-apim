@@ -62,6 +62,7 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,13 +127,18 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        adminDashboardRestClient = new AdminDashboardRestClient(getPublisherURLHttps());
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
-
         userManagementClient.addUser(USER_SMITH, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_SMITH);
         userManagementClient.addUser(USER_ADMIN, "admin", new String[]{ALLOWED_ROLE}, ADMIN_ROLE);
+
+        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContextMgt);
+        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "approveWorkflow" + File.separator
+                + "deployment.toml"));
+
+        adminDashboardRestClient = new AdminDashboardRestClient(getPublisherURLHttps());
 
         resourceAdminServiceClient = new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 createSession(gatewayContextMgt));
@@ -366,7 +372,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
             }
         }
         assertNotNull("Workflow reference is not available ", externalWorkflowRef);
-        
+
         //get workflow pending requests by external workflow reference by Admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(externalWorkflowRef);
         assertEquals(response.getResponseCode(), 200,
@@ -836,7 +842,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(updateWorkflowResponse.getResponseCode(), 200, "Workflow state update failed for user admin");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Subscription workflow process check", dependsOnMethods = 
+    @Test(groups = {"wso2.am"}, description = "Subscription workflow process check", dependsOnMethods =
         {"testApplicationWorkflowProcess", "testAPIWorkflowProcess" })
     public void testSubscriptionWorkflowProcess() throws Exception {
 
