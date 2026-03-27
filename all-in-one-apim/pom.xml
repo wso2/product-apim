@@ -1017,7 +1017,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
-                <version>${jackson-version}</version>
+                <version>${com.fasterxml.jackson.annotations.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -1306,7 +1306,7 @@
         <carbon.apimgt.ui.version>9.3.151</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.67</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.74</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1319,7 +1319,7 @@
         <carbon.governance.version>4.9.4</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.11.8</carbon.kernel.version>
+        <carbon.kernel.version>4.11.9</carbon.kernel.version>
 
         <cipher.tool.version>1.1.29</cipher.tool.version>
 
@@ -1353,7 +1353,7 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.15.0</carbon.deployment.version>
+        <carbon.deployment.version>4.15.2</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.13.3</carbon.multitenancy.version>
@@ -1370,7 +1370,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.1.0-wso2v31</synapse.version>
+        <synapse.version>4.1.0-wso2v33</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v121</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v34</axiom.wso2.version>
@@ -1447,7 +1447,7 @@
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
-        <jackson-version>2.16.1</jackson-version>
+        <jackson-version>2.21.2</jackson-version>
         <jodatime-version>2.10.6</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <com.squareup.okhttp.version>2.7.5</com.squareup.okhttp.version>
@@ -1470,7 +1470,8 @@
         <javax.jms.version>2.0.1</javax.jms.version>
 
         <!-- API Import/Export Dependencies -->
-        <com.fasterxml.jackson.dataformat.version>2.16.1</com.fasterxml.jackson.dataformat.version>
+        <com.fasterxml.jackson.dataformat.version>2.21.2</com.fasterxml.jackson.dataformat.version>
+        <com.fasterxml.jackson.annotations.version>2.21</com.fasterxml.jackson.annotations.version>
         <versions.pax.logging>2.3.0-wso2v1</versions.pax.logging>
         <config.mapper.version>1.0.25</config.mapper.version>
 
