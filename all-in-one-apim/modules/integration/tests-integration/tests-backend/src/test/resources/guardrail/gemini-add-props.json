@@ -1,0 +1,19 @@
+{
+  "name": "geminiAPI",
+  "version": "1.0.0",
+  "context": "geminiAPI",
+  "gatewayType": "wso2/synapse",
+  "policies": ["Unlimited"],
+  "endpointConfig": {
+    "endpoint_type": "http"
+  },
+  "subtypeConfiguration": {
+    "subtype": "AIAPI",
+    "configuration": {
+      "llmProviderName": "Gemini",
+      "llmProviderApiVersion": "v1"
+    }
+  },
+  "securityScheme": ["api_key"],
+  "egress": true
+}
