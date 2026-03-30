@@ -310,6 +310,8 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
         ApiResponse<Void> response = restAPIPublisher.deleteEndpointCertificate("endpoint-1");
         Assert.assertEquals(response.getStatusCode(), 200);
+        waitForSSLProfileReload();
+
         response = restAPIPublisher.deleteEndpointCertificate("endpoint-2");
         Assert.assertEquals(response.getStatusCode(), 200);
         // Thread.sleep(60500); // Sleep to reload the transport
@@ -379,6 +381,11 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
                 log.info("SSLProfile has not been reloaded. Retry attempt - " + retryAttempt);
                 Thread.sleep(12000); // Wait before fetching logs again
             }
+        }
+
+        if (!isSSProfileReloaded) {
+            throw new AssertionError("Gateway SSLProfile reload was not detected after waiting. "
+                    + "Expected log message containing 'PassThroughHttpSender reloading SSL Config'.");
         }
     }
 
