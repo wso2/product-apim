@@ -30,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -137,10 +138,64 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private static final String SEMANTIC_TOOL_FILTERING_POLICY_CLASS =
         "org.wso2.apim.policies.mediation.ai.semantic.tool.filtering.SemanticToolFiltering";
     private static final int SEMANTIC_TOOL_FILTERING_TOOL_LIMIT = 2;
-    private static final String SHARED_DUMMY_BACKEND_SYNAPSE_CONFIG =
-            "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "dummy_api.xml";
-    private static final String SHARED_DUMMY_BACKEND_HEALTHCHECK_PATH = "response/pets";
+    private static final String SHARED_GATEWAY_ARTIFACTS_ROOT =
+            "artifacts" + File.separator + "AM" + File.separator;
+    private static final String[] SHARED_GATEWAY_MGT_SYNAPSE_CONFIGS = new String[]{
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy_api.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "version1.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "version2.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "sequence" + File.separator + "xml_api.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy-api-multiResourceSameVerb.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy-api-resourceWithSpecialCharacters.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "jwt_backend.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy_api_APIMANAGER-4464.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy_digest_api.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "error_response_check_dummy_api.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "git2231_head_api.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy_api_APIMANAGER-4312.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy_patch_api.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "api_throttle_backend.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "throttling" + File.separator
+                    + "dummy-stockquote.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "APIResourceWithTemplateTestCaseAPI.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "scriptmediator"
+                    + File.separator + "script_mediator_api.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy_api_relative_url_loc_header.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy_api_schema_validation.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "dummy_api_loc_header.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "JWKS-Backend.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "BackEndSecurity.xml",
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "rest" + File.separator
+                    + "BackendCORS.xml"
+    };
+    private static final String[] SHARED_GATEWAY_WRK_SYNAPSE_CONFIGS = new String[]{
+            SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "error" + File.separator
+                    + "handle" + File.separator + "error-handling-test-synapse.xml"
+    };
+    private static final String[] SHARED_GATEWAY_HEALTHCHECK_PATHS = new String[]{
+            "response/pets",
+            "version1/customers",
+            "version2/customers"
+    };
     private static final int SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS = 12;
     private static final long SHARED_GATEWAY_RELOAD_RETRY_INTERVAL_MILLIS = 5000L;
 
@@ -287,14 +342,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             recordCleanupFailure(cleanupFailures, "delete Guardrail AI service provider", e);
         }
 
-        try {
-            if (restAPIStore != null && restAPIPublisher != null) {
-                super.cleanUp();
-            }
-        } catch (Exception e) {
-            recordCleanupFailure(cleanupFailures, "run shared APIM cleanup", e);
-        }
-
         if (wireMockServer != null) {
             try {
                 log.info("###===### Cleaning up WireMock server on port " + mockPort);
@@ -312,6 +359,23 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         }
 
         try {
+            if (sourceTomlPath != null && !Files.exists(Paths.get(sourceTomlPath))) {
+                cleanupFailures.add("temporary Guardrail config file was deleted before suite teardown");
+            }
+        } catch (Exception e) {
+            recordCleanupFailure(cleanupFailures, "verify temporary Guardrail config files", e);
+        }
+
+        if (!cleanupFailures.isEmpty()) {
+            Assert.fail("Guardrail cleanup failed: " + String.join(" | ", cleanupFailures));
+        }
+    }
+
+    @AfterSuite(alwaysRun = true)
+    public void restoreGuardrailConfigurationAfterSuite() throws Exception {
+        List<String> cleanupFailures = new ArrayList<>();
+
+        try {
             if (serverConfigurationManager != null && serverRestartedWithGuardrailConfig) {
                 serverConfigurationManager.restoreToLastConfiguration();
                 serverRestartedWithGuardrailConfig = false;
@@ -319,7 +383,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 reloadSharedGatewayTestArtifactsAfterServerRestart();
             }
         } catch (Exception e) {
-            recordCleanupFailure(cleanupFailures, "restore API Manager configuration", e);
+            recordCleanupFailure(cleanupFailures, "restore API Manager configuration after suite", e);
         }
 
         try {
@@ -329,7 +393,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         }
 
         if (!cleanupFailures.isEmpty()) {
-            Assert.fail("Guardrail cleanup failed: " + String.join(" | ", cleanupFailures));
+            Assert.fail("Guardrail suite teardown failed: " + String.join(" | ", cleanupFailures));
         }
     }
 
@@ -350,7 +414,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     }
 
     private void reloadSharedGatewayTestArtifactsAfterServerRestart() throws Exception {
-        if (isSharedDummyBackendAvailable()) {
+        if (areSharedGatewayTestArtifactsAvailable()) {
             return;
         }
 
@@ -376,31 +440,60 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 lastFailure);
     }
 
-    private boolean isSharedDummyBackendAvailable() {
+    private boolean areSharedGatewayTestArtifactsAvailable() {
+        for (String healthCheckPath : SHARED_GATEWAY_HEALTHCHECK_PATHS) {
+            if (!isGatewayArtifactAvailable(healthCheckPath)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isGatewayArtifactAvailable(String healthCheckPath) {
         try {
             HttpResponse response = HTTPSClientUtils.doGet(
-                    getGatewayURLNhttps() + SHARED_DUMMY_BACKEND_HEALTHCHECK_PATH, new HashMap<>());
+                    getGatewayURLNhttps() + healthCheckPath, new HashMap<>());
             return response != null && response.getResponseCode() == HttpStatus.SC_OK;
         } catch (Exception e) {
-            log.info("Shared dummy backend is not yet available after restart: " + e.getMessage());
+            log.info("Shared gateway artifact is not yet available after restart for path " + healthCheckPath
+                    + ": " + e.getMessage());
             return false;
         }
     }
 
     private void reloadSharedDummyBackendSynapseConfig() throws Exception {
         String gatewayManagementSessionCookie = createSession(gatewayContextMgt);
-        loadSynapseConfigurationFromClasspath(SHARED_DUMMY_BACKEND_SYNAPSE_CONFIG,
-                gatewayContextMgt, gatewayManagementSessionCookie);
+        loadSynapseConfigurations(gatewayContextMgt, gatewayManagementSessionCookie,
+                SHARED_GATEWAY_MGT_SYNAPSE_CONFIGS);
+        loadSynapseConfigurations(gatewayContextWrk, gatewayManagementSessionCookie,
+                SHARED_GATEWAY_WRK_SYNAPSE_CONFIGS);
+    }
+
+    private void loadSynapseConfigurations(AutomationContext automationContext, String sessionCookie,
+                                           String[] configPaths) throws Exception {
+        for (String configPath : configPaths) {
+            loadSynapseConfigurationFromClasspath(configPath, automationContext, sessionCookie);
+        }
     }
 
     private void waitForSharedDummyBackendAvailability() throws Exception {
-        String backendHealthCheckUrl = getGatewayURLNhttps() + SHARED_DUMMY_BACKEND_HEALTHCHECK_PATH;
+        String lastFailedPath = null;
         HttpResponse lastResponse = null;
         for (int attempt = 1; attempt <= SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS; attempt++) {
-            lastResponse = HTTPSClientUtils.doGet(backendHealthCheckUrl, new HashMap<>());
-            if (lastResponse != null && lastResponse.getResponseCode() == HttpStatus.SC_OK) {
+            String failedPath = null;
+            lastResponse = null;
+            for (String healthCheckPath : SHARED_GATEWAY_HEALTHCHECK_PATHS) {
+                lastResponse = HTTPSClientUtils.doGet(getGatewayURLNhttps() + healthCheckPath, new HashMap<>());
+                if (lastResponse == null || lastResponse.getResponseCode() != HttpStatus.SC_OK) {
+                    failedPath = healthCheckPath;
+                    break;
+                }
+            }
+
+            if (failedPath == null) {
                 return;
             }
+            lastFailedPath = failedPath;
 
             if (attempt < SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS) {
                 Thread.sleep(SHARED_GATEWAY_RELOAD_RETRY_INTERVAL_MILLIS);
@@ -409,7 +502,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         String responseCode = lastResponse == null ? "null" : String.valueOf(lastResponse.getResponseCode());
         String responseBody = lastResponse == null ? "null" : lastResponse.getData();
-        throw new Exception("Shared dummy backend health check failed for " + backendHealthCheckUrl
+        throw new Exception("Shared gateway artifact health check failed for "
+                + getGatewayURLNhttps() + lastFailedPath
                 + ". Last response code: " + responseCode + ", response: " + responseBody);
     }
 
