@@ -220,8 +220,15 @@ public class JWTGenerator {
             private List<Map<String, Object>> subscribedApis;
             private Map<String, Object> tierInfo;
 
-            public Builder endUsername(String val) { this.endUsername = val; return this; }
-            public Builder sub(String val) { this.sub = val; return this; }
+            public Builder endUsername(String val) {
+                this.sub = val;
+                this.endUsername = val;
+                return this;
+            }
+            public Builder sub(String val) {
+                this.sub = val;
+                return this;
+            }
             public Builder issuer(String val) { this.issuer = val; return this; }
             public Builder validityPeriod(long val) { this.validityPeriod = val; return this; }
             public Builder keyType(String val) { this.keyType = val; return this; }

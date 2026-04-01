@@ -133,6 +133,7 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(decodingApplicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")
