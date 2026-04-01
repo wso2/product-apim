@@ -264,7 +264,6 @@
         <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>
-            <class name="org.wso2.am.integration.tests.application.ApplicationBlockSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion"/>
@@ -504,6 +503,13 @@
         <classes>
             <class name="org.wso2.am.integration.tests.tenantsync.APIMISTenantSyncTestSuite"/>
             <class name="org.wso2.am.integration.tests.tenantsync.APIMTenantCreationNotificationTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-application-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group2"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.application.ApplicationBlockSubscriptionTestCase"/>
         </classes>
     </test>
     <!--<test name="apim-websocket-invocation-tests" preserve-order="true" parallel="false" group-by-instances="true">
