@@ -85,7 +85,7 @@ passthru_https.listener.ssl_profile_interval = 6000
 period = "1m"
 
 [database.local]
-url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1"
 
 [[event_listener]]
 id = "token_revocation"
@@ -108,3 +108,251 @@ show_display_name_in_consent_page = true
 
 [encryption]
 key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
+
+[[resource.access_control]]
+context = "(.*)/api/identity(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/openam/oauth2(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/passivests(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/jaxrs_basic/services(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/am/sample(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/am-graphQL-sample/api/graphql(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/am-auditApi-sample/api/auditapi(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/BPMNProcessServerApp-1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/store(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/testapp(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/pizzashack-api-1\\.0\\.0/api(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/backendMockup(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/etcdmock/v2/keys/jti(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/auth/realms/master(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/as(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/pf-ws/rest/oauth/clients(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/pf/JWKS(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/playground2(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/defaultversion(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/version1(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/version2(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/xmlapi(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/response(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/response_error(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/response_loc(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/locationheader(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/digestAuth(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/httpPatchSupportContext(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/script/1\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/backendSecurity/1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/urlmapping/1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/tokenTestAPI(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/refreshTokenTestAPI(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/jwtTokenTestAPI(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/api_throttle(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/phoneverify(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/phoneverifyarchive(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/phoneverifyurl123(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/pizzashack/1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/SampleAPI(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/Weather/1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/helloService(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/jwks(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/SwaggerPetstorev2import(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/SwaggerPetstorev3import(.*)"
+secure = false
+http_method = "all"
+[[resource.access_control]]
+context = "(.*)/name-check1_SB(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/name-checkOne(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/wildcard(.*)"
+secure = false
+http_method = "all"
+
+[[oauth.extensions.token_types]]
+name = "JWT"
+issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
+
+[[resource.access_control]]
+context = "(.*)/APIStatusMonitor(.*)"
+secure = false
+http_method = "all"

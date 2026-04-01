@@ -124,7 +124,8 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(isSDKGenerationSuccessfulInSameTenant && !isSDKGenerationSuccessfulAcrossTenants);
     }
 
-    @Test(groups = {"wso2.am"}, description = "SDK Generation for invalid swagger test case")
+// Commenting this as creating an API using an invalid swagger definition is not supported in the latest API-M version.
+//    @Test(groups = {"wso2.am"}, description = "SDK Generation for invalid swagger test case")
     public void testSDKGenerationForInvalidSwagger() throws Exception {
         String swaggerPath = getAMResourceLocation() + File.separator + SWAGGER_FOLDER +
                 File.separator + "invalid-petstore.json";

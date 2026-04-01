@@ -72,6 +72,7 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
     String enduserPassword = "password@123";
     URL tokenEndpointURL;
     private String decodingApplicationId;
+    private String decodingApplicationSecret;
     private String decodingApiId;
 
     @Factory(dataProvider = "userModeDataProvider") public JWTDecodingTestCase(TestUserMode userMode) {
@@ -117,8 +118,9 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         //generate keys
-        restAPIStore.generateKeys(decodingApplicationId, "36000", "",
+        ApplicationKeyDTO decodingApplicationKeyDTO = restAPIStore.generateKeys(decodingApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        decodingApplicationSecret = decodingApplicationKeyDTO.getConsumerSecret();
         createUser();
         waitForAPIDeploymentSync(user.getUserName(), decodingApiRequest.getName(), decodingApiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -159,7 +161,7 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
                 decodingApplicationId, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
         String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
-                applicationKeyDTO.getConsumerSecret(), enduserName, enduserPassword);
+                decodingApplicationSecret, enduserName, enduserPassword);
         log.info("Acess Token Generated in JWT ==" + accessToken);
         HttpClient decodingTokenHttpClient = HttpClientBuilder.create().build();
         HttpGet decodingThirdGet = new HttpGet(getAPIInvocationURLHttp(decodingApiContext, apiVersion));
@@ -171,6 +173,34 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse decodingFourthResponse = decodingTokenHttpClient.execute(decodingThirdGet);
         Assert.assertEquals(decodingFourthResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke API with opaque API key for JWT decoding test",
+            dependsOnMethods = "testJWTDecodingforCustomApplication")
+    public void testJWTDecodingforCustomApplicationWithOpaqueKey() throws Exception {
+
+        String opaqueApiKey = restAPIStore.generateAPIKeys(decodingApplicationId, "PRODUCTION", 3600, null, null,
+                "testJWTDecodingforCustomApplicationWithOpaqueKey").getApikey();
+
+        // Retry until the opaque key propagates to the gateway cache
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet getRequest = new HttpGet(getAPIInvocationURLHttp(decodingApiContext, apiVersion));
+        getRequest.addHeader("apikey", opaqueApiKey);
+        HttpResponse firstResponse;
+        int counter = 1;
+        do {
+            Thread.sleep(1000L);
+            firstResponse = httpClient.execute(getRequest);
+            counter++;
+        } while (firstResponse.getStatusLine().getStatusCode() != Response.Status.OK.getStatusCode() && counter < 25);
+        Assert.assertEquals(firstResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation with opaque key");
+
+        // Repeat to verify consistent behaviour (mirrors JWT test pattern)
+        Thread.sleep(1000);
+        HttpResponse secondResponse = httpClient.execute(getRequest);
+        Assert.assertEquals(secondResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation with opaque key (second call)");
     }
 
     @AfterClass(alwaysRun = true) public void destroy() throws Exception {

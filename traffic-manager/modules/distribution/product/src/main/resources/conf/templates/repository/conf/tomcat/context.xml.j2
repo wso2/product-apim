@@ -28,7 +28,7 @@
             loaderClass="org.wso2.carbon.webapp.mgt.loader.CarbonWebappClassLoader"/>
 
     <!-- Uncomment this to disable session persistence across Tomcat restarts -->
-    <Manager className="org.wso2.carbon.webapp.mgt.CarbonTomcatSessionManager">
+    <Manager className="{{ tenant_context.session_manager | default('org.wso2.carbon.webapp.mgt.CarbonTomcatSessionManager') }}">
         <SessionIdGenerator sessionIdLength="128"/>
     </Manager>
 

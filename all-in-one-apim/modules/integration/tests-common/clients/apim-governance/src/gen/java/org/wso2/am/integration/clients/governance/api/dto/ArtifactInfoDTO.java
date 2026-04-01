@@ -83,6 +83,59 @@ public static TypeEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_TYPE)
             private TypeEnum type;
 
+            /**
+* Extended type of the artifact.
+*/
+    @JsonAdapter(ExtendedTypeEnum.Adapter.class)
+public enum ExtendedTypeEnum {
+        REST_API("REST_API"),
+        
+        ASYNC_API("ASYNC_API"),
+        
+        MCP("MCP");
+
+private String value;
+
+ExtendedTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static ExtendedTypeEnum fromValue(String value) {
+    for (ExtendedTypeEnum b : ExtendedTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<ExtendedTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final ExtendedTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public ExtendedTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return ExtendedTypeEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_EXTENDED_TYPE = "extendedType";
+        @SerializedName(SERIALIZED_NAME_EXTENDED_TYPE)
+            private ExtendedTypeEnum extendedType;
+
         public static final String SERIALIZED_NAME_VERSION = "version";
         @SerializedName(SERIALIZED_NAME_VERSION)
             private String version;
@@ -135,6 +188,29 @@ public static TypeEnum fromValue(String value) {
 
     public void setType(TypeEnum type) {
         this.type = type;
+    }
+
+
+        public ArtifactInfoDTO extendedType(ExtendedTypeEnum extendedType) {
+        
+        this.extendedType = extendedType;
+        return this;
+        }
+
+    /**
+        * Extended type of the artifact.
+    * @return extendedType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "REST_API", value = "Extended type of the artifact.")
+    
+    public ExtendedTypeEnum getExtendedType() {
+        return extendedType;
+    }
+
+
+    public void setExtendedType(ExtendedTypeEnum extendedType) {
+        this.extendedType = extendedType;
     }
 
 
@@ -195,13 +271,14 @@ public static TypeEnum fromValue(String value) {
             ArtifactInfoDTO artifactInfo = (ArtifactInfoDTO) o;
             return Objects.equals(this.name, artifactInfo.name) &&
             Objects.equals(this.type, artifactInfo.type) &&
+            Objects.equals(this.extendedType, artifactInfo.extendedType) &&
             Objects.equals(this.version, artifactInfo.version) &&
             Objects.equals(this.owner, artifactInfo.owner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, type, version, owner);
+        return Objects.hash(name, type, extendedType, version, owner);
     }
 
 
@@ -211,6 +288,7 @@ StringBuilder sb = new StringBuilder();
 sb.append("class ArtifactInfoDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    extendedType: ").append(toIndentedString(extendedType)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
 sb.append("}");

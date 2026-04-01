@@ -53,8 +53,9 @@
   "oauth.grant_type.uma_ticket.allow_public_client": true,
   "oauth.grant_type.uma_ticket.grant_handler": "org.wso2.carbon.identity.oauth.uma.grant.UMA2GrantHandler",
   "oauth.grant_type.uma_ticket.grant_validator": "org.wso2.carbon.identity.oauth.uma.grant.GrantValidator",
-  "oauth.revoked_token_headers_in_response.enable": true,
-  "oauth.token_persistence.enable": true,
+  "oauth.revoked_token_headers_in_response.enable": false,
+  "oauth.token_persistence.enable": false,
+  "oauth.callback.enforce_literal_characters": true,
   "apim.token.validation.enforce_type_header_validation": false,
   "system.parameter.'org.wso2.CipherTransformation'": "AES/GCM/NoPadding",
   "encryption.internal_crypto_provider": "org.wso2.carbon.crypto.provider.SymmetricKeyInternalCryptoProvider",
@@ -336,7 +337,7 @@
   "transport.client.https.properties.Transfer-Encoding": "chunked",
   "transport.client.https.properties.SO_TIMEOUT": "60000",
   "transport.client.https.properties.CONNECTION_TIMEOUT": "60000",
-  "database.local.url": "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE",
+  "database.local.url": "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1",
   "database.local.username": "wso2carbon",
   "database.local.password": "wso2carbon",
   "database.local.driver": "org.h2.Driver",
@@ -356,6 +357,7 @@
   "static_configuration.versioning_tags.enable": false,
   "static_configuration.versioning_ratings.enable": false,
   "version_resources.on_change": false,
+  "tenant_context.session_manager": "org.wso2.carbon.webapp.mgt.CarbonTomcatSessionManager",
   "tenant_context.rewrite.webapps": [
     "/api/identity/user/v1.0/",
     "/api/identity/consent-mgt/v1.0/",
@@ -372,7 +374,8 @@
     "/api/users/v2/me/webauthn",
     "/api/",
     "/user-portal/",
-    "/keymanager-operations/"
+    "/keymanager-operations/",
+    "/authenticationendpoint/"
   ],
   "resource.access_control": [
     {
@@ -523,6 +526,7 @@
   "apim.jwt.use_kid_property": true,
   "apim.jwt.use_sha256_hash": false,
   "apim.hashing.hashing_algorithm": "SHA-256",
+  "apim.mediation.enable_secure_xml_processing": true,
   "diagnostic_tool.server_configuration.diagnostic_tool_enabled": "true",
   "diagnostic_tool.server_configuration.deployment_toml_path": "../conf/deployment.toml",
   "diagnostic_tool.server_configuration.logs_directory": "../repository/logs",

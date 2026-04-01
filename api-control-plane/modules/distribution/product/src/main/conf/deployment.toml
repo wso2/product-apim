@@ -47,7 +47,7 @@ key_password =  "wso2carbon"
 #key_password =  "wso2carbon"
 
 [apim]
-gateway_type = "Regular,APK,AWS,Azure,Kong,Envoy"
+gateway_type = "Regular,APK,AWS,Azure,Kong,Envoy,Universal"
 
 [[apim.gateway.environment]]
 name = "Default"
@@ -64,6 +64,10 @@ ws_endpoint = "ws://localhost:9099"
 wss_endpoint = "wss://localhost:8099"
 http_endpoint = "http://localhost:8280"
 https_endpoint = "https://localhost:8243"
+
+[[oauth.extensions.token_types]]
+name = "JWT"
+issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
 
 #[apim.cache.gateway_token]
 #enable = true
@@ -155,7 +159,7 @@ subscriptions=["POST_ADD_USER"]
 sp_name_regex = "^[\\sa-zA-Z0-9._-]*$"
 
 [database.local]
-url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1"
 
 [[event_listener]]
 id = "token_revocation"

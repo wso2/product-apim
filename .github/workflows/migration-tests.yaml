@@ -95,6 +95,7 @@ jobs:
         with:
           name: apim-distribution
           path: ${{ steps.find_dist.outputs.dist_path }}
+          retention-days: 7
           if-no-files-found: error
 
   prepare-and-migrate:
@@ -421,7 +422,7 @@ jobs:
 
       - name: Identity Migration - Download and Setup
         env:
-          IDENTITY_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2is-migration-1.1.175.zip"
+          IDENTITY_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2is-migration-1.1.179-SNAPSHOT.zip"
         run: |
           echo "=== Step 1: Identity Migration Setup ==="
           
@@ -574,7 +575,7 @@ jobs:
 
       - name: APIM Migration - Download and Setup
         env:
-          APIM_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2am-migration-4.6.0.zip"
+          APIM_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2am-migration-4.7.0.1-SNAPSHOT.zip"
         run: |
           echo "=== Step 3: APIM Migration Setup ==="
           
@@ -941,6 +942,56 @@ jobs:
       - name: Wait 10 minutes after re-indexing (DB prep)
         run: sleep 600
 
+      - name: Dump migrated databases before test run
+        run: |
+          set -e
+
+          mkdir -p .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION
+
+          APIM_DB_CONTAINER=$(docker ps \
+            --filter "ancestor=mysql:8.0" \
+            --filter "publish=3306" \
+            --format "{{.ID}}" | head -n 1)
+
+          SHARED_DB_CONTAINER=$(docker ps \
+            --filter "ancestor=mysql:8.0" \
+            --filter "publish=3307" \
+            --format "{{.ID}}" | head -n 1)
+
+          echo "APIM DB container: ${APIM_DB_CONTAINER}"
+          echo "Shared DB container: ${SHARED_DB_CONTAINER}"
+
+          if [ -z "$APIM_DB_CONTAINER" ]; then
+            echo "APIM DB container not found"
+            exit 1
+          fi
+
+          if [ -z "$SHARED_DB_CONTAINER" ]; then
+            echo "Shared DB container not found"
+            exit 1
+          fi
+
+          echo "Dumping WSO2AM_APIMGT_DB..."
+          docker exec "$APIM_DB_CONTAINER" sh -c \
+            'mysqldump -uapim_user -papimpass --databases WSO2AM_APIMGT_DB --routines --events --triggers' \
+            > .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/apim_db_after_migration.sql
+
+          echo "Dumping WSO2AM_COMMON_DB..."
+          docker exec "$SHARED_DB_CONTAINER" sh -c \
+            'mysqldump -ushared_user -psharedpass --databases WSO2AM_COMMON_DB --routines --events --triggers' \
+            > .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/shared_db_after_migration.sql
+
+          ls -lh .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/
+
+      - name: Upload migrated DB dumps
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migrated-db-dumps
+          path: .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/
+          retention-days: 7
+          if-no-files-found: error
+
       - name: Run Integration Tests on Migrated Databases
         working-directory: all-in-one-apim/modules/integration-v2
         env:
@@ -980,6 +1031,7 @@ jobs:
           name: migration-test-reports
           path: |
             all-in-one-apim/modules/integration-v2/tests-integration/**/target/surefire-reports/**
+          retention-days: 7
           if-no-files-found: warn
 
   version-bump:

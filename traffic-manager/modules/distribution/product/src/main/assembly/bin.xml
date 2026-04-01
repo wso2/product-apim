@@ -256,6 +256,7 @@
                 <exclude>**/catalina-server.xml.j2</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
                 <exclude>**/webapps/authenticationendpoint/WEB-INF/web.xml.j2</exclude>
+                <exclude>**/identity.xml.j2</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -295,6 +296,9 @@
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/
             </directory>
             <outputDirectory>wso2am-tm-${pom.version}/repository/conf/identity</outputDirectory>
+            <excludes>
+                <exclude>identity.xml</exclude>
+            </excludes>
         </fileSet>
         <fileSet>
             <directory>
@@ -1258,6 +1262,10 @@
         <file>
             <source>target/apim-is-plugin-resources/dropins/org.wso2.charon3.core-${charon3.version}.jar</source>
             <outputDirectory>wso2am-tm-${pom.version}/repository/components/dropins</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/conf/identity/identity.xml</source>
+            <outputDirectory>wso2am-tm-${pom.version}/repository/conf/identity</outputDirectory>
         </file>
     </files>
 

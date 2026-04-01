@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.application.ApplicationManagementClient;
+import org.wso2.am.admin.clients.application.CarbonApplicationUploaderClient;
 import org.wso2.am.admin.clients.claim.ClaimMetaDataMgtAdminClient;
 import org.wso2.am.admin.clients.idp.IdentityProviderMgtClient;
 import org.wso2.am.admin.clients.idp.IdentityProviderMgtServiceClient;
@@ -126,6 +127,7 @@ public class APIMIntegrationBaseTest {
     protected OAuthAdminServiceClient oAuthAdminServiceClient;
     protected ApplicationManagementClient applicationManagementClient;
     protected IdentityProviderMgtServiceClient identityProviderMgtServiceClient;
+    protected CarbonApplicationUploaderClient carbonApplicationUploaderClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
     protected String publisherURLHttps;
@@ -263,6 +265,9 @@ public class APIMIntegrationBaseTest {
                                 keymanagerSessionCookie);
                 identityProviderMgtServiceClient =
                         new IdentityProviderMgtServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                keymanagerSessionCookie);
+                carbonApplicationUploaderClient =
+                        new CarbonApplicationUploaderClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                 keymanagerSessionCookie);
             } catch (Exception e) {
                 throw new APIManagerIntegrationTestException(e.getMessage(), e);

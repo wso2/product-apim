@@ -249,6 +249,7 @@
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
                 <exclude>**/conf/tomcat/carbon/META-INF/context.xml.j2</exclude>
                 <exclude>**/webapps/authenticationendpoint/WEB-INF/web.xml.j2</exclude>
+                <exclude>**/identity.xml.j2</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -307,6 +308,9 @@
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/
             </directory>
             <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
+            <excludes>
+                <exclude>identity.xml</exclude>
+            </excludes>
         </fileSet>
 
         <!-- Start API Manager related -->
@@ -621,6 +625,10 @@
                 <exclude>accountrecoveryendpoint/self-registration-username-request.jsp</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-with-verification.jsp</exclude>
                 <exclude>accountrecoveryendpoint/error.jsp</exclude>
+                <exclude>accountrecoveryendpoint/lite-user-confirm.jsp</exclude>
+                <exclude>accountrecoveryendpoint/self-registration-process.jsp</exclude>
+                <exclude>accountrecoveryendpoint/self-registration-with-verification-confirm.jsp</exclude>
+                <exclude>accountrecoveryendpoint/username-recovery-complete.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -652,6 +660,10 @@
                 <include>self-registration-username-request.jsp</include>
                 <include>self-registration-with-verification.jsp</include>
                 <include>error.jsp</include>
+                <include>lite-user-confirm.jsp</include>
+                <include>self-registration-process.jsp</include>
+                <include>self-registration-with-verification-confirm.jsp</include>
+                <include>username-recovery-complete.jsp</include>
             </includes>
         </fileSet>
 
@@ -776,6 +788,7 @@
             </outputDirectory>
             <includes>
                 <include>internal#data#v1.war</include>
+                <include>internal#gateway.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -1726,6 +1739,10 @@
         <file>
             <source>target/apim-is-plugin-resources/dropins/org.wso2.charon3.core-${charon3.version}.jar</source>
             <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/conf/identity/identity.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
         </file>
     </files>
 

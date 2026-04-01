@@ -42,6 +42,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -73,9 +74,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(APIEndpointCertificateTestCase.class);
+    private ServerConfigurationManager serverConfigurationManager;
     private final String API_NAME = "APIEndpointCertificateTestCase";
     private final String API_CONTEXT = "APIEndpointCertificateTestCase";
     private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String CONFIG_DIR = "configFiles";
+    private final String ENDPOINT_CERTIFICATE_RESOURCE_PATH = "endpointCertificate";
+    private final String DEPLOYMENT_FILE = "deployment.toml";
     int securedEndpointPort;
     String securedEndpointHost;
     String applicationId;
@@ -103,6 +108,13 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     public void initialize() throws Exception {
 
         super.init(userMode);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + CONFIG_DIR + File.separator + ENDPOINT_CERTIFICATE_RESOURCE_PATH
+                + File.separator + DEPLOYMENT_FILE));
+        serverConfigurationManager.restartGracefully();
+        super.init(userMode);
+
         securedEndpointHost = InetAddress.getLocalHost().getHostName();
         int lowerPortLimit = 9950;
         int upperPortLimit = 9999;
@@ -298,6 +310,8 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
         ApiResponse<Void> response = restAPIPublisher.deleteEndpointCertificate("endpoint-1");
         Assert.assertEquals(response.getStatusCode(), 200);
+        waitForSSLProfileReload();
+
         response = restAPIPublisher.deleteEndpointCertificate("endpoint-2");
         Assert.assertEquals(response.getStatusCode(), 200);
         // Thread.sleep(60500); // Sleep to reload the transport
@@ -344,7 +358,7 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
         LogEvent[] logEvents;
         // Initial wait for the event to likely happen
-        Thread.sleep(65000);
+        Thread.sleep(60000);
 
         int retryAttempt = 0;
         boolean isSSProfileReloaded = false;
@@ -371,10 +385,11 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     }
 
     @AfterClass(alwaysRun = true)
-    public void destroy() throws ApiException {
+    public void destroy() throws Exception {
 
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
         wireMockServer.stop();
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 }

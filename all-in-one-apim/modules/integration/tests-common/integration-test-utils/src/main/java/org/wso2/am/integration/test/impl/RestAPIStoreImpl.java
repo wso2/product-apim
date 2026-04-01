@@ -17,6 +17,8 @@
 package org.wso2.am.integration.test.impl;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -442,6 +444,42 @@ public class RestAPIStoreImpl {
         }
     }
 
+    /**
+     * Updates an existing application with the provided details and custom attributes.
+     *
+     * @param applicationId The unique identifier of the application to be updated.
+     * @param appName The new name of the application.
+     * @param description The updated description of the application.
+     * @param throttleTier The throttling policy (application tier) to be applied to the application.
+     * @param attributes A map containing custom application attributes to be associated with the application.
+     *
+     * @return {@link HttpResponse} containing the response body and HTTP status code.
+     * Returns status code {@code 200} if the application update is successful. If an error occurs,
+     * the response will contain the error body and the corresponding HTTP status code returned by the API.
+     */
+    public HttpResponse updateApplicationByID(String applicationId, String appName,
+                                              String description, String throttleTier, Map<String, String> attributes) {
+
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setAttributes(attributes);
+
+            ApplicationDTO updatedApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(updatedApp.getApplicationId())) {
+                response = new HttpResponse(updatedApp.toString(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            String responseBody = e.getResponseBody();
+            int statusCode = e.getCode();
+            return new HttpResponse(responseBody, statusCode);
+        }
+    }
+
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) throws APIManagerIntegrationTestException {
 
         try {
@@ -604,9 +642,14 @@ public class RestAPIStoreImpl {
     }
 
     public APIKeyListDTO getAPIKeys(String applicationId, String keyType) throws ApiException {
-        ApiResponse<APIKeyListDTO> response = apiKeysApi.getAppBoundAPIKeysWithHttpInfo(applicationId, keyType, null);
+        okhttp3.Call call = apiKeysApi.getAppBoundAPIKeysCall(applicationId, keyType, null, null);
+        Type listType = new TypeToken<List<APIKeyInfoDTO>>(){}.getType();
+        ApiResponse<List<APIKeyInfoDTO>> response = apiKeysApi.getApiClient().execute(call, listType);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
-        return response.getData();
+        APIKeyListDTO result = new APIKeyListDTO();
+        result.setList(response.getData());
+        result.setCount(response.getData() != null ? response.getData().size() : 0);
+        return result;
     }
 
     public void revokeAPIKey(String applicationId, String apiKey) throws ApiException {

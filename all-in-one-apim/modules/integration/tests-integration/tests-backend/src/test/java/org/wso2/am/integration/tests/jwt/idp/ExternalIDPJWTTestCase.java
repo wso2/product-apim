@@ -126,6 +126,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     private String consumerKey3 = UUID.randomUUID().toString();
     private String apiIdOnlyKm1;
     ApplicationKeyDTO applicationKeyDTO;
+    private String consumerSecret;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -156,6 +157,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
                 new ArrayList<>(), Arrays.asList("client_credentials", "urn:ietf:params:oauth:grant-type:token" +
                         "-exchange"));
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
     }
 
     private String createAPI(String apiName, String apiContext, List<String> keyManagers)
@@ -511,7 +513,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched when api invocation");
         // Generate Exchange Token
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse =
-                invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), applicationKeyDTO.getConsumerSecret(),
+                invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), consumerSecret,
                         generatedJWT, new String[0]);
         Assert.assertEquals(httpResponse.getResponseCode(), 200);
         JSONObject accessTokenGenerationResponse = new JSONObject(httpResponse.getData());
@@ -561,7 +563,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched when api invocation");
         // Generate Exchange Token
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse =
-                invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), applicationKeyDTO.getConsumerSecret(),
+                invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), consumerSecret,
                         generatedJWT, new String[0]);
         Assert.assertEquals(httpResponse.getResponseCode(), 200);
         JSONObject accessTokenGenerationResponse = new JSONObject(httpResponse.getData());
@@ -600,7 +602,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                                 "userexternal", "http://exchange.apim.integration/default", attributes);
         // Generate Exchange Token
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse =
-                invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), applicationKeyDTO.getConsumerSecret(),
+                invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), consumerSecret,
                         generatedJWT, new String[0]);
         Assert.assertEquals(httpResponse.getResponseCode(), 400);
         applicationKeyByKeyMappingId =
@@ -653,7 +655,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched when api invocation");
         // Generate Exchange Token
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse =
-                invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), applicationKeyDTO.getConsumerSecret(),
+                invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), consumerSecret,
                         generatedJWT, new String[0]);
         Assert.assertEquals(httpResponse.getResponseCode(), 400);
     }

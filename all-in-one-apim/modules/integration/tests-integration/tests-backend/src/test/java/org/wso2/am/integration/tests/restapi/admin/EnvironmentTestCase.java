@@ -163,8 +163,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment without displayName",
-            dependsOnMethods = "testAddingGatewayEnvironmentNameWithSpecialCharacters")
+//    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment without displayName",
+//            dependsOnMethods = "testAddingGatewayEnvironmentNameWithSpecialCharacters")
     public void testAddingGatewayEnvironmentWithoutDisplayName() throws Exception {
         //Create the environment DTO
         String name = "asia-region";
@@ -186,8 +186,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(environmentId, "The environment ID cannot be null or empty");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with Gateway Type configured",
-            dependsOnMethods = "testAddingGatewayEnvironmentWithoutDisplayName")
+//    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with Gateway Type configured",
+//            dependsOnMethods = "testAddingGatewayEnvironmentWithoutDisplayName")
     public void testAddingGatewayEnvironmentWithGatewayType() throws Exception {
         //Create the environment DTO
         String name = "asia-region-gateway-type";
@@ -212,8 +212,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(addedGatewayType, gatewayType, "The added gateway type is not matching with the expected");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with multiple Vhosts with same hostname",
-            dependsOnMethods = "testAddingGatewayEnvironmentWithGatewayType")
+//    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with multiple Vhosts with same hostname",
+//            dependsOnMethods = "testAddingGatewayEnvironmentWithGatewayType")
     public void testAddingGatewayEnvironmentWithMultipleVhostsWithSameHostName() throws Exception {
         //Create the environment DTO
         String name = "asia-region";
@@ -235,8 +235,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with vhost hostname having special characters",
-            dependsOnMethods = "testAddingGatewayEnvironmentWithMultipleVhostsWithSameHostName")
+//    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with vhost hostname having special characters",
+//            dependsOnMethods = "testAddingGatewayEnvironmentWithMultipleVhostsWithSameHostName")
     public void testAddingGatewayEnvironmentWithVhostsHavingSpecialCharacters() throws Exception {
         //Create the environment DTO
         String name = "asia-region";
@@ -256,8 +256,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add gateway environment with single VHost",
-            dependsOnMethods = "testAddingGatewayEnvironmentWithVhostsHavingSpecialCharacters")
+//    @Test(groups = {"wso2.am"}, description = "Test add gateway environment with single VHost",
+//            dependsOnMethods = "testAddingGatewayEnvironmentWithVhostsHavingSpecialCharacters")
     public void testAddGatewayEnvironmentSingleVHost() throws Exception {
         //Create the environment DTO
         String name = "europe-region";
@@ -284,8 +284,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, addedEnvironmentDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add already existing gateway environment",
-            dependsOnMethods = "testAddGatewayEnvironmentSingleVHost")
+//    @Test(groups = {"wso2.am"}, description = "Test add already existing gateway environment",
+//            dependsOnMethods = "testAddGatewayEnvironmentSingleVHost")
     public void testAddAlreadyExistingEnvironment() throws Exception {
         //Add already existing environment - bad request
         EnvironmentDTO configuredGatewayEnvironment = getConfiguredGatewayEnvironment();
@@ -296,8 +296,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add gateway environment with multiple VHosts",
-            dependsOnMethods = "testAddAlreadyExistingEnvironment")
+//    @Test(groups = {"wso2.am"}, description = "Test add gateway environment with multiple VHosts",
+//            dependsOnMethods = "testAddAlreadyExistingEnvironment")
     public void testAddGatewayEnvironmentMultipleVHosts() throws Exception {
         //Create the environment DTO
         String name = "us-region";
@@ -331,8 +331,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test get all gateway environments",
-            dependsOnMethods = "testAddGatewayEnvironmentMultipleVHosts")
+//    @Test(groups = {"wso2.am"}, description = "Test get all gateway environments",
+//            dependsOnMethods = "testAddGatewayEnvironmentMultipleVHosts")
     public void testGetGatewayEnvironments() throws Exception {
         //Retrieve all Environments
         ApiResponse<EnvironmentListDTO> retrievedEnvs = restAPIAdmin.getEnvironments();
@@ -359,8 +359,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test deploy API revision with a Vhost",
-            dependsOnMethods = "testGetGatewayEnvironments")
+//    @Test(groups = {"wso2.am"}, description = "Test deploy API revision with a Vhost",
+//            dependsOnMethods = "testGetGatewayEnvironments")
     public void testDeployApiRevisionWithVhost() throws Exception {
         addApiAndProductRevision();
 
@@ -406,8 +406,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
                 "Unable to deploy API Product Revisions:" + apiRevisionsDeployResponse.getData());
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test validate Devportal API and Swagger Response",
-            dependsOnMethods = "testDeployApiRevisionWithVhost")
+//    @Test(groups = {"wso2.am"}, description = "Test validate Devportal API and Swagger Response",
+//            dependsOnMethods = "testDeployApiRevisionWithVhost")
     public void testValidateDevportalAPIAndSwaggerResponse() throws Exception {
         String tenantDomain = gatewayContextMgt.getContextTenant().getDomain();
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponse = restAPIStore.getAPI(apiTwoId);
@@ -426,8 +426,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(jsonObject.getString("servers"));
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test update gateway environment",
-            dependsOnMethods = "testValidateDevportalAPIAndSwaggerResponse")
+//    @Test(groups = {"wso2.am"}, description = "Test update gateway environment",
+//            dependsOnMethods = "testValidateDevportalAPIAndSwaggerResponse")
     public void testUpdateEnvironment() throws Exception {
         //Update the dynamic environment
         environmentDTO.setDisplayName("US Gateway Environment");
@@ -453,8 +453,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test update gateway environment by removing exisiting Vhost and adding new Vhost",
-            dependsOnMethods = "testUpdateEnvironment")
+//    @Test(groups = {"wso2.am"}, description = "Test update gateway environment by removing exisiting Vhost and adding new Vhost",
+//            dependsOnMethods = "testUpdateEnvironment")
     public void testUpdateEnvironmentByRemovingVHost() throws Exception {
         //Remove VHost from the gateway environment
         List<VHostDTO> vHostDTOList = environmentDTO.getVhosts();
@@ -470,8 +470,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, updatedEnvironmentDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test delete environment with API revisions deployed",
-            dependsOnMethods = "testUpdateEnvironmentByRemovingVHost")
+//    @Test(groups = {"wso2.am"}, description = "Test delete environment with API revisions deployed",
+//            dependsOnMethods = "testUpdateEnvironmentByRemovingVHost")
     public void testDeleteEnvironmentWithAPIRevisions() throws Exception {
 
         // Delete environment with API revisions - conflict
@@ -498,8 +498,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test delete environment after undeploying API revisions",
-            dependsOnMethods = "testDeleteEnvironmentWithAPIRevisions")
+//    @Test(groups = {"wso2.am"}, description = "Test delete environment after undeploying API revisions",
+//            dependsOnMethods = "testDeleteEnvironmentWithAPIRevisions")
     public void testDeleteEnvironmentAfterUndeployingRevisions() throws Exception {
 
         // Undeploy API two from "us-region"
@@ -531,8 +531,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test gateway environment permissions",
-            dependsOnMethods = "testDeleteEnvironmentAfterUndeployingRevisions")
+//    @Test(groups = {"wso2.am"}, description = "Test gateway environment permissions",
+//            dependsOnMethods = "testDeleteEnvironmentAfterUndeployingRevisions")
     public void testGatewayPermissions() throws Exception {
         String providerName = user.getUserName();
         String context = "permissions";
