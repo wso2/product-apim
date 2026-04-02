@@ -380,6 +380,12 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
-        super.cleanUp();
+        if (apiId != null) {
+            undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+            restAPIPublisher.deleteAPI(apiId);
+        }
+        if (appId != null) {
+            restAPIStore.deleteApplication(appId);
+        }
     }
 }

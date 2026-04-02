@@ -71,7 +71,6 @@ public class APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase extends 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 
 }

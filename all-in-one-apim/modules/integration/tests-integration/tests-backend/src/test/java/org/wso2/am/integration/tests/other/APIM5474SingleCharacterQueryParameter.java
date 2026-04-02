@@ -98,6 +98,5 @@ public class APIM5474SingleCharacterQueryParameter extends APIMIntegrationBaseTe
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 }

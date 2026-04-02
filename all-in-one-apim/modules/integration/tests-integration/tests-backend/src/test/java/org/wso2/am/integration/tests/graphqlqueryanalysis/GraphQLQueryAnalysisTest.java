@@ -299,6 +299,5 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(tokenTestApiAppId);
         undeployAndDeleteAPIRevisionsUsingRest(graphqlApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(graphqlApiId);
-        super.cleanUp();
     }
 }

@@ -99,7 +99,6 @@ public class UpdateAPINullPointerTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
 }

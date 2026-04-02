@@ -553,6 +553,5 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         callbackServer.stop();
         callbackServerWithSubVerification.stop();
         executorService.shutdownNow();
-        super.cleanUp();
     }
 }

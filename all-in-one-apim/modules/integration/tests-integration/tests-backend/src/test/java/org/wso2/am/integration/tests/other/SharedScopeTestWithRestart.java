@@ -118,7 +118,6 @@ public class SharedScopeTestWithRestart extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
     }
 }

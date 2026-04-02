@@ -95,6 +95,6 @@ public class APIM4765ResourceOrderInSwagger extends APIManagerLifecycleBaseTest 
 
     @AfterClass(alwaysRun = true) public void destroy() throws Exception {
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
-        super.cleanUp();
+        restAPIPublisher.deleteAPI(apiId);
     }
 }

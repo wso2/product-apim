@@ -195,6 +195,12 @@ public class AsyncAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
+        if (apiId != null) {
+            undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+            restAPIPublisher.deleteAPI(apiId);
+        }
+        if (appId != null) {
+            restAPIStore.deleteApplication(appId);
+        }
     }
 }

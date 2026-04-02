@@ -383,6 +383,5 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);
-        super.cleanUp();
     }
 }

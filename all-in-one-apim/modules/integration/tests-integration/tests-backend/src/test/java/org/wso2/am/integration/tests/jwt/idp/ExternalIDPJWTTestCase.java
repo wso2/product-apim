@@ -808,7 +808,6 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId);
         undeployAndDeleteAPIRevisionsUsingRest(apiIdOnlyKm1, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiIdOnlyKm1);
-        super.cleanUp();
     }
 
     @DataProvider

@@ -72,7 +72,6 @@ public class APIMANAGER5872UpdateAPIWithoutThumbnailValueAndAPISummaryTestCase e
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 
 }

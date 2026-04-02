@@ -280,6 +280,5 @@ public class APIM371PublishNewCopyGivenDeprecateOldVersionAndRequireReSubscripti
         apiStore.removeApplication(applicationName);
         apiPublisher.deleteAPI(apiName, apiVersionOld, providerNameApi);
         apiPublisher.deleteAPI(apiName, apiVersionNew, providerNameApi);
-        super.cleanUp();
     }
 }

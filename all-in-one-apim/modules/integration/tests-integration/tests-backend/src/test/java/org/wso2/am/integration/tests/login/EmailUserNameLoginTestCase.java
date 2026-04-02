@@ -234,7 +234,6 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 
     @AfterTest(alwaysRun = true)

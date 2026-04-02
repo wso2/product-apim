@@ -303,6 +303,5 @@ public class MultipleWebSubSubcriptionTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager.restoreToLastConfiguration(false);
         callbackServer.stop();
         executorService.shutdownNow();
-        super.cleanUp();
     }
 }

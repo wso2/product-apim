@@ -711,7 +711,6 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(apiLoggingApplicationId);
         restAPIPublisher.deleteAPI(apiLoggingApiId);
 
-        super.cleanUp();
     }
 
 }

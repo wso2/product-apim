@@ -390,6 +390,5 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(jwtApplicationId);
         identityProviderMgtServiceClient.deleteIdP(jwtIssuer);
         restAPIPublisher.removeSharedScope(scopeId);
-        super.cleanUp();
     }
 }

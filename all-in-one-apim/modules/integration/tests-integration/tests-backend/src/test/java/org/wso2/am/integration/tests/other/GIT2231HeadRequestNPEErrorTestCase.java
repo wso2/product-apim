@@ -73,7 +73,6 @@ public class GIT2231HeadRequestNPEErrorTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 
     @DataProvider

@@ -170,7 +170,6 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(jwtApplicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
 
     }
 

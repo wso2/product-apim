@@ -179,7 +179,6 @@ public class AllowedScopesTestWithCorsDisabled extends APIManagerLifecycleBaseTe
         restAPIStore.deleteApplication(applicationImportId);
         restAPIPublisher.deleteAPI(apiImportId);
         serverConfigurationManager.restoreToLastConfiguration();
-        super.cleanUp();
     }
 
     private void initializeServerConfiguration() throws Exception {

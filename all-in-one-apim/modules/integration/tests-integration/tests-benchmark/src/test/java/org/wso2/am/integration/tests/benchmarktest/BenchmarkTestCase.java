@@ -373,7 +373,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
-        super.cleanUp();
     }
 
     public String createAnApi(String apiName, String context)

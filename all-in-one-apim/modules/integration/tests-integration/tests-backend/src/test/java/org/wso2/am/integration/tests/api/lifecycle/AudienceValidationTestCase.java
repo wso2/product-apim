@@ -357,7 +357,9 @@ public class AudienceValidationTestCase extends APIManagerLifecycleBaseTest {
     public void cleanUpArtifacts() throws Exception {
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         undeployAndDeleteAPIProductRevisionsUsingRest(apiProductDTO.getId(), restAPIPublisher);
-        super.cleanUp();
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteApiProduct(apiProductDTO.getId());
+        restAPIStore.deleteApplication(applicationId);
         userManagementClient.deleteUser(STANDARD_SUBSCRIBER);
     }
 

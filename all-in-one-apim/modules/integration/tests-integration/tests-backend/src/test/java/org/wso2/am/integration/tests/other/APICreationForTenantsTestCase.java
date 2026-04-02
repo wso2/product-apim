@@ -96,7 +96,6 @@ public class APICreationForTenantsTestCase extends APIManagerLifecycleBaseTest {
             userManagementClient.deleteRole(API_CREATOR);
         }
 
-        super.cleanUp();
     }
 
 }

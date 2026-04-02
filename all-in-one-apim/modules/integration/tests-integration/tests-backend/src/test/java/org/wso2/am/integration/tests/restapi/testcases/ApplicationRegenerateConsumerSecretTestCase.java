@@ -79,7 +79,6 @@ public class ApplicationRegenerateConsumerSecretTestCase extends APIMIntegration
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        super.cleanUp();
     }
 
 }

@@ -125,6 +125,5 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 }

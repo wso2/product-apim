@@ -423,7 +423,6 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(jwtApplicationId);
         restAPIPublisher.deleteAPI(apiId);
         identityProviderMgtClient.deleteIdp("federated-idp");
-        super.cleanUp();
 
     }
 

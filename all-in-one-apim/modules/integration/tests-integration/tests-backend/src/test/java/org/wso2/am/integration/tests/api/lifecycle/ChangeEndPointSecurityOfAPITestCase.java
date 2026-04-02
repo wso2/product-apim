@@ -228,6 +228,5 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         restAPIStore.removeApplicationById(applicationID);
         undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiID);
-        super.cleanUp();
     }
 }

@@ -372,7 +372,6 @@ public class APIM373PublishNewCopyGivenRequireReSubscriptionTestCase extends
         apiStore.removeApplication(applicationName);
         apiPublisher.deleteAPI(apiName, apiVersionOld, providerNameApi);
         apiPublisher.deleteAPI(apiName, apiVersionNew, providerNameApi);
-        super.cleanUp();
     }
 
 

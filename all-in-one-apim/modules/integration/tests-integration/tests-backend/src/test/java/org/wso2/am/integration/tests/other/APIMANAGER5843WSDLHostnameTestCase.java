@@ -110,7 +110,6 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
     @DataProvider

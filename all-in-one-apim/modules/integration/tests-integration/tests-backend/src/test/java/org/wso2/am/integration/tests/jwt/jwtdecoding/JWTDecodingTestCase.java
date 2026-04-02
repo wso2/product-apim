@@ -208,7 +208,6 @@ public class JWTDecodingTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(decodingApplicationId);
         undeployAndDeleteAPIRevisionsUsingRest(decodingApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(decodingApiId);
-        super.cleanUp();
 
     }
 

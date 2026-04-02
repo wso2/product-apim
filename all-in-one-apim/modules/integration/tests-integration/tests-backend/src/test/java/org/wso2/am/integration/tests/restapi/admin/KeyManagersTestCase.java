@@ -1233,6 +1233,11 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         userManagementClient.deleteUser(USER_TEST);
         userManagementClient.deleteRole(API_SUBSCRIBER);
-        super.cleanUp();
+        if (apiId != null) {
+            restAPIPublisher.deleteAPI(apiId);
+        }
+        if (appId != null) {
+            restAPIStore.deleteApplication(appId);
+        }
     }
 }

@@ -251,7 +251,6 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        super.cleanUp();
 //        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
 //            serverConfigurationManager.restoreToLastConfiguration(true);
 //        }

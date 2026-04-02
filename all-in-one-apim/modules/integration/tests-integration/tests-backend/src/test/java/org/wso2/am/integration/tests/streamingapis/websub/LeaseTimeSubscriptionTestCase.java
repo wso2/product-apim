@@ -281,6 +281,5 @@ public class LeaseTimeSubscriptionTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager.restoreToLastConfiguration(false);
         callbackServer.stop();
         executorService.shutdownNow();
-        super.cleanUp();
     }
 }

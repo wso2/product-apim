@@ -272,6 +272,5 @@ public class SecretValidationTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager.restoreToLastConfiguration(false);
         callbackServer.stop();
         executorService.shutdownNow();
-        super.cleanUp();
     }
 }

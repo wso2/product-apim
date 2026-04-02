@@ -989,6 +989,5 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             server.stop();
         }
         serverConfigurationManager.restoreToLastConfiguration(false);
-        super.cleanUp();
     }
 }

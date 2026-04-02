@@ -82,6 +82,5 @@ public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase extends APIMI
     @AfterClass(alwaysRun = true)
     public void stop() throws Exception {
         simpleSocketServer.shutdown();
-        super.cleanUp();
     }
 }

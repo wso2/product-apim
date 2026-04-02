@@ -867,6 +867,5 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
         tenant2UserStoreManager.deleteRole("role1");
         tenantManagementServiceClient.deleteTenant(tenant1Name);
         tenantManagementServiceClient.deleteTenant(tenant2Name);
-        super.cleanUp();
     }
 }

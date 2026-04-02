@@ -119,7 +119,6 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        super.cleanUp();
     }
 
 }
