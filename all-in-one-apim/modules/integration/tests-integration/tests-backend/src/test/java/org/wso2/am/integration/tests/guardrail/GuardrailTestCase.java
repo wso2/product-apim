@@ -219,9 +219,6 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private static final String RESPONSE_FILE        = "mistral-response.json";
     private static final String EMBEDDINGS_RESPONSE_FILE = "mockembeddings.json";
     private static final String PROVIDER_CONFIG_FILE = "ai-service-provider-config-no-auth.json";
-    private static final String LOG4J2_PROPERTIES_FILE = "log4j2.properties";
-    private static final String CONFIG_PATH = "repository/conf";
-
     // -----------------------------------------------------------------------
     // Instance variables
     // -----------------------------------------------------------------------
@@ -672,6 +669,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         assertNotNull(revisionUUID, "Revision UUID must not be null after policy attachment");
         waitForAPIDeploymentSync(apiDto.getProvider(), apiDto.getName(), apiDto.getVersion(),
             APIMIntegrationConstants.IS_API_EXISTS);
+        assertSemanticToolFilteringMediatorDeployedToGateway();
 
         HttpResponse updatedAPIResponse = restAPIPublisher.getAPI(aiApiId);
         assertEquals(updatedAPIResponse.getResponseCode(), HttpStatus.SC_OK,

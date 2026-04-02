@@ -113,6 +113,7 @@ key = ""
 
 [apim.key_manager]
 enable_lightweight_apikey_generation = true
+skip_create_resident_key_manager = true
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
@@ -251,11 +252,18 @@ allow_credentials = false
 name="userPostSelfRegistration"
 subscriptions=["POST_ADD_USER"]
 
+[transport]
+passthru_https.listener.ssl_profile_interval = 6000
+passthru_https.sender.ssl_profile.interval = 6000
+
+[apim.certificate_reloader]
+period = "1m"
+
 [service_provider]
 sp_name_regex = "^[\\sa-zA-Z0-9._-]*$"
 
 [database.local]
-url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1"
 
 [[event_listener]]
 id = "token_revocation"
