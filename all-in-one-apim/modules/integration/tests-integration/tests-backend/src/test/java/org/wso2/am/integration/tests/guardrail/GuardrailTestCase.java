@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -30,7 +30,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -360,20 +359,11 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
 
         try {
             if (sourceTomlPath != null && !Files.exists(Paths.get(sourceTomlPath))) {
-                cleanupFailures.add("temporary Guardrail config file was deleted before suite teardown");
+                cleanupFailures.add("temporary Guardrail config file was deleted before class teardown");
             }
         } catch (Exception e) {
             recordCleanupFailure(cleanupFailures, "verify temporary Guardrail config files", e);
         }
-
-        if (!cleanupFailures.isEmpty()) {
-            Assert.fail("Guardrail cleanup failed: " + String.join(" | ", cleanupFailures));
-        }
-    }
-
-    @AfterSuite(alwaysRun = true)
-    public void restoreGuardrailConfigurationAfterSuite() throws Exception {
-        List<String> cleanupFailures = new ArrayList<>();
 
         try {
             if (serverConfigurationManager != null && serverRestartedWithGuardrailConfig) {
@@ -383,7 +373,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 reloadSharedGatewayTestArtifactsAfterServerRestart();
             }
         } catch (Exception e) {
-            recordCleanupFailure(cleanupFailures, "restore API Manager configuration after suite", e);
+            recordCleanupFailure(cleanupFailures, "restore API Manager configuration after class", e);
         }
 
         try {
@@ -393,7 +383,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         }
 
         if (!cleanupFailures.isEmpty()) {
-            Assert.fail("Guardrail suite teardown failed: " + String.join(" | ", cleanupFailures));
+            Assert.fail("Guardrail cleanup failed: " + String.join(" | ", cleanupFailures));
         }
     }
 
