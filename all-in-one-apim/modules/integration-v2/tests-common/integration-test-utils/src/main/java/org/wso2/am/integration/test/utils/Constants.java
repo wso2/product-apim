@@ -83,12 +83,14 @@ public class Constants {
     public static final String SUPER_TENANT_ADMIN_USERNAME = "admin";
     public static final String SUPER_TENANT_ADMIN_PASSWORD = "admin";
     public static final String ADMIN_USER_KEY = "admin";
+    public static final String MIGRATED_SUBSCRIBER_USER_KEY = "subscriberKey1";
     public static final String USER_KEY = "userKey1";
 
     public static final String ADPSAMPLE_TENANT_DOMAIN = "adpsample.com";
     public static final String ADPSAMPLE_TENANT_ADMIN_USERNAME = "admin@adpsample.com";
     public static final String ADPSAMPLE_TENANT_ADMIN_PASSWORD = "admin";
     public static final String ADPSAMPLE_ADMIN_USER_KEY = "admin";
+    public static final String ADPSAMPLE_SUBSCRIBER_USER_KEY = "subscriberKey1";
     public static final String ADPSAMPLE_USER_KEY = "userKey1";
 
     public static final String NEW_TENANT_DOMAIN = "tenant1.com";

@@ -244,4 +244,25 @@ public class TenantUserInitialisationSteps {
         TestContext.set(tenantDomain, tenant);
     }
 
+    /**
+     * Registers an already existing (e.g. migrated) user in the tenant context without any SOAP calls.
+     * Use this for users that are known to exist in the system and only need to be added to the test context.
+     *
+     * @param userKey A key identifier for the user (used for referencing in test context)
+     * @param username The username of the existing user
+     * @param password The password of the existing user
+     * @param tenantDomain The tenant domain the user belongs to
+     */
+    @When("I register existing user {string} with username {string} and password {string} in tenant context {string}")
+    public void registerExistingUserInContext(String userKey, String username, String password, String tenantDomain) {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantUser = new User();
+        tenantUser.setUserName(username + Constants.CHAR_AT + tenantDomain);
+        tenantUser.setPassword(password);
+        tenantUser.setKey(userKey);
+        tenant.addTenantUsers(tenantUser);
+        TestContext.set(tenantDomain, tenant);
+    }
+
 }

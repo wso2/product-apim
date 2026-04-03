@@ -179,11 +179,15 @@ public class Utils {
     }
 
     public static String getApplicationSearchURL(String baseUrl, String applicationName ) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications?query=" + applicationName;
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications?query=" + URLEncoder.encode(applicationName, StandardCharsets.UTF_8);
     }
 
     public static String getApiSearchURL(String baseUrl, String query ) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?query=" + query;
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+    }
+
+    public static String getDevportalApiDetailURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId;
     }
 
     public static String getApiDocumentsURL(String baseUrl, String resourceId) {
@@ -345,6 +349,53 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/generate-key";
     }
 
+    // --- API-bound API Key endpoints (devportal) ---
+
+    public static String getAPIBoundApiKeyGenerateURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/api-keys/generate";
+    }
+
+    public static String getAPIBoundApiKeyRegenerateURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/api-keys/regenerate";
+    }
+
+    public static String getAPIBoundApiKeysListURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/api-keys";
+    }
+
+    public static String getAPIBoundApiKeyRevokeURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/api-keys/revoke";
+    }
+
+    public static String getAPIBoundApiKeyAssociateURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/api-keys/associate";
+    }
+
+    public static String getAPIBoundApiKeyDissociateURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/api-keys/dissociate";
+    }
+
+    public static String getAppApiKeyAssociateURL(String baseUrl, String appId, String keyType) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + appId + "/api-keys/" + keyType + "/associate";
+    }
+
+    public static String getAppApiKeyDissociateURL(String baseUrl, String appId, String keyType) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + appId + "/api-keys/" + keyType + "/dissociate";
+    }
+
+    public static String getAppApiKeyAssociationsURL(String baseUrl, String appId, String keyType) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + appId + "/api-keys/" + keyType + "/associations";
+    }
+
+    // --- Legacy (application-level) API Key endpoints ---
+
+    public static String getLegacyApiKeysListURL(String baseUrl, String applicationId, String keyType) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/" + keyType;
+    }
+
+    public static String getLegacyApiKeyRegenerateURL(String baseUrl, String applicationId, String keyType) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/" + keyType + "/regenerate";
+    }
 
     /**
      * Extracts the API UUID

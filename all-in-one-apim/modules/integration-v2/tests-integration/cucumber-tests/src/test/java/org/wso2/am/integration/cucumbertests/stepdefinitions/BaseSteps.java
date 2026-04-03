@@ -188,6 +188,18 @@ public class BaseSteps {
     }
 
     /**
+     * Composite step that combines system initialization and devportal token retrieval only.
+     * Useful for subscriber-only users who do not have publisher or admin permissions.
+     */
+    @Given("The system is ready and I have valid devportal access token for current user")
+    public void iHaveSystemAndDevportalToken() throws Exception {
+
+        theSystemIsReady();
+        iHaveADCRApplication();
+        iHaveValidDevportalAccessToken();
+    }
+
+    /**
      * Loads a JSON payload from a file and stores it in the test context.
      *
      * @param jsonFilePath Path to the JSON file
