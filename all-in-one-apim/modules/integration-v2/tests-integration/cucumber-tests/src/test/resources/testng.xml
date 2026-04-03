@@ -12,6 +12,10 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.MigratedTenantUserInitilizationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateDeployPublishTestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.APIBoundApiKeyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedLegacyApiKeyInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIBoundApiKeyWithMigratedArtifactsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.LegacyApiKeyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.ImportOASDefinitionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.APIRuntimeConfigurationsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateAPITestRunner"/>
