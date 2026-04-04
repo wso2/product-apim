@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import com.google.gson.JsonObject;
+import com.jayway.jsonpath.JsonPath;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -369,6 +370,14 @@ public class BaseSteps {
         }
     }
 
+    @And("The {string} resource should reflect the updated {string} as value from context {string}")
+    public void theResourceShouldReflectTheUpdatedAsValueFromContext(String resourceType, String config,
+               String configValueContextKey) throws IOException, InterruptedException {
+
+        Object ctxValue = Utils.resolveFromContext(configValueContextKey);
+        theResourceShouldReflectTheUpdatedAs(resourceType, config, ctxValue.toString());
+    }
+
     /**
      * Helper method that verifies a specific configuration field in the HTTP response matches the expected value.
      *
@@ -538,4 +547,54 @@ public class BaseSteps {
         }
     }
 
+    /**
+     * Extracts a value from a JSON payload using the given path and stores it in the test context.
+     *
+     * @param payloadContextKey the context key of the JSON payload
+     * @param path the JSON path used to extract the value
+     * @param outputContextKey the context key used to store the extracted value
+     */
+    @When("I get the value from json payload {string} at path {string} and store it as {string}")
+    public void iGetTheValueFromPayloadAtPathAndStoreItAs(String payloadContextKey, String path, String outputContextKey) {
+
+        Object ctxValue = Utils.resolveFromContext(payloadContextKey);
+        String jsonPayload = ctxValue.toString().trim();
+        // validate JSON object
+        try {
+            new JSONObject(jsonPayload);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Context value for key '" + payloadContextKey + "' is not a valid JSON object", e);
+        }
+
+        String jsonPath = path.startsWith(Constants.JSON_PATH_ROOT) ? path : Constants.JSON_PATH_ROOT_WITH_DOT + path;
+        try {
+            Object value = JsonPath.read(jsonPayload, jsonPath);
+            TestContext.set(Utils.normalizeContextKey(outputContextKey), String.valueOf(value));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read JSON path '" + jsonPath + "' from payload", e);
+        }
+    }
+
+    /**
+     * Appends a parsed JSON value to the JSON array stored in the test context.
+     *
+     * @param arrayContextKey the context key of the target JSON array
+     * @param valueToAppend the JSON value to append to the array
+     */
+    @And("I append the following value to the json array {string}:")
+    public void iAppendTheFollowingValueToTheJsonArray(String arrayContextKey, String valueToAppend) {
+
+        Object ctxValue = Utils.resolveFromContext(arrayContextKey);
+        JSONArray jsonArray;
+        // Convert the stored context value into a JSONArray
+        if (ctxValue instanceof JSONArray) {
+            jsonArray = (JSONArray) ctxValue;
+        } else {
+            jsonArray = new JSONArray(ctxValue.toString());
+        }
+        Object parsedValue = Utils.parseConfigValue(valueToAppend);
+        jsonArray.put(parsedValue);
+        TestContext.set(Utils.normalizeContextKey(arrayContextKey), jsonArray.toString());
+    }
 }

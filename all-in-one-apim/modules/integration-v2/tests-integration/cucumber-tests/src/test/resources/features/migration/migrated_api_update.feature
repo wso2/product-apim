@@ -71,22 +71,24 @@ Feature: Migrated API Updates
   Scenario Outline: Update Scopes
     When I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
-    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
+    # Extract the current operations array from the payload
+    And I get the value from json payload "<apiUpdatePayload>" at path "<configType>" and store it as "<updatedConfigValue>"
+    # Append the new resource to the extracted operations array
+    And I append the following value to the json array "<updatedConfigValue>":
       """
       <configValue>
       """
+    # Update the API payload with the modified operations array
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value from context "<updatedConfigValue>"
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "<apiID>"
-    And The "apis" resource should reflect the updated "<configType>" as:
-      """
-      <configValue>
-      """
+    And The "apis" resource should reflect the updated "<configType>" as value from context "<updatedConfigValue>"
 
 # Modify Rest APIs with existing scopes
     Examples:
-      | apiID            |  apiUpdatePayload                 | configType       | configValue                                                                                           |
-      | RestApiId        | ADPRestAPIPayload                 |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-local-scope-without-roles"],"amznResourceTimeout":null,"authType":"Application & Application User","operationHubPolicies":[]}]    |
-      | GraphQLApiId     | ADPGraphQLAPIPayload              |operations        | [{"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-admin","adp-film-subscriber"],"amznResourceTimeout":null,"authType":"Application & Application User","operationHubPolicies":[]}]    |
+      | apiID            |  apiUpdatePayload      | configType   | updatedConfigValue    | configValue                                                                                           |
+      | RestApiId        | ADPRestAPIPayload      | operations   | operationArray        | {"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-local-scope-without-roles"],"amznResourceTimeout":null,"authType":"Application & Application User","operationHubPolicies":[]}    |
+      | GraphQLApiId     | ADPGraphQLAPIPayload   | operations   | operationArray        | {"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-admin","adp-film-subscriber"],"amznResourceTimeout":null,"authType":"Application & Application User","operationHubPolicies":[]}   |
 
 
 # Step 5: Custom properties (refer artifacts/payloads/MigratedAPIs for existing configs)
