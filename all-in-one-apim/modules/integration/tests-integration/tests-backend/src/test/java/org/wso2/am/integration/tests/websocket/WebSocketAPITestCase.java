@@ -473,6 +473,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(36000000)
                 .keyType("PRODUCTION")
@@ -597,6 +598,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(1)
                 .keyType("PRODUCTION")
@@ -635,6 +637,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(36000000)
                 .keyType("PRODUCTION")
@@ -687,6 +690,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(36000000)
                 .keyType("PRODUCTION")
@@ -724,6 +728,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(36000000)
                 .keyType("PRODUCTION")
@@ -780,6 +785,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(appId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(36000000)
                 .keyType("PRODUCTION")
