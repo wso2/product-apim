@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONTokener;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
@@ -503,5 +504,21 @@ public class Utils {
         return (Tenant) value;
     }
 
+    /**
+     * Parses a string as a JSON value.
+     *
+     * @param value the JSON value as a string
+     * @return the parsed value as a JSONObject, JSONArray, String,
+     *         Number, Boolean, or JSONObject.NULL
+     * @throws IllegalArgumentException if the input is null, blank, or invalid JSON
+     */
+    public static Object parseConfigValue(String value) {
 
+        value = value.trim();
+        try {
+            return new JSONTokener(value.trim()).nextValue();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JSON value to append: " + value, e);
+        }
+    }
 }
