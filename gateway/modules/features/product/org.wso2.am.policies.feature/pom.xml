@@ -117,6 +117,18 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.semantic-model-routing</artifactId>
+            <version>${semantic-model-routing.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
+            <artifactId>org.wso2.am.policies.mediation.ai.intelligent-model-routing</artifactId>
+            <version>${intelligent-model-routing.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am.policies</groupId>
             <artifactId>org.wso2.am.policies.mediation.ai.content-based-model-router</artifactId>
             <version>${content-based-model-router.version}</version>
             <type>jar</type>
@@ -159,6 +171,8 @@
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.word-count-guardrail</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-cache</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-tool-filtering</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.semantic-model-routing</bundleDef>
+                                <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.intelligent-model-routing</bundleDef>
                                 <bundleDef>org.wso2.am.policies:org.wso2.am.policies.mediation.ai.content-based-model-router</bundleDef>
                             </bundles>
                         </configuration>

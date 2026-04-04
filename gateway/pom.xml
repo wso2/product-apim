@@ -1511,6 +1511,8 @@
         <semantic-cache.version>1.1.1</semantic-cache.version>
         <semantic-tool-filtering.version>1.1.1</semantic-tool-filtering.version>
         <content-based-model-router.version>1.1.1</content-based-model-router.version>
+        <semantic-model-routing.version>1.2.1</semantic-model-routing.version>
+        <intelligent-model-routing.version>1.1.1</intelligent-model-routing.version>
     </properties>
 
 </project>
