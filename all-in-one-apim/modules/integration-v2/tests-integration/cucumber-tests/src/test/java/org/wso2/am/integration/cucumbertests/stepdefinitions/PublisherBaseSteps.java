@@ -797,7 +797,7 @@ public class PublisherBaseSteps {
                 ? (JSONObject) ctxValue
                 : new JSONObject(ctxValue.toString());
 
-        Object parsedValue = parseConfigValue(configValue);
+        Object parsedValue = Utils.parseConfigValue(configValue);
 
         // update or overwrite the payload
         jsonPayload.put(config, parsedValue);
@@ -832,29 +832,6 @@ public class PublisherBaseSteps {
         TestContext.set("httpResponse", documentUpdateResponse);
     }
 
-    // Helper to parse the values correctly for update document steps
-    private Object parseConfigValue(String value) {
-        value = value.trim();
-
-        try {
-            if (value.startsWith("{")) {
-                return new JSONObject(value);
-            } else if (value.startsWith("[")) {
-                return new JSONArray(value);
-            }
-        } catch (Exception ignored) {}
-
-        if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
-            return Boolean.parseBoolean(value);
-        }
-
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException ignored) {}
-
-        return value;
-    }
-
     /**
      * Updates a specific configuration field of a resource with a new value.
      * This step retrieves the existing resource payload, updates the specified configuration field,
@@ -878,7 +855,7 @@ public class PublisherBaseSteps {
         if ("endpointConfig".equals(configType)){
             configValue = Utils.resolveFromContext(configValue).toString();
         }
-        Object parsedValue = parseConfigValue(configValue);
+        Object parsedValue = Utils.parseConfigValue(configValue);
 
         // update or overwrite the payload
         jsonPayload.put(configType, parsedValue);
@@ -887,6 +864,27 @@ public class PublisherBaseSteps {
 
         iUpdateResourceWithJsonPayloadFromContext(resourceType, resourceID, "<apiConfigUpdate>");
         Thread.sleep(3000);
+    }
+
+
+    /**
+     * Updates a specific configuration field of a resource with a value fetched from test context.
+     *
+     * @param resourceType Type of resource to update (e.g., "apis", "api-products")
+     * @param resourceID Context key containing the resource ID to update
+     * @param resourceUpdatePayload Context key containing the existing resource payload
+     * @param configType The configuration field name to update
+     * @param configValueContextKey Context key containing the new value
+     */
+    @When("I update the {string} resource {string} and {string} with configuration type {string} and value from context {string}")
+    public void iUpdateTheResourceWithConfigurationTypeAndValueFromContext(String resourceType, String resourceID,
+            String resourceUpdatePayload, String configType, String configValueContextKey) throws IOException,
+            InterruptedException {
+
+        Object ctxValue = Utils.resolveFromContext(configValueContextKey);
+        iUpdateTheResourceWithConfigurationTypeAndValue(resourceType, resourceID, resourceUpdatePayload, configType,
+                ctxValue.toString()
+        );
     }
 
     /**
