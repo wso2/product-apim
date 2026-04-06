@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMXMLBuilderFactory;
 import org.apache.axiom.om.OMXMLParserWrapper;
@@ -420,24 +421,38 @@ public class Utils {
     }
 
     /**
-     * Extracts the value for the given key from a JSON payload.
+     * Extracts a value from a JSON payload using a JSONPath expression.
      *
-     * @param jsonPayload the response payload as a JSON string
-     * @param key         the key to extract
-     * @return the value for the key
-     * @throws IOException if the payload cannot be parsed
+     * @param jsonPayload the JSON string to parse
+     * @param path        the JSONPath (e.g., "id" or "$.operations[0].verb")
+     * @return the extracted value as an Object
+     * @throws IOException if the payload is invalid or the path is not found
      */
-    public static Object extractValueFromPayload(String jsonPayload, String key) throws IOException {
+    public static Object extractValueFromPayload(String jsonPayload, String path) throws IOException {
 
         if (StringUtils.isBlank(jsonPayload)) {
             throw new IOException("JSON payload is null or empty.");
         }
 
-        JSONObject jsonObject = new JSONObject(jsonPayload);
-        if (!jsonObject.has(key)) {
-            throw new IOException("Key '" + key + "' not found in JSON payload.");
+        // Validate JSON structure
+        try {
+            new JSONObject(jsonPayload.trim());
+        } catch (Exception e) {
+            throw new IOException("Provided string is not a valid JSON object.", e);
         }
-        return jsonObject.getString(key);
+
+        // Normalize the JSONPath
+        String trimmedPath = path.trim();
+        String jsonPath = trimmedPath.startsWith(Constants.JSON_PATH_ROOT)
+                ? trimmedPath
+                : Constants.JSON_PATH_ROOT_WITH_DOT + trimmedPath;
+
+        // Extract using JsonPath
+        try {
+            return JsonPath.read(jsonPayload, jsonPath);
+        } catch (Exception e) {
+            throw new IOException("Path '" + jsonPath + "' not found or invalid in JSON payload.", e);
+        }
     }
 
     /**
