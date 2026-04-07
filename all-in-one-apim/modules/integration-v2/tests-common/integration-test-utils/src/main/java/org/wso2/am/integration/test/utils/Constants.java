@@ -17,11 +17,16 @@
 
 package org.wso2.am.integration.test.utils;
 
+import java.util.regex.Pattern;
+
 public class Constants {
 
     public static final String CHAR_AT = "@";
     public static final String JSON_PATH_ROOT = "$";
     public static final String JSON_PATH_ROOT_WITH_DOT = "$.";
+    public static final String COMPOSITE_KEY_DELIMITER = "|";
+    public static final Pattern CONTEXT_PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^}]+)}}");
+
 
     public static final long DEPLOYMENT_WAIT_TIME = 60 * 1000;
     public static final long UNDEPLOYMENT_WAIT_TIME = 30 * 1000;

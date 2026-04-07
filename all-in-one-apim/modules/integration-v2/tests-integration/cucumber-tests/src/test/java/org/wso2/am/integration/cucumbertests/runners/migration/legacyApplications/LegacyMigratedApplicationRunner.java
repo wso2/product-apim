@@ -15,15 +15,11 @@
  *
  */
 
-package org.wso2.am.integration.cucumbertests.runners.migration;
+package org.wso2.am.integration.cucumbertests.runners.migration.legacyApplications;
 
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
@@ -31,13 +27,13 @@ import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 
 @CucumberOptions(
-        features = "src/test/resources/features/migration/migrated_application.feature",
+        features = "src/test/resources/features/migration/legacyApplicationSecrets/legacy_migrated_application.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
         plugin = {"pretty", "html:target/cucumber-report/migrated-application.html"}
 )
 
 @Test(groups = {"migrationTest"})
-public class MigratedApplicationRunner extends AbstractTestNGCucumberTests {
+public class LegacyMigratedApplicationRunner extends AbstractTestNGCucumberTests {
     private String testUserDomain;
     private String testUserKey;
 
@@ -66,7 +62,7 @@ public class MigratedApplicationRunner extends AbstractTestNGCucumberTests {
 
     @Factory(dataProvider = "userModeDataProvider")
     public static Object[] factory(String tenantDomain, String userKey) {
-        MigratedApplicationRunner runner = new MigratedApplicationRunner();
+        LegacyMigratedApplicationRunner runner = new LegacyMigratedApplicationRunner();
         runner.setTestUserDomain(tenantDomain);
         runner.setTestUserKey(userKey);
         return new Object[]{ runner };

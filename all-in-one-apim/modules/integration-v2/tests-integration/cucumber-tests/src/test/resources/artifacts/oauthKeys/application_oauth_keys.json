@@ -1,0 +1,16 @@
+{
+  "postgre|carbon.super|admin": "",
+  "postgre|adpsample.com|admin": "",
+  "mysql|carbon.super|admin": {
+    "keyMappingId":"b84a277c-de7e-4a51-b06b-142c286589dc",
+    "consumerSecret":"8sLsYJMoVGfTDfkNcR_kdkCuE8sa"
+  },
+  "mysql|adpsample.com|admin": {
+    "keyMappingId":"c788817b-0642-4bb9-9015-d6e8bc969ffd",
+    "consumerSecret":"GFCtx_sWOcS2Ho_o21mJ2Kz05g0a"
+  },
+  "oracle|carbon.super|admin": "",
+  "oracle|adpsample.com|admin":"",
+  "mssql|carbon.super|admin": "",
+  "mssql|adpsample.com|admin": ""
+}

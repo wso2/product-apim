@@ -1,0 +1,2 @@
+[oauth.multiple_client_secrets]
+enable = false
