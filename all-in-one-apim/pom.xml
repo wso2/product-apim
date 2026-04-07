@@ -1536,7 +1536,7 @@
         <sentence-count-guardrail.version>1.1.1</sentence-count-guardrail.version>
         <url-guardrail.version>1.1.1</url-guardrail.version>
         <word-count-guardrail.version>1.2.1</word-count-guardrail.version>
-        <semantic-cache.version>1.1.1</semantic-cache.version>
+        <semantic-cache.version>1.1.2</semantic-cache.version>
         <semantic-tool-filtering.version>1.1.2</semantic-tool-filtering.version>
         <content-based-model-router.version>1.1.1</content-based-model-router.version>
         <semantic-model-routing.version>1.2.1</semantic-model-routing.version>
