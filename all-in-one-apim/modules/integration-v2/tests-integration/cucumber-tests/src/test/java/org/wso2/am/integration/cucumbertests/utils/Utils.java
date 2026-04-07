@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.utils;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -26,6 +27,7 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMXMLBuilderFactory;
 import org.apache.axiom.om.OMXMLParserWrapper;
 import org.apache.axiom.om.xpath.AXIOMXPath;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
@@ -35,14 +37,15 @@ import org.json.JSONTokener;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
+import org.wso2.carbon.automation.engine.context.beans.User;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.StringReader;
+import java.util.Map;
+import java.util.regex.Matcher;
 
 public class Utils {
 
@@ -205,6 +208,21 @@ public class Utils {
 
     public static String getApplicationAllKeys(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys" ;
+    }
+
+    public static String getGenerateApplicationSecretURL(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
+                keyMappingId + "/generate-secret";
+    }
+
+    public static String getAllApplicationSecretsURL(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
+                keyMappingId + "/secrets";
+    }
+
+    public static String getRevokeApplicationSecretURL(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
+                keyMappingId + "/revoke-secret";
     }
 
     public static String getGenerateApplicationTokenURL(String baseUrl, String applicationId, String keyMappingId) {
@@ -586,5 +604,86 @@ public class Utils {
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid JSON value to append: " + value, e);
         }
+    }
+
+    /**
+     * Reads a JSON file from the classpath and returns the value for the given key.
+     *
+     * @param filePath path to the JSON file in the classpath
+     * @param key      key to look up in the JSON content
+     * @return value associated with the key
+     * @throws Exception if the file is missing, unreadable, or the key is not found
+     */
+    /**
+     * Reads a key-value file from the classpath and returns the value for the given key.
+     *
+     * @param filePath path to the file
+     * @param key lookup key
+     * @return value mapped to the key as Object
+     * @throws Exception if the file is missing or the key is not found
+     */
+    public static Object getValueFromFileByKey(String filePath, String key) throws Exception {
+        InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream(filePath);
+        if (inputStream == null) {
+            throw new FileNotFoundException("File not found on classpath: " + filePath);
+        }
+
+        String content = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        Map<String, Object> valuesMap = objectMapper.readValue(content, new TypeReference<>() {});
+
+        if (!valuesMap.containsKey(key)) {
+            throw new IllegalStateException(
+                    "No value found for key: " + key + ". Available keys: " + valuesMap.keySet()
+            );
+        }
+
+        return valuesMap.get(key);
+    }
+
+    /**
+     * Builds the default lookup key using database type, tenant domain, and username.
+     *
+     * @return composite key in the format dbType|tenantDomain|username
+     */
+    public static String buildUserScopedKey(Tenant tenant, User currentuser) {
+        String dbType = System.getenv(Constants.API_MANAGER_DATABASE_TYPE);
+        if (dbType == null) {
+            throw new IllegalStateException("DB type is not set in environment variables");
+        }
+
+        String tenantDomain = tenant.getDomain();
+        String username = currentuser.getUserNameWithoutDomain();
+
+        if (tenantDomain == null || username == null) {
+            throw new IllegalStateException("Tenant domain or username not found in TestContext. " +
+                            "tenantDomain=" + tenantDomain + ", username=" + username);
+        }
+        // Create the composite key in the format dbType|tenantDomain|username
+        return String.join(Constants.COMPOSITE_KEY_DELIMITER, dbType, tenantDomain, username);
+    }
+
+    public static String resolveContextPlaceholders(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        Matcher matcher = Constants.CONTEXT_PLACEHOLDER_PATTERN.matcher(input);
+        StringBuilder resolved = new StringBuilder();
+
+        while (matcher.find()) {
+            String contextKey = matcher.group(1).trim();
+            Object value = TestContext.get(contextKey);
+
+            if (value == null) {
+                throw new IllegalStateException("No value found in TestContext for key: " + contextKey);
+            }
+
+            matcher.appendReplacement(resolved, Matcher.quoteReplacement(String.valueOf(value)));
+        }
+
+        matcher.appendTail(resolved);
+        return resolved.toString();
     }
 }

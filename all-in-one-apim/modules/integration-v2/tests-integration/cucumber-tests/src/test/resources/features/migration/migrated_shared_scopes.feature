@@ -4,7 +4,7 @@ Feature: Migrated shared scopes for existing and new apis
     Given The system is ready and I have valid access tokens for current user
 
   Scenario: Migrated API scope Management
-    # Step 1: Create new api
+    # Step 1: Create new api, deploy and publish it
     Given I have created an api from "artifacts/payloads/create_apim_test_api.json" as "RestAPIId" and deployed it
     And I retrieve the "apis" resource with id "RestAPIId"
     And I put the response payload in context as "RestAPIPayload"
