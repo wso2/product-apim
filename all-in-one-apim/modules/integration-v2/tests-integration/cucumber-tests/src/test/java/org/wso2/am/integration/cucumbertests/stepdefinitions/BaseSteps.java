@@ -18,7 +18,6 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import com.google.gson.JsonObject;
-import com.jayway.jsonpath.JsonPath;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -200,6 +199,21 @@ public class BaseSteps {
     }
 
     /**
+     * Stores a generic string value or a value from a different context key into the test context.
+     *
+     * @param value The raw string value or a context key to resolve
+     * @param contextKey The key under which the value should be stored in TestContext
+     */
+    @When("I put value {string} in context as {string}")
+    public void iPutValueInContextAs(String value, String contextKey) {
+        // Resolve value if it's a reference to another context key
+        Object resolvedValue = Utils.resolveFromContext(value);
+
+        logger.info("Setting context key: {} with value: {}", contextKey, resolvedValue);
+        TestContext.set(Utils.normalizeContextKey(contextKey), resolvedValue.toString());
+    }
+
+    /**
      * Loads a JSON payload from a file and stores it in the test context.
      *
      * @param jsonFilePath Path to the JSON file
@@ -264,6 +278,29 @@ public class BaseSteps {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");;
         Assert.assertTrue(response.getData().contains(expectedValue));
+    }
+
+    /**
+     * Extracts a value from the stored HTTP response payload and saves it in TestContext.
+     *
+     * @param responseField field name or JSONPath to extract from the response body
+     * @param contextKey context key under which the extracted value should be stored
+     * @throws IOException if the HTTP response is missing or the field is not found
+     */
+    @Then("I extract response field {string} and store it as {string}")
+    public void iExtractResponseFieldAndStoreItAs(String responseField, String contextKey) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        if (response == null) {
+            throw new IOException("No HTTP response found in TestContext.");
+        }
+
+        Object value = Utils.extractValueFromPayload(response.getData(), responseField);
+        if (value == null) {
+            throw new IOException("No value found in response for field: " + responseField);
+        }
+
+        TestContext.set(Utils.normalizeContextKey(contextKey), String.valueOf(value));
     }
 
     /**

@@ -3,7 +3,7 @@
     <listeners>
         <!-- Set test suite parallel mode and threads from system env at runtime  -->
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.ParallelToggleAlterSuiteListener"/>
-        <!-- Add <test> name to MDC for per-test logs -->
+        <!-- Adds <test> name to MDC for per-test group logs -->
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.TestNameMdcListener"/>
     </listeners>
     <test name="CucumberTests">
@@ -27,6 +27,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIDocumentationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIRevisionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.NewAPIProductWithMigratedAPIs"/>
+            migrated api products has errors
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIProductsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedSharedScopesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIDefinitionRunner"/>
@@ -36,7 +37,9 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPILifecycleRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedOASAPIRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIPoliciesRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedApplicationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedApplicationUpdateRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedApplicationSubscriptionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedApplicationOauthKeysRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIProviderChangeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
         </classes>
@@ -46,6 +49,16 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.common.CustomHeaderSystemInitializationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.header.CustomAuthorizationHeaderTestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
+        </classes>
+    </test>
+    <test name="LegacyApplicationTests">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.LegacyApplicationSystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.MigratedTenantUserInitilizationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.legacyApplications.CreateApplicationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.legacyApplications.LegacyMigratedApplicationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
         </classes>
     </test>
