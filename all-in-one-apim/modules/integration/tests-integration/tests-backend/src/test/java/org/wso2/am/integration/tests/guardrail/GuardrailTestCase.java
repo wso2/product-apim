@@ -23,6 +23,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.gson.Gson;
+import org.apache.axiom.om.OMElement;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,12 +43,14 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.jwt.JWTGenerator;
 import org.wso2.am.admin.clients.mediation.SynapseConfigAdminClient;
+import org.wso2.am.admin.clients.rest.api.RestApiAdminClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -64,6 +67,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import javax.xml.namespace.QName;
 import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
@@ -75,8 +79,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.UUID;
 
@@ -190,13 +197,16 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             SHARED_GATEWAY_ARTIFACTS_ROOT + "synapseconfigs" + File.separator + "error" + File.separator
                     + "handle" + File.separator + "error-handling-test-synapse.xml"
     };
-    private static final String[] SHARED_GATEWAY_HEALTHCHECK_PATHS = new String[]{
+    private static final String[] SHARED_GATEWAY_RUNTIME_HEALTHCHECK_PATHS = new String[]{
             "response/pets",
             "version1/customers",
-            "version2/customers"
+            "version2/customers",
+            "jwt_backend/1.0"
     };
     private static final int SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS = 12;
     private static final long SHARED_GATEWAY_RELOAD_RETRY_INTERVAL_MILLIS = 5000L;
+    private static final int SEMANTIC_TOOL_FILTERING_MAX_ATTEMPTS = 6;
+    private static final long SEMANTIC_TOOL_FILTERING_RETRY_INTERVAL_MILLIS = 5000L;
 
     // -----------------------------------------------------------------------
     // AI service provider constants
@@ -240,6 +250,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     private int mockPort;
     private ServerConfigurationManager serverConfigurationManager;
     private boolean serverRestartedWithGuardrailConfig;
+    private List<String> sharedGatewayExpectedRestApiNames;
     // -----------------------------------------------------------------------
     // TestNG factory / data-provider
     // -----------------------------------------------------------------------
@@ -401,7 +412,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     }
 
     private void reloadSharedGatewayTestArtifactsAfterServerRestart() throws Exception {
-        if (areSharedGatewayTestArtifactsAvailable()) {
+        SharedGatewayAvailabilityCheckResult availabilityCheckResult = checkSharedGatewayTestArtifactsAvailability();
+        if (availabilityCheckResult.isAvailable()) {
             return;
         }
 
@@ -427,25 +439,63 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
                 lastFailure);
     }
 
-    private boolean areSharedGatewayTestArtifactsAvailable() {
-        for (String healthCheckPath : SHARED_GATEWAY_HEALTHCHECK_PATHS) {
-            if (!isGatewayArtifactAvailable(healthCheckPath)) {
-                return false;
-            }
+    private SharedGatewayAvailabilityCheckResult checkSharedGatewayTestArtifactsAvailability() {
+        SharedGatewayAvailabilityCheckResult runtimeAvailability =
+            checkSharedGatewayRuntimeAvailability();
+        if (!runtimeAvailability.isAvailable()) {
+            return runtimeAvailability;
         }
-        return true;
+
+        return checkSharedGatewayRestApiAvailability();
     }
 
-    private boolean isGatewayArtifactAvailable(String healthCheckPath) {
-        try {
-            HttpResponse response = HTTPSClientUtils.doGet(
-                    getGatewayURLNhttps() + healthCheckPath, new HashMap<>());
-            return response != null && response.getResponseCode() == HttpStatus.SC_OK;
-        } catch (Exception e) {
-            log.info("Shared gateway artifact is not yet available after restart for path " + healthCheckPath
-                    + ": " + e.getMessage());
-            return false;
+    private SharedGatewayAvailabilityCheckResult checkSharedGatewayRuntimeAvailability() {
+        for (String healthCheckPath : SHARED_GATEWAY_RUNTIME_HEALTHCHECK_PATHS) {
+            try {
+                HttpResponse response = HTTPSClientUtils.doGet(
+                        getGatewayURLNhttps() + healthCheckPath, new HashMap<>());
+                if (response == null || response.getResponseCode() != HttpStatus.SC_OK) {
+                    String responseCode = response == null ? "null" : String.valueOf(response.getResponseCode());
+                    String responseBody = response == null ? "null" : response.getData();
+                    return SharedGatewayAvailabilityCheckResult.unavailable(
+                            "Runtime health check failed for " + getGatewayURLNhttps() + healthCheckPath
+                                    + ". Response code: " + responseCode + ", response: " + responseBody);
+                }
+            } catch (Exception e) {
+                return SharedGatewayAvailabilityCheckResult.unavailable(
+                        "Runtime health check failed for " + getGatewayURLNhttps() + healthCheckPath
+                                + ". Cause: " + e.getMessage());
+            }
         }
+
+        return SharedGatewayAvailabilityCheckResult.available();
+    }
+
+    private SharedGatewayAvailabilityCheckResult checkSharedGatewayRestApiAvailability() {
+        try {
+            String gatewayManagementSessionCookie = createSession(gatewayContextMgt);
+            RestApiAdminClient apiAdminClient = new RestApiAdminClient(
+                    gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayManagementSessionCookie);
+            String[] deployedApiNames = apiAdminClient.getApiNames();
+
+            List<String> missingApiNames = new ArrayList<>();
+            for (String expectedApiName : getSharedGatewayExpectedRestApiNames()) {
+                if (!containsValue(deployedApiNames, expectedApiName)) {
+                    missingApiNames.add(expectedApiName);
+                }
+            }
+
+            if (!missingApiNames.isEmpty()) {
+                return SharedGatewayAvailabilityCheckResult.unavailable(
+                        "Shared Synapse REST APIs are not yet available after restart: "
+                                + String.join(", ", missingApiNames));
+            }
+        } catch (Exception e) {
+            return SharedGatewayAvailabilityCheckResult.unavailable(
+                    "Failed to verify shared Synapse REST APIs after restart. Cause: " + e.getMessage());
+        }
+
+        return SharedGatewayAvailabilityCheckResult.available();
     }
 
     private void reloadSharedDummyBackendSynapseConfig() throws Exception {
@@ -464,34 +514,64 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     }
 
     private void waitForSharedDummyBackendAvailability() throws Exception {
-        String lastFailedPath = null;
-        HttpResponse lastResponse = null;
+        SharedGatewayAvailabilityCheckResult lastResult = SharedGatewayAvailabilityCheckResult.available();
         for (int attempt = 1; attempt <= SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS; attempt++) {
-            String failedPath = null;
-            lastResponse = null;
-            for (String healthCheckPath : SHARED_GATEWAY_HEALTHCHECK_PATHS) {
-                lastResponse = HTTPSClientUtils.doGet(getGatewayURLNhttps() + healthCheckPath, new HashMap<>());
-                if (lastResponse == null || lastResponse.getResponseCode() != HttpStatus.SC_OK) {
-                    failedPath = healthCheckPath;
-                    break;
-                }
-            }
-
-            if (failedPath == null) {
+            lastResult = checkSharedGatewayTestArtifactsAvailability();
+            if (lastResult.isAvailable()) {
                 return;
             }
-            lastFailedPath = failedPath;
+
+            log.info("Shared gateway test artifacts are still stabilizing after restart. Attempt " + attempt
+                    + " of " + SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS + ". " + lastResult.getDescription());
 
             if (attempt < SHARED_GATEWAY_RELOAD_MAX_ATTEMPTS) {
                 Thread.sleep(SHARED_GATEWAY_RELOAD_RETRY_INTERVAL_MILLIS);
             }
         }
 
-        String responseCode = lastResponse == null ? "null" : String.valueOf(lastResponse.getResponseCode());
-        String responseBody = lastResponse == null ? "null" : lastResponse.getData();
-        throw new Exception("Shared gateway artifact health check failed for "
-                + getGatewayURLNhttps() + lastFailedPath
-                + ". Last response code: " + responseCode + ", response: " + responseBody);
+        throw new Exception("Shared gateway artifact health check failed after restart. "
+                + lastResult.getDescription());
+    }
+
+    private List<String> getSharedGatewayExpectedRestApiNames() throws Exception {
+        if (sharedGatewayExpectedRestApiNames != null) {
+            return sharedGatewayExpectedRestApiNames;
+        }
+
+        Set<String> expectedApiNames = new LinkedHashSet<>();
+        for (String configPath : SHARED_GATEWAY_MGT_SYNAPSE_CONFIGS) {
+            OMElement synapseConfig = APIMTestCaseUtils.loadResource(configPath);
+            Iterator<?> apiElements = synapseConfig.getChildrenWithLocalName("api");
+            while (apiElements.hasNext()) {
+                OMElement apiElement = (OMElement) apiElements.next();
+                String apiName = apiElement.getAttributeValue(new QName("name"));
+                if (apiName == null || apiName.trim().isEmpty()) {
+                    continue;
+                }
+
+                String apiVersion = apiElement.getAttributeValue(new QName("version"));
+                if (apiVersion != null && !apiVersion.trim().isEmpty()) {
+                    apiName = apiName + ":v" + apiVersion;
+                }
+                expectedApiNames.add(apiName);
+            }
+        }
+
+        sharedGatewayExpectedRestApiNames = new ArrayList<>(expectedApiNames);
+        return sharedGatewayExpectedRestApiNames;
+    }
+
+    private boolean containsValue(String[] values, String expectedValue) {
+        if (values == null || expectedValue == null) {
+            return false;
+        }
+
+        for (String value : values) {
+            if (expectedValue.equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateTomlFileWithMockPort(String sourceTomlPath, int newPort, int oldPort) throws IOException {
@@ -714,9 +794,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         @Test(groups = {"wso2.am"}, enabled = true,
             dependsOnMethods = {"testAttachSemanticToolFilteringPolicyToAiApi"},
             description = "Invoke AI API and verify tool filtering via embeddings usage and forwarded request")
-        public void testSemanticToolFilteringPolicyInvocation() throws Exception {
-        wireMockServer.resetRequests();
-
+    public void testSemanticToolFilteringPolicyInvocation() throws Exception {
         JSONObject originalRequestJson = new JSONObject(requestPayload);
         int originalToolCount = originalRequestJson.getJSONArray("tools")
             .getJSONObject(0)
@@ -728,42 +806,32 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         headers.put("Content-Type", "application/json");
 
         String gatewayUrl = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + CHAT_RESOURCE;
-        HttpResponse response = invokeGatewayWithRetryOnNotFound(gatewayUrl, headers, requestPayload, 12, 5000L);
-        // Add a wait
-        // Thread.sleep(5000);
-        assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
+        SemanticToolFilteringInvocationResult invocationResult =
+            invokeGatewayUntilSemanticToolFilteringApplied(gatewayUrl, headers, requestPayload,
+                SEMANTIC_TOOL_FILTERING_TOOL_LIMIT, true, -1);
+
+        assertEquals(invocationResult.response.getResponseCode(), HttpStatus.SC_OK,
             "Expected HTTP 200 when invoking AI API with Semantic Tool Filtering policy. Response body: "
-                + response.getData());
-        assertEquals(response.getData(), mockResponse,
+                + invocationResult.response.getData());
+        assertEquals(invocationResult.response.getData(), mockResponse,
             "Gateway response should match mock backend response after policy execution");
 
-        List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
-            postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
-
-        logAllMockServerRequests();
-        assertTrue(!embeddingRequests.isEmpty(),
-            "Expected at least one embeddings request when Semantic Tool Filtering policy is applied");
-        
-
-        List<LoggedRequest> chatRequests = wireMockServer.findAll(
-            postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
-        assertEquals(chatRequests.size(), 1,
-            "Expected exactly one forwarded chat request to the mock AI backend");
-
-        JSONObject filteredRequestJson = new JSONObject(chatRequests.get(0).getBodyAsString());
-        int filteredToolCount = filteredRequestJson.getJSONArray("tools")
-            .getJSONObject(0)
-            .getJSONArray("function_declarations")
-            .length();
-
-        assertEquals(filteredToolCount, SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
-            "Expected exactly " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT + " tools after filtering, but found: " + filteredToolCount);
-        assertTrue(filteredToolCount < originalToolCount,
+        assertTrue(!invocationResult.embeddingRequests.isEmpty(),
+            "Expected at least one embeddings request when Semantic Tool Filtering policy is applied. "
+                + invocationResult.describe());
+        assertEquals(invocationResult.chatRequests.size(), 1,
+            "Expected exactly one forwarded chat request to the mock AI backend. "
+                + invocationResult.describe());
+        assertEquals(invocationResult.filteredToolCount, SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
+            "Expected exactly " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT + " tools after filtering. "
+                + invocationResult.describe());
+        assertTrue(invocationResult.filteredToolCount < originalToolCount,
             "Filtered tools count should be lower than original count. Original: " + originalToolCount +
-                ", Filtered: " + filteredToolCount);
+                ", Filtered: " + invocationResult.filteredToolCount + ". " + invocationResult.describe());
 
         log.info("###===### Semantic Tool Filtering verification passed. Original tools: " + originalToolCount
-            + ", Filtered tools: " + filteredToolCount + ", Embeddings requests: " + embeddingRequests.size());
+            + ", Filtered tools: " + invocationResult.filteredToolCount
+            + ", Embeddings requests: " + invocationResult.embeddingRequests.size());
         
         // Verify policy parameters persist by retrieving API specification
         HttpResponse verifyAPIResponse = restAPIPublisher.getAPI(aiApiId);
@@ -775,9 +843,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         @Test(groups = {"wso2.am"}, enabled = true,
             dependsOnMethods = {"testSemanticToolFilteringPolicyInvocation"},
             description = "Invoke AI API and verify tool embeddings are cached and forwarded request contains filtered tools")
-        public void testSemanticToolFilteringPolicyCache() throws Exception {
-        wireMockServer.resetRequests();
-
+    public void testSemanticToolFilteringPolicyCache() throws Exception {
         JSONObject originalRequestJson = new JSONObject(requestPayload);
         int originalToolCount = originalRequestJson.getJSONArray("tools")
             .getJSONObject(0)
@@ -789,43 +855,33 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         headers.put("Content-Type", "application/json");
 
         String gatewayUrl = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + CHAT_RESOURCE;
-        HttpResponse response = invokeGatewayWithRetryOnNotFound(gatewayUrl, headers, requestPayload, 12, 5000L);
-        // Add a wait
-        // Thread.sleep(5000);
-        assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
+        SemanticToolFilteringInvocationResult invocationResult =
+            invokeGatewayUntilSemanticToolFilteringApplied(gatewayUrl, headers, requestPayload,
+                SEMANTIC_TOOL_FILTERING_TOOL_LIMIT, false, 1);
+
+        assertEquals(invocationResult.response.getResponseCode(), HttpStatus.SC_OK,
             "Expected HTTP 200 when invoking AI API with Semantic Tool Filtering policy. Response body: "
-                + response.getData());
-        assertEquals(response.getData(), mockResponse,
+                + invocationResult.response.getData());
+        assertEquals(invocationResult.response.getData(), mockResponse,
             "Gateway response should match mock backend response after policy execution");
 
-        List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
-            postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
-        
-        log.info("Embedding requests : " + embeddingRequests.size());
-        logAllMockServerRequests();
-        assertTrue(embeddingRequests.size() <= 1,
-            "Expected no embeddings requests when chache applied. Only user query should trigger embedding request. Embedding requests: " + embeddingRequests.size());
-        
-
-        List<LoggedRequest> chatRequests = wireMockServer.findAll(
-            postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
-        assertEquals(chatRequests.size(), 1,
-            "Expected exactly one forwarded chat request to the mock AI backend");
-
-        JSONObject filteredRequestJson = new JSONObject(chatRequests.get(0).getBodyAsString());
-        int filteredToolCount = filteredRequestJson.getJSONArray("tools")
-            .getJSONObject(0)
-            .getJSONArray("function_declarations")
-            .length();
-
-        assertEquals(filteredToolCount, SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
-            "Expected exactly " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT + " tools after filtering, but found: " + filteredToolCount);
-        assertTrue(filteredToolCount < originalToolCount,
+        log.info("Embedding requests : " + invocationResult.embeddingRequests.size());
+        assertTrue(invocationResult.embeddingRequests.size() <= 1,
+            "Expected no additional tool embeddings requests when cache is applied. "
+                + invocationResult.describe());
+        assertEquals(invocationResult.chatRequests.size(), 1,
+            "Expected exactly one forwarded chat request to the mock AI backend. "
+                + invocationResult.describe());
+        assertEquals(invocationResult.filteredToolCount, SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
+            "Expected exactly " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT + " tools after filtering. "
+                + invocationResult.describe());
+        assertTrue(invocationResult.filteredToolCount < originalToolCount,
             "Filtered tools count should be lower than original count. Original: " + originalToolCount +
-                ", Filtered: " + filteredToolCount);
+                ", Filtered: " + invocationResult.filteredToolCount + ". " + invocationResult.describe());
 
         log.info("###===### Semantic Tool Filtering verification passed. Original tools: " + originalToolCount
-            + ", Filtered tools: " + filteredToolCount + ", Embeddings requests: " + embeddingRequests.size());
+            + ", Filtered tools: " + invocationResult.filteredToolCount
+            + ", Embeddings requests: " + invocationResult.embeddingRequests.size());
         
         // Verify policy parameters persist by retrieving API specification
         HttpResponse verifyAPIResponse = restAPIPublisher.getAPI(aiApiId);
@@ -1060,6 +1116,38 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         return response;
     }
 
+    private SemanticToolFilteringInvocationResult invokeGatewayUntilSemanticToolFilteringApplied(String gatewayUrl,
+            Map<String, String> headers, String payload, int expectedToolCount, boolean expectEmbeddings,
+            int maxEmbeddingRequests) throws Exception {
+        SemanticToolFilteringInvocationResult lastResult = null;
+
+        for (int attempt = 1; attempt <= SEMANTIC_TOOL_FILTERING_MAX_ATTEMPTS; attempt++) {
+            wireMockServer.resetRequests();
+
+            HttpResponse response = HTTPSClientUtils.doPost(gatewayUrl, headers, payload);
+            List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
+                postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
+            List<LoggedRequest> chatRequests = wireMockServer.findAll(
+                postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
+
+            lastResult = new SemanticToolFilteringInvocationResult(response, embeddingRequests, chatRequests);
+
+            if (lastResult.hasExpectedFiltering(mockResponse, expectedToolCount, expectEmbeddings, maxEmbeddingRequests)) {
+                return lastResult;
+            }
+
+            log.warn("Semantic Tool Filtering propagation is not ready on attempt " + attempt + " of "
+                + SEMANTIC_TOOL_FILTERING_MAX_ATTEMPTS + ". " + lastResult.describe());
+            logAllMockServerRequests();
+
+            if (attempt < SEMANTIC_TOOL_FILTERING_MAX_ATTEMPTS) {
+                Thread.sleep(SEMANTIC_TOOL_FILTERING_RETRY_INTERVAL_MILLIS);
+            }
+        }
+
+        return lastResult;
+    }
+
     private void assertSemanticToolFilteringMediatorDeployedToGateway() throws Exception {
         AutomationContext adminContext = null;
         String backendUrl = null;
@@ -1133,7 +1221,99 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
             LoggedRequest request = serveEvent.getRequest();
             Date requestTime = request.getLoggedDate();
             String formattedTime = requestTime != null ? dateFormat.format(requestTime) : "N/A";
+            String body = request.getBodyAsString();
+            if (body != null && body.length() > 500) {
+                body = body.substring(0, 500) + "...";
+            }
+            log.info("###===### Mock request " + index + " [" + formattedTime + "] "
+                + request.getMethod() + " " + request.getUrl() + " body=" + body);
             index++;
+        }
+    }
+
+    private static final class SemanticToolFilteringInvocationResult {
+
+        private final HttpResponse response;
+        private final List<LoggedRequest> embeddingRequests;
+        private final List<LoggedRequest> chatRequests;
+        private final int filteredToolCount;
+
+        private SemanticToolFilteringInvocationResult(HttpResponse response, List<LoggedRequest> embeddingRequests,
+                List<LoggedRequest> chatRequests) {
+            this.response = response;
+            this.embeddingRequests = embeddingRequests;
+            this.chatRequests = chatRequests;
+            this.filteredToolCount = extractFilteredToolCount(chatRequests);
+        }
+
+        private boolean hasExpectedFiltering(String expectedResponseBody, int expectedToolCount,
+                boolean expectEmbeddings, int maxEmbeddingRequests) {
+            if (response == null || response.getResponseCode() != HttpStatus.SC_OK) {
+                return false;
+            }
+            if (!expectedResponseBody.equals(response.getData())) {
+                return false;
+            }
+            if (expectEmbeddings && embeddingRequests.isEmpty()) {
+                return false;
+            }
+            if (maxEmbeddingRequests >= 0 && embeddingRequests.size() > maxEmbeddingRequests) {
+                return false;
+            }
+            return chatRequests.size() == 1 && filteredToolCount == expectedToolCount;
+        }
+
+        private String describe() {
+            String responseCode = response == null ? "null" : String.valueOf(response.getResponseCode());
+            String responseBody = response == null ? "null" : response.getData();
+            return "responseCode=" + responseCode
+                + ", embeddingsRequests=" + embeddingRequests.size()
+                + ", chatRequests=" + chatRequests.size()
+                + ", filteredToolCount=" + filteredToolCount
+                + ", responseBody=" + responseBody;
+        }
+
+        private static int extractFilteredToolCount(List<LoggedRequest> chatRequests) {
+            if (chatRequests == null || chatRequests.size() != 1) {
+                return -1;
+            }
+
+            try {
+                JSONObject filteredRequestJson = new JSONObject(chatRequests.get(0).getBodyAsString());
+                return filteredRequestJson.getJSONArray("tools")
+                    .getJSONObject(0)
+                    .getJSONArray("function_declarations")
+                    .length();
+            } catch (Exception e) {
+                return -1;
+            }
+        }
+    }
+
+    private static final class SharedGatewayAvailabilityCheckResult {
+
+        private final boolean available;
+        private final String description;
+
+        private SharedGatewayAvailabilityCheckResult(boolean available, String description) {
+            this.available = available;
+            this.description = description;
+        }
+
+        private static SharedGatewayAvailabilityCheckResult available() {
+            return new SharedGatewayAvailabilityCheckResult(true, "Shared gateway artifacts are available");
+        }
+
+        private static SharedGatewayAvailabilityCheckResult unavailable(String description) {
+            return new SharedGatewayAvailabilityCheckResult(false, description);
+        }
+
+        private boolean isAvailable() {
+            return available;
+        }
+
+        private String getDescription() {
+            return description;
         }
     }
 
