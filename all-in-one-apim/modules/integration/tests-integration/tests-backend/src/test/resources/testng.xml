@@ -216,8 +216,14 @@
             <class name="org.wso2.am.integration.tests.other.SharedScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.analytics.APIMAnalyticsTest"/>
             <class name="org.wso2.am.integration.tests.analytics.ELKAnalyticsWithRespondMediatorTestCase"/>
-            <class name="org.wso2.am.integration.tests.guardrail.GuardrailTestCase"/>
             <class name="org.wso2.am.integration.tests.other.CarbonAppUploadTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-integration-tests-guardrail" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group4"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.guardrail.GuardrailTestCase"/>
         </classes>
     </test>
 
