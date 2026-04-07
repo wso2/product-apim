@@ -94,6 +94,52 @@ public class APIInvocationSteps {
     }
 
     /**
+     * Loads a pre-generated API key from a JSON file based on the current database type,
+     * tenant domain, and username. The API key is stored in the test context as "generatedApiKey"
+     * for use in API invocations. This is used to test old API keys generated in previous APIM versions
+     * (e.g., 3.2.0) after migration.
+     *
+     * @param apiKeyFilePath Path to the JSON file containing pre-generated API keys
+     */
+    @When("I get the generated api key from file {string}")
+    public void iGetTheGeneratedApiKeyFromFile(String apiKeyFilePath) throws Exception {
+
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(apiKeyFilePath);
+        if (inputStream == null) {
+            throw new FileNotFoundException("API key file not found on classpath: " + apiKeyFilePath);
+        }
+
+        String jsonContent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> apiKeysMap = objectMapper.readValue(jsonContent, new TypeReference<>() {});
+
+        String dbType = System.getenv(Constants.API_MANAGER_DATABASE_TYPE);
+        if (dbType == null) {
+            throw new IllegalStateException("DB type is not set in environment variables");
+        }
+
+        String tenantDomain = tenant.getDomain();
+        String username = currentuser.getUserNameWithoutDomain();
+
+        if (tenantDomain == null || username == null) {
+            throw new IllegalStateException(
+                    "Tenant domain or username not found in TestContext. " +
+                            "tenantDomain=" + tenantDomain + ", username=" + username);
+        }
+
+        String tokenKey = dbType + "|" + tenantDomain + "|" + username;
+
+        String apiKey = apiKeysMap.get(tokenKey);
+        if (apiKey == null) {
+            throw new IllegalStateException(
+                    "No API key found for key: " + tokenKey +
+                            ". Available keys: " + apiKeysMap.keySet());
+        }
+
+        TestContext.set("generatedApiKey", apiKey);
+    }
+
+    /**
      * Invokes an API endpoint using an OAuth2 access token for authentication.
      * Supports GET, POST, PUT, and DELETE HTTP methods. The access token is resolved from the test context
      * and included in the Authorization header as a Bearer token.
