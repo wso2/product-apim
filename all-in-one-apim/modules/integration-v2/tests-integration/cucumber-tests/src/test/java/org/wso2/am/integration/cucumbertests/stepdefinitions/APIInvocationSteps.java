@@ -17,11 +17,8 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.core.options.CurlOption;
 import io.cucumber.java.en.When;
-import org.apache.commons.io.IOUtils;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -29,10 +26,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +34,7 @@ public class APIInvocationSteps {
 
     private final String baseGatewayUrl;
     private final Tenant tenant;
-    private User currentuser;
+    private final User currentuser;
 
     public APIInvocationSteps() {
 
@@ -58,38 +52,8 @@ public class APIInvocationSteps {
     @When("I get the generated access token from file {string}")
     public void iGetTheGeneratedAccessTokenFromFile(String accessTokenFilePath) throws Exception {
 
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(accessTokenFilePath);
-        if (inputStream == null) {
-            throw new FileNotFoundException("Access token file not found on classpath: " + accessTokenFilePath);
-        }
-
-        String jsonContent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> accessTokensMap = objectMapper.readValue(jsonContent, new TypeReference<>() {});
-
-        String dbType = System.getenv(Constants.API_MANAGER_DATABASE_TYPE);
-        if (dbType == null) {
-            throw new IllegalStateException("DB type is not set in environment variables");
-        }
-
-        String tenantDomain = tenant.getDomain();
-        String username = currentuser.getUserNameWithoutDomain();
-
-        if (tenantDomain == null || username == null) {
-            throw new IllegalStateException(
-                    "Tenant domain or username not found in TestContext. " +
-                            "tenantDomain=" + tenantDomain + ", username=" + username);
-        }
-
-        String tokenKey = dbType + "|" + tenantDomain + "|" + username;
-
-        String accessToken = accessTokensMap.get(tokenKey);
-        if (accessToken == null) {
-            throw new IllegalStateException(
-                    "No access token found for key: " + tokenKey +
-                            ". Available keys: " + accessTokensMap.keySet());
-        }
-
+        String lookupKey = Utils.buildUserScopedKey(tenant, currentuser);
+        String accessToken = Utils.getValueFromFileByKey(accessTokenFilePath, lookupKey).toString();
         TestContext.set("generatedAccessToken", accessToken);
     }
 

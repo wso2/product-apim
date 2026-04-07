@@ -67,8 +67,9 @@ Feature: Custom Header Authorization
       "validityPeriod": 3600
     }
     """
-    And I request an access token for application id "<createdAppId>" using payload "<createApplicationAccessTokenPayload>"
+    And I request an access token for application id "<createdAppId>" using payload "<createApplicationAccessTokenPayload>" and key mapping id "<keyMappingId>"
     Then The response status code should be 200
+    And I extract response field "accessToken" and store it as "<generatedAccessToken>"
     And I invoke the API resource at path "/apiTestContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 401
 

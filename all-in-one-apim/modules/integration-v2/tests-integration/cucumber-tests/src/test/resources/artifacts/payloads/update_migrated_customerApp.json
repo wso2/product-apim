@@ -1,8 +1,7 @@
 {
-  "applicationId": "df1bb979-da46-4aac-9fa8-7e51d473c73c",
-  "name": "CustomerAppUpdated",
+  "name": "CustomerApp",
   "throttlingPolicy": "50PerMin",
-  "description": "Updated Test app for scenarios",
+  "description": "Updated description for migrated app",
   "tokenType": "JWT",
   "status": "APPROVED",
   "groups": [],
@@ -12,7 +11,5 @@
   "subscriptionScopes": [],
   "owner": "admin",
   "hashEnabled": false,
-  "createdTime": "1755757299000",
-  "updatedTime": "1755757299000",
   "visibility": "PRIVATE"
 }
