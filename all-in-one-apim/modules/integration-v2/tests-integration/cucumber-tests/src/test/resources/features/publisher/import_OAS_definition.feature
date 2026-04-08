@@ -4,8 +4,8 @@ Feature: Create APIs by importing Open API Specification (2, 3, 3.1)
     Given The system is ready and I have valid access tokens for current user
 
   Scenario: Create an application
-    When I have set up a application with keys
-    Then The response status code should be 200
+    When I create a test application and store the id as "<createdAppId>"
+    Then I generate keys for application "<createdAppId>" and store consumer secret as "<consumerSecret>" and key mapping id as "<keyMappingId>"
 
   Scenario Outline: Import API Definition
     # Step 1: Import API definition and create api
@@ -37,7 +37,8 @@ Feature: Create APIs by importing Open API Specification (2, 3, 3.1)
     Then The lifecycle status of API "<apiID>" should be "Published"
 
    # Step 5: Subscribe and invoke
-    When I subscribe to resource "<apiID>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
+    When I subscribe to resource "<apiID>" using application "<createdAppId>" and store subscription as "<subscriptionID>"
+    And I obtain an access token with scope "" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
 
     Then The response status code should be 200

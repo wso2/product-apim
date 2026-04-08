@@ -186,9 +186,6 @@ public class ApplicationBaseSteps {
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", response);
-
-//        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
-//        TestContext.set(subscriptionID,Utils.extractValueFromPayload(response.getData(), "subscriptionId"));
     }
 
     /**
@@ -640,89 +637,6 @@ public class ApplicationBaseSteps {
                 .anyMatch(subJson -> actualSubscriptionId.equals(subJson.optString("subscriptionId", null)));
 
         Assert.assertTrue(found, "Subscription with id " + actualSubscriptionId + " not found in the list.");
-    }
-
-    /**
-     * Composite step definition for,
-     * Application creation - put the 'createdAppId' in context
-     * Generate credentials for application - put 'consumerKey', 'consumerSecret' , and 'keyMappingId' in context
-     * Subscribe to a given apiId - put 'subscriptionId' in context
-     * Generate access tokens - put 'generatedAccessToken' in context
-     *
-     * @param apiId Api to be subscribed
-     */
-    @When("I have set up application with keys, subscribed to API {string}, and obtained access token for {string}")
-    public void iSetupApplicationSubscribeAndGetToken(String apiId, String subscriptionID) throws Exception {
-
-        // create an application
-        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
-        iCreateAnApplicationWithJsonPayload("<createAppPayload>");
-
-        // generate credentials for application
-        baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
-                "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
-        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
-        baseSteps.theResponseStatusCodeShouldBe(200);
-
-        // subscribe to an api with that created application
-        baseSteps.putJsonPayloadInContext("<apiSubscriptionPayload>", "{\"applicationId\": \"{{applicationId}}\"," +
-                "\"apiId\": \"{{apiId}}\",\"throttlingPolicy\": \"Bronze\"}");
-        iSubscribeToApi("<apiSubscriptionPayload>");
-
-        // generate access token
-        baseSteps.putJsonPayloadInContext("<createApplicationAccessTokenPayload>", "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
-                "\"validityPeriod\": 3600}");
-        iRequestAccessToken("<createdAppId>", "<createApplicationAccessTokenPayload>", "<keyMappingId>");
-        baseSteps.theResponseStatusCodeShouldBe(200);
-    }
-
-    /**
-     * Composite step definition for,
-     * Application creation - put the 'createdAppId' in context
-     * Generate credentials for application - put 'consumerKey', 'consumerSecret' , and 'keyMappingId' in context
-     */
-    @When("I have set up a application with keys")
-    public void iHaveSetUpAApplicationWithKeys() throws Exception {
-
-        // create an application
-        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
-        iCreateAnApplicationWithJsonPayload("<createAppPayload>");
-
-        // generate credentials for application
-        baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
-                "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
-        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
-        baseSteps.theResponseStatusCodeShouldBe(200);
-    }
-
-    /**
-     * Composite step definition for,
-     * Subscribe to a given apiId - put 'subscriptionId' in context
-     * Generate access tokens - put 'generatedAccessToken' in context
-     *
-     * @param resourceID resource to be subscribed
-     */
-    @And("I subscribe to resource {string}, with {string} and obtained access token for {string} with scope {string}")
-    public void iSubscribeToResourceAndObtainedAccessToken(String resourceID, String appId, String subscriptionID, String scope) throws Exception {
-
-        // subscribe to an api with that created application
-        baseSteps.putJsonPayloadInContext("<apiSubscriptionPayload>", "{\"applicationId\": \"{{applicationId}}\"," +
-                "\"apiId\": \"{{apiId}}\",\"throttlingPolicy\": \"Bronze\"}");
-        iSubscribeToApi(subscriptionID);
-
-        // generate access token
-        String tokenPayload;
-        if (scope != null && !scope.isEmpty()) {
-            tokenPayload = "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
-                    "\"validityPeriod\": 3600," +
-                    "\"scopes\": [\"" + scope + "\"]}";
-        } else {
-            tokenPayload = "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
-                    "\"validityPeriod\": 3600}";
-        }
-
-        baseSteps.putJsonPayloadInContext("<createApplicationAccessTokenPayload>", tokenPayload);
-        iRequestAccessToken(appId, "<createApplicationAccessTokenPayload>", "<keyMappingId>");
     }
 
     /**

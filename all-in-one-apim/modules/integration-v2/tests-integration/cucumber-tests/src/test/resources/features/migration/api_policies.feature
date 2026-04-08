@@ -16,8 +16,9 @@ Feature: Migrated Applications
     Then The response status code should be 200
     And I put the response payload in context as "migratedAPIPayload"
 
-    When I have set up a application with keys
-    Then The response status code should be 200
+    When I create a test application and store the id as "<createdAppId>"
+    Then I generate keys for application "<createdAppId>" and store consumer secret as "<consumerSecret>" and key mapping id as "<keyMappingId>"
+
 
   # Step 2: Create a new common policy
   Scenario: Create new common policy
@@ -90,7 +91,9 @@ Feature: Migrated Applications
     And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
     # These responses should not include x-common-header since it was only applied to DELETE resource
-    When I subscribe to resource "<apiId>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
+    When I subscribe to resource "<apiId>" using application "createdAppId" and store subscription as "<subscriptionID>"
+    And I obtain an access token with scope "" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
+
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
     And The response should not contain the header "x-common-header" with value "x-common-value"
@@ -144,7 +147,9 @@ Feature: Migrated Applications
     Then The response status code should be 201
     And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
-    When I subscribe to resource "<apiId>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
+    When I subscribe to resource "<apiId>" using application "createdAppId" and store subscription as "<subscriptionID>"
+    And I obtain an access token with scope "" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
+
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
     And The response should contain the header "x-common-header" with value "x-common-value"
@@ -198,7 +203,9 @@ Feature: Migrated Applications
     Then The response status code should be 201
     And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
-    When I subscribe to resource "<apiId>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
+    When I subscribe to resource "<apiId>" using application "createdAppId" and store subscription as "<subscriptionID>"
+    And I obtain an access token with scope "" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
+
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
     And The response should contain the header "x-specific-header" with value "x-specific-value"
@@ -237,7 +244,9 @@ Feature: Migrated Applications
       Then The response status code should be 200
 
   Scenario Outline: Verify global policies
-    When I subscribe to resource "<apiId>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope ""
+    When I subscribe to resource "<apiId>" using application "createdAppId" and store subscription as "<subscriptionID>"
+    And I obtain an access token with scope "" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
+
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
     And The response should contain the header "custom_global_header" with value "custom_global_value"

@@ -27,7 +27,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIDocumentationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIRevisionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.NewAPIProductWithMigratedAPIs"/>
-            migrated api products has errors
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIProductsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedSharedScopesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIDefinitionRunner"/>
