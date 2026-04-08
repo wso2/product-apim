@@ -370,7 +370,6 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         for (String conditionId : addedPolicyIds) {
             restAPIAdmin.deleteDenyThrottlingPolicy(conditionId);
         }
-        super.cleanUp();
     }
 
 }

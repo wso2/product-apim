@@ -104,6 +104,5 @@ public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseT
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 }

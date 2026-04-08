@@ -567,7 +567,6 @@ public class WebSocketAPIScopeTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.deleteAPI(websocketAPIID);
         serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
-        super.cleanUp();
     }
 
     enum AUTH_IN {

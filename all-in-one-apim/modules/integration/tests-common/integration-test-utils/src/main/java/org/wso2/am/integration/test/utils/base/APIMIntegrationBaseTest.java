@@ -142,6 +142,7 @@ public class APIMIntegrationBaseTest {
     protected  RestAPIInternalImpl restAPIInternal;
     protected final int inboundWebSocketPort = 9099;
     protected final int portOffset = 500;  //This need to be properly fixed rather than hard coding
+    protected final TestResourceTracker resourceTracker = new TestResourceTracker();
 
     /**
      * This method will initialize test environment
@@ -542,9 +543,15 @@ public class APIMIntegrationBaseTest {
     }
 
     /**
-     * Cleaning up the API manager by removing all APIs and applications other than default application
+     * Removes every API, API product, and non-default application visible to the current user.
      *
-     * @throws APIManagerIntegrationTestException - occurred when calling the apis
+     * <p>This is the original broad, tenant-wide cleanup used by all existing tests. It remains
+     * the default so that unmigrated tests continue to work without changes.</p>
+     *
+     * <p>When migrating a test to use {@link TestResourceTracker}, replace the {@code super.cleanUp()}
+     * call in {@code @AfterClass} with {@code resourceTracker.cleanup(restAPIPublisher, restAPIStore)}.
+     * Once migrated, the test will only delete resources it created, making it safe for parallel
+     * execution.</p>
      */
     protected void cleanUp() throws Exception {
 

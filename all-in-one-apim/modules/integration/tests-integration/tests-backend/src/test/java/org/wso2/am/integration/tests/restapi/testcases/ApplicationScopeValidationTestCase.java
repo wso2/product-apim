@@ -73,6 +73,5 @@ public class ApplicationScopeValidationTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 }

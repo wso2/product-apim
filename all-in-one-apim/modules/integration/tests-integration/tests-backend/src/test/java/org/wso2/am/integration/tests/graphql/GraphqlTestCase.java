@@ -673,6 +673,5 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.deleteAPI(graphqlAPISDLId);
         restAPIPublisher.deleteAPI(graphqlAPIEndpointId);
         stopWireMockServer();
-        super.cleanUp();
     }
 }

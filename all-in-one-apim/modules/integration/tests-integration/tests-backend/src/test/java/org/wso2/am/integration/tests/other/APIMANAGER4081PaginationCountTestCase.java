@@ -346,6 +346,5 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                 restAPIPublisher.deleteAPI(id);
             }
         }
-        super.cleanUp();
     }
 }

@@ -22,7 +22,6 @@ import org.testng.annotations.*;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -31,7 +30,7 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,10 +39,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
- * "Block an API and check its accessibility in the API Store."
+ * Block an API and check its accessibility in the API Store.
  */
 public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest {
-
 
     private final String API_NAME = "BlockAPITest";
     private final String API_CONTEXT = "BlockAPI";
@@ -56,7 +54,6 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     private Map<String, String> requestHeaders;
     private String apiId;
     private String applicationId;
-
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -72,92 +69,75 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     }
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException {
+    public void initialize() throws Exception {
         super.init(userMode);
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
 
+        // Create application
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application AccessibilityOfBlockAPITestCase", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
-    }
+        resourceTracker.trackApplication(applicationId);
 
-
-    @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before block")
-    public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws Exception {
-        //Create and publish  and subscribe API version 1.0.0
-
-        //Create the api creation request object
-        APIRequest apiRequest;
-        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
-
+        // Create, publish and subscribe to the API
+        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, URI.create(apiEndPointUrl).toURL());
         apiRequest.setVersion(API_VERSION_1_0_0);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setProvider(user.getUserName());
-        //Create, Publish and Subscribe
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
+        resourceTracker.trackAPI(apiId);
 
-        ArrayList grantTypes = new ArrayList();
+        // Generate access token
+        ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add("client_credentials");
-
-        //get access token
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        // Create requestHeaders
-        requestHeaders = new HashMap<String, String>();
+
+        requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "text/xml");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
+
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
-
-        //Invoke  old version
-        HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
-                        API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
-        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Response code mismatched when invoke api before block");
-        assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
-                "Response data mismatched when invoke  API  before block" +
-                        " Response Data:" + oldVersionInvokeResponse.getData());
     }
 
+    @Test(groups = {"wso2.am"}, description = "Invoke the API before it is blocked")
+    public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws Exception {
+        HttpResponse response = HttpRequestUtil.doGet(
+                getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api before block");
+        assertTrue(response.getData().contains(API_RESPONSE_DATA),
+                "Response data mismatched when invoke API before block. Response Data: " + response.getData());
+    }
 
-    @Test(groups = {"wso2.am"}, description = "Change API lifecycle to block",
+    @Test(groups = {"wso2.am"}, description = "Change API lifecycle to blocked",
             dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
     public void testChangeAPILifecycleToBlock() throws Exception {
-        //Block the API version 1.0.0
         HttpResponse response = restAPIPublisher
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.BLOCK.getAction(), null);
         assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API publish Response code is invalid " + apiId);
+                "API block lifecycle change response code is invalid for API: " + apiId);
     }
 
-
-    @Test(groups = {"wso2.am"}, description = "Invocation og the APi after block",
+    @Test(groups = {"wso2.am"}, description = "Invoke the API after it is blocked",
             dependsOnMethods = "testChangeAPILifecycleToBlock")
     public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws Exception {
         waitForAPIDeployment();
-
-        //Invoke  old version
-        HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_END_POINT_METHOD,
-                        requestHeaders);
-        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
+        HttpResponse response = HttpRequestUtil.doGet(
+                getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched when invoke api after block");
-        assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_API_BLOCK),
-                "Response data mismatched when invoke  API  after block" +
-                        " Response Data:" + oldVersionInvokeResponse.getData());
+        assertTrue(response.getData().contains(HTTP_RESPONSE_DATA_API_BLOCK),
+                "Response data mismatched when invoke API after block. Response Data: " + response.getData());
     }
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        restAPIStore.deleteApplication(applicationId);
-        restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
+        resourceTracker.cleanup(restAPIPublisher, restAPIStore);
     }
-
 }
-

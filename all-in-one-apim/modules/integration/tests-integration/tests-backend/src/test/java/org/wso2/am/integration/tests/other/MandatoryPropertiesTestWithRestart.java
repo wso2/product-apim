@@ -138,6 +138,5 @@ public class MandatoryPropertiesTestWithRestart extends APIManagerLifecycleBaseT
     public void destroy() throws Exception {
         serverConfigurationManager.restoreToLastConfiguration();
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }

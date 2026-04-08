@@ -115,7 +115,6 @@ public class APIMANAGER5327KeyGenerationWithPGSQLTestCase extends APIMIntegratio
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

@@ -145,7 +145,6 @@ public class HardThrottlingTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

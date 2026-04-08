@@ -360,7 +360,6 @@ public class GIT_1628_OAuthAppUpdateViaRestApiTestCase extends APIMIntegrationBa
     public void destroy() throws Exception {
         apiStore.login(user.getUserName(), user.getPassword());
         apiStore.removeApplication(applicationName);
-        super.cleanUp();
     }
 
     private String generateOAuthAccessToken(String username, String password, String consumerKey, String consumerSecret)

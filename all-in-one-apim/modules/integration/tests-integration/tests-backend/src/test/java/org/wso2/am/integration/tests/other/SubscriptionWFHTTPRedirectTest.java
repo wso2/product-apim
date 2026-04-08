@@ -135,7 +135,6 @@ public class SubscriptionWFHTTPRedirectTest  extends APIManagerLifecycleBaseTest
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        super.cleanUp();
         //restore the original workflow-extentions.xml content.
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, originalWFExtentionsXML);
     }

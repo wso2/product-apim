@@ -187,7 +187,9 @@ public class APIComplianceTestCase extends APIMIntegrationBaseTest{
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
+        if (createdAPIId != null) {
+            restAPIPublisher.deleteAPI(createdAPIId);
+        }
     }
 
 }

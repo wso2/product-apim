@@ -151,7 +151,6 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
 }

@@ -183,7 +183,6 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         restAPIPublisher.deleteAPI(id);
-        super.cleanUp();
     }
 
 

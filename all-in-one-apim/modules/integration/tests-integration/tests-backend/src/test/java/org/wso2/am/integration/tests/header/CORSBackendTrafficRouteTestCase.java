@@ -178,7 +178,6 @@ public class CORSBackendTrafficRouteTestCase extends APIManagerLifecycleBaseTest
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
 
-        super.cleanUp();
     }
 
     @DataProvider

@@ -126,6 +126,5 @@ public class TagsRatingTestCase
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }

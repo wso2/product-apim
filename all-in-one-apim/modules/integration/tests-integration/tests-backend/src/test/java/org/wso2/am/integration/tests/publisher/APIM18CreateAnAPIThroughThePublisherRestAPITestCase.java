@@ -383,7 +383,6 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         restAPIPublisher.deleteAPI(apiId2);
-        super.cleanUp();
     }
 
 }

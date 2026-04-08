@@ -117,6 +117,5 @@ public class APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITes
                 (publisherBackEndUrl, createSession(publisherContext));
         userManagementClientAdmin.deleteRole(adminRole);
         userManagementClientAdmin.deleteRole(creatorRole);
-        super.cleanUp();
     }
 }

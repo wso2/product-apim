@@ -367,6 +367,5 @@ public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         executorService.shutdownNow();
-        super.cleanUp();
     }
 }

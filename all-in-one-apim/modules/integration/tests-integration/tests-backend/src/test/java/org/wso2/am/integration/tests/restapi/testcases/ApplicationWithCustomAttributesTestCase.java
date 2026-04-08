@@ -71,7 +71,6 @@ public class ApplicationWithCustomAttributesTestCase extends APIMIntegrationBase
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 
 }

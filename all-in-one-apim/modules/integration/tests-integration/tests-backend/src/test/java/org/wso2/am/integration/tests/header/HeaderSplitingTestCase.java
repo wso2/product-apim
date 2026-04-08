@@ -79,7 +79,6 @@ public class HeaderSplitingTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 
     private static HttpResponse doGet(String endpoint, Map<String, String> headers) throws

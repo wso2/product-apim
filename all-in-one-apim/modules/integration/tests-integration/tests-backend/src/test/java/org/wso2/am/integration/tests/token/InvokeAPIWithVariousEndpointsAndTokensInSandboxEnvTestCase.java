@@ -297,6 +297,5 @@ public class InvokeAPIWithVariousEndpointsAndTokensInSandboxEnvTestCase extends 
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
         serverConfigurationManager.restoreToLastConfiguration();
-        super.cleanUp();
     }
 }

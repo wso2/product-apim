@@ -101,7 +101,6 @@ public class GetLinterCustomRulesThroughThePublisherRestAPITestCase extends
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
 
-        super.cleanUp();
     }
 
 }

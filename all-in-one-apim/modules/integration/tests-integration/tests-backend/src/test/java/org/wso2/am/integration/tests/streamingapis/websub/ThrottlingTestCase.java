@@ -368,6 +368,5 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager.restoreToLastConfiguration(false);
         callbackServer.stop();
         executorService.shutdownNow();
-        super.cleanUp();
     }
 }

@@ -728,7 +728,15 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         userManagementClient.deleteUser(USER_TEST);
         userManagementClient.deleteRole(API_SUBSCRIBER);
-        super.cleanUp();
+        if (apiOneId != null) {
+            restAPIPublisher.deleteAPI(apiOneId);
+        }
+        if (apiTwoId != null) {
+            restAPIPublisher.deleteAPI(apiTwoId);
+        }
+        if (apiProductId != null) {
+            restAPIPublisher.deleteApiProduct(apiProductId);
+        }
     }
 
     /**

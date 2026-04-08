@@ -18,6 +18,36 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
+<!--
+  Parallelism notes
+  =================
+  TestNG parallelism operates at two independent levels:
+
+  Suite level  — controlled by the `parallel` attribute on <suite>.
+                 NOT set here, so <test> blocks execute ONE AT A TIME, sequentially.
+                 `thread-count` on <suite> is ONLY used when suite-level parallel is active;
+                 without it the value has no effect on cross-block execution.
+
+  Test level   — controlled by the `parallel` attribute on each <test> block.
+                 Currently ONLY `apim-integration-tests-api-lifecycle` uses parallel="instances".
+                 All other blocks have parallel="false" and are completely unaffected.
+
+  What parallel="instances" does inside apim-integration-tests-api-lifecycle:
+    - Each @Factory-annotated class produces 2 instances: SUPER_TENANT_ADMIN and TENANT_ADMIN.
+    - With group-by-instances="true", all methods of one instance run before moving on.
+    - With parallel="instances" + thread-count="2", the SUPER_TENANT and TENANT instances
+      of EACH class run concurrently (in different tenant namespaces — zero collision risk).
+    - Different test classes in the block are NOT run in parallel with each other:
+      group-by-instances ensures all instances of ClassA finish before ClassB starts.
+    - thread-count="2" is intentionally set to exactly the number of factory variants
+      (SUPER_TENANT_ADMIN + TENANT_ADMIN) to avoid unintended cross-class concurrency.
+
+  Migration path:
+    - Once every class in a block removes super.cleanUp() and uses scoped cleanup,
+      set parallel="instances" thread-count="2" on that block.
+    - After ALL blocks are migrated, promote to suite-level parallel="tests"
+      with thread-count="N" (N = number of independent test blocks) for full parallelism.
+-->
 <suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
 
@@ -75,7 +105,9 @@
         </classes>
     </test>-->
 
-    <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false" group-by-instances="true">
+    <!-- parallel="instances": SUPER_TENANT and TENANT instances from @Factory run concurrently.
+         Safe because the two tenant namespaces are fully isolated. -->
+    <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="instances" group-by-instances="true">
         <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>

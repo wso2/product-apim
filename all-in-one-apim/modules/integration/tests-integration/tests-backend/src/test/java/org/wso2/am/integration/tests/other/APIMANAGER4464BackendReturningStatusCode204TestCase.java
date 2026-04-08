@@ -171,6 +171,5 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
     }
 }

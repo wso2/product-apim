@@ -255,7 +255,6 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        super.cleanUp();
     }
 
     private class APICreationRequestBeanWithoutAction extends APICreationRequestBean {

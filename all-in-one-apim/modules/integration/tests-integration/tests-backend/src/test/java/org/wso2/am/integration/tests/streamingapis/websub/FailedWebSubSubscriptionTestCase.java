@@ -301,6 +301,5 @@ public class FailedWebSubSubscriptionTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager.restoreToLastConfiguration(false);
         callbackServer.stop();
         executorService.shutdownNow();
-        super.cleanUp();
     }
 }
