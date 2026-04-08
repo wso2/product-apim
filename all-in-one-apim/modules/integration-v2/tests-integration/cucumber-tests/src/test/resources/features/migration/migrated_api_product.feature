@@ -39,7 +39,7 @@ Feature: Migrated API Products
     # Step 1: Check lifecycle status and subscribe to product
     When I retrieve the "api-products" resource with id "apiProductId"
     Then The lifecycle status of API "apiProductId" should be "Published"
-    And I have set up application with keys, subscribed to API "apiProductId", and obtained access token for "subscriptionId"
+    And I have set up application with keys, subscribed to API "<apiProductId>", store subscription id as "<subscriptionId>" and access token as "<generatedAccessToken>"
 
   Scenario: Migrated API Products Revisions
     # Step 1: Find the api product

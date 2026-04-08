@@ -80,14 +80,14 @@ Feature: Publisher API Management
     """
     And I generate client credentials for application id "<createdAppId>" with payload "<generateApplicationKeysPayload>"
     Then The response status code should be 200
-    And The response should contain "consumerKey"
-    And The response should contain "consumerSecret"
+    And I extract response field "consumerSecret" and store it as "<appConsumerSecret>"
+    And I extract response field "keyMappingId" and store it as "<keyMappingId>"
 
     And I put the following JSON payload in context as "<apiSubscriptionPayload>"
     """
     {
-      "applicationId": "{{applicationId}}",
-      "apiId": "{{apiId}}",
+      "applicationId": "{{createdAppId}}",
+      "apiId": "{{createdApiId}}",
       "throttlingPolicy": "Bronze"
     }
     """

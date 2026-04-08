@@ -32,7 +32,7 @@ Feature: API Versioning
     Then The lifecycle status of API "<newVersionId>" should be "Published"
 
     # Step 6: Invoke the new version
-    When I have set up application with keys, subscribed to API "<newVersionId>", and obtained access token for "subscriptionId"
+    When I have set up application with keys, subscribed to API "<newVersionId>", store subscription id as "<subscriptionId>" and access token as "<generatedAccessToken>"
     And I invoke the API resource at path "apiTestContext/<newVersion>/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
 
