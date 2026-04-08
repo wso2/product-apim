@@ -46,7 +46,9 @@ Feature: Custom Header Authorization
       "throttlingPolicy": "Bronze"
     }
     """
-    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>" as "subscriptionId"
+    And I create a subscription using payload "<apiSubscriptionPayload>"
+    Then The response status code should be 201
+    And I extract response field "subscriptionId" and store it as "<subscriptionId>"
 
   Scenario: Invoke API using custom authentication header named Test-Custom-Header
     And I put the following JSON payload in context as "<generateApplicationKeysPayload>"
@@ -60,6 +62,8 @@ Feature: Custom Header Authorization
     """
     And I generate client credentials for application id "<createdAppId>" with payload "<generateApplicationKeysPayload>"
     Then The response status code should be 200
+    And I extract response field "consumerSecret" and store it as "<appConsumerSecret>"
+    And I extract response field "keyMappingId" and store it as "<keyMappingId>"
     When I put the following JSON payload in context as "<createApplicationAccessTokenPayload>"
     """
     {

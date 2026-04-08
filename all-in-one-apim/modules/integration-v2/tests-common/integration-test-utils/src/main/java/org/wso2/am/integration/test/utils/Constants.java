@@ -25,6 +25,8 @@ public class Constants {
     public static final String JSON_PATH_ROOT = "$";
     public static final String JSON_PATH_ROOT_WITH_DOT = "$.";
     public static final String COMPOSITE_KEY_DELIMITER = "|";
+    public static final String AMPERSAND = "&";
+    public static final String XML_AMPERSAND = "&amp;";
     public static final Pattern CONTEXT_PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^}]+)}}");
 
 
