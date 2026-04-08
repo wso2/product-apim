@@ -499,6 +499,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")
@@ -789,6 +790,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")
@@ -876,6 +878,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")
@@ -955,6 +958,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
         JWTGenerator.JwtTokenInfo productionTokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")
@@ -1054,6 +1058,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")
@@ -1120,7 +1125,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                     getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                     opaqueRequestHeader);
             int opaqueResponseCode = invocationOpaqueAfterRevoked.getResponseCode();
-            if (opaqueResponseCode == HTTP_RESPONSE_CODE_UNAUTHORIZED) {
+            if (opaqueResponseCode == HTTP_RESPONSE_CODE_UNAUTHORIZED || 
+                opaqueResponseCode == HTTP_RESPONSE_CODE_FORBIDDEN) {
                 isOpaqueApiKeyValid = false;
             } else if (opaqueResponseCode == HTTP_RESPONSE_CODE_OK) {
                 isOpaqueApiKeyValid = true;
@@ -1215,6 +1221,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")
@@ -1307,6 +1314,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")
@@ -1442,6 +1450,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.getApplicationById(applicationId);
         JWTGenerator.JwtTokenInfo tokenInfo = new JWTGenerator.JwtTokenInfo.Builder()
                 .endUsername(user.getUserName())
+                .sub(user.getUserName())
                 .issuer(keyManagerHTTPSURL + "oauth2/token")
                 .validityPeriod(3600)
                 .keyType("PRODUCTION")

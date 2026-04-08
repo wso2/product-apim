@@ -190,6 +190,13 @@
   "passthru_http.rest_uri_api_regex": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "passthru_http.rest_uri_proxy_regex": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
   "passthru_http.allowed_response_properties": "sse_throttle_dto,artifact_type,sse_analytics_info",
+  "passthru_http.'pass.through.transport.enableReplayTransaction'": "false",
+  "passthru_http.'pass.through.transport.replay.buffer.log.drop.frequency'": "100",
+  "passthru_http.'pass.through.transport.replay.transaction.max.buffer.size'": "10000",
+  "passthru_http.'pass.through.transport.replay.transaction.buffer.poll.interval.ms'": "50",
+  "passthru_http.'pass.through.transport.replay.worker.core.pool.size'": "4",
+  "passthru_http.'pass.through.transport.replay.worker.max.pool.size'": "8",
+  "passthru_http.'pass.through.transport.replay.worker.keep.alive.time.ms'": "30000",
   "n_http.'nhttp.rest.dispatcher.service'": "__MultitenantDispatcherService",
   "n_http.rest_uri_api_regex": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "n_http.rest_uri_proxy_regex": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
@@ -357,6 +364,7 @@
   "static_configuration.versioning_tags.enable": false,
   "static_configuration.versioning_ratings.enable": false,
   "version_resources.on_change": false,
+  "tenant_context.session_manager": "org.wso2.carbon.webapp.mgt.CarbonTomcatSessionManager",
   "tenant_context.rewrite.webapps": [
     "/api/identity/user/v1.0/",
     "/api/identity/consent-mgt/v1.0/",
@@ -373,7 +381,8 @@
     "/api/users/v2/me/webauthn",
     "/api/",
     "/user-portal/",
-    "/keymanager-operations/"
+    "/keymanager-operations/",
+    "/authenticationendpoint/"
   ],
   "resource.access_control": [
     {
@@ -524,6 +533,7 @@
   "apim.jwt.use_kid_property": true,
   "apim.jwt.use_sha256_hash": false,
   "apim.hashing.hashing_algorithm": "SHA-256",
+  "apim.mediation.enable_secure_xml_processing": true,
   "diagnostic_tool.server_configuration.diagnostic_tool_enabled": "true",
   "diagnostic_tool.server_configuration.deployment_toml_path": "../conf/deployment.toml",
   "diagnostic_tool.server_configuration.logs_directory": "../repository/logs",

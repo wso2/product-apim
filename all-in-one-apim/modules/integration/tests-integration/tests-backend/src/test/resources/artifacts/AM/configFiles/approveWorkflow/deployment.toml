@@ -1,0 +1,425 @@
+[server]
+hostname = "localhost"
+#offset=0
+base_path = "${carbon.protocol}://${carbon.host}:${carbon.management.port}"
+server_role = "default"
+enable_shutdown_from_api = true
+enable_restart_from_api = true
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[user_store]
+type = "database_unique_id"
+
+[database.apim_db]
+driver = "$env{API_MANAGER_DATABASE_DRIVER}"
+url = "$env{API_MANAGER_DATABASE_URL}"
+username = "$env{API_MANAGER_DATABASE_USERNAME}"
+password = "$env{API_MANAGER_DATABASE_PASSWORD}"
+validationQuery = "$env{API_MANAGER_DATABASE_VALIDATION_QUERY}"
+
+[database.shared_db]
+driver = "$env{SHARED_DATABASE_DRIVER}"
+url = "$env{SHARED_DATABASE_URL}"
+username = "$env{SHARED_DATABASE_USERNAME}"
+password = "$env{SHARED_DATABASE_PASSWORD}"
+validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
+
+[keystore.tls]
+file_name =  "wso2carbon.jks"
+type =  "JKS"
+password =  "wso2carbon"
+alias =  "wso2carbon"
+key_password =  "wso2carbon"
+
+[apim]
+gateway_type = "Regular,APK,AWS"
+
+[[apim.gateway.environment]]
+name = "Default"
+type = "hybrid"
+provider = "wso2"
+display_in_api_console = true
+description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:${mgt.transport.https.port}/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
+
+[[apim.gateway.environment]]
+name = "Hybrid 2"
+type = "hybrid"
+provider = "wso2"
+display_in_api_console = true
+description = "This is a hybrid gateway 2 that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:9445/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:8282"
+https_endpoint = "https://localhost:8245"
+
+[[apim.gateway.environment]]
+name = "devportalEnv"
+display_name = "Developer portal Test Environment"
+type = "hybrid"
+display_in_api_console = false
+description = "development api gateway broker"
+provider = "solace"
+service_url = "http://localhost:9960"
+username = "testUser"
+ws_endpoint = "ws://localhost:9960/"
+wss_endpoint = "wss://localhost:9960/"
+http_endpoint = "http://localhost:9960"
+https_endpoint = "https://localhost:9960/"
+password = "testPassword"
+show_as_token_endpoint_url = false
+
+[apim.gateway.environment.properties]
+Organization = "TestWSO2"
+DisplayName = "Developer portal Test Environment"
+DevAccountName = "devPortTestEnv"
+
+[apim.jwt]
+enable = true
+encoding = "base64" # base64,base64url
+enable_user_claims = true
+[apim.devportal]
+display_multiple_versions = true
+display_deprecated_apis = true
+
+[apim.cors]
+allow_origins = ["http://global.config1.com", "http://global.config2.com", "http://global.config3.com"]
+allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","apikey", "testKey"]
+allow_credentials = false
+enable_validation_for_ws = true
+
+[apim.workflow]
+enable = false
+service_url = "http://localhost:10263/BPMNProcessServerApp-1.0.0"
+
+[transport.http]
+socket_timeout=20000
+
+[synapse_properties]
+synapse_commons_json_buildValidNCNames=true
+
+
+[apim.notification]
+from_address = "APIM.com"
+username = "APIM"
+password = "APIM+123"
+hostname = "localhost"
+port = 3025
+enable_start_tls = false
+enable_authentication = true
+
+[apim.token.revocation.persistent_notifier]
+hostname = "https://localhost:9943/etcdmock/v2/keys/jti/"
+
+[transport.passthru_https.listener]
+ssl_profile_interval = 6000
+
+[apim.certificate_reloader]
+period = "1m"
+
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1"
+
+[[event_listener]]
+id = "token_revocation"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+order = 1
+[event_listener.properties]
+notification_endpoint = "https://localhost:${mgt.transport.https.port}/internal/data/v1/notify"
+username = "${admin.username}"
+password = "${admin.password}"
+'header.X-WSO2-KEY-MANAGER' = "default"
+
+[apim.sync_runtime_artifacts.gateway.skip_list]
+apis = ["admin--git2231head_v1.0.0.xml","admin--PizzaShackAPI_v1.0.0.xml","admin--ScriptMediatorAPI_v1.0.xml",
+"APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml",
+    "JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml",
+    "Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml",
+    "status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml","schemaValidationAPI.xml", "BackendCORS.xml"]
+
+[encryption]
+key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
+
+[[resource.access_control]]
+context = "(.*)/api/identity(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/openam/oauth2(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/passivests(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/jaxrs_basic/services(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/am/sample(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/am-graphQL-sample/api/graphql(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/am-auditApi-sample/api/auditapi(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/BPMNProcessServerApp-1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/store(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/testapp(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/pizzashack-api-1\\.0\\.0/api(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/backendMockup(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/etcdmock/v2/keys/jti(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/auth/realms/master(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/as(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/pf-ws/rest/oauth/clients(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/pf/JWKS(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/playground2(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/defaultversion(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/version1(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/version2(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/xmlapi(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/response(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/response_error(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/response_loc(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/locationheader(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/digestAuth(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/httpPatchSupportContext(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/script/1\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/backendSecurity/1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/urlmapping/1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/tokenTestAPI(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/refreshTokenTestAPI(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/jwtTokenTestAPI(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/api_throttle(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/phoneverify(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/phoneverifyarchive(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/phoneverifyurl123(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/pizzashack/1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/SampleAPI(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/Weather/1\\.0\\.0(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/helloService(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/jwks(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/SwaggerPetstorev2import(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/SwaggerPetstorev3import(.*)"
+secure = false
+http_method = "all"
+[[resource.access_control]]
+context = "(.*)/name-check1_SB(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/name-checkOne(.*)"
+secure = false
+http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/wildcard(.*)"
+secure = false
+http_method = "all"
+[[oauth.extensions.token_types]]
+name = "JWT"
+issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
+
+[[resource.access_control]]
+context = "(.*)/APIStatusMonitor(.*)"
+secure = false
+http_method = "all"
+
+[[apim.devportal.application_attributes]]
+name = "External Reference ID"
+description = "Used for internal billing tracking"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Technical Contact"
+description = "Email address of the primary developer or lead"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Department Name"
+description = "The department owning this app"
+required = false
+hidden = false

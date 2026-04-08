@@ -193,6 +193,13 @@
   "passthru_http.rest_uri_api_regex": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "passthru_http.rest_uri_proxy_regex": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
   "passthru_http.allowed_response_properties": "sse_throttle_dto,artifact_type,sse_analytics_info",
+  "passthru_http.'pass.through.transport.enableReplayTransaction'": "false",
+  "passthru_http.'pass.through.transport.replay.buffer.log.drop.frequency'": "100",
+  "passthru_http.'pass.through.transport.replay.transaction.max.buffer.size'": "10000",
+  "passthru_http.'pass.through.transport.replay.transaction.buffer.poll.interval.ms'": "50",
+  "passthru_http.'pass.through.transport.replay.worker.core.pool.size'": "4",
+  "passthru_http.'pass.through.transport.replay.worker.max.pool.size'": "8",
+  "passthru_http.'pass.through.transport.replay.worker.keep.alive.time.ms'": "30000",
   "n_http.'nhttp.rest.dispatcher.service'": "__MultitenantDispatcherService",
   "n_http.rest_uri_api_regex": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "n_http.rest_uri_proxy_regex": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
@@ -225,7 +232,7 @@
   "identity_mgt.user_self_registration.allow_self_registration": true,
   "identity_mgt.user_self_registration.lock_on_creation": false,
   "identity_mgt.password_reset_email.enable_password_reset_email": true,
-  "resource_access_control.default_access_allow": true,
+  "resource_access_control.default_access_allow": false,
   "oauth.prompt_consent": true,
   "transport.binary.receiver.sslPort": "9711",
   "transport.binary.receiver.tcpPort": "9611",
@@ -278,6 +285,7 @@
   "apim.publisher.subscriber_claims": "http://wso2.org/claims/givenname,http://wso2.org/claims/lastname,http://wso2.org/claims/emailaddress,http://wso2.org/claims/organization",
   "apim.publisher.enable_portal_configuration_only_mode": false,
   "apim.jwt_authenitcation.subscription_validation_via_km": true,
+  "apim.universal_gateway.version": "0.11.0",
   "keystore.ssl_profile.default.servers": "*",
   "keystore.listener_profile.ssl_verify_client" : "optional",
   "keystore.listener_profile.bind_address" : "0.0.0.0",
@@ -366,6 +374,7 @@
   "static_configuration.versioning_tags.enable": false,
   "static_configuration.versioning_ratings.enable": false,
   "version_resources.on_change": false,
+  "tenant_context.session_manager": "org.wso2.carbon.webapp.mgt.CarbonTomcatSessionManager",
   "tenant_context.rewrite.webapps": [
     "/api/identity/user/v1.0/",
     "/api/identity/consent-mgt/v1.0/",
@@ -382,7 +391,8 @@
     "/api/users/v2/me/webauthn",
     "/api/",
     "/user-portal/",
-    "/keymanager-operations/"
+    "/keymanager-operations/",
+    "/authenticationendpoint/"
   ],
   "resource.access_control": [
     {
@@ -596,6 +606,7 @@
   "apim.basic_authenticator.max_active": "100",
   "apim.basic_authenticator.max_wait_millis": "30000",
   "apim.mcp.enable": true,
+  "apim.mediation.enable_secure_xml_processing": true,
   "apim.devportal.mode": "HYBRID",
   "admin_service.deny_list": [
     "ClassMediatorAdmin",
