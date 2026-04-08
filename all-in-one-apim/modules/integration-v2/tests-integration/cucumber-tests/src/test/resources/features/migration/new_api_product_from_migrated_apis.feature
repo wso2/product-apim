@@ -43,8 +43,11 @@ Feature: New product creation
     Then The lifecycle status of API "newAPIProductId" should be "Published"
 
     # Step 7: Subscribe and invoke
-    When I have set up a application with keys
-    And I subscribe to resource "newAPIProductId", with "createdAppId" and obtained access token for "subscriptionId" with scope "adp-shared-scope-with-roles, new-shared-scope"
+    When I create a test application and store the id as "<createdAppId>"
+    Then I generate keys for application "<createdAppId>" and store consumer secret as "<consumerSecret>" and key mapping id as "<keyMappingId>"
+
+    When I subscribe to resource "newAPIProductId" using application "createdAppId" and store subscription as "<subscriptionId>"
+    And I obtain an access token with scope "adp-shared-scope-with-roles, new-shared-scope" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
 
     When I invoke the API resource at path "apiTestProductContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
@@ -54,7 +57,7 @@ Feature: New product creation
 
   Scenario Outline: Create new versions of migrated API products
 
-#    # Step 1: Retrieve payload
+    # Step 1: Retrieve payload
     When I retrieve the "api-products" resource with id "<apiProductID>"
     And I put the response payload in context as "<apiProductPayload>"
 

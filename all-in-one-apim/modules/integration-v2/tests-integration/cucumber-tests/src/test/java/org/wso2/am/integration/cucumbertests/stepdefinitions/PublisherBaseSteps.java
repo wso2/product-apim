@@ -490,7 +490,7 @@ public class PublisherBaseSteps {
         }
 
         TestContext.set("httpResponse", response);
-        TestContext.set(apiID, apiUUID);
+        TestContext.set(Utils.normalizeContextKey(apiID), apiUUID);
     }
 
     /**
