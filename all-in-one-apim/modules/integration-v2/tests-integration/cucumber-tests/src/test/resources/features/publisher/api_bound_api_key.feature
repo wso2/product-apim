@@ -36,12 +36,15 @@ Feature: API-bound API Key Management
     When I put the following JSON payload in context as "<subscriptionPayload>"
     """
     {
-      "applicationId": "{{applicationId}}",
-      "apiId": "{{apiId}}",
+      "applicationId": "{{createdAppId}}",
+      "apiId": "{{testApiId}}",
       "throttlingPolicy": "Unlimited"
     }
     """
-    And I subscribe to API "testApiId" using application "createdAppId" with payload "<subscriptionPayload>" as "testSubscriptionId"
+    And I create a subscription using payload "<subscriptionPayload>"
+    Then The response status code should be 201
+    And I extract response field "subscriptionId" and store it as "<testSubscriptionId>"
+
 
   # Step 2: Generate key, associate, invoke, dissociate, invoke(fail), re-associate, revoke, invoke(fail)
   Scenario: Generate API key, associate, dissociate, and revoke from API side

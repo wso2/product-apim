@@ -6,7 +6,7 @@ Feature: Migrated Applications with multiple consumer secrets disabled
 
   # Find migrated application
   Scenario: Retrieve and update migrated Application
-    When I fetch the application with "CustomerApp" as "<migratedAppId>"
+    When I fetch the application with "CustomerApp2" as "<migratedAppId>"
     Then The response status code should be 200
 
   Scenario: Get consumer secret of the Migrated application

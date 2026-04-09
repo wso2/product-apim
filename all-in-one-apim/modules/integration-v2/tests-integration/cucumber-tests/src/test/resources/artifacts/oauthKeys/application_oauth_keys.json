@@ -1,16 +1,37 @@
 {
-  "postgre|carbon.super|admin": "",
-  "postgre|adpsample.com|admin": "",
+  "postgre|carbon.super|admin": {
+    "keyMappingId": "90d217cf-1831-44c2-a034-d19569c493fb",
+    "consumerKey": "ETQL2tJpyHh7WZzliao5L29za5ga",
+    "consumerSecret": "8JfuliV06UPyHRSwj1fZk13bdPoa"
+  },
+  "postgre|adpsample.com|admin": {
+    "keyMappingId": "1d579c26-897e-4646-83ff-4c0d2a6f486b",
+    "consumerKey": "8OGh5te8WkjWHG4LbEiLCGk5Pssa",
+    "consumerSecret": "YMA_SAcq5hBbw50G4LXIuMAcep4a"
+  },
+
   "mysql|carbon.super|admin": {
-    "keyMappingId":"b84a277c-de7e-4a51-b06b-142c286589dc",
-    "consumerSecret":"8sLsYJMoVGfTDfkNcR_kdkCuE8sa"
+    "keyMappingId": "d8856a51-e64d-4c90-8a5e-b16f24d64d84",
+    "consumerKey": "1TG1JCMOYWvg25kOSlOV6EXNbt0a",
+    "consumerSecret": "s3OtY_fixMjYr_Eh3UzvtwWaLpAa"
   },
   "mysql|adpsample.com|admin": {
-    "keyMappingId":"c788817b-0642-4bb9-9015-d6e8bc969ffd",
-    "consumerSecret":"GFCtx_sWOcS2Ho_o21mJ2Kz05g0a"
+    "keyMappingId": "f244810c-5e6e-4e7b-beeb-5feccf9a8052",
+    "consumerKey": "M51cjhwaOSJgdSIIuisd5fR6Wxoa",
+    "consumerSecret": "kFg6FtEIQDMYVDGOprx5qgkbkZAa"
   },
+
   "oracle|carbon.super|admin": "",
   "oracle|adpsample.com|admin":"",
-  "mssql|carbon.super|admin": "",
-  "mssql|adpsample.com|admin": ""
+
+  "mssql|carbon.super|admin": {
+    "keyMappingId": "6fc94cf2-6c97-4715-899f-4e26004ea4ce",
+    "consumerKey": "Omku4fp3FJz_BgHJ8IcnWPuOtDIa",
+    "consumerSecret": "w1DKw9QZeJaH68xZUwpUUgVxWi4a"
+  },
+  "mssql|adpsample.com|admin": {
+    "keyMappingId": "93a38054-d2b8-4dd2-bc06-b05de3c6ed6b",
+    "consumerKey": "AdD1MBBNsICHogUByaDY52CKAcUa",
+    "consumerSecret": "QPPwB7bCa7flBUByDMzRv8WUMAga"
+  }
 }

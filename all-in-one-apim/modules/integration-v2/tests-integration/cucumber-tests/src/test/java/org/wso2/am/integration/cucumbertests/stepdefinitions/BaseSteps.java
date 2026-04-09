@@ -454,8 +454,10 @@ public class BaseSteps {
             JSONArray expectedArray = new JSONArray(configValue);
             JSONArray actualArray = (JSONArray) actualValue;
 
-            Assert.assertEquals(actualArray.toString(), expectedArray.toString(),
-                    "Expected array " + expectedArray + " but got " + actualArray);
+            Assert.assertTrue(actualArray.similar(expectedArray),
+                    "JSON Arrays do not match. Expected (order-insensitive): " + expectedArray
+                            + "But got: " + actualArray);
+
         } else if (actualValue instanceof JSONObject) {
             JSONObject expectedObject = new JSONObject(configValue);
             JSONObject actualObject = (JSONObject) actualValue;
@@ -463,7 +465,7 @@ public class BaseSteps {
             Assert.assertTrue(actualObject.similar(expectedObject), "Expected JSON object:\n" + expectedObject
                     + "\nbut got:\n" + actualObject);
         } else {
-            Assert.assertEquals(actualValue, configValue,
+            Assert.assertEquals(actualValue.toString(), configValue,
                     "Expected string " + configValue + " but got " + actualValue);
         }
     }
