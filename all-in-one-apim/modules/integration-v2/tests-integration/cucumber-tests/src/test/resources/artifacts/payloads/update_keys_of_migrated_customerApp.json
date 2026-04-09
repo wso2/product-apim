@@ -1,7 +1,5 @@
 {
   "keyManager": "Resident Key Manager",
-  "consumerKey": "UYfI63BvohrXJc2dzjh39S_9rH0a",
-  "consumerSecret": "6jtMOsGwPSih28_aQVkbWROzYPMa",
   "supportedGrantTypes": [
     "password",
     "client_credentials",

@@ -44,11 +44,16 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
 
         super(System.getProperty("apim.docker.image.name"));
 
-        String apim_db_url = System.getenv(Constants.API_MANAGER_DATABASE_URL);
-        String shared_db_url = System.getenv(Constants.SHARED_DATABASE_URL);
+        String apimDbUrl = System.getenv(Constants.API_MANAGER_DATABASE_URL);
+        String sharedDbUrl = System.getenv(Constants.SHARED_DATABASE_URL);
 
-        apim_db_url = apim_db_url.replace("&", "&amp;");
-        shared_db_url = shared_db_url.replace("&", "&amp;");
+        // Replace raw ampersands with XML-safe entities
+        if (apimDbUrl != null) {
+            apimDbUrl = apimDbUrl.replace(Constants.AMPERSAND, Constants.XML_AMPERSAND);
+        }
+        if (sharedDbUrl != null) {
+            sharedDbUrl = sharedDbUrl.replace(Constants.AMPERSAND, Constants.XML_AMPERSAND);
+        }
 
         int offset = Constants.DEFAULT_OFFSET;
 
@@ -58,15 +63,15 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
             offset +=  offsetCounter.getAndIncrement();
 
             // Change db urls to use different databases for each container
-            apim_db_url = apim_db_url.replace(Constants.APIM_DB_NAME,
+            apimDbUrl = apimDbUrl.replace(Constants.APIM_DB_NAME,
                     Constants.APIM_DB_NAME + "_" + offsetCounter.get());
-            shared_db_url = shared_db_url.replace(Constants.SHARED_DB_NAME,
+            sharedDbUrl = sharedDbUrl.replace(Constants.SHARED_DB_NAME,
                     Constants.SHARED_DB_NAME + "_" + offsetCounter.get());
         }
 
         logger.info("APIM Container Offset: {}", offset);
-        logger.info("APIM DB URL: {}", apim_db_url);
-        logger.info("SHARED DB URL: {}", shared_db_url);
+        logger.info("APIM DB URL: {}", apimDbUrl);
+        logger.info("SHARED DB URL: {}", sharedDbUrl);
 
         httpPort = Constants.HTTP_PORT + offset;
         httpsPort = Constants.HTTPS_PORT + offset;
@@ -82,7 +87,7 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
         // Env vars for APIMGT_DB
         withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
         withEnv(Constants.API_MANAGER_DATABASE_DRIVER, System.getenv(Constants.API_MANAGER_DATABASE_DRIVER));
-        withEnv(Constants.API_MANAGER_DATABASE_URL, apim_db_url);
+        withEnv(Constants.API_MANAGER_DATABASE_URL, apimDbUrl);
         withEnv(Constants.API_MANAGER_DATABASE_USERNAME, System.getenv(Constants.API_MANAGER_DATABASE_USERNAME));
         withEnv(Constants.API_MANAGER_DATABASE_PASSWORD, System.getenv(Constants.API_MANAGER_DATABASE_PASSWORD));
         withEnv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
@@ -91,7 +96,7 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
         // Env vars for SHARED_DB
         withEnv(Constants.SHARED_DATABASE_TYPE, System.getenv(Constants.SHARED_DATABASE_TYPE));
         withEnv(Constants.SHARED_DATABASE_DRIVER, System.getenv(Constants.SHARED_DATABASE_DRIVER));
-        withEnv(Constants.SHARED_DATABASE_URL, shared_db_url);
+        withEnv(Constants.SHARED_DATABASE_URL, sharedDbUrl);
         withEnv(Constants.SHARED_DATABASE_USERNAME, System.getenv(Constants.SHARED_DATABASE_USERNAME));
         withEnv(Constants.SHARED_DATABASE_PASSWORD, System.getenv(Constants.SHARED_DATABASE_PASSWORD));
         withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, System.getenv(Constants.

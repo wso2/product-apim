@@ -82,7 +82,7 @@ public class PublisherBaseSteps {
         TestContext.set("httpResponse", apiCreateResponse);
 
         Assert.assertEquals(apiCreateResponse.getResponseCode(), 201, apiCreateResponse.getData());
-        TestContext.set(resourceID, Utils.extractValueFromPayload(apiCreateResponse.getData(), "id"));
+        TestContext.set(Utils.normalizeContextKey(resourceID), Utils.extractValueFromPayload(apiCreateResponse.getData(), "id"));
     }
 
     /**
@@ -490,7 +490,7 @@ public class PublisherBaseSteps {
         }
 
         TestContext.set("httpResponse", response);
-        TestContext.set(apiID, apiUUID);
+        TestContext.set(Utils.normalizeContextKey(apiID), apiUUID);
     }
 
     /**

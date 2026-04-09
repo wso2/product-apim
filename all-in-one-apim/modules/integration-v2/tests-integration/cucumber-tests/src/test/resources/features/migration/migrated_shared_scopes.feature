@@ -4,7 +4,7 @@ Feature: Migrated shared scopes for existing and new apis
     Given The system is ready and I have valid access tokens for current user
 
   Scenario: Migrated API scope Management
-    # Step 1: Create new api
+    # Step 1: Create new api, deploy and publish it
     Given I have created an api from "artifacts/payloads/create_apim_test_api.json" as "RestAPIId" and deployed it
     And I retrieve the "apis" resource with id "RestAPIId"
     And I put the response payload in context as "RestAPIPayload"
@@ -83,13 +83,13 @@ Feature: Migrated shared scopes for existing and new apis
 
   # Step 7: Create an application
   Scenario: Create an application
-    When I have set up a application with keys
-    Then The response status code should be 200
-
+    When I create a test application and store the id as "<createdAppId>"
+    Then I generate keys for application "<createdAppId>" and store consumer secret as "<consumerSecret>" and key mapping id as "<keyMappingId>"
 
   # Step 8: Verify the behaviour, should give 403 for "adp-shared-scope-with-roles"
   Scenario Outline: Invoking apis
-    When I subscribe to resource "<apiID>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope "adp-shared-scope-with-roles, new-shared-scope"
+    When I subscribe to resource "<apiID>" using application "<createdAppId>" and store subscription as "<subscriptionID>"
+    And I obtain an access token with scope "adp-shared-scope-with-roles, new-shared-scope" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
     And I invoke the API resource at path "<resourcePath>" with method "<method>" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be <statusCode>
 
@@ -113,7 +113,8 @@ Feature: Migrated shared scopes for existing and new apis
 
   # Step 10: Verify the behaviour after update, should give 200 for admin
   Scenario Outline: Invoking apis
-    When I subscribe to resource "<apiID>", with "createdAppId" and obtained access token for "<subscriptionID>" with scope "adp-shared-scope-with-roles"
+    When I subscribe to resource "<apiID>" using application "<createdAppId>" and store subscription as "<subscriptionID>"
+    And I obtain an access token with scope "adp-shared-scope-with-roles" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
     And I invoke the API resource at path "<resourcePath>" with method "<method>" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
 

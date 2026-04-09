@@ -17,14 +17,17 @@
 
 package org.wso2.am.integration.cucumbertests.utils;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMXMLBuilderFactory;
 import org.apache.axiom.om.OMXMLParserWrapper;
 import org.apache.axiom.om.xpath.AXIOMXPath;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
@@ -34,14 +37,15 @@ import org.json.JSONTokener;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
+import org.wso2.carbon.automation.engine.context.beans.User;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.StringReader;
+import java.util.Map;
+import java.util.regex.Matcher;
 
 public class Utils {
 
@@ -204,6 +208,21 @@ public class Utils {
 
     public static String getApplicationAllKeys(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys" ;
+    }
+
+    public static String getGenerateApplicationSecretURL(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
+                keyMappingId + "/generate-secret";
+    }
+
+    public static String getAllApplicationSecretsURL(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
+                keyMappingId + "/secrets";
+    }
+
+    public static String getRevokeApplicationSecretURL(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" +
+                keyMappingId + "/revoke-secret";
     }
 
     public static String getGenerateApplicationTokenURL(String baseUrl, String applicationId, String keyMappingId) {
@@ -420,24 +439,38 @@ public class Utils {
     }
 
     /**
-     * Extracts the value for the given key from a JSON payload.
+     * Extracts a value from a JSON payload using a JSONPath expression.
      *
-     * @param jsonPayload the response payload as a JSON string
-     * @param key         the key to extract
-     * @return the value for the key
-     * @throws IOException if the payload cannot be parsed
+     * @param jsonPayload the JSON string to parse
+     * @param path        the JSONPath (e.g., "id" or "$.operations[0].verb")
+     * @return the extracted value as an Object
+     * @throws IOException if the payload is invalid or the path is not found
      */
-    public static Object extractValueFromPayload(String jsonPayload, String key) throws IOException {
+    public static Object extractValueFromPayload(String jsonPayload, String path) throws IOException {
 
         if (StringUtils.isBlank(jsonPayload)) {
             throw new IOException("JSON payload is null or empty.");
         }
 
-        JSONObject jsonObject = new JSONObject(jsonPayload);
-        if (!jsonObject.has(key)) {
-            throw new IOException("Key '" + key + "' not found in JSON payload.");
+        // Validate JSON structure
+        try {
+            new JSONObject(jsonPayload.trim());
+        } catch (Exception e) {
+            throw new IOException("Provided string is not a valid JSON object.", e);
         }
-        return jsonObject.getString(key);
+
+        // Normalize the JSONPath
+        String trimmedPath = path.trim();
+        String jsonPath = trimmedPath.startsWith(Constants.JSON_PATH_ROOT)
+                ? trimmedPath
+                : Constants.JSON_PATH_ROOT_WITH_DOT + trimmedPath;
+
+        // Extract using JsonPath
+        try {
+            return JsonPath.read(jsonPayload, jsonPath);
+        } catch (Exception e) {
+            throw new IOException("Path '" + jsonPath + "' not found or invalid in JSON payload.", e);
+        }
     }
 
     /**
@@ -571,5 +604,86 @@ public class Utils {
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid JSON value to append: " + value, e);
         }
+    }
+
+    /**
+     * Reads a JSON file from the classpath and returns the value for the given key.
+     *
+     * @param filePath path to the JSON file in the classpath
+     * @param key      key to look up in the JSON content
+     * @return value associated with the key
+     * @throws Exception if the file is missing, unreadable, or the key is not found
+     */
+    /**
+     * Reads a key-value file from the classpath and returns the value for the given key.
+     *
+     * @param filePath path to the file
+     * @param key lookup key
+     * @return value mapped to the key as Object
+     * @throws Exception if the file is missing or the key is not found
+     */
+    public static Object getValueFromFileByKey(String filePath, String key) throws Exception {
+        InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream(filePath);
+        if (inputStream == null) {
+            throw new FileNotFoundException("File not found on classpath: " + filePath);
+        }
+
+        String content = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        Map<String, Object> valuesMap = objectMapper.readValue(content, new TypeReference<>() {});
+
+        if (!valuesMap.containsKey(key)) {
+            throw new IllegalStateException(
+                    "No value found for key: " + key + ". Available keys: " + valuesMap.keySet()
+            );
+        }
+
+        return valuesMap.get(key);
+    }
+
+    /**
+     * Builds the default lookup key using database type, tenant domain, and username.
+     *
+     * @return composite key in the format dbType|tenantDomain|username
+     */
+    public static String buildUserScopedKey(Tenant tenant, User currentuser) {
+        String dbType = System.getenv(Constants.API_MANAGER_DATABASE_TYPE);
+        if (dbType == null) {
+            throw new IllegalStateException("DB type is not set in environment variables");
+        }
+
+        String tenantDomain = tenant.getDomain();
+        String username = currentuser.getUserNameWithoutDomain();
+
+        if (tenantDomain == null || username == null) {
+            throw new IllegalStateException("Tenant domain or username not found in TestContext. " +
+                            "tenantDomain=" + tenantDomain + ", username=" + username);
+        }
+        // Create the composite key in the format dbType|tenantDomain|username
+        return String.join(Constants.COMPOSITE_KEY_DELIMITER, dbType, tenantDomain, username);
+    }
+
+    public static String resolveContextPlaceholders(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        Matcher matcher = Constants.CONTEXT_PLACEHOLDER_PATTERN.matcher(input);
+        StringBuilder resolved = new StringBuilder();
+
+        while (matcher.find()) {
+            String contextKey = matcher.group(1).trim();
+            Object value = TestContext.get(contextKey);
+
+            if (value == null) {
+                throw new IllegalStateException("No value found in TestContext for key: " + contextKey);
+            }
+
+            matcher.appendReplacement(resolved, Matcher.quoteReplacement(String.valueOf(value)));
+        }
+
+        matcher.appendTail(resolved);
+        return resolved.toString();
     }
 }

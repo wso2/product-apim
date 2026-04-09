@@ -18,7 +18,6 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import com.google.gson.JsonObject;
-import com.jayway.jsonpath.JsonPath;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -200,6 +199,21 @@ public class BaseSteps {
     }
 
     /**
+     * Stores a generic string value or a value from a different context key into the test context.
+     *
+     * @param value The raw string value or a context key to resolve
+     * @param contextKey The key under which the value should be stored in TestContext
+     */
+    @When("I put value {string} in context as {string}")
+    public void iPutValueInContextAs(String value, String contextKey) {
+        // Resolve value if it's a reference to another context key
+        Object resolvedValue = Utils.resolveFromContext(value);
+
+        logger.info("Setting context key: {} with value: {}", contextKey, resolvedValue);
+        TestContext.set(Utils.normalizeContextKey(contextKey), resolvedValue.toString());
+    }
+
+    /**
      * Loads a JSON payload from a file and stores it in the test context.
      *
      * @param jsonFilePath Path to the JSON file
@@ -267,6 +281,29 @@ public class BaseSteps {
     }
 
     /**
+     * Extracts a value from the stored HTTP response payload and saves it in TestContext.
+     *
+     * @param responseField field name or JSONPath to extract from the response body
+     * @param contextKey context key under which the extracted value should be stored
+     * @throws IOException if the HTTP response is missing or the field is not found
+     */
+    @Then("I extract response field {string} and store it as {string}")
+    public void iExtractResponseFieldAndStoreItAs(String responseField, String contextKey) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        if (response == null) {
+            throw new IOException("No HTTP response found in TestContext.");
+        }
+
+        Object value = Utils.extractValueFromPayload(response.getData(), responseField);
+        if (value == null) {
+            throw new IOException("No value found in response for field: " + responseField);
+        }
+
+        TestContext.set(Utils.normalizeContextKey(contextKey), String.valueOf(value));
+    }
+
+    /**
      * Verifies that the HTTP response body does not contain the specified string value.
      *
      * @param unexpectedValue The string value that should not be present in the response body
@@ -312,10 +349,10 @@ public class BaseSteps {
      *
      * @param resourceType The type of resource to check
      * @param config The configuration field name to verify
-     * @param configValue The expected configuration value
+     * @param expectedConfigValue The expected configuration value
      */
     @And("The {string} resource should reflect the updated {string} as:")
-    public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String configValue) throws IOException, InterruptedException {
+    public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String expectedConfigValue) throws IOException, InterruptedException {
         // Get the API ID from the update response
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
         JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
@@ -324,25 +361,28 @@ public class BaseSteps {
         String tenantDomain = currentTenant.getDomain();
 
         if ("endpointConfig".equals(config)){
-            configValue = Utils.resolveFromContext(configValue).toString();
+            expectedConfigValue = Utils.resolveFromContext(expectedConfigValue).toString();
         }
+
+        Object parsedExpectedValue = Utils.parseConfigValue(expectedConfigValue);
+        String normalizedConfigValue = String.valueOf(parsedExpectedValue);
 
         if ("provider".equals(config)) {
             if (tenantDomain != null && !Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)) {
-                if (!configValue.contains("@")) {
-                    configValue = configValue + "@" + tenantDomain;
+                if (!normalizedConfigValue.contains("@")) {
+                    normalizedConfigValue = normalizedConfigValue + "@" + tenantDomain;
                 }
             }
         }
 
         if (resourceId == null || resourceId.isEmpty()) {
-            verifyConfigurationInResponse(updateResponse, config, configValue);
+            verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
             return;
         }
 
         // Retry mechanism: retrieve the API and check until the configuration matches
-        int maxRetries = 20;
-        int delayMs = 3000;
+        int maxRetries = 30;
+        int delayMs = 4000;
         boolean configMatches = false;
         HttpResponse retrievedResponse = null;
 
@@ -356,7 +396,7 @@ public class BaseSteps {
 
             if (retrievedResponse.getResponseCode() == 200) {
                 try {
-                    verifyConfigurationInResponse(retrievedResponse, config, configValue);
+                    verifyConfigurationInResponse(retrievedResponse, config, normalizedConfigValue);
                     configMatches = true;
                     break;
                 } catch (AssertionError e) {
@@ -369,7 +409,7 @@ public class BaseSteps {
                 }
             } else {
                 if (i == 0) {
-                    verifyConfigurationInResponse(updateResponse, config, configValue);
+                    verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
                     return;
                 }
                 Thread.sleep(delayMs);
@@ -378,7 +418,7 @@ public class BaseSteps {
 
         // Final fall back
         if (!configMatches) {
-            verifyConfigurationInResponse(updateResponse, config, configValue);
+            verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
         }
     }
 
@@ -567,25 +607,12 @@ public class BaseSteps {
      * @param outputContextKey the context key used to store the extracted value
      */
     @When("I get the value from json payload {string} at path {string} and store it as {string}")
-    public void iGetTheValueFromPayloadAtPathAndStoreItAs(String payloadContextKey, String path, String outputContextKey) {
+    public void iGetTheValueFromPayloadAtPathAndStoreItAs(String payloadContextKey, String path,
+                                                          String outputContextKey) throws IOException {
 
         Object ctxValue = Utils.resolveFromContext(payloadContextKey);
-        String jsonPayload = ctxValue.toString().trim();
-        // validate JSON object
-        try {
-            new JSONObject(jsonPayload);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Context value for key '" + payloadContextKey + "' is not a valid JSON object", e);
-        }
-
-        String jsonPath = path.startsWith(Constants.JSON_PATH_ROOT) ? path : Constants.JSON_PATH_ROOT_WITH_DOT + path;
-        try {
-            Object value = JsonPath.read(jsonPayload, jsonPath);
-            TestContext.set(Utils.normalizeContextKey(outputContextKey), String.valueOf(value));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read JSON path '" + jsonPath + "' from payload", e);
-        }
+        Object value = Utils.extractValueFromPayload(ctxValue.toString(), path);
+        TestContext.set(Utils.normalizeContextKey(outputContextKey), String.valueOf(value));
     }
 
     /**

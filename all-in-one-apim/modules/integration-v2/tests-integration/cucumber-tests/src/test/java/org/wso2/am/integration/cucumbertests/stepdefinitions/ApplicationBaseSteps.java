@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -27,6 +28,8 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.carbon.automation.engine.context.beans.Tenant;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
@@ -37,10 +40,14 @@ import java.util.stream.IntStream;
 public class ApplicationBaseSteps {
 
     private final String baseUrl;
+    private final Tenant tenant;
+    private final User currentuser;
 
     public ApplicationBaseSteps() {
 
         baseUrl = TestContext.get("baseUrl").toString();
+        tenant = Utils.getTenantFromContext("currentTenant");
+        currentuser = tenant.getContextUser();
     }
 
     BaseSteps baseSteps = new BaseSteps();
@@ -130,7 +137,7 @@ public class ApplicationBaseSteps {
                     .getJSONArray("list")
                     .getJSONObject(0)
                     .getString("applicationId");
-            TestContext.set(appId, applicationId);
+            TestContext.set(Utils.normalizeContextKey(appId), applicationId);
         } else {
             throw new IOException("No applications found with name: " + applicationName);
         }
@@ -162,23 +169,15 @@ public class ApplicationBaseSteps {
     /**
      * Creates a subscription between an application and an API.
      * The payload is updated with the actual application ID and API ID before sending the request.
-     * The created subscription ID is stored in the test context.
-     * 
-     * @param apiId Context key containing the API ID to subscribe to
-     * @param appId Context key containing the application ID to use for subscription
-     * @param payload Context key containing the subscription creation JSON payload
-     * @param subscriptionID Context key where the created subscription ID will be stored
+     *
+     * @param payloadContextKey Context key containing the subscription creation JSON payload
      */
-    @When("I subscribe to API {string} using application {string} with payload {string} as {string}")
-    public void iSubscribeToApi(String apiId, String appId, String payload, String subscriptionID) throws Exception {
-
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+    @When("I create a subscription using payload {string}")
+    public void iSubscribeToApi(String payloadContextKey) throws Exception {
 
         // Add application id and API id to the payload
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
-        jsonPayload = jsonPayload.replace("{{applicationId}}", actualAppId);
-        jsonPayload = jsonPayload.replace("{{apiId}}", actualApiId);
+        String jsonPayloadTemplate = String.valueOf(Utils.resolveFromContext(payloadContextKey));
+        String jsonPayload = Utils.resolveContextPlaceholders(jsonPayloadTemplate);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
@@ -186,8 +185,7 @@ public class ApplicationBaseSteps {
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getCreateSubscriptionURL(baseUrl),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
 
-        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
-        TestContext.set(subscriptionID,Utils.extractValueFromPayload(response.getData(), "subscriptionId"));
+        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -225,8 +223,8 @@ public class ApplicationBaseSteps {
 
     /**
      * Retrieves all existing keys (OAuth2 credentials) for an application.
-     * The consumer secret and key mapping ID from the first key are extracted and stored in the test context.
-     * 
+     * Stores the full HttpResponse in the test context.
+     *
      * @param appId Context key containing the application ID
      */
     @When("I retrieve existing application keys for {string}")
@@ -235,33 +233,119 @@ public class ApplicationBaseSteps {
         String actualAppId = Utils.resolveFromContext(appId).toString();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("devportalAccessToken").toString());
 
         HttpResponse response = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getApplicationAllKeys(baseUrl, actualAppId), headers);
 
         TestContext.set("httpResponse", response);
+    }
 
-        JSONObject responseJson = new JSONObject(response.getData());
-        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
-            JSONObject firstKey = responseJson
-                    .getJSONArray("list")
-                    .getJSONObject(0);
+    /**
+     * Extracts the consumer secret and key mapping ID from the first OAuth2 key entry
+     * in the latest application keys response and stores them in the given context keys.
+     *
+     * @param consumerSecretContextKey context key used to store the extracted consumer secret
+     * @param keyMappingIdContextKey context key used to store the extracted key mapping ID
+     */
+    @And("I extract the first oauth2 key details from the application keys response and store them as {string} and {string}")
+    public void iExtractFirstKeyDetails(String consumerSecretContextKey, String keyMappingIdContextKey)
+            throws IOException {
 
-            String consumerSecret = firstKey.optString("consumerSecret", null);
-            String keyMappingId = firstKey.optString("keyMappingId", null);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        String responseData = response.getData();
 
-            if (consumerSecret != null) {
-                TestContext.set("consumerSecret", consumerSecret);
-            }
-
-            if (keyMappingId != null) {
-                TestContext.set("keyMappingId", keyMappingId);
-            }
-        } else {
-            throw new IOException("No application keys found in response");
+        // Check whether the response contains at least one key entry
+        Object listSize = Utils.extractValueFromPayload(responseData, "$.list.length()");
+        if (!(listSize instanceof Integer) || (Integer) listSize <= 0) {
+            throw new IOException("No application keys found in the stored response list.");
         }
 
+        // Extract first key details
+        Object consumerSecretObj = Utils.extractValueFromPayload(responseData, "$.list[0].consumerSecret");
+        Object keyMappingIdObj = Utils.extractValueFromPayload(responseData, "$.list[0].keyMappingId");
+
+        // Fail if required values are missing
+        if (consumerSecretObj == null || keyMappingIdObj == null) {
+            throw new IOException("consumerSecret or keyMappingId is missing in the first application key entry.");
+        }
+
+        TestContext.set(Utils.normalizeContextKey(consumerSecretContextKey), String.valueOf(consumerSecretObj));
+        TestContext.set(Utils.normalizeContextKey(keyMappingIdContextKey), String.valueOf(keyMappingIdObj));
+    }
+
+    /**
+     * Retrieves all existing secrets for an application's key mapping.
+     * Stores the full HttpResponse in the test context.
+     *
+     * @param appId context key containing the application ID
+     * @param keyMappingIdContextKey context key containing the key mapping ID
+     */
+    @When("I retrieve existing application secrets for {string} using key mapping id {string}")
+    public void iRetrieveExistingApplicationSecrets(String appId, String keyMappingIdContextKey) throws IOException {
+
+        String actualAppId = String.valueOf(Utils.resolveFromContext(appId));
+        String keyMappingId = String.valueOf(Utils.resolveFromContext(keyMappingIdContextKey));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getAllApplicationSecretsURL(baseUrl, actualAppId, keyMappingId), headers);
+
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Extracts the secret ID from the first secret entry in the latest secrets response
+     * and stores it in the given test context key.
+     *
+     * @param secretIdContextKey context key used to store the extracted secret ID
+     */
+    @And("I extract the first secret details from the response and store it as {string}")
+    public void iExtractFirstSecretDetailsFromTheResponse(String secretIdContextKey) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        String responseData = response.getData();
+
+        // Ensure at least one secret exists in the response
+        Object listSize = Utils.extractValueFromPayload(responseData, "$.list.length()");
+        if (!(listSize instanceof Integer) || (Integer) listSize <= 0) {
+            throw new IOException("No secrets found in the stored response list.");
+        }
+
+        // Extract first secret ID
+        Object secretIdObj = Utils.extractValueFromPayload(responseData, "$.list[0].secretId");
+
+        if (secretIdObj == null) {
+            throw new IOException("secretId is missing in the first secret entry.");
+        }
+        TestContext.set(Utils.normalizeContextKey(secretIdContextKey), String.valueOf(secretIdObj));
+    }
+    /**
+     * Loads OAuth key details from a file and stores the extracted values in the given context keys.
+     *
+     * @param filePath path to the file containing OAuth key details
+     * @param consumerSecretContextKey context key under which the consumer secret should be stored
+     * @param keyMappingIdContextKey context key under which the key mapping ID should be stored
+     */
+    @When("I get the consumer secret and key mapping id from file {string} and store them as {string} and {string}")
+    public void iGetTheConsumerSecretAndKeyMappingIdFromFile(String filePath, String consumerSecretContextKey,
+                        String keyMappingIdContextKey) throws Exception {
+
+        String lookupKey = Utils.buildUserScopedKey(tenant, currentuser);
+
+        // Read matching value and convert to JSON string
+        Object oauthKeysObj = Utils.getValueFromFileByKey(filePath, lookupKey);
+        String oauthKeys = new ObjectMapper().writeValueAsString(oauthKeysObj);
+
+        String keyMappingId = String.valueOf(Utils.extractValueFromPayload(oauthKeys, "keyMappingId"));
+        String consumerSecret = String.valueOf(Utils.extractValueFromPayload(oauthKeys, "consumerSecret"));
+
+        TestContext.set(Utils.normalizeContextKey(consumerSecretContextKey), consumerSecret);
+        TestContext.set(Utils.normalizeContextKey(keyMappingIdContextKey), keyMappingId);
     }
 
     /**
@@ -306,6 +390,36 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Verifies the oauth-keys count in the latest response payload.
+     *
+     * @param expectedCount the expected number of oauth keys
+     */
+    @Then("Oauth-keys count should be {int}")
+    public void oauthKeysCountShouldBe(int expectedCount) throws IOException {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // Get oauth key count from response payload
+        Object oauthKeyCount = Utils.extractValueFromPayload(response.getData(), "count");
+        int actualCount = Integer.parseInt(String.valueOf(oauthKeyCount));
+        Assert.assertEquals(actualCount, expectedCount,
+                "Expected oauth-keys count " + expectedCount + " but found " + actualCount);
+    }
+
+    /**
+     * Verifies the secrets count in the latest response payload.
+     *
+     * @param expectedCount the expected number of secrets
+     */
+    @Then("Secrets count should be {int}")
+    public void secretsCountShouldBe(int expectedCount) throws IOException {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // Get secrets count from response payload
+        Object secretsCountObj = Utils.extractValueFromPayload(response.getData(), "count");
+        int actualCount = Integer.parseInt(String.valueOf(secretsCountObj));
+        Assert.assertEquals(actualCount, expectedCount,
+                "Expected secrets count " + expectedCount + " but found " + actualCount);
+    }
+
+    /**
      * Generates OAuth2 client credentials (consumer key and secret) for an application.
      * The generated consumer key, consumer secret, and key mapping ID are stored in the test context.
      * 
@@ -319,46 +433,103 @@ public class ApplicationBaseSteps {
         String jsonPayload = Utils.resolveFromContext(payload).toString();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("devportalAccessToken").toString());
 
         HttpResponse response = SimpleHTTPClient.getInstance()
                 .doPost(Utils.getGenerateApplicationKeysURL(baseUrl, actualAppId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", response);
-        TestContext.set("consumerKey", Utils.extractValueFromPayload(response.getData(), "consumerKey"));
-        TestContext.set("consumerSecret", Utils.extractValueFromPayload(response.getData(), "consumerSecret"));
-        TestContext.set("keyMappingId", Utils.extractValueFromPayload(response.getData(), "keyMappingId"));
+    }
+
+    /**
+     * Generates a client secret for an application using the given payload and key mapping ID.
+     * The payload is resolved from the test context, and any placeholders in the payload
+     * are replaced using values from the test context.
+     *
+     * @param appId context key containing the application ID
+     * @param payloadContextKey context key containing the client secret generation payload
+     * @param keyMappingIdContextKey context key containing the key mapping ID
+     */
+    @When("I generate a client secret for application id {string} using payload {string} and key mapping id {string}")
+    public void iGenerateClientSecretForApplication(String appId, String payloadContextKey,
+                                                    String keyMappingIdContextKey) throws Exception {
+
+        String actualAppId = String.valueOf(Utils.resolveFromContext(appId));
+        String keyMappingId = String.valueOf(Utils.resolveFromContext(keyMappingIdContextKey));
+        String jsonPayload = String.valueOf(Utils.resolveFromContext(payloadContextKey));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
+                Utils.getGenerateApplicationSecretURL(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON
+        );
+
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Revokes a client secret for the given application and key mapping.
+     *
+     * @param appId context key containing the application ID
+     * @param payloadContextKey context key containing the revoke secret payload
+     * @param keyMappingIdContextKey context key containing the key mapping ID
+     */
+    @When("I revoke the client secret for application id {string} using payload {string} and key mapping id {string}")
+    public void iRevokeClientSecretForApplication(String appId, String payloadContextKey,
+            String keyMappingIdContextKey) throws Exception {
+
+        String actualAppId = String.valueOf(Utils.resolveFromContext(appId));
+        String keyMappingId = String.valueOf(Utils.resolveFromContext(keyMappingIdContextKey));
+
+        String jsonPayloadTemplate = String.valueOf(Utils.resolveFromContext(payloadContextKey));
+        String jsonPayload = Utils.resolveContextPlaceholders(jsonPayloadTemplate);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " +TestContext.get("devportalAccessToken").toString());
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
+                Utils.getRevokeApplicationSecretURL(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON
+        );
+
+        TestContext.set("httpResponse", response);
     }
 
     /**
      * Requests an OAuth2 access token for an application using the generated client credentials.
-     * The consumer secret from the context is injected into the payload before sending the request.
+     * The request payload is resolved from the test context, and any placeholders in the payload
+     * are replaced using values from the test context.
      * The generated access token is stored in the test context.
-     * 
-     * @param appId Context key containing the application ID
-     * @param payload Context key containing the token request JSON payload
+     *
+     * @param appId context key containing the application ID
+     * @param payloadContextKey context key containing the token request JSON payload
+     * @param keyMappingIdContextKey context key containing the key mapping ID
      */
-    @When("I request an access token for application id {string} using payload {string}")
-    public void iRequestAccessToken(String appId, String payload) throws Exception {
+    @When("I request an access token for application id {string} using payload {string} and key mapping id {string}")
+    public void iRequestAccessToken(String appId, String payloadContextKey, String keyMappingIdContextKey)
+            throws Exception {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
-        String consumerSecret = Utils.resolveFromContext("consumerSecret").toString();
+        String actualAppId = String.valueOf(Utils.resolveFromContext(appId));
+        String keyMappingId = String.valueOf(Utils.resolveFromContext(keyMappingIdContextKey));
 
-        // Add consumer secret to the payload
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
-        jsonPayload = jsonPayload.replace("{{appConsumerSecret}}", consumerSecret);
+        String jsonPayloadTemplate = String.valueOf(Utils.resolveFromContext(payloadContextKey));
+        String jsonPayload = Utils.resolveContextPlaceholders(jsonPayloadTemplate);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " +
+                TestContext.get("devportalAccessToken").toString());
 
         HttpResponse response = SimpleHTTPClient.getInstance()
                 .doPost(Utils.getGenerateApplicationTokenURL(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
-        String accessToken = Utils.extractValueFromPayload(response.getData(), "accessToken").toString();
-        TestContext.set("generatedAccessToken", accessToken);
+        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -466,89 +637,6 @@ public class ApplicationBaseSteps {
                 .anyMatch(subJson -> actualSubscriptionId.equals(subJson.optString("subscriptionId", null)));
 
         Assert.assertTrue(found, "Subscription with id " + actualSubscriptionId + " not found in the list.");
-    }
-
-    /**
-     * Composite step definition for,
-     * Application creation - put the 'createdAppId' in context
-     * Generate credentials for application - put 'consumerKey', 'consumerSecret' , and 'keyMappingId' in context
-     * Subscribe to a given apiId - put 'subscriptionId' in context
-     * Generate access tokens - put 'generatedAccessToken' in context
-     *
-     * @param apiId Api to be subscribed
-     */
-    @When("I have set up application with keys, subscribed to API {string}, and obtained access token for {string}")
-    public void iSetupApplicationSubscribeAndGetToken(String apiId, String subscriptionID) throws Exception {
-
-        // create an application
-        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
-        iCreateAnApplicationWithJsonPayload("<createAppPayload>");
-
-        // generate credentials for application
-        baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
-                "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
-        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
-        baseSteps.theResponseStatusCodeShouldBe(200);
-
-        // subscribe to an api with that created application
-        baseSteps.putJsonPayloadInContext("<apiSubscriptionPayload>", "{\"applicationId\": \"{{applicationId}}\"," +
-                "\"apiId\": \"{{apiId}}\",\"throttlingPolicy\": \"Bronze\"}");
-        iSubscribeToApi(apiId, "<createdAppId>", "<apiSubscriptionPayload>", subscriptionID);
-
-        // generate access token
-        baseSteps.putJsonPayloadInContext("<createApplicationAccessTokenPayload>", "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
-                "\"validityPeriod\": 3600}");
-        iRequestAccessToken("<createdAppId>", "<createApplicationAccessTokenPayload>");
-        baseSteps.theResponseStatusCodeShouldBe(200);
-    }
-
-    /**
-     * Composite step definition for,
-     * Application creation - put the 'createdAppId' in context
-     * Generate credentials for application - put 'consumerKey', 'consumerSecret' , and 'keyMappingId' in context
-     */
-    @When("I have set up a application with keys")
-    public void iHaveSetUpAApplicationWithKeys() throws Exception {
-
-        // create an application
-        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
-        iCreateAnApplicationWithJsonPayload("<createAppPayload>");
-
-        // generate credentials for application
-        baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
-                "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
-        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
-        baseSteps.theResponseStatusCodeShouldBe(200);
-    }
-
-    /**
-     * Composite step definition for,
-     * Subscribe to a given apiId - put 'subscriptionId' in context
-     * Generate access tokens - put 'generatedAccessToken' in context
-     *
-     * @param resourceID resource to be subscribed
-     */
-    @And("I subscribe to resource {string}, with {string} and obtained access token for {string} with scope {string}")
-    public void iSubscribeToResourceAndObtainedAccessToken(String resourceID, String appId, String subscriptionID, String scope) throws Exception {
-
-        // subscribe to an api with that created application
-        baseSteps.putJsonPayloadInContext("<apiSubscriptionPayload>", "{\"applicationId\": \"{{applicationId}}\"," +
-                "\"apiId\": \"{{apiId}}\",\"throttlingPolicy\": \"Bronze\"}");
-        iSubscribeToApi(resourceID, appId, "<apiSubscriptionPayload>", subscriptionID);
-
-        // generate access token
-        String tokenPayload;
-        if (scope != null && !scope.isEmpty()) {
-            tokenPayload = "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
-                    "\"validityPeriod\": 3600," +
-                    "\"scopes\": [\"" + scope + "\"]}";
-        } else {
-            tokenPayload = "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
-                    "\"validityPeriod\": 3600}";
-        }
-
-        baseSteps.putJsonPayloadInContext("<createApplicationAccessTokenPayload>", tokenPayload);
-        iRequestAccessToken(appId, "<createApplicationAccessTokenPayload>");
     }
 
     /**

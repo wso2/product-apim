@@ -8,7 +8,7 @@ Feature: Publisher API Management
     And I have a valid Devportal access token for the current user
 
   Scenario: Create an API Through the Publisher Rest API
-    When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "<createdApiId>" and deployed it
 
   Scenario: Get the API details by ID
     When  I retrieve the "apis" resource with id "<createdApiId>"
@@ -80,18 +80,20 @@ Feature: Publisher API Management
     """
     And I generate client credentials for application id "<createdAppId>" with payload "<generateApplicationKeysPayload>"
     Then The response status code should be 200
-    And The response should contain "consumerKey"
-    And The response should contain "consumerSecret"
+    And I extract response field "consumerSecret" and store it as "<appConsumerSecret>"
+    And I extract response field "keyMappingId" and store it as "<keyMappingId>"
 
     And I put the following JSON payload in context as "<apiSubscriptionPayload>"
     """
     {
-      "applicationId": "{{applicationId}}",
-      "apiId": "{{apiId}}",
+      "applicationId": "{{createdAppId}}",
+      "apiId": "{{createdApiId}}",
       "throttlingPolicy": "Bronze"
     }
     """
-    And I subscribe to API "<createdApiId>" using application "<createdAppId>" with payload "<apiSubscriptionPayload>" as "subscriptionId"
+    And I create a subscription using payload "<apiSubscriptionPayload>"
+    Then The response status code should be 201
+    And I extract response field "subscriptionId" and store it as "<subscriptionId>"
     And I retrieve the subscription for Api "<createdApiId>" by Application "<createdAppId>"
     Then The response status code should be 200
     And The subscription with id "<subscriptionId>" should be in the list of all subscriptions
@@ -108,7 +110,8 @@ Feature: Publisher API Management
       "validityPeriod": 3600
     }
     """
-    And I request an access token for application id "<createdAppId>" using payload "<createApplicationAccessTokenPayload>"
+    And I request an access token for application id "<createdAppId>" using payload "<createApplicationAccessTokenPayload>" and key mapping id "<keyMappingId>"
+    And I extract response field "accessToken" and store it as "generatedAccessToken"
     Then The response status code should be 200
     And I invoke the API resource at path "apiTestContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
