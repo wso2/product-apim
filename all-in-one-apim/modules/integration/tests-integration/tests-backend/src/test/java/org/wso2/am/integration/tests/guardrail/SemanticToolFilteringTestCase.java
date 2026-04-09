@@ -434,7 +434,7 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
         }
         assertTrue(policyAttached,
             "Semantic Tool Filtering policy should be attached to POST " + CHAT_RESOURCE + " request flow");
-        Thread.sleep(10000);
+        Thread.sleep(20000);
         // Retrieve and log the complete API definition to verify policy parameters
         HttpResponse finalAPIResponse = restAPIPublisher.getAPI(aiApiId);
         assertEquals(finalAPIResponse.getResponseCode(), HttpStatus.SC_OK,
