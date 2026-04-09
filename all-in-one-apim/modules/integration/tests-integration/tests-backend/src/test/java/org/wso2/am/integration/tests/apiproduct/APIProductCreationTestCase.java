@@ -45,6 +45,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
+import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.impl.InvocationStatusCodes;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -54,7 +55,6 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
-
 import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -394,23 +394,23 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 //             "category")
     public void testCreateAndInvokeApiProductWithAPICategoryAdded() throws Exception {
         // Create the Marketing category first
-        APICategoryDTO categoryDTO = new APICategoryDTO();
+        String categoryName = "Marketing-" + UUID.randomUUID().toString().substring(0, 8);
+        String description = "Marketing category for testing";
+
+        APICategoryDTO categoryDTO = DtoFactory.createApiCategoryDTO(categoryName, description);
+        //Add the api category
+        org.wso2.am.integration.clients.admin.ApiResponse<APICategoryDTO> addedApiCategory =
+                restAPIAdmin.addApiCategory(categoryDTO);
+        //Assert the status code and api category ID
+        Assert.assertEquals(addedApiCategory.getStatusCode(), HttpStatus.SC_CREATED);
+
+        APICategoryDTO addedApiCategoryDTO = addedApiCategory.getData();
+        String apiCategoryId = addedApiCategoryDTO.getId();
+
         String provider = user.getUserName();
         String name = UUID.randomUUID().toString();
         String context = "/" + UUID.randomUUID().toString();
         String version = "1.0.0";
-
-        String categoryName = "Marketing-" + UUID.randomUUID().toString().substring(0, 8);
-        categoryDTO.setName(categoryName);
-        categoryDTO.setDescription("Marketing category for testing");
-        try {
-            restAPIAdmin.addApiCategory(categoryDTO);
-        } catch (org.wso2.am.integration.clients.admin.ApiException e) {
-            //Assert the Status Code
-            Assert.assertTrue(
-                e.getResponseBody() != null && e.getResponseBody().contains("already exists"),
-                "Unexpected error creating category: " + e.getResponseBody());
-        }
         
         List<APIDTO> apisToBeUsed = new ArrayList<>();
 
@@ -447,6 +447,10 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         List<String> categoriesInReceivedAPI = apiDTO.getCategories();
         Assert.assertNotNull(categoriesInReceivedAPI);
         Assert.assertTrue(categoriesInReceivedAPI.contains(categoryName));
+        
+        org.wso2.am.integration.clients.admin.ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteApiCategory(apiCategoryId);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
