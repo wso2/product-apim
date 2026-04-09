@@ -6,7 +6,11 @@
 {% endfor %}
 {% endif %}
 {% if case_list is defined %}
-    <property name="switchExpression" expression="fn:concat($ctx:REST_METHOD,'_',$ctx:API_ELECTED_RESOURCE)" />
+    {% if api_type == 'WS' %}
+        <property name="switchExpression" expression="$ctx:API_ELECTED_RESOURCE" />
+    {% else %}
+        <property name="switchExpression" expression="fn:concat($ctx:REST_METHOD,'_',$ctx:API_ELECTED_RESOURCE)" />
+    {% endif %}
     <switch source=\"$ctx:switchExpression\">
     {% for case in case_list %}
         <case regex=\"{{case.case_regex}}\">

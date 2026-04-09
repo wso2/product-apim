@@ -281,11 +281,19 @@ optimize="$advance_ep.get("optimize")"
         </loadbalance>
         </endpoint>
         #elseif ($endpointClass == "default")
+        #if($websocketResourceKey)
+        #set($wsEndpointName = "${ep_key}_${websocketResourceKey}")
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$wsEndpointName">
+<property name="OUT_ONLY" value="true"/>
+<default/>
+</endpoint>
+        #else
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
 <default>
     #timeout( $endpoints.get('config') )
 </default>
 </endpoint>
+        #end
         #end
         #end
 
