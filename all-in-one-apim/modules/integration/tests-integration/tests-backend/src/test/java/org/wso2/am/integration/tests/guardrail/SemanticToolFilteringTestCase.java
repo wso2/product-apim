@@ -169,6 +169,19 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
     private WireMockServer wireMockServer;
     private int mockPort;
     private ServerConfigurationManager serverConfigurationManager;
+
+    private static final class GatewayInvocationObservation {
+        private final HttpResponse response;
+        private final List<LoggedRequest> embeddingRequests;
+        private final List<LoggedRequest> chatRequests;
+
+        private GatewayInvocationObservation(HttpResponse response, List<LoggedRequest> embeddingRequests,
+                List<LoggedRequest> chatRequests) {
+            this.response = response;
+            this.embeddingRequests = embeddingRequests;
+            this.chatRequests = chatRequests;
+        }
+    }
     // -----------------------------------------------------------------------
     // TestNG factory / data-provider
     // -----------------------------------------------------------------------
@@ -406,8 +419,9 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
 
         String revisionUUID = createAPIRevisionAndDeployUsingRest(aiApiId, restAPIPublisher);
         assertNotNull(revisionUUID, "Revision UUID must not be null after policy attachment");
-        waitForAPIDeploymentSync(apiDto.getProvider(), apiDto.getName(), apiDto.getVersion(),
-            APIMIntegrationConstants.IS_API_EXISTS);
+        // The API already exists before this update, so waitForAPIDeploymentSync(IS_API_EXISTS)
+        // can return while the previous gateway revision is still serving traffic.
+        waitForAPIDeployment();
 
         HttpResponse updatedAPIResponse = restAPIPublisher.getAPI(aiApiId);
         assertEquals(updatedAPIResponse.getResponseCode(), HttpStatus.SC_OK,
@@ -434,7 +448,6 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
         }
         assertTrue(policyAttached,
             "Semantic Tool Filtering policy should be attached to POST " + CHAT_RESOURCE + " request flow");
-        Thread.sleep(20000);
         // Retrieve and log the complete API definition to verify policy parameters
         HttpResponse finalAPIResponse = restAPIPublisher.getAPI(aiApiId);
         assertEquals(finalAPIResponse.getResponseCode(), HttpStatus.SC_OK,
@@ -466,27 +479,29 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
         headers.put("Content-Type", "application/json");
 
         String gatewayUrl = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + CHAT_RESOURCE;
-        HttpResponse response = invokeGatewayWithRetryOnNotFound(gatewayUrl, headers, requestPayload, 12, 5000L);
-        // Add a wait
-        // Thread.sleep(5000);
+        GatewayInvocationObservation observation = invokeGatewayUntilSemanticFilteringIsApplied(gatewayUrl, headers,
+            requestPayload, originalToolCount, 18, 5000L);
+        assertNotNull(observation, "Expected a gateway invocation result after attaching the policy");
+
+        HttpResponse response = observation.response;
         assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
             "Expected HTTP 200 when invoking AI API with Semantic Tool Filtering policy. Response body: "
                 + response.getData());
         assertEquals(response.getData(), mockResponse,
             "Gateway response should match mock backend response after policy execution");
 
-        List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
-            postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
+        List<LoggedRequest> embeddingRequests = observation.embeddingRequests;
 
         logAllMockServerRequests();
         assertTrue(!embeddingRequests.isEmpty(),
-            "Expected at least one embeddings request when Semantic Tool Filtering policy is applied");
+            "Expected at least one embeddings request when Semantic Tool Filtering policy is applied. "
+                + buildObservationSummary(observation, originalToolCount));
         
 
-        List<LoggedRequest> chatRequests = wireMockServer.findAll(
-            postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
+        List<LoggedRequest> chatRequests = observation.chatRequests;
         assertEquals(chatRequests.size(), 1,
-            "Expected exactly one forwarded chat request to the mock AI backend");
+            "Expected exactly one forwarded chat request to the mock AI backend. "
+                + buildObservationSummary(observation, originalToolCount));
 
         JSONObject filteredRequestJson = new JSONObject(chatRequests.get(0).getBodyAsString());
         int filteredToolCount = filteredRequestJson.getJSONArray("tools")
@@ -495,7 +510,8 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
             .length();
 
         assertEquals(filteredToolCount, SEMANTIC_TOOL_FILTERING_TOOL_LIMIT,
-            "Expected exactly " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT + " tools after filtering, but found: " + filteredToolCount);
+            "Expected exactly " + SEMANTIC_TOOL_FILTERING_TOOL_LIMIT + " tools after filtering, but found: "
+                + filteredToolCount + ". " + buildObservationSummary(observation, originalToolCount));
         assertTrue(filteredToolCount < originalToolCount,
             "Filtered tools count should be lower than original count. Original: " + originalToolCount +
                 ", Filtered: " + filteredToolCount);
@@ -781,7 +797,7 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Invokes the gateway endpoint with retry logic for transient 404 responses during API deployment sync.
+     * Invokes the gateway endpoint with retry logic for transient deployment-time gateway errors.
      *
      * `@param` gatewayUrl           the gateway URL to invoke
      * `@param` headers              request headers
@@ -799,13 +815,100 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
                 return response;
             }
 
-            if (response.getResponseCode() != HttpStatus.SC_NOT_FOUND || attempt == maxAttempts) {
+            int responseCode = response.getResponseCode();
+            boolean shouldRetry = responseCode == HttpStatus.SC_NOT_FOUND
+                    || responseCode == HttpStatus.SC_INTERNAL_SERVER_ERROR
+                    || responseCode == HttpStatus.SC_SERVICE_UNAVAILABLE
+                    || responseCode == HttpStatus.SC_BAD_GATEWAY;
+            if (!shouldRetry || attempt == maxAttempts) {
                 return response;
             }
 
-           Thread.sleep(retryIntervalMillis);
+            Thread.sleep(retryIntervalMillis);
         }
         return response;
+    }
+
+    /**
+     * Polls the gateway until the deployed revision actually applies Semantic Tool Filtering.
+     * A plain HTTP 200 is not enough here because the older revision may still be serving traffic
+     * for a short period after the updated revision is deployed.
+     */
+    private GatewayInvocationObservation invokeGatewayUntilSemanticFilteringIsApplied(String gatewayUrl,
+            Map<String, String> headers, String payload, int originalToolCount, int maxAttempts,
+            long retryIntervalMillis) throws Exception {
+        GatewayInvocationObservation observation = null;
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            wireMockServer.resetRequests();
+
+            HttpResponse response = HTTPSClientUtils.doPost(gatewayUrl, headers, payload);
+            List<LoggedRequest> embeddingRequests = wireMockServer.findAll(
+                postRequestedFor(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE)));
+            List<LoggedRequest> chatRequests = wireMockServer.findAll(
+                postRequestedFor(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE)));
+            observation = new GatewayInvocationObservation(response, embeddingRequests, chatRequests);
+
+            if (isSemanticFilteringApplied(observation, originalToolCount)) {
+                return observation;
+            }
+
+            if (attempt < maxAttempts) {
+                Thread.sleep(retryIntervalMillis);
+            }
+        }
+
+        return observation;
+    }
+
+    private boolean isSemanticFilteringApplied(GatewayInvocationObservation observation, int originalToolCount) {
+        if (observation == null || observation.response == null
+                || observation.response.getResponseCode() != HttpStatus.SC_OK
+                || observation.embeddingRequests == null || observation.embeddingRequests.isEmpty()
+                || observation.chatRequests == null || observation.chatRequests.size() != 1) {
+            return false;
+        }
+
+        try {
+            JSONObject filteredRequestJson = new JSONObject(observation.chatRequests.get(0).getBodyAsString());
+            int filteredToolCount = filteredRequestJson.getJSONArray("tools")
+                .getJSONObject(0)
+                .getJSONArray("function_declarations")
+                .length();
+            return filteredToolCount == SEMANTIC_TOOL_FILTERING_TOOL_LIMIT
+                && filteredToolCount < originalToolCount;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String buildObservationSummary(GatewayInvocationObservation observation, int originalToolCount) {
+        if (observation == null || observation.response == null) {
+            return "No gateway observation was captured.";
+        }
+
+        StringBuilder summary = new StringBuilder();
+        summary.append("Gateway status: ").append(observation.response.getResponseCode());
+        summary.append(", embeddings requests: ")
+            .append(observation.embeddingRequests != null ? observation.embeddingRequests.size() : 0);
+        summary.append(", chat requests: ")
+            .append(observation.chatRequests != null ? observation.chatRequests.size() : 0);
+
+        if (observation.chatRequests != null && observation.chatRequests.size() == 1) {
+            try {
+                JSONObject filteredRequestJson = new JSONObject(observation.chatRequests.get(0).getBodyAsString());
+                int filteredToolCount = filteredRequestJson.getJSONArray("tools")
+                    .getJSONObject(0)
+                    .getJSONArray("function_declarations")
+                    .length();
+                summary.append(", original tool count: ").append(originalToolCount);
+                summary.append(", forwarded tool count: ").append(filteredToolCount);
+            } catch (Exception e) {
+                summary.append(", forwarded tool count: unavailable");
+            }
+        }
+
+        return summary.toString();
     }
 
     private void logAllMockServerRequests() {
