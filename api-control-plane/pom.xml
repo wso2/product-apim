@@ -1491,7 +1491,7 @@
         <xmlsec.wso2.version>1.5.6-wso2v1</xmlsec.wso2.version>
         <xmlsec.version>2.3.4</xmlsec.version>
         <identity.user.workflow.version>5.6.1</identity.user.workflow.version>
-        <identity.carbon.auth.rest.version>1.11.0</identity.carbon.auth.rest.version>
+        <identity.carbon.auth.rest.version>1.11.1</identity.carbon.auth.rest.version>
 
         <!-- Identity Branding Preference Management Versions -->
         <identity.branding.preference.management.version>1.0.17</identity.branding.preference.management.version>
