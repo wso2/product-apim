@@ -1303,10 +1303,10 @@
         <carbon.analytics.common.version>5.4.4</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.173</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.175</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.99</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.102</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1316,10 +1316,10 @@
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.9.5</carbon.governance.version>
+        <carbon.governance.version>4.9.6</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.11.14</carbon.kernel.version>
+        <carbon.kernel.version>4.11.15</carbon.kernel.version>
 
         <cipher.tool.version>1.1.29</cipher.tool.version>
 
@@ -1330,7 +1330,7 @@
         <carbon.mediation.version>4.8.13</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.27.15</carbon.identity.version>
+        <carbon.identity.version>5.27.17</carbon.identity.version>
         <carbon.identity.governance.version>1.14.1</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.0</carbon.identity.event.handler.notification.version>
@@ -1372,8 +1372,8 @@
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <synapse.version>4.1.0-wso2v33</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v123</axis2.wso2.version>
-        <axiom.wso2.version>1.2.11-wso2v36</axiom.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v125</axis2.wso2.version>
+        <axiom.wso2.version>1.2.11-wso2v37</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <commons.logging.version>1.1</commons.logging.version>
         <javax.servlet.version>3.0.0.v201112011016</javax.servlet.version>
