@@ -41,8 +41,8 @@ Feature: Custom Header Authorization
     And I put the following JSON payload in context as "<apiSubscriptionPayload>"
     """
     {
-      "applicationId": "{{applicationId}}",
-      "apiId": "{{apiId}}",
+      "applicationId": "{{createdAppId}}",
+      "apiId": "{{createdApiId}}",
       "throttlingPolicy": "Bronze"
     }
     """

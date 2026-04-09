@@ -1,0 +1,10 @@
+{
+  "postgre|carbon.super|admin": "ff36deac-029b-3d66-9069-7c2f2b0b34ac",
+  "postgre|adpsample.com|admin": "b0c1c83a-b2e2-377f-ae4d-9f5a2526d88c",
+  "mysql|carbon.super|admin": "e46438a5-7031-4b01-b3fd-20bad246b470",
+  "mysql|adpsample.com|admin": "2f104546-2791-458d-9571-213c084a47cc",
+  "oracle|carbon.super|admin": "test",
+  "oracle|adpsample.com|admin": "test",
+  "mssql|carbon.super|admin": "16c77adb-551b-4e68-afb7-01f8a4164bf1",
+  "mssql|adpsample.com|admin": "ad86c2f3-7605-4a9e-8557-f4a72407fc09"
+}
