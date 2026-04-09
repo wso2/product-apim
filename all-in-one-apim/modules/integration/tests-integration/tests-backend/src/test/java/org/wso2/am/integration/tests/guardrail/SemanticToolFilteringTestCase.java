@@ -781,7 +781,14 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Writes {@code content} to a temporary file and schedules it for deletion on JVM exit.
+     * Invokes the gateway endpoint with retry logic for transient 404 responses during API deployment sync.
+     *
+     * `@param` gatewayUrl           the gateway URL to invoke
+     * `@param` headers              request headers
+     * `@param` payload              request body
+     * `@param` maxAttempts          maximum number of retry attempts
+     * `@param` retryIntervalMillis  interval between retries in milliseconds
+     * `@return` the HTTP response from the gateway
      */
     private HttpResponse invokeGatewayWithRetryOnNotFound(String gatewayUrl, Map<String, String> headers,
             String payload, int maxAttempts, long retryIntervalMillis) throws Exception {
@@ -799,70 +806,6 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
            Thread.sleep(retryIntervalMillis);
         }
         return response;
-    }
-
-    private void assertSemanticToolFilteringMediatorDeployedToGateway() throws Exception {
-        AutomationContext adminContext = null;
-        String backendUrl = null;
-
-        if (gatewayContextMgt != null && gatewayContextMgt.getContextUrls() != null) {
-            backendUrl = gatewayContextMgt.getContextUrls().getBackEndUrl();
-            adminContext = gatewayContextMgt;
-        }
-        if (backendUrl == null && keyManagerContext != null && keyManagerContext.getContextUrls() != null) {
-            backendUrl = keyManagerContext.getContextUrls().getBackEndUrl();
-            adminContext = keyManagerContext;
-        }
-        if (backendUrl == null && superTenantKeyManagerContext != null
-            && superTenantKeyManagerContext.getContextUrls() != null) {
-            backendUrl = superTenantKeyManagerContext.getContextUrls().getBackEndUrl();
-            adminContext = superTenantKeyManagerContext;
-        }
-
-        if (backendUrl == null || backendUrl.trim().isEmpty() || adminContext == null) {
-            log.warn("Skipping Synapse runtime verification for SemanticToolFiltering: "
-                + "no valid backend admin URL in current test environment");
-            return;
-        }
-
-        SynapseConfigAdminClient synapseConfigAdminClient;
-        try {
-            String gatewaySession = createSession(adminContext);
-            synapseConfigAdminClient = new SynapseConfigAdminClient(backendUrl, gatewaySession);
-        } catch (Exception e) {
-            log.warn("Skipping Synapse runtime verification for SemanticToolFiltering: "
-                + "unable to initialize SynapseConfigAdminClient at " + backendUrl + ". Cause: " + e.getMessage());
-            return;
-        }
-
-        String expectedMediatorClassFragment = "class name=\"" + SEMANTIC_TOOL_FILTERING_POLICY_CLASS + "\"";
-        boolean mediatorFound = false;
-        String lastSynapseConfig = null;
-
-        int maxAttempts = 12;
-        long retryIntervalMillis = 5000L;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            try {
-                lastSynapseConfig = synapseConfigAdminClient.getConfiguration();
-            } catch (Exception e) {
-                log.warn("Skipping Synapse runtime verification for SemanticToolFiltering: "
-                    + "failed to read Synapse configuration from " + backendUrl + ". Cause: " + e.getMessage());
-                return;
-            }
-            if (lastSynapseConfig != null
-                && lastSynapseConfig.contains(expectedMediatorClassFragment)
-                && lastSynapseConfig.contains("name=\"" + API_CONTEXT + "--v" + API_VERSION + "\"")) {
-                mediatorFound = true;
-                break;
-            }
-
-            Thread.sleep(retryIntervalMillis);
-        }
-
-        assertTrue(mediatorFound,
-            "SemanticToolFiltering mediator was not found in deployed Synapse config after policy attachment. "
-                + "Expected fragment: " + expectedMediatorClassFragment
-                + ". Last config size: " + (lastSynapseConfig == null ? 0 : lastSynapseConfig.length()));
     }
 
     private void logAllMockServerRequests() {
