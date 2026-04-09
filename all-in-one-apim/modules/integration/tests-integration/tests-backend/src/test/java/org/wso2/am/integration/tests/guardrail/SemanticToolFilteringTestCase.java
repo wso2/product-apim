@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2026, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -84,27 +84,27 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Verifies that an AI API created in the middleware (APIM Gateway) correctly
- * forwards the real AI request payload to the mock AI backend.
+ * Verifies the Semantic Tool Filtering flow for an AI API deployed through the
+ * APIM Gateway against a mock AI backend.
  *
  * <p>End-to-end flow:
  * <pre>
- *   Test client  ──►  APIM Gateway URL  ──►  WireMock (mock AI backend)
+ *   Test client  ──►  APIM Gateway URL  ──►  Semantic Tool Filtering policy  ──►  WireMock
  * </pre>
  *
  * <p>What the test checks:
  * <ol>
- *   <li>The middleware returns HTTP 200.</li>
- *   <li>The response body matches exactly what the mock backend is configured to return.</li>
- *   <li>WireMock received exactly one POST to the AI chat-completions resource,
- *       with the correct {@code model} field and {@code messages} array — proving
- *       the gateway forwarded the original AI request unchanged.</li>
+ *   <li>The AI API can be invoked successfully through the gateway.</li>
+ *   <li>The Semantic Tool Filtering policy can be attached to the chat-completions operation.</li>
+ *   <li>The gateway calls the embeddings endpoint when semantic filtering is applied.</li>
+ *   <li>The forwarded chat request contains only the filtered subset of tools.</li>
+ *   <li>Subsequent requests reuse cached tool embeddings and reduce repeated embeddings calls.</li>
  * </ol>
  */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class GuardrailTestCase extends APIMIntegrationBaseTest {
+public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
 
-    private static final Log log = LogFactory.getLog(GuardrailTestCase.class);
+    private static final Log log = LogFactory.getLog(SemanticToolFilteringTestCase.class);
 
     // -----------------------------------------------------------------------
     // API constants
@@ -174,7 +174,7 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     // -----------------------------------------------------------------------
 
     @Factory(dataProvider = "userModeDataProvider")
-    public GuardrailTestCase(TestUserMode userMode) {
+    public SemanticToolFilteringTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -272,21 +272,21 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
     // -----------------------------------------------------------------------
 
     /**
-     * Calls the middleware gateway URL and verifies that the mock AI backend
-     * receives the real AI request payload.
+     * Verifies the baseline AI API invocation before attaching the Semantic Tool
+     * Filtering policy.
      *
      * <p>Steps:
      * <ol>
-     *   <li>POST to the APIM gateway URL (the URL given by the middleware).</li>
+     *   <li>POST to the APIM gateway URL.</li>
      *   <li>Assert HTTP 200 response from the gateway.</li>
      *   <li>Assert the response body matches the mock backend's reply.</li>
-     *   <li>Use {@link WireMockServer#verify} to confirm the mock backend received
-     *       exactly one request containing the expected AI JSON fields.</li>
+     *   <li>Use {@link WireMockServer#verify} to confirm the backend received
+     *       exactly one chat-completions request with the original tool payload.</li>
      * </ol>
      */
     @Test(groups = {"wso2.am"},
             enabled = true,
-            description = "Verify the middleware gateway URL forwards the AI request to the mock AI backend")
+            description = "Verify baseline AI API invocation before Semantic Tool Filtering is attached")
     public void testAIRequestForwardedToMockBackend() throws Exception {
 
         // Build request headers
@@ -542,7 +542,8 @@ public class GuardrailTestCase extends APIMIntegrationBaseTest {
         log.info("Embedding requests : " + embeddingRequests.size());
         logAllMockServerRequests();
         assertTrue(embeddingRequests.size() <= 1,
-            "Expected no embeddings requests when chache applied. Only user query should trigger embedding request. Embedding requests: " + embeddingRequests.size());
+            "Expected cached tool embeddings to avoid repeated embeddings calls. Only the user query should "
+                + "require an embeddings request. Embedding requests: " + embeddingRequests.size());
         
 
         List<LoggedRequest> chatRequests = wireMockServer.findAll(
