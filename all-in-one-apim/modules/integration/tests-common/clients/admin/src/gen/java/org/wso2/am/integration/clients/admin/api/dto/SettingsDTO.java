@@ -292,11 +292,11 @@ public class SettingsDTO {
         }
 
     /**
-        * Universal Gateway version for quick-start guide (e.g. \&quot;0.11.0\&quot;)
+        * Universal Gateway version for quick-start guide (e.g. \&quot;1.0.0\&quot;)
     * @return universalGatewayVersion
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "1.0.0", value = "Universal Gateway version for quick-start guide (e.g. \"0.11.0\")")
+      @ApiModelProperty(example = "1.0.0", value = "Universal Gateway version for quick-start guide (e.g. \"1.0.0\")")
     
     public String getUniversalGatewayVersion() {
         return universalGatewayVersion;
