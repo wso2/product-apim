@@ -21,8 +21,16 @@
     "consumerSecret": "kFg6FtEIQDMYVDGOprx5qgkbkZAa"
   },
 
-  "oracle|carbon.super|admin": "",
-  "oracle|adpsample.com|admin":"",
+  "oracle|carbon.super|admin": {
+    "keyMappingId": "e42b0230-76f7-497f-b2f1-f982c6961f4f",
+    "consumerKey": "XP26c9bcg9q3hclFbaOm9kfVQDYa",
+    "consumerSecret": "m0VyLBhLZEHtzZXbmlw_WdAYPfca"
+  },
+  "oracle|adpsample.com|admin": {
+    "keyMappingId": "b32a62c1-1713-418e-b674-5d98b8f446d1",
+    "consumerKey": "ZSr8gn0JzMw9B4bdNLP3aHK3rnIa",
+    "consumerSecret": "25kx3k6cNF9ILZ6JFVRee2tzW48a"
+  },
 
   "mssql|carbon.super|admin": {
     "keyMappingId": "6fc94cf2-6c97-4715-899f-4e26004ea4ce",

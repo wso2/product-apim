@@ -3,8 +3,8 @@
   "postgre|adpsample.com|admin": "b0c1c83a-b2e2-377f-ae4d-9f5a2526d88c",
   "mysql|carbon.super|admin": "e46438a5-7031-4b01-b3fd-20bad246b470",
   "mysql|adpsample.com|admin": "2f104546-2791-458d-9571-213c084a47cc",
-  "oracle|carbon.super|admin": "test",
-  "oracle|adpsample.com|admin": "test",
+  "oracle|carbon.super|admin": "02ec3e99-a3f4-466a-80e4-873f9fd6b3b5",
+  "oracle|adpsample.com|admin": "b22af2ee-a25c-4aea-9965-9c8f23521e72",
   "mssql|carbon.super|admin": "16c77adb-551b-4e68-afb7-01f8a4164bf1",
   "mssql|adpsample.com|admin": "ad86c2f3-7605-4a9e-8557-f4a72407fc09"
 }
