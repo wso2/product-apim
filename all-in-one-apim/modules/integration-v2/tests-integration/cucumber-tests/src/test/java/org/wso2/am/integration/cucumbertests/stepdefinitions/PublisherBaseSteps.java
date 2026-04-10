@@ -1424,7 +1424,7 @@ public class PublisherBaseSteps {
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", response);
-        Thread.sleep(10000);
+        Thread.sleep(20000);
     }
 
     /**
