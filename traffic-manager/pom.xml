@@ -1284,20 +1284,20 @@
         <carbon.analytics.common.version>5.4.4</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.170</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.3.175</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.95</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.102</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.9.6</carbon.registry.version>
+        <carbon.registry.version>4.9.8</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.9.4</carbon.governance.version>
+        <carbon.governance.version>4.9.6</carbon.governance.version>
 
         <!--carbon versions-->
         <carbon.kernel.version>4.11.15</carbon.kernel.version>
@@ -1308,14 +1308,14 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.8.12</carbon.mediation.version>
+        <carbon.mediation.version>4.8.13</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.27.12</carbon.identity.version>
+        <carbon.identity.version>5.27.17</carbon.identity.version>
         <carbon.identity.governance.version>1.14.1</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.0</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.14.8</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.14.10</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.9.0</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.10.0</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.12.1</carbon.identity-inbound-auth-openid.version>
@@ -1326,7 +1326,7 @@
         <carbon.identity-data-publisher-application-authentication.version>5.9.0</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.5</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.11.2</carbon.identity.carbon.auth.saml2.version>
-        <identity.apps.version>1.6.384</identity.apps.version>
+        <identity.apps.version>1.6.388</identity.apps.version>
         <identity.oauth.addons.version>2.7.0</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
@@ -1353,8 +1353,8 @@
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <synapse.version>4.1.0-wso2v33</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v123</axis2.wso2.version>
-        <axiom.wso2.version>1.2.11-wso2v36</axiom.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v125</axis2.wso2.version>
+        <axiom.wso2.version>1.2.11-wso2v37</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <commons.logging.version>1.1</commons.logging.version>
         <javax.servlet.version>3.0.0.v201112011016</javax.servlet.version>
@@ -1468,8 +1468,8 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.8.4</wso2is.km.version>
-        <wso2is7.km.version>2.1.1</wso2is7.km.version>
+        <wso2is.km.version>1.8.6</wso2is.km.version>
+        <wso2is7.km.version>2.1.2</wso2is7.km.version>
         <okta.keymanager.feature.version>3.3.0</okta.keymanager.feature.version>
         <asgardeo.keymanager.feature.version>1.0.0</asgardeo.keymanager.feature.version>
         <azure.keymanager.feature.version>1.1.0</azure.keymanager.feature.version>
