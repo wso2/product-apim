@@ -32,9 +32,10 @@
 <%@ page import="org.wso2.carbon.identity.governance.bean.ConnectorConfig" %>
 <%@ page import="org.wso2.carbon.identity.application.common.model.Property" %>
 <%@ page import="org.owasp.encoder.Encode" %>
-<%@ page import="java.util.HashMap" %>
-<%@ page import="java.util.Map" %>
 <%@ page import="org.wso2.carbon.core.util.SignatureUtil" %>
+<%@ page import="org.apache.http.NameValuePair" %>
+<%@ page import="org.apache.http.client.utils.URIBuilder" %>
+<%@ page import="java.net.URISyntaxException" %>
 <%@ taglib prefix="layout" uri="org.wso2.identity.apps.taglibs.layout.controller" %>
 
 <jsp:directive.include file="includes/localize.jsp"/>
@@ -46,6 +47,7 @@
     String username = request.getParameter("username");
     String userStoreDomain = request.getParameter("userstoredomain");
     String sessionDataKey = StringUtils.EMPTY;
+    String resolvedCallback = callback;
     String SELF_SIGN_UP_CONNECTOR = "self-sign-up";
     String SELF_REGISTRATION_NOTIFY_ACCOUNT_CONFIRMATION = "SelfRegistration.NotifyAccountConfirmation";
     String fullyQualifiedUsername = username;
@@ -86,19 +88,23 @@
     if (StringUtils.isNotBlank(userStoreDomain)) {
         fullyQualifiedUsername = userStoreDomain + "/" + username + "@" + tenantDomain;
     }
-    // Check for query params in callback URL.
-    if (callback.contains("?")) {
-        String queryParams = callback.substring(callback.indexOf("?") + 1);
-        String[] parameterList = queryParams.split("&");
-        Map<String, String> queryMap = new HashMap<>();
-        for (String param : parameterList) {
-            String key = param.substring(0, param.indexOf("="));
-            String value = param.substring(param.indexOf("=") + 1);
-            queryMap.put(key, value);
-        }
-        sessionDataKey = queryMap.get("sessionDataKey");
-        if (StringUtils.isNotBlank(sessionDataKey)) {
-            isSessionDataKeyPresent = true;
+    if (StringUtils.isNotBlank(callback)) {
+        try {
+            URIBuilder callbackUriBuilder = new URIBuilder(IdentityManagementEndpointUtil.encodeURL(callback));
+            resolvedCallback = callbackUriBuilder.build().toString();
+            for (NameValuePair queryParam : callbackUriBuilder.getQueryParams()) {
+                if ("sessionDataKey".equals(queryParam.getName())) {
+                    sessionDataKey = queryParam.getValue();
+                }
+            }
+            if (StringUtils.isNotBlank(sessionDataKey)) {
+                isSessionDataKeyPresent = true;
+            }
+        } catch (MalformedURLException | URISyntaxException e) {
+            request.setAttribute("error", true);
+            request.setAttribute("errorMsg", "Invalid callback URL found in the request.");
+            request.getRequestDispatcher("error.jsp").forward(request, response);
+            return;
         }
     }
 %>
@@ -184,25 +190,12 @@
             $(document).ready(function () {
                 $('.notify').modal({
                     onHide: function () {
-                        <%
-                            try {
-                                if (hasAutoLoginCookie && isSessionDataKeyPresent &&
-                                StringUtils.isNotBlank(fullyQualifiedUsername)) {
-                        %>
+                        <% if (hasAutoLoginCookie && isSessionDataKeyPresent &&
+                                StringUtils.isNotBlank(fullyQualifiedUsername)) { %>
                         document.callbackForm.submit();
-                        <%
-                            } else {
-                        %>
-                        location.href = "<%= IdentityManagementEndpointUtil.encodeURL(callback)%>";
-                        <%
-                                }
-                        } catch (MalformedURLException e) {
-                            request.setAttribute("error", true);
-                            request.setAttribute("errorMsg", "Invalid callback URL found in the request.");
-                            request.getRequestDispatcher("error.jsp").forward(request, response);
-                            return;
-                        }
-                        %>
+                        <% } else { %>
+                        location.href = "<%= Encode.forJavaScript(resolvedCallback) %>";
+                        <% } %>
                     },
                     blurring: true,
                     detachable: true,

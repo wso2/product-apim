@@ -120,6 +120,7 @@
             }
             String content = contentValueInJson.toString();
 
+            SignatureUtil.init();
             JSONObject cookieValueInJson = new JSONObject();
             cookieValueInJson.put("content", content);
             String signature = Base64.getEncoder().encodeToString(SignatureUtil.doSignature(content));
