@@ -36,6 +36,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
@@ -848,6 +849,54 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         // Get api product definition and validate
         String apiProductDefinition = restAPIPublisher.getAPIProductSwaggerByID(apiProductID);
         validateDefinition(apiProductDefinition);
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test API Product when underlying API is updated")
+    public void testUpdateUnderlyingAPIofAPIProduct() throws Exception {
+
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        APIDTO apiOne = apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("order"));
+        apisToBeUsed.add(apiOne);
+
+        // Step 1 : Create APIProduct
+        final String provider = user.getUserName();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
+                apisToBeUsed, policies);
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Editing the API description
+        apiOne.setDescription("Updated description for APIOne");
+        // Update underlying API
+        restAPIPublisher.updateAPI(apiOne);
+
+        apiProductDTO = restAPIPublisher.getApiProduct(apiProductDTO.getId());
+        // Update API Product
+        ApiResponse<APIProductDTO> apiProductDTOApiResponse = restAPIPublisher.updateAPIProduct(apiProductDTO);
+        Assert.assertEquals(apiProductDTOApiResponse.getStatusCode(), 200);
+        List<ProductAPIDTO> usedAPIs = apiProductDTOApiResponse.getData().getApis();
+        Assert.assertNotNull(usedAPIs, "Used APIs list in API Product should not be null");
+        Assert.assertFalse(usedAPIs.isEmpty(), "Used APIs list in API Product should not be empty");
+        ProductAPIDTO matchingApi = null;
+        for (ProductAPIDTO api : usedAPIs) {
+            if (apiOne.getId().equals(api.getApiId())) {
+                matchingApi = api;
+                break;
+            }
+        }
+        Assert.assertNotNull(matchingApi,
+                "API Product should contain an entry for the underlying API 'apiOne'");
+        Assert.assertNotNull(matchingApi.getOperations(),
+                "Operations of the underlying API in the API Product should not be null");
+        Assert.assertEquals(matchingApi.getOperations().size(), apiOne.getOperations().size(),
+                "Number of operations in the API Product should match the underlying API");
     }
 
     private void validateDefinition(String oasDefinition) throws Exception {
