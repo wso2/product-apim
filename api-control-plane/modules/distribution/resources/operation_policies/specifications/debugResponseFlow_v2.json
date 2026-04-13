@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
   "name": "debugResponseFlow",
-  "version": "v1",
+  "version": "v2",
   "displayName": "Debug Response Flow",
   "description": "This policy allows you to log the special properties of the response message for debugging purposes",
   "applicableFlows": [
@@ -11,6 +11,7 @@
     "Synapse"
   ],
   "supportedApiTypes": [
-    "HTTP"
+    "HTTP",
+    "GRAPHQL"
   ]
 }
