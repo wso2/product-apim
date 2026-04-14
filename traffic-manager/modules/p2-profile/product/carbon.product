@@ -14,7 +14,7 @@ version="4.11.17" useFeatures="true" includeLaunchers="true">
    </plugins>
 
    <features>
-      <feature id="org.wso2.carbon.core.runtime" version="4.11.17.SNAPSHOT"/>
+      <feature id="org.wso2.carbon.core.runtime" version="4.11.17"/>
    </features>
 
   <configurations>
