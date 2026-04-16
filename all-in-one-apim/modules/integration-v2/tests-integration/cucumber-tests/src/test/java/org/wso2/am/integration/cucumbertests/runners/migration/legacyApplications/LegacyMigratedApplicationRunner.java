@@ -29,7 +29,7 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 @CucumberOptions(
         features = "src/test/resources/features/migration/legacyApplicationSecrets/legacy_migrated_application.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/migrated-application.html"}
+        plugin = {"pretty", "html:target/cucumber-report/legacy-migrated-application.html"}
 )
 
 @Test(groups = {"migrationTest"})
