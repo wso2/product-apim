@@ -220,18 +220,18 @@ Feature: Migrated Applications
         |  RestAPIId      |  RestAPIPayload    | restSubscriptionId    |/apiTestContext/1.0.0/customers/123/|
         |  migratedAPIId  |  migratedAPIPayload| migratedSubscriptionId|/apiContext/1.0.0/customers/123/    |
 
+  Scenario: Find existing common policies
+    When I retrieve available common policies
+    Then The response status code should be 200
+    And I find the "id" with name "addHeader" and version "v2" as "existingPolicyId"
 
   # Step 6: Add global policies
   Scenario: Add Global policies
-      When I retrieve available common policies
-      Then The response status code should be 200
-      And I find the "id" with name "addHeader" and version "v2" as "existingPolicyId"
+    When I put JSON payload from file "artifacts/payloads/policySpecFiles/custom_global_policy.json" in context as "globalPolicyPayload"
+    And I create a new global policy as "globalPolicyId" with "globalPolicyPayload"
+    Then The response status code should be 201
 
-      When I put JSON payload from file "artifacts/payloads/policySpecFiles/custom_global_policy.json" in context as "globalPolicyPayload"
-      And I create a new global policy as "globalPolicyId" with "globalPolicyPayload"
-      Then The response status code should be 201
-
-      When I put the following JSON payload in context as "gatewayPolicyPayload"
+    When I put the following JSON payload in context as "gatewayPolicyPayload"
       """
       [
         {
@@ -240,8 +240,8 @@ Feature: Migrated Applications
         }
       ]
       """
-      And I engage the gateway policy mapping "globalPolicyId" to the gateways "gatewayPolicyPayload"
-      Then The response status code should be 200
+    And I engage the gateway policy mapping "globalPolicyId" to the gateways "gatewayPolicyPayload"
+    Then The response status code should be 200
 
   Scenario Outline: Verify global policies
     When I subscribe to resource "<apiId>" using application "createdAppId" and store subscription as "<subscriptionID>"
