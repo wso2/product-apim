@@ -1201,41 +1201,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Searches for a resource ( policy etc.) by name and version
-     *
-     * @param key The field name to extract (typically "id")
-     * @param name The name of the resource to search for
-     * @param version The version of the resource to search for
-     * @param id Context key where the found ID will be stored
-     */
-    @When("I find the {string} with name {string} and version {string} as {string}")
-    public void iFindTheResourceWithNameAndVersionAs(String key, String name, String version, String id) {
-
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        JSONObject json = new JSONObject(response.getData());
-
-        JSONArray list = json.getJSONArray("list");
-        String foundId = null;
-
-        for (int i = 0; i < list.length(); i++) {
-            JSONObject item = list.getJSONObject(i);
-            String itemName = item.optString("name", "");
-            String itemVersion = item.optString("version", "");
-
-            if (itemName.equalsIgnoreCase(name) && itemVersion.equalsIgnoreCase(version)) {
-                foundId = item.getString(key);
-                break;
-            }
-        }
-
-        if (foundId == null) {
-            throw new AssertionError("Resource with name '" + name + "' and version '" + version + "' not found");
-        }
-
-        TestContext.set(id, foundId);
-    }
-
-    /**
      * Creates a new common (shared) operation policy.
      * Common policies can be reused across multiple APIs.
      *
@@ -1377,16 +1342,14 @@ public class PublisherBaseSteps {
     /**
      * Creates a new global policy (gateway policy) from a common policy.
      *
-     * @param globalPolicyId Context key where the created global policy ID will be stored
      * @param policyPayload Context key containing the global policy creation JSON payload
      */
-    @And("I create a new global policy as {string} with {string}")
-    public void iCreateANewGlobalPolicyAs(String globalPolicyId, String policyPayload) throws IOException {
+    @And("I create a new global policy with payload {string}")
+    public void iCreateANewGlobalPolicy(String policyPayload) throws IOException {
 
-        String jsonPayload = Utils.resolveFromContext(policyPayload).toString();
-        String commonPolicyId = Utils.resolveFromContext("existingPolicyId").toString();
-
-        jsonPayload = jsonPayload.replace("<id>", commonPolicyId);
+        String jsonPayloadTemplate = Utils.resolveFromContext(policyPayload).toString();
+        // Replace {{existingPolicyId}} with the actual id of the common policy
+        String jsonPayload = Utils.resolveContextPlaceholders(jsonPayloadTemplate);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
@@ -1397,7 +1360,6 @@ public class PublisherBaseSteps {
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", response);
-        TestContext.set(globalPolicyId, Utils.extractValueFromPayload(response.getData(), "id"));
     }
 
     /**
