@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
 @CucumberOptions(
         features = "src/test/resources/features/common/migrated_tenant_user_initialization.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/testrunner.html"}
+        plugin = {"pretty", "html:target/cucumber-report/migrated-tenant-user-initialization.html"}
 )
 
 @Test(groups = {"migrationTest"})
