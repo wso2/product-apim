@@ -32,7 +32,7 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 @CucumberOptions(
         features = "src/test/resources/features/legacyApplicationSecrets/create_new_application.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/create-application.html"}
+        plugin = {"pretty", "html:target/cucumber-report/create-new-application.html"}
 )
 
 public class CreateApplicationRunner extends AbstractTestNGCucumberTests {

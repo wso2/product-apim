@@ -23,7 +23,7 @@ import io.cucumber.testng.CucumberOptions;
 @CucumberOptions(
         features = "src/test/resources/features/common/custom_header_test_system_initialization.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/testrunner.html"}
+        plugin = {"pretty", "html:target/cucumber-report/custom-header-test-system-initialization.html"}
 )
 
 public class CustomHeaderSystemInitializationRunner extends AbstractTestNGCucumberTests {

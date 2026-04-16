@@ -23,7 +23,7 @@ import io.cucumber.testng.CucumberOptions;
 @CucumberOptions(
         features = "src/test/resources/features/common/tenant_users_initialisation.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/testrunner.html"}
+        plugin = {"pretty", "html:target/cucumber-report/tenant-users-initialisation.html"}
 )
 
 public class TenantUserInitializationRunner extends AbstractTestNGCucumberTests {

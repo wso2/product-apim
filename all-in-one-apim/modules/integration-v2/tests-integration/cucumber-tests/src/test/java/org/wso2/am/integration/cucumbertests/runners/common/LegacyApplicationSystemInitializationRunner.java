@@ -23,7 +23,7 @@ import io.cucumber.testng.CucumberOptions;
 @CucumberOptions(
         features = "src/test/resources/features/common/legacy_application_test_system_initialization.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/testrunner.html"}
+        plugin = {"pretty", "html:target/cucumber-report/legacy-application-test-system-initialization.html"}
 )
 
 public class LegacyApplicationSystemInitializationRunner extends AbstractTestNGCucumberTests {
