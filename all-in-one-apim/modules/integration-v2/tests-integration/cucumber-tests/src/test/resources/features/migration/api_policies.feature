@@ -271,14 +271,16 @@ Feature: Migrated Applications
     And I engage the gateway policy mapping "globalPolicyId" to the gateways "gatewayPolicyPayload"
     Then The response status code should be 200
 
- # Step 8: Remove other created resources
-  Scenario: Remove resources
+  # Delete policies and verify
+  Scenario: Delete policies
     When I delete the "gateway-policies" resource with id "globalPolicyId"
     Then The response status code should be 200
 
     When I delete the "operation-policies" resource with id "newCommonPolicyId"
     Then The response status code should be 200
 
+  # Step 9: Remove other created resources
+  Scenario: Remove resources
     When I delete the application with id "createdAppId"
     Then The response status code should be 200
 
