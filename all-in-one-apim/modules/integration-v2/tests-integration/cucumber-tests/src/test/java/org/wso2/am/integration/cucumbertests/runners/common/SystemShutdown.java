@@ -23,7 +23,7 @@ import io.cucumber.testng.CucumberOptions;
 @CucumberOptions(
         features = "src/test/resources/features/common/system_shutdown.feature",
         glue = "org.wso2.am.integration.cucumbertests.stepdefinitions",
-        plugin = {"pretty", "html:target/cucumber-report/testrunner.html"}
+        plugin = {"pretty", "html:target/cucumber-report/system-shutdown.html"}
 )
 
 public class SystemShutdown extends AbstractTestNGCucumberTests {
