@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import com.google.gson.JsonObject;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -300,7 +301,38 @@ public class BaseSteps {
             throw new IOException("No value found in response for field: " + responseField);
         }
 
-        TestContext.set(Utils.normalizeContextKey(contextKey), String.valueOf(value));
+        if (value instanceof net.minidev.json.JSONArray) {
+            value = new JSONArray(value.toString());
+        } else if (value instanceof net.minidev.json.JSONObject) {
+            value = new JSONObject(value.toString());
+        }
+        TestContext.set(Utils.normalizeContextKey(contextKey), value);
+    }
+
+    /**
+     * Extracts a field value from a JSONObject stored in TestContext and stores it under another key.
+     *
+     * @param sourceKey TestContext key containing the JSONObject
+     * @param fieldName JSON field name to extract
+     * @param targetKey TestContext key to store the extracted value
+     */
+    @And("I extract field {string} from {string} and store it as {string}")
+    public void iExtractFieldFromAndStoreItAs(String fieldName, String sourceKey, String targetKey) {
+
+        Object contextValue = Utils.resolveFromContext(sourceKey);
+
+        if (!(contextValue instanceof JSONObject jsonObject)) {
+            throw new IllegalStateException("Expected JSONObject in TestContext for key '" + sourceKey
+                            + "' but found: " + contextValue.getClass().getSimpleName());
+        }
+
+        if (!jsonObject.has(fieldName)) {
+            throw new AssertionError(
+                    "Field '" + fieldName + "' not found in object stored under key '" + sourceKey + "'");
+        }
+
+        Object extractedValue = jsonObject.get(fieldName);
+        TestContext.set(Utils.normalizeContextKey(targetKey), extractedValue);
     }
 
     /**
@@ -637,5 +669,33 @@ public class BaseSteps {
         Object parsedValue = Utils.parseConfigValue(valueToAppend);
         jsonArray.put(parsedValue);
         TestContext.set(Utils.normalizeContextKey(arrayContextKey), jsonArray.toString());
+    }
+
+    /**
+     * Finds a resource in the JSON array stored in the given context key using
+     * the provided property-value pairs, and stores the matched object in TestContext.
+     * Expected DataTable format:
+     * | name    | addHeader |
+     * | version | v1        |
+     *
+     * @param contextKey the TestContext key containing the JSONArray
+     * @param outputKey the TestContext key to store the matched JSONObject
+     * @param propertiesTable property-value pairs used for matching
+     */
+    @And("I find the resource with following properties in {string} as {string}")
+    public void iFindTheResourceWithFollowingPropertiesInAs(String contextKey, String outputKey,
+                                                            DataTable propertiesTable) {
+
+        Object contextValue = Utils.resolveFromContext(contextKey);
+        if (!(contextValue instanceof JSONArray jsonArray)) {
+            throw new IllegalStateException(
+                    "Expected JSONArray in TestContext for key '" + contextKey + "' but found: "
+                            + contextValue.getClass().getSimpleName());
+        }
+
+        Map<String, String> expectedProperties = propertiesTable.asMap(String.class, String.class);
+
+        JSONObject matchedObject = Utils.findMatchingJsonObjectInArray(jsonArray, expectedProperties);
+        TestContext.set(Utils.normalizeContextKey(outputKey), matchedObject);
     }
 }

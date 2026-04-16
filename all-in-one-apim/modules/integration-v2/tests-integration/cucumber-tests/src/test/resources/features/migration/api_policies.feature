@@ -223,13 +223,20 @@ Feature: Migrated Applications
   Scenario: Find existing common policies
     When I retrieve available common policies
     Then The response status code should be 200
-    And I find the "id" with name "addHeader" and version "v2" as "existingPolicyId"
+    And I extract response field "list" and store it as "<commonPoliciesList>"
+    # Get the id and version of the "Add header" common policy
+    Then I find the resource with following properties in "<commonPoliciesList>" as "<existingPolicy>"
+      | name | addHeader |
+    And I extract field "id" from "<existingPolicy>" and store it as "<existingPolicyId>"
+    And I extract field "version" from "<existingPolicy>" and store it as "<existingPolicyVersion>"
 
   # Step 6: Add global policies
   Scenario: Add Global policies
     When I put JSON payload from file "artifacts/payloads/policySpecFiles/custom_global_policy.json" in context as "globalPolicyPayload"
-    And I create a new global policy as "globalPolicyId" with "globalPolicyPayload"
+    # Add "Add header" common policy as a global policy
+    And I create a new global policy with payload "globalPolicyPayload"
     Then The response status code should be 201
+    And I extract response field "id" and store it as "globalPolicyId"
 
     When I put the following JSON payload in context as "gatewayPolicyPayload"
       """

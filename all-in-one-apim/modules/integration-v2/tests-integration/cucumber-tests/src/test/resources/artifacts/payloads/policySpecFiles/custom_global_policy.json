@@ -6,8 +6,8 @@
     "request": [
       {
         "policyName": "addHeader",
-        "policyVersion": "v2",
-        "policyId": "<id>",
+        "policyVersion": "{{existingPolicyVersion}}",
+        "policyId": "{{existingPolicyId}}",
         "parameters": {
           "headerName": "custom_global_header",
           "headerValue": "custom_global_value"
@@ -17,8 +17,8 @@
     "response": [
       {
         "policyName": "addHeader",
-        "policyVersion": "v2",
-        "policyId": "<id>",
+        "policyVersion": "{{existingPolicyVersion}}",
+        "policyId": "{{existingPolicyId}}",
         "parameters": {
           "headerName": "custom_global_header",
           "headerValue": "custom_global_value"
