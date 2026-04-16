@@ -31,6 +31,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONTokener;
@@ -664,6 +665,13 @@ public class Utils {
         return String.join(Constants.COMPOSITE_KEY_DELIMITER, dbType, tenantDomain, username);
     }
 
+    /**
+     * Replaces context placeholders (for example, {{subscriptionId}}) in the given input
+     * string with the corresponding values stored in {@link TestContext}.
+     *
+     * @param input the input string
+     * @return the input string with all placeholders resolved using values from {@link TestContext}
+     */
     public static String resolveContextPlaceholders(String input) {
         if (input == null) {
             return null;
@@ -685,5 +693,36 @@ public class Utils {
 
         matcher.appendTail(resolved);
         return resolved.toString();
+    }
+
+    /**
+     * Returns the first JSON object in the given array that matches all provided key-value pairs.
+     *
+     * @param list the JSON array containing objects to search
+     * @param criteria map of field names and expected values to match
+     * @return the matching JSON object
+     * @throws AssertionError if no matching object is found
+     */
+    public static JSONObject findMatchingJsonObjectInArray(JSONArray list, Map<String, String> criteria) {
+
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject item = list.getJSONObject(i);
+            boolean matches = true;
+
+            for (Map.Entry<String, String> entry : criteria.entrySet()) {
+                String actualValue = item.optString(entry.getKey(), "");
+                String expectedValue = entry.getValue();
+
+                if (!actualValue.equalsIgnoreCase(expectedValue)) {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (matches) {
+                return item;
+            }
+        }
+        throw new AssertionError("No matching resource found for criteria: " + criteria);
     }
 }
