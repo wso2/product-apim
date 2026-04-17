@@ -2028,6 +2028,7 @@
         <Resource context="(.*)/registry/resourceContent(.*)" secured="false" http-method="all"/>
         <Resource context="/acs(.*)" secured="false" http-method="all"/>
         <Resource context="(.*)/internal/gateway/.well-known(.*)" secured="false" http-method="GET" />
+        <Resource context="/.well-known/webfinger(.*)" secured="false" http-method="all"/>
 
         <Resource context="(.*)/((\.+)|(.*;+.*)|%2e.*)/(.*)" secured="true" http-method="all" >
             <Permissions>/</Permissions>
@@ -2777,8 +2778,6 @@
         <Resource context="/services(.*)" secured="false" http-method="all"/>
         <Resource context="/t/(.*)/services(.*)" secured="false" http-method="all"/>
         <Resource context="(.*)/samlsso(.*)" secured="false" http-method="all"/>
-        <Resource context="/openidserver(.*)" secured="false" http-method="all"/>
-        <Resource context="/openid(.*)" secured="false" http-method="all"/>
         <Resource context="(.*)/passivests(.*)" secured="false" http-method="all"/>
         <Resource context="(.*)/samlartresolve(.*)" secured="false" http-method="all"/>
         <Resource context="(.*)/oauth/request-token(.*)" secured="false" http-method="all"/>

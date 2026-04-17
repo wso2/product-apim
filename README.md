@@ -96,4 +96,4 @@ In addition, we may reach out to a small number of respondents to ask additional
 Survey is available at: https://forms.gle/h5q4M3K7vyXba3bK6
 
 --------------------------------------------------------------------------------
-(c) Copyright 2012 - 2025 WSO2 Inc.
+(c) Copyright 2012 - 2026 WSO2 Inc.

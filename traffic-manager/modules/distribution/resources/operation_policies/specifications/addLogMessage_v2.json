@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
   "name": "addLogMessage",
-  "version": "v1",
+  "version": "v2",
   "displayName": "Log Policy",
   "description": "This policy allows you to log the important details of the request",
   "applicableFlows": [
@@ -13,6 +13,8 @@
     "Synapse"
   ],
   "supportedApiTypes": [
-    "HTTP"
+    "HTTP",
+    "GRAPHQL",
+    "WS"
   ]
 }

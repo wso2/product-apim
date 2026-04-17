@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
   "name": "setToHeader",
-  "version": "v1",
+  "version": "v2",
   "displayName": "Set To Header",
   "description": "This policy allows the user to set the To header",
   "policyAttributes": [
@@ -21,6 +21,7 @@
     "Synapse"
   ],
   "supportedApiTypes": [
-    "HTTP"
+    "HTTP",
+    "GRAPHQL"
   ]
 }
