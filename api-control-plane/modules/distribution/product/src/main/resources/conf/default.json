@@ -205,7 +205,6 @@
   "n_http.rest_uri_proxy_regex": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
   "n_http.'http.socket.reuseaddr'": "true",
   "transport.http.enable": true,
-  "transport.https.properties.maxHttpHeaderSize": "15288",
   "transport.receiver.max_event_buffer_capacity": "10",
   "transport.receiver.type": "binary",
   "transport.thrift.receiver.enable": false,
@@ -220,8 +219,6 @@
   "realm_manager.data_source": "SHARED_DB",
   "realm_manager.properties.isCascadeDeleteEnabled": true,
   "realm_manager.properties.initializeNewClaimManager": true,
-  "apim.oauth_config.enable_jwt_for_portals": true,
-  "oauth.add_tenant_domain_to_access_token": true,
   "tasks.client_dispatch_address": "https://localhost:9443",
   "tasks.server_address": "https://localhost:9443",
   "identity.entitlement.policy_point.pip.attribute_designators": [

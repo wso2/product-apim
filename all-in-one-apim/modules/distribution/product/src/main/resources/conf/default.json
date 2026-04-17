@@ -219,8 +219,6 @@
   "realm_manager.data_source": "SHARED_DB",
   "realm_manager.properties.isCascadeDeleteEnabled": true,
   "realm_manager.properties.initializeNewClaimManager": true,
-  "apim.oauth_config.enable_jwt_for_portals": true,
-  "oauth.add_tenant_domain_to_access_token": true,
   "tasks.client_dispatch_address": "https://localhost:9443",
   "tasks.server_address": "https://localhost:9443",
   "identity.entitlement.policy_point.pip.attribute_designators": [
@@ -340,7 +338,6 @@
   "xml_input_factory.properties.'javax.xml.stream.isCoalescing'": true,
   "xml_input_factory.properties.'javax.xml.stream.isSupportingExternalEntities'": false,
   "xml_input_factory.properties.'javax.xml.stream.supportDTD'": false,
-  "transport.https.properties.maxHttpHeaderSize": "15288",
   "transport.client.default_max_connection_per_host": "500",
   "transport.client.max_total_connections":"15000",
   "transport.client.http_content_negotiation": false,
