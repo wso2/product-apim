@@ -1285,7 +1285,7 @@
          <carbon.apimgt.ui.version>9.3.177</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.108</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.111</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1298,7 +1298,7 @@
         <carbon.governance.version>4.9.7</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.11.17</carbon.kernel.version>
+        <carbon.kernel.version>4.11.18</carbon.kernel.version>
 
         <cipher.tool.version>1.1.30</cipher.tool.version>
 
