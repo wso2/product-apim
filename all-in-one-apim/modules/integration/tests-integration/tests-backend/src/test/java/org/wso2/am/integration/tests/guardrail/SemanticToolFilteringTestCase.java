@@ -19,7 +19,13 @@
 package org.wso2.am.integration.tests.guardrail;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.common.FileSource;
+import com.github.tomakehurst.wiremock.extension.Parameters;
+import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
+import com.github.tomakehurst.wiremock.http.Request;
+import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.gson.Gson;
@@ -68,13 +74,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -169,6 +173,111 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
     private WireMockServer wireMockServer;
     private int mockPort;
     private ServerConfigurationManager serverConfigurationManager;
+
+    /**
+     * WireMock transformer that returns one embedding per item in the request's
+     * {@code input} field. Matches each input text against {@code mockEmbeddingEntries}
+     * and emits the associated vector. Unmatched texts get an empty vector.
+     */
+    private static final class BatchEmbeddingsResponseTransformer extends ResponseDefinitionTransformer {
+        private static final String NAME = "batch-embeddings-transformer";
+        private final JSONArray embeddingEntries;
+        private final String modelName;
+
+        private BatchEmbeddingsResponseTransformer(JSONArray embeddingEntries, String modelName) {
+            this.embeddingEntries = embeddingEntries;
+            this.modelName = modelName;
+        }
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @Override
+        public boolean applyGlobally() {
+            return false;
+        }
+
+        @Override
+        public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition,
+                                            FileSource files, Parameters parameters) {
+            try {
+                JSONObject requestJson = new JSONObject(request.getBodyAsString());
+                Object input = requestJson.opt("input");
+                List<String> inputs = new ArrayList<>();
+                if (input instanceof JSONArray) {
+                    JSONArray arr = (JSONArray) input;
+                    for (int i = 0; i < arr.length(); i++) {
+                        inputs.add(arr.optString(i, ""));
+                    }
+                } else if (input instanceof String) {
+                    inputs.add((String) input);
+                }
+
+                JSONArray dataArray = new JSONArray();
+                for (int i = 0; i < inputs.size(); i++) {
+                    JSONArray embedding = findEmbedding(inputs.get(i));
+                    JSONObject embeddingObject = new JSONObject();
+                    embeddingObject.put("object", "embedding");
+                    embeddingObject.put("embedding", embedding != null ? embedding : new JSONArray());
+                    embeddingObject.put("index", i);
+                    dataArray.put(embeddingObject);
+                }
+
+                JSONObject response = new JSONObject();
+                response.put("id", UUID.randomUUID().toString().replace("-", ""));
+                response.put("object", "list");
+                response.put("data", dataArray);
+                response.put("model", modelName);
+
+                JSONObject usage = new JSONObject();
+                usage.put("prompt_audio_seconds", JSONObject.NULL);
+                usage.put("prompt_tokens", 15);
+                usage.put("total_tokens", 15);
+                usage.put("completion_tokens", 0);
+                usage.put("request_count", JSONObject.NULL);
+                usage.put("prompt_tokens_details", JSONObject.NULL);
+                usage.put("prompt_token_details", JSONObject.NULL);
+                response.put("usage", usage);
+
+                return new ResponseDefinitionBuilder()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(response.toString())
+                    .build();
+            } catch (Exception e) {
+                return new ResponseDefinitionBuilder()
+                    .withStatus(400)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("{\"error\":\"Failed to build batch embeddings response\"}")
+                    .build();
+            }
+        }
+
+        private JSONArray findEmbedding(String text) {
+            if (text == null) {
+                return null;
+            }
+            String lowered = text.toLowerCase();
+            for (int i = 0; i < embeddingEntries.length(); i++) {
+                JSONObject entry = embeddingEntries.optJSONObject(i);
+                if (entry == null) {
+                    continue;
+                }
+                String entryText = entry.optString("text", "");
+                if (entryText.isEmpty()) {
+                    continue;
+                }
+                String entryLowered = entryText.toLowerCase();
+                if (lowered.equals(entryLowered) || lowered.contains(entryLowered)
+                        || entryLowered.contains(lowered)) {
+                    return entry.optJSONArray("embedding");
+                }
+            }
+            return null;
+        }
+    }
 
     private static final class GatewayInvocationObservation {
         private final HttpResponse response;
@@ -604,7 +713,8 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
     private void startMockBackend() {
         mockPort = MOCK_BACKEND_PORT;
 
-        wireMockServer = new WireMockServer(options().port(mockPort));
+        wireMockServer = new WireMockServer(options().port(mockPort)
+            .extensions(new BatchEmbeddingsResponseTransformer(mockEmbeddingEntries, EMBEDDING_MODEL_NAME)));
 
         // Stub: POST /mock-ai/v1/chat/completions → 200 OK with mock AI response
         wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + CHAT_RESOURCE))
@@ -616,50 +726,17 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody(mockResponse)));
 
-        // Register one embeddings stub per text entry so the backend returns only the matched embedding.
-        for (int i = 0; i < mockEmbeddingEntries.length(); i++) {
-            JSONObject entry = mockEmbeddingEntries.optJSONObject(i);
-            if (entry == null) {
-                continue;
-            }
-            String text = entry.optString("text", "");
-            if (text.isEmpty()) {
-                continue;
-            }
-
-            String inputRegex = "(?i)^" + Pattern.quote(text) + "$";
-            String singleEmbeddingResponse = buildEmbeddingOnlyResponse(entry);
-            // Support requests where input is an array: {"input": ["..."]}
-            wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
-                .atPriority(1)
-                .withHeader("Authorization", containing("Bearer"))
-                .withRequestBody(matchingJsonPath("$.input[0]", matching(inputRegex)))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/json")
-                    .withBody(singleEmbeddingResponse)));
-
-            // Support requests where input is a string: {"input": "..."}
-            wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
-                .atPriority(1)
-                .withHeader("Authorization", containing("Bearer"))
-                .withRequestBody(matchingJsonPath("$.input", matching(inputRegex)))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/json")
-                    .withBody(singleEmbeddingResponse)));
-        }
-
-        // If model/input is valid but there is no text match in mockembeddings.json, return an empty response.
+        // Single stub for embeddings; transformer builds per-input embeddings from mockEmbeddingEntries
+        // so batch requests (input: [t1, t2, ...]) and single-text requests both return correct vectors.
         wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
-            .atPriority(5)
+            .atPriority(1)
             .withHeader("Authorization", containing("Bearer"))
             .withRequestBody(matchingJsonPath("$.model", equalTo(EMBEDDING_MODEL_NAME)))
             .withRequestBody(matchingJsonPath("$.input"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
-                .withBody(buildMistralEmptyEmbeddingResponse())));
+                .withTransformers(BatchEmbeddingsResponseTransformer.NAME)));
 
         // Fallback for malformed embeddings requests (no model or missing input).
         wireMockServer.stubFor(WireMock.post(urlEqualTo(BACKEND_PATH + EMBEDDINGS_RESOURCE))
@@ -922,86 +999,6 @@ public class SemanticToolFilteringTestCase extends APIMIntegrationBaseTest {
             String formattedTime = requestTime != null ? dateFormat.format(requestTime) : "N/A";
             index++;
         }
-    }
-
-    private String getEmbeddingResponseForText(String inputText) {
-        if (inputText == null) {
-            return buildMistralEmptyEmbeddingResponse();
-        }
-
-        for (int i = 0; i < mockEmbeddingEntries.length(); i++) {
-            JSONObject entry = mockEmbeddingEntries.optJSONObject(i);
-            if (entry == null) {
-                continue;
-            }
-            String text = entry.optString("text", "");
-            if (inputText.equalsIgnoreCase(text)) {
-                return buildEmbeddingOnlyResponse(entry);
-            }
-        }
-        return buildMistralEmptyEmbeddingResponse();
-    }
-
-    private String buildMistralEmptyEmbeddingResponse() {
-        try {
-            JSONObject response = new JSONObject();
-            response.put("id", generateEmbeddingId());
-            response.put("object", "list");
-            response.put("data", new JSONArray());
-            response.put("model", EMBEDDING_MODEL_NAME);
-            response.put("usage", buildMistralUsageObject());
-            return response.toString();
-        } catch (Exception e) {
-            return "{}";
-        }
-    }
-
-    private String buildEmbeddingOnlyResponse(JSONObject entry) {
-        if (entry == null || !entry.has("embedding")) {
-            return buildMistralEmptyEmbeddingResponse();
-        }
-
-        try {
-            JSONArray embeddingArray = entry.optJSONArray("embedding");
-            if (embeddingArray == null) {
-                return buildMistralEmptyEmbeddingResponse();
-            }
-
-            JSONObject response = new JSONObject();
-            response.put("id", generateEmbeddingId());
-            response.put("object", "list");
-            
-            JSONObject embeddingObject = new JSONObject();
-            embeddingObject.put("object", "embedding");
-            embeddingObject.put("embedding", embeddingArray);
-            embeddingObject.put("index", entry.optInt("index", 0));
-            
-            JSONArray dataArray = new JSONArray();
-            dataArray.put(embeddingObject);
-            response.put("data", dataArray);
-            response.put("model", EMBEDDING_MODEL_NAME);
-            response.put("usage", buildMistralUsageObject());
-            
-            return response.toString();
-        } catch (Exception e) {
-            return buildMistralEmptyEmbeddingResponse();
-        }
-    }
-
-    private JSONObject buildMistralUsageObject() throws org.json.JSONException {
-        JSONObject usage = new JSONObject();
-        usage.put("prompt_audio_seconds", JSONObject.NULL);
-        usage.put("prompt_tokens", 15);
-        usage.put("total_tokens", 15);
-        usage.put("completion_tokens", 0);
-        usage.put("request_count", JSONObject.NULL);
-        usage.put("prompt_tokens_details", JSONObject.NULL);
-        usage.put("prompt_token_details", JSONObject.NULL);
-        return usage;
-    }
-
-    private String generateEmbeddingId() {
-        return UUID.randomUUID().toString().replace("-", "");
     }
 
     private File writeTempFile(String content) throws IOException {
