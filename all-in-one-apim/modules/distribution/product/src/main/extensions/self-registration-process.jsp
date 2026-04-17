@@ -40,6 +40,7 @@
 <%@ page import="java.io.File" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Arrays" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Base64" %>
@@ -120,7 +121,8 @@
 
                 String userLocale = request.getHeader("Accept-Language");
                 String username = request.getParameter("username");
-                String password = request.getParameter("password");
+                String passwordParam = request.getParameter("password");
+                char[] password = passwordParam != null ? passwordParam.toCharArray() : null;
                 String callback = request.getParameter("callback");
                 String consent = request.getParameter("consent");
                 boolean isSaaSApp = Boolean.parseBoolean(request.getParameter("isSaaSApp"));
@@ -166,7 +168,7 @@
                     }
                 }
 
-                if (StringUtils.isBlank(password)) {
+                if (password == null || password.length == 0) {
                     request.setAttribute("error", true);
                     request.setAttribute("errorMsg", IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                             "Password.cannot.be.empty"));
@@ -343,9 +345,12 @@
                         return;
                     }
                 }
-
-
-            %>
+            } finally {
+                if (password != null) {
+                    Arrays.fill(password, '\u0000');
+                }
+            }
+        %>
         </div>
 
 

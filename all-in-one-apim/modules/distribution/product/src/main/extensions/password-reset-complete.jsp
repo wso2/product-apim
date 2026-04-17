@@ -29,6 +29,7 @@
 <%@ page import="java.net.URISyntaxException" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Arrays" %>
 <%@ page import="java.util.HashMap" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
@@ -60,7 +61,8 @@
     String passwordPatternErrorCode = "20035";
     String confirmationKey =
             IdentityManagementEndpointUtil.getStringValue(request.getSession().getAttribute("confirmationKey"));
-    String newPassword = request.getParameter("reset-password");
+    String passwordParam = request.getParameter("reset-password");
+    char[] newPassword = passwordParam != null ? passwordParam.toCharArray() : null;
     String callback = request.getParameter("callback");
     String userStoreDomain = request.getParameter("userstoredomain");
     String type = request.getParameter("type");
@@ -74,7 +76,7 @@
                 application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL), tenantDomain);
     }
 
-    if (StringUtils.isNotBlank(newPassword)) {
+    if (newPassword != null && newPassword.length > 0) {
         NotificationApi notificationApi = new NotificationApi();
         ResetPasswordRequest resetPasswordRequest = new ResetPasswordRequest();
         List<Property> properties = new ArrayList<Property>();
@@ -159,6 +161,10 @@
             }
             request.getRequestDispatcher("error.jsp").forward(request, response);
             return;
+        } finally {
+            if (newPassword != null) {
+                Arrays.fill(newPassword, '\u0000');
+            }
         }
 
     } else {
