@@ -139,6 +139,9 @@
                 }
             }
         } catch (ApiException e) {
+            if (newPassword != null) {
+                Arrays.fill(newPassword, '\u0000');
+            }
 
             Error error = IdentityManagementEndpointUtil.buildError(e);
             IdentityManagementEndpointUtil.addErrorInformation(request, error);
@@ -167,6 +170,9 @@
         }
 
     } else {
+        if (newPassword != null) {
+            Arrays.fill(newPassword, '\u0000');
+        }
         request.setAttribute("error", true);
         request.setAttribute("errorMsg", IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                 "Password.cannot.be.empty"));
