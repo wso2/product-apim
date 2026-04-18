@@ -1,0 +1,82 @@
+{
+  "contents": [
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "I'm planning a corporate retreat in Denver for next weekend. Can you find the weather forecast, book a conference room for 15 people, find a highly-rated catering service that offers vegan options, and then email the itinerary to my assistant at sarah@company.com?"
+        }
+      ]
+    }
+  ],
+  
+  "tools": [
+    {
+      "function_declarations": [
+        {
+          "name": "get_weather",
+          "description": "Get current weather and 7-day forecast for a location.",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "location": { "type": "string", "description": "The city and state, e.g. Denver, CO" }
+            },
+            "required": ["location"]
+          }
+        },
+        {
+          "name": "book_venue",
+          "description": "Reserve a conference room or meeting space.",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "location": { "type": "string" },
+              "capacity": { "type": "integer", "description": "Number of people" },
+              "date": { "type": "string", "description": "ISO date format" }
+            },
+            "required": ["location", "capacity", "date"]
+          }
+        },
+        {
+          "name": "find_restaurants",
+          "description": "Locate dining options based on cuisine and dietary needs.",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "location": { "type": "string" },
+              "dietary_options": { "type": "array", "items": { "type": "string" }, "description": "e.g. ['vegan', 'gluten-free']" }
+            },
+            "required": ["location"]
+          }
+        },
+        {
+          "name": "calendar_add",
+          "description": "Create a new event on the user's primary calendar.",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "summary": { "type": "string" },
+              "start_time": { "type": "string" },
+              "end_time": { "type": "string" }
+            },
+            "required": ["summary", "start_time"]
+          }
+        },
+        {
+          "name": "send_email",
+          "description": "Send an email to a specific recipient.",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "recipient": { "type": "string", "description": "Email address" },
+              "subject": { "type": "string" },
+              "body": { "type": "string" }
+            },
+            "required": ["recipient", "body"]
+          }
+        }
+      ]
+    }
+  ]
+
+}
