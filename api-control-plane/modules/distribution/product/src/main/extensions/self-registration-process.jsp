@@ -135,12 +135,18 @@
                         request.setAttribute("errorMsg", IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                                 "Callback.url.format.invalid"));
                         request.getRequestDispatcher("error.jsp").forward(request, response);
+                        if (password != null) {
+                            Arrays.fill(password, '\u0000');
+                        }
                         return;
                     }
                 } catch (IdentityRuntimeException e) {
                     request.setAttribute("error", true);
                     request.setAttribute("errorMsg", e.getMessage());
                     request.getRequestDispatcher("error.jsp").forward(request, response);
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     return;
                 }
 
@@ -188,6 +194,9 @@
                     request.setAttribute("callback", callback);
                     request.setAttribute("userTenantDomain", user.getTenantDomain());
                     request.getRequestDispatcher(SELF_REGISTRATION_COMPLETE_PAGE).forward(request, response);
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     return;
                 }
 
@@ -213,6 +222,9 @@
                     request.setAttribute("error", true);
                     request.setAttribute("errorMsg", e.getMessage());
                     request.getRequestDispatcher("error.jsp").forward(request, response);
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     return;
                 }
 
@@ -226,6 +238,9 @@
                         claims = claimsList.toArray(new Claim[claimsList.size()]);
                     }
                 } catch (ApiException e) {
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     IdentityManagementEndpointUtil.addErrorInformation(request, e);
                     request.getRequestDispatcher("error.jsp").forward(request, response);
                     return;
@@ -316,6 +331,9 @@
                     request.getRequestDispatcher(SELF_REGISTRATION_COMPLETE_PAGE).forward(request, response);
 
                 } catch (Exception e) {
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     IdentityManagementEndpointUtil.addErrorInformation(request, e);
                     String errorCode = (String) request.getAttribute("errorCode");
                     if (passwordPatternErrorCode.equals(errorCode) || invalidCharErrorCode.equals(errorCode) || usernameAlreadyExistsErrorCode.equals(errorCode)) {
