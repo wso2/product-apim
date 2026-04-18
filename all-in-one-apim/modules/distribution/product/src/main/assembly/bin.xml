@@ -586,6 +586,7 @@
                 <include>product-title.jsp</include>
                 <include>cookie-policy-content.jsp</include>
                 <include>privacy-policy-content.jsp</include>
+                <include>favicon.png</include>
             </includes>
         </fileSet>
 
@@ -643,6 +644,7 @@
                 <include>header.jsp</include>
                 <include>product-footer.jsp</include>
                 <include>product-title.jsp</include>
+                <include>favicon.png</include>
             </includes>
         </fileSet>
 
