@@ -343,12 +343,11 @@
 
                         return;
                     }
+                } finally {
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                 }
-            } finally {
-                if (password != null) {
-                    Arrays.fill(password, '\u0000');
-                }
-            }
         %>
 
         <%!
