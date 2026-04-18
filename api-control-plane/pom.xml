@@ -1282,10 +1282,10 @@
         <carbon.analytics.common.version>5.4.8</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-         <carbon.apimgt.ui.version>9.3.177</carbon.apimgt.ui.version>
+         <carbon.apimgt.ui.version>9.3.185</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.108</carbon.apimgt.version>
+        <carbon.apimgt.version>9.33.114</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1309,11 +1309,11 @@
         <carbon.mediation.version>4.8.16</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.27.18</carbon.identity.version>
+        <carbon.identity.version>5.27.21</carbon.identity.version>
         <carbon.identity.governance.version>1.14.1</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.1</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.14.12</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.14.14</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.9.0</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.10.0</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.12.2</carbon.identity-inbound-auth-openid.version>
@@ -1324,7 +1324,7 @@
         <carbon.identity-data-publisher-application-authentication.version>5.9.0</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.5</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.11.2</carbon.identity.carbon.auth.saml2.version>
-        <identity.apps.version>1.6.388</identity.apps.version>
+        <identity.apps.version>1.6.389</identity.apps.version>
         <identity.oauth.addons.version>2.7.0</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
@@ -1475,7 +1475,7 @@
         <auth0.keymanager.feature.version>1.1.0</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.1.0</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.2.0</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.2.35</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.2.36</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
         <charon3.version>4.0.54</charon3.version>
