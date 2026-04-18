@@ -29,6 +29,7 @@
 <%@ page import="java.net.URISyntaxException" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Arrays" %>
 <%@ page import="java.util.HashMap" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
@@ -60,7 +61,7 @@
     String passwordPatternErrorCode = "20035";
     String confirmationKey =
             IdentityManagementEndpointUtil.getStringValue(request.getSession().getAttribute("confirmationKey"));
-    String newPassword = request.getParameter("reset-password");
+    char[] newPassword = request.getParameter("reset-password") != null ? request.getParameter("reset-password").toCharArray() : null;
     String callback = request.getParameter("callback");
     String userStoreDomain = request.getParameter("userstoredomain");
     String type = request.getParameter("type");
@@ -74,7 +75,7 @@
                 application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL), tenantDomain);
     }
 
-    if (StringUtils.isNotBlank(newPassword)) {
+    if (!isBlankPassword(newPassword)) {
         NotificationApi notificationApi = new NotificationApi();
         ResetPasswordRequest resetPasswordRequest = new ResetPasswordRequest();
         List<Property> properties = new ArrayList<Property>();
@@ -138,6 +139,9 @@
                 }
             }
         } catch (ApiException e) {
+            if (newPassword != null) {
+                Arrays.fill(newPassword, '\u0000');
+            }
 
             Error error = IdentityManagementEndpointUtil.buildError(e);
             IdentityManagementEndpointUtil.addErrorInformation(request, error);
@@ -159,9 +163,16 @@
             }
             request.getRequestDispatcher("error.jsp").forward(request, response);
             return;
+        } finally {
+            if (newPassword != null) {
+                Arrays.fill(newPassword, '\u0000');
+            }
         }
 
     } else {
+        if (newPassword != null) {
+            Arrays.fill(newPassword, '\u0000');
+        }
         request.setAttribute("error", true);
         request.setAttribute("errorMsg", IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                 "Password.cannot.be.empty"));
@@ -174,6 +185,24 @@
 
     session.invalidate();
 %>
+
+<%!
+    private boolean isBlankPassword(char[] password) {
+
+        if (password == null || password.length == 0) {
+            return true;
+        }
+
+        for (char c : password) {
+            if (!Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+%>
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%-- Data for the layout from the page --%>
