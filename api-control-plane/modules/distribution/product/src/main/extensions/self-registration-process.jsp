@@ -168,7 +168,7 @@
                     }
                 }
 
-                if (password == null || password.length == 0) {
+                if (isBlankPassword(password)) {
                     request.setAttribute("error", true);
                     request.setAttribute("errorMsg", IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                             "Password.cannot.be.empty"));
@@ -351,6 +351,24 @@
                 }
             }
         %>
+
+        <%!
+            private boolean isBlankPassword(char[] password) {
+
+                if (password == null || password.length == 0) {
+                    return true;
+                }
+
+                for (char c : password) {
+                    if (!Character.isWhitespace(c)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        %>
+
         </div>
 
 

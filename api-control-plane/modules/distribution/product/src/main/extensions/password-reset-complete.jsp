@@ -76,7 +76,7 @@
                 application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL), tenantDomain);
     }
 
-    if (newPassword != null && newPassword.length > 0) {
+    if (!isBlankPassword(newPassword)) {
         NotificationApi notificationApi = new NotificationApi();
         ResetPasswordRequest resetPasswordRequest = new ResetPasswordRequest();
         List<Property> properties = new ArrayList<Property>();
@@ -180,6 +180,24 @@
 
     session.invalidate();
 %>
+
+<%!
+    private boolean isBlankPassword(char[] password) {
+
+        if (password == null || password.length == 0) {
+            return true;
+        }
+
+        for (char c : password) {
+            if (!Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+%>
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%-- Data for the layout from the page --%>
