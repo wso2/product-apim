@@ -121,8 +121,7 @@
 
                 String userLocale = request.getHeader("Accept-Language");
                 String username = request.getParameter("username");
-                String passwordParam = request.getParameter("password");
-                char[] password = passwordParam != null ? passwordParam.toCharArray() : null;
+                char[] password = request.getParameter("password") != null ? request.getParameter("password").toCharArray() : null;
                 String callback = request.getParameter("callback");
                 String consent = request.getParameter("consent");
                 boolean isSaaSApp = Boolean.parseBoolean(request.getParameter("isSaaSApp"));

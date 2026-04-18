@@ -61,8 +61,7 @@
     String passwordPatternErrorCode = "20035";
     String confirmationKey =
             IdentityManagementEndpointUtil.getStringValue(request.getSession().getAttribute("confirmationKey"));
-    String passwordParam = request.getParameter("reset-password");
-    char[] newPassword = passwordParam != null ? passwordParam.toCharArray() : null;
+    char[] newPassword = request.getParameter("reset-password") != null ? request.getParameter("reset-password").toCharArray() : null;
     String callback = request.getParameter("callback");
     String userStoreDomain = request.getParameter("userstoredomain");
     String type = request.getParameter("type");
