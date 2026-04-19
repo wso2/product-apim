@@ -1,3 +1,4 @@
+
 This product is licensed by WSO2 LLC. under Apache License 2.0. The license
 can be downloaded from the following locations:
 	http://www.apache.org/licenses/LICENSE-2.0.html
@@ -168,7 +169,6 @@ org.wso2.carbon.andes.core_3.4.1.jar                                            
 org.wso2.carbon.apimgt.common.jms_9.33.119.jar                                                      bundle         apache2             
 org.wso2.carbon.task_4.8.16.jar                                                                     bundle         apache2             
 io.swagger.swagger-annotations_1.6.11.jar                                                           bundle         apache2             
-org.wso2.am.multitenancy.dashboard.ui_4.7.0.SNAPSHOT.jar                                            bundle         apache2             
 tiles-jsp-jdk21_3.0.7.wso2v3.jar                                                                    bundle         apache2             
 commons-digester-2.0.jar                                                                            jarinbundle    apache2             
 tiles-extras-3.0.7.jar                                                                              jarinbundle    apache2             
@@ -296,7 +296,6 @@ org.wso2.carbon.tenant.redirector.servlet.ui_4.13.3.jar                         
 org.apache.commons.commons-pool2_2.8.0.jar                                                          bundle         apache2             
 org.wso2.carbon.localentry.stub_4.8.16.jar                                                          bundle         apache2             
 org.wso2.carbon.identity.entitlement.common_5.27.21.jar                                             bundle         apache2             
-org.wso2.am.styles_4.7.0.SNAPSHOT.jar                                                               bundle         apache2             
 org.wso2.carbon.metrics.data.common_1.4.0.jar                                                       bundle         apache2             
 org.wso2.carbon.ndatasource.rdbms_4.11.18.jar                                                       bundle         apache2             
 org.wso2.carbon.event.output.adapter.mqtt_5.4.9.jar                                                 bundle         apache2             
@@ -578,6 +577,7 @@ org.wso2.carbon.ndatasource.datasources_4.13.3.jar                              
 step2_1.0.0.wso2v2.jar                                                                              bundle         apache2             
 step2-consumer-1.0.0-wso2v2.jar                                                                     bundle         apache2             
 step2-common-1.0.0-wso2v2.jar                                                                       bundle         apache2             
+org.wso2.am.styles_4.7.0.jar                                                                        bundle         apache2             
 org.wso2.carbon.identity.authenticator.saml2.sso.common_5.11.2.jar                                  bundle         apache2             
 org.wso2.carbon.roles.mgt.ui_4.11.18.jar                                                            bundle         apache2             
 libthrift_0.16.0.wso2v1.jar                                                                         bundle         apache2             
@@ -942,6 +942,7 @@ org.sat4j.core_2.3.5.v201308161310.jar                                          
 asgardeo.key.manager_1.0.0.jar                                                                      bundle         apache2             
 org.wso2.carbon.siddhi.metrics.core_2.4.6.jar                                                       bundle         apache2             
 org.wso2.am.policies.mediation.ai.semantic-tool-filtering_1.1.2.jar                                 bundle         apache2             
+org.wso2.am.multitenancy.dashboard.ui_4.7.0.jar                                                     bundle         apache2             
 org.apache.commons.text_1.13.1.jar                                                                  bundle         apache2             
 org.wso2.carbon.mediation.ntask_4.8.16.jar                                                          bundle         apache2             
 org.wso2.carbon.identity.cors.mgt.core_5.27.21.jar                                                  bundle         apache2             

@@ -541,7 +541,7 @@ com.esotericsoftware.kryo_3.0.3.jar                                             
 org.wso2.carbon.andes.admin.mqtt_3.4.1.jar                                                          bundle         apache2             
 org.wso2.carbon.governance.registry.extensions_4.9.7.jar                                            bundle         apache2             
 org.wso2.carbon.event.ws_4.13.3.jar                                                                 bundle         apache2             
-org.wso2.am.tm.styles_4.7.0.SNAPSHOT.jar                                                            bundle         apache2             
+org.wso2.am.tm.styles_4.7.0.jar                                                                     bundle         apache2             
 org.wso2.carbon.event.stream.admin_5.4.9.jar                                                        bundle         apache2             
 org.wso2.carbon.identity.user.store.count.stub_5.27.21.jar                                          bundle         apache2             
 org.wso2.carbon.databridge.streamdefn.filesystem_5.4.9.jar                                          bundle         apache2             

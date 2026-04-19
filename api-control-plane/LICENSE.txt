@@ -233,7 +233,7 @@ org.wso2.carbon.cluster.mgt.core_4.11.18.jar                                    
 org.wso2.carbon.tenant.common_4.13.3.jar                                                            bundle         apache2             
 io.github.openfeign.feign-slf4j_13.2.1.jar                                                          bundle         apache2             
 axiom_1.2.11.wso2v37.jar                                                                            bundle         apache2             
-org.wso2.am.acp.styles_4.7.0.SNAPSHOT.jar                                                           bundle         apache2             
+org.wso2.am.acp.styles_4.7.0.jar                                                                    bundle         apache2             
 org.wso2.carbon.user.core_4.11.18.jar                                                               bundle         apache2             
 org.wso2.orbit.org.mapstruct.mapstruct_1.4.1.wso2v1.jar                                             bundle         apache2             
 org.eclipse.equinox.frameworkadmin.equinox_1.3.100.v20240213-1609.jar                               bundle         epl2                
@@ -577,7 +577,7 @@ org.eclipse.equinox.p2.touchpoint.eclipse_2.3.0.v20210315-2228.jar              
 org.wso2.carbon.ndatasource.core_4.11.18.jar                                                        bundle         apache2             
 org.wso2.carbon.governance.generic_4.9.7.jar                                                        bundle         apache2             
 encoder-jdk21_1.2.0.wso2v1.jar                                                                      bundle         apache2             
-org.wso2.am.acp.multitenancy.dashboard.ui_4.7.0.SNAPSHOT.jar                                        bundle         apache2             
+org.wso2.am.acp.multitenancy.dashboard.ui_4.7.0.jar                                                 bundle         apache2             
 org.eclipse.equinox.app_1.7.0.v20240213-1427.jar                                                    bundle         epl2                
 org.objenesis_2.1.0.jar                                                                             bundle         apache2             
 org.wso2.carbon.tenant.deployment_4.13.3.jar                                                        bundle         apache2             

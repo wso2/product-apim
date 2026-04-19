@@ -208,7 +208,7 @@ org.wso2.carbon.tenant.usage.agent_4.13.3.jar                                   
 org.wso2.carbon.consent.mgt.ui_2.8.1.jar                                                            bundle         apache2             
 org.wso2.carbon.base_4.11.18.jar                                                                    bundle         apache2             
 org.wso2.carbon.endpoint.stub_4.8.16.jar                                                            bundle         apache2             
-org.wso2.am.gw.multitenancy.dashboard.ui_4.7.0.SNAPSHOT.jar                                         bundle         apache2             
+org.wso2.am.gw.multitenancy.dashboard.ui_4.7.0.jar                                                  bundle         apache2             
 org.wso2.am.policies.mediation.ai.azure-content-safety-guardrail_1.1.2.jar                          bundle         apache2             
 httpclient5-5.5.jar                                                                                 jarinbundle    apache2             
 jdbc-pool_9.0.65.wso2v1.jar                                                                         bundle         apache2             
@@ -500,7 +500,7 @@ org.wso2.carbon.ntask.solutions_4.13.3.jar                                      
 org.eclipse.core.runtime_3.31.0.v20240215-1631.jar                                                  bundle         epl1                
 org.eclipse.equinox.security_1.4.600.v20250521-0413.jar                                             bundle         epl2                
 org.wso2.carbon.directory.server.manager.ui_5.27.21.jar                                             bundle         apache2             
-org.wso2.am.gw.styles_4.7.0.SNAPSHOT.jar                                                            bundle         apache2             
+org.wso2.am.gw.styles_4.7.0.jar                                                                     bundle         apache2             
 swagger-core_1.6.11.wso2v1.jar                                                                      bundle         apache2             
 org.eclipse.equinox.http.service.api_1.2.2.v20231218-2126.jar                                       bundle         epl2                
 com.fasterxml.jackson.core.jackson-annotations_2.21.0.jar                                           bundle         apache2             
