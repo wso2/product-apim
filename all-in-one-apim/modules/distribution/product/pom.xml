@@ -636,6 +636,7 @@
                             </reportSets>
                         </plugin>
                     </reportPlugins>
+                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
