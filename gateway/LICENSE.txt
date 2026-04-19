@@ -14,9 +14,9 @@ below is and where the actual text of the license can be found.
 
 Name                                                                                                Type           License             
 _________________________________________________________________________________________________________________________________________________
-org.wso2.carbon.apimgt.encryption.key.generator-9.33.118.jar                                        bundle         apache2             
 org.wso2.carbon.bootstrap-4.11.18.jar                                                               bundle         apache2             
 tomcat-juli-9.0.116.jar                                                                             bundle         apache2             
+org.wso2.carbon.apimgt.encryption.key.generator-9.33.119.jar                                        bundle         apache2             
 tcpmon-1.0.jar                                                                                      jar            bsd                 
 jersey-client-1.19.1.jar                                                                            bundle         epl2                
 cxf-core-3.6.10.jar                                                                                 bundle         apache2             
@@ -27,7 +27,7 @@ javax.ws.rs-api-2.1.1.jar                                                       
 jackson-jaxrs-base-2.21.2.jar                                                                       bundle         apache2             
 jackson-core-2.21.2.jar                                                                             bundle         apache2             
 cxf-rt-rs-security-cors-3.6.10.jar                                                                  bundle         apache2             
-org.wso2.carbon.apimgt.rest.api.util_9.33.118.jar                                                   bundle         apache2             
+org.wso2.carbon.apimgt.rest.api.util_9.33.119.jar                                                   bundle         apache2             
 org.wso2.carbon.identity.oauth.client.authn.filter-6.14.14.jar                                      bundle         apache2             
 org.wso2.carbon.identity.mgt.endpoint.util-5.27.21.jar                                              bundle         apache2             
 cxf-rt-frontend-jaxrs-3.6.10.jar                                                                    bundle         apache2             
@@ -160,6 +160,7 @@ jersey-hk2-3.1.11.jar                                                           
 lucene-core-9.12.3.jar                                                                              jarinbundle    apache2             
 org.wso2.carbon.websocket.transport_4.8.16.jar                                                      bundle         apache2             
 org.wso2.carbon.andes.core_3.4.1.jar                                                                bundle         apache2             
+org.wso2.carbon.apimgt.common.jms_9.33.119.jar                                                      bundle         apache2             
 org.wso2.carbon.task_4.8.16.jar                                                                     bundle         apache2             
 io.swagger.swagger-annotations_1.6.11.jar                                                           bundle         apache2             
 tiles-jsp-jdk21_3.0.7.wso2v3.jar                                                                    bundle         apache2             
@@ -196,10 +197,10 @@ org.wso2.carbon.captcha.mgt_5.27.21.jar                                         
 org.wso2.carbon.identity.organization.management.tenant.association_1.5.0.jar                       bundle         apache2             
 org.wso2.carbon.identity.application.mgt_5.27.21.jar                                                bundle         apache2             
 org.wso2.carbon.user.mgt.workflow.stub_5.27.21.jar                                                  bundle         apache2             
+org.wso2.carbon.apimgt.persistence_9.33.119.jar                                                     bundle         apache2             
 keycloak.key.manager_2.2.0.jar                                                                      bundle         apache2             
 org.wso2.carbon.localentry_4.8.16.jar                                                               bundle         apache2             
 org.wso2.carbon.governance.wsdltool.ui_4.9.7.jar                                                    bundle         apache2             
-org.wso2.carbon.apimgt.api_9.33.118.jar                                                             bundle         apache2             
 org.wso2.carbon.registry.properties.ui_4.9.10.jar                                                   bundle         apache2             
 org.wso2.carbon.event.input.adapter.websocket_5.4.9.jar                                             bundle         apache2             
 io.zipkin.reporter2.zipkin-reporter_3.5.1.jar                                                       bundle         apache2             
@@ -246,16 +247,17 @@ org.wso2.carbon.tenant.common_4.13.3.jar                                        
 io.github.openfeign.feign-slf4j_13.2.1.jar                                                          bundle         apache2             
 axiom_1.2.11.wso2v37.jar                                                                            bundle         apache2             
 org.wso2.carbon.user.core_4.11.18.jar                                                               bundle         apache2             
-org.wso2.carbon.apimgt.keymgt.stub_9.33.118.jar                                                     bundle         apache2             
-org.wso2.carbon.apimgt.persistence_9.33.118.jar                                                     bundle         apache2             
 org.eclipse.equinox.frameworkadmin.equinox_1.3.100.v20240213-1609.jar                               bundle         epl2                
 org.wso2.carbon.logging.appender.service_4.13.3.jar                                                 bundle         apache2             
 org.wso2.carbon.mediation.library_4.8.16.jar                                                        bundle         apache2             
 org.tukaani.xz_1.11.0.jar                                                                           bundle         0bsd                
+org.wso2.carbon.apimgt.broker.lifecycle_9.33.119.jar                                                bundle         apache2             
 org.wso2.am.policies.mediation.ai.intelligent-model-routing_1.1.2.jar                               bundle         apache2             
 org.wso2.carbon.mediation.dependency.mgt_4.8.16.jar                                                 bundle         apache2             
 org.wso2.carbon.ndatasource.ui_4.13.3.jar                                                           bundle         apache2             
+org.wso2.carbon.apimgt.keymgt.stub_9.33.119.jar                                                     bundle         apache2             
 org.wso2.carbon.event.output.adapter.ui_5.4.9.jar                                                   bundle         apache2             
+org.wso2.carbon.apimgt.eventing.hub_9.33.119.jar                                                    bundle         apache2             
 org.wso2.carbon.event.input.adapter.soap_5.4.9.jar                                                  bundle         apache2             
 org.wso2.carbon.registry.api_4.11.18.jar                                                            bundle         apache2             
 commons-beanutils_1.11.0.wso2v1.jar                                                                 bundle         apache2             
@@ -271,6 +273,7 @@ opentelemetry-all_1.57.0.wso2v3.jar                                             
 org.wso2.carbon.event.output.adapter.logger_5.4.9.jar                                               bundle         apache2             
 pdfbox-io_3.0.1.wso2v1.jar                                                                          bundle         apache2             
 com.fasterxml.jackson.core.jackson-core_2.21.2.jar                                                  bundle         apache2             
+org.wso2.carbon.apimgt.spec.parser_9.33.119.jar                                                     bundle         apache2             
 commons-httpclient_3.1.0.wso2v7.jar                                                                 bundle         apache2             
 siddhi-core_3.3.0.jar                                                                               bundle         apache2             
 org.wso2.carbon.tomcat.ext_4.11.18.jar                                                              bundle         apache2             
@@ -304,6 +307,7 @@ org.wso2.carbon.directory.server.manager.common_5.27.21.jar                     
 org.wso2.carbon.user.api_4.11.18.jar                                                                bundle         apache2             
 io.netty.codec-http_4.2.12.Final.jar                                                                bundle         apache2             
 com.esotericsoftware.minlog_1.3.0.jar                                                               bundle         bsd                 
+org.wso2.carbon.apimgt.gateway_9.33.119.jar                                                         bundle         apache2             
 org.wso2.carbon.identity.base_5.27.21.jar                                                           bundle         apache2             
 org.eclipse.osgi_3.19.0.v20240213-1246.jar                                                          bundle         epl2                
 org.wso2.orbit.sun.xml.bind.jaxb_2.3.2.wso2v1.jar                                                   bundle         apache2             
@@ -319,6 +323,7 @@ httpmime_4.5.13.wso2v1.jar                                                      
 org.wso2.carbon.identity.template.mgt_5.27.21.jar                                                   bundle         apache2             
 org.wso2.carbon.event.output.adapter.email_5.4.9.jar                                                bundle         apache2             
 javax.cache.wso2_4.11.18.jar                                                                        bundle         apache2             
+org.wso2.carbon.apimgt.common.gateway_9.33.119.jar                                                  bundle         apache2             
 org.wso2.carbon.tenant.common.stub_4.13.3.jar                                                       bundle         apache2             
 org.wso2.carbon.ntask.common_4.13.3.jar                                                             bundle         apache2             
 org.wso2.carbon.rest.api_4.8.16.jar                                                                 bundle         apache2             
@@ -342,6 +347,7 @@ org.wso2.carbon.identity.discovery_6.14.14.jar                                  
 java-property-utils_1.9.0.wso2v1.jar                                                                bundle         apache2             
 org.wso2.carbon.registry.relations.stub_4.9.10.jar                                                  bundle         apache2             
 org.wso2.carbon.framework.exporter_4.11.18.jar                                                      bundle         apache2             
+org.wso2.carbon.apimgt.impl_9.33.119.jar                                                            bundle         apache2             
 commons-scxml_0.9.0.wso2v2.jar                                                                      bundle         apache2             
 commons-scxml-0.9.jar                                                                               jarinbundle    apache2             
 org.wso2.carbon.ndatasource.capp.deployer_4.13.3.jar                                                bundle         apache2             
@@ -387,7 +393,6 @@ org.wso2.carbon.connector.core_4.8.16.jar                                       
 org.eclipse.core.jobs_3.15.200.v20231214-1526.jar                                                   bundle         epl2                
 io.netty.resolver_4.2.12.Final.jar                                                                  bundle         apache2             
 net.minidev.json-smart_2.6.0.jar                                                                    bundle         apache2             
-org.wso2.carbon.apimgt.tracing_9.33.118.jar                                                         bundle         apache2             
 org.wso2.carbon.ui_4.11.18.jar                                                                      bundle         apache2             
 org.eclipse.equinox.http.servlet_1.8.100.v20240213-1057.jar                                         bundle         epl1                
 wso2-uri-templates_1.6.5.jar                                                                        bundle         apache2             
@@ -402,7 +407,6 @@ io.netty.handler-proxy_4.2.12.Final.jar                                         
 org.wso2.carbon.application.deployer_4.11.18.jar                                                    bundle         apache2             
 org.wso2.carbon.event.input.adapter.core_5.4.9.jar                                                  bundle         apache2             
 com.google.gson_2.13.2.jar                                                                          bundle         apache2             
-org.wso2.carbon.apimgt.keymgt_9.33.118.jar                                                          bundle         apache2             
 org.wso2.carbon.metrics.manager_1.4.0.jar                                                           bundle         apache2             
 org.wso2.carbon.registry.common_4.9.10.jar                                                          bundle         apache2             
 azure-core_1.43.0.wso2v1.jar                                                                        bundle         mit                 
@@ -423,6 +427,7 @@ org.wso2.am.policies.mediation.ai.content-based-model-router_1.1.1.jar          
 gson-2.10.1.jar                                                                                     jarinbundle    apache2             
 org.wso2.carbon.server.admin.ui_4.11.18.jar                                                         bundle         apache2             
 org.eclipse.equinox.registry_3.12.0.v20240213-1057.jar                                              bundle         epl2                
+org.wso2.carbon.apimgt.tracing_9.33.119.jar                                                         bundle         apache2             
 org.wso2.carbon.securevault_4.11.18.jar                                                             bundle         apache2             
 org.wso2.carbon.identity.recovery_1.14.1.jar                                                        bundle         apache2             
 org.wso2.carbon.inbound_4.8.16.jar                                                                  bundle         apache2             
@@ -440,6 +445,7 @@ org.wso2.carbon.roles.mgt.stub_4.11.18.jar                                      
 org.eclipse.equinox.util_1.1.300.v20190714-1852.jar                                                 bundle         epl2                
 org.wso2.carbon.event.output.adapter.soap_5.4.9.jar                                                 bundle         apache2             
 org.wso2.carbon.governance.wsdltool.stub_4.9.7.jar                                                  bundle         apache2             
+org.wso2.carbon.apimgt.cache.invalidation_9.33.119.jar                                              bundle         apache2             
 io.dropwizard.metrics.jvm_3.2.5.jar                                                                 bundle         apache2             
 org.wso2.carbon.identity.notification.sender.tenant.config_1.11.1.jar                               bundle         apache2             
 org.wso2.carbon.identity.central.log.mgt_5.27.21.jar                                                bundle         apache2             
@@ -453,11 +459,9 @@ org.osgi.util.promise_1.3.0.202212101352.jar                                    
 org.wso2.carbon.deployment.synchronizer_4.13.3.jar                                                  bundle         apache2             
 org.wso2.carbon.application.mgt.synapse_4.8.16.jar                                                  bundle         apache2             
 org.wso2.carbon.identity.user.registration.stub_5.27.21.jar                                         bundle         apache2             
-org.wso2.carbon.apimgt.notification_9.33.118.jar                                                    bundle         apache2             
 synapse-extensions_4.1.0.wso2v40.jar                                                                bundle         apache2             
 org.eclipse.osgi.services_3.12.0.v20231218-2126.jar                                                 bundle         epl1                
 org.restlet_2.3.0.wso2v1.jar                                                                        bundle         apache2             
-org.wso2.carbon.apimgt.cache.invalidation_9.33.118.jar                                              bundle         apache2             
 org.eclipse.equinox.concurrent_1.3.0.v20240213-1244.jar                                             bundle         epl2                
 openid4java-jdk21_1.0.0.wso2v1.jar                                                                  bundle         apache2             
 openxri-syntax-1.2.0.jar                                                                            jarinbundle    apache2             
@@ -484,7 +488,6 @@ org.wso2.carbon.directory.server.manager_5.27.21.jar                            
 org.apache.pdfbox.fontbox_3.0.1.jar                                                                 bundle         apache2             
 org.wso2.carbon.identity.organization.management.authz.service_1.5.0.jar                            bundle         apache2             
 io.github.openfeign.feign-okhttp_13.2.1.jar                                                         bundle         apache2             
-org.wso2.carbon.apimgt.gateway_9.33.118.jar                                                         bundle         apache2             
 org.eclipse.equinox.p2.repository_2.5.0.v20201013-0853.jar                                          bundle         epl2                
 io.netty.tcnative_2.0.65.Final.jar                                                                  bundle         apache2             
 joda-time_2.14.0.wso2v1.jar                                                                         bundle         apache2             
@@ -508,7 +511,6 @@ openapi-generator_7.3.0.wso2v1.jar                                              
 commonmark-0.11.0.jar                                                                               jarinbundle    bsd2                
 slf4j-ext-2.0.12.jar                                                                                jarinbundle    mit                 
 com.google.protobuf_3.25.5.jar                                                                      bundle         upl1.0              
-org.wso2.carbon.apimgt.eventing_9.33.118.jar                                                        bundle         apache2             
 com.fasterxml.jackson.dataformat.jackson-dataformat-yaml_2.21.2.jar                                 bundle         apache2             
 json-simple_1.1.0.wso2v1.jar                                                                        bundle         apache2             
 org.wso2.carbon.identity.cors.valve_1.11.1.jar                                                      bundle         apache2             
@@ -535,7 +537,6 @@ io.github.openfeign.feign-gson_13.2.1.jar                                       
 org.osgi.service.permissionadmin_1.2.1.202007221806.jar                                             bundle         apache2             
 okta.key.manager_3.3.0.jar                                                                          bundle         apache2             
 org.wso2.carbon.registry.resource.stub_4.9.10.jar                                                   bundle         apache2             
-org.wso2.carbon.apimgt.common.jms_9.33.118.jar                                                      bundle         apache2             
 com.google.guava_33.0.0.jre.jar                                                                     bundle         apache2             
 auth0.key.manager_1.1.0.jar                                                                         bundle         apache2             
 tomcat-el-api-jdk21_9.0.116.wso2v1.jar                                                              bundle         apache2             
@@ -550,7 +551,6 @@ synapse-core_4.1.0.wso2v40.jar                                                  
 org.eclipse.equinox.p2.publisher_1.6.0.v20210322-0909.jar                                           bundle         epl2                
 org.wso2.carbon.identity.notification.mgt_5.27.21.jar                                               bundle         apache2             
 compass_2.0.1.wso2v2.jar                                                                            bundle         apache2             
-org.wso2.carbon.apimgt.common.gateway_9.33.118.jar                                                  bundle         apache2             
 commons-pool_1.5.6.wso2v1.jar                                                                       bundle         apache2             
 org.wso2.carbon.identity.consent.mgt_5.27.21.jar                                                    bundle         apache2             
 okhttp_4.12.0.wso2v4.jar                                                                            bundle         apache2             
@@ -567,24 +567,23 @@ json_3.0.0.wso2v7.jar                                                           
 org.wso2.carbon.core.commons.stub_4.11.18.jar                                                       bundle         apache2             
 org.wso2.am.policies.mediation.ai.semantic-model-routing_1.2.2.jar                                  bundle         apache2             
 org.wso2.carbon.statistics_4.13.3.jar                                                               bundle         apache2             
-org.wso2.carbon.apimgt.spec.parser_9.33.118.jar                                                     bundle         apache2             
+org.wso2.carbon.apimgt.notification_9.33.119.jar                                                    bundle         apache2             
 org.wso2.carbon.remote-tasks.stub_4.13.3.jar                                                        bundle         apache2             
 jakarta.validation.jakarta.validation-api_2.0.2.jar                                                 bundle         apache2             
 org.wso2.carbon.admin.advisory.mgt_4.11.18.jar                                                      bundle         apache2             
 org.wso2.carbon.registry.extensions_4.9.10.jar                                                      bundle         apache2             
-org.wso2.carbon.apimgt.rest.api.common_9.33.118.jar                                                 bundle         apache2             
 azure-core-amqp_2.8.9.wso2v1.jar                                                                    bundle         mit                 
 org.wso2.carbon.email.mgt_1.11.1.jar                                                                bundle         apache2             
 httpcore-nio_4.4.16.wso2v6.jar                                                                      bundle         apache2             
 org.ops4j.pax.logging.pax-logging-api_2.3.0.wso2v2.jar                                              bundle         apache2             
 org.wso2.carbon.event.input.adapter.email_5.4.9.jar                                                 bundle         apache2             
+org.wso2.carbon.apimgt.eventing_9.33.119.jar                                                        bundle         apache2             
 org.eclipse.ecf.filetransfer_5.1.103.v20230705-0614.jar                                             bundle         epl1                
 org.eclipse.ecf_3.11.0.v20230507-1923.jar                                                           bundle         epl1                
 org.wso2.carbon.registry.info.stub_4.9.10.jar                                                       bundle         apache2             
 org.eclipse.equinox.p2.touchpoint.eclipse_2.3.0.v20210315-2228.jar                                  bundle         epl2                
 org.wso2.carbon.ndatasource.core_4.11.18.jar                                                        bundle         apache2             
 org.wso2.carbon.mediation.transport.handlers_4.8.16.jar                                             bundle         apache2             
-org.wso2.carbon.apimgt.impl_9.33.118.jar                                                            bundle         apache2             
 org.wso2.carbon.governance.generic_4.9.7.jar                                                        bundle         apache2             
 org.wso2.transport.http.netty_6.4.1.jar                                                             bundle         apache2             
 encoder-jdk21_1.2.0.wso2v1.jar                                                                      bundle         apache2             
@@ -607,10 +606,8 @@ io.netty.codec_4.2.12.Final.jar                                                 
 qpid-proton-j-extensions_1.2.4.wso2v1.jar                                                           bundle         mit                 
 org.wso2.carbon.identity.claim.metadata.mgt_5.27.21.jar                                             bundle         apache2             
 org.wso2.carbon.task.services_4.8.16.jar                                                            bundle         apache2             
-org.wso2.carbon.apimgt.jms.listener_9.33.118.jar                                                    bundle         apache2             
 org.wso2.carbon.identity.user.store.configuration.stub_5.27.21.jar                                  bundle         apache2             
 tomcat-catalina-ha_9.0.116.wso2v1.jar                                                               bundle         apache2             
-org.wso2.carbon.apimgt.eventing.hub_9.33.118.jar                                                    bundle         apache2             
 org.wso2.carbon.logging.service_4.13.3.jar                                                          bundle         apache2             
 org.wso2.carbon.identity.configuration.mgt.core_5.27.21.jar                                         bundle         apache2             
 io.netty.transport_4.2.12.Final.jar                                                                 bundle         apache2             
@@ -625,7 +622,6 @@ org.wso2.carbon.relay.module_4.8.16.jar                                         
 org.wso2.carbon.event.client.stub_4.13.3.jar                                                        bundle         apache2             
 org.wso2.carbon.identity.user.store.count_5.27.21.jar                                               bundle         apache2             
 com.fasterxml.jackson.datatype.jackson-datatype-guava_2.21.2.jar                                    bundle         apache2             
-org.wso2.carbon.apimgt.common.analytics_9.33.118.jar                                                bundle         apache2             
 csrfguard-jdk21_3.1.0.wso2v1.jar                                                                    bundle         apache2             
 org.wso2.carbon.identity.entitlement.proxy_5.4.9.jar                                                bundle         apache2             
 org.wso2.carbon.event.receiver.stub_5.4.9.jar                                                       bundle         apache2             
@@ -671,6 +667,7 @@ org.wso2.carbon.identity.oauth.stub_6.0.103.jar                                 
 org.wso2.carbon.andes.cluster.mgt_3.4.1.jar                                                         bundle         apache2             
 wsdl4j.wso2_1.6.3.wso2v3.jar                                                                        bundle         apache2             
 azure.key.manager_1.1.0.jar                                                                         bundle         apache2             
+org.wso2.carbon.apimgt.keymgt_9.33.119.jar                                                          bundle         apache2             
 org.wso2.carbon.identity.user.functionality.mgt_5.27.21.jar                                         bundle         apache2             
 org.wso2.carbon.identity.user.profile.stub_5.27.21.jar                                              bundle         apache2             
 guice_3.0.0.wso2v1.jar                                                                              bundle         apache2             
@@ -688,7 +685,6 @@ io.netty.transport-native-unix-common_4.2.12.Final.jar                          
 org.eclipse.equinox.common_3.19.0.v20240214-0846.jar                                                bundle         epl2                
 tyrus-standalone-client_1.7.0.wso2v1.jar                                                            bundle         cddl1               
 synapse-commons_4.1.0.wso2v40.jar                                                                   bundle         apache2             
-org.wso2.carbon.apimgt.broker.lifecycle_9.33.118.jar                                                bundle         apache2             
 org.wso2.carbon.tenant.sso.redirector.ui_4.13.3.jar                                                 bundle         apache2             
 org.wso2.carbon.crypto.impl_1.2.3.jar                                                               bundle         apache2             
 org.wso2.carbon.andes.event.admin_3.4.1.jar                                                         bundle         apache2             
@@ -705,7 +701,9 @@ org.wso2.carbon.registry.ws.client_4.9.10.jar                                   
 org.wso2.carbon.event.publisher.ui_5.4.9.jar                                                        bundle         apache2             
 org.wso2.carbon.sequences_4.8.16.jar                                                                bundle         apache2             
 org.wso2.carbon.identity.role.mgt.core_5.27.21.jar                                                  bundle         apache2             
+org.wso2.carbon.apimgt.keymgt.client_9.33.119.jar                                                   bundle         apache2             
 org.eclipse.equinox.launcher_1.6.700.v20240213-1244.jar                                             bundle         epl2                
+org.wso2.carbon.apimgt.rest.api.common_9.33.119.jar                                                 bundle         apache2             
 org.wso2.carbon.identity.authz.service_1.11.1.jar                                                   bundle         apache2             
 org.wso2.carbon.user.mgt_5.27.21.jar                                                                bundle         apache2             
 org.wso2.carbon.registry.search_4.9.10.jar                                                          bundle         apache2             
@@ -751,6 +749,7 @@ org.objectweb.asm_9.2.0.jar                                                     
 commons-fileupload-jdk21_1.6.0.wso2v1.jar                                                           bundle         apache2             
 commons-io-2.17.0.jar                                                                               jarinbundle    apache2             
 org.wso2.carbon.identity.auth.valve_1.11.1.jar                                                      bundle         apache2             
+org.wso2.carbon.apimgt.api_9.33.119.jar                                                             bundle         apache2             
 org.wso2.carbon.identity.oauth_6.14.14.jar                                                          bundle         apache2             
 kaptcha_2.3.0.wso2v1.jar                                                                            bundle         apache2             
 org.wso2.carbon.identity.user.profile.ui_5.27.21.jar                                                bundle         apache2             
@@ -817,7 +816,6 @@ org.eclipse.equinox.event_1.7.0.v20240214-0846.jar                              
 org.wso2.carbon.tenant.theme.mgt_4.13.3.jar                                                         bundle         apache2             
 io.netty.buffer_4.2.12.Final.jar                                                                    bundle         apache2             
 org.wso2.carbon.user.mgt.common_5.27.21.jar                                                         bundle         apache2             
-org.wso2.carbon.apimgt.keymgt.client_9.33.118.jar                                                   bundle         apache2             
 org.wso2.carbon.rest.api.stub_4.8.16.jar                                                            bundle         apache2             
 org.wso2.carbon.registry.info_4.9.10.jar                                                            bundle         apache2             
 org.wso2.carbon.logging.updater_4.13.3.jar                                                          bundle         apache2             
@@ -843,6 +841,8 @@ jsr105_1.0.1.wso2v1.jar                                                         
 org.wso2.carbon.andes.commons_3.4.1.jar                                                             bundle         apache2             
 cqengine_2.7.0.jar                                                                                  bundle         apache2             
 org.wso2.carbon.mediation.templates.common_4.8.16.jar                                               bundle         apache2             
+org.wso2.carbon.apimgt.common.analytics_9.33.119.jar                                                bundle         apache2             
+org.wso2.carbon.apimgt.jms.listener_9.33.119.jar                                                    bundle         apache2             
 org.wso2.carbon.event.input.adapter.mqtt_5.4.9.jar                                                  bundle         apache2             
 org.wso2.carbon.event.input.adapter.kafka_5.4.9.jar                                                 bundle         apache2             
 org.wso2.carbon.identity.tenant.resource.manager_1.14.1.jar                                         bundle         apache2             
