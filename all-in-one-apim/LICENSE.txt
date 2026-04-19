@@ -1,4 +1,3 @@
-all-in-one-apim/LICENSE.txt
 This product is licensed by WSO2 LLC. under Apache License 2.0. The license
 can be downloaded from the following locations:
 	http://www.apache.org/licenses/LICENSE-2.0.html
@@ -12,7 +11,7 @@ At the bottom of this file is a table that shows what each license indicated
 below is and where the actual text of the license can be found.
 
 
-Name                                                                                                TYPE           License             
+Name                                                                                                Type           License             
 _________________________________________________________________________________________________________________________________________________
 org.wso2.carbon.apimgt.encryption.key.generator-9.33.118.jar                                        bundle         apache2             
 org.wso2.carbon.bootstrap-4.11.18.jar                                                               bundle         apache2             
