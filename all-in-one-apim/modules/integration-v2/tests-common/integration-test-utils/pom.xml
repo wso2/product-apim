@@ -36,7 +36,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
+            <version>${google.code.gson.version}</version>
         </dependency>
 
         <dependency>
@@ -95,7 +95,6 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <version>${carbon.apimgt.api.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.ops4j.pax.logging</groupId>
@@ -115,7 +114,6 @@
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.utils</artifactId>
-            <version>${carbon.utils.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.ops4j.pax.logging</groupId>
