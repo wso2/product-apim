@@ -798,6 +798,11 @@
                 <version>${org.slf4j.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.skyscreamer</groupId>
+                <artifactId>jsonassert</artifactId>
+                <version>${org.skyscreamer.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.ws.security.wso2</groupId>
                 <artifactId>wss4j</artifactId>
                 <version>${wss4j.version}</version>
@@ -1599,6 +1604,7 @@
 
         <slf4j.version>1.7.36</slf4j.version>
         <logback.version>1.2.11</logback.version>
+        <org.skyscreamer.version>1.5.0</org.skyscreamer.version>
     </properties>
 
 </project>

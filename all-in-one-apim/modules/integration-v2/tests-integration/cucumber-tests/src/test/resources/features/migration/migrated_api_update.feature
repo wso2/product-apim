@@ -72,23 +72,33 @@ Feature: Migrated API Updates
     When I retrieve the "apis" resource with id "<apiID>"
     And I put the response payload in context as "<apiUpdatePayload>"
     # Extract the current operations array from the payload
-    And I get the value from json payload "<apiUpdatePayload>" at path "<configType>" and store it as "<updatedConfigValue>"
+    And I get the value from json payload "<apiUpdatePayload>" at path "operations" and store it as "<operationArray>"
     # Append the new resource to the extracted operations array
-    And I append the following value to the json array "<updatedConfigValue>":
+    And I append the following value to the json array "<operationArray>":
       """
       <configValue>
       """
     # Update the API payload with the modified operations array
-    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value from context "<updatedConfigValue>"
+    When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "operations" and value from context "<operationArray>"
     Then The response status code should be 200
-    When I retrieve the "apis" resource with id "<apiID>"
-    And The "apis" resource should reflect the updated "<configType>" as value from context "<updatedConfigValue>"
 
-# Modify Rest APIs with existing scopes
+    # Validate the added resource and scopes in the response
+    When I retrieve the "apis" resource with id "<apiID>"
+    And I put the response payload in context as "<apiResponsePayload>"
+    And I extract response field "operations" and store it as "<responseOperationArray>"
+    Then I find the resource with following properties in "<responseOperationArray>" as "<newlyAddedResourceInResponse>"
+      | verb   | <expectedVerb>   |
+      | target | <expectedTarget> |
+    And I extract field "scopes" from json payload "<newlyAddedResourceInResponse>" and store it as "<newlyAddedScopes>"
+    And the actual value of "<newlyAddedScopes>" should match the expected value:
+      """
+      <scopes>
+      """
+
     Examples:
-      | apiID            |  apiUpdatePayload      | configType   | updatedConfigValue    | configValue                                                                                           |
-      | RestApiId        | ADPRestAPIPayload      | operations   | operationArray        | {"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-local-scope-without-roles"],"amznResourceTimeout":null,"authType":"Application & Application User","operationHubPolicies":[]}    |
-      | GraphQLApiId     | ADPGraphQLAPIPayload   | operations   | operationArray        | {"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"/newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-admin","adp-film-subscriber"],"amznResourceTimeout":null,"authType":"Application & Application User","operationHubPolicies":[]}   |
+      | apiID        | apiUpdatePayload     | expectedVerb | expectedTarget      | scopes                               | configValue |
+      | RestApiId    | ADPRestAPIPayload    | POST         | newlyAddedResource  | ["adp-local-scope-without-roles"]    | {"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"POST","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-local-scope-without-roles"],"amznResourceTimeout":null,"authType":"Application & Application User","operationHubPolicies":[]} |
+      | GraphQLApiId | ADPGraphQLAPIPayload | QUERY        | newlyAddedResource  | ["adp-admin","adp-film-subscriber"]  | {"payloadSchema":null,"operationPolicies":{"request":[],"response":[],"fault":[]},"verb":"QUERY","uriMapping":null,"throttlingPolicy":"Unlimited","target":"newlyAddedResource","amznResourceContentEncode":null,"usedProductIds":[],"amznResourceName":null,"id":"","scopes":["adp-admin","adp-film-subscriber"],"amznResourceTimeout":null,"authType":"Application & Application User","operationHubPolicies":[]} |
 
 
 # Step 5: Custom properties (refer artifacts/payloads/MigratedAPIs for existing configs)
