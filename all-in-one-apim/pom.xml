@@ -799,6 +799,11 @@
                 <version>${org.slf4j.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.skyscreamer</groupId>
+                <artifactId>jsonassert</artifactId>
+                <version>${org.skyscreamer.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.ws.security.wso2</groupId>
                 <artifactId>wss4j</artifactId>
                 <version>${wss4j.version}</version>
@@ -1669,7 +1674,7 @@
         <toml4j.version>0.7.2</toml4j.version>
         <logback.version>1.2.11</logback.version>
         <org.codehaus.mojo.plugin.version>3.1.0</org.codehaus.mojo.plugin.version>
-
+        <org.skyscreamer.version>1.5.0</org.skyscreamer.version>
     </properties>
 
 </project>
