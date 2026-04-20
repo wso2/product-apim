@@ -35,6 +35,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONTokener;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
@@ -146,7 +148,7 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "subscriptions/" + subscriptionId;
     }
 
-    public static String getAllSubscriptionsURL(String baseUrl,String apiId, String applicationId, String groupId,
+    public static String getAllSubscriptionsURL(String baseUrl, String apiId, String applicationId, String groupId,
                                                 Integer offset, Integer limit) {
 
         if (StringUtils.isBlank(apiId) && StringUtils.isBlank(applicationId)) {
@@ -183,11 +185,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications";
     }
 
-    public static String getApplicationSearchURL(String baseUrl, String applicationName ) {
+    public static String getApplicationSearchURL(String baseUrl, String applicationName) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications?query=" + URLEncoder.encode(applicationName, StandardCharsets.UTF_8);
     }
 
-    public static String getApiSearchURL(String baseUrl, String query ) {
+    public static String getApiSearchURL(String baseUrl, String query) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
     }
 
@@ -208,7 +210,7 @@ public class Utils {
     }
 
     public static String getApplicationAllKeys(String baseUrl, String applicationId) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys" ;
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys";
     }
 
     public static String getGenerateApplicationSecretURL(String baseUrl, String applicationId, String keyMappingId) {
@@ -232,7 +234,7 @@ public class Utils {
     }
 
     public static String getGenerateAPIKeyURL(String baseUrl, String applicationId) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION/generate" ;
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION/generate";
     }
 
     public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
@@ -328,7 +330,7 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-graphql-schema";
     }
 
-    public static String getAPIProvider(String baseUrl,String apiId, String providerName ) {
+    public static String getAPIProvider(String baseUrl, String apiId, String providerName) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "apis/" + apiId + "/change-provider?provider=" + providerName;
     }
 
@@ -550,9 +552,8 @@ public class Utils {
      * Evaluates the given XPath on the SOAP/XML string and returns the text of all
      * matched elements.
      *
-     *
-     * @param soapXml         XML content
-     * @param axiomXPathExpr  XPath expression selecting elements
+     * @param soapXml        XML content
+     * @param axiomXPathExpr XPath expression selecting elements
      * @return list of text values from matched elements
      * @throws JaxenException if the XPath is invalid or evaluation fails
      */
@@ -594,7 +595,7 @@ public class Utils {
      *
      * @param value the JSON value as a string
      * @return the parsed value as a JSONObject, JSONArray, String,
-     *         Number, Boolean, or JSONObject.NULL
+     * Number, Boolean, or JSONObject.NULL
      * @throws IllegalArgumentException if the input is null, blank, or invalid JSON
      */
     public static Object parseConfigValue(String value) {
@@ -614,14 +615,6 @@ public class Utils {
      * @param key      key to look up in the JSON content
      * @return value associated with the key
      * @throws Exception if the file is missing, unreadable, or the key is not found
-     */
-    /**
-     * Reads a key-value file from the classpath and returns the value for the given key.
-     *
-     * @param filePath path to the file
-     * @param key lookup key
-     * @return value mapped to the key as Object
-     * @throws Exception if the file is missing or the key is not found
      */
     public static Object getValueFromFileByKey(String filePath, String key) throws Exception {
         InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream(filePath);
@@ -698,7 +691,7 @@ public class Utils {
     /**
      * Returns the first JSON object in the given array that matches all provided key-value pairs.
      *
-     * @param list the JSON array containing objects to search
+     * @param list     the JSON array containing objects to search
      * @param criteria map of field names and expected values to match
      * @return the matching JSON object
      * @throws AssertionError if no matching object is found
@@ -724,5 +717,55 @@ public class Utils {
             }
         }
         throw new AssertionError("No matching resource found for criteria: " + criteria);
+    }
+
+    /**
+     * Asserts that the actual configuration value matches the expected value.
+     * Supports booleans, numbers, JSON arrays, JSON objects, and strings.
+     *
+     * @param actualValue   the actual value to compare
+     * @param expectedValue the expected value as a string
+     * @throws AssertionError if values do not match
+     */
+    public static void assertConfigValueMatchesExpectedValue(Object actualValue, String expectedValue) {
+
+        if (StringUtils.isBlank(expectedValue)) {
+            Assert.assertNull(actualValue, "Expected null/empty but got: " + actualValue);
+            return;
+        }
+
+        if (actualValue == null) {
+            Assert.fail("Expected value '" + expectedValue + "' but got null");
+        }
+
+        try {
+            switch (actualValue) {
+                case Boolean b -> {
+                    Assert.assertEquals(String.valueOf(actualValue), expectedValue, "Boolean values do not match");
+                    return;
+                }
+                case Number number -> {
+                    Assert.assertEquals(String.valueOf(actualValue), expectedValue, "Numeric values do not match");
+                    return;
+                }
+                case JSONArray actualArray -> {
+                    JSONArray expectedArray = new JSONArray(expectedValue);
+                    JSONAssert.assertEquals(expectedArray, actualArray, JSONCompareMode.LENIENT);
+                    return;
+                }
+                case JSONObject actualObject -> {
+                    JSONObject expectedObject = new JSONObject(expectedValue);
+                    JSONAssert.assertEquals(expectedObject, actualObject, JSONCompareMode.LENIENT);
+                    return;
+                }
+                default -> {
+                }
+            }
+
+            Assert.assertEquals(String.valueOf(actualValue), expectedValue, "String values do not match");
+        } catch (Exception e) {
+            log.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
+            throw new AssertionError("Comparison failed: " + e.getMessage(), e);
+        }
     }
 }

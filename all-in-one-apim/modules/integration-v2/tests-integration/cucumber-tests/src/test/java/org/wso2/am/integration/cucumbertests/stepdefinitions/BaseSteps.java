@@ -310,6 +310,37 @@ public class BaseSteps {
     }
 
     /**
+     * Extracts a field or JSONPath value from a JSON payload stored in TestContext
+     * and stores the extracted value back in TestContext.
+     *
+     * @param sourceContextKey context key containing the source JSON payload
+     * @param fieldPath field name or JSONPath to extract from the stored payload
+     * @param targetContextKey context key under which the extracted value should be stored
+     * @throws IOException if the source payload is missing or the field is not found
+     */
+    @And("I extract field {string} from json payload {string} and store it as {string}")
+    public void iExtractFieldFromJsonPayloadAndStoreItAs(String fieldPath, String sourceContextKey,
+                                                         String targetContextKey) throws IOException {
+
+        Object sourceValue = Utils.resolveFromContext(sourceContextKey);
+
+        Object value = Utils.extractValueFromPayload(String.valueOf(sourceValue), fieldPath);
+        if (value == null) {
+            throw new IOException("No value found in payload for field: " + fieldPath);
+        }
+
+        if (value instanceof net.minidev.json.JSONArray) {
+            value = new JSONArray(value.toString());
+        } else if (value instanceof net.minidev.json.JSONObject) {
+            value = new JSONObject(value.toString());
+        }
+
+        TestContext.set(Utils.normalizeContextKey(targetContextKey), value);
+        System.out.println("Extracted value for field '" + fieldPath + "' from payload '"
+                + sourceContextKey + "': " + value);
+    }
+
+    /**
      * Extracts a field value from a JSONObject stored in TestContext and stores it under another key.
      *
      * @param sourceKey TestContext key containing the JSONObject
@@ -697,5 +728,18 @@ public class BaseSteps {
 
         JSONObject matchedObject = Utils.findMatchingJsonObjectInArray(jsonArray, expectedProperties);
         TestContext.set(Utils.normalizeContextKey(outputKey), matchedObject);
+    }
+
+    /**
+     * Verifies that the actual value stored in context matches the expected value.
+     *
+     * @param actualKey TestContext key containing the actual value
+     * @param expectedValue expected value as a string
+     */
+    @Then("the actual value of {string} should match the expected value:")
+    public void theActualValueShouldMatchTheExpectedValue(String actualKey, String expectedValue) {
+
+        Object actualValue = Utils.resolveFromContext(actualKey);
+        Utils.assertConfigValueMatchesExpectedValue(actualValue, expectedValue);
     }
 }
