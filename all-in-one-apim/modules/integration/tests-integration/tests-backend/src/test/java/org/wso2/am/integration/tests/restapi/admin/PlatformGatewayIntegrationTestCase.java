@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.restapi.admin;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -35,11 +36,11 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.CreatePlatformGatewayRequestDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
-import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.GatewayListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.GatewayResponseWithTokenDTO;
 import org.wso2.am.integration.clients.admin.api.dto.PlatformGatewayResponseDTO;
 import org.wso2.am.integration.clients.admin.api.dto.UpdatePlatformGatewayRequestDTO;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -50,12 +51,10 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for platform (Universal) gateway admin APIs, environment surfacing,
@@ -64,7 +63,7 @@ import java.util.concurrent.TimeoutException;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest {
 
-    private static final String GATEWAY_TYPE_UNIVERSAL = "Universal";
+    private static final String GATEWAY_TYPE_PLATFORM = "APIPlatform";
     private static final String INTERNAL_DATA_V1 = "https://localhost:9943/internal/data/v1";
     private static final String WS_GATEWAY_CONNECT_PATH = "/ws/gateways/connect";
 
@@ -85,7 +84,7 @@ public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest 
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() throws APIManagerIntegrationTestException {
         super.init(userMode);
     }
 
@@ -122,34 +121,72 @@ public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest 
         this.lastRegistrationToken = token;
     }
 
+    /**
+     * Resolves the deploy-target environment view for a platform gateway. {@code GET /environments}
+     * intentionally omits platform gateways; {@code GET /environments/{id}} includes them by gateway UUID.
+     */
     private EnvironmentDTO findUniversalEnv(String gatewayId) throws ApiException {
-        ApiResponse<EnvironmentListDTO> envs = restAPIAdmin.getEnvironments();
-        List<EnvironmentDTO> list = envs.getData().getList();
-        if (list == null) {
+        try {
+            ApiResponse<EnvironmentDTO> res = restAPIAdmin.getEnvironment(gatewayId);
+            if (res.getStatusCode() != HttpStatus.SC_OK || res.getData() == null) {
+                return null;
+            }
+            EnvironmentDTO e = res.getData();
+            if (GATEWAY_TYPE_PLATFORM.equals(e.getGatewayType()) && gatewayId.equals(e.getId())) {
+                return e;
+            }
+            return null;
+        } catch (ApiException e) {
+            if (e.getCode() == HttpStatus.SC_NOT_FOUND) {
+                return null;
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Connection state from {@code GET /gateways} ({@link PlatformGatewayResponseDTO#isIsActive()}).
+     * Use this instead of parsing {@link EnvironmentDTO#getAdditionalProperties()} / {@code status}: the environment
+     * deploy-target DTO often omits or mis-deserializes those fields in the integration client, while the platform
+     * gateway API mirrors persisted DB {@code isActive} reliably.
+     */
+    private Boolean readPlatformGatewayIsActive(String gatewayId) throws ApiException {
+        ApiResponse<GatewayListDTO> res = restAPIAdmin.getPlatformGateways();
+        if (res.getStatusCode() != HttpStatus.SC_OK || res.getData() == null || res.getData().getList() == null) {
             return null;
         }
-        for (EnvironmentDTO e : list) {
-            if (GATEWAY_TYPE_UNIVERSAL.equals(e.getGatewayType()) && gatewayId.equals(e.getId())) {
-                return e;
+        for (PlatformGatewayResponseDTO g : res.getData().getList()) {
+            if (gatewayId.equals(g.getId())) {
+                return g.isIsActive();
             }
         }
         return null;
     }
 
-    private void awaitUniversalEnvStatus(String gatewayId, EnvironmentDTO.StatusEnum expected, long timeoutMs)
+    /** Polls {@link #readPlatformGatewayIsActive} until it matches {@code expectConnected} (true = CP marks gateway active). */
+    private void awaitUniversalEnvConnected(String gatewayId, boolean expectConnected, long timeoutMs)
             throws Exception {
 
         long deadline = System.currentTimeMillis() + timeoutMs;
-        EnvironmentDTO found = null;
+        Boolean last = null;
         while (System.currentTimeMillis() < deadline) {
-            found = findUniversalEnv(gatewayId);
-            if (found != null && expected.equals(found.getStatus())) {
+            last = readPlatformGatewayIsActive(gatewayId);
+            if (last != null && last.booleanValue() == expectConnected) {
                 return;
             }
             Thread.sleep(500L);
         }
-        Assert.fail("Timed out waiting for Universal environment " + gatewayId + " status " + expected
-                + (found == null ? " (not found)" : " (last status=" + found.getStatus() + ")"));
+        Assert.fail("Timed out waiting for platform gateway " + gatewayId + " connected=" + expectConnected
+                + " (last GET /gateways isActive=" + last + ")");
+    }
+
+    /**
+     * WebSocket client that trusts all TLS certs (integration only), required for {@code wss://localhost:9943}.
+     */
+    private WebSocketClient newInternalDataWebSocketClient() {
+        SslContextFactory sslContextFactory = new SslContextFactory();
+        sslContextFactory.setTrustAll(true);
+        return new WebSocketClient(sslContextFactory);
     }
 
     @Test
@@ -249,10 +286,15 @@ public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest 
         registerForCleanup(gatewayId, created.getData().getRegistrationToken());
 
         EnvironmentDTO env = findUniversalEnv(gatewayId);
-        Assert.assertNotNull(env, "Platform gateway should appear in GET /environments");
-        Assert.assertEquals(env.getGatewayType(), GATEWAY_TYPE_UNIVERSAL);
-        Assert.assertEquals(env.getStatus(), EnvironmentDTO.StatusEnum.INACTIVE);
-        Assert.assertNotNull(env.getVhost());
+        Assert.assertNotNull(env, "Platform gateway should be retrievable as GET /environments/{gatewayId}");
+        Assert.assertEquals(env.getGatewayType(), GATEWAY_TYPE_PLATFORM);
+        Boolean active = readPlatformGatewayIsActive(gatewayId);
+        Assert.assertNotNull(active, "Created gateway should appear in GET /gateways");
+        Assert.assertFalse(active, "Gateway should not be active before WebSocket connect (GET /gateways isActive)");
+        Assert.assertTrue((env.getVhost() != null)
+                        || (env.getVhosts() != null && !env.getVhosts().isEmpty()
+                        && StringUtils.isNotBlank(env.getVhosts().get(0).getHost())),
+                "Environment should expose gateway host via vhost or vhosts");
     }
 
     @Test
@@ -264,7 +306,7 @@ public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest 
         String token = created.getData().getRegistrationToken();
         registerForCleanup(gatewayId, token);
 
-        WebSocketClient client = new WebSocketClient();
+        WebSocketClient client = newInternalDataWebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
         try {
@@ -276,10 +318,10 @@ public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest 
             Assert.assertTrue(session.isOpen(), "WebSocket session should be open after successful connect");
             socket.getLatch().await(5L, TimeUnit.SECONDS);
 
-            awaitUniversalEnvStatus(gatewayId, EnvironmentDTO.StatusEnum.ACTIVE, 15000L);
+            awaitUniversalEnvConnected(gatewayId, true, 15000L);
 
             session.close();
-            awaitUniversalEnvStatus(gatewayId, EnvironmentDTO.StatusEnum.INACTIVE, 15000L);
+            awaitUniversalEnvConnected(gatewayId, false, 15000L);
         } finally {
             client.stop();
         }
@@ -287,7 +329,7 @@ public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest 
 
     @Test
     public void testWebSocketRejectedForInvalidRegistrationToken() throws Exception {
-        WebSocketClient client = new WebSocketClient();
+        WebSocketClient client = newInternalDataWebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
         try {
@@ -295,12 +337,24 @@ public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest 
             ClientUpgradeRequest request = new ClientUpgradeRequest();
             request.setHeader("api-key", "definitely-not-a-valid-platform-gateway-token");
             Future<Session> future = client.connect(socket, wsUri, request);
+            Session session;
             try {
-                future.get(15, TimeUnit.SECONDS);
-                Assert.fail("Connect should fail for invalid api-key");
-            } catch (ExecutionException | TimeoutException ok) {
-                // Jetty fails the upgrade when the server closes with 4401.
+                session = future.get(15, TimeUnit.SECONDS);
+            } catch (ExecutionException e) {
+                // Handshake failed before a session was established.
+                return;
             }
+            /*
+             * JSR-356/Jetty may complete the connect future after the HTTP upgrade even when the server
+             * closes in @OnOpen with 4401 (Unauthorized). Reject invalid tokens by asserting the session
+             * does not stay open.
+             */
+            long deadline = System.currentTimeMillis() + 5000L;
+            while (session.isOpen() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(100L);
+            }
+            Assert.assertFalse(session.isOpen(),
+                    "Invalid api-key must close the WebSocket (server uses close code 4401)");
         } finally {
             client.stop();
         }
