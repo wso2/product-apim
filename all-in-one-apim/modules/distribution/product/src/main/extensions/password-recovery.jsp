@@ -210,9 +210,9 @@
                             String callback = request.getParameter("callback");
 
                             // Validate the callback URL
-                            if (!StringUtils.isBlank(callback)
-                                    && !StringUtils.equalsIgnoreCase(callback, "null")
-                                    && !AuthenticationEndpointUtil.isValidMultiOptionURI(callback)) {
+                            if (StringUtils.isBlank(callback) 
+                                    || StringUtils.equalsIgnoreCase(callback, "null")
+                                    || !AuthenticationEndpointUtil.isValidMultiOptionURI(callback)) {
                                 callback = null;
                             }
 
