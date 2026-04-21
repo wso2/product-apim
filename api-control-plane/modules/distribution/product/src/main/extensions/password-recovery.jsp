@@ -210,10 +210,13 @@
                             String callback = request.getParameter("callback");
 
                             // Validate the callback URL
-                            if (!StringUtils.isBlank(callback)
-                                    && !StringUtils.equalsIgnoreCase(callback, "null")
-                                    && !AuthenticationEndpointUtil.isValidMultiOptionURI(callback)) {
+                             if (StringUtils.isBlank(callback) || StringUtils.equalsIgnoreCase(callback, "null")) {
                                 callback = null;
+                            } else {
+                                String encodedCallback = IdentityManagementEndpointUtil.getURLEncodedCallback(callback);
+                                if (!AuthenticationEndpointUtil.isValidMultiOptionURI(encodedCallback)) {
+                                    callback = null;
+                                }
                             }
 
                             if (callback != null) {

@@ -54,10 +54,13 @@
     /**
      * Validate the back to login URL.
      */
-    if (!StringUtils.isBlank(callback)
-            && !StringUtils.equalsIgnoreCase(callback, "null")
-            && !AuthenticationEndpointUtil.isValidMultiOptionURI(callback)) {
+    if (StringUtils.isBlank(callback) || StringUtils.equalsIgnoreCase(callback, "null")) {
         callback = null;
+    } else {
+        String encodedCallback = IdentityManagementEndpointUtil.getURLEncodedCallback(callback);
+        if (!AuthenticationEndpointUtil.isValidMultiOptionURI(encodedCallback)) {
+            callback = null;
+        }
     }
 
     boolean isCallBackUrlEmpty = StringUtils.isBlank(callback);
@@ -189,14 +192,17 @@
                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                                     "If.you.specify.tenant.domain.you.registered.under.super.tenant")%>
                         </p>
-                        <input id="callback" name="callback" type="hidden" value="<%=callback%>"
-                               class="form-control" required>
+
+                        <input id="callback" name="callback" type="hidden"
+                               value="<%=Encode.forHtmlAttribute(callback)%>" class="form-control">
+
 
                         <% Map<String, String[]> requestMap = request.getParameterMap();
                             for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
                                 String key = Encode.forHtmlAttribute(entry.getKey());
                                 String value = Encode.forHtmlAttribute(entry.getValue()[0]);
-                                if (StringUtils.equalsIgnoreCase("reCaptcha", key)) {
+                                if (StringUtils.equalsIgnoreCase("reCaptcha", key) 
+                                    || StringUtils.equalsIgnoreCase("callback", key)) {
                                     continue;
                                 } %>
                         <div class="field">
