@@ -1,0 +1,2 @@
+[encryption]
+internal_crypto_provider = "org.wso2.carbon.crypto.provider.KeyStoreBasedInternalCryptoProvider"

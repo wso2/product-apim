@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) 2025, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>org.wso2.am.integration.common</artifactId>
+        <groupId>org.wso2.am</groupId>
+        <version>4.7.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>testcontainers</artifactId>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skipCertificateFetch>true</skipCertificateFetch>
+        <!-- Docker extra hosts for host.docker.internal resolution (needed on Linux/CI) -->
+        <docker.extra.hosts></docker.extra.hosts>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>integration-test-utils</artifactId>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>start-server</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>python3</executable>
+                            <async>true</async>
+                            <workingDirectory>${project.basedir}/../../../distribution/product/target</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>http.server</argument>
+                                <argument>8000</argument>
+                                <argument>--bind</argument>
+                                <argument>0.0.0.0</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>wait-for-server</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>for i in {1..30}; do if curl -s http://localhost:8000/ &gt; /dev/null 2&gt;&amp;1; then echo "HTTP server is ready"; exit 0; fi; echo "Waiting for HTTP server... ($i/30)"; sleep 1; done; echo "HTTP server failed to start"; exit 1</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-node-app-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>-t</argument>
+                                <argument>${node.docker.image.name}</argument>
+                                <argument>${project.basedir}/src/main/resources/nodeapps</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-apim-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>
+                                    docker build ${docker.extra.hosts} https://github.com/wso2/docker-apim.git#master:dockerfiles/ubuntu/apim \
+                                    -t ${apim.docker.image.name} \
+                                    --build-arg WSO2_SERVER_VERSION=${apim.server.version} \
+                                    --build-arg WSO2_SERVER_ZIP_VERSION=${apim.server.version} \
+                                    --build-arg WSO2_SERVER=${apim.server.name} \
+                                    --build-arg WSO2_SERVER_DIST_URL=http://host.docker.internal:8000/${apim.server.name}.zip
+                                </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
