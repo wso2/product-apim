@@ -30,6 +30,7 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.CreatePlatformGatewayRequestDTO;
 import org.wso2.am.integration.clients.admin.api.dto.GatewayResponseWithTokenDTO;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -76,7 +77,7 @@ public class PlatformGatewayPublisherDeployIntegrationTestCase extends APIMInteg
     }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() throws APIManagerIntegrationTestException {
         super.init(userMode);
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice/";
     }
