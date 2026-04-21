@@ -194,6 +194,11 @@
                         <additionalJOption>-Xdoclint:none</additionalJOption>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${org.codehaus.mojo.plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -1186,6 +1191,76 @@
                 <artifactId>json-path</artifactId>
                 <version>${com.jayway.jsonpath.version}</version>
             </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-toml</artifactId>
+                <version>${jackson-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons.lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apache.httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>integration-test-utils</artifactId>
+                <version>${project.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-java</artifactId>
+                <version>${cucumber.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-testng</artifactId>
+                <version>${cucumber.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-picocontainer</artifactId>
+                <version>${cucumber.picocontainer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.moandjiezana.toml</groupId>
+                <artifactId>toml4j</artifactId>
+                <version>${toml4j.version}</version>
+            </dependency>
+
             <!-- JMS 2.0 API dependency -->
             <dependency>
                 <groupId>javax.jms</groupId>
@@ -1581,18 +1656,19 @@
         <semantic-model-routing.policy.version>v1.0</semantic-model-routing.policy.version>
         <intelligent-model-routing.policy.version>v1.0</intelligent-model-routing.policy.version>
 
-        <cucumber.version>7.22.0</cucumber.version>
+        <cucumber.version>7.0.0</cucumber.version>
         <cucumber.picocontainer.version>7.22.0</cucumber.picocontainer.version>
         <testng.version>7.4.0</testng.version>
         <testcontainers.version>2.0.2</testcontainers.version>
 
-        <commons.lang3.version>3.0</commons.lang3.version>
+        <commons.lang3.version>3.17.0</commons.lang3.version>
         <commons.io.version>2.18.0</commons.io.version>
         <apache.httpclient.version>4.5.14</apache.httpclient.version>
 
         <json.version>20250107</json.version>
         <toml4j.version>0.7.2</toml4j.version>
         <logback.version>1.2.11</logback.version>
+        <org.codehaus.mojo.plugin.version>3.1.0</org.codehaus.mojo.plugin.version>
 
     </properties>
 
