@@ -20,7 +20,6 @@ package org.wso2.am.integration.tests.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import jdk.internal.joptsimple.internal.Strings;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
@@ -213,7 +212,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         //publish the api
         restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction(), null);
 
-        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, Strings.EMPTY,
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, "",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
 
@@ -234,7 +233,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         requestHeaders.put(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
         requestHeaders.put(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
         HttpResponse apiInvokeResponse = HttpRequestUtil.doGet(
-                getAPIInvocationURLHttps(APIContext.replace(File.separator, Strings.EMPTY), APIVersion)
+                getAPIInvocationURLHttps(APIContext.replace(File.separator, ""), APIVersion)
                         + File.separator + API_ENDPOINT_METHOD, requestHeaders);
         Assert.assertEquals(apiInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 RESPONSE_CODE_MISMATCH_ERROR_MESSAGE);
@@ -331,7 +330,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         apiInvokeResponse = HttpRequestUtil.doGet(
-                getAPIInvocationURLHttps(APIContext.replace(File.separator, Strings.EMPTY), APIVersion)
+                getAPIInvocationURLHttps(APIContext.replace(File.separator, ""), APIVersion)
                         + File.separator + API_ENDPOINT_METHOD, requestHeaders);
         Assert.assertEquals(apiInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 RESPONSE_CODE_MISMATCH_ERROR_MESSAGE);
@@ -625,7 +624,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         restAPIPublisher.changeAPILifeCycleStatus(soapApiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // Create application and subscribe
-        HttpResponse applicationResponse = restAPIStore.createApplication(SOAP_APPLICATION_NAME, Strings.EMPTY,
+        HttpResponse applicationResponse = restAPIStore.createApplication(SOAP_APPLICATION_NAME, "",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         soapApplicationId = applicationResponse.getData();
@@ -701,7 +700,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         APIDTO apiByRevisionSoap = restAPIPublisher.getAPIByID(soapApiRevisionUUID);
         Assert.assertNotNull(apiByRevisionSoap, "SOAP API retrieved by revision should not be null");
         Assert.assertEquals(apiByRevisionSoap.getProvider(), originalProvider,
-                "SOAP API provider from revision should match new provider");
+                "SOAP API provider from revision should match original provider");
 
         // Get WSDL using revision UUID after provider change
         org.wso2.am.integration.clients.publisher.api.ApiResponse<Void> wsdlByRevision =
@@ -767,7 +766,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         restAPIPublisher.changeAPILifeCycleStatus(soapToRestApiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // Create application and subscribe
-        HttpResponse applicationResponse = restAPIStore.createApplication(SAPTOREST_APPLICATION_NAME, Strings.EMPTY,
+        HttpResponse applicationResponse = restAPIStore.createApplication(SAPTOREST_APPLICATION_NAME, "",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         soapToRestApplicationId = applicationResponse.getData();
@@ -936,7 +935,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         APIDTO apiByRevisionSoapToRest = restAPIPublisher.getAPIByID(soapToRestRevisionUUID);
         Assert.assertNotNull(apiByRevisionSoapToRest, "SOAPTOREST API retrieved by revision should not be null");
         Assert.assertEquals(apiByRevisionSoapToRest.getProvider(), originalProvider,
-                "SOAPTOREST API provider from revision should match new provider");
+                "SOAPTOREST API provider from revision should match original provider");
 
         // Get Swagger using revision UUID after provider change
         String swaggerByRevisionSoapToRest = restAPIPublisher.getSwaggerByID(soapToRestRevisionUUID);
@@ -1017,7 +1016,7 @@ public class ChangeApiProviderSecondaryUserStoreTestCase extends APIMIntegration
         restAPIPublisher.changeAPILifeCycleStatus(graphqlApiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
         // 4. Create application and subscribe
-        HttpResponse applicationResponse = restAPIStore.createApplication(GRAPHQL_APPLICATION_NAME, Strings.EMPTY,
+        HttpResponse applicationResponse = restAPIStore.createApplication(GRAPHQL_APPLICATION_NAME, "",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         graphqlApplicationId = applicationResponse.getData();

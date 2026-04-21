@@ -283,7 +283,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         APIDTO apiByRevision = restAPIPublisher.getAPIByID(revisionUUID);
         Assert.assertNotNull(apiByRevision, "API retrieved by revision should not be null");
         Assert.assertEquals(apiByRevision.getProvider(), originalProvider,
-                "API provider from revision should match new provider");
+                "API provider from revision should match original provider");
 
         // Get swagger using revision ID after provider change
         String swaggerByRevision = restAPIPublisher.getSwaggerByID(revisionUUID);
@@ -695,7 +695,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         APIDTO apiByRevisionSoap = restAPIPublisher.getAPIByID(soapApiRevisionUUID);
         Assert.assertNotNull(apiByRevisionSoap, "SOAP API retrieved by revision should not be null");
         Assert.assertEquals(apiByRevisionSoap.getProvider(), originalProvider,
-                "SOAP API provider from revision should match new provider");
+                "SOAP API provider from revision should match original provider");
 
         // Get WSDL using revision UUID after provider change
         org.wso2.am.integration.clients.publisher.api.ApiResponse<Void> wsdlByRevision =
@@ -932,7 +932,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         APIDTO apiByRevisionSoapToRest = restAPIPublisher.getAPIByID(soapToRestRevisionUUID);
         Assert.assertNotNull(apiByRevisionSoapToRest, "SOAPTOREST API retrieved by revision should not be null");
         Assert.assertEquals(apiByRevisionSoapToRest.getProvider(), originalProvider,
-                "SOAPTOREST API provider from revision should match new provider");
+                "SOAPTOREST API provider from revision should match original provider");
 
         // Get Swagger using revision UUID after provider change
         String swaggerByRevisionSoapToRest = restAPIPublisher.getSwaggerByID(soapToRestRevisionUUID);
