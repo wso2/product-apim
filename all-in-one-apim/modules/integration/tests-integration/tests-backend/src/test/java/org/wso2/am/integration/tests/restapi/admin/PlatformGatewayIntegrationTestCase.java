@@ -36,6 +36,7 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.CreatePlatformGatewayRequestDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.GatewayListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.GatewayResponseWithTokenDTO;
 import org.wso2.am.integration.clients.admin.api.dto.PlatformGatewayResponseDTO;
@@ -49,6 +50,7 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URI;
+import java.util.UUID;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,13 +60,15 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Integration tests for platform (Universal) gateway admin APIs, environment surfacing,
- * WebSocket connect to internal data plane, and gateway-scoped internal REST (/deployments).
+ * WebSocket connect to internal data plane, and gateway-scoped internal REST (/deployments, /fetch-batch, since).
+ * Also covers: unknown environment 404, platform gateways omitted from GET /environments list.
  */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest {
 
     private static final String GATEWAY_TYPE_PLATFORM = "APIPlatform";
     private static final String INTERNAL_DATA_V1 = "https://localhost:9943/internal/data/v1";
+    private static final String INTERNAL_GATEWAY_WELL_KNOWN = "https://localhost:9943/internal/gateway/.well-known";
     private static final String WS_GATEWAY_CONNECT_PATH = "/ws/gateways/connect";
 
     private String lastCreatedGatewayId;
@@ -380,6 +384,84 @@ public class PlatformGatewayIntegrationTestCase extends APIMIntegrationBaseTest 
     public void testInternalDeploymentsGetWithoutApiKeyReturnsUnauthorized() throws Exception {
         HttpResponse res = HTTPSClientUtils.doGet(INTERNAL_DATA_V1 + "/deployments", Collections.emptyMap());
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
+    }
+
+    @Test
+    public void testInternalGatewayWellKnownReturnsDiscoveryPayload() throws Exception {
+        HttpResponse res = HTTPSClientUtils.doGet(INTERNAL_GATEWAY_WELL_KNOWN, Collections.emptyMap());
+        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK);
+
+        JSONObject json = new JSONObject(res.getData());
+        Assert.assertEquals(json.optString("gatewayPath"), "internal/data/v1",
+                "Well-known should expose internal REST base path without /ws suffix");
+        JSONObject controlPlane = json.optJSONObject("controlPlane");
+        Assert.assertNotNull(controlPlane, "Well-known payload should include controlPlane metadata");
+        Assert.assertEquals(controlPlane.optString("type"), "APIM");
+        Assert.assertTrue(StringUtils.isNotBlank(controlPlane.optString("version")),
+                "Well-known control plane version should be present");
+    }
+
+    @Test
+    public void testGetEnvironmentByUnknownIdReturnsNotFound() throws Exception {
+        try {
+            restAPIAdmin.getEnvironment(UUID.randomUUID().toString());
+            Assert.fail("Expected ApiException for non-existent environment id");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void testEnvironmentsListExcludesRegisteredPlatformGatewayByName() throws Exception {
+        String name = uniqueGatewayName();
+        ApiResponse<GatewayResponseWithTokenDTO> created =
+                restAPIAdmin.createPlatformGateway(newCreateRequest(name));
+        Assert.assertEquals(created.getStatusCode(), HttpStatus.SC_CREATED);
+        registerForCleanup(created.getData().getId(), created.getData().getRegistrationToken());
+
+        ApiResponse<EnvironmentListDTO> listRes = restAPIAdmin.getEnvironments();
+        Assert.assertEquals(listRes.getStatusCode(), HttpStatus.SC_OK);
+        if (listRes.getData() != null && listRes.getData().getList() != null) {
+            for (EnvironmentDTO e : listRes.getData().getList()) {
+                Assert.assertNotEquals(name, e.getName(),
+                        "GET /environments must not expose synthetic platform gateway environments by name");
+            }
+        }
+    }
+
+    @Test
+    public void testInternalDeploymentsGetWithSinceQueryAccepted() throws Exception {
+        ApiResponse<GatewayResponseWithTokenDTO> created =
+                restAPIAdmin.createPlatformGateway(newCreateRequest(uniqueGatewayName()));
+        registerForCleanup(created.getData().getId(), created.getData().getRegistrationToken());
+        String token = created.getData().getRegistrationToken();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("api-key", token);
+        HttpResponse res = HTTPSClientUtils.doGet(
+                INTERNAL_DATA_V1 + "/deployments?since=1970-01-01T00:00:00Z", headers);
+        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK,
+                "GET /deployments should accept optional ISO8601 since filter");
+        JSONObject json = new JSONObject(res.getData());
+        Assert.assertTrue(json.has("deployments"));
+    }
+
+    @Test
+    public void testInternalFetchBatchWithUnknownDeploymentIdsReturnsOk() throws Exception {
+        ApiResponse<GatewayResponseWithTokenDTO> created =
+                restAPIAdmin.createPlatformGateway(newCreateRequest(uniqueGatewayName()));
+        registerForCleanup(created.getData().getId(), created.getData().getRegistrationToken());
+        String token = created.getData().getRegistrationToken();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("api-key", token);
+        headers.put("Content-Type", "application/json");
+        String payload =
+                "{\"deploymentIds\":[\"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\",\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\"]}";
+        HttpResponse res = HTTPSClientUtils.doPost(INTERNAL_DATA_V1 + "/deployments/fetch-batch", headers, payload);
+        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK,
+                "fetch-batch skips unknown ids and still returns an archive envelope");
+        Assert.assertNotNull(res.getData());
     }
 
     @Test
