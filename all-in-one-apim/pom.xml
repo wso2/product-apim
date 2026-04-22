@@ -1340,7 +1340,7 @@
         <carbon.identity-inbound-auth-openid.version>5.12.2</carbon.identity-inbound-auth-openid.version>
         <org.wso2.carbon.identity.local.auth.api.version>2.6.0</org.wso2.carbon.identity.local.auth.api.version>
         <carbon.identity-local-auth-basicauth.version>6.10.0</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.11.2</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.11.3</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.10.1</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.9.0</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.5</carbon.extension.identity.oauth2.grantType.jwt.version>
