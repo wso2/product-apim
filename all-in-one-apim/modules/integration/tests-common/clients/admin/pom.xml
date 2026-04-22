@@ -74,6 +74,53 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Codegen overwrites JSON.java with stock Gson adapters; replace with epoch-millis-safe copy -->
+            <!-- Same for EnvironmentDTO: stock fromValue() only accepts ACTIVE/INACTIVE names; Jackson sends Active/Inactive -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>apply-admin-json-date-override</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.basedir}/src/gen/java/org/wso2/am/integration/clients/admin</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/openapi-overrides</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>JSON.java</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>apply-environment-dto-status-override</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.basedir}/src/gen/java/org/wso2/am/integration/clients/admin/api/dto</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/openapi-overrides/api/dto</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>EnvironmentDTO.java</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

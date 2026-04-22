@@ -810,6 +810,19 @@ public class RestAPIAdminImpl {
         return environmentsApi.environmentsGetWithHttpInfo();
     }
 
+    /**
+     * Retrieves a gateway environment by id (including APIPlatform gateways by gateway UUID).
+     * {@link #getEnvironments()} intentionally omits platform gateways; use this for deploy-target lookups.
+     *
+     * @param environmentId Gateway environment UUID (same as platform gateway id for APIPlatform type).
+     * @return API response containing {@link EnvironmentDTO}.
+     * @throws ApiException if retrieval fails or the environment does not exist.
+     */
+    public ApiResponse<EnvironmentDTO> getEnvironment(String environmentId) throws ApiException {
+
+        return environmentsApi.environmentsEnvironmentIdGetWithHttpInfo(environmentId);
+    }
+
     public ApiResponse<GatewayResponseWithTokenDTO> createPlatformGateway(
             CreatePlatformGatewayRequestDTO body) throws ApiException {
 
