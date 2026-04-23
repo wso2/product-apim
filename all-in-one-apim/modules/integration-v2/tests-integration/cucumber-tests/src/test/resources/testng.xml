@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Cucumber Test Suite">
+    <listeners>
+        <!-- Set test suite parallel mode and threads from system env at runtime  -->
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.ParallelToggleAlterSuiteListener"/>
+        <!-- Adds <test> name to MDC for per-test group logs -->
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.TestNameMdcListener"/>
+    </listeners>
+    <test name="CucumberTests">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.MigratedTenantUserInitilizationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateDeployPublishTestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.APIBoundApiKeyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedLegacyApiKeyInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIBoundApiKeyWithMigratedArtifactsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.LegacyApiKeyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.ImportOASDefinitionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.APIRuntimeConfigurationsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateAPITestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.APIVersioningTestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.APIDocumentsTestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.APIOtherCommonConfigurationsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.publisher.CreateApplicationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIVerificationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIDocumentationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIRevisionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.NewAPIProductWithMigratedAPIs"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIProductsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedSharedScopesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIDefinitionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIUpdateRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPISearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPIVersioningRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedAPILifecycleRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedOASAPIRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIPoliciesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedApplicationUpdateRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedApplicationSubscriptionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.MigratedApplicationOauthKeysRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.APIProviderChangeRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
+        </classes>
+    </test>
+    <test name="CustomHeaderTests">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.CustomHeaderSystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.header.CustomAuthorizationHeaderTestRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
+        </classes>
+    </test>
+    <test name="LegacyApplicationTests">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.LegacyApplicationSystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.MigratedTenantUserInitilizationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.legacyApplications.CreateApplicationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.migration.legacyApplications.LegacyMigratedApplicationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
+        </classes>
+    </test>
+</suite>

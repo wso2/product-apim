@@ -1,0 +1,150 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "ADPRestAPI",
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "security" : [ {
+    "default" : [ ]
+  } ],
+  "paths" : {
+    "/users/{id}" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "default" : [ "adp-local-scope-without-roles", "adp-shared-scope-without-roles" ]
+        } ],
+        "x-auth-type" : "Application & Application User",
+        "x-throttling-tier" : "Unlimited",
+        "x-wso2-application-security" : {
+          "security-types" : [ "oauth2" ],
+          "optional" : false
+        }
+      },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "default" : [ ]
+        } ],
+        "x-auth-type" : "Application & Application User",
+        "x-throttling-tier" : "Unlimited",
+        "x-wso2-application-security" : {
+          "security-types" : [ "oauth2" ],
+          "optional" : false
+        }
+      }
+    },
+    "/users" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "default" : [ "adp-local-scope-without-roles" ]
+        } ],
+        "x-auth-type" : "Application & Application User",
+        "x-throttling-tier" : "Unlimited",
+        "x-wso2-application-security" : {
+          "security-types" : [ "oauth2" ],
+          "optional" : false
+        }
+      },
+      "post" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "default" : [ "adp-shared-scope-with-roles" ]
+        } ],
+        "x-auth-type" : "Application & Application User",
+        "x-throttling-tier" : "Unlimited",
+        "x-wso2-application-security" : {
+          "security-types" : [ "oauth2" ],
+          "optional" : false
+        }
+      }
+    }
+  },
+  "components" : {
+    "securitySchemes" : {
+      "default" : {
+        "type" : "oauth2",
+        "flows" : {
+          "implicit" : {
+            "authorizationUrl" : "https://test.com",
+            "scopes" : {
+              "adp-shared-scope-with-roles" : "Shared scope with role mapping",
+              "adp-shared-scope-without-roles" : "Shared scope without role mapping",
+              "adp-local-scope-without-roles" : "ADP local scope without roles"
+            },
+            "x-scopes-bindings" : {
+              "adp-local-scope-without-roles" : "",
+              "adp-shared-scope-without-roles" : "",
+              "adp-shared-scope-with-roles" : "ADP_CREATOR,ADP_SUBSCRIBER"
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-wso2-cors" : {
+    "corsConfigurationEnabled" : false,
+    "accessControlAllowOrigins" : [ "*" ],
+    "accessControlAllowCredentials" : false,
+    "accessControlAllowHeaders" : [ "authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction", "apikey", "testKey" ],
+    "accessControlAllowMethods" : [ "GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS" ]
+  },
+  "x-wso2-production-endpoints" : {
+    "urls" : [ "http://localhost:8090/" ],
+    "type" : "http"
+  },
+  "x-wso2-sandbox-endpoints" : {
+    "urls" : [ "http://localhost:8090/" ],
+    "type" : "http"
+  },
+  "x-wso2-basePath" : "/adp-rest/1.0.0",
+  "x-wso2-transports" : [ "http", "https" ],
+  "x-wso2-application-security" : {
+    "security-types" : [ "oauth2" ],
+    "optional" : false
+  },
+  "x-wso2-response-cache" : {
+    "enabled" : false,
+    "cacheTimeoutInSeconds" : 300
+  }
+}
