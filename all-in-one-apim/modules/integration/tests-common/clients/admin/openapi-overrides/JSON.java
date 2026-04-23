@@ -11,6 +11,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.internal.bind.util.ISO8601Utils;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import com.google.gson.JsonElement;
 import io.gsonfire.GsonFireBuilder;
@@ -25,11 +26,26 @@ import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public class JSON {
+
+    private static final Map<String, Class<?>> CLASS_BY_DISCRIMINATOR_VALUE;
+
+    static {
+        Map<String, Class<?>> m = new HashMap<String, Class<?>>();
+        m.put("AdvancedThrottlePolicyInfo", AdvancedThrottlePolicyInfoDTO.class);
+        m.put("AdvancedThrottlePolicy", AdvancedThrottlePolicyDTO.class);
+        m.put("ApplicationThrottlePolicy", ApplicationThrottlePolicyDTO.class);
+        m.put("SubscriptionThrottlePolicy", SubscriptionThrottlePolicyDTO.class);
+        m.put("CustomRule", CustomRuleDTO.class);
+        m.put("ThrottlePolicy", ThrottlePolicyDTO.class);
+        CLASS_BY_DISCRIMINATOR_VALUE = Collections.unmodifiableMap(m);
+    }
+
     private Gson gson;
     private boolean isLenientOnJson = false;
     private DateTypeAdapter dateTypeAdapter = new DateTypeAdapter();
@@ -41,14 +57,7 @@ public class JSON {
                 .registerTypeSelector(ThrottlePolicyDTO.class, new TypeSelector() {
                     @Override
                     public Class getClassForElement(JsonElement readElement) {
-                        Map<String, Class> classByDiscriminatorValue = new HashMap<String, Class>();
-                        classByDiscriminatorValue.put("AdvancedThrottlePolicyInfo", AdvancedThrottlePolicyInfoDTO.class);
-                        classByDiscriminatorValue.put("AdvancedThrottlePolicy", AdvancedThrottlePolicyDTO.class);
-                        classByDiscriminatorValue.put("ApplicationThrottlePolicy", ApplicationThrottlePolicyDTO.class);
-                        classByDiscriminatorValue.put("SubscriptionThrottlePolicy", SubscriptionThrottlePolicyDTO.class);
-                        classByDiscriminatorValue.put("CustomRule", CustomRuleDTO.class);
-                        classByDiscriminatorValue.put("ThrottlePolicy", ThrottlePolicyDTO.class);
-                        return getClassByDiscriminator(classByDiscriminatorValue,
+                        return getClassByDiscriminator(CLASS_BY_DISCRIMINATOR_VALUE,
                                 getDiscriminatorValue(readElement, "type"));
                     }
           })
@@ -166,15 +175,22 @@ public class JSON {
 
         @Override
         public byte[] read(JsonReader in) throws IOException {
-            switch (in.peek()) {
-                case NULL:
-                    in.nextNull();
-                    return null;
-                default:
-                    String bytesAsBase64 = in.nextString();
-                    ByteString byteString = ByteString.decodeBase64(bytesAsBase64);
-                    return byteString.toByteArray();
+            JsonToken token = in.peek();
+            if (token == JsonToken.NULL) {
+                in.nextNull();
+                return null;
             }
+            if (token != JsonToken.STRING) {
+                throw new JsonParseException(
+                        "Expected STRING or NULL for byte[] property, got " + token);
+            }
+            String bytesAsBase64 = in.nextString();
+            ByteString byteString = ByteString.decodeBase64(bytesAsBase64);
+            if (byteString == null) {
+                throw new JsonParseException(
+                        "Invalid base64 content for byte[] property: " + bytesAsBase64);
+            }
+            return byteString.toByteArray();
         }
     }
 
@@ -219,7 +235,7 @@ public class JSON {
                     in.nextNull();
                     return null;
                 case NUMBER:
-                    return new java.sql.Date((long) in.nextDouble());
+                    return parseSqlDateFromJsonNumber(in);
                 default:
                     String date = in.nextString();
                     try {
@@ -234,6 +250,21 @@ public class JSON {
                     } catch (ParseException e) {
                         throw new JsonParseException(e);
                     }
+            }
+        }
+
+        private java.sql.Date parseSqlDateFromJsonNumber(JsonReader in) throws IOException {
+            String epochRaw = in.nextString();
+            try {
+                return new java.sql.Date(Long.parseLong(epochRaw));
+            } catch (NumberFormatException e) {
+                try {
+                    double d = Double.parseDouble(epochRaw);
+                    return new java.sql.Date((long) d);
+                } catch (NumberFormatException e2) {
+                    throw new JsonParseException(
+                            "Cannot parse sql.Date from JSON number: " + epochRaw, e2);
+                }
             }
         }
 
@@ -300,7 +331,7 @@ public class JSON {
                         in.nextNull();
                         return null;
                     case NUMBER:
-                        return new Date((long) in.nextDouble());
+                        return parseUtilDateFromJsonNumber(in);
                     default:
                         String date = in.nextString();
                         try {
@@ -318,6 +349,21 @@ public class JSON {
                 }
             } catch (IllegalArgumentException e) {
                 throw new JsonParseException(e);
+            }
+        }
+
+        private Date parseUtilDateFromJsonNumber(JsonReader in) throws IOException {
+            String epochRaw = in.nextString();
+            try {
+                return new Date(Long.parseLong(epochRaw));
+            } catch (NumberFormatException e) {
+                try {
+                    double d = Double.parseDouble(epochRaw);
+                    return new Date((long) d);
+                } catch (NumberFormatException e2) {
+                    throw new JsonParseException(
+                            "Cannot parse java.util.Date from JSON number: " + epochRaw, e2);
+                }
             }
         }
 

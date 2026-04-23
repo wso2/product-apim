@@ -77,7 +77,9 @@
             <!-- Codegen overwrites JSON.java with stock Gson adapters; replace with epoch-millis-safe copy -->
             <!-- Same for EnvironmentDTO: stock fromValue() only accepts ACTIVE/INACTIVE names; Jackson sends Active/Inactive -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
                 <executions>
                     <execution>
                         <id>apply-admin-json-date-override</id>
