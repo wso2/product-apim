@@ -96,11 +96,14 @@ return String.valueOf(value);
 }
 
 public static ModeEnum fromValue(String value) {
-    for (ModeEnum b : ModeEnum.values()) {
-    if (b.name().equals(value)) {
-        return b;
+    if (value == null) {
+        return null;
     }
-}
+    for (ModeEnum b : ModeEnum.values()) {
+        if (b.name().equalsIgnoreCase(value) || b.getValue().equalsIgnoreCase(value)) {
+            return b;
+        }
+    }
     throw new IllegalArgumentException("Unexpected value '" + value + "'");
 }
 
@@ -112,8 +115,12 @@ public static ModeEnum fromValue(String value) {
 
     @Override
     public ModeEnum read(final JsonReader jsonReader) throws IOException {
-    String value =  jsonReader.nextString();
-    return ModeEnum.fromValue(value);
+        if (jsonReader.peek() == JsonToken.NULL) {
+            jsonReader.nextNull();
+            return null;
+        }
+        String value = jsonReader.nextString();
+        return ModeEnum.fromValue(value);
     }
     }
 }
