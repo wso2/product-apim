@@ -206,7 +206,7 @@ public static StatusEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_STATUS = "status";
         @SerializedName(SERIALIZED_NAME_STATUS)
-            private StatusEnum status = StatusEnum.ACTIVE;
+            private StatusEnum status;
 
         public static final String SERIALIZED_NAME_VHOST = "vhost";
         @SerializedName(SERIALIZED_NAME_VHOST)
