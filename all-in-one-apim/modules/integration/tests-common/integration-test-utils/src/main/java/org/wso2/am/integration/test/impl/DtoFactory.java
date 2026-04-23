@@ -430,15 +430,13 @@ public class DtoFactory {
      *
      * @param name        Name of the label.
      * @param description Description of the label.
-     * @param accessUrls  Access URLs.
      * @return Created label DTO.
      */
-    public static LabelDTO createLabelDTO(String name, String description, List<String> accessUrls) {
+    public static LabelDTO createLabelDTO(String name, String description) {
 
         return new LabelDTO().
                 name(name).
-                description(description).
-                accessUrls(accessUrls);
+                description(description);
     }
 
     /**
