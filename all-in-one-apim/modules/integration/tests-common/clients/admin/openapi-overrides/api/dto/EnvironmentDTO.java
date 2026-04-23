@@ -127,6 +127,7 @@ public static ModeEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_MODE = "mode";
         @SerializedName(SERIALIZED_NAME_MODE)
+            // Aligns with admin-api.yaml Environment.mode default: WRITE_ONLY (example in spec is READ_WRITE).
             private ModeEnum mode = ModeEnum.WRITE_ONLY;
 
         public static final String SERIALIZED_NAME_API_DISCOVERY_SCHEDULED_WINDOW = "apiDiscoveryScheduledWindow";
