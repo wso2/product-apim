@@ -8,7 +8,7 @@ on:
 
 jobs:
   update-and-build:
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
 
     permissions:
       contents: write
@@ -101,7 +101,7 @@ jobs:
   prepare-and-migrate:
     needs: update-and-build
     name: prepare-and-migrate - ${{ matrix.display_name }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
     strategy:
       fail-fast: false
       matrix:
@@ -1019,7 +1019,7 @@ jobs:
             echo "Note: migration-config.yaml not found in APIM migration-resources (may not be required)"
           fi
           
-          echo "✓ Found migration-resources at: $MIGRATION_RESOURCES"
+          echo "✓ Found migration-resources at : $MIGRATION_RESOURCES"
           
           # Find APIM migration jar
           APIM_MIGRATION_JAR=$(find .github/MIGRATION_RESOURCES/apim-migration -name "org.wso2.carbon.apimgt.migrate.client-*.jar" | head -n1)
@@ -1516,7 +1516,7 @@ jobs:
 
   version-bump:
     needs: [update-and-build, prepare-and-migrate]
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       contents: write
     env:
