@@ -18,9 +18,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApiException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.constants.SelfRegistrationStatusCodes" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.api.ReCaptchaApi" %>
+<%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.AuthenticationEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.ReCaptchaProperties" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementServiceUtil" %>
@@ -45,11 +47,21 @@
     User user = IdentityManagementServiceUtil.getInstance().getUser(username);
     Object errorCodeObj = request.getAttribute("errorCode");
     Object errorMsgObj = request.getAttribute("errorMsg");
-    String callback = Encode.forHtmlAttribute(request.getParameter("callback"));
-    boolean isCallBackUrlEmpty = false;
-    if (callback == null || callback.length() == 0) {
-        isCallBackUrlEmpty = true;
+            
+    // Validate callback URL
+    String callback = request.getParameter("callback");
+    
+    /**
+     * Validate the back to login URL.
+     */
+    if (StringUtils.isBlank(callback)
+            || StringUtils.equalsIgnoreCase(callback, "null")
+            || !AuthenticationEndpointUtil.isValidMultiOptionURI(callback)) {
+        callback = null;
     }
+
+    boolean isCallBackUrlEmpty = StringUtils.isBlank(callback);
+
     String errorCode = null;
     String errorMsg = null;
 
@@ -177,14 +189,17 @@
                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                                     "If.you.specify.tenant.domain.you.registered.under.super.tenant")%>
                         </p>
-                        <input id="callback" name="callback" type="hidden" value="<%=callback%>"
-                               class="form-control" required>
+                        <% if (StringUtils.isNotBlank(callback)) { %>
+                        <input id="callback" name="callback" type="hidden"
+                               value="<%=Encode.forHtmlAttribute(callback)%>" class="form-control">
+                        <% } %>
 
                         <% Map<String, String[]> requestMap = request.getParameterMap();
                             for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
                                 String key = Encode.forHtmlAttribute(entry.getKey());
                                 String value = Encode.forHtmlAttribute(entry.getValue()[0]);
-                                if (StringUtils.equalsIgnoreCase("reCaptcha", key)) {
+                                if (StringUtils.equalsIgnoreCase("reCaptcha", key) 
+                                    || StringUtils.equalsIgnoreCase("callback", key)) {
                                     continue;
                                 } %>
                         <div class="field">
@@ -215,7 +230,7 @@
                         <div class="align-right buttons">
                              <% if (!isCallBackUrlEmpty) { %>
                             <a id="goBack"
-                               href='<%=Encode.forHtmlAttribute(request.getParameter("callback"))%>'
+                               href='<%=Encode.forHtmlAttribute(callback)%>'
                                class="ui button link-button">
                             <% } else { %>
                             <a id="goBack" onclick="window.history.back()" class="ui button link-button">
