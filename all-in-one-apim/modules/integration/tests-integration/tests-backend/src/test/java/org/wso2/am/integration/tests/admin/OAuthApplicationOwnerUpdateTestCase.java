@@ -249,7 +249,7 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
 
         String newAppName = "JohnUpdatedApplication";
         String newAppDescription = "Application updated After Ownership Change to JOHN";
-        String newAppTier = "Gold";
+        String newAppTier = "20PerMin";
 
         //Update AppTier
         HttpResponse updateTierResponse = restAPIStoreClient1.updateApplicationByID(appIdOfMaryApp,

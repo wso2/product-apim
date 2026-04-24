@@ -40,6 +40,7 @@
 <%@ page import="java.io.File" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Arrays" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Base64" %>
@@ -68,7 +69,7 @@
         <jsp:include page="includes/title.jsp"/>
         <% } %>
 
-        <link rel="icon" href="images/favicon.png" type="image/x-icon"/>
+        <link rel="icon" href="includes/favicon.png" type="image/png"/>
         <link href="libs/bootstrap_5.3.5/css/bootstrap.min.css" rel="stylesheet">
         <link href="css/Roboto.css" rel="stylesheet">
         <link href="css/custom-common.css" rel="stylesheet">
@@ -120,7 +121,7 @@
 
                 String userLocale = request.getHeader("Accept-Language");
                 String username = request.getParameter("username");
-                String password = request.getParameter("password");
+                char[] password = request.getParameter("password") != null ? request.getParameter("password").toCharArray() : null;
                 String callback = request.getParameter("callback");
                 String consent = request.getParameter("consent");
                 boolean isSaaSApp = Boolean.parseBoolean(request.getParameter("isSaaSApp"));
@@ -134,12 +135,18 @@
                         request.setAttribute("errorMsg", IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                                 "Callback.url.format.invalid"));
                         request.getRequestDispatcher("error.jsp").forward(request, response);
+                        if (password != null) {
+                            Arrays.fill(password, '\u0000');
+                        }
                         return;
                     }
                 } catch (IdentityRuntimeException e) {
                     request.setAttribute("error", true);
                     request.setAttribute("errorMsg", e.getMessage());
                     request.getRequestDispatcher("error.jsp").forward(request, response);
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     return;
                 }
 
@@ -166,7 +173,7 @@
                     }
                 }
 
-                if (StringUtils.isBlank(password)) {
+                if (isBlankPassword(password)) {
                     request.setAttribute("error", true);
                     request.setAttribute("errorMsg", IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                             "Password.cannot.be.empty"));
@@ -187,6 +194,9 @@
                     request.setAttribute("callback", callback);
                     request.setAttribute("userTenantDomain", user.getTenantDomain());
                     request.getRequestDispatcher(SELF_REGISTRATION_COMPLETE_PAGE).forward(request, response);
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     return;
                 }
 
@@ -212,6 +222,9 @@
                     request.setAttribute("error", true);
                     request.setAttribute("errorMsg", e.getMessage());
                     request.getRequestDispatcher("error.jsp").forward(request, response);
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     return;
                 }
 
@@ -225,6 +238,9 @@
                         claims = claimsList.toArray(new Claim[claimsList.size()]);
                     }
                 } catch (ApiException e) {
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     IdentityManagementEndpointUtil.addErrorInformation(request, e);
                     request.getRequestDispatcher("error.jsp").forward(request, response);
                     return;
@@ -299,6 +315,7 @@
                         }
                         String content = contentValueInJson.toString();
 
+                        SignatureUtil.init();
                         JSONObject cookieValueInJson = new JSONObject();
                         cookieValueInJson.put("content", content);
                         String signature = Base64.getEncoder().encodeToString(SignatureUtil.doSignature(content));
@@ -314,6 +331,9 @@
                     request.getRequestDispatcher(SELF_REGISTRATION_COMPLETE_PAGE).forward(request, response);
 
                 } catch (Exception e) {
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
                     IdentityManagementEndpointUtil.addErrorInformation(request, e);
                     String errorCode = (String) request.getAttribute("errorCode");
                     if (passwordPatternErrorCode.equals(errorCode) || invalidCharErrorCode.equals(errorCode) || usernameAlreadyExistsErrorCode.equals(errorCode)) {
@@ -341,10 +361,30 @@
 
                         return;
                     }
+                } finally {
+                    if (password != null) {
+                        Arrays.fill(password, '\u0000');
+                    }
+                }
+        %>
+
+        <%!
+            private boolean isBlankPassword(char[] password) {
+
+                if (password == null || password.length == 0) {
+                    return true;
                 }
 
+                for (char c : password) {
+                    if (!Character.isWhitespace(c)) {
+                        return false;
+                    }
+                }
 
-            %>
+                return true;
+            }
+        %>
+
         </div>
 
 

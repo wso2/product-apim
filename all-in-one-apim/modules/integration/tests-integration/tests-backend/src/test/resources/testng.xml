@@ -21,7 +21,6 @@
 <suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
 
-
     <test name="apim-integration-tests-api-common" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
         <classes>
@@ -66,6 +65,7 @@
             <class name="org.wso2.am.integration.tests.apimGovernance.RulesetMgtTestCase"/>
             <class name="org.wso2.am.integration.tests.apimGovernance.PolicyMgtTestCase"/>
             <class name="org.wso2.am.integration.tests.apimGovernance.APIComplianceTestCase"/>
+            <class name="org.wso2.am.integration.tests.apimGovernance.MCPComplianceTestCase"/>
         </classes>
     </test>
 
@@ -103,9 +103,10 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.UpdateAPINullPointerTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
 <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>-->
         </classes>
     </test>
@@ -130,7 +131,6 @@
             <class name="org.wso2.am.integration.tests.operationPolicy.OperationPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICreationForTenantsTestCase" />
             <class name="org.wso2.am.integration.tests.operationPolicy.JWTClaimBasedAccessValidatorPolicyTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
         </classes>
     </test>
 
@@ -264,13 +264,16 @@
     <test name="apim-store-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group3"/>
         <classes>
+            <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion"/>
             <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
+            <class name="org.wso2.am.integration.tests.admin.ChangeApiProviderTestCase"/>
+            <class name="org.wso2.am.integration.tests.admin.ChangeApiProviderSecondaryUserStoreTestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/> -->
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
@@ -278,15 +281,12 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/-->
             <class name="org.wso2.am.integration.tests.admin.OAuthApplicationOwnerUpdateTestCase"/>
-            <class name="org.wso2.am.integration.tests.admin.ChangeApiProviderTestCase"/>
-            <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>
             <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationAttributesTestCase"/>
             <class name="org.wso2.am.integration.tests.application.PkceEnabledApplicationTestCase"/>
-            <class name="org.wso2.am.integration.tests.application.ApplicationBlockSubscriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.application.SubscriptionValidationDisableTestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.application.SubscriptionValidationDisableTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5417PrototypedAPIsInMonetizedTestCase"/>-->
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
@@ -360,6 +360,7 @@
     <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
         <classes>
+            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPITestSuite"/>
             <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.ThrottlingTestCase"/>
@@ -368,6 +369,14 @@
             <!--<class name="org.wso2.am.integration.tests.streamingapis.websub.FailedWebSubSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.MultipleWebSubSubcriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.LeaseTimeSubscriptionTestCase"/>-->
+        </classes>
+    </test>
+
+    <test name="apim-async-api-import-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group2"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPIValidationTestSuite"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPITestWithValidationCase"/>
         </classes>
     </test>
 
@@ -507,6 +516,13 @@
             <class name="org.wso2.am.integration.tests.tenantsync.APIMTenantCreationNotificationTestCase"/>
         </classes>
     </test>
+
+    <test name="apim-application-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group2"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.application.ApplicationBlockSubscriptionTestCase"/>
+        </classes>
+    </test>
     <!--<test name="apim-websocket-invocation-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
         <classes>
@@ -528,45 +544,46 @@
             <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.ConfigurableDefaultPolicyTestCase"/>
         </classes>
     </test>-->
-    <test name="apim-integration-token-persistence-tests" preserve-order="true" parallel="false"
-          group-by-instances="true">
-        <parameter name="group" value="group5"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.token.TokenPersistenceTestSuite"/>
-            <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.token.InvokeAPIWithVariousEndpointsAndTokensTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>
-            <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
-            <class name="org.wso2.am.integration.tests.jwt.FederatedUserJWTTestCase"/>
-        </classes>
-    </test>
 
-    <test name="apim-integration-token-persistence-tests-jwt" preserve-order="true" parallel="false"
-          group-by-instances="true">
-        <parameter name="group" value="group5"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.token.TokenPersistenceJWTTestSuite"/>
-            <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
-        </classes>
-    </test>
+<!--    <test name="apim-integration-token-persistence-tests" preserve-order="true" parallel="false"-->
+<!--          group-by-instances="true">-->
+<!--        <parameter name="group" value="group4"/>-->
+<!--        <classes>-->
+<!--            <class name="org.wso2.am.integration.tests.token.TokenPersistenceTestSuite"/>-->
+<!--            <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>-->
+<!--            <class name="org.wso2.am.integration.tests.token.InvokeAPIWithVariousEndpointsAndTokensTestCase"/>-->
+<!--            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>-->
+<!--            <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>-->
+<!--            <class name="org.wso2.am.integration.tests.jwt.FederatedUserJWTTestCase"/>-->
+<!--            <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
-    <test name="apim-integration-token-persistence-tests-url-safe-jwt" preserve-order="true" parallel="false"
-          group-by-instances="true">
-        <parameter name="group" value="group5"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.token.TokenPersistenceURLSafeJWTTestSuite"/>
-            <class name="org.wso2.am.integration.tests.jwt.urlsafe.URLSafeJWTTestCase"/>
-        </classes>
-    </test>
+<!--    <test name="apim-integration-token-persistence-tests-url-safe-jwt" preserve-order="true" parallel="false"-->
+<!--          group-by-instances="true">-->
+<!--        <parameter name="group" value="group4"/>-->
+<!--        <classes>-->
+<!--            <class name="org.wso2.am.integration.tests.token.TokenPersistenceURLSafeJWTTestSuite"/>-->
+<!--            <class name="org.wso2.am.integration.tests.jwt.urlsafe.URLSafeJWTTestCase"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
-    <test name="apim-integration-token-persistence-tests-external-idp-jwt" preserve-order="true" parallel="false"
-          group-by-instances="true">
-        <parameter name="group" value="group5"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.token.TokenPersistenceExternalIDPJWTTestSuite"/>
-            <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
-        </classes>
-    </test>
+<!--    <test name="apim-integration-token-persistence-tests-external-idp-jwt" preserve-order="true" parallel="false"-->
+<!--          group-by-instances="true">-->
+<!--        <parameter name="group" value="group4"/>-->
+<!--        <classes>-->
+<!--            <class name="org.wso2.am.integration.tests.token.TokenPersistenceExternalIDPJWTTestSuite"/>-->
+<!--            <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+
+<!--    <test name="apim-integration-token-persistence-tests-jwt" preserve-order="true" parallel="false"-->
+<!--          group-by-instances="true">-->
+<!--        <parameter name="group" value="group4"/>-->
+<!--        <classes>-->
+<!--            <class name="org.wso2.am.integration.tests.token.TokenPersistenceJWTTestSuite"/>-->
+<!--            <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
 </suite>

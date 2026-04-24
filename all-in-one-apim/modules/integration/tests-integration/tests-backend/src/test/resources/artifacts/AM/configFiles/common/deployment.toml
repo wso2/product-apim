@@ -405,3 +405,4 @@ issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer
 context = "(.*)/APIStatusMonitor(.*)"
 secure = false
 http_method = "all"
+

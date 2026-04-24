@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
   "name": "removeHeader",
-  "version": "v1",
+  "version": "v2",
   "displayName": "Remove Header",
   "description": "This policy allows you to remove a header from the request",
   "policyAttributes": [
@@ -23,6 +23,7 @@
     "Synapse"
   ],
   "supportedApiTypes": [
-    "HTTP"
+    "HTTP",
+    "GRAPHQL"
   ]
 }

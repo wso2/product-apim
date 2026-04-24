@@ -444,6 +444,42 @@ public class RestAPIStoreImpl {
         }
     }
 
+    /**
+     * Updates an existing application with the provided details and custom attributes.
+     *
+     * @param applicationId The unique identifier of the application to be updated.
+     * @param appName The new name of the application.
+     * @param description The updated description of the application.
+     * @param throttleTier The throttling policy (application tier) to be applied to the application.
+     * @param attributes A map containing custom application attributes to be associated with the application.
+     *
+     * @return {@link HttpResponse} containing the response body and HTTP status code.
+     * Returns status code {@code 200} if the application update is successful. If an error occurs,
+     * the response will contain the error body and the corresponding HTTP status code returned by the API.
+     */
+    public HttpResponse updateApplicationByID(String applicationId, String appName,
+                                              String description, String throttleTier, Map<String, String> attributes) {
+
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setAttributes(attributes);
+
+            ApplicationDTO updatedApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(updatedApp.getApplicationId())) {
+                response = new HttpResponse(updatedApp.toString(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            String responseBody = e.getResponseBody();
+            int statusCode = e.getCode();
+            return new HttpResponse(responseBody, statusCode);
+        }
+    }
+
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) throws APIManagerIntegrationTestException {
 
         try {

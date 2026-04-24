@@ -95,60 +95,188 @@ jobs:
         with:
           name: apim-distribution
           path: ${{ steps.find_dist.outputs.dist_path }}
+          retention-days: 7
           if-no-files-found: error
 
   prepare-and-migrate:
     needs: update-and-build
+    name: prepare-and-migrate - ${{ matrix.display_name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - db_type: mysql
+            display_name: "MySQL"
+            apim_url: "jdbc:mysql://host.docker.internal:3306/WSO2AM_APIMGT_DB?allowPublicKeyRetrieval=true&amp;useSSL=false"
+            shared_url: "jdbc:mysql://host.docker.internal:3307/WSO2AM_COMMON_DB?allowPublicKeyRetrieval=true&amp;useSSL=false"
+            driver_class: "com.mysql.cj.jdbc.Driver"
+            validation_query: "SELECT 1"
+            apim_username: "apim_user"
+            shared_username: "shared_user"
+            apim_password: "apimpass"
+            shared_password: "sharedpass"
 
-    services:
-      apim_db:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: rootpass
-          MYSQL_DATABASE: WSO2AM_APIMGT_DB
-          MYSQL_USER: apim_user
-          MYSQL_PASSWORD: apimpass
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot -prootpass"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          - db_type: mssql
+            display_name: "MSSQL"
+            apim_url: "jdbc:sqlserver://host.docker.internal:1433;databaseName=apim_db;SendStringParametersAsUnicode=false;integratedSecurity=false;encrypt=false"
+            shared_url: "jdbc:sqlserver://host.docker.internal:1434;databaseName=shared_db;SendStringParametersAsUnicode=false;integratedSecurity=false;encrypt=false"
+            driver_class: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+            validation_query: "SELECT 1"
+            apim_username: "apim_user"
+            shared_username: "shared_user"
+            apim_password: "apimpass"
+            shared_password: "sharedpass"
 
-      shared_db:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: rootpass
-          MYSQL_DATABASE: WSO2AM_COMMON_DB
-          MYSQL_USER: shared_user
-          MYSQL_PASSWORD: sharedpass
-        ports:
-          - 3307:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot -prootpass"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          - db_type: postgre
+            display_name: "PostgreSQL"
+            apim_url: "jdbc:postgresql://host.docker.internal:5432/apim_db"
+            shared_url: "jdbc:postgresql://host.docker.internal:5433/shared_db"
+            driver_class: "org.postgresql.Driver"
+            validation_query: "SELECT 1"
+            apim_username: "apim_user"
+            shared_username: "shared_user"
+            apim_password: "apimpass"
+            shared_password: "sharedpass"
+
+          - db_type: oracle
+            display_name: "Oracle"
+            apim_url: "jdbc:oracle:thin:@host.docker.internal:1521/XEPDB1"
+            shared_url: "jdbc:oracle:thin:@host.docker.internal:1522/XEPDB1"
+            driver_class: "oracle.jdbc.OracleDriver"
+            validation_query: "SELECT 1 FROM DUAL"
+            apim_username: "APIM_DB_USER"
+            shared_username: "SHARED_DB_USER"
+            apim_password: "apimpass"
+            shared_password: "sharedpass"
 
     env:
       # API Manager Database (apim_db)
-      API_MANAGER_DATABASE_TYPE: mysql
-      API_MANAGER_DATABASE_DRIVER: com.mysql.cj.jdbc.Driver
-      API_MANAGER_DATABASE_URL: "jdbc:mysql://host.docker.internal:3306/WSO2AM_APIMGT_DB?allowPublicKeyRetrieval=true&amp;useSSL=false"
-      API_MANAGER_DATABASE_USERNAME: apim_user
-      API_MANAGER_DATABASE_PASSWORD: apimpass
-      API_MANAGER_DATABASE_VALIDATION_QUERY: SELECT 1
+      API_MANAGER_DATABASE_TYPE: ${{ matrix.db_type }}
+      API_MANAGER_DATABASE_DRIVER: ${{ matrix.driver_class }}
+      API_MANAGER_DATABASE_URL: ${{ matrix.apim_url }}
+      API_MANAGER_DATABASE_USERNAME: ${{ matrix.apim_username }}
+      API_MANAGER_DATABASE_PASSWORD: ${{ matrix.apim_password }}
+      API_MANAGER_DATABASE_VALIDATION_QUERY: ${{ matrix.validation_query }}
+
       # Shared Database (shared_db)
-      SHARED_DATABASE_TYPE: mysql
-      SHARED_DATABASE_DRIVER: com.mysql.cj.jdbc.Driver
-      SHARED_DATABASE_URL: "jdbc:mysql://host.docker.internal:3307/WSO2AM_COMMON_DB?allowPublicKeyRetrieval=true&amp;useSSL=false"
-      SHARED_DATABASE_USERNAME: shared_user
-      SHARED_DATABASE_PASSWORD: sharedpass
-      SHARED_DATABASE_VALIDATION_QUERY: SELECT 1
+      SHARED_DATABASE_TYPE: ${{ matrix.db_type }}
+      SHARED_DATABASE_DRIVER: ${{ matrix.driver_class }}
+      SHARED_DATABASE_URL: ${{ matrix.shared_url }}
+      SHARED_DATABASE_USERNAME: ${{ matrix.shared_username }}
+      SHARED_DATABASE_PASSWORD: ${{ matrix.shared_password }}
+      SHARED_DATABASE_VALIDATION_QUERY: ${{ matrix.validation_query }}
 
     steps:
+      - name: Start Database Containers
+        run: |
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
+          
+            docker run -d --name apim_db \
+              -e MYSQL_ROOT_PASSWORD=rootpass \
+              -e MYSQL_DATABASE=WSO2AM_APIMGT_DB \
+              -e MYSQL_USER=apim_user \
+              -e MYSQL_PASSWORD=apimpass \
+              -p 3306:3306 mysql:8.0
+            
+            docker run -d --name shared_db \
+              -e MYSQL_ROOT_PASSWORD=rootpass \
+              -e MYSQL_DATABASE=WSO2AM_COMMON_DB \
+              -e MYSQL_USER=shared_user \
+              -e MYSQL_PASSWORD=sharedpass \
+              -p 3307:3306 mysql:8.0
+          
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            echo "Starting Azure SQL Edge for APIM DB..."
+            docker run -d --name apim_db \
+              -e ACCEPT_EULA="Y" \
+              -e MSSQL_SA_PASSWORD='RootPass123!' \
+              -e MSSQL_PID="Developer" \
+              -p 1433:1433 \
+              mcr.microsoft.com/azure-sql-edge
+
+            echo "Starting Azure SQL Edge for Shared DB..."
+            docker run -d --name shared_db \
+              -e ACCEPT_EULA="Y" \
+              -e MSSQL_SA_PASSWORD='RootPass123!' \
+              -e MSSQL_PID="Developer" \
+              -p 1434:1433 \
+              mcr.microsoft.com/azure-sql-edge
+            
+            # Wait until SQL Edge accepts connections before running DDL
+            for i in {1..60}; do
+              if docker exec apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "SELECT 1" >/dev/null 2>&1; then
+                break
+              fi
+              echo "Waiting for apim_db SQL Edge startup... ($i/60)"
+              sleep 2
+            done
+            # Fail if database is still not ready
+            if ! docker exec apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "SELECT 1" >/dev/null 2>&1; then
+              echo "ERROR: apim_db failed to start within timeout"
+              exit 1
+            fi
+
+            for i in {1..60}; do
+              if docker exec shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "SELECT 1" >/dev/null 2>&1; then
+                break
+              fi
+              echo "Waiting for shared_db SQL Edge startup... ($i/60)"
+              sleep 2
+            done
+            # Fail if database is still not ready
+            if ! docker exec shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "SELECT 1" >/dev/null 2>&1; then
+              echo "ERROR: shared_db failed to start within timeout"
+              exit 1
+            fi
+            
+            echo "Creating APIM Database and Login..."
+            docker exec apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "CREATE DATABASE apim_db; CREATE LOGIN apim_user WITH PASSWORD = 'apimpass', CHECK_POLICY = OFF;"
+            
+            echo "Mapping APIM User to Database..."
+            docker exec apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -d apim_db -Q "CREATE USER apim_user FOR LOGIN apim_user; ALTER ROLE db_owner ADD MEMBER apim_user;"
+    
+            echo "Creating Shared Database and Login..."
+            docker exec shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "CREATE DATABASE shared_db; CREATE LOGIN shared_user WITH PASSWORD = 'sharedpass', CHECK_POLICY = OFF;"
+            
+            echo "Mapping Shared User to Database..."
+            docker exec shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -d shared_db -Q "CREATE USER shared_user FOR LOGIN shared_user; ALTER ROLE db_owner ADD MEMBER shared_user;"
+          
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            echo "Starting PostgreSQL for APIM DB..."
+            docker run -d --name apim_db \
+              -e POSTGRES_DB=apim_db \
+              -e POSTGRES_USER=apim_user \
+              -e POSTGRES_PASSWORD=apimpass \
+              -p 5432:5432 postgres:14
+            
+            echo "Starting PostgreSQL for Shared DB..."
+            docker run -d --name shared_db \
+              -e POSTGRES_DB=shared_db \
+              -e POSTGRES_USER=shared_user \
+              -e POSTGRES_PASSWORD=sharedpass \
+              -p 5433:5432 postgres:14
+          
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            echo "Starting Oracle XE for APIM DB..."
+            # gvenzl/oracle-xe automatically provisions the APP_USER and grants required quotas
+            docker run -d --name apim_db \
+              -p 1521:1521 \
+              -e ORACLE_PASSWORD=rootpass \
+              -e APP_USER=APIM_DB_USER \
+              -e APP_USER_PASSWORD=apimpass \
+              gvenzl/oracle-xe:21-slim-faststart
+          
+            echo "Starting Oracle XE for Shared DB..."
+            docker run -d --name shared_db \
+              -p 1522:1521 \
+              -e ORACLE_PASSWORD=rootpass \
+              -e APP_USER=SHARED_DB_USER \
+              -e APP_USER_PASSWORD=sharedpass \
+              gvenzl/oracle-xe:21-slim-faststart
+          fi
+
+
       - name: Checkout master-new-test-framework branch
         uses: actions/checkout@v4
         with:
@@ -200,8 +328,19 @@ jobs:
           JDBC_URL="https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.30/mysql-connector-java-8.0.30.jar"
           
           mkdir -p "$REPO_LIB_DIR"
-          wget -q -O mysql-connector-java-8.0.30.jar "$JDBC_URL"
-          mv mysql-connector-java-8.0.30.jar "$REPO_LIB_DIR"
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
+            wget -q -O mysql-connector-java-8.0.30.jar "https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.30/mysql-connector-java-8.0.30.jar"
+            mv mysql-connector-java-8.0.30.jar "$REPO_LIB_DIR"
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            wget -q -O mssql-jdbc-12.4.2.jre11.jar "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/12.4.2.jre11/mssql-jdbc-12.4.2.jre11.jar"
+            mv mssql-jdbc-12.4.2.jre11.jar "$REPO_LIB_DIR"
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            wget -q -O postgresql-42.7.8.jar "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.8/postgresql-42.7.8.jar"
+            mv postgresql-42.7.8.jar "$REPO_LIB_DIR"
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            wget -q -O ojdbc8-19.23.0.0.jar "https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/19.23.0.0/ojdbc8-19.23.0.0.jar"
+            mv ojdbc8-19.23.0.0.jar "$REPO_LIB_DIR"
+          fi
           echo "JDBC driver added to $REPO_LIB_DIR"
 
       - name: Replace keystore and truststore of distribution
@@ -218,7 +357,7 @@ jobs:
           
           echo "Keystore and truststore files replaced in $SECURITY_DIR"
 
-      - name: Configure deployment.toml with MySQL database settings
+      - name: Configure deployment.toml with database settings
         run: |
           DEPLOYMENT_TOML="$EXTRACTED_DIR/repository/conf/deployment.toml"
           
@@ -238,12 +377,12 @@ jobs:
             !skip { print }
           ' "$DEPLOYMENT_TOML.backup" > "$DEPLOYMENT_TOML.tmp"
 
-          # Append MySQL database configurations and gateway environment from static template
+          # Append database configurations and gateway environment from static template
           cat .github/WORKFLOW_ARTIFACTS/migration-deployment.toml >> "$DEPLOYMENT_TOML.tmp"
           
           mv "$DEPLOYMENT_TOML.tmp" "$DEPLOYMENT_TOML"
           
-          echo "deployment.toml configured with MySQL database settings and gateway environment"
+          echo "deployment.toml configured with database settings and gateway environment"
           echo "=== Updated deployment.toml ==="
           tail -30 "$DEPLOYMENT_TOML"
 
@@ -281,101 +420,367 @@ jobs:
 
       - name: Wait for DBs to be ready
         run: |
-          echo "Waiting for databases..."
-          for i in {1..60}; do
-            if mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -prootpass --silent 2>/dev/null; then
-              echo "apim_db is ready"
-              break
-            fi
-            echo "Waiting for apim_db... ($i/60)"
-            sleep 2
-          done
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
+            echo "Waiting for MySQL databases..."
+            for i in {1..60}; do
+              if mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -prootpass --silent 2>/dev/null; then
+                echo "apim_db is ready"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "::error::MySQL apim_db failed to start after 120 seconds."
+                echo "Fetching container logs for debugging:"
+                docker logs apim_db
+                exit 1
+              fi
+              echo "Waiting for apim_db... ($i/60)"
+              sleep 2
+            done
           
-          for i in {1..60}; do
-            if mysqladmin ping -h 127.0.0.1 -P 3307 -uroot -prootpass --silent 2>/dev/null; then
-              echo "shared_db is ready"
-              break
-            fi
-            echo "Waiting for shared_db... ($i/60)"
-            sleep 2
-          done
+            for i in {1..60}; do
+              if mysqladmin ping -h 127.0.0.1 -P 3307 -uroot -prootpass --silent 2>/dev/null; then
+                echo "shared_db is ready"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "::error::MySQL shared_db failed to start after 120 seconds."
+                echo "Fetching container logs for debugging:"
+                docker logs shared_db
+                exit 1
+              fi
+              echo "Waiting for shared_db... ($i/60)"
+              sleep 2
+            done
           
-          # Configure APIM database
-          mysql -h 127.0.0.1 -P 3306 -uroot -prootpass <<EOF
-          ALTER DATABASE WSO2AM_APIMGT_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-          EOF
+            # Configure APIM database using -e flag
+            mysql -h 127.0.0.1 -P 3306 -uroot -prootpass -e "ALTER DATABASE WSO2AM_APIMGT_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;"
+          
+            # Configure Shared database using -e flag
+            mysql -h 127.0.0.1 -P 3307 -uroot -prootpass -e "ALTER DATABASE WSO2AM_COMMON_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;"
+          
+            echo "MySQL databases configured successfully"
+          
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            echo "Waiting for MSSQL databases..."
+            for i in {1..60}; do
+              if docker exec apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "SELECT 1" &> /dev/null; then
+                echo "apim_db is ready"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "::error::MSSQL apim_db failed to start after 120 seconds."
+                echo "Fetching container logs for debugging:"
+                docker logs apim_db
+                exit 1
+              fi
+              echo "Waiting for apim_db... ($i/60)"
+              sleep 2
+            done
+          
+            for i in {1..60}; do
+              if docker exec shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "SELECT 1" &> /dev/null; then
+                echo "shared_db is ready"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "::error::MSSQL shared_db failed to start after 120 seconds."
+                echo "Fetching container logs for debugging:"
+                docker logs shared_db
+                exit 1
+              fi
+              echo "Waiting for shared_db... ($i/60)"
+              sleep 2
+            done
+          
+            echo "MSSQL databases are responding successfully!"
+          
+            echo "Applying MSSQL concurrency fix..."
+            docker exec apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "ALTER DATABASE apim_db SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;"
+            docker exec shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "ALTER DATABASE shared_db SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;"
+          
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            echo "Waiting for PostgreSQL databases..."
+            for i in {1..60}; do
+              # pg_isready is a built-in postgres tool to check connection status
+              if docker exec apim_db pg_isready -U apim_user -d apim_db > /dev/null 2>&1; then
+                echo "apim_db is ready"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "::error::PostgreSQL apim_db failed to start after 120 seconds."
+                echo "Fetching container logs for debugging:"
+                docker logs apim_db
+                exit 1
+              fi
+              echo "Waiting for apim_db... ($i/60)"
+              sleep 2
+            done
+          
+            for i in {1..60}; do
+              if docker exec shared_db pg_isready -U shared_user -d shared_db > /dev/null 2>&1; then
+                echo "shared_db is ready"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                  echo "::error::PostgreSQL shared_db failed to start after 120 seconds."
+                  echo "Fetching container logs for debugging:"
+                  docker logs shared_db
+                  exit 1
+              fi
+              echo "Waiting for shared_db... ($i/60)"
+              sleep 2
+            done
+          
+            echo "PostgreSQL databases are responding successfully!"
+            
+            echo "Granting SUPERUSER permission to apim_user..."
+            docker exec -e PGPASSWORD=apimpass apim_db psql -U apim_user -d apim_db -c "ALTER USER apim_user WITH SUPERUSER;"
+          
+            echo "Granting SUPERUSER permission to shared_user..."
+            docker exec -e PGPASSWORD=sharedpass shared_db psql -U shared_user -d shared_db -c "ALTER USER shared_user WITH SUPERUSER;"
+          
+            echo "PostgreSQL setup fully complete!"
+          
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            echo "Waiting for Oracle databases to accept connections..."
+          
+            # Wait for apim_db
+            for i in {1..60}; do
+              if docker exec apim_db bash -c "echo 'SELECT 1 FROM DUAL;' | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba" > /dev/null 2>&1; then
+                echo "apim_db is ready!"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "::error::Oracle apim_db failed to start after 10 minutes."
+                echo "Fetching last 100 lines of container logs for debugging:"
+                docker logs apim_db --tail 100
+                exit 1
+              fi
+              echo "Waiting for apim_db... ($i/60)"
+              sleep 10
+            done
 
-          # Configure Shared database
-          mysql -h 127.0.0.1 -P 3307 -uroot -prootpass <<EOF
-          ALTER DATABASE WSO2AM_COMMON_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-          EOF
+            # Wait for shared_db
+            for i in {1..60}; do
+              if docker exec shared_db bash -c "echo 'SELECT 1 FROM DUAL;' | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba" > /dev/null 2>&1; then
+                echo "shared_db is ready!"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "::error::Oracle shared_db failed to start after 10 minutes."
+                echo "Fetching last 100 lines of container logs for debugging:"
+                docker logs shared_db --tail 100
+                exit 1
+              fi
+              echo "Waiting for shared_db... ($i/60)"
+              sleep 10
+            done
+          
+            echo "Applying explicit permissions to APIM_DB_USER..."
+            docker exec apim_db bash -c "echo -e 'GRANT CREATE SESSION, CREATE TABLE, CREATE SEQUENCE, CREATE TRIGGER, CREATE PROCEDURE TO APIM_DB_USER;\nEXIT;' | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba"
+          
+            echo "Applying explicit permissions to SHARED_DB_USER..."
+            docker exec shared_db bash -c "echo -e 'GRANT CREATE SESSION, CREATE TABLE, CREATE SEQUENCE, CREATE TRIGGER, CREATE PROCEDURE TO SHARED_DB_USER;\nEXIT;' | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba"
 
-          echo "MySQL databases configured successfully"
+            echo "Increasing Oracle process limit to 500 to prevent PoolExhaustedExceptions..."
+            docker exec apim_db bash -c "echo -e 'ALTER SYSTEM SET PROCESSES=500 SCOPE=SPFILE;\nEXIT;' | sqlplus -s sys/rootpass as sysdba"
+            docker exec shared_db bash -c "echo -e 'ALTER SYSTEM SET PROCESSES=500 SCOPE=SPFILE;\nEXIT;' | sqlplus -s sys/rootpass as sysdba"
+          
+            echo "Restarting Oracle containers to apply limits..."
+            docker restart apim_db shared_db
+          
+            # Brief sleep to allow Oracle to come back up after the restart
+            echo "Waiting for databases to come back up after restart..."
+            
+            for db in apim_db shared_db; do
+              for i in {1..60}; do
+                if docker exec "$db" bash -c "printf '%s\n' 'WHENEVER SQLERROR EXIT SQL.SQLCODE' 'SELECT 1 FROM DUAL;' 'EXIT;' | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba" > /dev/null 2>&1; then
+                  break
+                fi
+                if [ $i -eq 60 ]; then
+                  echo "::error::Oracle $db failed to come back after restart."
+                  docker logs "$db" --tail 100
+                  exit 1
+                fi
+                sleep 10
+              done
+            done
+          
+          fi
 
-      - name: Download APIM 3.2.0 database dumps from Google Drive
+      - name: Verify APIM 3.2.0 database dumps exist
         run: |
-          mkdir -p .github/WORKFLOW_ARTIFACTS/DB_DUMPS
-          echo "Using checked-in APIM 3.2.0 DB dumps from .github/WORKFLOW_ARTIFACTS/DB_DUMPS"
-          # Verify files exist
-          ls -lh .github/WORKFLOW_ARTIFACTS/DB_DUMPS/
-          test -f .github/WORKFLOW_ARTIFACTS/DB_DUMPS/apim_db_320_dump.sql
-          test -f .github/WORKFLOW_ARTIFACTS/DB_DUMPS/shared_db_320_dump.sql
+          # Determine the correct folder based on the matrix DB type
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
+            DB_DIR=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MYSQL"
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            DB_DIR=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MSSQL"
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            DB_DIR=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/POSTGRESQL"
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            DB_DIR=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/ORACLE"
+          fi
+          
+          echo "Using checked-in APIM 3.2.0 DB dumps from $DB_DIR"
+          
+          # List the files for debugging purposes
+          ls -lh $DB_DIR/
+          
+          # Hard fail 3.2.0 db dumps are missing
+          if [ "${{ matrix.db_type }}" == "oracle" ]; then
+            test -f $DB_DIR/apim_db_dump_oracle_320.dmp
+            test -f $DB_DIR/shared_db_dump_oracle_320.dmp
+          else
+            test -f $DB_DIR/apim_db_320_dump.sql
+            test -f $DB_DIR/shared_db_320_dump.sql
+          fi
 
       - name: Restore APIM DB dump (3.2.0)
         run: |
-          APIM_DB_CONTAINER=$(docker ps \
-            --filter "ancestor=mysql:8.0" \
-            --filter "publish=3306" \
-            --format "{{.ID}}" | head -n 1)
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
+            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MYSQL/apim_db_320_dump.sql"
+            echo "Restoring MySQL APIM dump..."
           
-          echo "APIM DB container: ${APIM_DB_CONTAINER}"
+            # Copy SQL inside container
+            docker cp $DUMP_FILE apim_db:/apim_db_dump.sql
           
-          test -f .github/WORKFLOW_ARTIFACTS/DB_DUMPS/apim_db_320_dump.sql
+            # Restore dump using mysql client
+            docker exec -i apim_db bash -c "cat /apim_db_dump.sql | mysql -uapim_user -papimpass WSO2AM_APIMGT_DB"
           
-          # Copy SQL inside container
-          docker cp .github/WORKFLOW_ARTIFACTS/DB_DUMPS/apim_db_320_dump.sql ${APIM_DB_CONTAINER}:/apim_db_dump.sql
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MSSQL/apim_db_320_dump.sql"
+            echo "Restoring MSSQL APIM dump..."
           
-          # Restore dump
-          docker exec -i ${APIM_DB_CONTAINER} \
-            bash -c "cat /apim_db_dump.sql | mysql -uapim_user -papimpass WSO2AM_APIMGT_DB"
+            # Copy SQL inside container
+            docker cp $DUMP_FILE apim_db:/apim_db_dump.sql
+          
+            # Restore dump using sqlcmd (-i flag specifies the input file)
+            docker exec -i apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -d apim_db -C -i /apim_db_dump.sql
+          
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/POSTGRESQL/apim_db_320_dump.sql"
+            echo "Restoring PostgreSQL APIM dump..."
+          
+            # Copy SQL inside container
+            docker cp $DUMP_FILE apim_db:/apim_db_dump.sql
+          
+            # Restore dump using psql
+            docker exec -i -e PGPASSWORD=apimpass apim_db psql -U apim_user -d apim_db -f /apim_db_dump.sql
+          
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/ORACLE/apim_db_dump_oracle_320.dmp"
+            echo "Restoring Oracle APIM dump using Data Pump (impdp)..."
+          
+            # Create a directory for the dump inside the container
+            docker exec -i apim_db bash -c "mkdir -p /tmp/dpdump"
+          
+            # Copy the dump file into the container
+            docker cp $DUMP_FILE apim_db:/tmp/dpdump/apim_db_dump_oracle_320.dmp
+          
+            # Create Oracle directory inside the PDB, grant permissions, and run import
+            docker exec -i apim_db bash -c "echo -e \"CREATE OR REPLACE DIRECTORY dp_dir AS '/tmp/dpdump';\nGRANT READ, WRITE ON DIRECTORY dp_dir TO APIM_DB_USER;\nEXIT;\" | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba && \
+              impdp APIM_DB_USER/apimpass@//localhost:1521/XEPDB1 directory=dp_dir dumpfile=apim_db_dump_oracle_320.dmp logfile=apim_impdp.log full=y"
+          fi
           
           echo "APIM DB dump restored successfully"
 
       - name: Restore Shared DB dump (3.2.0)
         run: |
-          SHARED_DB_CONTAINER=$(docker ps \
-            --filter "ancestor=mysql:8.0" \
-            --filter "publish=3307" \
-            --format "{{.ID}}" | head -n 1)
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
+            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MYSQL/shared_db_320_dump.sql"
+            echo "Restoring MySQL Shared dump from $DUMP_FILE..."
           
-          echo "Shared DB container: ${SHARED_DB_CONTAINER}"
+            # Copy SQL inside container
+            docker cp "$DUMP_FILE" shared_db:/shared_db_dump.sql
           
-          test -f .github/WORKFLOW_ARTIFACTS/DB_DUMPS/shared_db_320_dump.sql
+            # Restore dump
+            docker exec -i shared_db bash -c "cat /shared_db_dump.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
           
-          docker cp .github/WORKFLOW_ARTIFACTS/DB_DUMPS/shared_db_320_dump.sql ${SHARED_DB_CONTAINER}:/shared_db_dump.sql
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MSSQL/shared_db_320_dump.sql"
+            echo "Restoring MSSQL Shared dump from $DUMP_FILE..."
           
-          docker exec -i ${SHARED_DB_CONTAINER} \
-            bash -c "cat /shared_db_dump.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
+            # Copy SQL inside container
+            docker cp "$DUMP_FILE" shared_db:/shared_db_dump.sql
+          
+            # Restore dump using sqlcmd
+            docker exec -i shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -d shared_db -C -i /shared_db_dump.sql
+          
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/POSTGRESQL/shared_db_320_dump.sql"
+            echo "Restoring PostgreSQL Shared dump from $DUMP_FILE..."
+          
+            # Copy SQL inside container
+            docker cp "$DUMP_FILE" shared_db:/shared_db_dump.sql
+          
+            # Restore dump using psql
+            docker exec -i -e PGPASSWORD=sharedpass shared_db psql -U shared_user -d shared_db -f /shared_db_dump.sql
+          
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/ORACLE/shared_db_dump_oracle_320.dmp"
+            echo "Restoring Oracle Shared dump using Data Pump (impdp)..."
+          
+            # Create a directory for the dump inside the container
+            docker exec -i shared_db bash -c "mkdir -p /tmp/dpdump"
+          
+            # Copy the dump file into the container
+            docker cp "$DUMP_FILE" shared_db:/tmp/dpdump/shared_db_dump_oracle_320.dmp
+          
+            # Create Oracle directory inside the PDB, grant permissions, and run import
+            docker exec -i shared_db bash -c "echo -e \"CREATE OR REPLACE DIRECTORY dp_dir AS '/tmp/dpdump';\nGRANT READ, WRITE ON DIRECTORY dp_dir TO SHARED_DB_USER;\nEXIT;\" | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba && \
+              impdp SHARED_DB_USER/sharedpass@//localhost:1521/XEPDB1 directory=dp_dir dumpfile=shared_db_dump_oracle_320.dmp logfile=shared_impdp.log full=y"
+          fi
           
           echo "Shared DB dump restored successfully"
 
-      - name: Run MySQL script for shared_db
+      - name: Run DB script on shared_db to add missing registry indices
         run: |
-          SHARED_DB_CONTAINER=$(docker ps \
-            --filter "ancestor=mysql:8.0" \
-            --filter "publish=3307" \
-            --format "{{.ID}}" | head -n 1)
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
+            SCRIPT_FILE=".github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/MySQL.sql"
+            echo "Running MySQL script on shared_db container..."
           
-          echo "Using checked-in MySQL script for shared_db from .github/WORKFLOW_ARTIFACTS/DB_SCRIPTS"
-          mkdir -p .github/WORKFLOW_ARTIFACTS/DB_SCRIPTS
-          test -f .github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/shared_db_script.sql
+            # Verify file exists
+            test -f "$SCRIPT_FILE"
           
-          echo "Running MySQL script on shared_db container..."
-          docker cp .github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/shared_db_script.sql ${SHARED_DB_CONTAINER}:/shared_db_script.sql
-          docker exec -i ${SHARED_DB_CONTAINER} \
-            bash -c "cat /shared_db_script.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
+            # Copy and execute
+            docker cp "$SCRIPT_FILE" shared_db:/shared_db_script.sql
+            docker exec -i shared_db bash -c "cat /shared_db_script.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
           
-          echo "MySQL script executed successfully"
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            SCRIPT_FILE=".github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/MSSQL.sql"
+            echo "Running MSSQL script on shared_db container..."
+          
+            # Verify file exists
+            test -f "$SCRIPT_FILE"
+          
+            # Copy and execute using sqlcmd
+            docker cp "$SCRIPT_FILE" shared_db:/shared_db_script.sql
+            docker exec -i shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -d shared_db -C -i /shared_db_script.sql
+          
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            SCRIPT_FILE=".github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/PostgreSQL.sql"
+            echo "Running PostgreSQL script on shared_db container..."
+          
+            # Verify file exists
+            test -f "$SCRIPT_FILE"
+          
+            # Copy and execute using psql
+            docker cp "$SCRIPT_FILE" shared_db:/shared_db_script.sql
+            docker exec -i -e PGPASSWORD=sharedpass shared_db psql -U shared_user -d shared_db -f /shared_db_script.sql
+          
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            SCRIPT_FILE=".github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/Oracle.sql"
+            echo "Running Oracle script on shared_db container..."
+          
+            # Verify file exists
+            test -f "$SCRIPT_FILE"
+            
+            # Copy and execute using sqlplus (Connecting to XEPDB1)
+            docker cp "$SCRIPT_FILE" shared_db:/shared_db_script.sql
+            docker exec -i shared_db bash -c "echo -e '@/shared_db_script.sql\nEXIT;' | sqlplus -s SHARED_DB_USER/sharedpass@//localhost:1521/XEPDB1"
+          fi
+          
+          echo "DB script executed successfully"
 
       - name: Build Docker image for APIM
         env:
@@ -421,7 +826,7 @@ jobs:
 
       - name: Identity Migration - Download and Setup
         env:
-          IDENTITY_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2is-migration-1.1.175.zip"
+          IDENTITY_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2is-migration-1.1.179-SNAPSHOT.zip"
         run: |
           echo "=== Step 1: Identity Migration Setup ==="
           
@@ -574,7 +979,7 @@ jobs:
 
       - name: APIM Migration - Download and Setup
         env:
-          APIM_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2am-migration-4.6.0.zip"
+         APIM_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2am-migration-4.7.0.1-SNAPSHOT.zip"
         run: |
           echo "=== Step 3: APIM Migration Setup ==="
           
@@ -587,7 +992,7 @@ jobs:
           unzip -q .github/MIGRATION_RESOURCES/apim-migration.zip -d .github/MIGRATION_RESOURCES/apim-migration
           
           echo "APIM migration resources downloaded and extracted"
-#
+
       - name: APIM Migration - Pre-Migration
         run: |
           echo "=== Step 4: APIM Pre-Migration ==="
@@ -753,6 +1158,13 @@ jobs:
           
           echo "✓ Found APIM migration jar at: $APIM_MIGRATION_JAR"
           
+          # Add the Postgres specific flag to shared db url if db_type is postgre
+          ACTUAL_SHARED_URL="$SHARED_DATABASE_URL"
+          if [ "${{ matrix.db_type }}" == "postgre" ]; then
+            echo "Applying PostgreSQL migration requirement: preparedStatementCacheQueries=0"
+            ACTUAL_SHARED_URL="${SHARED_DATABASE_URL}?preparedStatementCacheQueries=0"
+          fi
+          
           # Start container in detached mode
           CONTAINER_ID=$(docker run -d \
             --entrypoint "" \
@@ -766,7 +1178,7 @@ jobs:
             -e API_MANAGER_DATABASE_VALIDATION_QUERY="$API_MANAGER_DATABASE_VALIDATION_QUERY" \
             -e SHARED_DATABASE_TYPE="$SHARED_DATABASE_TYPE" \
             -e SHARED_DATABASE_DRIVER="$SHARED_DATABASE_DRIVER" \
-            -e SHARED_DATABASE_URL="$SHARED_DATABASE_URL" \
+            -e SHARED_DATABASE_URL="$ACTUAL_SHARED_URL" \
             -e SHARED_DATABASE_USERNAME="$SHARED_DATABASE_USERNAME" \
             -e SHARED_DATABASE_PASSWORD="$SHARED_DATABASE_PASSWORD" \
             -e SHARED_DATABASE_VALIDATION_QUERY="$SHARED_DATABASE_VALIDATION_QUERY" \
@@ -941,6 +1353,83 @@ jobs:
       - name: Wait 10 minutes after re-indexing (DB prep)
         run: sleep 600
 
+      - name: Dump migrated databases before test run
+        run: |
+          set -e
+          mkdir -p .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION
+          
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
+            echo "Dumping MySQL WSO2AM_APIMGT_DB..."
+            docker exec apim_db sh -c \
+              'mysqldump -uapim_user -papimpass --databases WSO2AM_APIMGT_DB --routines --events --triggers' \
+              > .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/apim_db_after_migration.sql
+          
+            echo "Dumping MySQL WSO2AM_COMMON_DB..."
+            docker exec shared_db sh -c \
+              'mysqldump -ushared_user -psharedpass --databases WSO2AM_COMMON_DB --routines --events --triggers' \
+              > .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/shared_db_after_migration.sql
+          
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            echo "Installing mssql-scripter inside a virtual environment..."
+          
+            # Create and activate a virtual environment
+            python3 -m venv /tmp/mssql_env
+            source /tmp/mssql_env/bin/activate
+          
+            # Install inside the venv
+            pip install mssql-scripter
+          
+            echo "Dumping MSSQL apim_db to .sql format..."
+            # Run the module directly via python so it doesn't get confused by the wrapper bug
+            python -m mssqlscripter -S localhost,1433 -U sa -P 'RootPass123!' -d apim_db --schema-and-data \
+              > .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/apim_db_after_migration.sql
+          
+            echo "Dumping MSSQL shared_db to .sql format..."
+            python -m mssqlscripter -S localhost,1434 -U sa -P 'RootPass123!' -d shared_db --schema-and-data \
+              > .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/shared_db_after_migration.sql
+          
+            # Deactivate the venv just to be clean
+            deactivate
+          
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            echo "Dumping PostgreSQL apim_db..."
+            docker exec -e PGPASSWORD=apimpass apim_db pg_dump -U apim_user -d apim_db \
+              > .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/apim_db_after_migration.sql
+
+            echo "Dumping PostgreSQL shared_db..."
+            docker exec -e PGPASSWORD=sharedpass shared_db pg_dump -U shared_user -d shared_db \
+              > .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/shared_db_after_migration.sql
+          
+          
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            echo "Dumping Oracle apim_db using Data Pump (expdp)..."
+            # Create a directory inside the container, map it in Oracle, and run expdp
+            docker exec apim_db bash -c "mkdir -p /tmp/dpdump && \
+              echo -e \"CREATE OR REPLACE DIRECTORY dp_dir AS '/tmp/dpdump';\nGRANT READ, WRITE ON DIRECTORY dp_dir TO APIM_DB_USER;\nEXIT;\" | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba && \
+              expdp APIM_DB_USER/apimpass@//localhost:1521/XEPDB1 schemas=APIM_DB_USER directory=dp_dir dumpfile=apim_db_after_migration.dmp logfile=apim_db_exp.log reuse_dumpfiles=YES"
+          
+            # Copy the binary dump file out of the container
+            docker cp apim_db:/tmp/dpdump/apim_db_after_migration.dmp .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/
+          
+            echo "Dumping Oracle shared_db using Data Pump (expdp)..."
+            docker exec shared_db bash -c "mkdir -p /tmp/dpdump && \
+              echo -e \"CREATE OR REPLACE DIRECTORY dp_dir AS '/tmp/dpdump';\nGRANT READ, WRITE ON DIRECTORY dp_dir TO SHARED_DB_USER;\nEXIT;\" | sqlplus -s sys/rootpass@//localhost:1521/XEPDB1 as sysdba && \
+              expdp SHARED_DB_USER/sharedpass@//localhost:1521/XEPDB1 schemas=SHARED_DB_USER directory=dp_dir dumpfile=shared_db_after_migration.dmp logfile=shared_db_exp.log reuse_dumpfiles=YES"
+          
+            docker cp shared_db:/tmp/dpdump/shared_db_after_migration.dmp .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/
+          fi
+          
+          ls -lh .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/
+
+      - name: Upload migrated DB dumps
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migrated-db-dumps-${{ matrix.db_type }}
+          path: .github/WORKFLOW_ARTIFACTS/DB_DUMPS_AFTER_MIGRATION/
+          retention-days: 7
+          if-no-files-found: error
+
       - name: Run Integration Tests on Migrated Databases
         working-directory: all-in-one-apim/modules/integration-v2
         env:
@@ -952,10 +1441,12 @@ jobs:
           DOCKER_BUILDKIT: 1
         run: |
           echo "=== Starting Integration Tests on Migrated Databases ==="
-          echo "Running tests against databases that have been migrated from APIM 3.2.0"
+          echo "Running tests against ${{ matrix.display_name }} databases that have been migrated from APIM 3.2.0"
+          
           echo "Maven will start the HTTP server automatically via pom.xml"
           echo "Using --add-host=host.docker.internal:host-gateway for Linux compatibility"
           echo ""
+          
           echo "=== Final file check before Maven ==="
           ZIP_PATH=$(find ../distribution/product/target -maxdepth 1 -name "wso2am-*-SNAPSHOT.zip" 2>/dev/null | head -n1)
           if [ -n "$ZIP_PATH" ] && [ -f "$ZIP_PATH" ]; then
@@ -966,20 +1457,61 @@ jobs:
             exit 1
           fi
 
-          export DOCKER_BUILDKIT=1
+          #  Replace '&amp;' with a standard '&' specifically for Maven 
+          CLEAN_SHARED_URL=$(echo "$SHARED_DATABASE_URL" | sed 's/&amp;/\&/g')
+          CLEAN_APIM_URL=$(echo "$API_MANAGER_DATABASE_URL" | sed 's/&amp;/\&/g')
+          
+          
+          echo ""
+          echo "=== Database Configuration Passed to Maven ==="
+          echo "Shared DB Type:       $SHARED_DATABASE_TYPE"
+          echo "Shared DB Driver:     $SHARED_DATABASE_DRIVER"
+          echo "Shared DB URL:        $CLEAN_SHARED_URL"
+          echo "Shared DB User:       $SHARED_DATABASE_USERNAME"
+          echo "Shared DB Validation: $SHARED_DATABASE_VALIDATION_QUERY"
+            echo "----------------------------------------------"
+          echo "APIM DB Type:         $API_MANAGER_DATABASE_TYPE"
+          echo "APIM DB Driver:       $API_MANAGER_DATABASE_DRIVER"
+          echo "APIM DB URL:          $CLEAN_APIM_URL"
+          echo "APIM DB User:         $API_MANAGER_DATABASE_USERNAME"
+          echo "APIM DB Validation:   $API_MANAGER_DATABASE_VALIDATION_QUERY"
+          echo "=============================================="
+          echo ""
+          
+          echo "Applying MSSQL concurrency fix..."    
+          if [ "${{ matrix.db_type }}" == "mssql" ]; then
+            echo "Enabling READ_COMMITTED_SNAPSHOT just before tests to prevent deadlocks..."
+            docker exec apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "ALTER DATABASE apim_db SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;"
+            docker exec shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -Q "ALTER DATABASE shared_db SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;"
+          fi
+
           mvn -B clean install \
             -Pmigration \
             -DskipBenchMarkTest=true \
             -DskipRestartTests=true \
-            -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+            -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway" \
+            -Dshared.database.type="$SHARED_DATABASE_TYPE" \
+            -Dshared.database.driver="$SHARED_DATABASE_DRIVER" \
+            -Dshared.database.url="$CLEAN_SHARED_URL" \
+            -Dshared.database.username="$SHARED_DATABASE_USERNAME" \
+            -Dshared.database.password="$SHARED_DATABASE_PASSWORD" \
+            -Dshared.database.validationQuery="$SHARED_DATABASE_VALIDATION_QUERY" \
+            -Dapim.database.type="$API_MANAGER_DATABASE_TYPE" \
+            -Dapim.database.driver="$API_MANAGER_DATABASE_DRIVER" \
+            -Dapim.database.url="$CLEAN_APIM_URL" \
+            -Dapim.database.username="$API_MANAGER_DATABASE_USERNAME" \
+            -Dapim.database.password="$API_MANAGER_DATABASE_PASSWORD" \
+            -Dapim.database.validationQuery="$API_MANAGER_DATABASE_VALIDATION_QUERY"
 
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: migration-test-reports
+          name: migration-test-reports-${{ matrix.db_type }}
           path: |
             all-in-one-apim/modules/integration-v2/tests-integration/**/target/surefire-reports/**
+            all-in-one-apim/modules/integration-v2/tests-integration/**/target/cucumber-report/**
+          retention-days: 7
           if-no-files-found: warn
 
   version-bump:

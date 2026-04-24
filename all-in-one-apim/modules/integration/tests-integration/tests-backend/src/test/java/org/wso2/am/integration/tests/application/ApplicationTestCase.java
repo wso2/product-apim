@@ -314,8 +314,10 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
                 "Incorrect consumer key returned");
     }
 
-    @Test(groups = {"webapp" }, description = "Regenerate secret by key mapping ID",
-            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
+// With the introduction of mutiple client secret support, regenerating the secret by key mapping ID is not supported.
+// Hence this test case is disabled.
+//    @Test(groups = {"webapp" }, description = "Regenerate secret by key mapping ID",
+//            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
     public void testRegenerateSecretForKeyMappingId() throws Exception {
         ApplicationKeyReGenerateResponseDTO reGenerateResponseDTO = restAPIStore
                 .regenerateSecretByKeyMappingId(applicationId3, app3KeyMappingId);

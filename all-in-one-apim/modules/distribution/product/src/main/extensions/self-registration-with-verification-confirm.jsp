@@ -120,6 +120,7 @@
             }
             String content = contentValueInJson.toString();
 
+            SignatureUtil.init();
             JSONObject cookieValueInJson = new JSONObject();
             cookieValueInJson.put("content", content);
             String signature = Base64.getEncoder().encodeToString(SignatureUtil.doSignature(content));
@@ -157,7 +158,7 @@
         <jsp:include page="includes/title.jsp"/>
         <% } %>
 
-        <link rel="icon" href="images/favicon.png" type="image/x-icon"/>
+        <link rel="icon" href="includes/favicon.png" type="image/png"/>
         <link href="libs/bootstrap_5.3.5/css/bootstrap.min.css" rel="stylesheet">
         <link href="css/Roboto.css" rel="stylesheet">
         <link href="css/custom-common.css" rel="stylesheet">

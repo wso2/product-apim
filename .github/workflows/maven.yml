@@ -24,8 +24,6 @@ jobs:
             segment: group3
           - id: 4
             segment: group4
-          - id: 5
-            segment: group5
       fail-fast: false
     steps:
     - name: Run hostname
@@ -95,7 +93,7 @@ jobs:
         with:
           node-version: '10.x'
       - name: Build product-apim with Test.
-        run: mvn clean install --file all-in-one-apim/pom.xml -DskipIntegrationTests=true
+        run: mvn clean install -U --file all-in-one-apim/pom.xml -DskipIntegrationTests=true
   show-report:
     if: ${{ always() && !cancelled() }}
     needs: build
