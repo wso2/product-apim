@@ -3,7 +3,7 @@ name: APIM Database Migration Tests
 on:
   workflow_dispatch: {}
   schedule:
-    # Run nightly at 00:00 UTC
+    # Run nightly build at 00:00 UTC
     - cron: '0 0 * * *'
 
 jobs:
