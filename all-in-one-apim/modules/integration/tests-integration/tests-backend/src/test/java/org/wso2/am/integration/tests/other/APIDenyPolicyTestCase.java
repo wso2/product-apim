@@ -161,14 +161,14 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
     public void testUpdateAPIDenyPolicyStatus() throws ApiException {
 
         String denyPolicyId = blockingConditionDTO.getConditionId();
-        String conditionType = blockingConditionDTO.getConditionType().toString();
         boolean conditionStatus = false;
 
         BlockingConditionStatusDTO blockingConditionStatusDTO = new BlockingConditionStatusDTO();
         blockingConditionStatusDTO.setConditionStatus(conditionStatus);
         blockingConditionStatusDTO.setConditionId(denyPolicyId);
 
-        ApiResponse<BlockingConditionDTO> updatedCondition = restAPIAdmin.updateDenyThrottlingPolicy(denyPolicyId, conditionType, blockingConditionStatusDTO);
+        ApiResponse<BlockingConditionDTO> updatedCondition = restAPIAdmin.updateDenyThrottlingPolicy(denyPolicyId,
+                blockingConditionStatusDTO);
         Assert.assertEquals(updatedCondition.getStatusCode(), HttpStatus.SC_OK);
 
         BlockingConditionDTO updatedBlockedCondition = updatedCondition.getData();
