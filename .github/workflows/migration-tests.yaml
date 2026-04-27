@@ -3,12 +3,12 @@ name: APIM Database Migration Tests
 on:
   workflow_dispatch: {}
   schedule:
-    # Run nightly at 00:00 UTC
+    # Run nightly build at 00:00 UTC
     - cron: '0 0 * * *'
 
 jobs:
   update-and-build:
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
 
     permissions:
       contents: write
@@ -101,7 +101,7 @@ jobs:
   prepare-and-migrate:
     needs: update-and-build
     name: prepare-and-migrate - ${{ matrix.display_name }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
     strategy:
       fail-fast: false
       matrix:
@@ -1516,7 +1516,7 @@ jobs:
 
   version-bump:
     needs: [update-and-build, prepare-and-migrate]
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       contents: write
     env:
