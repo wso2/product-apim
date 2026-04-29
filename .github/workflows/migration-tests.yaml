@@ -102,6 +102,10 @@ jobs:
     needs: update-and-build
     name: prepare-and-migrate - ${{ matrix.display_name }}
     runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -803,54 +807,64 @@ jobs:
           fi
 
           echo "Using APIM distribution: $DIST_PATH"
-
-          # Start a temporary HTTP server to expose the zip
+          
+          # Start a temporary HTTP server 
           DIST_DIR="all-in-one-apim/modules/distribution/product/target"
           cd "$DIST_DIR"
-          python3 -m http.server 8000 &
+          python3 -m http.server 8000 --bind 127.0.0.1 &
           SERVER_PID=$!
           cd - >/dev/null
-
+          
+          trap "kill $SERVER_PID 2>/dev/null || true" EXIT
+          
           sleep 3
-
+          
           ZIP_NAME=$(basename "$DIST_PATH")
-          DOCKER_EXTRA_HOSTS="--add-host=host.docker.internal:host-gateway"
-
-          # Build Docker image using official docker-apim Ubuntu Dockerfile,
+          
+          # Build Docker image using official docker-apim Ubuntu Dockerfile
           docker build \
-            $DOCKER_EXTRA_HOSTS \
+            --network=host \
             https://github.com/wso2/docker-apim.git#master:dockerfiles/ubuntu/apim \
             -t wso2am-migration:latest \
             --build-arg WSO2_SERVER="${APIM_SERVER_NAME}" \
-            --build-arg WSO2_SERVER_DIST_URL="http://host.docker.internal:8000/${ZIP_NAME}"
-
-          # Stop the temporary HTTP server
-          kill "$SERVER_PID" || true
-
+            --build-arg WSO2_SERVER_DIST_URL="http://127.0.0.1:8000/${ZIP_NAME}"
+          
           echo "Docker image built successfully"
           docker images | grep wso2am-migration || true
 
-      - name: Identity Migration - Download and Setup
-        env:
-          IDENTITY_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2is-migration-1.1.179-SNAPSHOT.zip"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Download Migration Clients from S3
         run: |
-          echo "=== Step 1: Identity Migration Setup ==="
-          
-          # Download Identity migration zip
-          echo "Downloading Identity migration resources..."
+          echo "=== Step 1: Fetching Migration Clients from S3 ==="
           mkdir -p .github/MIGRATION_RESOURCES
-          curl -fSL "$IDENTITY_MIGRATION_S3_URL" -o .github/MIGRATION_RESOURCES/identity-migration.zip
           
-          # Unzip
-          unzip -q .github/MIGRATION_RESOURCES/identity-migration.zip -d .github/MIGRATION_RESOURCES/identity-migration
+          # Find and download the latest APIM migration zip
+          APIM_ZIP=$(aws s3 ls "s3://${{ secrets.S3_BUCKET_NAME }}/migration_clients/" | grep "wso2am-migration-" | awk '{print $4}' | sort -V | tail -n1)
+          if [ -z "$APIM_ZIP" ]; then echo "APIM migration zip not found in S3"; exit 1; fi
+          echo "Downloading $APIM_ZIP..."
+          aws s3 cp "s3://${{ secrets.S3_BUCKET_NAME }}/migration_clients/$APIM_ZIP" .github/MIGRATION_RESOURCES/apim-migration.zip
           
-          echo "Identity migration resources downloaded and extracted"
+          # Find and download the latest IS migration zip
+          IS_ZIP=$(aws s3 ls "s3://${{ secrets.S3_BUCKET_NAME }}/migration_clients/" | grep "wso2is-migration-" | awk '{print $4}' | sort -V | tail -n1)
+          if [ -z "$IS_ZIP" ]; then echo "IS migration zip not found in S3"; exit 1; fi
+          echo "Downloading $IS_ZIP..."
+          aws s3 cp "s3://${{ secrets.S3_BUCKET_NAME }}/migration_clients/$IS_ZIP" .github/MIGRATION_RESOURCES/identity-migration.zip
+
 
       - name: Identity Migration - Copy Resources and Run
         run: |
           echo "=== Step 2: Identity Migration Execution ==="
           
-          # First, verify the extracted structure locally
+          # Extract the downloaded zip
+          unzip -q .github/MIGRATION_RESOURCES/identity-migration.zip -d .github/MIGRATION_RESOURCES/identity-migration
+          echo "Extracted Identity migration resources"
+
+          # Verify the extracted structure locally
           echo "=== Verifying extracted migration zip structure ==="
           find .github/MIGRATION_RESOURCES/identity-migration -type f -name "migration-config.yaml" | head -5
           find .github/MIGRATION_RESOURCES/identity-migration -type d -name "migration-resources" | head -5
@@ -983,27 +997,14 @@ jobs:
             echo ""
             echo "Identity migration run completed"
 
-      - name: APIM Migration - Download and Setup
-        env:
-         APIM_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2am-migration-4.7.0.1-SNAPSHOT.zip"
-        run: |
-          echo "=== Step 3: APIM Migration Setup ==="
-          
-          # Download APIM migration zip
-          echo "Downloading APIM migration resources..."
-          mkdir -p .github/MIGRATION_RESOURCES
-          curl -fSL "$APIM_MIGRATION_S3_URL" -o .github/MIGRATION_RESOURCES/apim-migration.zip
-          
-          # Unzip
-          unzip -q .github/MIGRATION_RESOURCES/apim-migration.zip -d .github/MIGRATION_RESOURCES/apim-migration
-          
-          echo "APIM migration resources downloaded and extracted"
-
       - name: APIM Migration - Pre-Migration
         run: |
-          echo "=== Step 4: APIM Pre-Migration ==="
+          echo "=== Step 3: APIM Pre-Migration ==="
           
-          # First, verify the extracted structure locally
+          # Extract the downloaded zip
+          unzip -q .github/MIGRATION_RESOURCES/apim-migration.zip -d .github/MIGRATION_RESOURCES/apim-migration
+          
+          # verify the extracted structure locally
           echo "=== Verifying extracted APIM migration zip structure ==="
           find .github/MIGRATION_RESOURCES/apim-migration -type f -name "migration-config.yaml" | head -5
           find .github/MIGRATION_RESOURCES/apim-migration -type d -name "migration-resources" | head -5
@@ -1128,7 +1129,7 @@ jobs:
 
       - name: APIM Migration - Run Migration
         run: |
-          echo "=== Step 5: APIM Migration ==="
+          echo "=== Step 4: APIM Migration ==="
           
           # First, verify the extracted structure locally
           echo "=== Verifying extracted APIM migration zip structure ==="
@@ -1262,7 +1263,7 @@ jobs:
 
       - name: Re-indexing - Configure and Run
         run: |
-          echo "=== Step 6: Re-indexing API Artifacts ==="
+          echo "=== Step 5: Re-indexing API Artifacts ==="
           
           # Start container in detached mode
           CONTAINER_ID=$(docker run -d \
