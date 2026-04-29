@@ -108,7 +108,7 @@
     boolean skipSignUpEnableCheck = Boolean.parseBoolean(request.getParameter("skipsignupenablecheck"));
     boolean isPasswordProvisionEnabled = Boolean.parseBoolean(request.getParameter("passwordProvisionEnabled"));
     boolean isSaaSApp = Boolean.parseBoolean(request.getParameter("isSaaSApp"));
-    String callback = Encode.forHtmlAttribute(request.getParameter("callback"));
+    String callback = request.getParameter("callback");
     User user = IdentityManagementServiceUtil.getInstance().resolveUser(username, tenantDomain, isSaaSApp);
 
     if (skipSignUpEnableCheck) {
@@ -190,6 +190,19 @@
         return;
     }
 
+    /**
+     * Validate the back to login URL. If the URL is not valid, set the URL to null.
+     */
+    if (StringUtils.isBlank(callback) || StringUtils.equalsIgnoreCase(callback, "null")) {
+        callback = null;
+    } else if (!AuthenticationEndpointUtil.isValidMultiOptionURI(callback)) {
+        callback = null;
+    }
+
+
+    /**
+     * If the callback is null, set the callback to the user portal URL.
+     */
     if (StringUtils.isBlank(callback)) {
         callback = IdentityManagementEndpointUtil.getUserPortalUrl(
                 application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL), tenantDomain);
@@ -487,7 +500,7 @@
 
                                         if (callback != null) {
                                     %>
-                                    <input type="hidden" name="callback" value="<%=callback %>"/>
+                                    <input type="hidden" name="callback" value="<%=Encode.forHtmlAttribute(callback) %>"/>
                                     <% for (int index = 0; index < missingClaimList.length; index++) {
                                         String claim = missingClaimList[index];
                                         String claimDisplayName = missingClaimDisplayName[index];
