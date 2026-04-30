@@ -29,6 +29,8 @@ public class Constants {
     public static final String XML_AMPERSAND = "&amp;";
     public static final Pattern CONTEXT_PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^}]+)}}");
 
+    public static final String HTTP_SCHEME = "http";
+    public static final String HTTPS_SCHEME = "https";
 
     public static final long DEPLOYMENT_WAIT_TIME = 60 * 1000;
     public static final long UNDEPLOYMENT_WAIT_TIME = 30 * 1000;

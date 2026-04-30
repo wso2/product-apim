@@ -29,6 +29,10 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
@@ -72,10 +76,17 @@ public class SimpleHTTPClient {
                     .build();
 
             // Disable hostname mismatch checks
-            SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(
-                    sslContext, NoopHostnameVerifier.INSTANCE);
+            SSLConnectionSocketFactory sslSocketFactory =
+                    new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
 
-            PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+            Registry<ConnectionSocketFactory> socketFactoryRegistry =
+                    RegistryBuilder.<ConnectionSocketFactory>create()
+                            .register(Constants.HTTP_SCHEME, PlainConnectionSocketFactory.getSocketFactory())
+                            .register(Constants.HTTPS_SCHEME, sslSocketFactory)
+                            .build();
+
+            PoolingHttpClientConnectionManager connManager =
+                    new PoolingHttpClientConnectionManager(socketFactoryRegistry);
             connManager.setMaxTotal(1000);        // total max connections
             connManager.setDefaultMaxPerRoute(100);   // max connections per route
 
@@ -85,7 +96,6 @@ public class SimpleHTTPClient {
 
             this.client = HttpClients.custom()
                     .setConnectionManager(connManager)
-                    .setSSLSocketFactory(csf)
                     .setDefaultRequestConfig(requestConfig)
                     .evictExpiredConnections()
                     .disableCookieManagement() // Disable sending or storing cookies
