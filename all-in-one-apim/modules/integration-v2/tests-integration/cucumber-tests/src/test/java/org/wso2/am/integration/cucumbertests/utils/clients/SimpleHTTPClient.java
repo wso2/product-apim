@@ -29,6 +29,7 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.EntityTemplate;
@@ -36,7 +37,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
-import org.apache.http.ssl.TrustStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.integration.test.utils.Constants;
@@ -68,10 +68,12 @@ public class SimpleHTTPClient {
         try {
             // Initialize SSL Context to trust all certificates
             SSLContext sslContext = SSLContexts.custom()
-                    .loadTrustMaterial((TrustStrategy) new TrustAllStrategy())
+                    .loadTrustMaterial(new TrustAllStrategy())
                     .build();
 
-            SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+            // Disable hostname mismatch checks
+            SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(
+                    sslContext, NoopHostnameVerifier.INSTANCE);
 
             PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
             connManager.setMaxTotal(1000);        // total max connections
