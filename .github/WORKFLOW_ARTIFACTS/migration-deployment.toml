@@ -7,6 +7,8 @@ url = "$env{API_MANAGER_DATABASE_URL}"
 username = "$env{API_MANAGER_DATABASE_USERNAME}"
 password = "$env{API_MANAGER_DATABASE_PASSWORD}"
 validationQuery = "$env{API_MANAGER_DATABASE_VALIDATION_QUERY}"
+pool_options.maxActive = "100"
+pool_options.maxWait = "60000"
 
 [database.shared_db]
 type = "$env{SHARED_DATABASE_TYPE}"
@@ -15,6 +17,8 @@ url = "$env{SHARED_DATABASE_URL}"
 username = "$env{SHARED_DATABASE_USERNAME}"
 password = "$env{SHARED_DATABASE_PASSWORD}"
 validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
+pool_options.maxActive = "100"
+pool_options.maxWait = "60000"
 
 # Gateway environment configuration
 [[apim.gateway.environment]]
