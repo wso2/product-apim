@@ -5,8 +5,17 @@ Feature: Migrated API Versioning
 
 # Step 1: Find the api
   Scenario Outline: Migrated API Retrieval
-    When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
+    When I find the API created with the name "<apiName>" and version "<apiVersion>"
+    And I wait until the response status code is 200
+    And I extract response field "count" and store it as "<apiCount>"
+    And the actual value of "<apiCount>" should match the expected value:
+      """
+      1
+      """
+    And I extract response field "list[0].id" and store it as "<apiID>"
+
     And I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
@@ -19,19 +28,22 @@ Feature: Migrated API Versioning
 
   Scenario Outline: Create new versions of migrated APIs
     # Step 2: Create a new version
-    When I create a new version "<newVersion>" of "apis" resource "<apiID>" with default version "<defaultProperty>" as "<newVersionId>"
-    Then The response status code should be <expectedStatus>
+    When I create a new version "<newVersion>" of "apis" resource "<apiID>" with default version "<defaultProperty>"
+    And I wait until the response status code is <expectedStatus>
     And The response should contain "<newVersion>"
     And The response should contain "<defaultProperty>"
-    And The lifecycle status of API "<newVersionId>" should be "<expectedLifecycle>"
+    And I extract response field "id" and store it as "<newVersionId>"
+    Then I get the lifecycle status of API "<newVersionId>"
+    Then I wait until the response status code is 200 and the value of response field "state" is "<expectedLifecycle>"
 
     # Step 3: Enable/disable default versioning
     When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
@@ -39,7 +51,7 @@ Feature: Migrated API Versioning
 
     # Step 4: Delete the version
     When I delete the "apis" resource with id "<newVersionId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     Examples:
     | apiID       | newVersion | defaultProperty | expectedStatus | newVersionId    | expectedLifecycle | apiUpdatePayload              | configType             | configValue    |

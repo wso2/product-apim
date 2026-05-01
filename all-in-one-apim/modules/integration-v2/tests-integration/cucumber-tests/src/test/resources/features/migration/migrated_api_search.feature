@@ -6,7 +6,7 @@ Feature: Search for migrated APIs in dev portal
  # Step 1: Search apis in devportal
   Scenario Outline: API search
     When I search DevPortal APIs with query "<query>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And The response should contain "<expectedValue>"
 
     Examples:
@@ -18,9 +18,17 @@ Feature: Search for migrated APIs in dev portal
 
   # Step 2: Find devportal documents
   Scenario Outline: Find devportal documents
-    When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
+    When I find the API created with the name "<apiName>" and version "<apiVersion>"
+    And I wait until the response status code is 200
+    And I extract response field "count" and store it as "<apiCount>"
+    And the actual value of "<apiCount>" should match the expected value:
+      """
+      1
+      """
+    And I extract response field "list[0].id" and store it as "<apiID>"
+
     And I retrieve devportal documents for "<apiID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And The response should contain "adp-inline-doc"
 
     Examples:

@@ -10,17 +10,21 @@ Feature: Publisher API Management
   Scenario: Create new application
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "<createAppPayload>"
     And I create an application with payload "<createAppPayload>"
+    And I wait until the response status code is 201
+    And I extract response field "applicationId" and store it as "<createdAppId>"
     And I retrieve the application with id "<createdAppId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
   Scenario: Create a new API, deploy and publish it
     When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "<createdApiId>" and deployed it
     And I retrieve the "apis" resource with id "<createdApiId>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<createdAPIPayload>"
     And I wait for deployment of the resource in "<createdAPIPayload>"
     And I publish the "apis" resource with id "<createdApiId>"
-    Then The response status code should be 200
-    Then The lifecycle status of API "<createdApiId>" should be "Published"
+    And I wait until the response status code is 200
+    Then I get the lifecycle status of API "<createdApiId>"
+    Then I wait until the response status code is 200 and the value of response field "state" is "Published"
 
   Scenario: Subscribe the new API using the created application
     And I put the following JSON payload in context as "<apiSubscriptionPayload>"
@@ -32,7 +36,7 @@ Feature: Publisher API Management
     }
     """
     And I create a subscription using payload "<apiSubscriptionPayload>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I extract response field "subscriptionId" and store it as "<subscriptionId>"
 
   # Generate the initial production key mapping for the application
@@ -47,7 +51,7 @@ Feature: Publisher API Management
     }
     """
     And I generate client credentials for application id "<createdAppId>" with payload "<generateApplicationKeysPayload>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And I extract response field "consumerSecret" and store it as "<appConsumerSecret>"
     And I extract response field "keyMappingId" and store it as "<keyMappingId>"
 
@@ -64,7 +68,7 @@ Feature: Publisher API Management
     }
     """
     And I generate a client secret for application id "createdAppId" using payload "<generateApplicationSecretPayload1>" and key mapping id "<keyMappingId>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I extract response field "secretValue" and store it as "<generatedConsumerSecret1>"
     And I extract response field "secretId" and store it as "<generatedSecretId1>"
 
@@ -74,7 +78,7 @@ Feature: Publisher API Management
     {}
     """
     And I generate a client secret for application id "createdAppId" using payload "<generateApplicationSecretPayload2>" and key mapping id "<keyMappingId>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I extract response field "secretValue" and store it as "<generatedConsumerSecret2>"
     And I extract response field "secretId" and store it as "<generatedSecretId2>"
 
@@ -89,7 +93,7 @@ Feature: Publisher API Management
     }
     """
     And I request an access token for application id "createdAppId" using payload "<createApplicationAccessTokenPayload>" and key mapping id "<keyMappingId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And I extract response field "accessToken" and store it as "<generatedAccessTokenForInitialSecret>"
 
     # Generate token using the first additional secret
@@ -101,7 +105,7 @@ Feature: Publisher API Management
     }
     """
     And I request an access token for application id "<createdAppId>" using payload "<createAccessTokenPayloadForGeneratedSecret1>" and key mapping id "<keyMappingId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And I extract response field "accessToken" and store it as "<generatedAccessTokenForGeneratedSecret1>"
 
   # Verify that the issued tokens can invoke the API
@@ -117,8 +121,7 @@ Feature: Publisher API Management
   # Confirm that the application now has three secrets in total
   Scenario: Verify the application has three client secrets
     When I retrieve existing application secrets for "<createdAppId>" using key mapping id "<keyMappingId>"
-    Then The response status code should be 200
-    And Secrets count should be 3
+    And I wait until the response status code is 200 and the value of response field "count" is "3"
     # Store the original secret id so it can be deleted later.
     And I extract the first secret details from the response and store it as "<initialSecretId>"
 
@@ -131,7 +134,7 @@ Feature: Publisher API Management
     }
     """
     And I revoke the client secret for application id "<createdAppId>" using payload "<deleteInitialSecretPayload>" and key mapping id "<keyMappingId>"
-    Then The response status code should be 204
+    And I wait until the response status code is 204
 
   # Delete the first additional secret
   Scenario: Delete the first additional client secret
@@ -142,7 +145,7 @@ Feature: Publisher API Management
     }
     """
     And I revoke the client secret for application id "<createdAppId>" using payload "<deleteGeneratedSecretPayload1>" and key mapping id "<keyMappingId>"
-    Then The response status code should be 204
+    And I wait until the response status code is 204
 
   # Attempt to delete the latest remaining secret
   # This is expected to fail
@@ -154,13 +157,12 @@ Feature: Publisher API Management
     }
     """
     And I revoke the client secret for application id "<createdAppId>" using payload "<deleteGeneratedSecretPayload2>" and key mapping id "<keyMappingId>"
-    # Then The response status code should be 400
+    # And I wait until the response status code is 400
 
   # After deleting the first two secrets, only the latest secret should remain
   Scenario: Verify only the latest client secret remains
     When I retrieve existing application secrets for "<createdAppId>" using key mapping id "<keyMappingId>"
-    Then The response status code should be 200
-    And Secrets count should be 1
+    And I wait until the response status code is 200 and the value of response field "count" is "1"
 
   # The oldest issued token should remain valid even after its secret is deleted
   Scenario: Verify oldest issued token remains valid after secret deletion
@@ -171,18 +173,18 @@ Feature: Publisher API Management
   Scenario: Share application with organization
     When I put JSON payload from file "artifacts/payloads/update_apim_test_app.json" in context as "<appUpdatePayload>"
     And I update the application "<createdAppId>" with payload "<appUpdatePayload>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And The response should contain "org1"
 
   # Clean up the resources
   Scenario: Delete the subscription
     When I delete the subscription with id "<subscriptionId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
   Scenario: Delete the created application
     When I delete the application with id "<createdAppId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
   Scenario: Delete the created API
     When I delete the "apis" resource with id "<createdApiId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200

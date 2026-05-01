@@ -6,12 +6,13 @@ Feature: Migrated Applications with multiple consumer secrets disabled
 
   # Find migrated application
   Scenario: Retrieve and update migrated Application
-    When I fetch the application with "CustomerApp2" as "<migratedAppId>"
-    Then The response status code should be 200
+    When I fetch the application with name "CustomerApp2"
+    Then I wait until the response status code is 200
+    And I extract response field "list[0].applicationId" and store it as "<migratedAppId>"
 
   Scenario: Get consumer secret of the Migrated application
     When I retrieve existing application keys for "<migratedAppId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     # Get the existing consumerSecret and keyMappingId of the migrated application
     And I extract the first oauth2 key details from the application keys response and store them as "<appConsumerSecret>" and "<keyMappingId>"
 
@@ -25,5 +26,5 @@ Feature: Migrated Applications with multiple consumer secrets disabled
     }
     """
     And I request an access token for application id "<migratedAppId>" using payload "<AccessTokenPayload>" and key mapping id "<keyMappingId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 

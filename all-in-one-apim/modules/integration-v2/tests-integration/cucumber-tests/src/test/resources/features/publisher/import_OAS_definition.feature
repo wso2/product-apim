@@ -9,11 +9,13 @@ Feature: Create APIs by importing Open API Specification (2, 3, 3.1)
 
   Scenario Outline: Import API Definition
     # Step 1: Import API definition and create api
-    When I import open api definition from "<apiDefinition>" , additional properties from "<additionalProperty>" and create api as "<apiID>"
-    Then The response status code should be 201
+    When I import open api definition from "<apiDefinition>", additional properties from "<additionalProperty>" and create api
+    And I wait until the response status code is 201
+    And I extract response field "id" and store it as "<apiID>"
 
     When  I retrieve the "apis" resource with id "<apiID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiPayload>"
 
     # Step 2: Create a new revision of an API and save in context as "revisionId"
@@ -24,29 +26,34 @@ Feature: Create APIs by importing Open API Specification (2, 3, 3.1)
     }
     """
     And I make a request to create a revision for "apis" resource "<apiID>" with payload "<createRevisionPayload>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
+    And I extract response field "id" and store it as "<revisionId>"
+    And I wait for 3 seconds
 
     # Step 3: Deploy revision to gateway environment
     When I deploy revision "revisionId" of "apis" resource "<apiID>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I wait for deployment of the resource in "<apiPayload>"
 
     # Step 4: Publish the API
-    And I publish the "apis" resource with id "<apiID>"
-    Then The response status code should be 200
-    Then The lifecycle status of API "<apiID>" should be "Published"
+    When I publish the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
+    Then I get the lifecycle status of API "<apiID>"
+    Then I wait until the response status code is 200 and the value of response field "state" is "Published"
 
    # Step 5: Subscribe and invoke
     When I subscribe to resource "<apiID>" using application "<createdAppId>" and store subscription as "<subscriptionID>"
     And I obtain an access token with scope "" for application "<createdAppId>" using key mapping "<keyMappingId>" and consumer secret "<consumerSecret>" and store as "<generatedAccessToken>"
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
-
     Then The response status code should be 200
-    And I delete the subscription with id "<subscriptionID>"
 
-  # Step 5: Remove the created API
+    # Step 6: Delete the subscription
+    When I delete the subscription with id "<subscriptionID>"
+    And I wait until the response status code is 200
+
+    # Step 5: Remove the created API
     When I delete the "apis" resource with id "<apiID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     Examples:
       | apiDefinition                                       | additionalProperty                                         | apiID         | apiResource                    | apiPayload     | subscriptionID |
@@ -54,7 +61,6 @@ Feature: Create APIs by importing Open API Specification (2, 3, 3.1)
       | artifacts/payloads/OAS/OAS3ApiDefinition.json       | artifacts/payloads/OAS/OAS3AdditionalProperties.json       | oas3ApiId     | /oas3/1.0.0/hello              | oas3ApiPayload | oas3ApiSubId   |
       | artifacts/payloads/OAS/OAS3.1ApiDefinition.json     | artifacts/payloads/OAS/OAS3.1AdditionalProperties.json     | oas31ApiId     | /oas31/1.0.0/hello            | oas31ApiPayload| oas31ApiSubId  |
 
-
   Scenario: Removing created resource
     When I delete the application with id "createdAppId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
