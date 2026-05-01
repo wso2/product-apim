@@ -29,6 +29,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.RequestAction;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -254,7 +255,7 @@ public class BaseSteps {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         TestContext.set(Utils.normalizeContextKey(key), response.getData());
-        Thread.sleep(Constants.INITIAL_INDEXING_TIME);
+        Thread.sleep(Constants.WAIT_TIME);
     }
 
     /**
@@ -267,6 +268,69 @@ public class BaseSteps {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertEquals(response.getResponseCode(), expectedStatusCode, response.getData());
+    }
+
+
+    /**
+     * Retrieves a previously prepared request and executes it until
+     * the desired HTTP status code is received or the maximum retry limit is reached.
+     *
+     * @param expectedCode The expected HTTP status code
+     * @throws InterruptedException ]
+     */
+    @And("I wait until the response status code is {int}")
+    public void iWaitUntilStatus(int expectedCode) throws InterruptedException {
+
+        // Retrieve prepared request logic from context
+        RequestAction requestAction = Utils.getPendingHttpRequest();
+
+        // Execute with retry loop until expected status is met
+        HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode, res -> true);
+        TestContext.set(Constants.HTTP_RESPONSE, finalResponse);
+
+        Assert.assertEquals(finalResponse.getResponseCode(), expectedCode,
+                "The request failed to return the expected status code after retries." +
+                        finalResponse.getData());
+    }
+
+    /**
+     * Waits until the pending HTTP request returns the expected response status code
+     * and the specified JSON response field contains the expected value.
+     *
+     * @param expectedCode  the expected HTTP response status code
+     * @param fieldName     the JSON response field to validate
+     * @param expectedValue the expected value of the specified JSON field
+     * @throws InterruptedException if the retry wait is interrupted
+     * @throws IOException          if an error occurs while extracting the field value
+     *                              from the response payload
+     */
+    @Then("I wait until the response status code is {int} and the value of response field {string} is {string}")
+    public void iWaitUntilStatusAndFieldValue(int expectedCode, String fieldName, String expectedValue) throws InterruptedException, IOException {
+
+        RequestAction requestAction = Utils.getPendingHttpRequest();
+
+        HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode,
+                response -> {
+                    // Extract value from JSON
+                    Object actualValue;
+                    try {
+                        actualValue = Utils.extractValueFromPayload(response.getData(), fieldName);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    // Return true if value matches
+                    return actualValue != null && String.valueOf(actualValue).equalsIgnoreCase(expectedValue);
+                }
+        );
+
+        TestContext.set("httpResponse", finalResponse);
+
+        Assert.assertEquals(finalResponse.getResponseCode(), expectedCode, "HTTP Status Code mismatch.");
+
+        Object actualFieldVal = Utils.extractValueFromPayload(finalResponse.getData(), fieldName);
+        Assert.assertTrue(expectedValue.equalsIgnoreCase(String.valueOf(actualFieldVal)),
+                String.format("Field '%s' was [%s] but expected [%s]. Data: %s",
+                        fieldName, actualFieldVal, expectedValue, finalResponse.getData()));
     }
 
     /**
@@ -336,8 +400,6 @@ public class BaseSteps {
         }
 
         TestContext.set(Utils.normalizeContextKey(targetContextKey), value);
-        System.out.println("Extracted value for field '" + fieldPath + "' from payload '"
-                + sourceContextKey + "': " + value);
     }
 
     /**
@@ -450,12 +512,13 @@ public class BaseSteps {
         HttpResponse retrievedResponse = null;
 
         for (int i = 0; i < maxRetries; i++) {
+            logger.info("[Attempt {}/{}] Fetching resource {} with ID: {}", i, maxRetries, resourceType, resourceId);
             Map<String, String> headers = new HashMap<>();
             headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                     "Bearer " + TestContext.get("publisherAccessToken").toString());
 
             retrievedResponse = SimpleHTTPClient.getInstance().doGet(
-                    Utils.getResourceEndpointURL(baseUrl,resourceType,resourceId), headers);
+                    Utils.getResourceEndpointURL(baseUrl, resourceType, resourceId), headers);
 
             if (retrievedResponse.getResponseCode() == 200) {
                 try {
@@ -481,6 +544,7 @@ public class BaseSteps {
 
         // Final fall back
         if (!configMatches) {
+            logger.warn("Criteria not met. Falling back to initial update response verification.");
             verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
         }
     }
@@ -548,7 +612,7 @@ public class BaseSteps {
      * Waits for the APIM server to be ready by polling the gateway health check endpoint.
      */
     @Then("I wait for the APIM server to be ready")
-    public void waitForAPIMServerToBeReady() throws IOException, InterruptedException {
+    public void waitForAPIMServerToBeReady()  {
 
         String url = Utils.getGatewayHealthCheckURL(baseUrl);
         long currentTime = System.currentTimeMillis();
@@ -572,6 +636,19 @@ public class BaseSteps {
         }
         Assert.assertTrue(isServerReady, "APIM server is not ready even after waiting for " +
                 Constants.DEPLOYMENT_WAIT_TIME /60000 + " minutes");
+    }
+
+    /**
+     * Pauses the execution for a fixed duration to allow the indexing engine
+     * and background registry tasks to stabilize after server startup or migration.
+     *
+     * @throws InterruptedException if the sleep thread is interrupted.
+     */
+    @And("I wait for the system indexing to stabilize")
+    public void iWaitToStabilizeIndexing() throws InterruptedException {
+        logger.info("Waiting {}s for system indexing to stabilize...", Constants.INITIAL_INDEXING_TIME / 1000);
+        Thread.sleep(Constants.INITIAL_INDEXING_TIME);
+        logger.info("Indexing stabilization period completed.");
     }
 
     /**
@@ -724,14 +801,23 @@ public class BaseSteps {
                             + contextValue.getClass().getSimpleName());
         }
 
-        Map<String, String> expectedProperties = propertiesTable.asMap(String.class, String.class);
+        // Get the raw map from the DataTable
+        Map<String, String> rawProperties = propertiesTable.asMap(String.class, String.class);
+        Map<String, String> resolvedProperties = new HashMap<>();
 
-        JSONObject matchedObject = Utils.findMatchingJsonObjectInArray(jsonArray, expectedProperties);
+        // Resolve if values are context keys
+        for (Map.Entry<String, String> entry : rawProperties.entrySet()) {
+            Object resolvedValue = Utils.resolveIfContextKey(entry.getValue());
+            resolvedProperties.put(entry.getKey(), String.valueOf(resolvedValue));
+        }
+
+        JSONObject matchedObject = Utils.findMatchingJsonObjectInArray(jsonArray, resolvedProperties);
         TestContext.set(Utils.normalizeContextKey(outputKey), matchedObject);
     }
 
     /**
      * Verifies that the actual value stored in context matches the expected value.
+     * Expected value can be a literal string or a context key.
      *
      * @param actualKey TestContext key containing the actual value
      * @param expectedValue expected value as a string
@@ -740,6 +826,7 @@ public class BaseSteps {
     public void theActualValueShouldMatchTheExpectedValue(String actualKey, String expectedValue) {
 
         Object actualValue = Utils.resolveFromContext(actualKey);
-        Utils.assertConfigValueMatchesExpectedValue(actualValue, expectedValue);
+        String finalExpectedValue = Utils.resolveIfContextKey(expectedValue).toString();
+        Utils.assertConfigValueMatchesExpectedValue(actualValue, finalExpectedValue);
     }
 }

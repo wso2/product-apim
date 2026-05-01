@@ -5,8 +5,17 @@ Feature: Migrated API Updates
 
 # Step 1: Find the api
   Scenario Outline: Migrated API Retrieval
-    When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
+    When I find the API created with the name "<apiName>" and version "<apiVersion>"
+    And I wait until the response status code is 200
+    And I extract response field "count" and store it as "<apiCount>"
+    And the actual value of "<apiCount>" should match the expected value:
+      """
+      1
+      """
+    And I extract response field "list[0].id" and store it as "<apiID>"
+
     And I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
@@ -22,8 +31,9 @@ Feature: Migrated API Updates
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
@@ -43,8 +53,9 @@ Feature: Migrated API Updates
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
@@ -70,6 +81,7 @@ Feature: Migrated API Updates
 # Step 4: Modify operations by updating existing scopes to resource(refer artifacts/payloads/MigratedAPIs for existing configs)
   Scenario Outline: Update Scopes
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiUpdatePayload>"
     # Extract the current operations array from the payload
     And I get the value from json payload "<apiUpdatePayload>" at path "operations" and store it as "<operationArray>"
@@ -80,10 +92,11 @@ Feature: Migrated API Updates
       """
     # Update the API payload with the modified operations array
     When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "operations" and value from context "<operationArray>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     # Validate the added resource and scopes in the response
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiResponsePayload>"
     And I extract response field "operations" and store it as "<responseOperationArray>"
     Then I find the resource with following properties in "<responseOperationArray>" as "<newlyAddedResourceInResponse>"
@@ -107,9 +120,10 @@ Feature: Migrated API Updates
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
-    And The "apis" resource should reflect the updated "<configType>" as:
+    And I wait until the response status code is 200
+     And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
       """
@@ -130,8 +144,9 @@ Feature: Migrated API Updates
       """
       <endpointUpdateConfig>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "endpointConfig" as:
       """
       <endpointUpdateConfig>

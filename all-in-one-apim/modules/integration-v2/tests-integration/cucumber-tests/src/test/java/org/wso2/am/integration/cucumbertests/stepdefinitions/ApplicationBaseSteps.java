@@ -24,6 +24,7 @@ import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.RequestAction;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -50,29 +51,32 @@ public class ApplicationBaseSteps {
         currentuser = tenant.getContextUser();
     }
 
-    BaseSteps baseSteps = new BaseSteps();
-
     /**
      * Creates a new application in the Developer Portal using a JSON payload.
      * The created application ID is stored as "createdAppId" in the test context for use in subsequent steps.
-     * 
+     *
      * @param payload Context key containing the application creation JSON payload
      */
     @When("I create an application with payload {string}")
-    public void iCreateAnApplicationWithJsonPayload(String payload) throws IOException {
+    public void iCreateAnApplicationWithJsonPayload(String payload) {
 
         String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String url = Utils.getApplicationCreateURL(baseUrl);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse applicationCreateResponse = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getApplicationCreateURL(baseUrl), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance()
+                        .doPost(url, headers, jsonPayload,
+                                Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Application creation failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", applicationCreateResponse);
-        Assert.assertEquals(applicationCreateResponse.getResponseCode(), 201, applicationCreateResponse.getData());
-        TestContext.set("createdAppId", Utils.extractValueFromPayload(applicationCreateResponse.getData(), "applicationId"));
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -81,17 +85,23 @@ public class ApplicationBaseSteps {
      * @param appId Context key containing the application ID to delete
      */
     @When("I delete the application with id {string}")
-    public void iDeleteApplication(String appId) throws IOException{
+    public void iDeleteApplication(String appId) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
+        String url = Utils.getApplicationEndpointURL(baseUrl, actualAppId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse applicationDeleteResponse = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getApplicationEndpointURL(baseUrl, actualAppId), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doDelete(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Application deletion failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", applicationDeleteResponse);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -100,47 +110,48 @@ public class ApplicationBaseSteps {
      * @param appId Context key containing the application ID to retrieve
      */
     @When("I retrieve the application with id {string}")
-    public void iShouldBeAbleToRetrieveApplication(String appId) throws Exception {
+    public void iShouldBeAbleToRetrieveApplication(String appId) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
+        String url = Utils.getApplicationEndpointURL(baseUrl, actualAppId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse applicationRetrieveResponse = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationEndpointURL(baseUrl, actualAppId), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Application retrieval failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", applicationRetrieveResponse);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
-     * Searches for an application by name and stores its ID in the test context.
+     * Searches for an application by name.
      *
      * @param applicationName The name of the application to search for
-     * @param appId Context key where the found application ID will be stored
      */
-    @When("I fetch the application with {string} as {string}")
-    public void iFetchTheApplicationWithAs(String applicationName, String appId) throws IOException {
+    @When("I fetch the application with name {string}")
+    public void iFetchTheApplicationWithAs(String applicationName)  {
+
+        String url = Utils.getApplicationSearchURL(baseUrl, applicationName);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationSearchURL(baseUrl, applicationName), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to fetch application: " + applicationName, e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-
-        JSONObject responseJson = new JSONObject(response.getData());
-        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
-            String applicationId = responseJson
-                    .getJSONArray("list")
-                    .getJSONObject(0)
-                    .getString("applicationId");
-            TestContext.set(Utils.normalizeContextKey(appId), applicationId);
-        } else {
-            throw new IOException("No applications found with name: " + applicationName);
-        }
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -150,20 +161,26 @@ public class ApplicationBaseSteps {
      * @param updatePayload Context key containing the application update JSON payload
      */
     @When("I update the application {string} with payload {string}")
-    public void iUpdateTheApplicationWithPayload(String appId, String updatePayload) throws IOException {
+    public void iUpdateTheApplicationWithPayload(String appId, String updatePayload) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String jsonPayload = Utils.resolveFromContext(updatePayload).toString();
+        String url = Utils.getApplicationEndpointURL(baseUrl, actualAppId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(
-                Utils.getApplicationEndpointURL(baseUrl, actualAppId), headers, jsonPayload,
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPut(url, headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Application update failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -173,19 +190,25 @@ public class ApplicationBaseSteps {
      * @param payloadContextKey Context key containing the subscription creation JSON payload
      */
     @When("I create a subscription using payload {string}")
-    public void iSubscribeToApi(String payloadContextKey) throws Exception {
+    public void iSubscribeToApi(String payloadContextKey) {
 
-        // Add application id and API id to the payload
         String jsonPayloadTemplate = String.valueOf(Utils.resolveFromContext(payloadContextKey));
         String jsonPayload = Utils.resolveContextPlaceholders(jsonPayloadTemplate);
+        String url = Utils.getCreateSubscriptionURL(baseUrl);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getCreateSubscriptionURL(baseUrl),
-                headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Subscription creation failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -199,26 +222,20 @@ public class ApplicationBaseSteps {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
         String actualAppId = Utils.resolveFromContext(appId).toString();
+        String url = Utils.getAllSubscriptionsURL(baseUrl, actualApiId, actualAppId, null, null, null);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAllSubscriptionsURL(baseUrl, actualApiId, actualAppId, null, null,
-                        null), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Subscription retrieval failed for API " + apiId, e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-
-        JSONObject responseJson = new JSONObject(response.getData());
-        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
-            String subscriptionId = responseJson
-                    .getJSONArray("list")
-                    .getJSONObject(0)
-                    .getString("subscriptionId");
-            TestContext.set("subscriptionId", subscriptionId);
-        } else {
-            throw new IOException("No subscription found");
-        }
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -228,18 +245,24 @@ public class ApplicationBaseSteps {
      * @param appId Context key containing the application ID
      */
     @When("I retrieve existing application keys for {string}")
-    public void iRetrieveExistingApplicationKeys(String appId) throws IOException {
+    public void iRetrieveExistingApplicationKeys(String appId) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
+        String url = Utils.getApplicationAllKeys(baseUrl, actualAppId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationAllKeys(baseUrl, actualAppId), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to retrieve application keys: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -283,19 +306,25 @@ public class ApplicationBaseSteps {
      * @param keyMappingIdContextKey context key containing the key mapping ID
      */
     @When("I retrieve existing application secrets for {string} using key mapping id {string}")
-    public void iRetrieveExistingApplicationSecrets(String appId, String keyMappingIdContextKey) throws IOException {
+    public void iRetrieveExistingApplicationSecrets(String appId, String keyMappingIdContextKey) {
 
         String actualAppId = String.valueOf(Utils.resolveFromContext(appId));
         String keyMappingId = String.valueOf(Utils.resolveFromContext(keyMappingIdContextKey));
+        String url = Utils.getAllApplicationSecretsURL(baseUrl, actualAppId, keyMappingId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAllApplicationSecretsURL(baseUrl, actualAppId, keyMappingId), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to retrieve application secrets: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -324,6 +353,7 @@ public class ApplicationBaseSteps {
         }
         TestContext.set(Utils.normalizeContextKey(secretIdContextKey), String.valueOf(secretIdObj));
     }
+
     /**
      * Loads OAuth key details from a file and stores the extracted values in the given context keys.
      *
@@ -355,19 +385,26 @@ public class ApplicationBaseSteps {
      * @param appId Context key containing the application ID
      */
     @And("I update the keys for application with {string}")
-    public void iUpdateTheKeysForApplicationWith(String appId) throws IOException {
+    public void iUpdateTheKeysForApplicationWith(String appId) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
-        String jsonPayload =Utils.resolveFromContext("updateKeysPayload").toString();
+        String jsonPayload = Utils.resolveFromContext("updateKeysPayload").toString();
+        String url = Utils.getUpdateKey(baseUrl, actualAppId, keyMappingId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getUpdateKey(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPut(url, headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+            } catch (IOException e) {
+                throw new RuntimeException("Key update failed: " + e.getMessage(), e);
+            }
+        };
+
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -376,71 +413,54 @@ public class ApplicationBaseSteps {
      * @param appId Context key containing the application ID
      */
     @When("I delete the generated keys for {string}")
-    public void iDeleteTheGeneratedKeysFor(String appId) throws IOException {
+    public void iDeleteTheGeneratedKeysFor(String appId) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
+        String url = Utils.getUpdateKey(baseUrl, actualAppId, keyMappingId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getUpdateKey(baseUrl, actualAppId, keyMappingId), headers);
-        TestContext.set("httpResponse", response);
-    }
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doDelete(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Key deletion failed: " + e.getMessage(), e);
+            }
+        };
 
-    /**
-     * Verifies the oauth-keys count in the latest response payload.
-     *
-     * @param expectedCount the expected number of oauth keys
-     */
-    @Then("Oauth-keys count should be {int}")
-    public void oauthKeysCountShouldBe(int expectedCount) throws IOException {
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        // Get oauth key count from response payload
-        Object oauthKeyCount = Utils.extractValueFromPayload(response.getData(), "count");
-        int actualCount = Integer.parseInt(String.valueOf(oauthKeyCount));
-        Assert.assertEquals(actualCount, expectedCount,
-                "Expected oauth-keys count " + expectedCount + " but found " + actualCount);
-    }
-
-    /**
-     * Verifies the secrets count in the latest response payload.
-     *
-     * @param expectedCount the expected number of secrets
-     */
-    @Then("Secrets count should be {int}")
-    public void secretsCountShouldBe(int expectedCount) throws IOException {
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        // Get secrets count from response payload
-        Object secretsCountObj = Utils.extractValueFromPayload(response.getData(), "count");
-        int actualCount = Integer.parseInt(String.valueOf(secretsCountObj));
-        Assert.assertEquals(actualCount, expectedCount,
-                "Expected secrets count " + expectedCount + " but found " + actualCount);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
      * Generates OAuth2 client credentials (consumer key and secret) for an application.
      * The generated consumer key, consumer secret, and key mapping ID are stored in the test context.
-     * 
+     *
      * @param appId Context key containing the application ID
      * @param payload Context key containing the key generation JSON payload
      */
     @When("I generate client credentials for application id {string} with payload {string}")
-    public void iGenerateClientCredentialsForApplication(String appId, String payload) throws Exception {
+    public void iGenerateClientCredentialsForApplication(String appId, String payload) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String url = Utils.getGenerateApplicationKeysURL(baseUrl, actualAppId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGenerateApplicationKeysURL(baseUrl, actualAppId), headers, jsonPayload,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Client credentials generation failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -454,22 +474,27 @@ public class ApplicationBaseSteps {
      */
     @When("I generate a client secret for application id {string} using payload {string} and key mapping id {string}")
     public void iGenerateClientSecretForApplication(String appId, String payloadContextKey,
-                                                    String keyMappingIdContextKey) throws Exception {
+                                                    String keyMappingIdContextKey) {
 
         String actualAppId = String.valueOf(Utils.resolveFromContext(appId));
         String keyMappingId = String.valueOf(Utils.resolveFromContext(keyMappingIdContextKey));
         String jsonPayload = String.valueOf(Utils.resolveFromContext(payloadContextKey));
+        String url = Utils.getGenerateApplicationSecretURL(baseUrl, actualAppId, keyMappingId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
-                Utils.getGenerateApplicationSecretURL(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
-                Constants.CONTENT_TYPES.APPLICATION_JSON
-        );
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Client secret generation failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -481,24 +506,28 @@ public class ApplicationBaseSteps {
      */
     @When("I revoke the client secret for application id {string} using payload {string} and key mapping id {string}")
     public void iRevokeClientSecretForApplication(String appId, String payloadContextKey,
-            String keyMappingIdContextKey) throws Exception {
+            String keyMappingIdContextKey) {
 
         String actualAppId = String.valueOf(Utils.resolveFromContext(appId));
         String keyMappingId = String.valueOf(Utils.resolveFromContext(keyMappingIdContextKey));
-
         String jsonPayloadTemplate = String.valueOf(Utils.resolveFromContext(payloadContextKey));
         String jsonPayload = Utils.resolveContextPlaceholders(jsonPayloadTemplate);
+        String url = Utils.getRevokeApplicationSecretURL(baseUrl, actualAppId, keyMappingId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " +TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
-                Utils.getRevokeApplicationSecretURL(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
-                Constants.CONTENT_TYPES.APPLICATION_JSON
-        );
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Client secret revocation failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -512,48 +541,28 @@ public class ApplicationBaseSteps {
      * @param keyMappingIdContextKey context key containing the key mapping ID
      */
     @When("I request an access token for application id {string} using payload {string} and key mapping id {string}")
-    public void iRequestAccessToken(String appId, String payloadContextKey, String keyMappingIdContextKey)
-            throws Exception {
+    public void iRequestAccessToken(String appId, String payloadContextKey, String keyMappingIdContextKey) {
 
         String actualAppId = String.valueOf(Utils.resolveFromContext(appId));
         String keyMappingId = String.valueOf(Utils.resolveFromContext(keyMappingIdContextKey));
-
         String jsonPayloadTemplate = String.valueOf(Utils.resolveFromContext(payloadContextKey));
         String jsonPayload = Utils.resolveContextPlaceholders(jsonPayloadTemplate);
+        String url = Utils.getGenerateApplicationTokenURL(baseUrl, actualAppId, keyMappingId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " +
                 TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGenerateApplicationTokenURL(baseUrl, actualAppId, keyMappingId), headers, jsonPayload,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Access token request failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-    }
-
-    /**
-     * Generates an API Key for an application.
-     *
-     * @param appId Context key containing the application ID
-     * @param payload Context key containing the API key generation JSON payload
-     */
-    @And("I request an api key for application id {string} using payload {string}")
-    public void iRequestAnApiKeyForApplicationIdUsingPayload(String appId, String payload) throws IOException {
-
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGenerateAPIKeyURL(baseUrl, actualAppId), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
-        String apikey = Utils.extractValueFromPayload(response.getData(), "apikey").toString();
-        TestContext.set("apiKey", apikey);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -562,16 +571,23 @@ public class ApplicationBaseSteps {
      * @param subscriptionId Context key containing the subscription ID to delete
      */
     @When("I delete the subscription with id {string}")
-    public void iDeleteSubscription(String subscriptionId) throws Exception {
+    public void iDeleteSubscription(String subscriptionId) {
+
         String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+        String url = Utils.getSubscriptionURL(baseUrl, actualSubscriptionId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doDelete(Utils.getSubscriptionURL(baseUrl,
-                actualSubscriptionId), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doDelete(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Subscription deletion failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -582,21 +598,27 @@ public class ApplicationBaseSteps {
      * @param subscriptionPlan The new throttling policy/plan (e.g., "Gold", "Silver", "Bronze", "Unlimited")
      */
     @When("I update the subscription {string} with subscription plan {string}")
-    public void iUpdateTheSubscriptionWithSubscriptionPlan(String subscriptionId, String subscriptionPlan) throws IOException {
+    public void iUpdateTheSubscriptionWithSubscriptionPlan(String subscriptionId, String subscriptionPlan) {
 
         String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+        String url = Utils.getSubscriptionURL(baseUrl, actualSubscriptionId);
 
-        // Add application id and API id to the payload
-        String jsonPayload = Utils.resolveFromContext("subscriptionPayload").toString();
-        jsonPayload = jsonPayload.replace("\"throttlingPolicy\":\"Unlimited\"", "\"throttlingPolicy\":\"" + subscriptionPlan +"\"");
+        String initialJsonPayload = Utils.resolveFromContext("subscriptionPayload").toString();
+        String jsonPayload = initialJsonPayload.replace("\"throttlingPolicy\":\"Unlimited\"", "\"throttlingPolicy\":\"" + subscriptionPlan +"\"");
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getSubscriptionURL(baseUrl, actualSubscriptionId),
-                headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPut(url, headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Subscription update failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -605,17 +627,23 @@ public class ApplicationBaseSteps {
      * @param subscriptionId Context key containing the subscription ID to retrieve
      */
     @When("I get the subscription with id {string}")
-    public void iGetSubscription(String subscriptionId) throws Exception {
+    public void iGetSubscription(String subscriptionId) {
 
         String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+        String url = Utils.getSubscriptionURL(baseUrl, actualSubscriptionId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doGet(Utils.getSubscriptionURL(baseUrl,
-                actualSubscriptionId), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Subscription retrieval failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -646,16 +674,23 @@ public class ApplicationBaseSteps {
      * @param query The search query string
      */
     @When("I search DevPortal APIs with query {string}")
-    public void iSearchDevPortalAPIsWithQuery(String query) throws IOException {
+    public void iSearchDevPortalAPIsWithQuery(String query) {
+
+        String url = Utils.getApiSearchURL(baseUrl, query);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApiSearchURL(baseUrl, query), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("DevPortal API search failed: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -665,39 +700,26 @@ public class ApplicationBaseSteps {
      *
      * @param apiName Name of the API to search for
      * @param apiVersion Version of the API to search for
-     * @param apiID Context key where the found API UUID will be stored
      */
-    @When("I find the apiUUID of the API with name {string} and version {string} from devportal as {string}")
-    public void iFindApiUUIDFromDevportal(String apiName, String apiVersion, String apiID) throws IOException, InterruptedException {
+    @When("I find the apiUUID of the API with name {string} and version {string} from devportal")
+    public void iFindApiUUIDFromDevportal(String apiName, String apiVersion) throws InterruptedException {
+
+        String searchQuery = String.format("name:%s version:%s", apiName, apiVersion);
+        String url = Utils.getApiSearchURL(baseUrl, searchQuery);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        String searchQuery = String.format("name:%s version:%s", apiName, apiVersion);
-        Thread.sleep(Constants.INITIAL_INDEXING_TIME);
-
-        HttpResponse response = null;
-        String apiUUID = null;
-
-        for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
-            response = SimpleHTTPClient.getInstance()
-                    .doGet(Utils.getApiSearchURL(baseUrl, searchQuery), headers);
-
-            if (response.getResponseCode() == 200) {
-                apiUUID = Utils.extractAPIUUID(response.getData());
-                if (apiUUID != null && !apiUUID.isEmpty()) {
-                    break;
-                }
+        RequestAction searchAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Devportal API search failed: " + searchQuery, e);
             }
-            if (attempt < Constants.MAX_RETRIES) {
-                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
-            }
-        }
+        };
 
-        Assert.assertNotNull(apiUUID, "API UUID not found for API: " + apiName + " version: " + apiVersion);
-        TestContext.set(apiID, apiUUID);
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, searchAction);
     }
 
     /**
@@ -706,16 +728,23 @@ public class ApplicationBaseSteps {
      * @param resourceId Context key containing the API ID
      */
     @And("I retrieve devportal documents for {string}")
-    public void iRetrieveDevportalDocumentsFor(String resourceId) throws IOException {
+    public void iRetrieveDevportalDocumentsFor(String resourceId) {
+
         String actualApiId = Utils.resolveFromContext(resourceId).toString();
+        String url = Utils.getApiDocumentsURL(baseUrl, actualApiId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApiDocumentsURL(baseUrl, actualApiId), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to retrieve DevPortal documents: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -724,94 +753,80 @@ public class ApplicationBaseSteps {
      * @param apiId Context key containing the API ID to retrieve
      */
     @When("I retrieve the API with id {string} from devportal")
-    public void iRetrieveApiFromDevportal(String apiId) throws IOException {
+    public void iRetrieveApiFromDevportal(String apiId) {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
+        String url = Utils.getDevportalApiDetailURL(baseUrl, actualApiId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getDevportalApiDetailURL(baseUrl, actualApiId), headers);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to retrieve API from DevPortal: " + e.getMessage(), e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     // --- API-bound API Key steps ---
 
     /**
      * Generates a new API-bound API key from the devportal for a specific API.
-     * The generated API key value is stored in the context under the given contextKey,
-     * and the keyUUID is stored as "{contextKey}UUID".
      *
      * @param apiId Context key containing the API ID
      * @param payload The JSON payload for API key generation
-     * @param contextKey Context key to store the generated API key
      */
-    @When("I generate an api-bound api key for api {string} with payload {string} as {string}")
-    public void iGenerateApiBoundApiKey(String apiId, String payload, String contextKey) throws IOException {
+    @When("I generate an api-bound api key for api {string} with payload {string}")
+    public void iGenerateApiBoundApiKey(String apiId, String payload) {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
         String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String url = Utils.getAPIBoundApiKeyGenerateURL(baseUrl, actualApiId);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getAPIBoundApiKeyGenerateURL(baseUrl, actualApiId), headers, jsonPayload,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
-        if (response.getResponseCode() == 200 || response.getResponseCode() == 201) {
-            JSONObject responseJson = new JSONObject(response.getData());
-            String apikey = responseJson.getString("apikey");
-            TestContext.set(contextKey, apikey);
-            String keyName = responseJson.getString("keyName");
-            TestContext.set(contextKey + "Name", keyName);
-            if (responseJson.has("keyUUID")) {
-                TestContext.set(contextKey + "UUID", responseJson.getString("keyUUID"));
+            } catch (IOException e) {
+                throw new RuntimeException("API Key generation failed for API: " + apiId, e);
             }
-        }
+        };
+
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
-     * Retrieves the list of API keys for an API and extracts the keyUUID for a key by name.
+     * Retrieves the list of API keys for an API
      *
      * @param apiId Context key containing the API ID
-     * @param keyNameKey Context key containing the key name to find
-     * @param uuidKey Context key to store the found keyUUID
      */
-    @When("I find the keyUUID of api key {string} for api {string} as {string}")
-    public void iFindKeyUUIDOfApiKey(String keyNameKey, String apiId, String uuidKey) throws IOException {
+    @When("I find the list of api keys for api {string}")
+    public void iFetchApiKeysListOfApi(String apiId) {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String keyName = Utils.resolveFromContext(keyNameKey).toString();
+        String url = Utils.getAPIBoundApiKeysListURL(baseUrl, actualApiId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAPIBoundApiKeysListURL(baseUrl, actualApiId), headers);
-
-        TestContext.set("httpResponse", response);
-
-        String data = response.getData();
-        JSONArray keysArray;
-        if (data.trim().startsWith("[")) {
-            keysArray = new JSONArray(data);
-        } else {
-            JSONObject wrapper = new JSONObject(data);
-            keysArray = wrapper.getJSONArray("list");
-        }
-        for (int i = 0; i < keysArray.length(); i++) {
-            JSONObject keyObj = keysArray.getJSONObject(i);
-            if (keyName.equals(keyObj.getString("keyName"))) {
-                TestContext.set(uuidKey, keyObj.getString("keyUUID"));
-                return;
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to list API keys for API: " + actualApiId, e);
             }
-        }
-        throw new IOException("No API key found with name: " + keyName);
+        };
+
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -822,11 +837,12 @@ public class ApplicationBaseSteps {
      * @param appId Context key containing the application UUID
      */
     @When("I associate api key {string} to application {string} from api {string}")
-    public void iAssociateApiKeyToAppFromApi(String keyUUID, String appId, String apiId) throws IOException, InterruptedException {
+    public void iAssociateApiKeyToAppFromApi(String keyUUID, String appId, String apiId) throws InterruptedException {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
         String actualKeyUUID = Utils.resolveFromContext(keyUUID).toString();
         String actualAppId = Utils.resolveFromContext(appId).toString();
+        String url = Utils.getAPIBoundApiKeyAssociateURL(baseUrl, actualApiId);
 
         JSONObject payload = new JSONObject();
         payload.put("keyUUID", actualKeyUUID);
@@ -835,12 +851,16 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getAPIBoundApiKeyAssociateURL(baseUrl, actualApiId), headers,
-                        payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers, payload.toString(),
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to associate API key to application", e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-        Thread.sleep(2000);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -850,10 +870,11 @@ public class ApplicationBaseSteps {
      * @param apiId Context key containing the API ID
      */
     @When("I dissociate api key {string} from api {string}")
-    public void iDissociateApiKeyFromApi(String keyUUID, String apiId) throws IOException, InterruptedException {
+    public void iDissociateApiKeyFromApi(String keyUUID, String apiId) throws InterruptedException {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
         String actualKeyUUID = Utils.resolveFromContext(keyUUID).toString();
+        String url = Utils.getAPIBoundApiKeyDissociateURL(baseUrl, actualApiId);
 
         JSONObject payload = new JSONObject();
         payload.put("keyUUID", actualKeyUUID);
@@ -861,12 +882,16 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getAPIBoundApiKeyDissociateURL(baseUrl, actualApiId), headers,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers,
                         payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("API Key dissociation failed for key: " + actualKeyUUID, e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-        Thread.sleep(2000);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -876,10 +901,11 @@ public class ApplicationBaseSteps {
      * @param apiId Context key containing the API ID
      */
     @When("I revoke api key {string} for api {string}")
-    public void iRevokeApiKey(String keyUUID, String apiId) throws IOException, InterruptedException {
+    public void iRevokeApiKey(String keyUUID, String apiId) throws InterruptedException {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
         String actualKeyUUID = Utils.resolveFromContext(keyUUID).toString();
+        String url = Utils.getAPIBoundApiKeyRevokeURL(baseUrl, actualApiId);
 
         JSONObject payload = new JSONObject();
         payload.put("keyUUID", actualKeyUUID);
@@ -887,12 +913,16 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getAPIBoundApiKeyRevokeURL(baseUrl, actualApiId), headers,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers,
                         payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("API Key revocation failed for key: " + actualKeyUUID, e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-        Thread.sleep(2000);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -900,13 +930,13 @@ public class ApplicationBaseSteps {
      *
      * @param keyUUID Context key containing the key UUID to regenerate
      * @param apiId Context key containing the API ID
-     * @param contextKey Context key to store the new API key value
      */
-    @When("I regenerate api key {string} for api {string} as {string}")
-    public void iRegenerateApiKey(String keyUUID, String apiId, String contextKey) throws IOException, InterruptedException {
+    @When("I regenerate api key {string} for api {string}")
+    public void iRegenerateApiKey(String keyUUID, String apiId) throws InterruptedException {
 
         String actualApiId = Utils.resolveFromContext(apiId).toString();
         String actualKeyUUID = Utils.resolveFromContext(keyUUID).toString();
+        String url = Utils.getAPIBoundApiKeyRegenerateURL(baseUrl, actualApiId);
 
         JSONObject payload = new JSONObject();
         payload.put("keyUUID", actualKeyUUID);
@@ -914,16 +944,16 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getAPIBoundApiKeyRegenerateURL(baseUrl, actualApiId), headers,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers,
                         payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("API Key regeneration failed for key: " + actualKeyUUID, e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-        if (response.getResponseCode() == 200 || response.getResponseCode() == 201) {
-            String apikey = Utils.extractValueFromPayload(response.getData(), "apikey").toString();
-            TestContext.set(contextKey, apikey);
-        }
-        Thread.sleep(2000);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -940,6 +970,7 @@ public class ApplicationBaseSteps {
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String actualKeyUUID = Utils.resolveFromContext(keyUUID).toString();
         String actualApiId = Utils.resolveFromContext(apiId).toString();
+        String url = Utils.getAppApiKeyAssociateURL(baseUrl, actualAppId, keyType);
 
         JSONObject payload = new JSONObject();
         payload.put("keyUUID", actualKeyUUID);
@@ -948,12 +979,16 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getAppApiKeyAssociateURL(baseUrl, actualAppId, keyType), headers,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers,
                         payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("API Key association failed", e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-        Thread.sleep(2000);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -968,6 +1003,7 @@ public class ApplicationBaseSteps {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String actualKeyUUID = Utils.resolveFromContext(keyUUID).toString();
+        String url = Utils.getAppApiKeyDissociateURL(baseUrl, actualAppId, keyType);
 
         JSONObject payload = new JSONObject();
         payload.put("keyUUID", actualKeyUUID);
@@ -975,16 +1011,19 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getAppApiKeyDissociateURL(baseUrl, actualAppId, keyType), headers,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers,
                         payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("API Key dissociation from app side failed for key: " + actualKeyUUID, e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-        Thread.sleep(2000);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     // --- Legacy (application-level) API Key steps ---
-
     /**
      * Generates a legacy (application-level) API key for an application.
      * The generated API key value is stored in the context under the given contextKey,
@@ -992,71 +1031,53 @@ public class ApplicationBaseSteps {
      *
      * @param appId Context key containing the application ID
      * @param payload Context key containing the API key generation JSON payload
-     * @param contextKey Context key to store the generated API key
      */
-    @When("I generate a legacy api key for application {string} with payload {string} as {string}")
-    public void iGenerateLegacyApiKey(String appId, String payload, String contextKey) throws IOException, InterruptedException {
+    @When("I generate a legacy api key for application {string} with payload {string}")
+    public void iGenerateLegacyApiKey(String appId, String payload)  {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String url = Utils.getGenerateAPIKeyURL(baseUrl, actualAppId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGenerateAPIKeyURL(baseUrl, actualAppId), headers, jsonPayload,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
-        if (response.getResponseCode() == 200 || response.getResponseCode() == 201) {
-            JSONObject responseJson = new JSONObject(response.getData());
-            String apikey = responseJson.getString("apikey");
-            TestContext.set(contextKey, apikey);
-            if (responseJson.has("keyName")) {
-                TestContext.set(contextKey + "Name", responseJson.getString("keyName"));
+            } catch (IOException e) {
+                throw new RuntimeException("Legacy API key generation failed for App: " + actualAppId, e);
             }
-        }
-        Thread.sleep(2000);
+        };
+
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
      * Lists legacy API keys for an application and finds the keyUUID by key name.
      *
-     * @param keyNameKey Context key containing the key name to search for
      * @param appId Context key containing the application ID
      * @param keyType The key type (PRODUCTION or SANDBOX)
-     * @param uuidKey Context key to store the found keyUUID
      */
-    @When("I find the keyUUID of legacy api key {string} for application {string} with key type {string} as {string}")
-    public void iFindLegacyApiKeyUUID(String keyNameKey, String appId, String keyType, String uuidKey) throws IOException {
+    @When("I get the list of legacy api keys for application {string} with key type {string}")
+    public void iFetchLegacyApiKeysList(String appId, String keyType) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
-        String keyName = Utils.resolveFromContext(keyNameKey).toString();
+        String url = Utils.getLegacyApiKeysListURL(baseUrl, actualAppId, keyType);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getLegacyApiKeysListURL(baseUrl, actualAppId, keyType), headers);
-
-        TestContext.set("httpResponse", response);
-
-        String data = response.getData();
-        JSONArray keysArray;
-        if (data.trim().startsWith("[")) {
-            keysArray = new JSONArray(data);
-        } else {
-            JSONObject wrapper = new JSONObject(data);
-            keysArray = wrapper.getJSONArray("list");
-        }
-        for (int i = 0; i < keysArray.length(); i++) {
-            JSONObject keyObj = keysArray.getJSONObject(i);
-            if (keyName.equals(keyObj.getString("keyName"))) {
-                TestContext.set(uuidKey, keyObj.getString("keyUUID"));
-                return;
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doGet(url, headers);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to list legacy API keys for App: " + actualAppId, e);
             }
-        }
-        throw new IOException("No legacy API key found with name: " + keyName);
+        };
+
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
 
     /**
@@ -1066,13 +1087,13 @@ public class ApplicationBaseSteps {
      * @param keyUUID Context key containing the key UUID to regenerate
      * @param appId Context key containing the application ID
      * @param keyType The key type (PRODUCTION or SANDBOX)
-     * @param contextKey Context key to store the regenerated API key
      */
-    @When("I regenerate legacy api key {string} for application {string} with key type {string} as {string}")
-    public void iRegenerateLegacyApiKey(String keyUUID, String appId, String keyType, String contextKey) throws IOException, InterruptedException {
+    @When("I regenerate legacy api key {string} for application {string} with key type {string}")
+    public void iRegenerateLegacyApiKey(String keyUUID, String appId, String keyType) {
 
         String actualAppId = Utils.resolveFromContext(appId).toString();
         String actualKeyUUID = Utils.resolveFromContext(keyUUID).toString();
+        String url = Utils.getLegacyApiKeyRegenerateURL(baseUrl, actualAppId, keyType);
 
         JSONObject payload = new JSONObject();
         payload.put("keyUUID", actualKeyUUID);
@@ -1080,16 +1101,15 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + TestContext.get("devportalAccessToken").toString());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getLegacyApiKeyRegenerateURL(baseUrl, actualAppId, keyType), headers,
+        RequestAction requestAction = () -> {
+            try {
+                return SimpleHTTPClient.getInstance().doPost(url, headers,
                         payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException e) {
+                throw new RuntimeException("Legacy API key regeneration failed for Key: " + actualKeyUUID, e);
+            }
+        };
 
-        TestContext.set("httpResponse", response);
-        if (response.getResponseCode() == 200 || response.getResponseCode() == 201) {
-            String apikey = Utils.extractValueFromPayload(response.getData(), "apikey").toString();
-            TestContext.set(contextKey, apikey);
-        }
-        Thread.sleep(2000);
+        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
     }
-
 }

@@ -31,14 +31,17 @@ public class Constants {
 
     public static final String HTTP_SCHEME = "http";
     public static final String HTTPS_SCHEME = "https";
+    public static final String HTTP_RESPONSE = "httpResponse";
+    public static final String PENDING_HTTP_REQUEST = "pendingRequest";
 
     public static final long DEPLOYMENT_WAIT_TIME = 60 * 1000;
     public static final long UNDEPLOYMENT_WAIT_TIME = 30 * 1000;
     public static final long SERVER_STARTUP_WAIT_TIME = 300 * 1000;
 
-    public static final long INITIAL_INDEXING_TIME = 1000;
+    public static final long INITIAL_INDEXING_TIME = 120 * 1000;
     public static final int MAX_RETRIES = 30;
-    public static final long RETRY_INTERVAL_TIME = 5000;
+    public static final long RETRY_INTERVAL_TIME = 2000;
+    public static final long WAIT_TIME = 2000;
 
     public static final int DEFAULT_OFFSET = 500;
     public static final int HTTPS_PORT = 9443;

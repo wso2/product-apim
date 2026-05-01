@@ -7,18 +7,27 @@ Feature: Migrated Applications
   Scenario: Create/Find API and create application
     Given I have created an api from "artifacts/payloads/create_apim_test_api.json" as "RestAPIId" and deployed it
     And I retrieve the "apis" resource with id "RestAPIId"
+    And I wait until the response status code is 200
     And I put the response payload in context as "RestAPIPayload"
     And I wait for deployment of the resource in "RestAPIPayload"
     And I publish the "apis" resource with id "RestAPIId"
+    And I wait until the response status code is 200
 
-    When I find the apiUUID of the API created with the name "APIM18PublisherTest" and version "1.0.0" as "migratedAPIId"
+    When I find the API created with the name "APIM18PublisherTest" and version "1.0.0"
+    And I wait until the response status code is 200
+    And I extract response field "count" and store it as "<apiCount>"
+    And the actual value of "<apiCount>" should match the expected value:
+      """
+      1
+      """
+    And I extract response field "list[0].id" and store it as "<migratedAPIId>"
+
     And I retrieve the "apis" resource with id "migratedAPIId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And I put the response payload in context as "migratedAPIPayload"
 
     When I create a test application and store the id as "<createdAppId>"
     Then I generate keys for application "<createdAppId>" and store consumer secret as "<consumerSecret>" and key mapping id as "<keyMappingId>"
-
 
   # Step 2: Create a new common policy
   Scenario: Create new common policy
@@ -33,6 +42,7 @@ Feature: Migrated Applications
       ["Bronze","Gold","Unlimited"]
       """
     And I retrieve the "apis" resource with id "<apiId>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiPayload>"
     And The "apis" resource should reflect the updated "policies" as:
       """
@@ -82,12 +92,13 @@ Feature: Migrated Applications
         }
       ]
     """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     When I retrieve the "apis" resource with id "<apiId>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiPayload>"
     And I deploy the API with id "<apiId>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
     # These responses should not include x-common-header since it was only applied to DELETE resource
@@ -102,12 +113,14 @@ Feature: Migrated Applications
     When I invoke the API resource at path "<apiResource>" with method "DELETE" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
     And The response should contain the header "x-common-header" with value "x-common-value"
-    And I delete the subscription with id "<subscriptionID>"
+    Then I delete the subscription with id "<subscriptionID>"
+    And I wait until the response status code is 200
 
     # Remove created revision
     When I undeploy revision "revisionId" of "apis" resource "<apiId>"
+    And I wait until the response status code is 201
     And I Delete the "apis" resource revision with "revisionId" for "<apiId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     Examples:
       | apiId           | apiPayload         | subscriptionID        | apiResource                        |
@@ -139,12 +152,13 @@ Feature: Migrated Applications
           "fault": []
         }
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     When I retrieve the "apis" resource with id "<apiId>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiPayload>"
     And I deploy the API with id "<apiId>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
     When I subscribe to resource "<apiId>" using application "createdAppId" and store subscription as "<subscriptionID>"
@@ -153,12 +167,14 @@ Feature: Migrated Applications
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
     And The response should contain the header "x-common-header" with value "x-common-value"
-    And I delete the subscription with id "<subscriptionID>"
+    Then I delete the subscription with id "<subscriptionID>"
+    And I wait until the response status code is 200
 
     # Remove created revision
     When I undeploy revision "revisionId" of "apis" resource "<apiId>"
+    And I wait until the response status code is 201
     And I Delete the "apis" resource revision with "revisionId" for "<apiId>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
       Examples:
       | apiId           | apiPayload         | subscriptionID        | apiResource                        |
@@ -171,6 +187,7 @@ Feature: Migrated Applications
     When I create a new API specific policy for api "<apiId>" with spec "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.yaml" as "apiLevelPolicyId"
     Then The response status code should be 201
     And I retrieve the "apis" resource with id "<apiId>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiPayload>"
 
     When I update the "apis" resource "<apiId>" and "<apiPayload>" with configuration type "apiPolicies" and value:
@@ -195,12 +212,13 @@ Feature: Migrated Applications
           "fault": []
         }
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     When I retrieve the "apis" resource with id "<apiId>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiPayload>"
     When I deploy the API with id "<apiId>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I wait until "apis" "<apiId>" revision is deployed in the gateway
 
     When I subscribe to resource "<apiId>" using application "createdAppId" and store subscription as "<subscriptionID>"
@@ -209,10 +227,11 @@ Feature: Migrated Applications
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
     And The response should contain the header "x-specific-header" with value "x-specific-value"
-    And I delete the subscription with id "<subscriptionID>"
+    Then I delete the subscription with id "<subscriptionID>"
+    And I wait until the response status code is 200
 
     When I delete the api "<apiId>" specific policy "apiLevelPolicyId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
 
       Examples:
@@ -222,7 +241,7 @@ Feature: Migrated Applications
 
   Scenario: Find existing common policies
     When I retrieve available common policies
-    Then The response status code should be 200
+    Then I wait until the response status code is 200
     And I extract response field "list" and store it as "<commonPoliciesList>"
     # Get the id and version of the "Add header" common policy
     Then I find the resource with following properties in "<commonPoliciesList>" as "<existingPolicy>"
@@ -235,7 +254,7 @@ Feature: Migrated Applications
     When I put JSON payload from file "artifacts/payloads/policySpecFiles/custom_global_policy.json" in context as "globalPolicyPayload"
     # Add "Add header" common policy as a global policy
     And I create a new global policy with payload "globalPolicyPayload"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I extract response field "id" and store it as "globalPolicyId"
 
     When I put the following JSON payload in context as "gatewayPolicyPayload"
@@ -248,7 +267,8 @@ Feature: Migrated Applications
       ]
       """
     And I engage the gateway policy mapping "globalPolicyId" to the gateways "gatewayPolicyPayload"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
+    And I wait for 20 seconds
 
   Scenario Outline: Verify global policies
     When I subscribe to resource "<apiId>" using application "createdAppId" and store subscription as "<subscriptionID>"
@@ -257,7 +277,8 @@ Feature: Migrated Applications
     And I invoke the API resource at path "<apiResource>" with method "GET" using access token "<generatedAccessToken>" and payload ""
     Then The response status code should be 200
     And The response should contain the header "custom_global_header" with value "custom_global_value"
-    And I delete the subscription with id "<subscriptionID>"
+    Then I delete the subscription with id "<subscriptionID>"
+    And I wait until the response status code is 200
 
     Examples:
       | apiId           | subscriptionID        | apiResource                        |
@@ -276,20 +297,22 @@ Feature: Migrated Applications
       ]
       """
     And I engage the gateway policy mapping "globalPolicyId" to the gateways "gatewayPolicyPayload"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
+    And I wait for 20 seconds
 
   # Delete policies and verify
   Scenario: Delete policies
     When I delete the "gateway-policies" resource with id "globalPolicyId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     When I delete the "operation-policies" resource with id "newCommonPolicyId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
-  # Step 9: Remove other created resources
-  Scenario: Remove resources
+  # Step 9: Cleanup
+  Scenario: Delete the application
     When I delete the application with id "createdAppId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
+  Scenario: Delete the API
     When I delete the "apis" resource with id "RestAPIId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200

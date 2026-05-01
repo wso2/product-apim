@@ -5,21 +5,30 @@ Feature: Migrated API Documentation Management
 
   Scenario Outline: Migrated API Documentation Management
     # Step 1: Find the api
-    When I find the apiUUID of the API created with the name "<apiName>" and version "<apiVersion>" as "<apiID>"
+    When I find the API created with the name "<apiName>" and version "<apiVersion>"
+    And I wait until the response status code is 200
+    And I extract response field "count" and store it as "<apiCount>"
+    And the actual value of "<apiCount>" should match the expected value:
+      """
+      1
+      """
+    And I extract response field "list[0].id" and store it as "<apiID>"
 
     # Step 2: Add a new document with ID as "documentID"
     When I prepare a new document payload with type "HOWTO", sourceType "MARKDOWN", and inlineContent "Test content"
     And I add the document to API "<apiID>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
+    And I extract response field "documentId" and store it as "<documentID>"
+
 
     # Step 3: Update an existing API document
     # First find the existing document with name as "existingDocumentID"
     When I retrieve all available documents for "<apiID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And I find the "documentId" with name "<documentName>" as "existingDocumentID"
 
     When I retrieve document with "existingDocumentID" for "<apiID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And I put the response payload in context as "documentPayload"
 
     # Step 3.1: Meta data update
@@ -27,7 +36,7 @@ Feature: Migrated API Documentation Management
     """
     <configValue>
     """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "<config>" as:
       """
       <configValue>
@@ -35,7 +44,7 @@ Feature: Migrated API Documentation Management
 
     # Step 4: Delete an existing API document
     When I delete the document with "<deleteDocument>" for "<apiID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
 
     Examples:
