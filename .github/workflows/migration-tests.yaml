@@ -1526,6 +1526,7 @@ jobs:
     runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       contents: write
+      pull-requests: write
     env:
       CARBON_APIMGT_VERSION_PROPERTY: carbon.apimgt.version
     steps:
@@ -1542,22 +1543,30 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Update pom.xml and push version bump
+      - name: Update pom.xml with new version
         if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
         working-directory: all-in-one-apim
         run: |
           LATEST="${{ needs.update-and-build.outputs.latest_version }}"
           echo "Bumping ${CARBON_APIMGT_VERSION_PROPERTY} from ${{ needs.update-and-build.outputs.current_version }} to $LATEST"
+          
           mvn -B \
             org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
             -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
             -DnewVersion=$LATEST \
             -DgenerateBackupPoms=false
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
-          git commit -am "chore: bump carbon-apimgt to $LATEST"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+
+      - name: Create Pull Request for Version Bump
+        if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump carbon-apimgt version to ${{ needs.update-and-build.outputs.latest_version }}"
+          title: "Automated Version Bump: carbon-apimgt version to ${{ needs.update-and-build.outputs.latest_version }}"
+          body: |
+            Automated version bump detected a new release of `carbon-apimgt`.
+            - **Previous version:** `${{ needs.update-and-build.outputs.current_version }}`
+            - **New version:** `${{ needs.update-and-build.outputs.latest_version }}`
+          branch: "bot/bump-carbon-apimgt"
+          base: "${{ github.ref_name }}"
+          labels: "automated pr, version bump"
