@@ -539,7 +539,7 @@
             if ( (sp != null && !sp.endsWith("apim_publisher") && !sp.endsWith("apim_admin_portal")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType) && isSelfSignUpEnabledInTenant) { %>
             <button
                 type="button"
-                onclick="window.location.href='<%=StringEscapeUtils.escapeHtml4(getRegistrationUrl(accountRegistrationEndpointURL, urlEncodedURL, urlParameters))%>';"
+                onclick="window.location.href='<%=getRegistrationUrl(accountRegistrationEndpointURL, urlEncodedURL, urlParameters)%>';"
                 class="ui secondary fluid large button"
                 id="registerLink"
                 tabindex="8"
@@ -587,9 +587,9 @@
 
         private String getRegistrationUrl(String accountRegistrationEndpointURL, String urlEncodedURL,
                 String urlParameters) {
-            String rawUrl = accountRegistrationEndpointURL + "?" + urlParameters + "&callback=" + Encode.forHtmlAttribute(urlEncodedURL);
+            String rawUrl = accountRegistrationEndpointURL + "?" + urlParameters + "&callback=" + urlEncodedURL;
 
-            return Encode.forJavaScript(rawUrl);
+            return Encode.forJavaScriptAttribute(rawUrl);
         }
     %>
 
