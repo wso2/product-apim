@@ -2462,6 +2462,7 @@
             <Enable>false</Enable>
             <RequireSuperTenantInUrls>false</RequireSuperTenantInUrls>
             <EnableTenantedSessions>false</EnableTenantedSessions>
+            <SkipTenantValidationForOAuthEndpoints>false</SkipTenantValidationForOAuthEndpoints>
         </TenantQualifiedUrls>
     </TenantContext>
 
