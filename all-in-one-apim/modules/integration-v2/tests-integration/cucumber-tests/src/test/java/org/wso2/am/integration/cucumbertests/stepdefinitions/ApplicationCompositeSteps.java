@@ -67,15 +67,14 @@ public class ApplicationCompositeSteps {
      * @param appIdStoreKey Output: Context key to store the created Application ID
      */
     @When("I create a test application and store the id as {string}")
-    public void iCreateTestApplication(String appIdStoreKey) throws IOException {
+    public void iCreateTestApplication(String appIdStoreKey) throws IOException, InterruptedException {
 
         // Load payload and create the application
         baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "createAppPayload");
         applicationBaseSteps.iCreateAnApplicationWithJsonPayload("createAppPayload");
-
-        // Verify creation and store the ID in the given context key
-        baseSteps.theResponseStatusCodeShouldBe(201);
-        baseSteps.iExtractResponseFieldAndStoreItAs("applicationId", appIdStoreKey);
+        baseSteps.iWaitUntilStatus(201);
+        //  store the ID in the given context key
+        baseSteps.iExtractResponseFieldAndStoreItAs("applicationId", "<createdAppId>");
     }
 
     /**
@@ -95,7 +94,7 @@ public class ApplicationCompositeSteps {
 
         // Request key generation
         applicationBaseSteps.iGenerateClientCredentialsForApplication(appIdContextKey, "generateKeysPayload");
-        baseSteps.theResponseStatusCodeShouldBe(200);
+        baseSteps.iWaitUntilStatus(200);
 
         // Extract and store values into given context keys
         baseSteps.iExtractResponseFieldAndStoreItAs("consumerSecret", consumerSecretStoreKey);
@@ -123,10 +122,11 @@ public class ApplicationCompositeSteps {
         baseSteps.iPutValueInContextAs(appIdContextKey, "<applicationId>");
 
         applicationBaseSteps.iSubscribeToApi("apiSubscriptionPayload");
-        baseSteps.theResponseStatusCodeShouldBe(201);
+        baseSteps.iWaitUntilStatus(201);
 
         // Extract and store the subscription ID
         baseSteps.iExtractResponseFieldAndStoreItAs("subscriptionId", subscriptionStoreKey);
+
     }
 
     /**
@@ -156,7 +156,7 @@ public class ApplicationCompositeSteps {
         // Request the token
         applicationBaseSteps.iRequestAccessToken(appIdContextKey, "tokenRequestPayload",
                 keyMappingIdContextKey);
-        baseSteps.theResponseStatusCodeShouldBe(200);
+        baseSteps.iWaitUntilStatus(200);
 
         // Extract and store the access token
         baseSteps.iExtractResponseFieldAndStoreItAs("accessToken", accessTokenStoreKey);

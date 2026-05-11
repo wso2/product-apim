@@ -7,7 +7,9 @@ Feature: Publisher API Creation and Deployment
   # Step 1.1: Create Rest apis and soap apis
   Scenario Outline: Create APIs
     When I put JSON payload from file "<payloadFile>" in context as "<apiPayload>"
-    And I create an "apis" resource with payload "<apiPayload>" as "<apiID>"
+    And I create an "apis" resource with payload "<apiPayload>"
+    And I wait until the response status code is 201
+    And I extract response field "id" and store it as "<apiID>"
 
     Examples:
       |payloadFile                                             | apiPayload          | apiID          |
@@ -18,13 +20,15 @@ Feature: Publisher API Creation and Deployment
   # Step 1.2:Create graphQL API
   Scenario: Create GraphQL API
     When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "graphQLAPIPayload"
-    And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "graphQLAPIPayload" as "GraphQLAPIId"
+    And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "graphQLAPIPayload"
+    And I wait until the response status code is 201
+    And I extract response field "id" and store it as "<GraphQLAPIId>"
 
   Scenario Outline: Deploy an API Through the Publisher Rest API
 
     # Step 2: Verify created APIs
     When  I retrieve the "apis" resource with id "<apiID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And The response should contain "<apiName>"
     And The response should contain "<apiContext>"
     And The response should contain "<apiVersion>"
@@ -38,6 +42,9 @@ Feature: Publisher API Creation and Deployment
     }
     """
     And  I make a request to create a revision for "apis" resource "<apiID>" with payload "<createRevisionPayload>"
+    And I wait until the response status code is 201
+    And I extract response field "id" and store it as "<revisionId>"
+    And I wait for 3 seconds
     And I put the following JSON payload in context as "<deployRevisionPayload>"
     """
     [
@@ -49,14 +56,16 @@ Feature: Publisher API Creation and Deployment
     ]
     """
     And I make a request to deploy revision "<revisionId>" of "apis" resource "<apiID>" with payload "<deployRevisionPayload>"
-    Then The response status code should be 201
-    Then The lifecycle status of API "<apiID>" should be "Created"
+    And I wait until the response status code is 201
+    Then I get the lifecycle status of API "<apiID>"
+    Then I wait until the response status code is 200 and the value of response field "state" is "Created"
     And I wait for deployment of the resource in "<retrievedApiPayload>"
 
     # Step 4: Publish the API
-    And I publish the "apis" resource with id "<apiID>"
-    Then The response status code should be 200
-    Then The lifecycle status of API "<apiID>" should be "Published"
+    When I publish the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
+    Then I get the lifecycle status of API "<apiID>"
+    Then I wait until the response status code is 200 and the value of response field "state" is "Published"
 
   Examples:
     | apiID          | apiName        | apiContext           | apiVersion|
@@ -82,7 +91,7 @@ Feature: Publisher API Creation and Deployment
       Then The response status code should be 200
 
       When I delete the subscription with id "<subscriptionID>"
-      Then The response status code should be 200
+      And I wait until the response status code is 200
 
       Examples:
         | apiID      | subscriptionID       |  payload                                 | resourcePath                            | method|
@@ -106,10 +115,10 @@ Feature: Publisher API Creation and Deployment
             </soap:Envelope>
       """
       And I invoke the SOAP API at path "<resourcePath>" using access token "<generatedAccessToken>" and payload "<Payload>" and soap action "<soapAction>"
-      Then The response status code should be 200
+      And I wait until the response status code is 200
 
       When I delete the subscription with id "<subscriptionID>"
-      Then The response status code should be 200
+      And I wait until the response status code is 200
 
       Examples:
         | apiID    | subscriptionID     | Payload  | resourcePath                  | soapAction                                               |
@@ -117,11 +126,11 @@ Feature: Publisher API Creation and Deployment
 
     Scenario: Delete the app
       When I delete the application with id "createdAppId"
-      Then The response status code should be 200
+      And I wait until the response status code is 200
 
     Scenario Outline: Delete the created resources
       When I delete the "apis" resource with id "<apiID>"
-      Then The response status code should be 200
+      And I wait until the response status code is 200
 
       Examples:
         | apiID          |

@@ -28,8 +28,6 @@ import org.apache.axiom.om.OMXMLBuilderFactory;
 import org.apache.axiom.om.OMXMLParserWrapper;
 import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,10 +35,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONTokener;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -48,11 +49,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 
 public class Utils {
-
-    private static final Log log = LogFactory.getLog(Utils.class);
+    
+    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static String getDCREndpointURL(String baseUrl) {
@@ -136,7 +138,7 @@ public class Utils {
             String encodedChecklist = URLEncoder.encode(lifecycleChecklist, StandardCharsets.UTF_8);
             urlBuilder.append("&lifecycleChecklist=").append(encodedChecklist);
         }
-        log.info("Change Lifecycle URL: " + urlBuilder);
+        logger.info("Change Lifecycle URL: " + urlBuilder);
         return urlBuilder.toString();
     }
 
@@ -420,32 +422,13 @@ public class Utils {
     }
 
     /**
-     * Extracts the API UUID
-     *
-     * @param jsonPayload the JSON response payload
-     * @return the API UUID if count == 1, otherwise null
-     * @throws IOException if the payload cannot be parsed
-     */
-    public static String extractAPIUUID(String jsonPayload) throws IOException {
-
-        JsonNode root = mapper.readTree(jsonPayload);
-
-        JsonNode countNode = root.path("count");
-        if (countNode.isInt() && countNode.asInt() == 1) {
-            JsonNode list = root.path("list");
-            if (list.isArray() && !list.isEmpty()) {
-                JsonNode apiObj = list.get(0);
-                return apiObj.path("id").asText(null);
-            }
-        }
-        return null;
-    }
-
-    /**
      * Extracts a value from a JSON payload using a JSONPath expression.
+     * Sample JSONPath expressions:
+     *  - JSON Object: "id" or "$.id" or "$.operations[0].verb"
+     *  - JSON Array: "[0].id" or "$[0].id"
      *
      * @param jsonPayload the JSON string to parse
-     * @param path        the JSONPath (e.g., "id" or "$.operations[0].verb")
+     * @param path        the JSONPath
      * @return the extracted value as an Object
      * @throws IOException if the payload is invalid or the path is not found
      */
@@ -455,25 +438,40 @@ public class Utils {
             throw new IOException("JSON payload is null or empty.");
         }
 
-        // Validate JSON structure
-        try {
-            new JSONObject(jsonPayload.trim());
-        } catch (Exception e) {
-            throw new IOException("Provided string is not a valid JSON object.", e);
-        }
-
-        // Normalize the JSONPath
         String trimmedPath = path.trim();
-        String jsonPath = trimmedPath.startsWith(Constants.JSON_PATH_ROOT)
-                ? trimmedPath
-                : Constants.JSON_PATH_ROOT_WITH_DOT + trimmedPath;
+        String jsonPath = normalizeJsonPath(trimmedPath);
 
-        // Extract using JsonPath
         try {
             return JsonPath.read(jsonPayload, jsonPath);
         } catch (Exception e) {
             throw new IOException("Path '" + jsonPath + "' not found or invalid in JSON payload.", e);
         }
+    }
+
+    /**
+     * Normalizes shorthand paths into valid JSONPath expressions based on payload structure.
+     * - If starts with "$", returns as-is (e.g., "$" -> "$").
+     * - If starts with "[", prepends "$" (e.g., "[0].key" -> "$[0].key").
+     * - Otherwise, prepends "$." (e.g., "list[0]" -> "$.list[0]").
+     *
+     * @param path        The shorthand path provided in the Gherkin step.
+     * @return A valid, absolute JSONPath starting with "$".
+     */
+    private static String normalizeJsonPath(String path) {
+        String trimmedPath = path.trim();
+
+        // If path already starts with "$", return as-is
+        if (trimmedPath.startsWith("$")) {
+            return trimmedPath;
+        }
+
+        // JSON Arrays: If it starts with "[", prepend "$"
+        if (trimmedPath.startsWith("[")) {
+            return "$" + trimmedPath;
+        }
+
+        // JSON Objects: Otherwise, prepend "$."
+        return "$." + trimmedPath;
     }
 
     /**
@@ -492,6 +490,20 @@ public class Utils {
             throw new IllegalArgumentException("No value found in context for key: " + lookupKey);
         }
         return value;
+    }
+
+    /**
+     * Resolves the value from context only if the input is a context key (e.g., "<sampleKey>").
+     * If the input is not wrapped in brackets, it returns the input string as-is.
+     *
+     * @param input the string to check and potentially resolve
+     * @return the resolved context value or the original input string
+     */
+    public static Object resolveIfContextKey(String input) {
+        if (input != null && input.startsWith("<") && input.endsWith(">")) {
+            return resolveFromContext(input);
+        }
+        return input;
     }
 
     /**
@@ -764,8 +776,61 @@ public class Utils {
 
             Assert.assertEquals(String.valueOf(actualValue), expectedValue, "String values do not match");
         } catch (Exception e) {
-            log.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
+            logger.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
             throw new AssertionError("Comparison failed: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Executes the given HTTP request repeatedly until the expected response status code
+     * is received and the provided custom validation condition is satisfied, or until the
+     * maximum number of retry attempts is reached.
+     *
+     *
+     * @param requestAction       the HTTP request action to execute
+     * @param expectedStatusCode  the expected HTTP response status code
+     * @param customValidation    an additional validation condition to apply to the response
+     * @return the first response that satisfies both the expected status code and custom
+     *         validation, or the last received response if the retry limit is reached
+     * @throws InterruptedException if the thread is interrupted while waiting between retries
+     */
+    public static HttpResponse executeWithRetry(RequestAction requestAction, int expectedStatusCode,
+            Predicate<HttpResponse> customValidation) throws InterruptedException {
+
+        HttpResponse response = null;
+
+        for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
+            logger.info("Attempt {}/{}: Executing request...", attempt, Constants.MAX_RETRIES);
+            response = requestAction.execute();
+
+            // Check if status code matches and custom validation passes
+            if (response != null) {
+                if ( response.getResponseCode() == expectedStatusCode && customValidation.test(response)) {
+                    return response;
+                } else {
+                    logger.warn("Attempt {}: Criteria not met. Received: [{}]. Data: {}",
+                            attempt, response.getResponseCode(), response.getData());
+                }
+            }
+
+            if (attempt < Constants.MAX_RETRIES) {
+                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
+            }
+        }
+        return response;
+    }
+
+
+    /**
+     * Retrieves the pending HTTP request stored in the current test context.
+     *
+     *
+     * @return the pending HTTP request action stored in the test context
+     */
+    public static RequestAction getPendingHttpRequest() {
+
+        RequestAction requestAction = (RequestAction) TestContext.get(Constants.PENDING_HTTP_REQUEST);
+        Assert.assertNotNull(requestAction, "No pending request found in TestContext");
+        return requestAction;
     }
 }

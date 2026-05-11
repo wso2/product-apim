@@ -9,6 +9,7 @@ Feature: API Other Common Configurations
   Scenario Outline: Creating an API
     Given I have created an api from "<payloadFile>" as "<apiID>" and deployed it
     And I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiUpdatePayload>"
 
     Examples:
@@ -19,8 +20,11 @@ Feature: API Other Common Configurations
 
   Scenario: Create GraphQL API
     When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "graphQLAPIPayload"
-    And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "graphQLAPIPayload" as "GraphQLAPIId"
+    And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "graphQLAPIPayload"
+    And I wait until the response status code is 201
+    And I extract response field "id" and store it as "<GraphQLAPIId>"
     And I retrieve the "apis" resource with id "GraphQLAPIId"
+    And I wait until the response status code is 200
     And I put the response payload in context as "graphQLAPIPayload"
 
 
@@ -30,8 +34,9 @@ Feature: API Other Common Configurations
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
@@ -50,8 +55,9 @@ Feature: API Other Common Configurations
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The response should contain "newlyAddedResource"
 
     Examples:
@@ -67,8 +73,9 @@ Feature: API Other Common Configurations
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
@@ -87,8 +94,9 @@ Feature: API Other Common Configurations
   # Step 5.1 : Create a new shared scope, "scopeID" stored in context
   Scenario: Create a new shared scope
     When I create a new shared scope as "new-shared-scope"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And The response should contain "new-shared-scope"
+    And I extract response field "id" and store it as "<scopeID>"
 
   # Step 5.2: Add scope to api
   Scenario Outline: Add scope to API
@@ -96,8 +104,9 @@ Feature: API Other Common Configurations
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiUpdatePayload>"
     And The "apis" resource should reflect the updated "<configType>" as:
       """
@@ -117,8 +126,9 @@ Feature: API Other Common Configurations
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
@@ -138,13 +148,13 @@ Feature: API Other Common Configurations
 
   # Step 5.4: Delete the created scope
   Scenario: Delete the created shared scope
-    When I delete shared scope with "scopeID"
-    Then The response status code should be 200
+    When I delete shared scope with "<scopeID>"
+    And I wait until the response status code is 200
 
  # Step 6: Remove created APIs
   Scenario Outline: Remove the APIs
     When I delete the "apis" resource with id "<apiID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     Examples:
       |   apiID    |

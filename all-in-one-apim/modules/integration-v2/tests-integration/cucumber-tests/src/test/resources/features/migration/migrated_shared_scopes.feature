@@ -7,33 +7,46 @@ Feature: Migrated shared scopes for existing and new apis
     # Step 1: Create new api, deploy and publish it
     Given I have created an api from "artifacts/payloads/create_apim_test_api.json" as "RestAPIId" and deployed it
     And I retrieve the "apis" resource with id "RestAPIId"
+    And I wait until the response status code is 200
     And I put the response payload in context as "RestAPIPayload"
 
     And I wait for deployment of the resource in "RestAPIPayload"
     And I publish the "apis" resource with id "RestAPIId"
-    Then The response status code should be 200
-    Then The lifecycle status of API "RestAPIId" should be "Published"
+    And I wait until the response status code is 200
+    Then I get the lifecycle status of API "<RestAPIId>"
+    Then I wait until the response status code is 200 and the value of response field "state" is "Published"
 
     # Step 2: Find migrated api
-    When I find the apiUUID of the API created with the name "APIM18PublisherTest" and version "1.0.0" as "migratedAPIId"
+    When I find the API created with the name "APIM18PublisherTest" and version "1.0.0"
+    And I wait until the response status code is 200
+    And I extract response field "count" and store it as "<apiCount>"
+    And the actual value of "<apiCount>" should match the expected value:
+      """
+      1
+      """
+    And I extract response field "list[0].id" and store it as "<migratedAPIId>"
+
     And I retrieve the "apis" resource with id "migratedAPIId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
+    And I wait until the response status code is 200
     And I put the response payload in context as "migratedAPIPayload"
 
   # Step 3: Create a new shared scope, "scopeID" stored in context
   Scenario: Create a new shared scope
     When I create a new shared scope as "new-shared-scope"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And The response should contain "new-shared-scope"
+    And I extract response field "id" and store it as "<scopeID>"
 
- # Step 4: Add migrated and new shared scope to apis
+  # Step 4: Add migrated and new shared scope to apis
   Scenario Outline: Add scope to API
     When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiUpdatePayload>"
     And The "apis" resource should reflect the updated "<configType>" as:
       """
@@ -47,14 +60,16 @@ Feature: Migrated shared scopes for existing and new apis
   # Step 5: Add migrated and new shared scopes to operations
   Scenario Outline: Add Scopes to resources
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiUpdatePayload>"
 
     When I update the "apis" resource "<apiID>" and "<apiUpdatePayload>" with configuration type "<configType>" and value:
       """
       <configValue>
       """
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And The "apis" resource should reflect the updated "<configType>" as:
       """
       <configValue>
@@ -70,9 +85,10 @@ Feature: Migrated shared scopes for existing and new apis
  # Step 6: Deploy new revision after applying changes
   Scenario Outline: Deploy new revision
     When I retrieve the "apis" resource with id "<apiID>"
+    And I wait until the response status code is 200
     And I put the response payload in context as "<apiPayload>"
     When I deploy the API with id "<apiID>"
-    Then The response status code should be 201
+    And I wait until the response status code is 201
     And I wait until "apis" "<apiID>" revision is deployed in the gateway
 
     Examples:
@@ -94,7 +110,7 @@ Feature: Migrated shared scopes for existing and new apis
     Then The response status code should be <statusCode>
 
     When I delete the subscription with id "<subscriptionID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     Examples:
       | apiID          | subscriptionID           | resourcePath                            | method   | statusCode |
@@ -105,10 +121,18 @@ Feature: Migrated shared scopes for existing and new apis
 
   # Step 9: Edit shared scopes
   Scenario:
-    When I fetch the shared scope with name "adp-shared-scope-with-roles" into context as "migratedScopeId"
+    When I fetch all shared scopes
+    And I wait until the response status code is 200
+    And I extract response field "list" and store it as "sharedScopesList"
+    And I find the resource with following properties in "sharedScopesList" as "targetScopeObject"
+      | name | adp-shared-scope-with-roles |
+
+    # 5. Extract the ID from the object we found
+    And I extract field "id" from "targetScopeObject" and store it as "migratedScopeId"
+
     When I put JSON payload from file "artifacts/payloads/updated_migrated_shared_scope.json" in context as "<scopePayload>"
     And I update shared scope "migratedScopeId" with payload "<scopePayload>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And The response should contain "admin"
 
   # Step 10: Verify the behaviour after update, should give 200 for admin
@@ -119,7 +143,7 @@ Feature: Migrated shared scopes for existing and new apis
     Then The response status code should be 200
 
     When I delete the subscription with id "<subscriptionID>"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
     Examples:
       | apiID          | subscriptionID           | resourcePath                            | method|
@@ -130,7 +154,7 @@ Feature: Migrated shared scopes for existing and new apis
   # Step 11: Delete migrated and new shared scope
   Scenario Outline: Delete scopes
     When I delete shared scope with "<scopeId>"
-    Then The response status code should be 409
+    And I wait until the response status code is 409
 
     Examples:
     | scopeId       |
@@ -138,9 +162,10 @@ Feature: Migrated shared scopes for existing and new apis
     |scopeID        |
 
   # Step 12: Delete newy created resources
-  Scenario: Delete the API
+  Scenario: Delete the application
     When I delete the application with id "createdAppId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
 
+  Scenario: Delete the API
     When I delete the "apis" resource with id "RestAPIId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200

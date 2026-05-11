@@ -6,16 +6,19 @@ Feature: API-bound API Key with Migrated Artifacts
   # Step 1: Find migrated API and application, ensure api_key security is enabled
   Scenario: Setup - Find migrated resources and enable API key security
     # Find migrated API from devportal
-    When I find the apiUUID of the API with name "APIM18PublisherTest" and version "1.0.0" from devportal as "migratedAPIId"
-    Then The response status code should be 200
+    When I find the apiUUID of the API with name "APIM18PublisherTest" and version "1.0.0" from devportal
+    And I wait until the response status code is 200 and the value of response field "count" is "1"
+    And I extract response field "list[0].id" and store it as "<migratedAPIId>"
+
     # Retrieve API details and store payload
     When I retrieve the API with id "migratedAPIId" from devportal
-    Then The response status code should be 200
+    And I wait until the response status code is 200
     And I put the response payload in context as "migratedAPIPayload"
 
     # Find migrated application (already subscribed to the migrated API)
-    When I fetch the application with "CustomerApp" as "migratedAppId"
-    Then The response status code should be 200
+    When I fetch the application with name "CustomerApp"
+    Then I wait until the response status code is 200
+    And I extract response field "list[0].applicationId" and store it as "<migratedAppId>"
 
   # Step 2: Generate key, associate from API side, invoke, dissociate, invoke(fail), re-associate, revoke, invoke(fail)
   Scenario: Generate API key, associate, dissociate, and revoke from API side
@@ -32,15 +35,24 @@ Feature: API-bound API Key with Migrated Artifacts
       }
     }
     """
-    And I generate an api-bound api key for api "migratedAPIId" with payload "<apiKeyGenPayload>" as "apiBoundApiKey1"
-    Then The response status code should be 200
+    And I generate an api-bound api key for api "migratedAPIId" with payload "<apiKeyGenPayload>"
+    And I wait until the response status code is 200
+    And I extract response field "apikey" and store it as "<apiBoundApiKey1>"
+    And I extract response field "keyName" and store it as "<apiBoundApiKey1Name>"
+    And I wait for 3 seconds
 
     # Find the keyUUID of the generated key
-    When I find the keyUUID of api key "apiBoundApiKey1Name" for api "migratedAPIId" as "apiKey1UUID"
+    When I find the list of api keys for api "migratedAPIId"
+    And I wait until the response status code is 200
+    And I extract response field "$" and store it as "apiKeysList"
+    And I find the resource with following properties in "apiKeysList" as "matchedKeyObject"
+      | keyName | <apiBoundApiKey1Name> |
+    And I extract field "keyUUID" from "matchedKeyObject" and store it as "apiKey1UUID"
 
     # Associate key to the migrated application from API side
-    When I associate api key "apiKey1UUID" to application "migratedAppId" from api "migratedAPIId"
-    Then The response status code should be 200
+    When I associate api key "apiKey1UUID" to application "<migratedAppId>" from api "<migratedAPIId>"
+    And I wait until the response status code is 200
+    And I wait for 3 seconds
 
     # Invoke migrated API with associated key - should succeed
     When I invoke the API resource at path "/apiContext/1.0.0/customers/123/" with method "GET" using api key "apiBoundApiKey1"
@@ -48,7 +60,8 @@ Feature: API-bound API Key with Migrated Artifacts
 
     # Dissociate key from application
     When I dissociate api key "apiKey1UUID" from api "migratedAPIId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
+    And I wait for 3 seconds
 
     # Invoke migrated API with dissociated key - should fail
     When I invoke the API resource at path "/apiContext/1.0.0/customers/123/" with method "GET" using api key "apiBoundApiKey1"
@@ -56,11 +69,13 @@ Feature: API-bound API Key with Migrated Artifacts
 
     # Re-associate to test revoke behavior
     When I associate api key "apiKey1UUID" to application "migratedAppId" from api "migratedAPIId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
+    And I wait for 3 seconds
 
     # Revoke the API key
     When I revoke api key "apiKey1UUID" for api "migratedAPIId"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
+    And I wait for 3 seconds
 
     # Invoke migrated API with revoked key - should fail
     When I invoke the API resource at path "/apiContext/1.0.0/customers/123/" with method "GET" using api key "apiBoundApiKey1"
@@ -81,23 +96,34 @@ Feature: API-bound API Key with Migrated Artifacts
       }
     }
     """
-    And I generate an api-bound api key for api "migratedAPIId" with payload "<apiKeyGenPayload2>" as "apiBoundApiKey2"
-    Then The response status code should be 200
+    And I generate an api-bound api key for api "migratedAPIId" with payload "<apiKeyGenPayload2>"
+    And I wait until the response status code is 200
+    And I extract response field "apikey" and store it as "<apiBoundApiKey2>"
+    And I extract response field "keyName" and store it as "<apiBoundApiKey2Name>"
+    And I wait for 3 seconds
 
     # Find the keyUUID
-    When I find the keyUUID of api key "apiBoundApiKey2Name" for api "migratedAPIId" as "apiKey2UUID"
+    When I find the list of api keys for api "migratedAPIId"
+    And I wait until the response status code is 200
+    And I extract response field "$" and store it as "apiKeysList"
+    And I find the resource with following properties in "apiKeysList" as "matchedKeyObject"
+      | keyName | <apiBoundApiKey2Name> |
+    And I extract field "keyUUID" from "matchedKeyObject" and store it as "apiKey2UUID"
 
     # Associate from application side
     When I associate api key "apiKey2UUID" for api "migratedAPIId" to application "migratedAppId" with key type "PRODUCTION"
-    Then The response status code should be 200
+    And I wait until the response status code is 200
+    And I wait for 3 seconds
 
     # Invoke migrated API with the new associated key - should succeed
     When I invoke the API resource at path "/apiContext/1.0.0/customers/123/" with method "GET" using api key "apiBoundApiKey2"
     Then The response status code should be 200
 
     # Regenerate the API key
-    When I regenerate api key "apiKey2UUID" for api "migratedAPIId" as "apiBoundApiKey2Regenerated"
-    Then The response status code should be 200
+    When I regenerate api key "apiKey2UUID" for api "migratedAPIId"
+    And I wait until the response status code is 200
+    And I extract response field "apikey" and store it as "apiBoundApiKey2Regenerated"
+    And I wait for 3 seconds
 
     # Invoke with regenerated key - should succeed (association maintained)
     When I invoke the API resource at path "/apiContext/1.0.0/customers/123/" with method "GET" using api key "apiBoundApiKey2Regenerated"
