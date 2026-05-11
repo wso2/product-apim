@@ -1524,14 +1524,55 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
-      - name: Notify Google Chat on Failure
-        if: failure()
+  notify-failure:
+    needs: [prepare-and-migrate]
+    if: failure()
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
+    permissions:
+      actions: read
+    steps:
+      - name: Identify failed databases and notify Google Chat
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
         run: |
-          PAYLOAD="{\"text\": \"❌ *APIM Migration Tests Failed!*\nDatabase Type: *${{ matrix.display_name }}*\nPlease investigate the logs here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
+          echo "Fetching job status from GitHub API..."
+
+          # Fetch API response and capture HTTP status code
+          HTTP_RESPONSE=$(curl -s -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+            -o job_data.json)
+
+          # Validate the API response structure
+          if [ "$HTTP_RESPONSE" -ne 200 ]; then
+            FAILED_DBS="API Error (Status: $HTTP_RESPONSE)"
+          elif ! jq -e '.jobs' job_data.json >/dev/null 2>&1; then
+            ERROR_MSG=$(jq -r '.message // "Unknown Error"' job_data.json)
+            FAILED_DBS="API Data Error ($ERROR_MSG)"
+          else
+            FAILED_DBS=$(jq -r '[.jobs[] | select((.conclusion == "failure" or .conclusion == "timed_out") and (.name | contains("prepare-and-migrate"))) | .name | gsub("prepare-and-migrate - "; "")] | join(", ")' job_data.json)
+          fi
+
+          if [ -z "$FAILED_DBS" ]; then
+            FAILED_DBS="Multiple/Unknown (Check Workflow Logs)"
+          fi
+
+          echo "Failed Databases identified: $FAILED_DBS"
+
+          # Construct Payload
+          PAYLOAD=$(cat <<EOF
+          {
+            "text": "❌ *APIM Migration Tests Failed!*\nFailed Databases: *${FAILED_DBS}*\nPlease investigate the logs here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+          EOF
+          )
           
-          curl -X POST -H 'Content-Type: application/json' \
-            -d "$PAYLOAD" \
-            "${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}"
+          echo "$PAYLOAD" | curl --fail --silent --show-error \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            -d @- \
+            "$GOOGLE_CHAT_WEBHOOK_URL"
 
   version-bump:
     needs: [update-and-build, prepare-and-migrate]
@@ -1586,9 +1627,19 @@ jobs:
 
       - name: Notify Google Chat on PR Creation
         if: steps.create_pr.outputs.pull-request-url != ''
+        env:
+          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+          PR_URL: ${{ steps.create_pr.outputs.pull-request-url }}
         run: |
-          PAYLOAD="{\"text\": \"✅ *APIM Migration Tests Passed!*\nA new automated version bump PR has been created.\n *Review PR:* ${{ steps.create_pr.outputs.pull-request-url }}\"}"
-
-          curl -X POST -H 'Content-Type: application/json' \
-            -d "$PAYLOAD" \
-            "${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}"
+          PAYLOAD=$(cat <<EOF
+          {
+            "text": "✅ *APIM Migration Tests Passed!*\nA new automated version bump PR has been created.\n👉 *Review PR:* ${PR_URL}"
+          }
+          EOF
+          )
+          
+          echo "$PAYLOAD" | curl --fail --silent --show-error \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            -d @- \
+            "$GOOGLE_CHAT_WEBHOOK_URL"
