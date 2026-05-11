@@ -3,12 +3,12 @@ name: APIM Database Migration Tests
 on:
   workflow_dispatch: {}
   schedule:
-    # Run nightly at 00:00 UTC
+    # Run nightly build at 00:00 UTC
     - cron: '0 0 * * *'
 
 jobs:
   update-and-build:
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
 
     permissions:
       contents: write
@@ -101,7 +101,11 @@ jobs:
   prepare-and-migrate:
     needs: update-and-build
     name: prepare-and-migrate - ${{ matrix.display_name }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -168,6 +172,12 @@ jobs:
       SHARED_DATABASE_VALIDATION_QUERY: ${{ matrix.validation_query }}
 
     steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
       - name: Start Database Containers
         run: |
           if [ "${{ matrix.db_type }}" == "mysql" ]; then
@@ -325,8 +335,7 @@ jobs:
       - name: Add JDBC driver to distribution
         run: |
           REPO_LIB_DIR="$EXTRACTED_DIR/repository/components/lib"
-          JDBC_URL="https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.30/mysql-connector-java-8.0.30.jar"
-          
+
           mkdir -p "$REPO_LIB_DIR"
           if [ "${{ matrix.db_type }}" == "mysql" ]; then
             wget -q -O mysql-connector-java-8.0.30.jar "https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.30/mysql-connector-java-8.0.30.jar"
@@ -423,7 +432,7 @@ jobs:
           if [ "${{ matrix.db_type }}" == "mysql" ]; then
             echo "Waiting for MySQL databases..."
             for i in {1..60}; do
-              if mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -prootpass --silent 2>/dev/null; then
+              if docker exec apim_db mysqladmin ping -h localhost -uroot -prootpass --silent 2>/dev/null; then
                 echo "apim_db is ready"
                 break
               fi
@@ -438,7 +447,7 @@ jobs:
             done
           
             for i in {1..60}; do
-              if mysqladmin ping -h 127.0.0.1 -P 3307 -uroot -prootpass --silent 2>/dev/null; then
+              if docker exec shared_db mysqladmin ping -h localhost -uroot -prootpass --silent 2>/dev/null; then
                 echo "shared_db is ready"
                 break
               fi
@@ -452,11 +461,11 @@ jobs:
               sleep 2
             done
           
-            # Configure APIM database using -e flag
-            mysql -h 127.0.0.1 -P 3306 -uroot -prootpass -e "ALTER DATABASE WSO2AM_APIMGT_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;"
+            # Configure APIM database using docker exec
+            docker exec apim_db mysql -uroot -prootpass -e "ALTER DATABASE WSO2AM_APIMGT_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;"
           
-            # Configure Shared database using -e flag
-            mysql -h 127.0.0.1 -P 3307 -uroot -prootpass -e "ALTER DATABASE WSO2AM_COMMON_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;"
+            # Configure Shared database using docker exec
+            docker exec shared_db mysql -uroot -prootpass -e "ALTER DATABASE WSO2AM_COMMON_DB CHARACTER SET latin1 COLLATE latin1_swedish_ci;"
           
             echo "MySQL databases configured successfully"
           
@@ -608,37 +617,46 @@ jobs:
           
           fi
 
-      - name: Verify APIM 3.2.0 database dumps exist
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Download APIM 3.2.0 DB Dumps from S3
         run: |
-          # Determine the correct folder based on the matrix DB type
           if [ "${{ matrix.db_type }}" == "mysql" ]; then
-            DB_DIR=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MYSQL"
+            DB_FOLDER="MYSQL"
           elif [ "${{ matrix.db_type }}" == "mssql" ]; then
-            DB_DIR=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MSSQL"
+            DB_FOLDER="MSSQL"
           elif [ "${{ matrix.db_type }}" == "postgre" ]; then
-            DB_DIR=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/POSTGRESQL"
+            DB_FOLDER="POSTGRESQL"
           elif [ "${{ matrix.db_type }}" == "oracle" ]; then
-            DB_DIR=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/ORACLE"
+            DB_FOLDER="ORACLE"
           fi
           
-          echo "Using checked-in APIM 3.2.0 DB dumps from $DB_DIR"
+          # Create a local directory for the downloaded dumps
+          LOCAL_DIR=".github/MIGRATION_RESOURCES/DB_DUMPS"
+          mkdir -p "$LOCAL_DIR"
           
-          # List the files for debugging purposes
-          ls -lh $DB_DIR/
+          echo "Downloading 3.2.0 database dumps from S3 folder: db_dumps/$DB_FOLDER/ ..."
           
-          # Hard fail 3.2.0 db dumps are missing
+          # Fetch the files recursively from the specific database folder
+          aws s3 cp "s3://${{ secrets.S3_BUCKET_NAME }}/db_dumps/$DB_FOLDER/" "$LOCAL_DIR/" --recursive
+          
+          # Hard fail if the required dumps were not found in the bucket
           if [ "${{ matrix.db_type }}" == "oracle" ]; then
-            test -f $DB_DIR/apim_db_dump_oracle_320.dmp
-            test -f $DB_DIR/shared_db_dump_oracle_320.dmp
+            test -f "$LOCAL_DIR/apim_db_dump_oracle_320.dmp" || (echo "::error::Missing Oracle APIM dump in S3" && exit 1)
+            test -f "$LOCAL_DIR/shared_db_dump_oracle_320.dmp" || (echo "::error::Missing Oracle Shared dump in S3" && exit 1)
           else
-            test -f $DB_DIR/apim_db_320_dump.sql
-            test -f $DB_DIR/shared_db_320_dump.sql
+            test -f "$LOCAL_DIR/apim_db_320_dump.sql" || (echo "::error::Missing APIM sql dump in S3" && exit 1)
+            test -f "$LOCAL_DIR/shared_db_320_dump.sql" || (echo "::error::Missing Shared sql dump in S3" && exit 1)
           fi
 
       - name: Restore APIM DB dump (3.2.0)
         run: |
           if [ "${{ matrix.db_type }}" == "mysql" ]; then
-            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MYSQL/apim_db_320_dump.sql"
+            DUMP_FILE=".github/MIGRATION_RESOURCES/DB_DUMPS/apim_db_320_dump.sql"
             echo "Restoring MySQL APIM dump..."
           
             # Copy SQL inside container
@@ -648,7 +666,7 @@ jobs:
             docker exec -i apim_db bash -c "cat /apim_db_dump.sql | mysql -uapim_user -papimpass WSO2AM_APIMGT_DB"
           
           elif [ "${{ matrix.db_type }}" == "mssql" ]; then
-            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MSSQL/apim_db_320_dump.sql"
+            DUMP_FILE=".github/MIGRATION_RESOURCES/DB_DUMPS/apim_db_320_dump.sql"
             echo "Restoring MSSQL APIM dump..."
           
             # Copy SQL inside container
@@ -658,7 +676,7 @@ jobs:
             docker exec -i apim_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -d apim_db -C -i /apim_db_dump.sql
           
           elif [ "${{ matrix.db_type }}" == "postgre" ]; then
-            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/POSTGRESQL/apim_db_320_dump.sql"
+            DUMP_FILE=".github/MIGRATION_RESOURCES/DB_DUMPS/apim_db_320_dump.sql"
             echo "Restoring PostgreSQL APIM dump..."
           
             # Copy SQL inside container
@@ -668,7 +686,7 @@ jobs:
             docker exec -i -e PGPASSWORD=apimpass apim_db psql -U apim_user -d apim_db -f /apim_db_dump.sql
           
           elif [ "${{ matrix.db_type }}" == "oracle" ]; then
-            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/ORACLE/apim_db_dump_oracle_320.dmp"
+            DUMP_FILE=".github/MIGRATION_RESOURCES/DB_DUMPS/apim_db_dump_oracle_320.dmp"
             echo "Restoring Oracle APIM dump using Data Pump (impdp)..."
           
             # Create a directory for the dump inside the container
@@ -687,7 +705,7 @@ jobs:
       - name: Restore Shared DB dump (3.2.0)
         run: |
           if [ "${{ matrix.db_type }}" == "mysql" ]; then
-            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MYSQL/shared_db_320_dump.sql"
+            DUMP_FILE=".github/MIGRATION_RESOURCES/DB_DUMPS/shared_db_320_dump.sql"
             echo "Restoring MySQL Shared dump from $DUMP_FILE..."
           
             # Copy SQL inside container
@@ -697,7 +715,7 @@ jobs:
             docker exec -i shared_db bash -c "cat /shared_db_dump.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
           
           elif [ "${{ matrix.db_type }}" == "mssql" ]; then
-            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/MSSQL/shared_db_320_dump.sql"
+            DUMP_FILE=".github/MIGRATION_RESOURCES/DB_DUMPS/shared_db_320_dump.sql"
             echo "Restoring MSSQL Shared dump from $DUMP_FILE..."
           
             # Copy SQL inside container
@@ -707,7 +725,7 @@ jobs:
             docker exec -i shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -d shared_db -C -i /shared_db_dump.sql
           
           elif [ "${{ matrix.db_type }}" == "postgre" ]; then
-            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/POSTGRESQL/shared_db_320_dump.sql"
+            DUMP_FILE=".github/MIGRATION_RESOURCES/DB_DUMPS/shared_db_320_dump.sql"
             echo "Restoring PostgreSQL Shared dump from $DUMP_FILE..."
           
             # Copy SQL inside container
@@ -717,7 +735,7 @@ jobs:
             docker exec -i -e PGPASSWORD=sharedpass shared_db psql -U shared_user -d shared_db -f /shared_db_dump.sql
           
           elif [ "${{ matrix.db_type }}" == "oracle" ]; then
-            DUMP_FILE=".github/WORKFLOW_ARTIFACTS/DB_DUMPS/ORACLE/shared_db_dump_oracle_320.dmp"
+            DUMP_FILE=".github/MIGRATION_RESOURCES/DB_DUMPS/shared_db_dump_oracle_320.dmp"
             echo "Restoring Oracle Shared dump using Data Pump (impdp)..."
           
             # Create a directory for the dump inside the container
@@ -736,45 +754,46 @@ jobs:
       - name: Run DB script on shared_db to add missing registry indices
         run: |
           if [ "${{ matrix.db_type }}" == "mysql" ]; then
-            SCRIPT_FILE=".github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/MySQL.sql"
+            SCRIPT_NAME="MySQL.sql"
+          elif [ "${{ matrix.db_type }}" == "mssql" ]; then
+            SCRIPT_NAME="MSSQL.sql"
+          elif [ "${{ matrix.db_type }}" == "postgre" ]; then
+            SCRIPT_NAME="PostgreSQL.sql"
+          elif [ "${{ matrix.db_type }}" == "oracle" ]; then
+            SCRIPT_NAME="Oracle.sql"
+          fi
+          
+          # 2. Download the script from S3
+          LOCAL_SCRIPT_DIR=".github/MIGRATION_RESOURCES/DB_SCRIPTS"
+          mkdir -p "$LOCAL_SCRIPT_DIR"
+          SCRIPT_FILE="$LOCAL_SCRIPT_DIR/$SCRIPT_NAME"
+          
+          echo "Downloading $SCRIPT_NAME from S3 (db_scripts/$SCRIPT_NAME)..."
+          aws s3 cp "s3://${{ secrets.S3_BUCKET_NAME }}/db_scripts/$SCRIPT_NAME" "$SCRIPT_FILE"
+          
+          # Hard fail if the download failed or file is missing
+          test -f "$SCRIPT_FILE" || (echo "::error::Missing DB script in S3: $SCRIPT_NAME" && exit 1)
+          
+          # 3. Execute the downloaded script against the container
+          if [ "${{ matrix.db_type }}" == "mysql" ]; then
             echo "Running MySQL script on shared_db container..."
-          
-            # Verify file exists
-            test -f "$SCRIPT_FILE"
-          
-            # Copy and execute
             docker cp "$SCRIPT_FILE" shared_db:/shared_db_script.sql
             docker exec -i shared_db bash -c "cat /shared_db_script.sql | mysql -ushared_user -psharedpass WSO2AM_COMMON_DB"
           
           elif [ "${{ matrix.db_type }}" == "mssql" ]; then
-            SCRIPT_FILE=".github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/MSSQL.sql"
             echo "Running MSSQL script on shared_db container..."
-          
-            # Verify file exists
-            test -f "$SCRIPT_FILE"
-          
             # Copy and execute using sqlcmd
             docker cp "$SCRIPT_FILE" shared_db:/shared_db_script.sql
             docker exec -i shared_db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'RootPass123!' -d shared_db -C -i /shared_db_script.sql
           
           elif [ "${{ matrix.db_type }}" == "postgre" ]; then
-            SCRIPT_FILE=".github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/PostgreSQL.sql"
             echo "Running PostgreSQL script on shared_db container..."
-          
-            # Verify file exists
-            test -f "$SCRIPT_FILE"
-          
             # Copy and execute using psql
             docker cp "$SCRIPT_FILE" shared_db:/shared_db_script.sql
             docker exec -i -e PGPASSWORD=sharedpass shared_db psql -U shared_user -d shared_db -f /shared_db_script.sql
           
           elif [ "${{ matrix.db_type }}" == "oracle" ]; then
-            SCRIPT_FILE=".github/WORKFLOW_ARTIFACTS/DB_SCRIPTS/Oracle.sql"
             echo "Running Oracle script on shared_db container..."
-          
-            # Verify file exists
-            test -f "$SCRIPT_FILE"
-            
             # Copy and execute using sqlplus (Connecting to XEPDB1)
             docker cp "$SCRIPT_FILE" shared_db:/shared_db_script.sql
             docker exec -i shared_db bash -c "echo -e '@/shared_db_script.sql\nEXIT;' | sqlplus -s SHARED_DB_USER/sharedpass@//localhost:1521/XEPDB1"
@@ -797,54 +816,58 @@ jobs:
           fi
 
           echo "Using APIM distribution: $DIST_PATH"
-
-          # Start a temporary HTTP server to expose the zip
+          
+          # Start a temporary HTTP server 
           DIST_DIR="all-in-one-apim/modules/distribution/product/target"
           cd "$DIST_DIR"
-          python3 -m http.server 8000 &
+          python3 -m http.server 8000 --bind 127.0.0.1 &
           SERVER_PID=$!
           cd - >/dev/null
-
+          
+          trap "kill $SERVER_PID 2>/dev/null || true" EXIT
+          
           sleep 3
-
+          
           ZIP_NAME=$(basename "$DIST_PATH")
-          DOCKER_EXTRA_HOSTS="--add-host=host.docker.internal:host-gateway"
-
-          # Build Docker image using official docker-apim Ubuntu Dockerfile,
+          
+          # Build Docker image using official docker-apim Ubuntu Dockerfile
           docker build \
-            $DOCKER_EXTRA_HOSTS \
+            --network=host \
             https://github.com/wso2/docker-apim.git#master:dockerfiles/ubuntu/apim \
             -t wso2am-migration:latest \
             --build-arg WSO2_SERVER="${APIM_SERVER_NAME}" \
-            --build-arg WSO2_SERVER_DIST_URL="http://host.docker.internal:8000/${ZIP_NAME}"
-
-          # Stop the temporary HTTP server
-          kill "$SERVER_PID" || true
-
+            --build-arg WSO2_SERVER_DIST_URL="http://127.0.0.1:8000/${ZIP_NAME}"
+          
           echo "Docker image built successfully"
           docker images | grep wso2am-migration || true
 
-      - name: Identity Migration - Download and Setup
-        env:
-          IDENTITY_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2is-migration-1.1.179-SNAPSHOT.zip"
+      - name: Download Migration Clients from S3
         run: |
-          echo "=== Step 1: Identity Migration Setup ==="
-          
-          # Download Identity migration zip
-          echo "Downloading Identity migration resources..."
+          echo "=== Step 1: Fetching Migration Clients from S3 ==="
           mkdir -p .github/MIGRATION_RESOURCES
-          curl -fSL "$IDENTITY_MIGRATION_S3_URL" -o .github/MIGRATION_RESOURCES/identity-migration.zip
           
-          # Unzip
-          unzip -q .github/MIGRATION_RESOURCES/identity-migration.zip -d .github/MIGRATION_RESOURCES/identity-migration
+          # Find and download the latest APIM migration zip
+          APIM_ZIP=$(aws s3 ls "s3://${{ secrets.S3_BUCKET_NAME }}/migration_clients/" | grep "wso2am-migration-" | awk '{print $4}' | sort -V | tail -n1)
+          if [ -z "$APIM_ZIP" ]; then echo "APIM migration zip not found in S3"; exit 1; fi
+          echo "Downloading $APIM_ZIP..."
+          aws s3 cp "s3://${{ secrets.S3_BUCKET_NAME }}/migration_clients/$APIM_ZIP" .github/MIGRATION_RESOURCES/apim-migration.zip
           
-          echo "Identity migration resources downloaded and extracted"
+          # Find and download the latest IS migration zip
+          IS_ZIP=$(aws s3 ls "s3://${{ secrets.S3_BUCKET_NAME }}/migration_clients/" | grep "wso2is-migration-" | awk '{print $4}' | sort -V | tail -n1)
+          if [ -z "$IS_ZIP" ]; then echo "IS migration zip not found in S3"; exit 1; fi
+          echo "Downloading $IS_ZIP..."
+          aws s3 cp "s3://${{ secrets.S3_BUCKET_NAME }}/migration_clients/$IS_ZIP" .github/MIGRATION_RESOURCES/identity-migration.zip
+
 
       - name: Identity Migration - Copy Resources and Run
         run: |
           echo "=== Step 2: Identity Migration Execution ==="
           
-          # First, verify the extracted structure locally
+          # Extract the downloaded zip
+          unzip -q .github/MIGRATION_RESOURCES/identity-migration.zip -d .github/MIGRATION_RESOURCES/identity-migration
+          echo "Extracted Identity migration resources"
+
+          # Verify the extracted structure locally
           echo "=== Verifying extracted migration zip structure ==="
           find .github/MIGRATION_RESOURCES/identity-migration -type f -name "migration-config.yaml" | head -5
           find .github/MIGRATION_RESOURCES/identity-migration -type d -name "migration-resources" | head -5
@@ -977,27 +1000,14 @@ jobs:
             echo ""
             echo "Identity migration run completed"
 
-      - name: APIM Migration - Download and Setup
-        env:
-         APIM_MIGRATION_S3_URL: "https://apim-migration-test-resources.s3.us-east-1.amazonaws.com/wso2am-migration-4.7.0.1-SNAPSHOT.zip"
-        run: |
-          echo "=== Step 3: APIM Migration Setup ==="
-          
-          # Download APIM migration zip
-          echo "Downloading APIM migration resources..."
-          mkdir -p .github/MIGRATION_RESOURCES
-          curl -fSL "$APIM_MIGRATION_S3_URL" -o .github/MIGRATION_RESOURCES/apim-migration.zip
-          
-          # Unzip
-          unzip -q .github/MIGRATION_RESOURCES/apim-migration.zip -d .github/MIGRATION_RESOURCES/apim-migration
-          
-          echo "APIM migration resources downloaded and extracted"
-
       - name: APIM Migration - Pre-Migration
         run: |
-          echo "=== Step 4: APIM Pre-Migration ==="
+          echo "=== Step 3: APIM Pre-Migration ==="
           
-          # First, verify the extracted structure locally
+          # Extract the downloaded zip
+          unzip -q .github/MIGRATION_RESOURCES/apim-migration.zip -d .github/MIGRATION_RESOURCES/apim-migration
+          
+          # verify the extracted structure locally
           echo "=== Verifying extracted APIM migration zip structure ==="
           find .github/MIGRATION_RESOURCES/apim-migration -type f -name "migration-config.yaml" | head -5
           find .github/MIGRATION_RESOURCES/apim-migration -type d -name "migration-resources" | head -5
@@ -1122,7 +1132,7 @@ jobs:
 
       - name: APIM Migration - Run Migration
         run: |
-          echo "=== Step 5: APIM Migration ==="
+          echo "=== Step 4: APIM Migration ==="
           
           # First, verify the extracted structure locally
           echo "=== Verifying extracted APIM migration zip structure ==="
@@ -1256,7 +1266,7 @@ jobs:
 
       - name: Re-indexing - Configure and Run
         run: |
-          echo "=== Step 6: Re-indexing API Artifacts ==="
+          echo "=== Step 5: Re-indexing API Artifacts ==="
           
           # Start container in detached mode
           CONTAINER_ID=$(docker run -d \
@@ -1514,11 +1524,62 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
+  notify-failure:
+    needs: [prepare-and-migrate]
+    if: failure()
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
+    permissions:
+      actions: read
+    steps:
+      - name: Identify failed databases and notify Google Chat
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+        run: |
+          echo "Fetching job status from GitHub API..."
+
+          # Fetch API response and capture HTTP status code
+          HTTP_RESPONSE=$(curl -s -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+            -o job_data.json)
+
+          # Validate the API response structure
+          if [ "$HTTP_RESPONSE" -ne 200 ]; then
+            FAILED_DBS="API Error (Status: $HTTP_RESPONSE)"
+          elif ! jq -e '.jobs' job_data.json >/dev/null 2>&1; then
+            ERROR_MSG=$(jq -r '.message // "Unknown Error"' job_data.json)
+            FAILED_DBS="API Data Error ($ERROR_MSG)"
+          else
+            FAILED_DBS=$(jq -r '[.jobs[] | select((.conclusion == "failure" or .conclusion == "timed_out") and (.name | contains("prepare-and-migrate"))) | .name | gsub("prepare-and-migrate - "; "")] | join(", ")' job_data.json)
+          fi
+
+          if [ -z "$FAILED_DBS" ]; then
+            FAILED_DBS="Multiple/Unknown (Check Workflow Logs)"
+          fi
+
+          echo "Failed Databases identified: $FAILED_DBS"
+
+          # Construct Payload
+          PAYLOAD=$(cat <<EOF
+          {
+            "text": "❌ *APIM Migration Tests Failed!*\nFailed Databases: *${FAILED_DBS}*\nPlease investigate the logs here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+          EOF
+          )
+          
+          echo "$PAYLOAD" | curl --fail --silent --show-error \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            -d @- \
+            "$GOOGLE_CHAT_WEBHOOK_URL"
+
   version-bump:
     needs: [update-and-build, prepare-and-migrate]
-    runs-on: ubuntu-latest
+    runs-on: codebuild-wso2_product-apim-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       contents: write
+      pull-requests: write
     env:
       CARBON_APIMGT_VERSION_PROPERTY: carbon.apimgt.version
     steps:
@@ -1535,22 +1596,50 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Update pom.xml and push version bump
+      - name: Update pom.xml with new version
         if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
         working-directory: all-in-one-apim
         run: |
           LATEST="${{ needs.update-and-build.outputs.latest_version }}"
           echo "Bumping ${CARBON_APIMGT_VERSION_PROPERTY} from ${{ needs.update-and-build.outputs.current_version }} to $LATEST"
+          
           mvn -B \
             org.codehaus.mojo:versions-maven-plugin:2.16.2:set-property \
             -Dproperty=${CARBON_APIMGT_VERSION_PROPERTY} \
             -DnewVersion=$LATEST \
             -DgenerateBackupPoms=false
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
-          git commit -am "chore: bump carbon-apimgt to $LATEST"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+
+      - name: Create Pull Request for Version Bump
+        id: create_pr
+        if: needs.update-and-build.outputs.latest_version != '' && needs.update-and-build.outputs.latest_version != needs.update-and-build.outputs.current_version
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump carbon-apimgt version to ${{ needs.update-and-build.outputs.latest_version }}"
+          title: "Automated Version Bump: carbon-apimgt version to ${{ needs.update-and-build.outputs.latest_version }}"
+          body: |
+            Automated version bump detected a new release of `carbon-apimgt`.
+            - **Previous version:** `${{ needs.update-and-build.outputs.current_version }}`
+            - **New version:** `${{ needs.update-and-build.outputs.latest_version }}`
+          branch: "bot/bump-carbon-apimgt"
+          base: "${{ github.ref_name }}"
+          labels: "automated pr, version bump"
+
+      - name: Notify Google Chat on PR Creation
+        if: steps.create_pr.outputs.pull-request-url != ''
+        env:
+          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+          PR_URL: ${{ steps.create_pr.outputs.pull-request-url }}
+        run: |
+          PAYLOAD=$(cat <<EOF
+          {
+            "text": "✅ *APIM Migration Tests Passed!*\nA new automated version bump PR has been created.\n👉 *Review PR:* ${PR_URL}"
+          }
+          EOF
+          )
+          
+          echo "$PAYLOAD" | curl --fail --silent --show-error \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            -d @- \
+            "$GOOGLE_CHAT_WEBHOOK_URL"

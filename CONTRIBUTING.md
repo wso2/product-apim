@@ -44,15 +44,15 @@ After updating the version, rebuild the product-apim repository.
 
 ## Debug the Product
 
-1. Unzip the product distribution (e.g., wso2am-4.5.0.zip).
+1. Unzip the product distribution (e.g., wso2am-4.7.0.zip).
 2. Identify the component version used in the product. You can find this by:
     - Checking the component version in the `repository/components/plugins/` folder, or
-    - Viewing the component version in the corresponding product release tag (ex: https://github.com/wso2/product-apim/blob/v4.5.0/all-in-one-apim/pom.xml for APIM 4.5.0).
-3. Clone the relevant component repository and check out the tag that matches the component version. Example: The carbon-apimgt component version used in WSO2 API Manager 4.5.0 is 9.31.86. The source code for this version is available at:
-https://github.com/wso2/carbon-apimgt/tree/v9.31.86
+    - Viewing the component version in the corresponding product release tag (ex: https://github.com/wso2/product-apim/blob/v4.7.0/all-in-one-apim/pom.xml for APIM 4.7.0).
+3. Clone the relevant component repository and check out the tag that matches the component version. Example: The carbon-apimgt component version used in WSO2 API Manager 4.7.0 is 9.33.118. The source code for this version is available at:
+https://github.com/wso2/carbon-apimgt/tree/v9.33.118
 4. Load the source code into your IDE.
 5. Start the product in debug mode:
-   - Navigate to wso2am-4.5.0/bin/
+   - Navigate to wso2am-4.7.0/bin/
    - Run: `./api-manager.sh -debug 5005`
 6. Connect to the server using your IDE’s remote debug option.
 
