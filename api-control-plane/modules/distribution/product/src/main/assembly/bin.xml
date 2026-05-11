@@ -1067,6 +1067,13 @@
             </source>
             <outputDirectory>wso2am-acp-${pom.version}/repository/conf</outputDirectory>
         </file>
+
+        <!-- Tenant selection page deployed as a standalone webapp at context /select-tenant -->
+        <file>
+            <source>src/main/extensions/select-tenant.jsp</source>
+            <outputDirectory>wso2am-acp-${pom.version}/repository/deployment/server/webapps/select-tenant</outputDirectory>
+            <destName>index.jsp</destName>
+        </file>
         <file>
             <source>src/main/conf/axis2_KM.xml</source>
             <outputDirectory>wso2am-acp-${pom.version}/repository/conf/axis2</outputDirectory>

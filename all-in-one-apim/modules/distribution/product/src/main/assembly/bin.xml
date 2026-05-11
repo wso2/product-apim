@@ -1112,6 +1112,13 @@
         </file>
         <!--End of claim management feature-->
 
+        <!-- Tenant selection page deployed as a standalone webapp at context /select-tenant -->
+        <file>
+            <source>src/main/extensions/select-tenant.jsp</source>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/webapps/select-tenant</outputDirectory>
+            <destName>index.jsp</destName>
+        </file>
+
 
         <!-- using the event-broker config file from carbon mediation>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml</source>
