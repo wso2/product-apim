@@ -2462,6 +2462,12 @@
             <Enable>false</Enable>
             <RequireSuperTenantInUrls>false</RequireSuperTenantInUrls>
             <EnableTenantedSessions>false</EnableTenantedSessions>
+            <!--
+                When set to true, tenant validation will be skipped for OAuth endpoints in multi-tenant scenarios.
+                This allows OAuth flows to proceed without strict tenant domain validation.
+                Enable this only when using multi-tenant SSO configurations.
+                Default: false (tenant validation is enforced)
+            -->
             <SkipTenantValidationForOAuthEndpoints>false</SkipTenantValidationForOAuthEndpoints>
         </TenantQualifiedUrls>
     </TenantContext>
