@@ -19,9 +19,9 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
@@ -37,7 +37,7 @@ import java.io.IOException;
 
 public class ContainerInitializationSteps {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContainerInitializationSteps.class);
+    private static final Log log = LogFactory.getLog(ContainerInitializationSteps.class);
     String callerModuleDir = ModulePathResolver.getModuleDir(ContainerInitializationSteps.class);
 
 
@@ -81,9 +81,9 @@ public class ContainerInitializationSteps {
         // Verifying that the deployment.toml file was copied correctly by logging its content
         String filePathInsideContainer = apimContainer.getContainerTomlPath();
         String fileContents = apimContainer.execInContainer("cat", filePathInsideContainer).getStdout();
-        logger.info("Contents of the copied deployment.toml inside the container: \n {}", fileContents);
+        log.info("Contents of the copied deployment.toml inside the container: \n " + fileContents);
 
-        TestContext.set("baseUrl", apimContainer.getAPIManagerUrl());
+        TestContext.set(Constants.BASE_URL, apimContainer.getAPIManagerUrl());
         TestContext.set("baseGatewayUrl", apimContainer.getGatewayUrl());
         TestContext.set("label", label);
     }

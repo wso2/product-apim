@@ -46,7 +46,7 @@ public class ApplicationBaseSteps {
 
     public ApplicationBaseSteps() {
 
-        baseUrl = TestContext.get("baseUrl").toString();
+        baseUrl = TestContext.get(Constants.BASE_URL).toString();
         tenant = Utils.getTenantFromContext("currentTenant");
         currentuser = tenant.getContextUser();
     }

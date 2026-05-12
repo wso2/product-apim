@@ -25,6 +25,7 @@ public class Constants {
     public static final String JSON_PATH_ROOT = "$";
     public static final String JSON_PATH_ROOT_WITH_DOT = "$.";
     public static final String COMPOSITE_KEY_DELIMITER = "|";
+    public static final String JSON_ARRAY_START_TOKEN = "[";
     public static final String AMPERSAND = "&";
     public static final String XML_AMPERSAND = "&amp;";
     public static final Pattern CONTEXT_PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^}]+)}}");
@@ -33,6 +34,8 @@ public class Constants {
     public static final String HTTPS_SCHEME = "https";
     public static final String HTTP_RESPONSE = "httpResponse";
     public static final String PENDING_HTTP_REQUEST = "pendingRequest";
+
+    public static final String BASE_URL = "baseUrl";
 
     public static final long DEPLOYMENT_WAIT_TIME = 60 * 1000;
     public static final long UNDEPLOYMENT_WAIT_TIME = 30 * 1000;

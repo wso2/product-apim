@@ -28,6 +28,8 @@ import org.apache.axiom.om.OMXMLBuilderFactory;
 import org.apache.axiom.om.OMXMLParserWrapper;
 import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,8 +37,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONTokener;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
@@ -54,7 +54,7 @@ import java.util.regex.Matcher;
 
 public class Utils {
     
-    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static final Log log = LogFactory.getLog(Utils.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static String getDCREndpointURL(String baseUrl) {
@@ -116,7 +116,8 @@ public class Utils {
         return urlBuilder.toString();
     }
 
-    public static String getChangeLifecycleURL(String baseUrl, String resourceType, String apiId, String action, String lifecycleChecklist) {
+    public static String getChangeLifecycleURL(String baseUrl, String resourceType, String apiId, String action,
+                                               String lifecycleChecklist) {
 
         if (StringUtils.isBlank(apiId) || StringUtils.isBlank(action)) {
             throw new IllegalArgumentException("ID and Action must be provided.");
@@ -138,7 +139,7 @@ public class Utils {
             String encodedChecklist = URLEncoder.encode(lifecycleChecklist, StandardCharsets.UTF_8);
             urlBuilder.append("&lifecycleChecklist=").append(encodedChecklist);
         }
-        logger.info("Change Lifecycle URL: " + urlBuilder);
+        log.info("Change Lifecycle URL: " + urlBuilder);
         return urlBuilder.toString();
     }
 
@@ -461,17 +462,17 @@ public class Utils {
         String trimmedPath = path.trim();
 
         // If path already starts with "$", return as-is
-        if (trimmedPath.startsWith("$")) {
+        if (trimmedPath.startsWith(Constants.JSON_PATH_ROOT)) {
             return trimmedPath;
         }
 
         // JSON Arrays: If it starts with "[", prepend "$"
-        if (trimmedPath.startsWith("[")) {
-            return "$" + trimmedPath;
+        if (trimmedPath.startsWith(Constants.JSON_ARRAY_START_TOKEN)) {
+            return Constants.JSON_PATH_ROOT + trimmedPath;
         }
 
         // JSON Objects: Otherwise, prepend "$."
-        return "$." + trimmedPath;
+        return Constants.JSON_PATH_ROOT_WITH_DOT + trimmedPath;
     }
 
     /**
@@ -776,7 +777,7 @@ public class Utils {
 
             Assert.assertEquals(String.valueOf(actualValue), expectedValue, "String values do not match");
         } catch (Exception e) {
-            logger.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
+            log.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
             throw new AssertionError("Comparison failed: " + e.getMessage(), e);
         }
     }
@@ -800,7 +801,7 @@ public class Utils {
         HttpResponse response = null;
 
         for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
-            logger.info("Attempt {}/{}: Executing request...", attempt, Constants.MAX_RETRIES);
+            log.info("Attempt " + attempt + "/" + Constants.MAX_RETRIES + ": Executing request...");
             response = requestAction.execute();
 
             // Check if status code matches and custom validation passes
@@ -808,8 +809,8 @@ public class Utils {
                 if ( response.getResponseCode() == expectedStatusCode && customValidation.test(response)) {
                     return response;
                 } else {
-                    logger.warn("Attempt {}: Criteria not met. Received: [{}]. Data: {}",
-                            attempt, response.getResponseCode(), response.getData());
+                    log.warn("Attempt " + attempt + ": Criteria not met. Received: [" + response.getResponseCode()
+                            + "]. Data: " + response.getData());
                 }
             }
 

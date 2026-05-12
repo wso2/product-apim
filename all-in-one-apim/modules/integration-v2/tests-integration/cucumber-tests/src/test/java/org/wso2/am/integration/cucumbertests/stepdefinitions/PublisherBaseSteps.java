@@ -20,16 +20,15 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.datatable.DataTable;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.RequestAction;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -49,10 +48,10 @@ import java.io.FileNotFoundException;
 public class PublisherBaseSteps {
 
     private final String baseUrl;
-    private static final Logger logger = LoggerFactory.getLogger(PublisherBaseSteps.class);
+    private static final Log log = LogFactory.getLog(PublisherBaseSteps.class);
 
     public PublisherBaseSteps() {
-        baseUrl = TestContext.get("baseUrl").toString();
+        baseUrl = TestContext.get(Constants.BASE_URL).toString();
     }
 
     BaseSteps baseSteps = new BaseSteps();
@@ -425,7 +424,7 @@ public class PublisherBaseSteps {
 
         RequestAction requestAction = () -> {
             try {
-                logger.info("Attempting to demote resource {} to CREATED state.", actualResourceId);
+                log.info("Attempting to demote resource " + actualResourceId + " to CREATED state.");
                 return SimpleHTTPClient.getInstance().doPost(url, headers, null, null);
             } catch (IOException e) {
                 throw new RuntimeException("Resource demotion failed: ", e);
@@ -574,7 +573,7 @@ public class PublisherBaseSteps {
 
                         if (revisionId.equals(deployedRevisionId)) {
                             deployed = true;
-                            logger.info("Revision {} is deployed for API {}", revisionId, actualResourceId);
+                            log.info("Revision " + revisionId + " is deployed for API " + actualResourceId);
                             Thread.sleep(10000);
                             break;
                         }
@@ -586,8 +585,7 @@ public class PublisherBaseSteps {
                 }
 
             } catch (Exception e) {
-                logger.debug("Revision {} not deployed yet – retrying", revisionId
-                );
+                log.debug("Revision " + revisionId + " not deployed yet – retrying");
             }
 
             try {
