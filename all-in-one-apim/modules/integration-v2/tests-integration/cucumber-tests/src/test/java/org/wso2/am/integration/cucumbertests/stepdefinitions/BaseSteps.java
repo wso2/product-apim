@@ -24,10 +24,10 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.RequestAction;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -49,7 +49,7 @@ import java.util.Map;
 
 public class BaseSteps {
 
-    private static final Logger logger = LoggerFactory.getLogger(BaseSteps.class);
+    private static final Log log = LogFactory.getLog(BaseSteps.class);
 
     private final String baseUrl;
     private Tenant tenant;
@@ -57,7 +57,7 @@ public class BaseSteps {
 
     public BaseSteps() {
 
-        baseUrl = TestContext.get("baseUrl").toString();
+        baseUrl = TestContext.get(Constants.BASE_URL).toString();
     }
 
     /**
@@ -68,7 +68,7 @@ public class BaseSteps {
 
         tenant = Utils.getTenantFromContext("currentTenant");
         currentuser = tenant.getContextUser();
-        logger.info("Running with user: {}", currentuser.getUserName());
+        log.info("Running with user: " + currentuser.getUserName());
     }
 
     /**
@@ -211,7 +211,7 @@ public class BaseSteps {
         // Resolve value if it's a reference to another context key
         Object resolvedValue = Utils.resolveFromContext(value);
 
-        logger.info("Setting context key: {} with value: {}", contextKey, resolvedValue);
+        log.info("Setting context key: " + contextKey + " with value: " + resolvedValue);
         TestContext.set(Utils.normalizeContextKey(contextKey), resolvedValue.toString());
     }
 
@@ -512,7 +512,8 @@ public class BaseSteps {
         HttpResponse retrievedResponse = null;
 
         for (int i = 0; i < maxRetries; i++) {
-            logger.info("[Attempt {}/{}] Fetching resource {} with ID: {}", i, maxRetries, resourceType, resourceId);
+            log.info("[Attempt " + i + "/" + maxRetries + "] Fetching resource " + resourceType + " with ID: "
+                    + resourceId);
             Map<String, String> headers = new HashMap<>();
             headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                     "Bearer " + TestContext.get("publisherAccessToken").toString());
@@ -544,7 +545,7 @@ public class BaseSteps {
 
         // Final fall back
         if (!configMatches) {
-            logger.warn("Criteria not met. Falling back to initial update response verification.");
+            log.warn("Criteria not met. Falling back to initial update response verification.");
             verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
         }
     }
@@ -629,7 +630,7 @@ public class BaseSteps {
                     break;
             }
             try {
-                logger.info("Waiting for APIM server to be ready...");
+                log.info("Waiting for APIM server to be ready...");
                 Thread.sleep(1000);
             } catch (InterruptedException ignored) {
             }
@@ -646,9 +647,9 @@ public class BaseSteps {
      */
     @And("I wait for the system indexing to stabilize")
     public void iWaitToStabilizeIndexing() throws InterruptedException {
-        logger.info("Waiting {}s for system indexing to stabilize...", Constants.INITIAL_INDEXING_TIME / 1000);
+        log.info("Waiting " + (Constants.INITIAL_INDEXING_TIME / 1000) + "s for system indexing to stabilize...");
         Thread.sleep(Constants.INITIAL_INDEXING_TIME);
-        logger.info("Indexing stabilization period completed.");
+        log.info("Indexing stabilization period completed.");
     }
 
     /**
@@ -681,7 +682,7 @@ public class BaseSteps {
             try {
                 response = SimpleHTTPClient.getInstance().doGet(url, headers);
             } catch (IOException ignored) {
-                logger.warn("API :{} with version: {} not yet deployed in tenant: {}", apiName, apiVersion,
+                log.warn("API :" + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
                         tenant.getDomain());
             }
             if (response != null && response.getResponseCode() == 200) {
@@ -689,8 +690,8 @@ public class BaseSteps {
                     break;
             }
             try {
-                logger.info("Wait for availability of API: {} with version: {} in tenant {}", apiName, apiVersion,
-                        tenant.getDomain());
+                log.info("Wait for availability of API: " + apiName + " with version: " + apiVersion +
+                        " in tenant " + tenant.getDomain());
                 Thread.sleep(500);
             } catch (InterruptedException ignored) {
             }
@@ -729,12 +730,12 @@ public class BaseSteps {
                 response = SimpleHTTPClient.getInstance().doGet(url, headers);
             } catch (IOException ignored) {}
             if (response != null && response.getResponseCode() == 404) {
-                logger.info("Previous API revision is undeployed successfully");
+                log.info("Previous API revision is undeployed successfully");
                 break;
             }
             try {
-                logger.info("Wait for undeployment of API: {} with version: {} in tenant {}", apiName, apiVersion,
-                        tenant.getDomain());
+                log.info("Wait for undeployment of API: " + apiName + " with version: " + apiVersion +
+                        " in tenant " + tenant.getDomain());
                 Thread.sleep(500);
             } catch (InterruptedException ignored) {
             }

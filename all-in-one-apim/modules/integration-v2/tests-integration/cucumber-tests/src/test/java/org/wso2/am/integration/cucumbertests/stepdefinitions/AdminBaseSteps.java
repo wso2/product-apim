@@ -35,7 +35,7 @@ public class AdminBaseSteps {
 
     public AdminBaseSteps() {
 
-        baseUrl = TestContext.get("baseUrl").toString();
+        baseUrl = TestContext.get(Constants.BASE_URL).toString();
     }
 
     /**
