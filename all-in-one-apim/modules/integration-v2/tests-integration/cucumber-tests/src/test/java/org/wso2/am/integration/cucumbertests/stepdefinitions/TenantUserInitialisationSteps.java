@@ -21,8 +21,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import org.jaxen.JaxenException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -38,11 +38,12 @@ import java.util.Map;
 
 public class TenantUserInitialisationSteps {
 
-    private static final Logger logger = LoggerFactory.getLogger(TenantUserInitialisationSteps.class);
+    private static final Log log = LogFactory.getLog(TenantUserInitialisationSteps.class);
     private final String baseUrl;
 
     public TenantUserInitialisationSteps() {
-        baseUrl = TestContext.get("baseUrl").toString();
+
+        baseUrl = TestContext.get(Constants.BASE_URL).toString();
     }
 
     /**
@@ -125,7 +126,7 @@ public class TenantUserInitialisationSteps {
 
 
         if (existingTenantDomains.contains(tenantDomain)) {
-            logger.info("Tenant with domain {} already exists", tenantDomain);
+            log.info("Tenant with domain " + tenantDomain + " already exists");
         } else {
             String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
                     "xmlns:ser=\"http://services.mgt.tenant.carbon.wso2.org\" " +
@@ -213,7 +214,7 @@ public class TenantUserInitialisationSteps {
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
 
         if (existingTenantUsers.contains(username)) {
-            logger.info("User with username {} already exists in the tenant", username);
+            log.info("User with username " + username + " already exists in the tenant");
         } else {
             String[] rolesList = roles.split("\\s*,\\s*");
             StringBuilder rolesXml = new StringBuilder();

@@ -4,7 +4,7 @@ Feature: Migrated API Lifecycle Management
     Given The system is ready and I have valid access tokens for current user
 
   Scenario Outline: Migrated API Lifecycle Management
-    # Step 1: Find the api
+    # Find the api
     When I find the API created with the name "<apiName>" and version "<apiVersion>"
     And I wait until the response status code is 200
     And I extract response field "count" and store it as "<apiCount>"
@@ -18,23 +18,16 @@ Feature: Migrated API Lifecycle Management
     And I wait until the response status code is 200
     And I put the response payload in context as "<apiPayload>"
 
-
-    # Step 3: Deploy the API
+    # Deploy the API
     When I deploy the API with id "<apiID>"
     And I wait until the response status code is 201
     And I wait for deployment of the resource in "<apiPayload>"
 
-    # Step 4: Publish the API
-    When I publish the "apis" resource with id "<apiID>"
-    And I wait until the response status code is 200
-    Then I get the lifecycle status of API "<apiID>"
-    Then I wait until the response status code is 200 and the value of response field "state" is "Published"
+    # Publish the API
+    When I execute lifecycle action "Publish" on "apis" resource "<apiID>" and wait for state "Published"
 
-    # Step 5: Demote the API to created state
-    When I demote the "apis" resource with id "<apiID>" to created state
-    And I wait until the response status code is 200
-    Then I get the lifecycle status of API "<apiID>"
-    Then I wait until the response status code is 200 and the value of response field "state" is "Created"
+    # Demote the API to created state
+    When I execute lifecycle action "Demote to Created" on "apis" resource "<apiID>" and wait for state "Created"
 
     Examples:
       | apiName                  | apiVersion   | apiID         |
