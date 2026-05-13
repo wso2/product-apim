@@ -29,8 +29,8 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>am-gw-features</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 Universal Gateway - Features Aggregator Module</name>
-    <description>Features specific to the WSO2 Universal Gateway</description>
+    <name>WSO2 Classic Gateway - Features Aggregator Module</name>
+    <description>Features specific to the WSO2 Classic Gateway</description>
 
 
     <modules>
