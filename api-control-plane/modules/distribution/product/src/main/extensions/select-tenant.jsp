@@ -232,7 +232,9 @@
         document.addEventListener('DOMContentLoaded', fetchTenants);
 
         document.getElementById('tenantForm').addEventListener('submit', function(e) {
-            var tenantIdentifier = document.getElementById('tenantIdentifier').value;
+            var tenantField = document.getElementById('tenantIdentifier');
+            var tenantIdentifier = tenantField.value.trim();
+            tenantField.value = tenantIdentifier;
             var errorMsg = document.getElementById('errorMsg');
             var submitBtn = document.getElementById('submitBtn');
 
