@@ -195,7 +195,12 @@
         function fetchTenants() {
             var select = document.getElementById('tenantIdentifier');
             fetch(TENANTS_API_URL)
-                .then(function(res) { return res.json(); })
+                .then(function(res) {
+                    if (!res.ok) {
+                        throw new Error('Tenant API request failed: ' + res.status);
+                    }
+                    return res.json();
+                })
                 .then(function(data) {
                     var tenants = (data.list || [])
                         .sort(function(a, b) { return a.domain > b.domain ? 1 : -1; });
@@ -244,8 +249,10 @@
             submitBtn.textContent = 'Redirecting...';
         });
 
-        document.getElementById('tenantIdentifier').addEventListener('change', function() {
-            document.getElementById('errorMsg').style.display = 'none';
+        document.getElementById('tenantForm').addEventListener('input', function(e) {
+            if (e.target && e.target.id === 'tenantIdentifier') {
+                document.getElementById('errorMsg').style.display = 'none';
+            }
         });
     </script>
 </body>

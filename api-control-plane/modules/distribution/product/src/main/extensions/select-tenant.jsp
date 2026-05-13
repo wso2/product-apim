@@ -16,6 +16,7 @@
   under the License.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="org.owasp.encoder.Encode" %>
 <%
     String sessionDataKey = request.getParameter("sessionDataKey");
     if (sessionDataKey == null) {
@@ -29,15 +30,10 @@
     if (idp == null) {
         idp = "";
     }
-    // Dynamically resolve the commonauth endpoint URL from the request properties
-    // instead of hardcoding it. This makes the app work across different environments.
-    String scheme = request.getScheme();
-    String serverName = request.getServerName();
-    int serverPort = request.getServerPort();
-    String portStr = (serverPort == 80 && "http".equals(scheme)) ||
-                     (serverPort == 443 && "https".equals(scheme)) ? "" : ":" + serverPort;
-    String commonAuthUrl = scheme + "://" + serverName + portStr + "/commonauth";
-    String tenantsApiUrl = scheme + "://" + serverName + portStr + "/api/am/devportal/v3/tenants?state=active";
+    // Use relative URLs so the form/API target stays same-origin regardless of
+    // Host header value. Prevents open redirect via spoofed Host header.
+    String commonAuthUrl = "/commonauth";
+    String tenantsApiUrl = "/api/am/devportal/v3/tenants?state=active";
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -176,10 +172,10 @@
         <h1>Select Your Tenant</h1>
         <p class="subtitle">Select the tenant domain to continue</p>
 
-        <form id="tenantForm" action="<%= commonAuthUrl %>" method="GET">
-            <input type="hidden" name="sessionDataKey" value="<%= sessionDataKey %>" />
-            <input type="hidden" name="authenticator" value="<%= authenticator %>" />
-            <input type="hidden" name="idp" value="<%= idp %>" />
+        <form id="tenantForm" action="<%= Encode.forHtmlAttribute(commonAuthUrl) %>" method="POST">
+            <input type="hidden" name="sessionDataKey" value="<%= Encode.forHtmlAttribute(sessionDataKey) %>" />
+            <input type="hidden" name="authenticator" value="<%= Encode.forHtmlAttribute(authenticator) %>" />
+            <input type="hidden" name="idp" value="<%= Encode.forHtmlAttribute(idp) %>" />
 
             <div class="form-group">
                 <label for="tenantIdentifier">Tenant Domain</label>
@@ -194,12 +190,17 @@
     </div>
 
     <script>
-        var TENANTS_API_URL = '<%= tenantsApiUrl %>';
+        var TENANTS_API_URL = '<%= Encode.forJavaScript(tenantsApiUrl) %>';
 
         function fetchTenants() {
             var select = document.getElementById('tenantIdentifier');
             fetch(TENANTS_API_URL)
-                .then(function(res) { return res.json(); })
+                .then(function(res) {
+                    if (!res.ok) {
+                        throw new Error('Tenant API request failed: ' + res.status);
+                    }
+                    return res.json();
+                })
                 .then(function(data) {
                     var tenants = (data.list || [])
                         .sort(function(a, b) { return a.domain > b.domain ? 1 : -1; });
@@ -248,8 +249,10 @@
             submitBtn.textContent = 'Redirecting...';
         });
 
-        document.getElementById('tenantIdentifier').addEventListener('change', function() {
-            document.getElementById('errorMsg').style.display = 'none';
+        document.getElementById('tenantForm').addEventListener('input', function(e) {
+            if (e.target && e.target.id === 'tenantIdentifier') {
+                document.getElementById('errorMsg').style.display = 'none';
+            }
         });
     </script>
 </body>
