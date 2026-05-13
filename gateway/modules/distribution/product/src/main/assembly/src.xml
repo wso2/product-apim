@@ -56,17 +56,17 @@
     <files>
         <file>
             <source>../../../LICENSE.txt</source>
-            <outputDirectory> wso2am-classic-gw-${pom.version}-src</outputDirectory>
+            <outputDirectory>wso2am-classic-gw-${pom.version}-src</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
             <source>../../../README.txt</source>
-            <outputDirectory> wso2am-classic-gw-${pom.version}-src</outputDirectory>
+            <outputDirectory>wso2am-classic-gw-${pom.version}-src</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
             <source>../../../INSTALL.txt</source>
-            <outputDirectory> wso2am-classic-gw-${pom.version}-src</outputDirectory>
+            <outputDirectory>wso2am-classic-gw-${pom.version}-src</outputDirectory>
             <filtered>true</filtered>
         </file>
     </files>
