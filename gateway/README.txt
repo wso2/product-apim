@@ -1,19 +1,19 @@
 ================================================================================
-                               WSO2 Universal Gateway
+                               WSO2 Classic Gateway (Universal)
 ================================================================================
 
-WSO2 Universal Gateway is a powerful platform for creating, managing, consuming,
+WSO2 Classic Gateway is a powerful platform for creating, managing, consuming,
 and monitoring web APIs. It combines tried and tested SOA best practices with modern 
 day API management principles to solve a wide range of enterprise challenges associated 
 with API provisioning, governance, and integration.
 
-WSO2 Universal Gateway provides powerful tools to secure and control the load on individual APIs.
+WSO2 Classic Gateway provides powerful tools to secure and control the load on individual APIs.
 
-WSO2 Universal Gateway is based on the revolutionary WSO2 Carbon [Middleware a' la carte]
+WSO2 Classic Gateway is based on the revolutionary WSO2 Carbon [Middleware a' la carte]
 framework. All the major features have been developed as reusable Carbon
 components.
 
-To learn more about WSO2 Universal Gateway please visit http://wso2.com/products/api-manager.
+To learn more about WSO2 Classic Gateway please visit http://wso2.com/products/api-manager.
 
 Key Features
 =============
@@ -40,7 +40,7 @@ System Requirements
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
-5. To build WSO2 Universal Gateway from the Source distribution, it is necessary that you have
+5. To build WSO2 Classic Gateway from the Source distribution, it is necessary that you have
    JDK 21 version and Maven 3.0.4 or later
 
 Installation & Running
