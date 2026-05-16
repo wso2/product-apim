@@ -17,17 +17,17 @@ info:
   title: WSO2 API Manager - Admin
   description: |
     This document specifies a **RESTful API** for WSO2 **API Manager** - **Admin Portal**.
-    Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin.v1/src/main/resources/admin-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.
+    Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/master/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin.v1/src/main/resources/admin-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.
 
     # Authentication
-    Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking
+    The Admin REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking
     the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps
     that you will need to follow to obtain an access token.
     First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types
     in the payload. A sample payload is shown below.
     ```
       {
-      "callbackUrl":"www.google.lk",
+      "callbackUrl":"www.example.com",
       "clientName":"rest_api_admin",
       "owner":"admin",
       "grantType":"client_credentials password refresh_token",
@@ -51,15 +51,18 @@ info:
     {
     "clientId": "fOCi4vNJ59PpHucC2CAYfYuADdMa",
     "clientName": "rest_api_admin",
-    "callBackURL": "www.google.lk",
+    "callBackURL": "www.example.com",
     "clientSecret": "a4FwHlq0iCIKVs2MPIIDnepZnYMa",
     "isSaasApplication": true,
     "appOwner": "admin",
-    "jsonString": "{\"grant_types\":\"client_credentials password refresh_token\",\"redirect_uris\":\"www.google.lk\",\"client_name\":\"rest_api_admin\"}",
+    "jsonString": "{\"grant_types\":\"client_credentials password refresh_token\",\"redirect_uris\":\"www.example.com\",\"client_name\":\"rest_api_admin\"}",
     "jsonAppAttribute": "{}",
     "tokenType": null
     }
     ```
+    Note that in a distributed deployment or IS as KM separated environment to invoke RESTful APIs (product APIs), users must generate tokens through API-M Control Plane's token endpoint.
+    The tokens generated using third party key managers, are to manage end-user authentication when accessing APIs.
+    
     Next you must use the above client id and secret to obtain the access token.
     We will be using the password grant type for this, you can use any grant type you desire.
     You also need to add the proper **scope** when getting the access token. All possible scopes for Admin REST API can be viewed in **OAuth2 Security** section
@@ -68,11 +71,11 @@ info:
     ```
     curl -k -d "grant_type=password&username=<admin_username>&password=<admin_passowrd>&scope=<scopes seperated by space>"
     \ -H "Authorization: Basic base64(cliet_id:client_secret)"
-    \ https://<host>:<gateway_port>/token
+    \ https://<host>:<server_port>/oauth2/token
     ```
     **Sample request**
     ```
-    curl https://localhost:8243/token -k \
+    curl https://localhost:9443/oauth2/token -k \
     -H "Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h" \
     -d "grant_type=password&username=admin&password=admin&scope=apim:admin apim:tier_view"
     ```
@@ -96,10 +99,10 @@ info:
     * Make sure you have an API Manager instance up and running.
     * Update the `basepath` parameter to match the hostname and port of the APIM instance.
 
-    [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/f5ac2ca9fb22afef6ed6)
+    [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/32294946-71bea2bc-f808-4208-a4f6-861ede6f0434)
   contact:
     name: WSO2
-    url: http://wso2.com/products/api-manager/
+    url: https://wso2.com/api-manager/
     email: architecture@wso2.com
   license:
     name: Apache 2.0
@@ -114,7 +117,7 @@ paths:
   /throttling/policies/search:
     get:
       tags:
-        - Throttling Policy Search
+        - Unified Search
       summary: |
         Retrieve/Search Throttling Policies
       description: |
@@ -124,7 +127,7 @@ paths:
           in: query
           description: |
             **Search**.
-            You can search by providing a keyword. Allowed to search by type only.
+            You can search by providing a keyword. Allowed to search by type and name only.
           schema:
             type: string
       responses:
@@ -145,6 +148,8 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
+            - apim:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -163,25 +168,12 @@ paths:
         Retrieves all existing application throttling policies.
       parameters:
         - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Policies returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -191,19 +183,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApplicationThrottlePolicyList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/application"'
 
@@ -230,12 +218,6 @@ paths:
             Successful response with the newly created object as entity in the body.
             Location header contains URL of newly created entity.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Location:
               description: |
                 Location of the newly created Policy object.
@@ -256,6 +238,7 @@ paths:
                 displayName: 20PerMin
                 description: Allows 20 request per minute
                 isDeployed: true
+                type: ApplicationThrottlePolicy
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -270,8 +253,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/application"'
 
@@ -287,26 +271,12 @@ paths:
         Retrieves an application throttling policy.
       parameters:
         - $ref: '#/components/parameters/policyId'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Policy returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -322,17 +292,13 @@ paths:
                 displayName: 20PerMin
                 description: Allows 20 request per minute
                 isDeployed: true
+                type: ApplicationThrottlePolicy
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
                     timeUnit: min
                     unitTime: 1
                     requestCount: 20
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         404:
           $ref: '#/components/responses/NotFound'
         406:
@@ -341,8 +307,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/application/4e098fff-7f94-459a-981f-d257332f69d0"'
 
@@ -355,8 +322,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/policyId'
         - $ref: '#/components/parameters/Content-Type'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       requestBody:
         description: |
           Policy object that needs to be modified
@@ -371,18 +336,6 @@ paths:
             OK.
             Policy updated.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional request.
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional reuquests.
-              schema:
-                type: string
             Location:
               description: |
                 The URL of the newly created resource.
@@ -403,6 +356,7 @@ paths:
                 displayName: 20PerMin
                 description: Allows 20 request per minute
                 isDeployed: true
+                type: ApplicationThrottlePolicy
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -413,14 +367,13 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/application/4e098fff-7f94-459a-981f-d257332f69d0"'
 
@@ -432,8 +385,6 @@ paths:
         Deletes an application level throttling policy.
       parameters:
         - $ref: '#/components/parameters/policyId'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       responses:
         200:
           description: |
@@ -442,294 +393,17 @@ paths:
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
+            - apim:policies_import_export
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/application/4e098fff-7f94-459a-981f-d257332f69d0"'
 
-  ######################################################
-  # The "Global Mediation Policy Collections" resource API
-  ######################################################
-  /policies/mediation:
-    get:
-      tags:
-        - Mediation Policy (Collection)
-      summary: |
-        Get all Global Mediation Policies
-      description: |
-        This operation provides you a list of all available global mediation policies.
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - name: query
-          in: query
-          description: -Not supported yet-
-          schema:
-            type: string
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK.
-            List of mediation policies is returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Content-Type:
-              description: The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mediationList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:mediation_policy_view
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/policies/mediation"'
-
-    post:
-      tags:
-        - Mediation Policy (Collection)
-      summary: Add a Global Mediation Policy
-      description: |
-        This operation can be used to add a new global mediation policy.
-      parameters:
-        - $ref: '#/components/parameters/Content-Type'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
-      requestBody:
-        description: mediation policy to upload
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Mediation'
-        required: true
-      responses:
-        200:
-          description: |
-            OK.
-            Mediation policy added successfully.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Location:
-              description: |
-                The URL of the uploaded thumbnail image of the API.
-              schema:
-                type: string
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mediation'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:mediation_policy_create
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/policies/mediation"'
-
-  ######################################################
-  # The "Individual Global Mediation Policy" resource
-  ######################################################
-  /policies/mediation/{mediationPolicyId}:
-    get:
-      tags:
-        - Mediation Policy (Individual)
-      summary: Get a Global Mediation Policy
-      description: |
-        This operation can be used to retrieve a particular global mediation policy.
-      parameters:
-        - $ref: '#/components/parameters/mediationPolicyId'
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
-      responses:
-        200:
-          description: |
-            OK.
-            Mediation Policy returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mediation'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:mediation_policy_view
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/policies/mediation/2253cf01-0356-4cc1-9941-3034a8c29007"'
-
-    put:
-      tags:
-        - Mediation Policy (Individual)
-      summary: Update a Global Mediation Policy
-      description: |
-        This operation can be used to update an existing global mediation policy.
-      parameters:
-        - $ref: '#/components/parameters/mediationPolicyId'
-        - $ref: '#/components/parameters/Content-Type'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
-      requestBody:
-        description: |
-          Mediation policy object that needs to be updated
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Mediation'
-        required: true
-      responses:
-        200:
-          description: |
-            OK.
-            Successful response with updated mediation policy object
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Location:
-              description: |
-                The URL of the newly created resource.
-              schema:
-                type: string
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mediation'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:mediation_policy_create
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/policies/mediation/2253cf01-0356-4cc1-9941-3034a8c29007"'
-
-    delete:
-      tags:
-        - Mediation Policy (Individual)
-      summary: Delete a Global Mediation Policy
-      description: |
-        This operation can be used to delete an existing global mediation policy providing the Id of the mediation policy.
-      parameters:
-        - $ref: '#/components/parameters/mediationPolicyId'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
-      responses:
-        200:
-          description: |
-            OK.
-            Mediation policy successfully deleted.
-          content: {}
-        403:
-          $ref: '#/components/responses/Forbidden'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:mediation_policy_create
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/policies/mediation/2253cf01-0356-4cc1-9941-3034a8c29007"'
 
   ######################################################
   # The "Subscription Throttling Policy Collection" resource API
@@ -743,26 +417,12 @@ paths:
         This operation can be used to retrieve all Subscription level throttling policies.
       parameters:
         - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Policies returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -772,19 +432,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SubscriptionThrottlePolicyList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/subscription"'
 
@@ -811,12 +467,6 @@ paths:
             Successful response with the newly created object as entity in the body.
             Location header contains URL of newly created entity.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Location:
               description: |
                 Location of the newly created Policy object.
@@ -839,7 +489,6 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
-                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -858,8 +507,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/subscription"'
 
@@ -875,26 +525,12 @@ paths:
         This operation can be used to retrieves subscription level throttling policy by specifying the Id of the policy as a path paramter
       parameters:
         - $ref: '#/components/parameters/policyId'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Policy returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -912,7 +548,6 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
-                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -923,11 +558,6 @@ paths:
                 customAttributes: []
                 stopOnQuotaReach: true
                 billingPlan: FREE
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         404:
           $ref: '#/components/responses/NotFound'
         406:
@@ -936,8 +566,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/subscription/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
 
@@ -950,8 +581,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/policyId'
         - $ref: '#/components/parameters/Content-Type'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       requestBody:
         description: |
           Policy object that needs to be modified
@@ -966,18 +595,6 @@ paths:
             OK.
             Policy updated.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Location:
               description: |
                 The URL of the newly created resource.
@@ -1000,7 +617,6 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
-                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -1015,14 +631,13 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/subscription/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
 
@@ -1034,8 +649,6 @@ paths:
         This operation can be used to delete a subscription level throttling policy by specifying the Id of the policy as a path paramter.
       parameters:
         - $ref: '#/components/parameters/policyId'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       responses:
         200:
           description: |
@@ -1044,14 +657,14 @@ paths:
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
+            - apim:policies_import_export
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/subscription/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
 
@@ -1070,26 +683,12 @@ paths:
         * Only super tenant users are allowed for this operation.
       parameters:
         - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Policies returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -1099,19 +698,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomRuleList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/custom"'
 
@@ -1141,12 +736,6 @@ paths:
             Successful response with the newly created object as entity in the body.
             Location header contains URL of newly created entity.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Location:
               description: |
                 Location of the newly created resource.
@@ -1181,8 +770,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/custom"'
 
@@ -1201,26 +791,12 @@ paths:
         * Only super tenant users are allowed for this operation.
       parameters:
         - $ref: '#/components/parameters/ruleId'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Policy returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -1242,11 +818,6 @@ paths:
                   \ expiryTimeStamp group by throttleKey \nINSERT ALL EVENTS into\
                   \ ResultStream;"
                 keyTemplate: $userId
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         404:
           $ref: '#/components/responses/NotFound'
         406:
@@ -1255,8 +826,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"'
 
@@ -1272,8 +844,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ruleId'
         - $ref: '#/components/parameters/Content-Type'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       requestBody:
         description: |
           Policy object that needs to be modified
@@ -1288,18 +858,6 @@ paths:
             OK.
             Policy updated.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Location:
               description: |
                 The URL of the newly created resource.
@@ -1330,14 +888,13 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"'
 
@@ -1352,8 +909,6 @@ paths:
         * Only super tenant users are allowed for this operation.
       parameters:
         - $ref: '#/components/parameters/ruleId'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       responses:
         200:
           description: |
@@ -1362,14 +917,14 @@ paths:
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
+            - apim:policies_import_export
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"'
 
@@ -1385,26 +940,12 @@ paths:
         Retrieves all existing advanced throttling policies.
       parameters:
         - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Policies returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -1414,19 +955,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdvancedThrottlePolicyList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/advanced"'
 
@@ -1453,12 +990,6 @@ paths:
             Successful response with the newly created object as entity in the body.
             Location header contains URL of newly created entity.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Location:
               description: |
                 Location of the newly created Advanced Throttling Policy.
@@ -1494,8 +1025,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/advanced"'
 
@@ -1511,26 +1043,12 @@ paths:
         Retrieves an advanced throttling policy.
       parameters:
         - $ref: '#/components/parameters/policyId'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Policy returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -1553,11 +1071,6 @@ paths:
                     unitTime: 1
                     requestCount: 10000
                 conditionalGroups: []
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         404:
           $ref: '#/components/responses/NotFound'
         406:
@@ -1566,8 +1079,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_view
+            - apim:admin_tier_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/advanced/229a3c46-c836-43c8-b988-8eebd9c7774b"'
 
@@ -1580,8 +1094,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/policyId'
         - $ref: '#/components/parameters/Content-Type'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       requestBody:
         description: |
           Policy object that needs to be modified
@@ -1596,18 +1108,6 @@ paths:
             OK.
             Policy updated.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Location:
               description: |
                 The URL of the newly created resource.
@@ -1639,14 +1139,13 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/advanced/229a3c46-c836-43c8-b988-8eebd9c7774b"'
 
@@ -1658,8 +1157,6 @@ paths:
         Deletes an advanced throttling policy.
       parameters:
         - $ref: '#/components/parameters/policyId'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       responses:
         200:
           description: |
@@ -1668,24 +1165,23 @@ paths:
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
+            - apim:policies_import_export
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/advanced/229a3c46-c836-43c8-b988-8eebd9c7774b"'
-
   ######################################################
   # "Export Throttling Policy" resource API
   ######################################################
   /throttling/policies/export:
     get:
       tags:
-        - Import Export Throttling Policy
+        - Import Export
       summary: Export a Throttling Policy
       description: |
         This operation can be used to export the details of a particular Throttling Policy.
@@ -1761,11 +1257,12 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
             - apim:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/export?policyId=96077508-fd01-4fae-bc64-5de0e2baf43c&name=Bronze&type=subscription&format=YAML"'
+          "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/export?policyId=96077508-fd01-4fae-bc64-5de0e2baf43c&name=Bronze&type=sub&format=YAML"'
       operationId: exportThrottlingPolicy
   ####################################################################
   # Import Throttling Policy
@@ -1773,7 +1270,7 @@ paths:
   /throttling/policies/import:
     post:
       tags:
-        - Import Export Throttling Policy
+        - Import Export
       summary: Import a Throttling Policy
       description: |
         This operation can be used to import a Throttling Policy
@@ -1814,6 +1311,7 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:tier_manage
+            - apim:admin_tier_manage
             - apim:policies_import_export
       x-code-samples:
         - lang: Curl
@@ -1832,8 +1330,6 @@ paths:
         Retrieves all existing deny policies.
       parameters:
         - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
         - name: query
           in: query
           description: |
@@ -1852,18 +1348,6 @@ paths:
             OK.
             Deny Policies returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -1873,11 +1357,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BlockingConditionList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
@@ -1885,9 +1364,9 @@ paths:
             - apim:admin
             - apim:bl_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/deny-policies"'
+          "https://127.0.0.1:9443/api/am/admin/v4/throttling/deny-policies"'
 
     post:
       tags:
@@ -1912,12 +1391,6 @@ paths:
             Successful response with the newly created object as entity in the body.
             Location header contains URL of newly created entity.
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Location:
               description: |
                 Location of the newly created resource.
@@ -1941,9 +1414,9 @@ paths:
             - apim:admin
             - apim:bl_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/deny-policies"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/deny-policies"'
 
   ######################################################
   # The "Individual Deny Policy" resource API
@@ -1957,26 +1430,12 @@ paths:
         Retrieves a Deny policy providing the condition Id
       parameters:
         - $ref: '#/components/parameters/conditionId'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/If-Modified-Since'
       responses:
         200:
           description: |
             OK.
             Condition returned
           headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -1986,11 +1445,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BlockingCondition'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         404:
           $ref: '#/components/responses/NotFound'
         406:
@@ -2000,9 +1454,9 @@ paths:
             - apim:admin
             - apim:bl_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
+          "https://127.0.0.1:9443/api/am/admin/v4/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
 
     delete:
       tags:
@@ -2012,8 +1466,6 @@ paths:
         Deletes an existing deny policy
       parameters:
         - $ref: '#/components/parameters/conditionId'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       responses:
         200:
           description: |
@@ -2022,16 +1474,14 @@ paths:
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:bl_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
+          "https://127.0.0.1:9443/api/am/admin/v4/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
 
     patch:
       tags:
@@ -2042,8 +1492,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/conditionId'
         - $ref: '#/components/parameters/Content-Type'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       requestBody:
         description: |
           Blocking condition with updated status
@@ -2070,9 +1518,9 @@ paths:
             - apim:admin
             - apim:bl_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PATCH -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/policies/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
 
   ######################################################
   # The "Application Collection" resource APIs
@@ -2091,7 +1539,6 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
         - name: name
           in: query
           description: |
@@ -2107,6 +1554,22 @@ paths:
             users **only at a migration process**.
           schema:
             type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - name
+              - owner
+            default: name
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
       responses:
         200:
           description: |
@@ -2122,11 +1585,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApplicationList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         400:
           $ref: '#/components/responses/BadRequest'
         406:
@@ -2134,10 +1592,12 @@ paths:
       security:
         - OAuth2Security:
             - apim:admin
+            - apim:app_settings_change
             - apim:app_owner_change
             - apim:app_import_export
+            - apim:admin_application_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/applications"'
 
@@ -2145,6 +1605,40 @@ paths:
   # The "Individual Application" resource APIs
   ######################################################
   /applications/{applicationId}:
+    get:
+      tags:
+        - Applications
+      summary: |
+        Get the details of an Application
+      description: |
+        This operation can be used to get the details of an application by specifying its id.
+      parameters:
+        - $ref: '#/components/parameters/applicationId'
+      responses:
+        200:
+          description: |
+            OK.
+            Application details returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:app_import_export
+            - apim:admin_application_view
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+
     delete:
       tags:
         - Applications
@@ -2154,7 +1648,6 @@ paths:
         This operation can be used to delete an application by specifying its id.
       parameters:
         - $ref: '#/components/parameters/applicationId'
-        - $ref: '#/components/parameters/If-Match'
       responses:
         200:
           description: |
@@ -2177,23 +1670,69 @@ paths:
                 $ref: '#/components/schemas/WorkflowResponse'
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:app_import_export
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
 
+  /applications/{applicationId}/change-settings:
+    post:
+      tags:
+        - Application
+      operationId: updateApplicationSettings
+      summary: Update Application Settings
+      description: |
+        This operation allows updating one or more settings of an application.
+      parameters:
+        - $ref: '#/components/parameters/applicationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationUpdateRequest'
+      responses:
+        200:
+          description: Application updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:app_settings_change
+      x-code-samples:
+        - lang: Curl
+          source: |
+            curl -k -X POST \
+            -H "Authorization: Bearer <access-token>" \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "owner": "newOwner",
+                  "tokenType": "JWT"
+                }' \
+            "https://127.0.0.1:9443/api/am/admin/v4/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"
+
   /applications/{applicationId}/change-owner:
     post:
+      deprecated: true
       tags:
         - Application
       summary: Change Application Owner
       description: |
+        **Deprecated.**
+        This API will be removed in a future release.
+        Use `/applications/{applicationId}/change-settings` instead.
+        
         This operation is used to change the owner of an Application.
         In order to change the owner of an application, we need to pass the new application owner as a query parameter
       parameters:
@@ -2213,574 +1752,14 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
             - apim:admin
             - apim:app_owner_change
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b/change-owner?owner=admin"'
-
-  ######################################################
-  # Export Resource API
-  ######################################################
-  /export/applications:
-    get:
-      tags:
-        - Application (Individual)
-      summary: Export an Application
-      description: |
-        This operation can be used to export the details of a particular application as a zip file.
-      parameters:
-        - name: appName
-          in: query
-          description: |
-            Application Name
-          required: true
-          schema:
-            type: string
-        - name: appOwner
-          in: query
-          description: |
-            Owner of the Application
-          required: true
-          schema:
-            type: string
-        - name: withKeys
-          in: query
-          description: |
-            Export application keys
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: |
-            OK.
-            Export Successful.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                type: string
-                format: binary
-            application/zip:
-              schema:
-                type: string
-                format: binary
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:app_import_export
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/export/applications?appName=sampleApp&appOwner=admin&withKeys=true"
-          > exported-application.zip'
-
-  /export/api:
-    get:
-      tags:
-        - API (Individual)
-      summary: Export an API
-      description: |
-        This operation can be used to export the details of a particular API as a zip file.
-      parameters:
-        - name: name
-          in: query
-          description: |
-            API Name
-          required: true
-          schema:
-            type: string
-        - name: version
-          in: query
-          description: |
-            Version of the API
-          required: true
-          schema:
-            type: string
-        - name: providerName
-          in: query
-          description: |
-            Provider name of the API
-          schema:
-            type: string
-        - name: format
-          in: query
-          description: |
-            Format of output documents. Can be YAML or JSON.
-          schema:
-            type: string
-            enum:
-              - JSON
-              - YAML
-        - name: preserveStatus
-          in: query
-          description: |
-            Preserve API Status on export
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: |
-            OK.
-            Export Successful.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/zip:
-              schema:
-                type: string
-                format: binary
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:api_import_export
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/export/api?name=PizzaShackAPI&version=1.0.0&providerName=admin&format=YAML&preserveStatus=true"
-          > exportAPI.zip'
-
-  /export/api-product:
-    get:
-      tags:
-        - API Product (Individual)
-      summary: Export an API Product
-      description: |
-        This operation can be used to export the details of a particular API Product as a zip file.
-      parameters:
-        - name: name
-          in: query
-          description: |
-            API Product Name
-          required: true
-          schema:
-            type: string
-        - name: version
-          in: query
-          description: |
-            Version of the API Product
-          required: true
-          schema:
-            type: string
-        - name: providerName
-          in: query
-          description: |
-            Provider name of the API Product
-          schema:
-            type: string
-        - name: format
-          in: query
-          description: |
-            Format of output documents. Can be YAML or JSON.
-          schema:
-            type: string
-            enum:
-              - JSON
-              - YAML
-        - name: preserveStatus
-          in: query
-          description: |
-            Preserve API Product Status on export
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: |
-            OK.
-            Export Successful.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/zip:
-              schema:
-                type: string
-                format: binary
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:api_product_import_export
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/export/api-product?name=PizzaShackAPIProduct&version=1.0.0&providerName=admin&format=YAML&preserveStatus=true"
-          > exportAPIProduct.zip'
-
-  ######################################################
-  # Import Resource API
-  ######################################################
-  /import/applications:
-    post:
-      tags:
-        - Application (Individual)
-      summary: Import an Application
-      description: |
-        This operation can be used to import an application.
-      parameters:
-        - name: preserveOwner
-          in: query
-          description: |
-            Preserve Original Creator of the Application
-          schema:
-            type: boolean
-        - name: skipSubscriptions
-          in: query
-          description: |
-            Skip importing Subscriptions of the Application
-          schema:
-            type: boolean
-        - name: appOwner
-          in: query
-          description: |
-            Expected Owner of the Application in the Import Environment
-          schema:
-            type: string
-        - name: skipApplicationKeys
-          in: query
-          description: |
-            Skip importing Keys of the Application
-          schema:
-            type: boolean
-        - name: update
-          in: query
-          description: |
-            Update if application exists
-          schema:
-            type: boolean
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              required:
-                - file
-              properties:
-                file:
-                  type: string
-                  description: |
-                    Zip archive consisting of exported Application Configuration.
-                  format: binary
-        required: true
-      responses:
-        200:
-          description: |
-            OK.
-            Successful response with the updated object information as entity in the body.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationInfo'
-        207:
-          description: |
-            Multi Status.
-            Partially successful response with skipped APIs information object as entity in the body.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIInfoList'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:app_import_export
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@exported-application.zip "https://127.0.0.1:9443/api/am/admin/v4/import/applications?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
-
-  /import/api:
-    post:
-      tags:
-        - API (Individual)
-      summary: Import an API
-      description: |
-        This operation can be used to import an API.
-      parameters:
-        - name: preserveProvider
-          in: query
-          description: |
-            Preserve Original Provider of the API. This is the user choice to keep or replace the API provider.
-          schema:
-            type: boolean
-        - name: overwrite
-          in: query
-          description: |
-            Whether to update the API or not. This is used when updating already existing APIs.
-          schema:
-            type: boolean
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              required:
-                - file
-              properties:
-                file:
-                  type: string
-                  description: |
-                    Zip archive consisting on exported api configuration
-                  format: binary
-        required: true
-      responses:
-        200:
-          description: |
-            Created.
-            API Imported Successfully.
-          content: {}
-        403:
-          $ref: '#/components/responses/Forbidden'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:api_import_export
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@admin-PizzaShackAPI-1.0.0.zip "https://127.0.0.1:9443/api/am/admin/v4/import/api?preserveProvider=false&overwrite=false"'
-
-  /import/api-product:
-    post:
-      tags:
-        - API Product (Individual)
-      summary: Import an API Product
-      description: |
-        This operation can be used to import an API Product.
-      parameters:
-        - name: preserveProvider
-          in: query
-          description: |
-            Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider.
-          schema:
-            type: boolean
-        - name: importAPIs
-          in: query
-          description: |
-            Whether to import the dependent APIs or not.
-          schema:
-            type: boolean
-        - name: overwriteAPIProduct
-          in: query
-          description: |
-            Whether to update the API Product or not. This is used when updating already existing API Products.
-          schema:
-            type: boolean
-        - name: overwriteAPIs
-          in: query
-          description: |
-            Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.
-          schema:
-            type: boolean
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              required:
-                - file
-              properties:
-                file:
-                  type: string
-                  description: |
-                    Zip archive consisting on exported API Product configuration
-                  format: binary
-        required: true
-      responses:
-        200:
-          description: |
-            Created.
-            API Product Imported Successfully.
-          content: {}
-        403:
-          $ref: '#/components/responses/Forbidden'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:api_product_import_export
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@exportAPIProduct.zip "https://127.0.0.1:9443/api/am/admin/v4/import/api-product?preserveProvider=false&overwriteAPIProduct=false&overwriteAPIs=false&importAPIs=false"'
-
-  ######################################################
-  # The "Label" resource API
-  ######################################################
-  /labels:
-    get:
-      tags:
-        - Label Collection
-      summary: Get all registered Labels
-      description: |
-        Get all Registered Labels
-      responses:
-        200:
-          description: |
-            OK.
-            Labels returned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LabelList'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:label_read
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/labels"'
-
-    post:
-      tags:
-        - Label
-      summary: Add a Label
-      description: |
-        Add a new gateway label
-      requestBody:
-        description: |
-          Label object that should to be added
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Label'
-        required: true
-      responses:
-        201:
-          description: |
-            Created.
-            Successful response with the newly created object as entity in the body.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Label'
-        400:
-          $ref: '#/components/responses/BadRequest'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:label_manage
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/labels"'
-
-  ######################################################
-  # The "Individual label" resource APIs
-  ######################################################
-  /labels/{labelId}:
-    put:
-      tags:
-        - Label
-      summary: Update a Label
-      description: |
-        Update a Label by label Id
-      parameters:
-        - $ref: '#/components/parameters/labelId'
-      requestBody:
-        description: |
-          Label object with updated information
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Label'
-        required: true
-      responses:
-        200:
-          description: |
-            OK.
-            Label updated.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Label'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:label_manage
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
-
-    delete:
-      tags:
-        - Label
-      summary: Delete a Label
-      description: |
-        Delete a Label by label Id
-      parameters:
-        - $ref: '#/components/parameters/labelId'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
-      responses:
-        200:
-          description: |
-            OK.
-            Label successfully deleted.
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-      security:
-        - OAuth2Security:
-            - apim:admin
-            - apim:label_manage
-      x-code-samples:
-        - lang: Shell
-          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
 
   ######################################################
   # AI Service Providers resource APIs
@@ -2951,6 +1930,7 @@ paths:
   ######################################################
   /llm-providers:
     get:
+      deprecated: true
       tags:
         - LLMProviders
       summary: Get all LLM providers
@@ -2972,8 +1952,10 @@ paths:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/llm-providers"'
+      operationId: getLLMProviders
 
     post:
+      deprecated: true
       tags:
         - LLMProviders
       summary: Add a LLM provider
@@ -3011,12 +1993,14 @@ paths:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/llm-providers"'
+      operationId: addLLMProvider
 
   ######################################################
   # The "Individual LLM Provider" resource APIs
   ######################################################
   /llm-providers/{llmProviderId}:
     put:
+      deprecated: true
       tags:
         - LLMProvider
       summary: Update an LLM provider
@@ -3055,8 +2039,10 @@ paths:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      operationId: updateLLMProvider
 
     delete:
+      deprecated: true
       tags:
         - LLMProvider
       summary: Delete a LLM Provider
@@ -3080,6 +2066,7 @@ paths:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      operationId: deleteLLMProvider
 
     get:
       tags:
@@ -3105,6 +2092,7 @@ paths:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      operationId: getLLMProvider
 
   ######################################################
   # The "Environment" resource API
@@ -3112,7 +2100,7 @@ paths:
   /environments:
     get:
       tags:
-        - Environment Collection
+        - Environments
       summary: Get all registered Environments
       description: |
         Get all Registered Environments
@@ -3130,16 +2118,16 @@ paths:
             - apim:admin
             - apim:environment_read
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/environments"'
 
     post:
       tags:
-        - Environment
+        - Environments
       summary: Add an Environment
       description: |
-        Add a new geteway environment
+        Add a new gateway environment
       requestBody:
         description: |
           Environment object that should to be added
@@ -3152,7 +2140,7 @@ paths:
         201:
           description: |
             Created.
-            Successful response with the newly created object as entity in the body.
+            Successful response with the newly created environment as entity in the body.
           content:
             application/json:
               schema:
@@ -3164,7 +2152,7 @@ paths:
             - apim:admin
             - apim:environment_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/environments"'
 
@@ -3172,9 +2160,44 @@ paths:
   # The "Individual Environment" resource APIs
   ######################################################
   /environments/{environmentId}:
+    get:
+      tags:
+        - Environments
+      summary: Get a Gateway Environment Configuration
+      description: |
+        Retrieve a single Gateway Environment Configuration. We should provide the Id of the Environment as a path parameter.
+      parameters:
+        - $ref: '#/components/parameters/environmentId'
+      responses:
+        200:
+          description: |
+            OK.
+            Gateway Environment Configuration returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:environment_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/environments/8d263942-a6df-4cc2-a804-7a2525501450"'
     put:
       tags:
-        - Environment
+        - Environments
       summary: Update an Environment
       description: |
         Update a gateway Environment by environment Id
@@ -3206,13 +2229,13 @@ paths:
             - apim:admin
             - apim:environment_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
 
     delete:
       tags:
-        - Environment
+        - Environments
       summary: Delete an Environment
       description: |
         Delete a Environment by Environment Id
@@ -3231,7 +2254,7 @@ paths:
             - apim:admin
             - apim:environment_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
 
@@ -3271,7 +2294,182 @@ paths:
             - apim:environment_read
       x-code-samples:
         - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://127.0.0.1:9443/api/am/admin/v4/environments/8d263942-a6df-4cc2-a804-7a2525501450/gateways"'
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/environments/8d263942-a6df-4cc2-a804-7a2525501450/gateways"'
+
+  ######################################################
+  # The "Platform Gateways" resource API (platform / self-hosted gateway registration)
+  ######################################################
+  /gateways:
+    get:
+      operationId: getPlatformGateways
+      tags:
+        - Platform Gateways
+      summary: Get all platform gateways
+      description: |
+        Get all registered platform gateways for the organization.
+      responses:
+        200:
+          description: |
+            OK.
+            List of platform gateways returned (without registration tokens).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayList'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/gateways"'
+    post:
+      operationId: createPlatformGateway
+      tags:
+        - Platform Gateways
+      summary: Register a platform gateway
+      description: |
+        Register a new platform gateway. A registration token is generated and returned
+        once in the response; store it (e.g. as GATEWAY_CONTROL_PLANE_TOKEN in Docker Compose) for the
+        gateway to connect to the control plane WebSocket. The token is stored hashed and cannot be retrieved later.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlatformGatewayRequest'
+      responses:
+        201:
+          description: |
+            Created.
+            Gateway and registration token (returned once) in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayResponseWithToken'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/gateways"'
+
+  /gateways/{gatewayId}/regenerate-token:
+    post:
+      operationId: regeneratePlatformGatewayToken
+      tags:
+        - Platform Gateways
+      summary: Regenerate registration token for a platform gateway
+      description: |
+        Regenerate the registration token for an existing platform gateway. The old token is revoked
+        and a new one is generated. Store the new token (e.g. as GATEWAY_CONTROL_PLANE_TOKEN in Docker Compose)
+        for the gateway to reconnect to the control plane WebSocket. The token is returned only once.
+      parameters:
+        - name: gatewayId
+          in: path
+          description: Gateway UUID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            Gateway and new registration token (returned once) in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayResponseWithToken'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/gateways/{gatewayId}/regenerate-token"'
+
+  /gateways/{gatewayId}:
+    put:
+      operationId: updatePlatformGateway
+      tags:
+        - Platform Gateways
+      summary: Update a platform gateway
+      description: |
+        Update platform gateway metadata. Request body must include all updatable fields (displayName,
+        description, properties, permissions). Name and vhost cannot be changed. UI should send
+        the full resource representation to align with PUT semantics.
+      parameters:
+        - name: gatewayId
+          in: path
+          description: Gateway UUID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlatformGatewayRequest'
+      responses:
+        200:
+          description: OK. Updated platform gateway in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformGatewayResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+    delete:
+      operationId: deletePlatformGateway
+      tags:
+        - Platform Gateways
+      summary: Delete a platform gateway
+      description: |
+        Delete a platform gateway and all its references (tokens, instance mappings, revision deployment
+        records, gateway environment, permissions). Fails with 409 if any API revisions are currently
+        deployed to this gateway; undeploy all APIs from the gateway first.
+      parameters:
+        - name: gatewayId
+          in: path
+          description: Gateway UUID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK. Gateway and all references removed.
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          description: Conflict. Cannot delete gateway while API revisions are deployed to it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - OAuth2Security:
+            - apim:admin
+
   ######################################################
   # The "Organizations" resource API
   ######################################################
@@ -3429,7 +2627,7 @@ paths:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
- 
+
   /me/organization-information:
     get:
       tags:
@@ -3457,7 +2655,6 @@ paths:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/publisher/v4/me/organization"'
-  
   ######################################################
   # The Bot Detection Data API resources
   ######################################################
@@ -3492,7 +2689,7 @@ paths:
             - apim:admin
             - apim:bot_data
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/bot-detection-data"'
 
@@ -3528,7 +2725,7 @@ paths:
             - apim:admin
             - apim:monetization_usage_publish
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/monetization/publish-usage"'
 
@@ -3553,7 +2750,7 @@ paths:
             - apim:admin
             - apim:monetization_usage_publish
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/monetization/publish-usage/status"'
 
@@ -3572,18 +2769,16 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/If-None-Match'
         - name: workflowType
           in: query
           description: |
             We need to show the values of each workflow process separately .for that we use workflow type.
-            Workflow type can be AM_APPLICATION_CREATION, AM_SUBSCRIPTION_CREATION,   AM_USER_SIGNUP, AM_APPLICATION_REGISTRATION_PRODUCTION, AM_APPLICATION_REGISTRATION_SANDBOX, AM_APPLICATION_UPDATE.
+            Workflow type can be AM_APPLICATION_CREATION, AM_SUBSCRIPTION_CREATION,   AM_USER_SIGNUP, AM_APPLICATION_REGISTRATION_PRODUCTION, AM_APPLICATION_REGISTRATION_SANDBOX.
           schema:
             type: string
             enum:
               - AM_APPLICATION_CREATION
               - AM_SUBSCRIPTION_CREATION
-              - AM_APPLICATION_UPDATE
               - AM_USER_SIGNUP
               - AM_APPLICATION_REGISTRATION_PRODUCTION
               - AM_APPLICATION_REGISTRATION_SANDBOX
@@ -3607,11 +2802,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkflowList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
         400:
           $ref: '#/components/responses/BadRequest'
         404:
@@ -3623,7 +2813,7 @@ paths:
             - apim:admin
             - apim:api_workflow_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/workflows"'
 
@@ -3643,7 +2833,6 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -3667,7 +2856,7 @@ paths:
             - apim:admin
             - apim:api_workflow_view
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/workflows/c43a325c-260b-4302-81cb-768eafaa3aed"'
 
@@ -3712,7 +2901,7 @@ paths:
             - apim:admin
             - apim:api_workflow_approve
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/workflows/update-workflow-status?workflowReferenceId=56e3a170-a7a7-45f8-b051-7e43a58a67e1"'
 
@@ -3761,7 +2950,7 @@ paths:
             - apim:admin
             - apim:tenantInfo
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/tenant-info/john"'
 
@@ -3809,7 +2998,7 @@ paths:
             - apim:admin
             - apim:tenantInfo
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/custom-urls/wso2.com"'
 
@@ -3836,8 +3025,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:api_category
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/api-categories"'
 
@@ -3870,8 +3060,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:api_category
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/api-categories"'
 
@@ -3912,8 +3103,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:api_category
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779"'
 
@@ -3925,8 +3117,6 @@ paths:
         Delete an API Category by API Category Id
       parameters:
         - $ref: '#/components/parameters/apiCategoryId'
-        - $ref: '#/components/parameters/If-Match'
-        - $ref: '#/components/parameters/If-Unmodified-Since'
       responses:
         200:
           description: |
@@ -3939,8 +3129,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:api_category
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779"'
 
@@ -3970,7 +3161,7 @@ paths:
             - apim:admin
             - apim:admin_settings
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/settings"'
 
@@ -4008,7 +3199,7 @@ paths:
             - apim:admin
             - apim:admin_alert_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/alert-types"'
 
@@ -4043,7 +3234,7 @@ paths:
             - apim:admin
             - apim:admin_alert_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/alert-subscriptions"'
 
@@ -4086,7 +3277,7 @@ paths:
             - apim:admin
             - apim:admin_alert_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/alert-subscriptions"'
 
@@ -4117,7 +3308,7 @@ paths:
             - apim:admin
             - apim:admin_alert_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/alert-subscriptions"'
 
@@ -4152,7 +3343,7 @@ paths:
             - apim:admin
             - apim:admin_alert_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/alert-subscriptions/bot-detection"'
 
@@ -4195,7 +3386,7 @@ paths:
             - apim:admin
             - apim:admin_alert_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/alert-subscriptions/bot-detection"'
 
@@ -4235,9 +3426,9 @@ paths:
             - apim:admin
             - apim:admin_alert_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v4/alert-subscriptions/bot-detection"'
+          "https://127.0.0.1:9443/api/am/admin/v4/alert-subscriptions/bot-detection/7c9ee02d-37f5-4694-b99c-6d5641b28645"'
 
   ######################################################
   # System scopes resource API
@@ -4275,7 +3466,7 @@ paths:
             - apim:admin
             - apim:scope_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/system-scopes/YXBpbTpzdWJzY3JpYmU?username=john"'
 
@@ -4310,7 +3501,7 @@ paths:
             - apim:scope_manage
             - apim:admin
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/system-scopes"'
 
@@ -4354,7 +3545,7 @@ paths:
             - apim:admin
             - apim:scope_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/system-scopes"'
 
@@ -4387,7 +3578,7 @@ paths:
             - apim:admin
             - apim:scope_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/system-scopes/role-aliases"'
 
@@ -4422,9 +3613,39 @@ paths:
             - apim:scope_manage
             - apim:admin
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/system-scopes/role-aliases"'
+
+  ######################################################
+  # Roles resource APIs
+  ######################################################
+  /roles/{roleId}:
+    head:
+      tags:
+        - Roles
+      summary: Check Whether Given Role Name already Exist
+      description: |
+        Using this operation, user can check a given role name exists or not.
+      operationId: validateSystemRole
+      parameters:
+        - $ref: '#/components/parameters/roleId'
+      responses:
+        200:
+          description: OK. Requested role name exists.
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:role_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -I -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/roles/SW50ZXJuYWwvcHVibGlzaGVyCQ"'
 
   ######################################################
   # The Tenant Theme resource APIs
@@ -4464,7 +3685,7 @@ paths:
             - apim:admin
             - apim:tenant_theme_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/tenant-theme" > theme.zip'
 
@@ -4505,9 +3726,197 @@ paths:
             - apim:admin
             - apim:tenant_theme_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -F file=@theme.zip "https://127.0.0.1:9443/api/am/admin/v4/tenant-theme"'
+
+  ######################################################
+  # Organization theme of Devportal related APIs
+  ######################################################
+  /org-themes:
+    get:
+      operationId: getOrgThemes
+      summary: Retrieve UUIDs of org-theme contents
+      description: Returns the UUIDs of org-theme contents and their publish status.
+      parameters:
+        - name: publish
+          in: query
+          description: Filter themes based on published status
+          required: false
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: List of org themes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentPublishStatusResponse'
+        404:
+          $ref: '#/components/responses/NotFound'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tenant_theme_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+                "https://127.0.0.1:9443/api/am/admin/v4/org-themes?publish=true"'
+
+    post:
+      operationId: importOrgTheme
+      summary: Import org theme
+      description: Imports a drafted zip of an org theme to APIM.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  description: |
+                    The org-content.zip file
+                  format: binary
+      responses:
+        200:
+          description: Successfully imported
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        413:
+          $ref: '#/components/responses/PayloadTooLarge'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tenant_theme_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" 
+                -F "file=@org-content.zip" 
+                "https://127.0.0.1:9443/api/am/admin/v4/org-themes"'
+
+  /org-themes/{id}/content:
+    get:
+      operationId: getOrgThemeContent
+      summary: Retrieve org theme as zip
+      description: Returns the org theme as a zip file for the given ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Returns the org theme zip
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        404:
+          $ref: '#/components/responses/NotFound'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tenant_theme_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+                "https://127.0.0.1:9443/api/am/admin/v4/org-themes/{id}/content" 
+                -o org-content.zip'
+
+  /org-themes/{id}:
+    delete:
+      operationId: deleteOrgTheme
+      summary: Delete an org theme
+      description: Deletes the org theme for the given ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successfully deleted
+        404:
+          $ref: '#/components/responses/NotFound'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tenant_theme_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+                "https://127.0.0.1:9443/api/am/admin/v4/org-themes/{id}"'
+
+  /org-themes/{id}/status:
+    post:
+      operationId: updateOrgThemeStatus
+      summary: Update publish status of an org theme
+      description: Publishes or unpublishes an org theme to the dev portal.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentPublishStatus"
+      responses:
+        200:
+          description: Successfully updated status
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tenant_theme_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" 
+                -H "Content-Type: application/json" 
+                -d ''{"ACTION": "PUBLISH"}'' 
+                "https://127.0.0.1:9443/api/am/admin/v4/org-themes/{id}/status"'
 
   ######################################################
   # The Tenant config resource APIs
@@ -4545,7 +3954,7 @@ paths:
         - OAuth2Security:
             - apim:admin
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/tenant-config" > tenant-config.json'
     put:
@@ -4560,7 +3969,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              type: string
         required: true
       responses:
         200:
@@ -4581,7 +3990,7 @@ paths:
         - OAuth2Security:
             - apim:admin
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
            "https://127.0.0.1:9443/api/am/admin/v4/tenant-config"'
 
@@ -4610,7 +4019,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: string
         403:
           $ref: '#/components/responses/Forbidden'
         404:
@@ -4621,7 +4030,7 @@ paths:
         - OAuth2Security:
             - apim:admin
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/tenant-config-schema" > tenant-config-schema.json'
 
@@ -4648,8 +4057,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:keymanagers_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/key-managers"'
 
@@ -4682,8 +4092,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:keymanagers_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/key-managers"'
 
@@ -4722,8 +4133,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:keymanagers_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
 
@@ -4760,8 +4172,9 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:keymanagers_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
 
@@ -4778,7 +4191,7 @@ paths:
           description: |
             OK.
             Key Manager successfully deleted.
-          content: {}
+          content: { }
         404:
           $ref: '#/components/responses/NotFound'
       security:
@@ -4787,6 +4200,178 @@ paths:
             - apim:admin_operations
       x-code-samples:
         - lang: Shell
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/global-key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
+
+  ######################################################
+  # The "Global Key Manager Collection" resource API
+  ######################################################
+  /global-key-managers:
+    get:
+      tags:
+        - Global Key Manager (Collection)
+      summary: Get all Global Key managers
+      description: |
+        Get all Global Key managers
+      responses:
+        200:
+          description: |
+            OK.
+            KeyManagers returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyManagerList'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:admin_operations
+            - apim:keymanagers_manage
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/global-key-managers"'
+
+    post:
+      tags:
+        - Global Key Manager (Collection)
+      summary: Add a new Global Key Manager
+      description: |
+        Add a new Global Key Manager
+      requestBody:
+        description: |
+          Key Manager object that should to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyManager'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyManager'
+        400:
+          $ref: '#/components/responses/BadRequest'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:admin_operations
+            - apim:keymanagers_manage
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json 
+          "https://127.0.0.1:9443/api/am/admin/v2/global-key-managers"'
+
+  ######################################################
+  # The "Global Individual KeyManager" resource APIs
+  ######################################################
+  /global-key-managers/{keyManagerId}:
+    get:
+      tags:
+        - Global Key Manager (Individual)
+      summary: Get a Global Key Manager Configuration
+      description: |
+        Retrieve a single Global Key Manager Configuration. We should provide the Id of the KeyManager as a path 
+        parameter.
+      parameters:
+        - $ref: '#/components/parameters/keyManagerId'
+      responses:
+        200:
+          description: |
+            OK.
+            KeyManager Configuration returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyManager'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:admin_operations
+            - apim:keymanagers_manage
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v3/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
+
+    put:
+      tags:
+        - Global Key Manager (Individual)
+      summary: Update a Global Key Manager
+      description: |
+        Update a Global Key Manager by keyManager id
+      parameters:
+        - $ref: '#/components/parameters/keyManagerId'
+      requestBody:
+        description: |
+          Key Manager object with updated information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyManager'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Label updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyManager'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:admin_operations
+            - apim:keymanagers_manage
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
+
+    delete:
+      tags:
+        - Global Key Manager (Individual)
+      summary: Delete a Global Key Manager
+      description: |
+        Delete a Global Key Manager by keyManager id
+      parameters:
+        - $ref: '#/components/parameters/keyManagerId'
+      responses:
+        200:
+          description: |
+            OK.
+            Key Manager successfully deleted.
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:admin_operations
+            - apim:keymanagers_manage
+      x-code-samples:
+        - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
 
@@ -4823,10 +4408,92 @@ paths:
         - OAuth2Security:
             - apim:admin
             - apim:admin_operations
+            - apim:keymanagers_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -F "type=WSO2-IS" "https://127.0.0.1:9443/api/am/admin/v4/key-managers/discover"'
+
+  /key-managers/{keyManagerId}/api-usages:
+    get:
+      tags:
+        - Key Manager (Individual)
+      summary: Retrieve Key Manager Usages (APIs)
+      description: |
+        Retrieves a list of APIs that are specifically utilizing the Key Manager identified by the provided ID.
+        The Key Manager ID should be provided as a path parameter.
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/keyManagerId'
+      responses:
+        200:
+          description: |
+            OK.
+            KeyManager API usages returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyManagerAPIUsages'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:admin_operations
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/admin/v4/key-managers/8d263942-a6df-4cc2-a804-7a2525501450/api-usages"'
+
+  /key-managers/{keyManagerId}/app-usages:
+    get:
+      tags:
+        - Key Manager (Individual)
+      summary: Retrieve Key Manager Usages (Appilcations)
+      description: |
+        Retrieves a list of Applications that are specifically utilizing the Key Manager identified by the provided ID.
+        The Key Manager ID should be provided as a path parameter.
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/keyManagerId'
+      responses:
+        200:
+          description: |
+            OK.
+            KeyManager application usages returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyManagerAppUsages'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:admin_operations
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/admin/v4/key-managers/8d263942-a6df-4cc2-a804-7a2525501450/app-usages"'
+
   ######################################################
   # The "API Collection" resource APIs
   ######################################################
@@ -4874,7 +4541,7 @@ paths:
           description: |
             Not Modified.
             Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: { }
+          content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
@@ -4926,7 +4593,345 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-              -H "Content-Type: application/json" "https://127.0.0.1:9443/api/am/admin/v4/provider/admin/apis/33662a62-8db1-4d75-af08-afd63c6bd0b4"'
+              -H "Content-Type: application/json" "https://127.0.0.1:9443/api/am/admin/v4/provider/admin/apis/33662a62-8db1-4d75-af08-afd63c6bd0b4/change-provider?provider=user1"'
+  ######################################################
+  # The "Transaction Count" resource API
+  ######################################################
+  /transaction-count:
+    get:
+      tags:
+        - "Transaction Records"
+      summary: "Get transaction count"
+      description: "This endpoint retrieves the transaction count based on various filter parameters."
+      parameters:
+        - name: "startTime"
+          in: "query"
+          description: "Start time for the transaction count retrieval"
+          required: true
+          schema:
+            type: "string"
+        - name: "endTime"
+          in: "query"
+          description: "End time for the transaction count retrieval"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "Transaction count retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionCount"
+        default:
+          description: "Unexpected error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - OAuth2Security:
+            - apim:admin
+    ######################################################
+  # Export API Consumption Data
+  ######################################################
+  /export-consumption:
+    get:
+      tags:
+        - Consumption
+      summary: |
+        Export API Consumption Data
+      description: |
+        This operation provides a ZIP archive containing API consumption/usage data
+        for a given date range.
+      parameters:
+        - name: fromDate
+          in: query
+          description: |
+            Start date of the export range (inclusive). Format: YYYY-MM-DD.
+          required: true
+          schema:
+            type: string
+        - name: toDate
+          in: query
+          description: |
+            End date of the export range (inclusive). Format: YYYY-MM-DD.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            Consumption data exported successfully as a ZIP file.
+          headers:
+            Content-Disposition:
+              description: |
+                Indicates the filename for the download (e.g., consumption-report.zip).
+              schema:
+                type: string
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: |
+            curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" \
+            "https://127.0.0.1:9443/api/am/admin/v4/export-consumption?fromDate=2026-01-01&toDate=2026-03-31" \
+            > consumption-report.zip
+      operationId: exportConsumptionData
+  ######################################################
+  # The "Label Collection" resource API
+  ######################################################
+  /labels:
+    get:
+      tags:
+        - Labels (Collection)
+      summary: Get all Labels
+      description: |
+        Get all Labels
+      responses:
+        200:
+          description: |
+            OK.
+            Labels returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelList'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/labels"'
+      operationId: getAllLabels
+
+    post:
+      tags:
+        - Label (Individual)
+      summary: Add a new Label
+      description: |
+        Add a new Label
+      requestBody:
+        description: |
+          Label object that should to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Label'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        409:
+          $ref: '#/components/responses/Conflict'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/labels"'
+      operationId: createLabel
+
+  ######################################################
+  # The "Individual Label" resource APIs
+  ######################################################
+  /labels/{labelId}:
+    put:
+      tags:
+        - Label (Individual)
+      summary: Update a Label
+      description: |
+        Update a Label by label id
+      parameters:
+        - $ref: '#/components/parameters/labelId'
+      requestBody:
+        description: |
+          Label object with updated information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Label'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Label updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      operationId: updateLabel
+
+    delete:
+      tags:
+        - Label (Individual)
+      summary: Delete a Label
+      description: |
+        Delete a Label by label id
+      parameters:
+        - $ref: '#/components/parameters/labelId'
+      responses:
+        200:
+          description: |
+            OK.
+            Label successfully deleted.
+          content: {}
+        409:
+          $ref: '#/components/responses/Conflict'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      operationId: deleteLabel
+
+  ######################################################
+  # The "Label Usage Individual" resource API
+  ######################################################
+  /labels/{labelId}/usage:
+    get:
+      tags:
+        - Label (Individual)
+      summary: Get a Label Usage
+      description: |
+        Retrieve a single Label Usage. We should provide the Id of the Label as a path parameter.
+      parameters:
+        - $ref: '#/components/parameters/labelId'
+      responses:
+        200:
+          description: |
+            OK.
+            Label Usage returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelUsage'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779/usage"'
+      operationId: getLabelUsage
+
+  ######################################################
+  # The "API Key Collection" resource API
+  ######################################################
+  /api-keys:
+    get:
+      tags:
+        - APIKeys
+      summary: Get all API Keys
+      description: |
+        Retrieve all API Keys.
+      operationId: getAllAPIKeys
+      responses:
+        200:
+          description: |
+            OK.
+            API keys returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKeyList'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X GET "https://127.0.0.1:9443/api/am/admin/v4/api-keys"'
+
+  /api-keys/revoke:
+    post:
+      tags:
+        - APIKeys
+      summary: Revoke an API Key
+      description: |
+        Revoke an API Key for the API
+      operationId: revokeAPIKeyFromAdmin
+      requestBody:
+        description: |
+          API key revoke object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIKeyRevokeRequest'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Api key revoked successfully.
+          content: { }
+        400:
+          $ref: '#/components/responses/BadRequest'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -H "Content-Type: application/json" -X POST -d @data.json 
+          "https://127.0.0.1:9443/api/am/admin/v4/api-keys/ght65523-7650-4255-84fa-6cb171c1f779/d7cf8523-9180-4255-84fa-6cb171c1f779/PRODUCTION/revoke"'
+
 components:
   schemas:
     Error:
@@ -4972,6 +4977,40 @@ components:
           type: string
           description: |
             Description about individual errors occurred
+    ContentPublishStatus:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+            - PUBLISH
+            - UNPUBLISH
+      example:
+        action: PUBLISH
+    ContentPublishStatusResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of the org-theme
+        published:
+          type: boolean
+          description: Publish status of the org-theme
+    ThrottlePolicyList:
+      title: Throttle Policy List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Throttling Policies returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThrottlePolicy'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     ThrottlePolicyDetailsList:
       title: Policy List
       type: object
@@ -5155,6 +5194,10 @@ components:
               type: string
               description: Burst control time unit
               example: min
+            subscriberCount:
+              type: integer
+              description: Number of subscriptions allowed
+              example: 10
             customAttributes:
               type: array
               description: |
@@ -5174,11 +5217,6 @@ components:
               example: FREE
             permissions:
               $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
-            subscriberCount:
-              type: integer
-              description: |
-                Number of subscriptions allowed
-              example: 10
     SubscriptionThrottlePolicyPermission:
       title: SubscriptionThrottlePolicyPermission
       required:
@@ -5363,8 +5401,6 @@ components:
           description: Value of the header
     IPCondition:
       title: IP based throttling condition
-      required:
-        - specificIP
       type: object
       properties:
         ipConditionType:
@@ -5467,7 +5503,6 @@ components:
     MonetizationInfo:
       title: API monetization details object
       required:
-        - monetizationPlan
         - properties
       type: object
       properties:
@@ -5632,79 +5667,6 @@ components:
           type: string
           description: Value of the custom attribute
           example: value1
-    mediationList:
-      title: Mediation List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of mediation sequences returned.
-          example: 1
-        next:
-          type: string
-          description: |
-            Link to the next subset of sequences qualified.
-            Empty if no more sequences are to be returned.
-          example: ""
-        previous:
-          type: string
-          description: |
-            Link to the previous subset of sequences qualified.
-            Empty if current subset is the first subset returned.
-          example: ""
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediationInfo'
-    MediationInfo:
-      title: MediationInfo
-      required:
-        - id
-        - name
-        - type
-      type: object
-      properties:
-        name:
-          type: string
-          example: json_fault.xml
-        id:
-          type: string
-          example: 01234567-0123-0123-0123-012345678901
-        type:
-          type: string
-          example: in
-          enum:
-            - in
-            - out
-            - fault
-    Mediation:
-      title: Mediation
-      required:
-        - config
-        - name
-        - type
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          example: 01234567-0123-0123-0123-012345678901
-        name:
-          type: string
-          example: custom_log_in_message.xml
-        type:
-          type: string
-          example: IN
-          enum:
-            - IN
-            - OUT
-            - FAULT
-        config:
-          type: string
-          example: <sequence xmlns="http://ws.apache.org/ns/synapse" name="custom_log_in_message">
-            <log level="full"> <property name="IN_MESSAGE" value="IN_MESSAGE_21133232"/>
-            </log> </sequence>
     ApplicationList:
       title: Application List
       type: object
@@ -5714,22 +5676,12 @@ components:
           description: |
             Number of applications returned.
           example: 1
-        next:
-          type: string
-          description: |
-            Link to the next subset of resources qualified.
-            Empty if no more resources are to be returned.
-          example: /applications?limit=1&offset=2&user=
-        previous:
-          type: string
-          description: |
-            Link to the previous subset of resources qualified.
-            Empty if current subset is the first subset returned.
-          example: /applications?limit=1&offset=0&user=
         list:
           type: array
           items:
             $ref: '#/components/schemas/ApplicationInfo'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     ApplicationInfo:
       title: Application info object with basic application details
       type: object
@@ -5743,12 +5695,96 @@ components:
         owner:
           type: string
           example: admin
+        tokenType:
+          type: string
+          enum:
+            - OAUTH
+            - JWT
+        createdTime:
+          type: string
+          readOnly: true
+          example: "1651555310208"
+        keyManagers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyManagerInfo'
         status:
           type: string
           example: APPROVED
         groupId:
           type: string
           example: ""
+    Application:
+      title: Application object with all the application details
+      type: object
+      properties:
+        applicationId:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          type: string
+          example: CalculatorApp
+        throttlingPolicy:
+          type: string
+          example: Unlimited
+        description:
+          type: string
+          example: Sample calculator application
+        tokenType:
+          type: string
+          enum:
+            - OAUTH
+            - JWT
+          description: |
+            Type of the access token generated for this application.
+            **OAUTH:** A UUID based access token which is issued by default.
+            **JWT:** A self-contained, signed JWT based access token. **Note:** This can be only used in Microgateway environments.
+          default: JWT
+          example: JWT
+        status:
+          type: string
+          example: APPROVED
+          default: ""
+        groups:
+          type: array
+          items:
+            type: string
+          example: ""
+        subscriptionCount:
+          type: integer
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          example: External Reference ID, Billing Tier
+        subscriptionScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopeInfo'
+        owner:
+          description: |
+            Application created user
+          type: string
+          example: admin
+    ScopeInfo:
+      title: API Scope info object with scope details
+      type: object
+      properties:
+        key:
+          type: string
+          example: admin_scope
+        name:
+          type: string
+          example: admin scope
+        roles:
+          type: array
+          items:
+            type: string
+          description: Allowed roles for the scope
+          example: ["manager","developer"]
+        description:
+          type: string
+          description: Description of the scope
     APIInfoList:
       title: API Info List
       type: object
@@ -5770,6 +5806,13 @@ components:
           type: string
           description: The name of the API.
           example: PizzaShackAPI
+        displayName:
+          type: string
+          example: PizzaShack API
+          description: |
+            Display name of the API.
+            This is the name that will be displayed in the Publisher and DevPortal.
+            If not provided, the name will be used as the display name.
         version:
           type: string
           description: The version of the API
@@ -5778,43 +5821,6 @@ components:
           type: string
           description: The provider of the API
           example: admin
-    Label:
-      title: Label
-      required:
-        - name
-      type: object
-      properties:
-        id:
-          type: string
-          readOnly: true
-          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
-        name:
-          maxLength: 255
-          minLength: 1
-          type: string
-          example: Public
-        description:
-          maxLength: 1024
-          type: string
-          example: Label to use for public Gateway
-        accessUrls:
-          type: array
-          items:
-            type: string
-            example: http://localhost:9443/
-    LabelList:
-      title: Label List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of Labels returned.
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
     Environment:
       title: Environment
       required:
@@ -5829,7 +5835,7 @@ components:
         name:
           maxLength: 255
           minLength: 1
-          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+]*$)'
+          pattern: '^[a-zA-Z0-9_-]+$'
           type: string
           example: us-region
         displayName:
@@ -5837,21 +5843,39 @@ components:
           minLength: 1
           type: string
           example: US Region
-        description:
-          maxLength: 1023
-          type: string
-          example: Gateway environment in US Region
         provider:
           type: string
           example: wso2
+        type:
+          type: string
+          default: hybrid
+          example: hybrid
         gatewayType:
           type: string
           example: Regular
           default: Regular
+        description:
+          maxLength: 1023
+          type: string
+          example: Gateway environment in US Region
         isReadOnly:
           type: boolean
-          readOnly: true
           example: false
+          default: false
+          deprecated: true
+        mode:
+          type: string
+          enum:
+            - READ_ONLY
+            - READ_WRITE
+            - WRITE_ONLY
+          example: READ_WRITE
+          default: WRITE_ONLY
+          description: |
+            The mode of the environment. This indicates whether the environment is in read-only or read-write mode.
+            **READ_ONLY:** The environment is in read-only mode. API cannot be deployed, only discovery is possible.
+            **READ_WRITE:** The environment is in read-write mode. APIs can be deployed and discovered.
+            **WRITE_ONLY:** The environment is in write-only mode/ APIs only can be deployed.
         apiDiscoveryScheduledWindow:
           type: integer
           description: |
@@ -5886,9 +5910,27 @@ components:
               type: array
               items:
                 type: string
-              example:
-                - Subscriber
-                - Internal/subscriber
+                example: Internal/everyone
+        status:
+          type: string
+          readOnly: true
+          description: For platform gateway environments (gatewayType Universal), connection status to the control plane (Active or Inactive).
+          example: Active
+          default: Active
+          enum:
+            - Active
+            - Inactive
+        vhost:
+          type: string
+          format: uri
+          readOnly: true
+          description: For platform gateway environments, the gateway URL (e.g. https://host:9443). Same as Platform Gateways API; only set when this environment represents a platform gateway.
+          example: https://mg.wso2.com
+        universalGatewayVersion:
+          type: string
+          readOnly: true
+          description: Universal Gateway version from config (e.g. "1.0.0"). Set for deploy targets so UI can show quick-start version; from apim.universal_gateway.version.
+          example: "1.0.0"
     EnvironmentList:
       title: Environment List
       type: object
@@ -5934,6 +5976,203 @@ components:
           enum:
             - ACTIVE
             - EXPIRED
+    ApplicationUpdateRequest:
+      type: object
+      description: Request body to update application attributes
+      properties:
+        owner:
+          type: string
+          description: The new owner of the application
+        tokenType:
+          type: string
+          description: The type of token for the application (e.g., JWT)
+          enum:
+            - JWT
+    CreatePlatformGatewayRequest:
+      title: Create Platform Gateway Request
+      description: Request body for creating a platform gateway (name, displayName, vhost as URL, optional properties). Same property name as platform API; type is URL.
+      required:
+        - name
+        - displayName
+        - vhost
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          minLength: 3
+          maxLength: 64
+          description: URL-friendly gateway identifier (lowercase alphanumeric with hyphens, unique per organization)
+          example: prod-gateway-01
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 128
+          description: Human-readable gateway name
+          example: Production Gateway 01
+        description:
+          type: string
+          maxLength: 1023
+          description: Optional description
+        vhost:
+          type: string
+          format: uri
+          description: Gateway URL (e.g. https://mg.example.com:9443). Same name as platform API; type is URL. Server persists host internally.
+          example: https://mg.wso2.com
+        properties:
+          type: object
+          additionalProperties: true
+          description: Custom key-value properties for the gateway
+          example: {"region": "us-west", "tier": "premium"}
+        permissions:
+          type: object
+          description: Gateway visibility permissions configuration
+          properties:
+            permissionType:
+              type: string
+              enum: [PUBLIC, ALLOW, DENY]
+              default: PUBLIC
+              description: |
+                Permission type for gateway visibility:
+                - PUBLIC: Gateway is visible to all users
+                - ALLOW: Gateway is visible only to specified roles
+                - DENY: Gateway is hidden from specified roles
+            roles:
+              type: array
+              items:
+                type: string
+              description: List of roles for ALLOW/DENY permission types
+              example: ["admin", "publisher"]
+          example:
+            permissionType: ALLOW
+            roles: ["admin", "publisher"]
+    UpdatePlatformGatewayRequest:
+      title: Update Platform Gateway Request
+      description: |
+        Request body for PUT /gateways/{gatewayId}. Per PUT semantics, send the full resource
+        representation. Name and vhost are immutable (server validates they match the existing gateway).
+      required:
+        - name
+        - displayName
+        - vhost
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          minLength: 3
+          maxLength: 64
+          description: Gateway identifier (immutable; must match existing). Required for PUT full representation.
+        vhost:
+          type: string
+          format: uri
+          description: Gateway URL (immutable; must match existing). Same name as platform API; type is URL. Example https://mg.wso2.com
+          example: https://mg.wso2.com
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 128
+          description: Human-readable gateway name
+          example: Production Gateway 01
+        description:
+          type: string
+          maxLength: 1023
+          description: Optional description
+        properties:
+          type: object
+          additionalProperties: true
+          description: Custom key-value properties for the gateway
+          example: {"region": "us-west", "tier": "premium"}
+        permissions:
+          type: object
+          description: Gateway visibility permissions (on-prem extension)
+          properties:
+            permissionType:
+              type: string
+              enum: [PUBLIC, ALLOW, DENY]
+              default: PUBLIC
+            roles:
+              type: array
+              items:
+                type: string
+              description: List of roles for ALLOW/DENY permission types
+    PlatformGatewayResponse:
+      title: Platform Gateway Response
+      description: Platform gateway response (without registration token). Used for list and get.
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Gateway UUID
+        name:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        properties:
+          type: object
+          additionalProperties: true
+          description: Custom key-value properties
+        vhost:
+          type: string
+          format: uri
+          readOnly: true
+          description: Gateway URL (e.g. https://host or https://host:9443). Same name as platform API; type is URL.
+        isActive:
+          type: boolean
+          readOnly: true
+          description: Indicates if the gateway is currently connected to the control plane via WebSocket
+        permissions:
+          type: object
+          description: Gateway visibility permissions configuration
+          properties:
+            permissionType:
+              type: string
+              enum: [PUBLIC, ALLOW, DENY]
+              default: PUBLIC
+              description: |
+                Permission type for gateway visibility:
+                - PUBLIC: Gateway is visible to all users
+                - ALLOW: Gateway is visible only to specified roles
+                - DENY: Gateway is hidden from specified roles
+            roles:
+              type: array
+              items:
+                type: string
+              description: List of roles for ALLOW/DENY permission types
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+    GatewayResponseWithToken:
+      title: Gateway Response With Token
+      description: Platform gateway response including the one-time registration token (POST create or regenerate-token).
+      allOf:
+        - $ref: '#/components/schemas/PlatformGatewayResponse'
+        - type: object
+          properties:
+            registrationToken:
+              type: string
+              description: |
+                Registration token (returned only once on create or regenerate). Use as api-key when connecting
+                the gateway to the control plane WebSocket. Store e.g. as GATEWAY_REGISTRATION_TOKEN.
+    GatewayList:
+      title: Gateway List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Number of platform gateways returned
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformGatewayResponse'
     Organization:
       title: Organization
       required:
@@ -6075,6 +6314,10 @@ components:
           description: List of model providers supported by the AI Service Provider
           items:
             $ref: '#/components/schemas/ModelProvider'
+        deprecated:
+          type: boolean
+          description: Indicates if the LLM provider is deprecated
+          example: false
     AIServiceProviderSummaryResponse:
       title: AIServiceProviderSummaryResponse
       type: object
@@ -6103,6 +6346,10 @@ components:
           maxLength: 1023
           type: string
           example: OpenAI LLM Provider
+        deprecated:
+          type: boolean
+          description: Indicates if the LLM provider is deprecated
+          example: false
     AIServiceProviderSummaryResponseList:
       title: AIServiceProviderSummaryResponseList
       type: object
@@ -6227,13 +6474,12 @@ components:
         host:
           maxLength: 255
           minLength: 1
-          # hostname regex as per RFC 1123 (http://tools.ietf.org/html/rfc1123) and appended *
-          pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
           type: string
           example: mg.wso2.com
         httpContext:
           maxLength: 255
           minLength: 0
+          # TODO (renuka) check this regex: not allowed: (_ .) and allowed: (- /)
           pattern: '^\/?([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])*$'
           type: string
           example: pets
@@ -6246,9 +6492,15 @@ components:
         wsPort:
           type: integer
           example: 9099
+        wsHost:
+          type: string
+          example: mg.wso2.com
         wssPort:
           type: integer
           example: 8099
+        wssHost:
+          type: string
+          example: mg.wso2.com
     AdditionalProperty:
       title: Additional Gateway Properties
       type: object
@@ -6423,6 +6675,14 @@ components:
           type: array
           items:
             type: string
+        IsJWTEnabledForLoginTokens:
+          type: boolean
+          default: false
+        orgAccessControlEnabled:
+          type: boolean
+          description: |
+            Is Organization-based access control configuration enabled
+          example: true
         keyManagerConfiguration:
           type: array
           items:
@@ -6440,13 +6700,64 @@ components:
               defaultScopesClaim:
                 type: string
                 example: scope
+              authConfigurations:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KeyManagerConfiguration'
               configurations:
                 type: array
                 items:
                   $ref: '#/components/schemas/KeyManagerConfiguration'
+              endpointConfigurations:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KeyManagerConfiguration'
+              configurationConstraints:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConfigurationConstraint'
+        gatewayConfiguration:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                example: default
+              displayName:
+                type: string
+                example: default
+              supportedModes:
+                type: array
+                items:
+                  type: string
+                  example: 'READ_WRITE'
+              configurations:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GatewayConfiguration'
+              defaultHostnameTemplate:
+                type: string
+                example: '{apiId}.execute-api.{region}.amazonaws.com'
         analyticsEnabled:
           type: boolean
           description: To determine whether analytics is enabled or not
+          example: false
+        transactionCounterEnable:
+          type: boolean
+          description: To determine whether the transaction counter is enabled or not
+          example: false
+        isGatewayNotificationEnabled:
+          type: boolean
+          description: Is Gateway Notification Enabled
+          default: false
+        universalGatewayVersion:
+          type: string
+          description: Universal Gateway version for quick-start guide (e.g. "1.0.0")
+          example: "1.0.0"
+        consumptionExportEnabled:
+          type: boolean
+          description: Whether the ConsumptionDataExportService OSGi service is available
           example: false
     ScopeList:
       title: Scope Role Mapping List
@@ -6539,27 +6850,39 @@ components:
         introspectionEndpoint:
           type: string
           example: https://localhost:9444/oauth2/introspect
+          deprecated: true
         clientRegistrationEndpoint:
           type: string
           example: https://localhost:9444/keymanager-operations/dcr/register
+          deprecated: true
         tokenEndpoint:
           type: string
           example: https://localhost:9444/oauth2/token
+          deprecated: true
         displayTokenEndpoint:
           type: string
           example: https://localhost:9444/oauth2/token
+          deprecated: true
         revokeEndpoint:
           type: string
           example: https://localhost:9444/oauth2/revoke
+          deprecated: true
         displayRevokeEndpoint:
           type: string
           example: https://localhost:9444/oauth2/revoke
+          deprecated: true
         userInfoEndpoint:
           type: string
           example: https://localhost:9444/oauth2/userinfo?schema=openid
+          deprecated: true
         authorizeEndpoint:
           type: string
           example: https://localhost:9444/oauth2/authorize
+          deprecated: true
+        endpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyManagerEndpoint'
         certificates:
           type: object
           properties:
@@ -6582,6 +6905,7 @@ components:
         scopeManagementEndpoint:
           type: string
           example: https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes
+          deprecated: true
         availableGrantTypes:
           type: array
           items:
@@ -6627,9 +6951,12 @@ components:
         enabled:
           type: boolean
           example: true
+        global:
+          type: boolean
+          example: true
         additionalProperties:
           type: object
-          properties: { }
+          properties: {}
           example:
             self_validate_jwt: true
             Username: admin
@@ -6653,7 +6980,7 @@ components:
         tokenType:
           type: string
           description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED and DIRECT.
+            Accepted values are EXCHANGED, DIRECT and BOTH.
           example: EXCHANGED
           default: DIRECT
           enum:
@@ -6664,6 +6991,19 @@ components:
           type: array
           items:
             type: string
+    KeyManagerEndpoint:
+      title: Key Manager Endpoint.
+      required:
+        - name
+        - value
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'token_endpoint'
+        value:
+          type: string
+          example: 'https://localhost:9443/oauth2/token'
     KeyManagerInfo:
       title: Key Manager Info
       required:
@@ -6686,10 +7026,16 @@ components:
         enabled:
           type: boolean
           example: true
+        isGlobal:
+          type: boolean
+          example: true
+        isUsed:
+          type: boolean
+          example: true
         tokenType:
           type: string
           description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED and DIRECT.
+            Accepted values are EXCHANGED, DIRECT and BOTH.
           example: EXCHANGED
           default: DIRECT
           enum:
@@ -6720,7 +7066,76 @@ components:
           example: true
         tooltip:
           type: string
-          example: Entet username to connect to key manager
+          example: Enter username to connect to key manager
+        default:
+          type: object
+          properties: { }
+          example: admin
+        values:
+          type: array
+          items:
+            type: object
+            properties: { }
+        updateDisabled:
+          type: boolean
+          description: Indicates that this configuration field cannot be modified once the Key Manager is created.
+          default: false
+          example: true
+    ConfigurationConstraint:
+      title: Configurable Configuration Constraints
+      type: object
+      properties:
+        name:
+          type: string
+          example: application_access_token_expiry_time
+        label:
+          type: string
+          example: Access Token Expiry
+        type:
+          type: string
+          example: input
+        multiple:
+          type: boolean
+          example: true
+        tooltip:
+          type: string
+          example: Define the valid range for token expiration in seconds.
+        constraintType:
+          type: string
+          example: RANGE
+        values:
+          type: array
+          items:
+            type: object
+            properties: { }
+        default:
+          type: object
+          properties: { }
+    GatewayConfiguration:
+      title: Gateway Configuration
+      type: object
+      properties:
+        name:
+          type: string
+          example: consumer_key
+        label:
+          type: string
+          example: Consumer Key
+        type:
+          type: string
+          example: select
+        required:
+          type: boolean
+          example: true
+        mask:
+          type: boolean
+          example: true
+        multiple:
+          type: boolean
+          example: true
+        tooltip:
+          type: string
+          example: Enter username
         default:
           type: object
           properties: {}
@@ -6743,6 +7158,109 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/KeyManagerInfo'
+
+    KeyManagerAppUsages:
+      title: Key Manager Application Usages.
+      required:
+        - applicationCount
+        - applications
+      type: object
+      properties:
+        applicationCount:
+          type: integer
+          description: The total count of applications.
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationInfoKeyManager'
+
+    ApplicationInfoKeyManager:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the application.
+        uuid:
+          type: string
+          description: The UUID of the application.
+        organizationId:
+          type: string
+          nullable: true
+          description: The ID of the organization to which the application belongs.
+        owner:
+          type: string
+          description: The owner of the application.
+        organization:
+          type: string
+          description: The organization of the application.
+      required:
+        - name
+        - uuid
+        - owner
+        - organization
+
+    KeyManagerAPIUsages:
+      title: Key Manager API Usages.
+      required:
+        - apiCount
+        - apis
+      type: object
+      properties:
+        apiCount:
+          type: integer
+          description: The total count of APIs.
+        apis:
+          type: array
+          items:
+            $ref: '#/components/schemas/APIInfoKeyManager'
+
+    APIInfoKeyManager:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the API.
+        type:
+          type: string
+          description: The type of the entry (e.g., "API").
+        name:
+          type: string
+          description: The name of the API.
+        transportType:
+          type: string
+          description: The transport type of the API.
+        description:
+          type: string
+          nullable: true
+          description: The description of the API.
+        context:
+          type: string
+          description: The context of the API.
+        version:
+          type: string
+          description: The version of the API.
+        provider:
+          type: string
+          description: The provider of the API.
+        status:
+          type: string
+          description: The status of the API.
+        thumbnailUri:
+          type: string
+          nullable: true
+          description: The URI of the thumbnail of the API.
+        advertiseOnly:
+          type: boolean
+          description: Indicates if the API is advertised only.
+        keyManagerEntry:
+          type: string
+          description: The key manager entry related to the API.
+      required:
+        - id
+        - name
+        - version
+        - provider
+
     ClaimMappingEntry:
       title: Claim Mapping Configuration
       type: object
@@ -6880,17 +7398,17 @@ components:
           example: APPLICATION_CREATION
           enum:
             - APPLICATION_CREATION
-            - APPLICATION_UPDATE
             - SUBSCRIPTION_CREATION
             - USER_SIGNUP
             - APPLICATION_REGISTRATION_PRODUCTION
             - APPLICATION_REGISTRATION_SANDBOX
             - APPLICATION_DELETION
             - API_STATE
+            - API_PRODUCT_STATE
             - SUBSCRIPTION_DELETION
             - SUBSCRIPTION_UPDATE
-            - API_PRODUCT_STATE
             - REVISION_DEPLOYMENT
+            - APPLICATION_UPDATE
         workflowStatus:
           type: string
           description: |
@@ -6994,7 +7512,7 @@ components:
           example: 01234567-0123-0123-0123-012345678901
         name:
           type: string
-          example: My Organization  
+          example: My Organization
     RoleAliasList:
       title: Role alias list
       type: object
@@ -7023,6 +7541,54 @@ components:
             - Internal/subscriber
           items:
             type: string
+    Pagination:
+      title: Pagination
+      type: object
+      properties:
+        offset:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 1
+        total:
+          type: integer
+          example: 10
+        next:
+          type: string
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+            example: ""
+        previous:
+          type: string
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
+            example: ""
+    PaginationApis:
+      title: Pagination
+      type: object
+      properties:
+        offset:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 1
+        total:
+          type: integer
+          example: 10
+        next:
+          type: string
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+        previous:
+          type: string
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
     SearchResultList:
       title: Unified Search Result List
       type: object
@@ -7049,31 +7615,132 @@ components:
           type: string
         id:
           type: string
-    Pagination:
-      title: Pagination
+    TransactionCount:
       type: object
       properties:
-        offset:
+        count:
           type: integer
-          example: 0
-        limit:
+          example: 120
+    Label:
+      title: Label
+      required:
+        - name
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+          example: d7cf8523-9180-4255-84fa-6cb171c1f779
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: Health
+        description:
+          maxLength: 1024
+          type: string
+          example: Health related APIs
+    LabelList:
+      title: Label List
+      type: object
+      properties:
+        count:
           type: integer
+          description: Number of labels returned.
           example: 1
-        total:
+        list:
+          type: array
+          description: List of labels.
+          items:
+            $ref: '#/components/schemas/Label'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    LabelUsage:
+      title: Label Usage
+      type: object
+      properties:
+        apis:
+          type: object
+          description: |
+            List of APIs associated with the label.
+          properties:
+            count:
+              type: integer
+              description: Number of APIs associated with the label.
+              example: 1
+            list:
+              type: array
+              description: List of APIs associated with the label.
+              items:
+                $ref: '#/components/schemas/ApiResult'
+    APIKey:
+      title: API Key details to invoke APIs
+      type: object
+      properties:
+        keyUUID:
+          type: string
+          description: The UUID of the API key
+        keyName:
+          type: string
+          description: API Key name
+          example: Test_Key
+        apiName:
+          type: string
+          description: API Name
+          example: NotificationsAPI
+        applicationName:
+          type: string
+          description: Application Name
+          example: DefaultApplication
+        keyType:
+          type: string
+          description: Application Key Type
+          example: PRODUCTION
+          enum:
+            - PRODUCTION
+            - SANDBOX
+        user:
+          type: string
+          description: Owner of the Application
+          example: Bob
+        issuedOn:
           type: integer
-          example: 10
-        next:
-          type: string
+          format: int64
+          description: Created time in Unix epoch milliseconds
+          example: 1599196134000
+        validityPeriod:
+          type: integer
+          format: int64
+          example: 3600
+        lastUsed:
+          type: integer
+          format: int64
+          nullable: true
+          description: Last used time in Unix epoch milliseconds
+          example: 1599196134000
+    APIKeyList:
+      title: API Keys List
+      type: object
+      properties:
+        count:
+          type: integer
           description: |
-            Link to the next subset of resources qualified.
-            Empty if no more resources are to be returned.
-            example: ""
-        previous:
+            Number of API keys returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/APIKey'
+    APIKeyRevokeRequest:
+      title: API Key revoke request object
+      type: object
+      required:
+        - keyUUID
+      properties:
+        keyUUID:
           type: string
-          description: |
-            Link to the previous subset of resources qualified.
-            Empty if current subset is the first subset returned.
-            example: ""
+          description: The UUID of the API key
+
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -7203,6 +7870,46 @@ components:
             moreInfo: ""
             error: []
   parameters:
+    If-None-Match:
+      name: If-None-Match
+      in: header
+      description: |
+        Validator for conditional requests; based on the ETag of the formerly retrieved
+        variant of the resource.
+      schema:
+        type: string
+    requestedTenant:
+      name: X-WSO2-Tenant
+      in: header
+      description: |
+        For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+          retirieved from.
+      schema:
+        type: string
+    sortBy:
+      name: sortBy
+      in: query
+      description: |
+        Criteria for sorting.
+      schema:
+        type: string
+        default: createdTime
+        enum:
+          - apiName
+          - version
+          - createdTime
+          - status
+    sortOrder:
+      name: sortOrder
+      in: query
+      description: |
+        Order of sorting(ascending/descending).
+      schema:
+        type: string
+        default: desc
+        enum:
+          - asc
+          - desc
     username:
       name: username
       in: query
@@ -7215,15 +7922,7 @@ components:
       name: scopeName
       in: path
       description: |
-        scope name to be validated
-      required: true
-      schema:
-        type: string
-    labelId:
-      name: labelId
-      in: path
-      description: |
-        Label UUID
+        Base64 URL encoded value of the scope name to be validated
       required: true
       schema:
         type: string
@@ -7231,7 +7930,8 @@ components:
       name: environmentId
       in: path
       description: |
-        Environment UUID (or Environment name defined in config)
+        Environment UUID (or Environment name defined in config), in case the ID contains special characters it should
+        be base64 encoded
       required: true
       schema:
         type: string
@@ -7308,36 +8008,6 @@ components:
       schema:
         type: string
         default: application/json
-    If-None-Match:
-      name: If-None-Match
-      in: header
-      description: |
-        Validator for conditional requests; based on the ETag of the formerly retrieved
-        variant of the resource (Will be supported in future).
-      schema:
-        type: string
-    If-Modified-Since:
-      name: If-Modified-Since
-      in: header
-      description: |
-        Validator for conditional requests; based on Last Modified header of the
-        formerly retrieved variant of the resource (Will be supported in future).
-      schema:
-        type: string
-    If-Match:
-      name: If-Match
-      in: header
-      description: |
-        Validator for conditional requests; based on ETag (Will be supported in future).
-      schema:
-        type: string
-    If-Unmodified-Since:
-      name: If-Unmodified-Since
-      in: header
-      description: |
-        Validator for conditional requests; based on Last Modified header (Will be supported in future).
-      schema:
-        type: string
     limit:
       name: limit
       in: query
@@ -7354,14 +8024,6 @@ components:
       schema:
         type: integer
         default: 0
-    mediationPolicyId:
-      name: mediationPolicyId
-      in: path
-      description: |
-        Mediation policy Id
-      required: true
-      schema:
-        type: string
     user:
       name: user
       in: query
@@ -7393,6 +8055,16 @@ components:
       required: true
       schema:
         type: string
+    roleId:
+      name: roleId
+      in: path
+      description: |
+        The Base 64 URL encoded role name with domain. If the given role is in PRIMARY user-store, role ID should be
+        derived as Base64URLEncode(role-name). If the given role is in secondary user-store, role ID should be
+        derived as Base64URLEncode({user-store-name}/{role-name}).
+      required: true
+      schema:
+        type: string
     apiId:
       name: apiId
       in: path
@@ -7401,6 +8073,25 @@ components:
       required: true
       schema:
         type: string
+    labelId:
+      name: labelId
+      in: path
+      description: |
+        Label UUID
+      required: true
+      schema:
+        type: string
+    keyType:
+      name: keyType
+      in: path
+      description: |
+        **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox).
+      required: true
+      schema:
+        type: string
+        enum:
+          - PRODUCTION
+          - SANDBOX
   securitySchemes:
     OAuth2Security:
       type: oauth2
@@ -7413,17 +8104,18 @@ components:
             apim:admin: Manage all admin operations
             apim:tier_view: View throttling policies
             apim:tier_manage: Update and delete throttling policies
+            apim:admin_tier_view: View throttling policies
+            apim:admin_tier_manage: Update and delete throttling policies
             apim:bl_view: View deny policies
             apim:bl_manage: Update and delete deny policies
             apim:mediation_policy_view: View mediation policies
             apim:mediation_policy_create: Create and update mediation policies
             apim:app_owner_change: Retrieve and manage applications
+            apim:app_settings_change: Change Application Settings
             apim:app_import_export: Import and export applications related operations
             apim:api_import_export: Import and export APIs related operations
             apim:api_product_import_export: Import and export API Products related
               operations
-            apim:label_manage: Manage microgateway labels
-            apim:label_read: Retrieve microgateway labels
             apim:environment_manage: Manage gateway environments
             apim:environment_read: Retrieve gateway environments
             apim:monetization_usage_publish: Retrieve and publish Monetization related
@@ -7434,10 +8126,20 @@ components:
             apim:tenant_theme_manage: Manage tenant themes
             apim:admin_operations: Manage API categories and Key Managers related
               operations
+            apim:api_category: Manage API categories
             apim:admin_settings: Retrieve admin settings
             apim:admin_alert_manage: Manage admin alerts
             apim:api_workflow_view: Retrive workflow requests
             apim:scope_manage: Manage system scopes
+            apim:role_manage: Manage system roles
+            apim:admin_application_view: View Applications
+            apim:keymanagers_manage: Manage Key Managers
+            apim:api_provider_change: Retrieve and manage applications
             apim:llm_provider_manage: Manage LLM Providers
+            apim:gov_policy_read: Retrieve governance policies
+            apim:gov_policy_manage: Manage governance policies
+            apim:gov_result_read: Retrieve governance results
+            apim:gov_rule_read: Retrieve governance rules
+            apim:gov_rule_manage: Manage governance rules
             apim:organization_manage: Manage Organizations
             apim:organization_read: Read Organizations

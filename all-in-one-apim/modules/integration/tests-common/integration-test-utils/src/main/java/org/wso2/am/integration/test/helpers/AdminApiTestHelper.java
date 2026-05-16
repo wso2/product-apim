@@ -150,8 +150,6 @@ public class AdminApiTestHelper {
                 "Label name does not match with the expected name");
         Assert.assertEquals(actualLabel.getDescription(), expectedLabel.getDescription(),
                 "Label description does not match with the expected description");
-        boolean isAccessUrlsEqual = actualLabel.getAccessUrls().equals(expectedLabel.getAccessUrls());
-        Assert.assertTrue(isAccessUrlsEqual, "Access URLs does not match with the expected access URLs");
     }
 
     /**
