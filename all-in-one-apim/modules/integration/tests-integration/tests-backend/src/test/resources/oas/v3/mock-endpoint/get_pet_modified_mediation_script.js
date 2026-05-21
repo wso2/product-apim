@@ -35,7 +35,7 @@ if (mc.getProperty('uri.var.petId') == 1) {
     "photoUrls" : [ "mock-pet-image-url" ],
     "tags" : [ {
       "id" : 1,
-      "name" : "German Sheperd"
+      "name" : "German Shepherd"
     } ],
     "status" : "available"
   }
@@ -44,17 +44,17 @@ if (mc.getProperty('uri.var.petId') == 1) {
 if (!responses[400]) {
   responses[400] = [];
 }
-responses[400]["application/json"] = "";
+responses[400]["application/json"] = {};
 
 if (!responses[404]) {
   responses[404] = [];
 }
-responses[404]["application/json"] = "";
+responses[404]["application/json"] = {};
 
 responses[501] = [];
 responses[501]["application/json"] = {
-"code" : 501,
-"description" : "Not Implemented"}
+  "message" : "Not Implemented"
+}
 
 if (responseCode == null) {
 responseCode = 200;

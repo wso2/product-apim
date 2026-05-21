@@ -43,9 +43,12 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Integration tests for mock implementation (inline JS mediation scripts) on the API Gateway,
@@ -107,7 +110,7 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
                 "Modified mediation script was not saved to swagger");
         Assert.assertTrue(updatedSwagger.contains("uri.var.petId"),
                 "Modified mediation script does not contain petId path parameter handling");
-        Assert.assertTrue(updatedSwagger.contains("German Sheperd"),
+        Assert.assertTrue(updatedSwagger.contains("German Shepherd"),
                 "Modified mediation script does not contain petId=1 branch payload");
     }
 
@@ -128,7 +131,7 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
                 "petId=0 should return default mock payload with Dogs category. Response: " + response.getData());
     }
 
-    @Test(groups = {"wso2.am"}, description = "petId=1 returns manually modified mock payload (German Sheperd tag)",
+    @Test(groups = {"wso2.am"}, description = "petId=1 returns manually modified mock payload (German Shepherd tag)",
             dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
     public void testInvokeMockEndpointForPetIdOne() throws Exception {
         prepareForGatewayInvocation();
@@ -139,7 +142,7 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
 
         Assert.assertEquals(response.getResponseCode(), 200,
                 "Mock endpoint invocation failed for petId=1. Response: " + response.getData());
-        Assert.assertTrue(response.getData().contains("German Sheperd"),
+        Assert.assertTrue(response.getData().contains("German Shepherd"),
                 "petId=1 should return manually modified mock payload. Response: " + response.getData());
         Assert.assertTrue(response.getData().contains("\"id\":1") || response.getData().contains("\"id\": 1"),
                 "petId=1 should return mock payload with id 1. Response: " + response.getData());
@@ -184,9 +187,7 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
      * (generated responses map + manual petId branch + responseCode selection).
      */
     private void applyModifiedMediationScriptFromDoc() throws Exception {
-        String modifiedScript = IOUtils.toString(
-                getClass().getClassLoader().getResourceAsStream(RESOURCE_PATH + "get_pet_modified_mediation_script.js"),
-                "UTF-8");
+        String modifiedScript = readResource(RESOURCE_PATH + "get_pet_modified_mediation_script.js");
 
         JSONObject swagger = new JSONObject(restAPIPublisher.getSwaggerByID(apiId));
         swagger.getJSONObject("paths").getJSONObject(GET_PET_PATH).getJSONObject("get")
@@ -226,6 +227,7 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
         waitForAPIDeployment();
     }
 
+    /** Builds request headers with the generated bearer token for gateway invocation. */
     private Map<String, String> buildAuthHeaders() {
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
@@ -233,6 +235,7 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
         return requestHeaders;
     }
 
+    /** Imports the mock pet store OAS and returns the created API id. */
     private String importMockPetStoreApi() throws Exception {
         apiName = "MockPetStore" + userMode;
         String context = "/" + API_CONTEXT;
@@ -240,10 +243,8 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
             context = "/t/" + user.getUserDomain() + context;
         }
 
-        String oasDefinition = IOUtils.toString(
-                getClass().getClassLoader().getResourceAsStream(RESOURCE_PATH + "petstore_oas.json"), "UTF-8");
-        String additionalProperties = IOUtils.toString(
-                getClass().getClassLoader().getResourceAsStream(RESOURCE_PATH + "additionalProperties.json"), "UTF-8");
+        String oasDefinition = readResource(RESOURCE_PATH + "petstore_oas.json");
+        String additionalProperties = readResource(RESOURCE_PATH + "additionalProperties.json");
 
         JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
         additionalPropertiesObj.put("name", apiName);
@@ -255,6 +256,7 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
         return apiDto.getId();
     }
 
+    /** Writes content to a temporary file for OAS import. */
     private File getTempFileWithContent(String content) throws Exception {
         File temp = File.createTempFile("swagger", ".json");
         temp.deleteOnExit();
@@ -262,5 +264,20 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
             out.write(content);
         }
         return temp;
+    }
+
+    /**
+     * Reads a classpath test resource as UTF-8 text.
+     *
+     * @param resourcePath classpath-relative resource path
+     * @return resource contents
+     * @throws NullPointerException if the resource is not found on the classpath
+     */
+    private String readResource(String resourcePath) throws Exception {
+        try (InputStream inputStream = Objects.requireNonNull(
+                getClass().getClassLoader().getResourceAsStream(resourcePath),
+                "Missing test resource: " + resourcePath)) {
+            return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        }
     }
 }
