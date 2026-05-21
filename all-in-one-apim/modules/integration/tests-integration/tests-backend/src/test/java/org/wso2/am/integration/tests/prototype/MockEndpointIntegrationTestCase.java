@@ -40,6 +40,8 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
+import javax.ws.rs.core.Response;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -69,11 +71,15 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
     private String applicationId;
     private String accessToken;
 
+    /**
+     * @param userMode tenant user mode for multitenant test execution
+     */
     @Factory(dataProvider = "userModeDataProvider")
     public MockEndpointIntegrationTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
+    /** Provides super-tenant and tenant user modes for parameterized test runs. */
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
@@ -82,11 +88,16 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
         };
     }
 
+    /** Initializes publisher, store, and gateway clients for the configured user mode. */
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws APIManagerIntegrationTestException {
         super.init(userMode);
     }
 
+    /**
+     * Imports the mock API, generates inline mock scripts, applies the doc-style mediation script,
+     * and asserts the updated swagger contains expected mock artifacts.
+     */
     @Test(groups = {"wso2.am"}, description = "Generate mock scripts and apply doc-style modified inline script")
     public void testGenerateAndApplyModifiedMockScript() throws Exception {
         apiId = importMockPetStoreApi();
@@ -114,6 +125,9 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
                 "Modified mediation script does not contain petId=1 branch payload");
     }
 
+    /**
+     * Invokes GET /pet/0 and verifies the default generated mock payload (id=10, Dogs category).
+     */
     @Test(groups = {"wso2.am"}, description = "petId=0 returns default generated mock payload (id=10, Dogs category)",
             dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
     public void testInvokeMockEndpointForPetIdZero() throws Exception {
@@ -131,6 +145,9 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
                 "petId=0 should return default mock payload with Dogs category. Response: " + response.getData());
     }
 
+    /**
+     * Invokes GET /pet/1 and verifies the manually modified mock payload (German Shepherd tag).
+     */
     @Test(groups = {"wso2.am"}, description = "petId=1 returns manually modified mock payload (German Shepherd tag)",
             dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
     public void testInvokeMockEndpointForPetIdOne() throws Exception {
@@ -148,6 +165,9 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
                 "petId=1 should return mock payload with id 1. Response: " + response.getData());
     }
 
+    /**
+     * Invokes GET /pet/0?responseCode=501 and verifies HTTP 501 with a Not Implemented body.
+     */
     @Test(groups = {"wso2.am"}, description = "responseCode=501 query param returns Not Implemented per mock script",
             dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
     public void testInvokeMockEndpointWithResponseCodeQueryParam() throws Exception {
@@ -164,16 +184,22 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
                 "Mock 501 response body mismatch. Response: " + response.getData());
     }
 
+    /**
+     * Verifies the imported API retains INLINE endpoint implementation type after mock setup.
+     */
     @Test(groups = {"wso2.am"}, description = "Verify INLINE mock implementation type is retained on API",
             dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
     public void testMockEndpointImplementationType() throws Exception {
         HttpResponse apiResponse = restAPIPublisher.getAPI(apiId);
+        Assert.assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Failed to retrieve API details. Response: " + apiResponse.getData());
         APIDTO apiDto = new Gson().fromJson(apiResponse.getData(), APIDTO.class);
 
         Assert.assertEquals(apiDto.getEndpointImplementationType(), APIDTO.EndpointImplementationTypeEnum.INLINE,
                 "API endpointImplementationType is not INLINE for mock implementation");
     }
 
+    /** Deletes the test application and removes APIs created during the test run. */
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (applicationId != null) {
