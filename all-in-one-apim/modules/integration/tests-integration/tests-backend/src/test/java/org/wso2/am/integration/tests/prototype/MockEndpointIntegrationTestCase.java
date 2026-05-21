@@ -141,7 +141,10 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
         HttpResponse applicationResponse = restAPIStore.createApplication(
                 APPLICATION_NAME + userMode, "Mock Endpoint Test Application",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
-        Assert.assertNotNull(applicationResponse.getData(), "Application creation failed");
+        Assert.assertTrue(applicationResponse.getResponseCode() >= 200
+                        && applicationResponse.getResponseCode() < 300,
+                "Application creation failed. Response: " + applicationResponse.getData());
+        Assert.assertNotNull(applicationResponse.getData(), "Application creation returned no application id");
         applicationId = applicationResponse.getData();
         restAPIStore.subscribeToAPI(apiId, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
 
@@ -166,28 +169,30 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(petZeroResponse.getResponseCode(), 200,
                 "Mock endpoint invocation failed for petId=0. URL: " + baseUrl + "/pet/0 Response: "
                         + petZeroResponse.getData());
-        Assert.assertTrue(petZeroResponse.getData().contains("\"id\":10")
-                        || petZeroResponse.getData().contains("\"id\": 10"),
+        JSONObject petZeroBody = new JSONObject(petZeroResponse.getData());
+        Assert.assertEquals(petZeroBody.getInt("id"), 10,
                 "petId=0 should return default mock payload with id 10. Response: " + petZeroResponse.getData());
-        Assert.assertTrue(petZeroResponse.getData().contains("Dogs"),
-                "petId=0 should return default mock payload with Dogs category. Response: " + petZeroResponse.getData());
+        Assert.assertEquals(petZeroBody.getJSONObject("category").getString("name"), "Dogs",
+                "petId=0 should return Dogs category. Response: " + petZeroResponse.getData());
 
         HttpResponse petOneResponse = HTTPSClientUtils.doGet(baseUrl + "/pet/1", requestHeaders);
         Assert.assertEquals(petOneResponse.getResponseCode(), 200,
                 "Mock endpoint invocation failed for petId=1. URL: " + baseUrl + "/pet/1 Response: "
                         + petOneResponse.getData());
-        Assert.assertTrue(petOneResponse.getData().contains("German Shepherd"),
-                "petId=1 should return manually modified mock payload. Response: " + petOneResponse.getData());
-        Assert.assertTrue(petOneResponse.getData().contains("\"id\":1")
-                        || petOneResponse.getData().contains("\"id\": 1"),
+        JSONObject petOneBody = new JSONObject(petOneResponse.getData());
+        Assert.assertEquals(petOneBody.getInt("id"), 1,
                 "petId=1 should return mock payload with id 1. Response: " + petOneResponse.getData());
+        Assert.assertEquals(petOneBody.getJSONArray("tags").getJSONObject(0).getString("name"),
+                "German Shepherd",
+                "petId=1 should return manually modified mock payload. Response: " + petOneResponse.getData());
 
         HttpResponse responseCodeResponse = HTTPSClientUtils.doGet(baseUrl + "/pet/0?responseCode=501",
                 requestHeaders);
         Assert.assertEquals(responseCodeResponse.getResponseCode(), 501,
                 "Expected HTTP 501 for responseCode=501. URL: " + baseUrl
                         + "/pet/0?responseCode=501 Response: " + responseCodeResponse.getData());
-        Assert.assertTrue(responseCodeResponse.getData().contains("Not Implemented"),
+        JSONObject response501Body = new JSONObject(responseCodeResponse.getData());
+        Assert.assertEquals(response501Body.getString("message"), "Not Implemented",
                 "Mock 501 response body mismatch. Response: " + responseCodeResponse.getData());
     }
 
