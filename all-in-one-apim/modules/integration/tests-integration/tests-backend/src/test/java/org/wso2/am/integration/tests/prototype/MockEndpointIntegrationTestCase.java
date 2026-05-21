@@ -60,7 +60,7 @@ import java.util.Objects;
 public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
 
     private static final String API_VERSION = "1.0.0";
-    private static final String API_CONTEXT = "mockpetstore";
+    private static final String API_CONTEXT = "/mockpetstore";
     private static final String APPLICATION_NAME = "MockEndpointIntegrationTestCaseApp";
     private static final String RESOURCE_PATH = "oas" + File.separator + "v3" + File.separator + "mock-endpoint"
             + File.separator;
@@ -69,7 +69,6 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
     private String apiId;
     private String apiName;
     private String applicationId;
-    private String accessToken;
 
     /**
      * @param userMode tenant user mode for multitenant test execution
@@ -95,11 +94,12 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Imports the mock API, generates inline mock scripts, applies the doc-style mediation script,
-     * and asserts the updated swagger contains expected mock artifacts.
+     * End-to-end test aligned with {@link PrototypedAPITestcase#testOAS3InlinePrototypeWithMock}:
+     * import, prototype, generate mock scripts, apply doc-style mediation script, deploy, subscribe,
+     * and invoke gateway with petId and responseCode variants.
      */
-    @Test(groups = {"wso2.am"}, description = "Generate mock scripts and apply doc-style modified inline script")
-    public void testGenerateAndApplyModifiedMockScript() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Mock endpoint E2E: generate script, apply modifications, deploy and invoke")
+    public void testMockEndpointEndToEnd() throws Exception {
         apiId = importMockPetStoreApi();
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.DEPLOY_AS_PROTOTYPE);
 
@@ -113,6 +113,8 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
                 "Auto-generated mock script does not include responseCode handling from OAS parser");
         Assert.assertTrue(generatedSwagger.contains("mc.setPayloadJSON"),
                 "Auto-generated mock script does not set JSON payload");
+        Assert.assertTrue(generatedSwagger.contains(GET_PET_PATH),
+                "Generated swagger does not contain " + GET_PET_PATH);
 
         applyModifiedMediationScriptFromDoc();
 
@@ -123,112 +125,14 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
                 "Modified mediation script does not contain petId path parameter handling");
         Assert.assertTrue(updatedSwagger.contains("German Shepherd"),
                 "Modified mediation script does not contain petId=1 branch payload");
-    }
 
-    /**
-     * Invokes GET /pet/0 and verifies the default generated mock payload (id=10, Dogs category).
-     */
-    @Test(groups = {"wso2.am"}, description = "petId=0 returns default generated mock payload (id=10, Dogs category)",
-            dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
-    public void testInvokeMockEndpointForPetIdZero() throws Exception {
-        prepareForGatewayInvocation();
-
-        Map<String, String> requestHeaders = buildAuthHeaders();
-        HttpResponse response = HTTPSClientUtils.doGet(
-                getAPIInvocationURLHttps(API_CONTEXT, API_VERSION) + "/pet/0", requestHeaders);
-
-        Assert.assertEquals(response.getResponseCode(), 200,
-                "Mock endpoint invocation failed for petId=0. Response: " + response.getData());
-        Assert.assertTrue(response.getData().contains("\"id\":10") || response.getData().contains("\"id\": 10"),
-                "petId=0 should return default mock payload with id 10. Response: " + response.getData());
-        Assert.assertTrue(response.getData().contains("Dogs"),
-                "petId=0 should return default mock payload with Dogs category. Response: " + response.getData());
-    }
-
-    /**
-     * Invokes GET /pet/1 and verifies the manually modified mock payload (German Shepherd tag).
-     */
-    @Test(groups = {"wso2.am"}, description = "petId=1 returns manually modified mock payload (German Shepherd tag)",
-            dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
-    public void testInvokeMockEndpointForPetIdOne() throws Exception {
-        prepareForGatewayInvocation();
-
-        Map<String, String> requestHeaders = buildAuthHeaders();
-        HttpResponse response = HTTPSClientUtils.doGet(
-                getAPIInvocationURLHttps(API_CONTEXT, API_VERSION) + "/pet/1", requestHeaders);
-
-        Assert.assertEquals(response.getResponseCode(), 200,
-                "Mock endpoint invocation failed for petId=1. Response: " + response.getData());
-        Assert.assertTrue(response.getData().contains("German Shepherd"),
-                "petId=1 should return manually modified mock payload. Response: " + response.getData());
-        Assert.assertTrue(response.getData().contains("\"id\":1") || response.getData().contains("\"id\": 1"),
-                "petId=1 should return mock payload with id 1. Response: " + response.getData());
-    }
-
-    /**
-     * Invokes GET /pet/0?responseCode=501 and verifies HTTP 501 with a Not Implemented body.
-     */
-    @Test(groups = {"wso2.am"}, description = "responseCode=501 query param returns Not Implemented per mock script",
-            dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
-    public void testInvokeMockEndpointWithResponseCodeQueryParam() throws Exception {
-        prepareForGatewayInvocation();
-
-        Map<String, String> requestHeaders = buildAuthHeaders();
-        HttpResponse response = HTTPSClientUtils.doGet(
-                getAPIInvocationURLHttps(API_CONTEXT, API_VERSION) + "/pet/0?responseCode=501",
-                requestHeaders);
-
-        Assert.assertEquals(response.getResponseCode(), 501,
-                "Expected HTTP 501 for responseCode=501. Response: " + response.getData());
-        Assert.assertTrue(response.getData().contains("Not Implemented"),
-                "Mock 501 response body mismatch. Response: " + response.getData());
-    }
-
-    /**
-     * Verifies the imported API retains INLINE endpoint implementation type after mock setup.
-     */
-    @Test(groups = {"wso2.am"}, description = "Verify INLINE mock implementation type is retained on API",
-            dependsOnMethods = "testGenerateAndApplyModifiedMockScript")
-    public void testMockEndpointImplementationType() throws Exception {
         HttpResponse apiResponse = restAPIPublisher.getAPI(apiId);
         Assert.assertEquals(apiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Failed to retrieve API details. Response: " + apiResponse.getData());
         APIDTO apiDto = new Gson().fromJson(apiResponse.getData(), APIDTO.class);
-
         Assert.assertEquals(apiDto.getEndpointImplementationType(), APIDTO.EndpointImplementationTypeEnum.INLINE,
                 "API endpointImplementationType is not INLINE for mock implementation");
-    }
-
-    /** Deletes the test application and removes APIs created during the test run. */
-    @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
-        if (applicationId != null) {
-            restAPIStore.deleteApplication(applicationId);
-        }
-        super.cleanUp();
-    }
-
-    /**
-     * Replaces the GET /pet/{petId} x-mediation-script with the modified script from the official guide
-     * (generated responses map + manual petId branch + responseCode selection).
-     */
-    private void applyModifiedMediationScriptFromDoc() throws Exception {
-        String modifiedScript = readResource(RESOURCE_PATH + "get_pet_modified_mediation_script.js");
-
-        JSONObject swagger = new JSONObject(restAPIPublisher.getSwaggerByID(apiId));
-        swagger.getJSONObject("paths").getJSONObject(GET_PET_PATH).getJSONObject("get")
-                .put("x-mediation-script", modifiedScript);
-        restAPIPublisher.updateSwagger(apiId, swagger.toString());
-    }
-
-    /**
-     * Mirrors {@link PrototypedAPITestcase#testOAS3InlinePrototypeWithMock}: deploy revision, subscribe,
-     * generate keys, wait for gateway sync, then invoke.
-     */
-    private void prepareForGatewayInvocation() throws Exception {
-        if (accessToken != null) {
-            return;
-        }
+        String invocationContext = resolveGatewayInvocationContext(apiDto.getContext());
 
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeploymentSync(user.getUserName(), apiName, API_VERSION,
@@ -248,23 +152,86 @@ public class MockEndpointIntegrationTestCase extends APIMIntegrationBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         Assert.assertNotNull(applicationKeyDTO.getToken(), "Application key token is null");
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
         Assert.assertNotNull(accessToken, "Access token is null after key generation");
-        waitForAPIDeployment();
-    }
 
-    /** Builds request headers with the generated bearer token for gateway invocation. */
-    private Map<String, String> buildAuthHeaders() {
+        waitForAPIDeployment();
+
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("accept", "application/json");
-        return requestHeaders;
+        String baseUrl = getAPIInvocationURLHttps(invocationContext, API_VERSION);
+
+        HttpResponse petZeroResponse = HTTPSClientUtils.doGet(baseUrl + "/pet/0", requestHeaders);
+        Assert.assertEquals(petZeroResponse.getResponseCode(), 200,
+                "Mock endpoint invocation failed for petId=0. URL: " + baseUrl + "/pet/0 Response: "
+                        + petZeroResponse.getData());
+        Assert.assertTrue(petZeroResponse.getData().contains("\"id\":10")
+                        || petZeroResponse.getData().contains("\"id\": 10"),
+                "petId=0 should return default mock payload with id 10. Response: " + petZeroResponse.getData());
+        Assert.assertTrue(petZeroResponse.getData().contains("Dogs"),
+                "petId=0 should return default mock payload with Dogs category. Response: " + petZeroResponse.getData());
+
+        HttpResponse petOneResponse = HTTPSClientUtils.doGet(baseUrl + "/pet/1", requestHeaders);
+        Assert.assertEquals(petOneResponse.getResponseCode(), 200,
+                "Mock endpoint invocation failed for petId=1. URL: " + baseUrl + "/pet/1 Response: "
+                        + petOneResponse.getData());
+        Assert.assertTrue(petOneResponse.getData().contains("German Shepherd"),
+                "petId=1 should return manually modified mock payload. Response: " + petOneResponse.getData());
+        Assert.assertTrue(petOneResponse.getData().contains("\"id\":1")
+                        || petOneResponse.getData().contains("\"id\": 1"),
+                "petId=1 should return mock payload with id 1. Response: " + petOneResponse.getData());
+
+        HttpResponse responseCodeResponse = HTTPSClientUtils.doGet(baseUrl + "/pet/0?responseCode=501",
+                requestHeaders);
+        Assert.assertEquals(responseCodeResponse.getResponseCode(), 501,
+                "Expected HTTP 501 for responseCode=501. URL: " + baseUrl
+                        + "/pet/0?responseCode=501 Response: " + responseCodeResponse.getData());
+        Assert.assertTrue(responseCodeResponse.getData().contains("Not Implemented"),
+                "Mock 501 response body mismatch. Response: " + responseCodeResponse.getData());
+    }
+
+    /** Deletes the test application and removes APIs created during the test run. */
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        if (applicationId != null) {
+            restAPIStore.deleteApplication(applicationId);
+        }
+        super.cleanUp();
+    }
+
+    /**
+     * Replaces the GET /pet/{petId} x-mediation-script with the modified script from the official guide
+     * (generated responses map + manual petId branch + responseCode selection).
+     */
+    private void applyModifiedMediationScriptFromDoc() throws Exception {
+        String modifiedScript = readResource(RESOURCE_PATH + "get_pet_modified_mediation_script.js");
+
+        JSONObject swagger = new JSONObject(restAPIPublisher.getSwaggerByID(apiId));
+        Assert.assertTrue(swagger.getJSONObject("paths").has(GET_PET_PATH),
+                "Swagger is missing path " + GET_PET_PATH + " before applying modified script");
+        swagger.getJSONObject("paths").getJSONObject(GET_PET_PATH).getJSONObject("get")
+                .put("x-mediation-script", modifiedScript);
+        restAPIPublisher.updateSwagger(apiId, swagger.toString());
+    }
+
+    /**
+     * Strips leading slash and tenant prefix from API context for gateway invocation URLs.
+     * Tenant domain is already present in the gateway base URL for tenant user mode.
+     */
+    private String resolveGatewayInvocationContext(String apiContext) {
+        String context = apiContext.startsWith("/") ? apiContext.substring(1) : apiContext;
+        String tenantPrefix = "t/" + user.getUserDomain() + "/";
+        if (context.startsWith(tenantPrefix)) {
+            context = context.substring(tenantPrefix.length());
+        }
+        return context;
     }
 
     /** Imports the mock pet store OAS and returns the created API id. */
     private String importMockPetStoreApi() throws Exception {
         apiName = "MockPetStore" + userMode;
-        String context = "/" + API_CONTEXT;
+        String context = API_CONTEXT;
         if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(user.getUserDomain())) {
             context = "/t/" + user.getUserDomain() + context;
         }

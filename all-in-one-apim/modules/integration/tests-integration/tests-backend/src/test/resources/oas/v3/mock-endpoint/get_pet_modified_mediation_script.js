@@ -24,7 +24,7 @@ responses[200]["application/json"] = {
 
 // **MANUALLY ADDED CODE** //
 
-if (mc.getProperty('uri.var.petId') == 1) {
+if (mc.getProperty('uri.var.petId') == '1') {
   responses[200]["application/json"] = {
     "id" : 1,
     "category" : {
