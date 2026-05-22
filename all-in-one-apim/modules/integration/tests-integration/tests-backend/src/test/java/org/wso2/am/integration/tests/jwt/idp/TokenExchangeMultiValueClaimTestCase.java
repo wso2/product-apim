@@ -115,7 +115,10 @@ public class TokenExchangeMultiValueClaimTestCase extends APIManagerLifecycleBas
         JWTClaimsSet exchangedAccessTokenClaims = SignedJWT.parse(tokenResponseBody.getString("access_token"))
                 .getJWTClaimsSet();
 
-        Assert.assertEquals(exchangedAccessTokenClaims.getStringListClaim("groups"), SUBJECT_TOKEN_GROUPS,
+        List<String> actualGroups = exchangedAccessTokenClaims.getStringListClaim("groups");
+        Assert.assertNotNull(actualGroups, "Groups claim is missing in exchanged access token. Claims: "
+                + exchangedAccessTokenClaims.getClaims());
+        Assert.assertEqualsNoOrder(actualGroups.toArray(new String[0]), SUBJECT_TOKEN_GROUPS.toArray(new String[0]),
                 "Groups claim values are not handled as expected in the exchanged access token. Claims: "
                         + exchangedAccessTokenClaims.getClaims());
         Assert.assertEquals(exchangedAccessTokenClaims.getStringClaim("preferred_username"), "user1",
