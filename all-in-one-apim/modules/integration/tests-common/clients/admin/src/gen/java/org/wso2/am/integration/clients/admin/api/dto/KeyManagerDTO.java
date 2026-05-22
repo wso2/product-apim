@@ -131,6 +131,10 @@ public class KeyManagerDTO {
         @SerializedName(SERIALIZED_NAME_ENABLE_O_AUTH_APP_CREATION)
             private Boolean enableOAuthAppCreation = false;
 
+        public static final String SERIALIZED_NAME_ENABLE_PROVISIONED_APP_VALIDATION = "enableProvisionedAppValidation";
+        @SerializedName(SERIALIZED_NAME_ENABLE_PROVISIONED_APP_VALIDATION)
+            private Boolean enableProvisionedAppValidation = true;
+
         public static final String SERIALIZED_NAME_ENABLE_SELF_VALIDATION_J_W_T = "enableSelfValidationJWT";
         @SerializedName(SERIALIZED_NAME_ENABLE_SELF_VALIDATION_J_W_T)
             private Boolean enableSelfValidationJWT = true;
@@ -771,6 +775,29 @@ public static TokenTypeEnum fromValue(String value) {
     }
 
 
+        public KeyManagerDTO enableProvisionedAppValidation(Boolean enableProvisionedAppValidation) {
+        
+        this.enableProvisionedAppValidation = enableProvisionedAppValidation;
+        return this;
+        }
+
+    /**
+        * Get enableProvisionedAppValidation
+    * @return enableProvisionedAppValidation
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "true", value = "")
+    
+    public Boolean isEnableProvisionedAppValidation() {
+        return enableProvisionedAppValidation;
+    }
+
+
+    public void setEnableProvisionedAppValidation(Boolean enableProvisionedAppValidation) {
+        this.enableProvisionedAppValidation = enableProvisionedAppValidation;
+    }
+
+
         public KeyManagerDTO enableSelfValidationJWT(Boolean enableSelfValidationJWT) {
         
         this.enableSelfValidationJWT = enableSelfValidationJWT;
@@ -1034,6 +1061,7 @@ public static TokenTypeEnum fromValue(String value) {
             Objects.equals(this.enableTokenHashing, keyManager.enableTokenHashing) &&
             Objects.equals(this.enableMapOAuthConsumerApps, keyManager.enableMapOAuthConsumerApps) &&
             Objects.equals(this.enableOAuthAppCreation, keyManager.enableOAuthAppCreation) &&
+            Objects.equals(this.enableProvisionedAppValidation, keyManager.enableProvisionedAppValidation) &&
             Objects.equals(this.enableSelfValidationJWT, keyManager.enableSelfValidationJWT) &&
             Objects.equals(this.claimMapping, keyManager.claimMapping) &&
             Objects.equals(this.consumerKeyClaim, keyManager.consumerKeyClaim) &&
@@ -1048,7 +1076,7 @@ public static TokenTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, displayName, type, description, wellKnownEndpoint, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, displayTokenEndpoint, revokeEndpoint, displayRevokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, alias, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties, permissions, tokenType, allowedOrganizations);
+        return Objects.hash(id, name, displayName, type, description, wellKnownEndpoint, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, displayTokenEndpoint, revokeEndpoint, displayRevokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, alias, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableProvisionedAppValidation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties, permissions, tokenType, allowedOrganizations);
     }
 
 
@@ -1080,6 +1108,7 @@ sb.append("class KeyManagerDTO {\n");
     sb.append("    enableTokenHashing: ").append(toIndentedString(enableTokenHashing)).append("\n");
     sb.append("    enableMapOAuthConsumerApps: ").append(toIndentedString(enableMapOAuthConsumerApps)).append("\n");
     sb.append("    enableOAuthAppCreation: ").append(toIndentedString(enableOAuthAppCreation)).append("\n");
+    sb.append("    enableProvisionedAppValidation: ").append(toIndentedString(enableProvisionedAppValidation)).append("\n");
     sb.append("    enableSelfValidationJWT: ").append(toIndentedString(enableSelfValidationJWT)).append("\n");
     sb.append("    claimMapping: ").append(toIndentedString(claimMapping)).append("\n");
     sb.append("    consumerKeyClaim: ").append(toIndentedString(consumerKeyClaim)).append("\n");
