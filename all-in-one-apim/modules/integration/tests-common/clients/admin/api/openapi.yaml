@@ -10371,6 +10371,7 @@ components:
       example:
         valid: true
         value:
+          enableProvisionedAppValidation: true
           clientRegistrationEndpoint: https://localhost:9444/keymanager-operations/dcr/register
           displayName: WSO2 Identity Server
           enableMapOAuthConsumerApps: false
@@ -10441,6 +10442,7 @@ components:
       type: object
     KeyManager:
       example:
+        enableProvisionedAppValidation: true
         clientRegistrationEndpoint: https://localhost:9444/keymanager-operations/dcr/register
         displayName: WSO2 Identity Server
         enableMapOAuthConsumerApps: false
@@ -10590,6 +10592,10 @@ components:
         enableOAuthAppCreation:
           default: false
           example: false
+          type: boolean
+        enableProvisionedAppValidation:
+          default: true
+          example: true
           type: boolean
         enableSelfValidationJWT:
           default: true
