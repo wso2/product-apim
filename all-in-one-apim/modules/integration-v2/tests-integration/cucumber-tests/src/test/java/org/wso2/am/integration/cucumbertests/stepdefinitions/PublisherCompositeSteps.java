@@ -159,6 +159,8 @@ public class PublisherCompositeSteps {
             if (expectedState.equalsIgnoreCase(actualLifecycleState)) {
                 log.info(resourceType + " " + resourceId + " successfully reached expected state: '"
                         + expectedState + "'");
+                // Wait till gateway components stabilize
+                baseSteps.waitForSeconds(5);
                 stateAchieved = true;
                 break;
             }

@@ -43,14 +43,11 @@ Feature: Custom Header Authorization
     And I wait for deployment of the resource in "<retrievedApiPayload>"
 
     # Publish the API
-    And I publish the "apis" resource with id "<createdApiId>"
-    And I wait until the response status code is 200
-    Then I get the lifecycle status of API "<createdApiId>"
-    Then I wait until the response status code is 200 and the value of response field "state" is "Published"
-    And I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "<createAppPayload>"
+    When I execute lifecycle action "Publish" on "apis" resource "<createdApiId>" and wait for state "Published"
 
   Scenario: Create an application
-    When I create an application with payload "<createAppPayload>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "<createAppPayload>"
+    And I create an application with payload "<createAppPayload>"
     And I wait until the response status code is 201
     And I extract response field "applicationId" and store it as "<createdAppId>"
 
