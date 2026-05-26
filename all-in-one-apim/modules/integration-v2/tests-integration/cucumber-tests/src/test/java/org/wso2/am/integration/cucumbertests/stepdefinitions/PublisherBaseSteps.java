@@ -405,36 +405,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Demotes a resource, changing its lifecycle state back to "CREATED".
-     * This is typically used to move a "PUBLISHED" or "PROTOTYPED" API back to the draft state.
-     *
-     * @param resourceType Type of resource to demote (e.g., "apis")
-     * @param resourceId Context key containing the resource ID to demote
-     */
-    @When("I demote the {string} resource with id {string} to created state")
-    public void iDemoteTheResourceToCreated(String resourceType, String resourceId) {
-
-        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
-        String action = "Demote to Created";
-        String url = Utils.getChangeLifecycleURL(baseUrl, resourceType, actualResourceId, action, null);
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + TestContext.get("publisherAccessToken").toString());
-
-        RequestAction requestAction = () -> {
-            try {
-                log.info("Attempting to demote resource " + actualResourceId + " to CREATED state.");
-                return SimpleHTTPClient.getInstance().doPost(url, headers, null, null);
-            } catch (IOException e) {
-                throw new RuntimeException("Resource demotion failed: ", e);
-            }
-        };
-
-        TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
-    }
-
-    /**
      * Retrieves the details of a specific resource by its ID.
      *
      * @param resourceType Type of resource to retrieve (e.g., "apis", "api-products")
@@ -609,7 +579,12 @@ public class PublisherBaseSteps {
 
         String actualResourceID = Utils.resolveFromContext(resourceID).toString();
         boolean defaultVersion = Boolean.parseBoolean(isDefault);
-        String url = Utils.getNewAPIVersionURL(baseUrl, resourceType, newVersion, defaultVersion, actualResourceID);
+
+        // Generate a unique timestamped version
+        String timestampedVersion = newVersion + "-" + System.currentTimeMillis();
+
+        String url = Utils.getNewAPIVersionURL(baseUrl, resourceType, timestampedVersion, defaultVersion,
+                actualResourceID);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
