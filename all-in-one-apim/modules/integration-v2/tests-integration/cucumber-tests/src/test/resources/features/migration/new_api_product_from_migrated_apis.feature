@@ -48,10 +48,7 @@ Feature: New product creation
     And I wait for deployment of the resource in "<retrievedApiProductPayload>"
 
     # Step 6: Publish the API product
-    And I publish the "api-products" resource with id "newAPIProductId"
-    And I wait until the response status code is 200
-    Then I get the lifecycle status of API "<newAPIProductId>"
-    Then I wait until the response status code is 200 and the value of response field "state" is "Published"
+    When I execute lifecycle action "Publish" on "api-products" resource "<newAPIProductId>" and wait for state "Published"
 
     # Step 7: Subscribe and invoke
     When I create a test application and store the id as "<createdAppId>"
