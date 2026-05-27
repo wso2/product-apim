@@ -34,6 +34,7 @@ public class Constants {
     public static final String HTTPS_SCHEME = "https";
     public static final String HTTP_RESPONSE = "httpResponse";
     public static final String PENDING_HTTP_REQUEST = "pendingRequest";
+    public static final String HTTP_METHOD = "HTTP_METHOD";
 
     public static final String BASE_URL = "baseUrl";
 
@@ -129,5 +130,13 @@ public class Constants {
         public static final String TEXT_PLAIN = "text/plain";
         public static final String TEXT_XML = "text/xml";
         public static final String APPLICATION_CA_CERT = "application/x-x509-ca-cert";
+    }
+
+    public static class HTTP_METHODS {
+
+        public static final String GET = "GET";
+        public static final String POST = "POST";
+        public static final String PUT = "PUT";
+        public static final String DELETE = "DELETE";
     }
 }

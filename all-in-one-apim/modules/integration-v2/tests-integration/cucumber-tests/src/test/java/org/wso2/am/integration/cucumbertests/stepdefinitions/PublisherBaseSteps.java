@@ -373,6 +373,7 @@ public class PublisherBaseSteps {
         };
 
         TestContext.set(Constants.PENDING_HTTP_REQUEST, requestAction);
+        TestContext.set(Constants.HTTP_METHOD, Constants.HTTP_METHODS.DELETE);
     }
 
     /**
@@ -579,12 +580,8 @@ public class PublisherBaseSteps {
 
         String actualResourceID = Utils.resolveFromContext(resourceID).toString();
         boolean defaultVersion = Boolean.parseBoolean(isDefault);
+        String url = Utils.getNewAPIVersionURL(baseUrl, resourceType, newVersion, defaultVersion, actualResourceID);
 
-        // Generate a unique timestamped version
-        String timestampedVersion = newVersion + "-" + System.currentTimeMillis();
-
-        String url = Utils.getNewAPIVersionURL(baseUrl, resourceType, timestampedVersion, defaultVersion,
-                actualResourceID);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
