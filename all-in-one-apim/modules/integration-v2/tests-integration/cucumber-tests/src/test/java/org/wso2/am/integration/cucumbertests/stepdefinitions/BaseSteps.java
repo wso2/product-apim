@@ -284,13 +284,25 @@ public class BaseSteps {
         // Retrieve prepared request logic from context
         RequestAction requestAction = Utils.getPendingHttpRequest();
 
-        // Execute with retry loop until expected status is met
-        HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode, res -> true);
-        TestContext.set(Constants.HTTP_RESPONSE, finalResponse);
+        try {
+            // Execute with retry loop until expected status is met
+            HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode, res -> true);
+            TestContext.set(Constants.HTTP_RESPONSE, finalResponse);
 
-        Assert.assertEquals(finalResponse.getResponseCode(), expectedCode,
-                "The request failed to return the expected status code after retries." +
-                        finalResponse.getData());
+            Assert.assertEquals(finalResponse.getResponseCode(), expectedCode,
+                    "The request failed to return the expected status code after retries." +
+                            finalResponse.getData());
+
+            String httpMethod = (String) TestContext.get(Constants.HTTP_METHOD);
+
+            // Check if the HTTP method is DELETE
+            if (Constants.HTTP_METHODS.DELETE.equalsIgnoreCase(httpMethod)) {
+                Thread.sleep(2000);
+            }
+
+        } finally {
+            TestContext.remove(Constants.HTTP_METHOD);
+        }
     }
 
     /**

@@ -80,7 +80,6 @@ Feature: New product creation
     Then I get the lifecycle status of API "<newVersionId>"
     Then I wait until the response status code is 200 and the value of response field "state" is "<expectedLifecycle>"
 
-
     # Step 3: Enable/disable default versioning
     When I update the "api-products" resource "<apiProductID>" and "<apiProductPayload>" with configuration type "<configType>" and value:
       """

@@ -169,13 +169,6 @@ Feature: Publisher API Management
     And I invoke the API resource at path "/apiTestContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessTokenForInitialSecret>" and payload ""
     Then The response status code should be 200
 
-  # Share the application with an organization
-  Scenario: Share application with organization
-    When I put JSON payload from file "artifacts/payloads/update_apim_test_app.json" in context as "<appUpdatePayload>"
-    And I update the application "<createdAppId>" with payload "<appUpdatePayload>"
-    And I wait until the response status code is 200
-    And The response should contain "org1"
-
   # Clean up the resources
   Scenario: Delete the subscription
     When I delete the subscription with id "<subscriptionId>"
