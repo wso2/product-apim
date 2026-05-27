@@ -87,7 +87,7 @@ public class ConsumerAppBasedJWTRevocation extends APIMIntegrationBaseTest {
         validateIntrospectionResponse(user, accessToken, consumerKey, true);
 
         // Step 2: Revoke the consumer application
-        oAuthAdminServiceClient.updateOauthApplicationState(consumerKey, "REVOKED");
+        oAuthAdminServiceClient.updateOAuthApplicationState(consumerKey, "REVOKED");
 
         // Step 3: Introspect the token again and verify it's inactive
         validateIntrospectionResponse(user, accessToken, consumerKey, false);
@@ -104,24 +104,25 @@ public class ConsumerAppBasedJWTRevocation extends APIMIntegrationBaseTest {
         if (!"carbon.super".equals(user.getUserDomain())) {
             introspectionUrl = "https://localhost:9943/t/" + user.getUserDomain() + "/oauth2/introspect";
         }
-        CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
-        HttpPost httpPost = new HttpPost();
-        httpPost.addHeader("Authorization",
-                "Basic " + waffle.util.Base64.encode(user.getUserName().concat(":").concat(user.getPassword()).getBytes()));
-        httpPost.setURI(URI.create(introspectionUrl));
-        UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair(
-                "token", accessToken)));
-        httpPost.setEntity(urlEncodedFormEntity);
-        try (CloseableHttpResponse response = closeableHttpClient.execute(httpPost)) {
-            Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
-            HttpEntity entity = response.getEntity();
-            JSONObject jsonPayload = (JSONObject) new JSONParser().parse(new InputStreamReader(entity.getContent()));
-            if (expectedToBeActive) {
-                Assert.assertTrue((Boolean) jsonPayload.get("active"));
-                Assert.assertNotNull(jsonPayload.get("client_id"));
-                Assert.assertEquals(jsonPayload.get("client_id"), clientId);
-            } else {
-                Assert.assertFalse((Boolean) jsonPayload.get("active"));
+        try (CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build()) {
+            HttpPost httpPost = new HttpPost();
+            httpPost.addHeader("Authorization",
+                    "Basic " + waffle.util.Base64.encode(user.getUserName().concat(":").concat(user.getPassword()).getBytes()));
+            httpPost.setURI(URI.create(introspectionUrl));
+            UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair(
+                    "token", accessToken)));
+            httpPost.setEntity(urlEncodedFormEntity);
+            try (CloseableHttpResponse response = closeableHttpClient.execute(httpPost)) {
+                Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+                HttpEntity entity = response.getEntity();
+                JSONObject jsonPayload = (JSONObject) new JSONParser().parse(new InputStreamReader(entity.getContent()));
+                if (expectedToBeActive) {
+                    Assert.assertTrue((Boolean) jsonPayload.get("active"));
+                    Assert.assertNotNull(jsonPayload.get("client_id"));
+                    Assert.assertEquals(jsonPayload.get("client_id"), clientId);
+                } else {
+                    Assert.assertFalse((Boolean) jsonPayload.get("active"));
+                }
             }
         } catch (IOException | ParseException e) {
             log.error(e.getMessage());
