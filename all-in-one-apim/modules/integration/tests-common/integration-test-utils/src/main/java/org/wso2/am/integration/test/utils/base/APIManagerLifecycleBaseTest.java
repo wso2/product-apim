@@ -462,7 +462,10 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                             + getAPIIdentifierStringFromAPIRequest(apiRequest));
                     try {
                         Thread.sleep(3000);
-                    } catch (InterruptedException ignored) {
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new APIManagerIntegrationTestException(
+                                "Thread interrupted while retrying API publish status check", e);
                     }
                     HttpResponse lifecycleResponse = publisherRestClient.getLifecycleStatus(createAPIResponse.getData());
                     if (lifecycleResponse != null
@@ -607,8 +610,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             throws APIManagerIntegrationTestException, ApiException,
             org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException {
         APIDTO apidto = createAndPublishAPI(apiCreationRequestBean, publisherRestClient, false);
-        waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
         SubscriptionDTO httpResponseSubscribeAPI = subscribeToAPI(apidto.getId(), applicationID, tier, storeRestClient);
         log.info("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
         return apidto;

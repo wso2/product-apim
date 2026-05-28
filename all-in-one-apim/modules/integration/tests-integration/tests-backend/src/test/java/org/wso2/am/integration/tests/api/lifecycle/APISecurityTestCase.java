@@ -461,7 +461,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         while (response.getResponseCode() == 404 && retries < 5) {
             try {
                 Thread.sleep(3000);
-            } catch (InterruptedException ignored) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
             response = HttpRequestUtil.doGet(url, requestHeaders);
             retries++;
