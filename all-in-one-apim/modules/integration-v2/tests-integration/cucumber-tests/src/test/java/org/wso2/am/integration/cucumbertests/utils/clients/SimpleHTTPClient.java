@@ -41,8 +41,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.utils.Constants;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -64,7 +64,7 @@ import java.util.zip.GZIPOutputStream;
 
 public class SimpleHTTPClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SimpleHTTPClient.class);
+    private static final Log logger = LogFactory.getLog(SimpleHTTPClient.class);
     private final CloseableHttpClient client;
 
     private SimpleHTTPClient()  {

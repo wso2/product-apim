@@ -17,11 +17,10 @@
 
 package org.wso2.am.testcontainers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.MDC;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.wso2.am.integration.test.utils.Constants;
@@ -32,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class APIMContainer extends GenericContainer<APIMContainer> {
 
-    private static final Logger logger = LoggerFactory.getLogger(APIMContainer.class);
+    private static final Log logger = LogFactory.getLog(APIMContainer.class);
 
     private static final AtomicInteger offsetCounter = new AtomicInteger();
     private final int httpPort;
@@ -69,9 +68,9 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
                     Constants.SHARED_DB_NAME + "_" + offsetCounter.get());
         }
 
-        logger.info("APIM Container Offset: {}", offset);
-        logger.info("APIM DB URL: {}", apimDbUrl);
-        logger.info("SHARED DB URL: {}", sharedDbUrl);
+        logger.info("APIM Container Offset: " + offset);
+        logger.info("APIM DB URL: " + apimDbUrl);
+        logger.info("SHARED DB URL: " + sharedDbUrl);
 
         httpPort = Constants.HTTP_PORT + offset;
         httpsPort = Constants.HTTPS_PORT + offset;
@@ -120,7 +119,7 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
                     throw new RuntimeException("Invalid APIM_DEBUG_PORT. APIM debug port must be " + debugPort);
                 }
             }
-            logger.info("Debugging enabled for the API Manager Instance on port {}", debugPortStr);
+            logger.info("Debugging enabled for the API Manager Instance on port " + debugPortStr);
             // Expose debug port
             addFixedExposedPort(debugPort, debugPort);
             withCommand("-DportOffset=" + offset, "-debug", debugPortStr);
@@ -128,9 +127,10 @@ public class APIMContainer extends GenericContainer<APIMContainer> {
             withCommand("-DportOffset=" + offset);
         }
 
-        String testName = MDC.get("testName") != null ? MDC.get("testName") : "default";
+        Object testNameValue = MDC.get("testName");
+        String testName = testNameValue != null ? testNameValue.toString() : "default";
         // send container logs with MDC fields
-        Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(logger)
+        JclLogConsumer logConsumer = new JclLogConsumer(logger)
                 .withPrefix(containerLabel)
                 .withSeparateOutputStreams()
                 .withMdc("testName", testName);

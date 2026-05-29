@@ -17,7 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.utils.listeners;
 
-import org.slf4j.MDC;
+import org.apache.log4j.MDC;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 
