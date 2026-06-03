@@ -18,6 +18,7 @@
 package org.wso2.am.integration.test.utils.base;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
@@ -36,11 +37,13 @@ import org.wso2.am.admin.clients.idp.IdentityProviderMgtServiceClient;
 import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
@@ -87,6 +90,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -670,6 +674,86 @@ public class APIMIntegrationBaseTest {
                     + " seconds for API: " + apiName + " version: " + apiVersion + " provider: " + apiProvider
                     + " expected: " + expectedResponse);
         }
+    }
+
+    /**
+     * Wait until a specific API revision is acknowledged as successfully deployed by the gateway.
+     * Unlike {@link #waitForAPIDeploymentSync}, which only checks artifact existence via APIStatusMonitor,
+     * this polls the revision deployment status (deployedGatewayCount / successDeployedTime) so it confirms
+     * the gateway actually applied the artifact (and its bundled client certificates) for the given revision.
+     * Uses the default timeout ({@code WAIT_TIME}).
+     *
+     * @param apiId            - API UUID
+     * @param revisionUUID     - UUID of the revision expected to be deployed
+     * @param restAPIPublisher - Instance of RestAPIPublisherImpl
+     * @return {@code true} if the revision was acknowledged as deployed within the wait window, else {@code false}
+     */
+    protected boolean waitForAPIRevisionDeploymentSync(String apiId, String revisionUUID,
+                                                       RestAPIPublisherImpl restAPIPublisher) {
+        return waitForAPIRevisionDeploymentSync(apiId, revisionUUID, restAPIPublisher, WAIT_TIME);
+    }
+
+    /**
+     * Wait until a specific API revision is acknowledged as successfully deployed by the gateway, with a
+     * configurable timeout.
+     *
+     * @param apiId            - API UUID
+     * @param revisionUUID     - UUID of the revision expected to be deployed
+     * @param restAPIPublisher - Instance of RestAPIPublisherImpl
+     * @param waitTime         - Overall time budget in milliseconds
+     * @return {@code true} if the revision was acknowledged as deployed within the wait window, else {@code false}
+     */
+    protected boolean waitForAPIRevisionDeploymentSync(String apiId, String revisionUUID,
+                                                       RestAPIPublisherImpl restAPIPublisher, long waitTime) {
+
+        long currentTime = System.currentTimeMillis();
+        long deadline = currentTime + waitTime;
+
+        while (deadline > System.currentTimeMillis()) {
+            try {
+                // The generated getAPIRevisionDeployments() deserializes into an object wrapper, but the
+                // server returns a bare JSON array, so execute the call with the correct list type.
+                okhttp3.Call call = restAPIPublisher.apiRevisionsApi.getAPIRevisionDeploymentsCall(apiId, null);
+                Type listType = new TypeToken<List<APIRevisionDeploymentDTO>>() {
+                }.getType();
+                ApiResponse<List<APIRevisionDeploymentDTO>> deploymentResponse =
+                        restAPIPublisher.apiRevisionsApi.getApiClient().execute(call, listType);
+                List<APIRevisionDeploymentDTO> deploymentList = deploymentResponse.getData();
+                if (deploymentList != null) {
+                    for (APIRevisionDeploymentDTO deployment : deploymentList) {
+                        if (revisionUUID.equals(deployment.getRevisionUuid())
+                                && deployment.getSuccessDeployedTime() != null
+                                && deployment.getDeployedGatewayCount() != null
+                                && deployment.getLiveGatewayCount() != null
+                                && deployment.getLiveGatewayCount() > 0
+                                && deployment.getDeployedGatewayCount() > 0
+                                && deployment.getDeployedGatewayCount().intValue()
+                                        >= deployment.getLiveGatewayCount().intValue()
+                                && (deployment.getFailedGatewayCount() == null
+                                        || deployment.getFailedGatewayCount() == 0)) {
+                            log.info("Revision " + revisionUUID + " of API " + apiId
+                                    + " acknowledged as deployed. deployedGatewayCount="
+                                    + deployment.getDeployedGatewayCount() + ", liveGatewayCount="
+                                    + deployment.getLiveGatewayCount() + ", successDeployedTime="
+                                    + deployment.getSuccessDeployedTime());
+                            return true;
+                        }
+                    }
+                }
+            } catch (ApiException e) {
+                log.warn("Failed to retrieve revision deployment status for API " + apiId + ": " + e.getMessage());
+            }
+            log.info("WAIT for revision deployment sync of API: " + apiId + " revision: " + revisionUUID);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        log.warn("Revision " + revisionUUID + " of API " + apiId
+                + " was not acknowledged as deployed within the wait window.");
+        return false;
     }
 
     /**
