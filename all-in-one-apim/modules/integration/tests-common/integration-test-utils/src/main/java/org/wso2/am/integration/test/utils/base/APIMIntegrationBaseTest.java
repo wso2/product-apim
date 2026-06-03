@@ -632,6 +632,7 @@ public class APIMIntegrationBaseTest {
         headerMap.put("Authorization",authorizationHeader);
         String tenantIdentifier = getTenantIdentifier(apiProvider);
 
+        boolean apiFound = false;
         while (waitTime > System.currentTimeMillis()) {
             HttpResponse response = null;
             try {
@@ -653,6 +654,7 @@ public class APIMIntegrationBaseTest {
                 if (response.getData().contains(expectedResponse)) {
                     log.info("API :" + apiName + " with version: " + apiVersion +
                              " with expected response " + expectedResponse + " found");
+                    apiFound = true;
                     break;
                 } else {
                     try {
@@ -662,6 +664,11 @@ public class APIMIntegrationBaseTest {
                     }
                 }
             }
+        }
+        if (!apiFound) {
+            throw new APIManagerIntegrationTestException("API deployment sync timed out after " + (WAIT_TIME / 1000)
+                    + " seconds for API: " + apiName + " version: " + apiVersion + " provider: " + apiProvider
+                    + " expected: " + expectedResponse);
         }
     }
 
@@ -688,6 +695,7 @@ public class APIMIntegrationBaseTest {
         String authorizationHeader = "Basic "+Base64.encodeBase64(colonSeparatedHeader.getBytes()).toString();
         Map headerMap = new HashMap();
         headerMap.put("Authorization",authorizationHeader);
+        boolean apiUndeployed = false;
         while (waitTime > System.currentTimeMillis()) {
             HttpResponse response = null;
             try{
@@ -706,6 +714,7 @@ public class APIMIntegrationBaseTest {
                 if (!response.getData().contains(expectedResponse)) {
                     log.info("API :" + apiName + " with version: " + apiVersion +
                              " with expected response " + expectedResponse + " not found");
+                    apiUndeployed = true;
                     break;
                 } else {
                     try {
@@ -715,6 +724,11 @@ public class APIMIntegrationBaseTest {
                     }
                 }
             }
+        }
+        if (!apiUndeployed) {
+            throw new APIManagerIntegrationTestException("API un-deployment sync timed out after "
+                    + (WAIT_TIME / 1000) + " seconds for API: " + apiName + " version: " + apiVersion
+                    + " provider: " + apiProvider + " unexpected response still present: " + expectedResponse);
         }
     }
 

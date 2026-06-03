@@ -455,7 +455,20 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
         requestHeaders.put("Internal-Key", internalKey);
-        return HttpRequestUtil.doGet(getAPIInvocationURLHttps(context, version) + resource, requestHeaders);
+        String url = getAPIInvocationURLHttps(context, version) + resource;
+        HttpResponse response = HttpRequestUtil.doGet(url, requestHeaders);
+        int retries = 0;
+        while (response.getResponseCode() == 404 && retries < 5) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            response = HttpRequestUtil.doGet(url, requestHeaders);
+            retries++;
+        }
+        return response;
     }
 
     @Test(description = "This test case tests the behaviour of APIs that are protected with mutual SSL and OAuth2 "
