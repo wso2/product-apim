@@ -122,8 +122,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
                         null, grantTypes);
         assertNotNull(applicationKeyDTO.getToken().getAccessToken());
 
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
 
     }
 
