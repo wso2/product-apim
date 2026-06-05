@@ -288,6 +288,10 @@ iat_validity_period = "1h"
 #service_username = "admin"
 #service_password = "admin"
 
+[oauth.token_validation]
+app_access_token_validity = 86400
+user_access_token_validity = 86400
+refresh_token_validity = 604800
 
 [database.apim_db]
 type = "$env{API_MANAGER_DATABASE_TYPE}"

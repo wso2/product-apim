@@ -259,6 +259,11 @@ enable = true
 allow_refresh_tokens = true
 iat_validity_period = "1h"
 
+[oauth.token_validation]
+app_access_token_validity = 86400
+user_access_token_validity = 86400
+refresh_token_validity = 604800
+
 #[apim.transaction_counter]
 #enable = true
 #server_id = "Gateway1"

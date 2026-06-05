@@ -4,3 +4,5 @@ Feature: Custom Header Test System Initialization
     Given I have initialized the NodeApp server container
     And I have initialized the API Manager container with label "legacyApplications" and deployment toml changes file path at "/src/test/resources/artifacts/configFiles/legacyApplicationsTest"
     And I wait for the APIM server to be ready
+    And I wait for the system indexing to stabilize
+
