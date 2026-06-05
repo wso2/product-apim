@@ -1,10 +1,7 @@
 Feature: Custom Header Authorization
 
   Background:
-    Given The system is ready
-    And I have a valid DCR application for the current user
-    And I have a valid Publisher access token for the current user
-    And I have a valid Devportal access token for the current user
+    Given The system is ready and I have valid access tokens for current user
 
   Scenario: Create an API with custom authorization header
     # Create the API

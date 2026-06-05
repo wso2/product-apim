@@ -126,6 +126,9 @@ public class BaseSteps {
 
         String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
         TestContext.set("publisherAccessToken", accessToken);
+        log.info("Obtained Publisher access token for user " + currentuser.getUserName()
+                + " with expires_in (seconds): "
+                + Utils.extractValueFromPayload(response.getData(), "expires_in"));
     }
 
     /**
@@ -150,6 +153,9 @@ public class BaseSteps {
 
         String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
         TestContext.set("devportalAccessToken", accessToken);
+        log.info("Obtained Devportal access token for user " + currentuser.getUserName()
+                + " with expires_in (seconds): "
+                + Utils.extractValueFromPayload(response.getData(), "expires_in"));
     }
 
     /**
@@ -173,6 +179,9 @@ public class BaseSteps {
 
         String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
         TestContext.set("adminAccessToken", accessToken);
+        log.info("Obtained Admin access token for user " + currentuser.getUserName()
+                + " with expires_in (seconds): "
+                + Utils.extractValueFromPayload(response.getData(), "expires_in"));
     }
 
     /**
