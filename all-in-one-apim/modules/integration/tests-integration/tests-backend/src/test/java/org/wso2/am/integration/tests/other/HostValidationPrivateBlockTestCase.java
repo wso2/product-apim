@@ -31,10 +31,8 @@ import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
-import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
@@ -43,10 +41,7 @@ import java.util.Map;
  */
 public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest {
 
-    private static final String LOOPBACK_URL   = "http://127.0.0.1:9999/api";
-    private static final String LINK_LOCAL_URL = "http://169.254.169.254/latest/meta-data/";
-
-    private String apiId;
+    private static final String LOOPBACK_URL = "http://127.0.0.1:9999/api";
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -63,7 +58,7 @@ public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest 
             description = "Host validation [bpna=true]: loopback/link-local blocked across endpoint validation, KM create, and WSDL import")
     public void testPrivateNetworkBlock_MultipleAPISurfacesBlocked() throws Exception {
         ApiEndpointValidationResponseDTO endpointDto =
-                restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
+                restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, null);
         Assert.assertNotNull(endpointDto, "Endpoint validation response must not be null");
         Assert.assertNotNull(endpointDto.getError(),
                 "Expected host validation error for loopback URL when block_private_network_access=true");
@@ -81,6 +76,8 @@ public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest 
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for KM with link-local (169.254.x.x) URL");
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+                    "Expected host validation block error in KM create response body, got: " + e.getResponseBody());
         }
 
         try {
@@ -93,14 +90,13 @@ public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest 
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for WSDL import from loopback address");
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+                    "Expected host validation block error in WSDL import response body, got: " + e.getResponseBody());
         }
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        if (apiId != null) {
-            restAPIPublisher.deleteAPI(apiId);
-        }
         super.cleanUp();
     }
 

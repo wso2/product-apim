@@ -352,8 +352,7 @@ context = "(.*)/APIStatusMonitor(.*)"
 secure = false
 http_method = "all"
 
-[apim.outbound_request_security]
-enabled = true
-mode = "allow_all"
-exceptions = ["169.254.*", "*.internal", "test.com"]
+[apim.network_security.access_control]
+mode = "deny"
+hosts = ["169.254.*", "*.internal", "test.com"]
 block_private_network_access = true

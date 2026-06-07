@@ -30,7 +30,7 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import java.net.URL;
 
 /**
- * Integration tests for host validation with enabled=false (all checks skipped).
+ * Integration tests for host validation with the feature disabled (no config block present).
  */
 public class HostValidationDisabledTestCase extends APIMIntegrationBaseTest {
 
@@ -51,19 +51,19 @@ public class HostValidationDisabledTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"},
-            description = "Host validation [enabled=false]: all platform checks skipped, nothing blocked")
+            description = "Host validation [feature disabled]: all platform checks skipped, nothing blocked")
     public void testHostValidationDisabled_NothingBlocked() throws Exception {
         ApiEndpointValidationResponseDTO s2dto1 = restAPIPublisher.validateEndpointRaw(LINK_LOCAL_URL, apiId);
-        Assert.assertNotNull(s2dto1, "[enabled=false] Endpoint validation response must not be null");
+        Assert.assertNotNull(s2dto1, "[feature disabled] Endpoint validation response must not be null");
         if (s2dto1.getError() != null) {
             Assert.assertFalse(s2dto1.getError().contains("not trusted"),
-                    "[enabled=false] Should not block when disabled, error: " + s2dto1.getError());
+                    "[feature disabled] Should not block when disabled, error: " + s2dto1.getError());
         }
         ApiEndpointValidationResponseDTO s2dto2 = restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
-        Assert.assertNotNull(s2dto2, "[enabled=false] Endpoint validation response must not be null");
+        Assert.assertNotNull(s2dto2, "[feature disabled] Endpoint validation response must not be null");
         if (s2dto2.getError() != null) {
             Assert.assertFalse(s2dto2.getError().contains("not trusted"),
-                    "[enabled=false] Should not block loopback when disabled, error: " + s2dto2.getError());
+                    "[feature disabled] Should not block loopback when disabled, error: " + s2dto2.getError());
         }
     }
 
