@@ -28,6 +28,10 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 
+/**
+ * Test suite that applies block_private_network_access=true with deny mode before running
+ * {@link HostValidationPrivateBlockTestCase}.
+ */
 public class HostValidationPrivateBlockTestSuite extends APIManagerLifecycleBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
