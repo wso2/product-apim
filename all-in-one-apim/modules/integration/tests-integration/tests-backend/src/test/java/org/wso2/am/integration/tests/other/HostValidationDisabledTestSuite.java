@@ -28,6 +28,10 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 
+/**
+ * Test suite that applies a configuration with no host validation settings, effectively
+ * disabling all platform-level host validation checks, before running {@link HostValidationDisabledTestCase}.
+ */
 public class HostValidationDisabledTestSuite extends APIManagerLifecycleBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;

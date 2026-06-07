@@ -46,12 +46,6 @@ public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(TestUserMode.SUPER_TENANT_ADMIN);
-        APIRequest apiRequest = new APIRequest("HostValidationPrivateBlockTestAPI", "/hvprivateblock",
-                new URL(backEndServerUrl.getWebAppURLHttp()
-                        + "jaxrs_basic/services/customers/customerservice/"));
-        apiRequest.setVersion("1.0.0");
-        apiRequest.setProvider(user.getUserName());
-        apiId = restAPIPublisher.addAPI(apiRequest).getData();
     }
 
     @Test(groups = {"wso2.am"},
