@@ -64,6 +64,7 @@ public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest 
     public void testPrivateNetworkBlock_MultipleAPISurfacesBlocked() throws Exception {
         ApiEndpointValidationResponseDTO endpointDto =
                 restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
+        Assert.assertNotNull(endpointDto, "Endpoint validation response must not be null");
         Assert.assertNotNull(endpointDto.getError(),
                 "Expected host validation error for loopback URL when block_private_network_access=true");
         Assert.assertTrue(endpointDto.getError().contains("not trusted"),
