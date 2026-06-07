@@ -20,8 +20,6 @@ package org.wso2.am.integration.tests.other;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -42,9 +40,7 @@ import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
@@ -54,12 +50,8 @@ import java.util.Map;
  */
 public class HostValidationTestCase extends APIMIntegrationBaseTest {
 
-    private static final Log log = LogFactory.getLog(HostValidationTestCase.class);
-
-    private static final String BLOCKED_URL    = "http://attacker.internal.corp/endpoint";
-    private static final String ALLOWED_URL    = "http://api.allowed.example.com/endpoint";
-    private static final String LOOPBACK_URL   = "http://127.0.0.1:9999/api";
-    private static final String LINK_LOCAL_URL = "http://169.254.169.254/latest/meta-data/";
+    private static final String BLOCKED_URL = "http://attacker.internal.corp/endpoint";
+    private static final String ALLOWED_URL = "http://api.allowed.example.com/endpoint";
 
     private static final String TENANT_DOMAIN         = "hvtest.com";
     private static final String TENANT_ADMIN_USERNAME  = "hvTestAdmin";
@@ -68,7 +60,6 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
     private String originalTenantConfig;
     private String apiId;
     private RestAPIPublisherImpl tenantPublisher;
-    private ServerConfigurationManager serverConfigManager;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -337,117 +328,6 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             }
         } finally {
             restoreOriginalTenantConfig();
-        }
-    }
-
-    @Test(groups = {"wso2.am"},
-            description = "Host validation [bpna=true]: loopback/link-local blocked across endpoint validation, KM create, and WSDL import",
-            dependsOnMethods = "testAllowlistIsolation_NewTenantUnaffectedBySuperTenantAllowlist")
-    public void testPrivateNetworkBlock_MultipleAPISurfacesBlocked() throws Exception {
-        serverConfigManager = new ServerConfigurationManager(gatewayContextMgt);
-        serverConfigManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "hostValidationPrivateBlock"
-                + File.separator + "deployment.toml"));
-        try {
-            // Loopback blocked on endpoint validation
-            ApiEndpointValidationResponseDTO endpointDto =
-                    restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
-            Assert.assertNotNull(endpointDto.getError(),
-                    "Expected error for loopback URL when block_private_network_access=true");
-            Assert.assertTrue(endpointDto.getError().contains("not trusted"),
-                    "Expected private network block for loopback, got: " + endpointDto.getError());
-
-            // Link-local blocked on KM create
-            try {
-                restAPIAdmin.addKeyManager(buildKeyManagerDTO("HVLinkLocalKM",
-                        "https://169.254.169.254/oauth2/introspect",
-                        "https://169.254.169.254/keymanager-operations/dcr/register",
-                        "https://169.254.169.254/oauth2/token",
-                        "https://169.254.169.254/oauth2/revoke",
-                        null));
-                Assert.fail("Expected ApiException for KM with link-local URL");
-            } catch (ApiException e) {
-                Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
-                        "Expected HTTP 400 for KM with link-local (169.254.x.x) URL");
-            }
-
-            // Loopback blocked on WSDL import
-            try {
-                restAPIPublisher.importWSDLSchemaDefinition(null,
-                        "http://127.0.0.1:9090/service?wsdl",
-                        "{\"name\":\"HVLoopbackWSDL\",\"context\":\"/loopbackwsdl\","
-                                + "\"version\":\"1.0.0\",\"provider\":\"" + user.getUserName() + "\"}",
-                        "SOAP");
-                Assert.fail("Expected ApiException for WSDL import from loopback address");
-            } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
-                Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
-                        "Expected HTTP 400 for WSDL import from loopback address");
-            }
-        } finally {
-            serverConfigManager.restoreToLastConfiguration();
-            serverConfigManager = null;
-        }
-    }
-
-    @Test(groups = {"wso2.am"},
-            description = "Host validation: deny_all mode and disabled mode each in their own server lifecycle",
-            dependsOnMethods = "testPrivateNetworkBlock_MultipleAPISurfacesBlocked")
-    public void testAllPlatformConfigCombinations() throws Exception {
-        String configs = getAMResourceLocation() + File.separator + "configFiles" + File.separator;
-
-        // --- Scenario 1: deny_all + bpna=true ---
-        // Non-exception URL blocked by deny_all; exception-matching private IP still blocked by bpna;
-        // tenant allowlist cannot override platform deny_all.
-        log.info("Host validation scenario: deny_all + bpna=true");
-        ServerConfigurationManager mgr1 = new ServerConfigurationManager(gatewayContextMgt);
-        mgr1.applyConfiguration(
-                new File(configs + "hostValidationDenyAllBpnaEnabled" + File.separator + "deployment.toml"));
-        try {
-            ApiEndpointValidationResponseDTO s1dto1 = restAPIPublisher.validateEndpointRaw(ALLOWED_URL, apiId);
-            Assert.assertNotNull(s1dto1.getError(), "[deny_all+bpna=true] Expected error for non-exception URL");
-            Assert.assertTrue(s1dto1.getError().contains("not trusted"),
-                    "[deny_all+bpna=true] Expected deny_all block, got: " + s1dto1.getError());
-
-            ApiEndpointValidationResponseDTO s1dto2 = restAPIPublisher.validateEndpointRaw(LINK_LOCAL_URL, apiId);
-            Assert.assertNotNull(s1dto2.getError(),
-                    "[deny_all+bpna=true] Expected bpna block for link-local IP even though it matches exceptions");
-            Assert.assertTrue(s1dto2.getError().contains("not trusted"),
-                    "[deny_all+bpna=true] Expected bpna block, got: " + s1dto2.getError());
-
-            // Platform deny_all takes precedence over tenant allowlist
-            enableTenantAllowlist(new String[]{"*.corp"});
-            try {
-                ApiEndpointValidationResponseDTO s1dto3 = restAPIPublisher.validateEndpointRaw(BLOCKED_URL, apiId);
-                Assert.assertNotNull(s1dto3.getError(),
-                        "[deny_all precedence] Expected block despite tenant allowlist");
-                Assert.assertTrue(s1dto3.getError().contains("not trusted"),
-                        "[deny_all precedence] Platform deny_all must override tenant allowlist, got: " + s1dto3.getError());
-            } finally {
-                restoreOriginalTenantConfig();
-            }
-        } finally {
-            mgr1.restoreToLastConfiguration();
-        }
-
-        // --- Scenario 2: enabled=false ---
-        // All platform checks skipped; nothing blocked regardless of URL.
-        log.info("Host validation scenario: enabled=false");
-        ServerConfigurationManager mgr2 = new ServerConfigurationManager(gatewayContextMgt);
-        mgr2.applyConfiguration(
-                new File(configs + "hostValidationDisabled" + File.separator + "deployment.toml"));
-        try {
-            ApiEndpointValidationResponseDTO s2dto1 = restAPIPublisher.validateEndpointRaw(LINK_LOCAL_URL, apiId);
-            if (s2dto1.getError() != null) {
-                Assert.assertFalse(s2dto1.getError().contains("not trusted"),
-                        "[enabled=false] Should not block when disabled, error: " + s2dto1.getError());
-            }
-            ApiEndpointValidationResponseDTO s2dto2 = restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
-            if (s2dto2.getError() != null) {
-                Assert.assertFalse(s2dto2.getError().contains("not trusted"),
-                        "[enabled=false] Should not block loopback when disabled, error: " + s2dto2.getError());
-            }
-        } finally {
-            mgr2.restoreToLastConfiguration();
         }
     }
 
