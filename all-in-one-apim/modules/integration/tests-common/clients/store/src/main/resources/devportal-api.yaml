@@ -3268,6 +3268,163 @@ paths:
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/{keyMappingId}/generate-token"'
 
+  /applications/{applicationId}/oauth-keys/{keyMappingId}/generate-secret:
+    post:
+      tags:
+        - Application Secrets
+      summary: |
+        Generate a New Consumer Secret
+      description: |
+        This operation can be used to generate a new consumer secret for an application for the given key type
+      operationId: generateConsumerSecret
+      parameters:
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyMappingId'
+      requestBody:
+        description: |
+          Request payload containing details for creating a new consumer secret
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumerSecretCreationRequest'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          headers:
+            Location:
+              description: |
+                Location to the newly created secret entity.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsumerSecret'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
+      x-code-samples:
+        - lang: Curl
+          source: |
+            curl -k \
+              -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"additionalProperties":{"description":"pizza application secret7","expiresIn":86400}}' \
+              "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/generate-secret"
+  /applications/{applicationId}/oauth-keys/{keyMappingId}/secrets:
+    get:
+      tags:
+        - Application Secrets
+      summary: |
+        Retrieve Consumer Secrets
+      description: |
+        This operation can be used to retrieve consumer secrets of an application for the given key type
+      operationId: getConsumerSecrets
+      parameters:
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyMappingId'
+      responses:
+        200:
+          description: |
+            OK.
+            Consumer secrets are retrieved.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsumerSecretList'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -X GET "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/secrets"'
+  /applications/{applicationId}/oauth-keys/{keyMappingId}/revoke-secret:
+    post:
+      tags:
+        - Application Secrets
+      summary: |
+        Revoke a Consumer Secret
+      description: |
+        This operation can be used to revoke a consumer secret for an application for the give key type
+      operationId: revokeConsumerSecret
+      parameters:
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyMappingId'
+      requestBody:
+        description: |
+          Request payload containing details for revoking a new consumer secret
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumerSecretDeletionRequest'
+        required: true
+      responses:
+        204:
+          description: |
+            OK.
+            Consumer secret deleted.
+          content: { }
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
+      x-code-samples:
+        - lang: Curl
+          source: |
+            curl -k \
+              -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"secretId":"sec_123456"}' \
+              "https://localhost:9443/api/am/devportal/v3/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/revoke-secret"
+
   /applications/{applicationId}/api-keys/{keyType}/generate:
     post:
       tags:
@@ -6074,6 +6231,12 @@ components:
           description: Consumer secret of the application
           readOnly: true
           example: TIDlOFkpzB7WjufO3OJUhy1fsvAa
+        consumerSecrets:
+          type: array
+          description: A list of all consumer secrets of the application
+            When multiple consumer secrets are enabled
+          items:
+            $ref: '#/components/schemas/ConsumerSecret'
         supportedGrantTypes:
           type: array
           description: The grant types that are supported by the application
@@ -7203,6 +7366,77 @@ components:
           description: |
             Category of the comment
           example: general
+    #-----------------------------------------------------
+    # Consumer Secret Object
+    #-----------------------------------------------------
+    ConsumerSecret:
+      type: object
+      properties:
+        secretId:
+          type: string
+          description: Unique identifier for the secret
+          example: sec_123456
+        secretValue:
+          type: string
+          description: The actual secret string
+          example: "***r3tV@lu3"
+        additionalProperties:
+          type: object
+          description: Additional dynamic properties for the secret creation request.
+          additionalProperties:
+            type: object
+          example:
+            expiresAt: 1761568483
+            description: "pizza application secret"
+    #-----------------------------------------------------
+    # Consumer Secret Request Object
+    #-----------------------------------------------------
+    ConsumerSecretCreationRequest:
+      type: object
+      properties:
+        additionalProperties:
+          type: object
+          description: Additional properties for the secret creation request.
+          additionalProperties:
+            type: object
+          example:
+            expiresIn: 86400
+            description: "pizza application secret"
+      example:
+        additionalProperties:
+          expiresIn: 86400
+          description: "pizza application secret"
+    #-----------------------------------------------------
+    # Consumer Secret Deletion Object
+    #-----------------------------------------------------
+    ConsumerSecretDeletionRequest:
+      type: object
+      properties:
+        secretId:
+          type: string
+          description: Unique identifier for the secret
+          example: sec_123456
+        additionalProperties:
+          type: object
+          description: Additional properties for the secret deletion request.
+          additionalProperties:
+            type: object
+    #-----------------------------------------------------
+    # Consumer Secret List Object
+    #-----------------------------------------------------
+    ConsumerSecretList:
+      title: Client Secret List
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of consumer secrets returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsumerSecret'
+
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -7289,6 +7523,18 @@ components:
             code: 401
             message: Unauthorized
             description: The user is not authorized
+            moreInfo: ""
+            error: []
+    Forbidden:
+      description: Forbidden. The user does not have permission to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 403
+            message: Forbidden
+            description: The user does not have permission to perform this action
             moreInfo: ""
             error: []
     UnsupportedMediaType:
