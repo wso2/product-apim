@@ -38,6 +38,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidatio
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MCPServerProxyRequestDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -60,8 +61,13 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
     private static final String LOOPBACK_URL   = "http://127.0.0.1:9999/api";
     private static final String LINK_LOCAL_URL = "http://169.254.169.254/latest/meta-data/";
 
+    private static final String TENANT_DOMAIN         = "hvtest.com";
+    private static final String TENANT_ADMIN_USERNAME  = "hvTestAdmin";
+    private static final String TENANT_ADMIN_PASSWORD  = "admin123";
+
     private String originalTenantConfig;
     private String apiId;
+    private RestAPIPublisherImpl tenantPublisher;
     private ServerConfigurationManager serverConfigManager;
 
     @BeforeClass(alwaysRun = true)
@@ -75,6 +81,13 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion("1.0.0");
         apiRequest.setProvider(user.getUserName());
         apiId = restAPIPublisher.addAPI(apiRequest).getData();
+
+        // Create a fresh tenant for the tenant isolation test.
+        // This tenant starts with a clean (default) config — no OutboundRequestSecurity entry.
+        tenantManagementServiceClient.addTenant(
+                TENANT_DOMAIN, TENANT_ADMIN_PASSWORD, TENANT_ADMIN_USERNAME, "demo");
+        tenantPublisher = getRestAPIPublisherForUser(
+                TENANT_ADMIN_USERNAME, TENANT_ADMIN_PASSWORD, TENANT_DOMAIN);
     }
 
     @Test(groups = {"wso2.am"},
@@ -103,8 +116,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — non-matching URL blocked on endpoint validation",
             dependsOnMethods = "testNonExistentHost_DNSFailureNotTreatedAsHostValidationBlock")
     public void testAllowlistEnabled_NonMatchingURLBlockedOnEndpointValidation() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             ApiEndpointValidationResponseDTO dto =
                     restAPIPublisher.validateEndpointRaw(BLOCKED_URL, apiId);
             Assert.assertNotNull(dto.getError(), "Expected an error for blocked URL");
@@ -120,8 +133,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — matching URL passes endpoint validation",
             dependsOnMethods = "testAllowlistEnabled_NonMatchingURLBlockedOnEndpointValidation")
     public void testAllowlistEnabled_MatchingURLPassesEndpointValidation() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             ApiEndpointValidationResponseDTO dto =
                     restAPIPublisher.validateEndpointRaw(ALLOWED_URL, apiId);
             if (dto.getError() != null) {
@@ -137,8 +150,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — KM create with non-matching URL returns 400",
             dependsOnMethods = "testAllowlistEnabled_MatchingURLPassesEndpointValidation")
     public void testAllowlistEnabled_KeyManagerCreateWithBlockedURLRejected() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             restAPIAdmin.addKeyManager(buildKeyManagerDTO("HVBlockedKM",
                     "https://attacker.corp/oauth2/introspect",
                     "https://attacker.corp/keymanager-operations/dcr/register",
@@ -158,8 +171,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — KM JWKS cert URL blocked returns 400",
             dependsOnMethods = "testAllowlistEnabled_KeyManagerCreateWithBlockedURLRejected")
     public void testAllowlistEnabled_KeyManagerJWKSCertURLBlocked() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             KeyManagerCertificatesDTO blockedCerts = DtoFactory.createKeyManagerCertificatesDTO(
                     KeyManagerCertificatesDTO.TypeEnum.JWKS,
                     "https://attacker.corp/.well-known/jwks.json");
@@ -182,10 +195,10 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — KM update with non-matching URL returns 400",
             dependsOnMethods = "testAllowlistEnabled_KeyManagerJWKSCertURLBlocked")
     public void testAllowlistEnabled_KeyManagerUpdateWithBlockedURLRejected() throws Exception {
-        // Create a valid KM with all URLs on the allowlist
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
+        // Create a valid KM with all URLs on the allowlist, then update with a blocked URL
         String createdKmId = null;
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             ApiResponse<KeyManagerDTO> createResponse = restAPIAdmin.addKeyManager(
                     buildKeyManagerDTO("HVUpdateTestKM",
                             "https://api.allowed.example.com/oauth2/introspect",
@@ -199,11 +212,13 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             // Update: change token endpoint to a blocked host
             KeyManagerDTO toUpdate = createResponse.getData();
             toUpdate.setTokenEndpoint("https://attacker.corp/oauth2/token");
-            restAPIAdmin.updateKeyManager(createdKmId, toUpdate);
-            Assert.fail("Expected ApiException for KM update with blocked URL");
-        } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
-                    "Expected HTTP 400 for KM update with blocked URL");
+            try {
+                restAPIAdmin.updateKeyManager(createdKmId, toUpdate);
+                Assert.fail("Expected ApiException for KM update with blocked URL");
+            } catch (ApiException e) {
+                Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
+                        "Expected HTTP 400 for KM update with blocked URL");
+            }
         } finally {
             if (createdKmId != null) {
                 restAPIAdmin.deleteKeyManager(createdKmId);
@@ -216,8 +231,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — GraphQL schema validation by non-matching URL returns isValid=false",
             dependsOnMethods = "testAllowlistEnabled_KeyManagerUpdateWithBlockedURLRejected")
     public void testAllowlistEnabled_GraphQLValidationByBlockedURLFails() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             GraphQLValidationResponseDTO response =
                     restAPIPublisher.validateGraphqlSchemaDefinitionByURL(BLOCKED_URL, false);
             Assert.assertNotNull(response, "Response should not be null");
@@ -232,8 +247,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — WSDL import by non-matching URL returns 400",
             dependsOnMethods = "testAllowlistEnabled_GraphQLValidationByBlockedURLFails")
     public void testAllowlistEnabled_WSDLImportByBlockedURLRejected() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             restAPIPublisher.importWSDLSchemaDefinition(null,
                     "http://attacker.internal.corp/service?wsdl",
                     "{\"name\":\"HVWSDLBlockTest\",\"context\":\"/hvwsdlblock\","
@@ -252,8 +267,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — OAS definition import from non-matching URL returns 400",
             dependsOnMethods = "testAllowlistEnabled_WSDLImportByBlockedURLRejected")
     public void testAllowlistEnabled_OASDefinitionFromBlockedURLRejected() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             restAPIPublisher.validateOASDefinitionByURL(BLOCKED_URL);
             Assert.fail("Expected ApiException for OAS validate from blocked URL");
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
@@ -268,8 +283,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — KM discover with non-matching URL returns 400",
             dependsOnMethods = "testAllowlistEnabled_OASDefinitionFromBlockedURLRejected")
     public void testAllowlistEnabled_KeyManagerDiscoverWithBlockedURLRejected() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             restAPIAdmin.discoverKeyManager("https://attacker.corp/.well-known/openid-configuration", "OIDC");
             Assert.fail("Expected ApiException for KM discover with blocked URL");
         } catch (ApiException e) {
@@ -284,8 +299,8 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
             description = "Host validation: allowlist enabled — MCP proxy create with non-matching URL returns 400",
             dependsOnMethods = "testAllowlistEnabled_KeyManagerDiscoverWithBlockedURLRejected")
     public void testAllowlistEnabled_MCPProxyCreateWithBlockedURLRejected() throws Exception {
-        enableTenantAllowlist(new String[]{"*.allowed.example.com"});
         try {
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
             MCPServerProxyRequestDTO proxyRequest = new MCPServerProxyRequestDTO();
             proxyRequest.setUrl(BLOCKED_URL);
             restAPIPublisher.createMCPServerProxy(proxyRequest);
@@ -299,8 +314,35 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"},
-            description = "Host validation [bpna=true]: loopback/link-local blocked across endpoint validation, KM create, and WSDL import",
+            description = "Host validation: super-tenant allowlist must not affect a new tenant whose config is at default",
             dependsOnMethods = "testAllowlistEnabled_MCPProxyCreateWithBlockedURLRejected")
+    public void testAllowlistIsolation_NewTenantUnaffectedBySuperTenantAllowlist() throws Exception {
+        try {
+            // Enable allowlist on the super tenant only
+            enableTenantAllowlist(new String[]{"*.allowed.example.com"});
+            // super tenant is blocked by its own allowlist
+            ApiEndpointValidationResponseDTO superDto =
+                    restAPIPublisher.validateEndpointRaw(BLOCKED_URL, apiId);
+            Assert.assertNotNull(superDto.getError(), "Expected host validation block for super tenant");
+            Assert.assertTrue(superDto.getError().contains("not trusted"),
+                    "Super tenant allowlist should block non-matching URL, got: " + superDto.getError());
+
+            // New tenant has default config (no OutboundRequestSecurity / EnableHostAllowlist=false).
+            ApiEndpointValidationResponseDTO tenantDto =
+                    tenantPublisher.validateEndpointRaw(BLOCKED_URL, null);
+            if (tenantDto.getError() != null) {
+                Assert.assertFalse(tenantDto.getError().contains("not trusted"),
+                        "New tenant with default config must not inherit super-tenant allowlist, got: "
+                                + tenantDto.getError());
+            }
+        } finally {
+            restoreOriginalTenantConfig();
+        }
+    }
+
+    @Test(groups = {"wso2.am"},
+            description = "Host validation [bpna=true]: loopback/link-local blocked across endpoint validation, KM create, and WSDL import",
+            dependsOnMethods = "testAllowlistIsolation_NewTenantUnaffectedBySuperTenantAllowlist")
     public void testPrivateNetworkBlock_MultipleAPISurfacesBlocked() throws Exception {
         serverConfigManager = new ServerConfigurationManager(gatewayContextMgt);
         serverConfigManager.applyConfiguration(new File(getAMResourceLocation()
@@ -393,15 +435,19 @@ public class HostValidationTestCase extends APIMIntegrationBaseTest {
         ServerConfigurationManager mgr2 = new ServerConfigurationManager(gatewayContextMgt);
         mgr2.applyConfiguration(
                 new File(configs + "hostValidationDisabled" + File.separator + "deployment.toml"));
-        ApiEndpointValidationResponseDTO s2dto1 = restAPIPublisher.validateEndpointRaw(LINK_LOCAL_URL, apiId);
-        if (s2dto1.getError() != null) {
-            Assert.assertFalse(s2dto1.getError().contains("not trusted"),
-                    "[enabled=false] Should not block when disabled, error: " + s2dto1.getError());
-        }
-        ApiEndpointValidationResponseDTO s2dto2 = restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
-        if (s2dto2.getError() != null) {
-            Assert.assertFalse(s2dto2.getError().contains("not trusted"),
-                    "[enabled=false] Should not block loopback when disabled, error: " + s2dto2.getError());
+        try {
+            ApiEndpointValidationResponseDTO s2dto1 = restAPIPublisher.validateEndpointRaw(LINK_LOCAL_URL, apiId);
+            if (s2dto1.getError() != null) {
+                Assert.assertFalse(s2dto1.getError().contains("not trusted"),
+                        "[enabled=false] Should not block when disabled, error: " + s2dto1.getError());
+            }
+            ApiEndpointValidationResponseDTO s2dto2 = restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
+            if (s2dto2.getError() != null) {
+                Assert.assertFalse(s2dto2.getError().contains("not trusted"),
+                        "[enabled=false] Should not block loopback when disabled, error: " + s2dto2.getError());
+            }
+        } finally {
+            mgr2.restoreToLastConfiguration();
         }
     }
 
