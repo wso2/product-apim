@@ -54,11 +54,13 @@ public class HostValidationDisabledTestCase extends APIMIntegrationBaseTest {
             description = "Host validation [enabled=false]: all platform checks skipped, nothing blocked")
     public void testHostValidationDisabled_NothingBlocked() throws Exception {
         ApiEndpointValidationResponseDTO s2dto1 = restAPIPublisher.validateEndpointRaw(LINK_LOCAL_URL, apiId);
+        Assert.assertNotNull(s2dto1, "[enabled=false] Endpoint validation response must not be null");
         if (s2dto1.getError() != null) {
             Assert.assertFalse(s2dto1.getError().contains("not trusted"),
                     "[enabled=false] Should not block when disabled, error: " + s2dto1.getError());
         }
         ApiEndpointValidationResponseDTO s2dto2 = restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
+        Assert.assertNotNull(s2dto2, "[enabled=false] Endpoint validation response must not be null");
         if (s2dto2.getError() != null) {
             Assert.assertFalse(s2dto2.getError().contains("not trusted"),
                     "[enabled=false] Should not block loopback when disabled, error: " + s2dto2.getError());

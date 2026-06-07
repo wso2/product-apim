@@ -60,11 +60,13 @@ public class HostValidationDenyAllTestCase extends APIMIntegrationBaseTest {
             description = "Host validation [deny_all+bpna=true]: all URLs blocked; platform deny_all overrides tenant allowlist")
     public void testDenyAllMode_AllURLsBlocked() throws Exception {
         ApiEndpointValidationResponseDTO s1dto1 = restAPIPublisher.validateEndpointRaw(ALLOWED_URL, apiId);
+        Assert.assertNotNull(s1dto1, "[deny_all+bpna=true] Endpoint validation response must not be null");
         Assert.assertNotNull(s1dto1.getError(), "[deny_all+bpna=true] Expected error for non-exception URL");
         Assert.assertTrue(s1dto1.getError().contains("not trusted"),
                 "[deny_all+bpna=true] Expected deny_all block, got: " + s1dto1.getError());
 
         ApiEndpointValidationResponseDTO s1dto2 = restAPIPublisher.validateEndpointRaw(LINK_LOCAL_URL, apiId);
+        Assert.assertNotNull(s1dto2, "[deny_all+bpna=true] Endpoint validation response must not be null");
         Assert.assertNotNull(s1dto2.getError(),
                 "[deny_all+bpna=true] Expected bpna block for link-local IP");
         Assert.assertTrue(s1dto2.getError().contains("not trusted"),
@@ -73,6 +75,7 @@ public class HostValidationDenyAllTestCase extends APIMIntegrationBaseTest {
         enableTenantAllowlist(new String[]{"*.corp"});
         try {
             ApiEndpointValidationResponseDTO s1dto3 = restAPIPublisher.validateEndpointRaw(BLOCKED_URL, apiId);
+            Assert.assertNotNull(s1dto3, "[deny_all precedence] Endpoint validation response must not be null");
             Assert.assertNotNull(s1dto3.getError(),
                     "[deny_all precedence] Expected block despite tenant allowlist");
             Assert.assertTrue(s1dto3.getError().contains("not trusted"),
