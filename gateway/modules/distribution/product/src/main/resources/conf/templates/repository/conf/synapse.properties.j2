@@ -42,6 +42,8 @@ synapse.endpoint.http.oauth.token.endpoint.global.proxy.port={{apim.proxy_config
 synapse.endpoint.http.oauth.token.endpoint.global.proxy.username={{apim.proxy_config.username}}
 synapse.endpoint.http.oauth.token.endpoint.global.proxy.password={{apim.proxy_config.password}}
 synapse.endpoint.http.oauth.token.endpoint.global.proxy.protocol={{apim.proxy_config.protocol}}
+synapse.endpoint.http.oauth.token.endpoint.global.proxy.nonProxyHosts={{apim.proxy_config.nonProxyHosts}}
+synapse.endpoint.http.oauth.token.endpoint.global.proxy.targetProxyHosts={{apim.proxy_config.targetProxyHosts}}
 {% endif %}
 {% if apim.mediator_config.oauth.trust_store.location is defined %}
 synapse.endpoint.http.oauth.token.endpoint.trust.store.location={{apim.mediator_config.oauth.trust_store.location}}
