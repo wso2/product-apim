@@ -1,0 +1,30 @@
+{
+  "displayName": "new_global_policy",
+  "description": "test_global_policy",
+  "appliedGatewayLabels": [],
+  "policyMapping": {
+    "request": [
+      {
+        "policyName": "addHeader",
+        "policyVersion": "v2",
+        "policyId": "<id>",
+        "parameters": {
+          "headerName": "custom_global_header",
+          "headerValue": "custom_global_value"
+        }
+      }
+    ],
+    "response": [
+      {
+        "policyName": "addHeader",
+        "policyVersion": "v2",
+        "policyId": "<id>",
+        "parameters": {
+          "headerName": "custom_global_header",
+          "headerValue": "custom_global_value"
+        }
+      }
+    ],
+    "fault": []
+  }
+}

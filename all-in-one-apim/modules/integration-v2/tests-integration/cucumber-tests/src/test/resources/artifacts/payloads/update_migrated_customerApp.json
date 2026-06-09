@@ -1,0 +1,15 @@
+{
+  "name": "CustomerApp",
+  "throttlingPolicy": "50PerMin",
+  "description": "Updated description for migrated app",
+  "tokenType": "JWT",
+  "status": "APPROVED",
+  "groups": [],
+  "subscriptionCount": 1,
+  "keys": [],
+  "attributes": {},
+  "subscriptionScopes": [],
+  "owner": "admin",
+  "hashEnabled": false,
+  "visibility": "PRIVATE"
+}

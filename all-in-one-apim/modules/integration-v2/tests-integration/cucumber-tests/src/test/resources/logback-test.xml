@@ -1,0 +1,33 @@
+<configuration>
+
+    <!-- Console for all logs -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- One log file per TestNG <test>, named logs/<testName>.log -->
+    <appender name="TEST_SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator class="ch.qos.logback.classic.sift.MDCBasedDiscriminator">
+            <Key>testName</Key>
+            <DefaultValue>default</DefaultValue>
+        </discriminator>
+        <sift>
+            <appender name="FILE-${testName}" class="ch.qos.logback.core.FileAppender">
+                <file>logs/${testName}.log</file>
+                <append>false</append>
+                <encoder>
+                    <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </sift>
+    </appender>
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="TEST_SIFT"/>
+    </root>
+
+</configuration>

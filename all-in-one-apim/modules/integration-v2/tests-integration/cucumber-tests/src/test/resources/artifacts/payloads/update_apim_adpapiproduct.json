@@ -1,0 +1,214 @@
+{
+  "name": "ADPAPIProduct",
+  "context": "/adp-api-product",
+  "version": "1.0.0",
+  "description": null,
+  "provider": "adp_pub_user",
+  "hasThumbnail": false,
+  "state": "PUBLISHED",
+  "enableSchemaValidation": false,
+  "isDefaultVersion": true,
+  "isRevision": false,
+  "revisionedApiProductId": null,
+  "revisionId": 0,
+  "responseCachingEnabled": false,
+  "cacheTimeout": 300,
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "visibleTenants": [],
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "apiType": null,
+  "transport": [
+    "http",
+    "https"
+  ],
+  "tags": [],
+  "policies": [
+    "Bronze","Gold","Unlimited"
+  ],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": null,
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": [
+    "oauth_basic_auth_api_key_mandatory",
+    "oauth2"
+  ],
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "subscriptionAvailableTenants": [],
+  "additionalProperties": [
+    {
+      "name": "adp-property-name",
+      "value": "adp-property-value",
+      "display": true
+    }
+  ],
+  "additionalPropertiesMap": {
+    "adp-property-name__display": {
+      "name": "adp-property-name",
+      "value": "adp-property-value",
+      "display": false
+    }
+  },
+  "monetization": null,
+  "businessInformation": {
+    "businessOwner": null,
+    "businessOwnerEmail": null,
+    "technicalOwner": null,
+    "technicalOwnerEmail": null
+  },
+  "corsConfiguration": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": [
+      "*"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "testKey"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  },
+  "createdTime": "1753950796000",
+  "lastUpdatedTime": "2025-12-01 15:00:14.0",
+  "lastUpdatedTimestamp": "1764581414000",
+  "gatewayVendor": "wso2",
+  "apis": [
+    {
+      "name": "APIM18PublisherTest",
+      "apiId": "<FirstAPIId>",
+      "version": "1.0.0",
+      "operations": [
+        {
+          "id": "",
+          "target": "/customers/{id}",
+          "verb": "GET",
+          "authType": "Application & Application User",
+          "throttlingPolicy": "Unlimited",
+          "scopes": [],
+          "usedProductIds": [],
+          "amznResourceName": null,
+          "amznResourceTimeout": null,
+          "amznResourceContentEncode": null,
+          "payloadSchema": null,
+          "uriMapping": null,
+          "operationPolicies": {
+            "request": [],
+            "response": [],
+            "fault": []
+          }
+        },
+        {
+          "id": "",
+          "target": "/customers/{id}",
+          "verb": "DELETE",
+          "authType": "Application & Application User",
+          "throttlingPolicy": "Unlimited",
+          "scopes": [],
+          "usedProductIds": [],
+          "amznResourceName": null,
+          "amznResourceTimeout": null,
+          "amznResourceContentEncode": null,
+          "payloadSchema": null,
+          "uriMapping": null,
+          "operationPolicies": {
+            "request": [],
+            "response": [],
+            "fault": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADPRestAPI",
+      "apiId": "<SecondAPIId>",
+      "version": "1.0.0",
+      "operations": [
+        {
+          "id": "",
+          "target": "/users/{id}",
+          "verb": "GET",
+          "authType": "Application & Application User",
+          "throttlingPolicy": "Unlimited",
+          "scopes": [
+            "adp-local-scope-without-roles",
+            "adp-shared-scope-without-roles"
+          ],
+          "usedProductIds": [],
+          "amznResourceName": null,
+          "amznResourceTimeout": null,
+          "amznResourceContentEncode": null,
+          "payloadSchema": null,
+          "uriMapping": null,
+          "operationPolicies": {
+            "request": [],
+            "response": [],
+            "fault": []
+          }
+        },
+        {
+          "id": "",
+          "target": "/users",
+          "verb": "GET",
+          "authType": "Application & Application User",
+          "throttlingPolicy": "Unlimited",
+          "scopes": [
+            "adp-local-scope-without-roles"
+          ],
+          "usedProductIds": [],
+          "amznResourceName": null,
+          "amznResourceTimeout": null,
+          "amznResourceContentEncode": null,
+          "payloadSchema": null,
+          "uriMapping": null,
+          "operationPolicies": {
+            "request": [],
+            "response": [],
+            "fault": []
+          }
+        }
+      ]
+    }
+  ],
+  "scopes": [
+    {
+      "scope": {
+        "id": null,
+        "name": "adp-local-scope-without-roles",
+        "displayName": "adp-local-scope-without-roles",
+        "description": "ADP local scope without roles",
+        "bindings": [],
+        "usageCount": null
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "id": null,
+        "name": "adp-shared-scope-without-roles",
+        "displayName": "adp-shared-scope-without-roles",
+        "description": "Shared scope without role mapping",
+        "bindings": [],
+        "usageCount": null
+      },
+      "shared": true
+    }
+  ],
+  "categories": [],
+  "workflowStatus": null,
+  "audiences": [
+    "all"
+  ],
+  "egress": false
+}

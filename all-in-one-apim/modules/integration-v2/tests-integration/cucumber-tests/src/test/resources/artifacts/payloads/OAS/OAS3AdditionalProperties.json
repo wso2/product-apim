@@ -1,0 +1,19 @@
+{
+  "name": "OAS3RestAPI",
+  "version": "1.0.0",
+  "context": "oas3",
+  "gatewayType": "wso2/synapse",
+  "policies": [
+    "Unlimited",
+    "Bronze"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  }
+}

@@ -1,0 +1,86 @@
+Feature: Custom Header Authorization
+
+  Background:
+    Given The system is ready
+    And I have a valid DCR application for the current user
+    And I have a valid Publisher access token for the current user
+    And I have a valid Devportal access token for the current user
+
+  Scenario: Create an API Through the Publisher Rest API and subscribe using an Application
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    And I put JSON payload from file "artifacts/payloads/customHeaderTest/update_apim_test_api.json" in context as "<apiUpdatePayload>"
+    And I update "apis" resource of id "<createdApiId>" with payload "<apiUpdatePayload>"
+    Then The response status code should be 200
+    And I put the following JSON payload in context as "<createRevisionPayload>"
+    """
+    {
+      "description":"Initial Revision"
+    }
+    """
+    And I make a request to create a revision for "apis" resource "<createdApiId>" with payload "<createRevisionPayload>"
+    And I put the following JSON payload in context as "<deployRevisionPayload>"
+    """
+    [
+      {
+        "name": "{{gatewayEnvironment}}",
+        "vhost": "localhost",
+        "displayOnDevportal": true
+      }
+    ]
+    """
+    And I make a request to deploy revision "<revisionId>" of "apis" resource "<createdApiId>" with payload "<deployRevisionPayload>"
+    Then The response status code should be 201
+    And  I retrieve the "apis" resource with id "<createdApiId>"
+    Then The response status code should be 200
+    And I put the response payload in context as "<retrievedApiPayload>"
+    And I wait for deployment of the resource in "<retrievedApiPayload>"
+    And I publish the "apis" resource with id "<createdApiId>"
+    Then The lifecycle status of API "<createdApiId>" should be "Published"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "<createAppPayload>"
+    When I create an application with payload "<createAppPayload>"
+    And I put the following JSON payload in context as "<apiSubscriptionPayload>"
+    """
+    {
+      "applicationId": "{{createdAppId}}",
+      "apiId": "{{createdApiId}}",
+      "throttlingPolicy": "Bronze"
+    }
+    """
+    And I create a subscription using payload "<apiSubscriptionPayload>"
+    Then The response status code should be 201
+    And I extract response field "subscriptionId" and store it as "<subscriptionId>"
+
+  Scenario: Invoke API using custom authentication header named Test-Custom-Header
+    And I put the following JSON payload in context as "<generateApplicationKeysPayload>"
+    """
+    {
+      "keyType": "PRODUCTION",
+      "grantTypesToBeSupported": [
+        "client_credentials"
+      ]
+    }
+    """
+    And I generate client credentials for application id "<createdAppId>" with payload "<generateApplicationKeysPayload>"
+    Then The response status code should be 200
+    And I extract response field "consumerSecret" and store it as "<appConsumerSecret>"
+    And I extract response field "keyMappingId" and store it as "<keyMappingId>"
+    When I put the following JSON payload in context as "<createApplicationAccessTokenPayload>"
+    """
+    {
+      "consumerSecret": "{{appConsumerSecret}}",
+      "validityPeriod": 3600
+    }
+    """
+    And I request an access token for application id "<createdAppId>" using payload "<createApplicationAccessTokenPayload>" and key mapping id "<keyMappingId>"
+    Then The response status code should be 200
+    And I extract response field "accessToken" and store it as "<generatedAccessToken>"
+    And I invoke the API resource at path "/apiTestContext/1.0.0/customers/123/" with method "GET" using access token "<generatedAccessToken>" and payload ""
+    Then The response status code should be 401
+
+  Scenario: Delete the application and the API
+    When I delete the subscription with id "<subscriptionId>"
+    Then The response status code should be 200
+    And I delete the application with id "<createdAppId>"
+    Then The response status code should be 200
+    And I delete the "apis" resource with id "<createdApiId>"
+    Then The response status code should be 200

@@ -1,0 +1,15 @@
+{
+  "applicationId": "1c312e3d-de39-4a46-9c24-44c2cdfc1621",
+  "name": "TestOpaqueApp",
+  "throttlingPolicy": "Unlimited",
+  "description": "Test opaque tokens",
+  "tokenType": "JWT",
+  "status": "APPROVED",
+  "groups": [],
+  "subscriptionCount": 1,
+  "keys": [],
+  "attributes": {},
+  "subscriptionScopes": [],
+  "owner": "admin",
+  "hashEnabled": false
+}
