@@ -587,7 +587,11 @@
 
         private String getRegistrationUrl(String accountRegistrationEndpointURL, String urlEncodedURL,
                 String urlParameters) {
-            return accountRegistrationEndpointURL + "?" + urlParameters + "&callback=" + Encode.forHtmlAttribute(urlEncodedURL);
+            // 1. Construct the full raw URL
+            String rawUrl = accountRegistrationEndpointURL + "?" + urlParameters + "&callback=" + urlEncodedURL;
+
+            // 2. Encode the entire URL for safe usage inside a JavaScript string literal
+            return Encode.forJavaScriptAttribute(rawUrl);
         }
     %>
 
