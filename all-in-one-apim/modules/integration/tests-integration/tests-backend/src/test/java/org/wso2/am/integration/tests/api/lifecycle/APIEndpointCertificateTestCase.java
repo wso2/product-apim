@@ -44,17 +44,13 @@ import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
-import org.wso2.carbon.logging.view.data.xsd.LogEvent;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -81,13 +77,16 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     private final String CONFIG_DIR = "configFiles";
     private final String ENDPOINT_CERTIFICATE_RESOURCE_PATH = "endpointCertificate";
     private final String DEPLOYMENT_FILE = "deployment.toml";
+    // Generous budget so an invocation can be retried until the Gateway picks up the SSL profile change
+    // (cert add/remove) and any cached keep-alive connections to the backend have drained.
+    private static final long INVOCATION_RETRY_TIMEOUT = 150000L;
+    private static final long INVOCATION_RETRY_INTERVAL = 3000L;
     int securedEndpointPort;
     String securedEndpointHost;
     String applicationId;
     String apiId;
     WireMockServer wireMockServer;
     private String accessToken;
-    private LogViewerClient logViewerClient;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIEndpointCertificateTestCase(TestUserMode userMode) {
@@ -152,25 +151,18 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         accessToken = applicationKeyDTO.getToken().getAccessToken();
-        waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
-        AutomationContext autoContext = new AutomationContext();
-        logViewerClient = new LogViewerClient(autoContext.getContextUrls().getBackEndUrl(),
-                autoContext.getSuperTenant().getTenantAdmin().getUserName(),
-                autoContext.getSuperTenant().getTenantAdmin().getPassword());
-        logViewerClient.clearLogs();
+        // The first invocation test (testInvokeAPIWithoutUploadingEndpointCertificate) polls until the
+        // expected status with a generous timeout, so it doubles as the deployment readiness gate.
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke API without inserting Endpoint Certificate")
-    public void testInvokeAPIWithoutUploadingEndpointCertificate() throws XPathExpressionException, IOException {
-        // Create requestHeaders
-        Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("accept", "application/json");
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-
-        HttpResponse apiResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0),
-                requestHeaders);
-        Assert.assertEquals(apiResponse.getResponseCode(), 500);
+    public void testInvokeAPIWithoutUploadingEndpointCertificate() throws XPathExpressionException, IOException,
+            InterruptedException {
+        HttpResponse apiResponse = invokeUntilExpectedStatus(500, INVOCATION_RETRY_TIMEOUT);
+        Assert.assertEquals(apiResponse.getResponseCode(), 500,
+                "Invocation without an endpoint certificate should fail with 500 (backend SSL handshake "
+                        + "untrusted). Received code: " + apiResponse.getResponseCode() + ", body: "
+                        + apiResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
@@ -291,37 +283,12 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
             "testSearchEndpointCertificates"})
     public void testInvokeAPI() throws ApiException, InterruptedException, XPathExpressionException, IOException {
 
-        logViewerClient.clearLogs();
-        waitForSSLProfileReload();
-        Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("accept", "application/json");
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-
-        final int maxRetries = 10;
-        final int retryIntervalMillis = 10000;
-        HttpResponse apiResponse = null;
-        boolean apiInvocationSucceeded = false;
-
-        for (int retryAttempt = 1; retryAttempt <= maxRetries; retryAttempt++) {
-            try {
-                apiResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0),
-                        requestHeaders);
-                if (apiResponse.getResponseCode() == 200) {
-                    apiInvocationSucceeded = true;
-                    break;
-                }
-            } catch (IOException e) {
-                log.warn("IOException during API invocation on retry attempt " + retryAttempt + "/" + maxRetries
-                        + ": " + e.getMessage());
-            }
-            log.info("API invocation still does not return 200 after certificate upload. Retry attempt - "
-                    + retryAttempt + "/" + maxRetries);
-            if (retryAttempt < maxRetries) {
-                Thread.sleep(retryIntervalMillis);
-            }
-        }
-        Assert.assertTrue(apiInvocationSucceeded,
-                "Expected API invocation to succeed with 200 after uploading endpoint certificates");
+        // Poll until the uploaded certificate's SSL profile is reloaded in the Gateway and invocation succeeds.
+        HttpResponse apiResponse = invokeUntilExpectedStatus(200, INVOCATION_RETRY_TIMEOUT);
+        Assert.assertEquals(apiResponse.getResponseCode(), 200,
+                "Invocation should succeed with 200 once the uploaded endpoint certificate is trusted by the "
+                        + "Gateway. The SSL profile reload may not have propagated within " + INVOCATION_RETRY_TIMEOUT
+                        + "ms. Received code: " + apiResponse.getResponseCode() + ", body: " + apiResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
@@ -329,64 +296,22 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     public void testInvokeAPIAfterRemovingCertificate() throws InterruptedException, XPathExpressionException,
             IOException, ApiException {
 
-        logViewerClient.clearLogs();
         ApiResponse<Void> response = restAPIPublisher.deleteEndpointCertificate("endpoint-1");
-        Assert.assertEquals(response.getStatusCode(), 200);
+        Assert.assertEquals(response.getStatusCode(), 200,
+                "Deleting endpoint certificate 'endpoint-1' should return 200. Received code: "
+                        + response.getStatusCode());
         response = restAPIPublisher.deleteEndpointCertificate("endpoint-2");
-        Assert.assertEquals(response.getStatusCode(), 200);
-        waitForSSLProfileReload();
-
-        Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("accept", "application/json");
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-
-        final int maxRetries = 10;
-        final int retryIntervalMillis = 10000;
-        HttpResponse apiResponse = null;
-        boolean receivedExpectedFailure = false;
-
-        for (int retryAttempt = 1; retryAttempt <= maxRetries; retryAttempt++) {
-            try {
-                apiResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0),
-                        requestHeaders);
-
-                if (apiResponse.getResponseCode() == 500) {
-                    receivedExpectedFailure = true;
-                    log.info("API invocation returned 500 after certificate removal");
-                    break;
-                }
-            } catch (IOException e) {
-                log.warn("IOException during API invocation on retry attempt " + retryAttempt + "/" + maxRetries
-                        + ": " + e.getMessage());
-            }
-            log.info("API invocation still does not return 500 after certificate removal. Retry attempt - "
-                    + retryAttempt + "/" + maxRetries);
-            if (retryAttempt < maxRetries) {
-                Thread.sleep(retryIntervalMillis);
-            }
-        }
-        Assert.assertTrue(receivedExpectedFailure,
-                "Expected API invocation to fail with 500 after removing endpoint certificates");
-        boolean isStable = true;
-        for (int i = 0; i < 3; i++) {
-            Thread.sleep(2000);
-            try {
-                HttpResponse retryResponse = HttpRequestUtil.doGet(
-                        getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0), requestHeaders);
-
-                if (retryResponse.getResponseCode() != 500) {
-                    isStable = false;
-                    log.info("API invocation did not consistently return 500. Received: "
-                            + retryResponse.getResponseCode());
-                    break;
-                }
-            } catch (IOException e) {
-                isStable = false;
-                log.warn("IOException during stability check: " + e.getMessage());
-                break;
-            }
-        }
-        Assert.assertTrue(isStable, "API did not consistently return 500 after certificate removal");
+        Assert.assertEquals(response.getStatusCode(), 200,
+                "Deleting endpoint certificate 'endpoint-2' should return 200. Received code: "
+                        + response.getStatusCode());
+        // Poll until the removed certificate's SSL profile reload takes effect and any cached
+        // keep-alive connections to the backend have drained, so the invocation starts failing.
+        HttpResponse apiResponse = invokeUntilExpectedStatus(500, INVOCATION_RETRY_TIMEOUT);
+        Assert.assertEquals(apiResponse.getResponseCode(), 500,
+                "Invocation should fail with 500 after the endpoint certificates are removed and the Gateway "
+                        + "SSL profile reload (plus keep-alive connection drain) takes effect within "
+                        + INVOCATION_RETRY_TIMEOUT + "ms. Received code: " + apiResponse.getResponseCode()
+                        + ", body: " + apiResponse.getData());
     }
 
     @Test(groups = { "wso2.am" }, description = "test Upload Endpoint Certificate", dependsOnMethods = {
@@ -413,44 +338,34 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         wireMockConfiguration.keyManagerPassword("wso2carbon");
         wireMockConfiguration.keystoreType("JKS");
         wireMockServer = new WireMockServer(wireMockConfiguration);
+        // Return "Connection: close" so the Gateway cannot reuse a pooled keep-alive connection to this
+        // backend. Each invocation then opens a fresh connection and re-runs the SSL handshake, so once an
+        // endpoint certificate is removed the invocation starts failing immediately instead of riding a
+        // still-trusted cached connection.
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/abc")).willReturn(aResponse().withHeader("Content" +
-                "-Type", "text/plain").withBody("Hello world!")));
+                "-Type", "text/plain").withHeader("Connection", "close").withBody("Hello world!")));
         wireMockServer.start();
     }
 
-    private void waitForSSLProfileReload() throws RemoteException, InterruptedException {
+    private HttpResponse invokeUntilExpectedStatus(int expectedStatusCode, long timeoutMillis)
+            throws XPathExpressionException, IOException, InterruptedException {
 
-        final String reloadLogMessage = "PassThroughHttpSender reloading SSL Config";
-        final int initialWaitMillis = 30000;
-        final int retryIntervalMillis = 15000;
-        final int maxRetries = 10;
-
-        boolean sslProfileReloaded = false;
-        Thread.sleep(initialWaitMillis);
-
-        for (int retryAttempt = 1; retryAttempt <= maxRetries; retryAttempt++) {
-            LogEvent[] logEvents = logViewerClient.getAllRemoteSystemLogs();
-            if (logEvents != null) {
-                for (LogEvent logEvent : logEvents) {
-                    if (logEvent != null && logEvent.getMessage() != null
-                            && logEvent.getMessage().contains(reloadLogMessage)) {
-                        sslProfileReloaded = true;
-                        log.info("SSL profile has been reloaded successfully");
-                        logViewerClient.clearLogs();
-                        break;
-                    }
-                }
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        long startTime = System.currentTimeMillis();
+        HttpResponse apiResponse;
+        do {
+            apiResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0),
+                    requestHeaders);
+            if (apiResponse.getResponseCode() == expectedStatusCode) {
+                return apiResponse;
             }
-            if (sslProfileReloaded) {
-                return;
-            }
-            log.info("SSL profile reload log not found yet. Retry attempt - " + retryAttempt + "/" + maxRetries);
-            if (retryAttempt < maxRetries) {
-                Thread.sleep(retryIntervalMillis);
-            }
-        }
-
-        log.warn("SSL profile reload was not detected within the expected time. Continuing...");
+            log.info("Expected response code " + expectedStatusCode + " but received "
+                    + apiResponse.getResponseCode() + ". Retrying API invocation...");
+            Thread.sleep(INVOCATION_RETRY_INTERVAL);
+        } while (System.currentTimeMillis() - startTime < timeoutMillis);
+        return apiResponse;
     }
 
     @AfterClass(alwaysRun = true)
