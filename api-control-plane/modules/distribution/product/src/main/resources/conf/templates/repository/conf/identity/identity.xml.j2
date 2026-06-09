@@ -1520,6 +1520,9 @@
         {% if authentication_policy.disable_account_lock_handler is defined %}
         <DisableAccountLockHandler>{{authentication_policy.disable_account_lock_handler}}</DisableAccountLockHandler>
         {% endif %}
+        {% if authentication_policy.disable_account_disable_handler is defined %}
+        <DisableAccountDisableHandler>{{authentication_policy.disable_account_disable_handler}}</DisableAccountDisableHandler>
+        {% endif %}
     </AuthenticationPolicy>
 
     <!-- Show authenticated user name in audit logs. -->
