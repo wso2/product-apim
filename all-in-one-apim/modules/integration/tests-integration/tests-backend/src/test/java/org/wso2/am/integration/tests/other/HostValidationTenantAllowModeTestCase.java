@@ -50,6 +50,7 @@ import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.net.URL;
@@ -89,7 +90,9 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
                         + "jaxrs_basic/services/customers/customerservice/"));
         apiRequest.setVersion("1.0.0");
         apiRequest.setProvider(user.getUserName());
-        apiId = restAPIPublisher.addAPI(apiRequest).getData();
+        HttpResponse addApiResponse = restAPIPublisher.addAPI(apiRequest);
+        Assert.assertNotNull(addApiResponse, "Failed to create test API in setup");
+        apiId = addApiResponse.getData();
 
         // Create an MCP server for MCP-update and backend-update host validation tests.
         File mcpOasFile = new File(getAMResourceLocation()

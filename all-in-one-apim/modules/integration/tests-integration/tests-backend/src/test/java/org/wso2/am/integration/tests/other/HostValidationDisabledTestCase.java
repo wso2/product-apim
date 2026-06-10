@@ -26,6 +26,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidatio
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 
@@ -47,7 +48,9 @@ public class HostValidationDisabledTestCase extends APIMIntegrationBaseTest {
                         + "jaxrs_basic/services/customers/customerservice/"));
         apiRequest.setVersion("1.0.0");
         apiRequest.setProvider(user.getUserName());
-        apiId = restAPIPublisher.addAPI(apiRequest).getData();
+        HttpResponse addApiResponse = restAPIPublisher.addAPI(apiRequest);
+        Assert.assertNotNull(addApiResponse, "Failed to create test API in setup");
+        apiId = addApiResponse.getData();
     }
 
     @Test(groups = {"wso2.am"},
