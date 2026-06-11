@@ -1658,7 +1658,7 @@
 
         <cucumber.version>7.0.0</cucumber.version>
         <cucumber.picocontainer.version>7.22.0</cucumber.picocontainer.version>
-        <testng.version>7.4.0</testng.version>
+        <cucumber.testng.version>7.4.0</cucumber.testng.version>
         <testcontainers.version>2.0.2</testcontainers.version>
 
         <commons.lang3.version>3.17.0</commons.lang3.version>

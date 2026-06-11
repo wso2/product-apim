@@ -51,6 +51,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <version>${cucumber.testng.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
