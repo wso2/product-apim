@@ -1,0 +1,11 @@
+openapi: "3.0.1"
+info:
+  title: HVTestOpenAPI
+  version: "1.0.0"
+paths:
+  /test:
+    get:
+      summary: Test endpoint
+      responses:
+        '200':
+          description: OK
