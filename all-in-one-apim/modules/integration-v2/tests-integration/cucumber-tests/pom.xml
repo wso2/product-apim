@@ -147,6 +147,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
+                    <skipTests>${skipIntegrationTestsV2}</skipTests>
                     <!-- Exclude test groups which are not explicitly enabled -->
                     <excludedGroups>${surefire.excludedGroups}</excludedGroups>
                     <groups>${surefire.groups}</groups>

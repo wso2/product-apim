@@ -38,6 +38,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skipIntegrationTestsV2>false</skipIntegrationTestsV2>
         <truststore.path>${user.dir}/client-truststore.jks</truststore.path>
         <truststore.password>wso2carbon</truststore.password>
         <keystore.path>${user.dir}/wso2carbon.jks</keystore.path>
