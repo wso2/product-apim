@@ -442,6 +442,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.idp.TokenExchangeMultiValueClaimTestCase"/>
         </classes>
     </test>
 
