@@ -1,0 +1,28 @@
+{
+  "languages": [
+      {
+        "code": "af",
+        "name": "Afrikaans"
+      },
+      {
+        "code": "am",
+        "name": "Amharic"
+      },
+      {
+        "code": "ar",
+        "name": "Arabic"
+      },
+      {
+        "code": "ay",
+        "name": "Aymara"
+      },
+      {
+        "code": "az",
+        "name": "Azerbaijani"
+      },
+      {
+        "code": "be",
+        "name": "Belarusian"
+      }
+    ]
+}

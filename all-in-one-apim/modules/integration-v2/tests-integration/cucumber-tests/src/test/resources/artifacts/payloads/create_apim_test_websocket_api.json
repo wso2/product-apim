@@ -1,0 +1,172 @@
+{
+  "name": "APIMAsyncTest",
+  "description": null,
+  "context": "/apimAsyncContext",
+  "version": "1.0.0",
+  "provider": "admin",
+  "wsdlInfo": null,
+  "wsdlUrl": null,
+  "responseCachingEnabled": false,
+  "cacheTimeout": 300,
+  "hasThumbnail": false,
+  "isDefaultVersion": false,
+  "isRevision": false,
+  "revisionedApiId": null,
+  "revisionId": 0,
+  "enableSchemaValidation": false,
+  "enableSubscriberVerification": false,
+  "type": "WS",
+  "audience": null,
+  "audiences": [
+    "all"
+  ],
+  "transport": [],
+  "tags": [],
+  "policies": [
+    "AsyncUnlimited"
+  ],
+  "organizationPolicies": [],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": "Authorization",
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": [
+    "oauth_basic_auth_api_key_mandatory",
+    "oauth2"
+  ],
+  "maxTps": null,
+  "visibility": "PUBLIC",
+  "visibleRoles": [
+    ""
+  ],
+  "visibleTenants": [],
+  "visibleOrganizations": [
+    "carbon.super"
+  ],
+  "mediationPolicies": [],
+  "apiPolicies": null,
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "subscriptionAvailableTenants": [
+    ""
+  ],
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "monetization": null,
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "businessInformation": {
+    "businessOwner": null,
+    "businessOwnerEmail": null,
+    "technicalOwner": null,
+    "technicalOwnerEmail": null
+  },
+  "corsConfiguration": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": [
+      "*"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "Internal-Key"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  },
+  "websubSubscriptionConfiguration": {
+    "enable": false,
+    "secret": "",
+    "signingAlgorithm": "SHA1",
+    "signatureHeader": "x-hub-signature"
+  },
+  "workflowStatus": null,
+  "createdTime": "1763460962372",
+  "lastUpdatedTimestamp": null,
+  "lastUpdatedTime": null,
+  "endpointConfig": {
+    "endpoint_type": "ws",
+    "sandbox_endpoints": {
+      "url": "wss://ws.postman-echo.com/raw"
+    },
+    "production_endpoints": {
+      "url": "wss://ws.postman-echo.com/raw"
+    }
+  },
+  "primaryProductionEndpointId": null,
+  "primarySandboxEndpointId": null,
+  "endpointImplementationType": "ENDPOINT",
+  "subtypeConfiguration": {
+    "subtype": "DEFAULT",
+    "configuration": null
+  },
+  "scopes": [],
+  "operations": [
+    {
+      "id": "",
+      "target": "/*",
+      "verb": "SUBSCRIBE",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "id": "",
+      "target": "/*",
+      "verb": "PUBLISH",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "usedProductIds": [],
+      "amznResourceName": null,
+      "amznResourceTimeout": null,
+      "amznResourceContentEncode": null,
+      "payloadSchema": null,
+      "uriMapping": null,
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "threatProtectionPolicies": null,
+  "categories": [],
+  "keyManagers": [
+    "all"
+  ],
+  "serviceInfo": null,
+  "advertiseInfo": {
+    "advertised": false,
+    "apiExternalProductionEndpoint": null,
+    "apiExternalSandboxEndpoint": null,
+    "originalDevPortalUrl": null,
+    "apiOwner": "admin",
+    "vendor": "WSO2"
+  },
+  "gatewayVendor": "wso2",
+  "gatewayType": "wso2/synapse",
+  "asyncTransportProtocols": [
+    ""
+  ],
+  "egress": false
+}
