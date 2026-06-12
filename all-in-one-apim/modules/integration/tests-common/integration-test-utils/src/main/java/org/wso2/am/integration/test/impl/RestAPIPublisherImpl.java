@@ -865,6 +865,10 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+    public ApiEndpointValidationResponseDTO validateEndpointRaw(String endpointUrl, String apiId) throws ApiException {
+        return validationApi.validateEndpoint(endpointUrl, apiId);
+    }
+
     /**
      * Change the API Lifecycle status to Publish with the option of Re-subscription is required or not
      *
@@ -1237,6 +1241,10 @@ public class RestAPIPublisherImpl {
                 validationApi.validateOpenAPIDefinitionWithHttpInfo(null, null, oasDefinition, null);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
+    }
+
+    public OpenAPIDefinitionValidationResponseDTO validateOASDefinitionByURL(String url) throws ApiException {
+        return validationApi.validateOpenAPIDefinition(false, url, null, null);
     }
 
     public APIDTO getAPIByID(String apiId, String tenantDomain) throws ApiException {
