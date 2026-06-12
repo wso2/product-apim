@@ -1311,7 +1311,7 @@
         <!-- carbon identity -->
         <carbon.identity.version>5.27.21</carbon.identity.version>
         <carbon.identity.governance.version>1.14.1</carbon.identity.governance.version>
-        <carbon.identity.event.handler.account.lock.version>1.11.0</carbon.identity.event.handler.account.lock.version>
+        <carbon.identity.event.handler.account.lock.version>1.11.1</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.11.1</carbon.identity.event.handler.notification.version>
         <carbon.identity-inbound-auth-oauth.version>6.14.14</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.9.0</carbon.identity-data-publisher-oauth.version>
