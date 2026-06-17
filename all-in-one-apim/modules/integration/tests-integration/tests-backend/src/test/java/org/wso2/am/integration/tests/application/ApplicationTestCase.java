@@ -373,6 +373,14 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"webapp"}, description = "Revoke a generated consumer secret",
             dependsOnMethods = "testGetConsumerSecretsForKeyMappingId")
     public void testRevokeConsumerSecretForKeyMappingId() throws Exception {
+        // The IS prevents deleting the most recently added additional secret. Generate a helper
+        // secret first so that generatedSecretId is no longer the latest and can be revoked.
+        ConsumerSecretCreationRequestDTO helperRequest = new ConsumerSecretCreationRequestDTO();
+        Map<String, Object> helperProps = new HashMap<>();
+        helperProps.put("description", "revoke-test-helper-secret");
+        helperRequest.setAdditionalProperties(helperProps);
+        restAPIStore.generateConsumerSecret(applicationId3, app3KeyMappingId, helperRequest);
+
         ConsumerSecretDeletionRequestDTO revokeRequest = new ConsumerSecretDeletionRequestDTO();
         revokeRequest.setSecretId(generatedSecretId);
         restAPIStore.revokeConsumerSecret(applicationId3, app3KeyMappingId, revokeRequest);
