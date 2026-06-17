@@ -7052,7 +7052,7 @@ paths:
   /applications/{applicationId}/oauth-keys/{keyMappingId}/revoke-secret:
     post:
       description: |
-        This operation can be used to revoke a consumer secret for an application for the give key type
+        This operation can be used to revoke a consumer secret for an application for the given key type
       operationId: revokeConsumerSecret
       parameters:
       - description: |
@@ -7079,7 +7079,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ConsumerSecretDeletionRequest'
         description: |
-          Request payload containing details for revoking a new consumer secret
+          Request payload containing details for revoking an existing consumer secret
         required: true
       responses:
         "204":

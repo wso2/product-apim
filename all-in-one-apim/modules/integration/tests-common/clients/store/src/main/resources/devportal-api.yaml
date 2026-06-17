@@ -3382,14 +3382,14 @@ paths:
       summary: |
         Revoke a Consumer Secret
       description: |
-        This operation can be used to revoke a consumer secret for an application for the give key type
+        This operation can be used to revoke a consumer secret for an application for the given key type
       operationId: revokeConsumerSecret
       parameters:
         - $ref: '#/components/parameters/applicationId'
         - $ref: '#/components/parameters/keyMappingId'
       requestBody:
         description: |
-          Request payload containing details for revoking a new consumer secret
+          Request payload containing details for revoking an existing consumer secret
         content:
           application/json:
             schema:

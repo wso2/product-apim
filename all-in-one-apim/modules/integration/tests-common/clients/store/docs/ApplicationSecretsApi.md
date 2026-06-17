@@ -164,7 +164,7 @@ Name | Type | Description  | Notes
 
 Revoke a Consumer Secret 
 
-This operation can be used to revoke a consumer secret for an application for the give key type 
+This operation can be used to revoke a consumer secret for an application for the given key type 
 
 ### Example
 ```java
@@ -188,7 +188,7 @@ public class Example {
     ApplicationSecretsApi apiInstance = new ApplicationSecretsApi(defaultClient);
     String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
     String keyMappingId = "keyMappingId_example"; // String | OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping. 
-    ConsumerSecretDeletionRequestDTO consumerSecretDeletionRequestDTO = new ConsumerSecretDeletionRequestDTO(); // ConsumerSecretDeletionRequestDTO | Request payload containing details for revoking a new consumer secret 
+    ConsumerSecretDeletionRequestDTO consumerSecretDeletionRequestDTO = new ConsumerSecretDeletionRequestDTO(); // ConsumerSecretDeletionRequestDTO | Request payload containing details for revoking an existing consumer secret 
     try {
       apiInstance.revokeConsumerSecret(applicationId, keyMappingId, consumerSecretDeletionRequestDTO);
     } catch (ApiException e) {
@@ -208,7 +208,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
  **keyMappingId** | **String**| OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  |
- **consumerSecretDeletionRequestDTO** | [**ConsumerSecretDeletionRequestDTO**](ConsumerSecretDeletionRequestDTO.md)| Request payload containing details for revoking a new consumer secret  |
+ **consumerSecretDeletionRequestDTO** | [**ConsumerSecretDeletionRequestDTO**](ConsumerSecretDeletionRequestDTO.md)| Request payload containing details for revoking an existing consumer secret  |
 
 ### Return type
 

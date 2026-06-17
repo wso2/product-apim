@@ -349,7 +349,7 @@ public class ApplicationSecretsApi {
      * Build call for revokeConsumerSecret
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
-     * @param consumerSecretDeletionRequestDTO Request payload containing details for revoking a new consumer secret  (required)
+     * @param consumerSecretDeletionRequestDTO Request payload containing details for revoking an existing consumer secret  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -421,10 +421,10 @@ public class ApplicationSecretsApi {
 
     /**
      * Revoke a Consumer Secret 
-     * This operation can be used to revoke a consumer secret for an application for the give key type 
+     * This operation can be used to revoke a consumer secret for an application for the given key type 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
-     * @param consumerSecretDeletionRequestDTO Request payload containing details for revoking a new consumer secret  (required)
+     * @param consumerSecretDeletionRequestDTO Request payload containing details for revoking an existing consumer secret  (required)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -443,10 +443,10 @@ public class ApplicationSecretsApi {
 
     /**
      * Revoke a Consumer Secret 
-     * This operation can be used to revoke a consumer secret for an application for the give key type 
+     * This operation can be used to revoke a consumer secret for an application for the given key type 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
-     * @param consumerSecretDeletionRequestDTO Request payload containing details for revoking a new consumer secret  (required)
+     * @param consumerSecretDeletionRequestDTO Request payload containing details for revoking an existing consumer secret  (required)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -467,10 +467,10 @@ public class ApplicationSecretsApi {
 
     /**
      * Revoke a Consumer Secret  (asynchronously)
-     * This operation can be used to revoke a consumer secret for an application for the give key type 
+     * This operation can be used to revoke a consumer secret for an application for the given key type 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
      * @param keyMappingId OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping.  (required)
-     * @param consumerSecretDeletionRequestDTO Request payload containing details for revoking a new consumer secret  (required)
+     * @param consumerSecretDeletionRequestDTO Request payload containing details for revoking an existing consumer secret  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
