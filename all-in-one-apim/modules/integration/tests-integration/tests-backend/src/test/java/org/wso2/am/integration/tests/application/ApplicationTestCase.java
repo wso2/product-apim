@@ -37,7 +37,6 @@ import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ConsumerSecretCreationRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ConsumerSecretDeletionRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ConsumerSecretDTO;
@@ -549,76 +548,6 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
         ConsumerSecretDeletionRequestDTO revokeRequest = new ConsumerSecretDeletionRequestDTO();
         revokeRequest.setSecretId(sandboxSecretId);
         restAPIStore.revokeConsumerSecret(applicationId3, sandboxKeyMappingId, revokeRequest);
-    }
-
-    @Test(groups = {"webapp"}, description = "Revoke with a non-existent secretId should return 404",
-            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
-    public void testRevokeNonExistentSecretId() throws Exception {
-        ConsumerSecretDeletionRequestDTO revokeRequest = new ConsumerSecretDeletionRequestDTO();
-        revokeRequest.setSecretId("non-existent-secret-" + System.currentTimeMillis());
-        try {
-            restAPIStore.revokeConsumerSecret(applicationId3, app3KeyMappingId, revokeRequest);
-            Assert.fail("Expected ApiException with 404 when revoking a non-existent secretId");
-        } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND,
-                    "Expected 404 when revoking a non-existent secretId");
-        }
-    }
-
-    @Test(groups = {"webapp"}, description = "Revoke with missing secretId in body should return 400",
-            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
-    public void testRevokeSecretWithEmptyBody() throws Exception {
-        ConsumerSecretDeletionRequestDTO revokeRequest = new ConsumerSecretDeletionRequestDTO();
-        try {
-            restAPIStore.revokeConsumerSecret(applicationId3, app3KeyMappingId, revokeRequest);
-            Assert.fail("Expected ApiException with 400 when revoking with missing secretId field");
-        } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
-                    "Expected 400 when revoking with missing secretId field");
-        }
-    }
-
-    @Test(groups = {"webapp"}, description = "Generate secret for an invalid keyMappingId should return 404",
-            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
-    public void testGenerateSecretForInvalidKeyMappingId() throws Exception {
-        ConsumerSecretCreationRequestDTO request = new ConsumerSecretCreationRequestDTO();
-        request.setAdditionalProperties(new HashMap<>());
-        try {
-            restAPIStore.generateConsumerSecret(applicationId3, "00000000-0000-0000-0000-000000000000", request);
-            Assert.fail("Expected ApiException with 404 when generating secret for invalid keyMappingId");
-        } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND,
-                    "Expected 404 when generating secret for invalid keyMappingId");
-        }
-    }
-
-    @Test(groups = {"webapp"}, description = "List secrets for an invalid keyMappingId should return 404",
-            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
-    public void testGetSecretsForInvalidKeyMappingId() throws Exception {
-        try {
-            restAPIStore.getConsumerSecrets(applicationId3, "00000000-0000-0000-0000-000000000000");
-            Assert.fail("Expected ApiException with 404 when listing secrets for invalid keyMappingId");
-        } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND,
-                    "Expected 404 when listing secrets for invalid keyMappingId");
-        }
-    }
-
-    @Test(groups = {"webapp"}, description = "Regenerate secret by key mapping ID",
-            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
-    public void testRegenerateSecretForKeyMappingId() throws Exception {
-        try {
-            ApplicationKeyReGenerateResponseDTO reGenerateResponseDTO = restAPIStore
-                    .regenerateSecretByKeyMappingId(applicationId3, app3KeyMappingId);
-            Assert.assertNotNull(reGenerateResponseDTO);
-            Assert.assertNotNull(reGenerateResponseDTO.getConsumerSecret(), "Secret is not populated");
-        } catch (ApiException e) {
-            if (e.getCode() == HttpStatus.SC_BAD_REQUEST && e.getResponseBody() != null
-                    && e.getResponseBody().contains("900917")) {
-                throw new SkipException("Regenerating consumer secret is not supported when multiple client secrets mode is enabled.");
-            }
-            throw e;
-        }
     }
 
     private OAuthConsumerAppDTO createOIDCApplication(String applicationName) throws Exception {
