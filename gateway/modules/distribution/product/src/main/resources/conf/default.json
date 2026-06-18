@@ -621,6 +621,7 @@
   "apim.basic_authenticator.init_idle_capacity": "50",
   "apim.basic_authenticator.max_active": "100",
   "apim.basic_authenticator.max_wait_millis": "30000",
+  "apim.mcp.enforce_auth_for_all_mcp_methods": false,
   "admin_service.deny_list": [
     "ClassMediatorAdmin",
     "CommandMediatorAdmin",
