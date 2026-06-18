@@ -549,7 +549,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(workflowResponse.getLifecycleState().getState(), LIFECYCLE_STATE_PUBLISHED,
                 "MCP Server lifecycle state mismatch.");
 
-        Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis());
+        Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis()*10);
 
         final List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
                 restAPIStore.getAllMCPServers(10, 0, tenantDomain, null));
