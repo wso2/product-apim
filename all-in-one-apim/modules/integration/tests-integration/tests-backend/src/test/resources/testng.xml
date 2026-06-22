@@ -37,6 +37,7 @@
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
             <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.aiapi.GeminiAPIUnlimitedTierDisabledTestCase"/>
             <class name="org.wso2.am.integration.tests.mcp.MCPServerTestCase"/>
         </classes>
     </test>
@@ -271,6 +272,8 @@
             <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
+            <class name="org.wso2.am.integration.tests.admin.ChangeApiProviderTestCase"/>
+            <class name="org.wso2.am.integration.tests.admin.ChangeApiProviderSecondaryUserStoreTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/> -->
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
@@ -279,7 +282,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/-->
             <class name="org.wso2.am.integration.tests.admin.OAuthApplicationOwnerUpdateTestCase"/>
-            <class name="org.wso2.am.integration.tests.admin.ChangeApiProviderTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.ConsumerAppBasedJWTRevocation"/>
             <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>

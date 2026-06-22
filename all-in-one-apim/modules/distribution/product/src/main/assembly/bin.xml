@@ -586,6 +586,7 @@
                 <include>product-title.jsp</include>
                 <include>cookie-policy-content.jsp</include>
                 <include>privacy-policy-content.jsp</include>
+                <include>favicon.png</include>
             </includes>
         </fileSet>
 
@@ -643,6 +644,7 @@
                 <include>header.jsp</include>
                 <include>product-footer.jsp</include>
                 <include>product-title.jsp</include>
+                <include>favicon.png</include>
             </includes>
         </fileSet>
 
@@ -1109,6 +1111,13 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
         </file>
         <!--End of claim management feature-->
+
+        <!-- Tenant selection page deployed as a standalone webapp at context /select-tenant -->
+        <file>
+            <source>src/main/extensions/select-tenant.jsp</source>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/webapps/select-tenant</outputDirectory>
+            <destName>index.jsp</destName>
+        </file>
 
 
         <!-- using the event-broker config file from carbon mediation>

@@ -42,7 +42,10 @@
                 </filter>
             </inSequence>
             <outSequence>
-                <script language="js"><![CDATA[java.lang.Thread.sleep(60000);]]></script>
+                <script language="js"><![CDATA[
+                    var end = new Date().getTime() + 60000;
+                    while (new Date().getTime() < end) { }
+                ]]></script>
                 <send/>
             </outSequence>
         </resource>

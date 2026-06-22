@@ -254,8 +254,8 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
-        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Allow time for the new revision to replace the previous one on the gateway
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP",

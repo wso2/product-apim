@@ -111,8 +111,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         restAPIId = serviceResponse.getData();
         restAPIPublisher.changeAPILifeCycleStatus(restAPIId, APILifeCycleAction.PUBLISH.getAction(), null);
 
-        //publish the api
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
     }
 
     @Test(description = "Publish WebSocket API", dependsOnMethods = "testAPICreation")

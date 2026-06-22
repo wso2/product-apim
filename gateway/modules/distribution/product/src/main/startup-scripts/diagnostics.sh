@@ -110,13 +110,8 @@ if [ -n "$CLASSPATH_PREFIX" ] ; then
   CLASSPATH=$CLASSPATH_PREFIX:$CLASSPATH
 fi
 
-if [ -z "$JVM_MEM_OPTS" ]; then
-   java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-   JVM_MEM_OPTS="-Xms32m -Xmx128m"
-   if [ "$java_version" \< "1.8" ]; then
-      JVM_MEM_OPTS="$JVM_MEM_OPTS"
-   fi
-fi
+# Restrict diagnostics process memory to 128MB-256MB regardless of parent process JVM_MEM_OPTS
+JVM_MEM_OPTS="-Xms128m -Xmx256m"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

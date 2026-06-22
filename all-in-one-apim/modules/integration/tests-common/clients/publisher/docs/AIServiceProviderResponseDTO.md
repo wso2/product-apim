@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **description** | **String** |  |  [optional]
 **configurations** | **String** | LLM Provider configurations |  [optional]
 **apiDefinition** | **String** | OpenAPI specification |  [optional]
+**deprecated** | **Boolean** | Indicates if the LLM provider is deprecated |  [optional]
 
 
 
