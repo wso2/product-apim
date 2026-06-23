@@ -175,7 +175,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(APIVersion);
         apiRequest.setResourceMethod("GET");
         apiRequest.setDefault_version("default_version");
-        apiRequest.setDefault_version_checked("default_version");
+        apiRequest.setDefault_version_checked("true");
         //add test api
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         Assert.assertEquals(serviceResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
@@ -276,8 +276,8 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
 
         // Assert isDefaultVersion before provider change (issue #5038 baseline)
         APIDTO apiBeforeProviderChange = restAPIPublisher.getAPIByID(apiID);
-        Assert.assertTrue("API should be marked as default version before provider change",
-                apiBeforeProviderChange.getIsDefaultVersion());
+        Assert.assertEquals("API should be marked as default version before provider change",
+                Boolean.TRUE, apiBeforeProviderChange.getIsDefaultVersion());
 
         ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newProviderName, apiID);
         Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
@@ -285,8 +285,8 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         // Verify the provider was actually changed
         APIDTO apiAfterProviderChange = restAPIPublisher.getAPIByID(apiID);
         // Verify isDefaultVersion is preserved after provider change (fix for issue #5038)
-        Assert.assertTrue("isDefaultVersion should remain true after provider change (issue #5038)",
-                apiAfterProviderChange.getIsDefaultVersion());
+        Assert.assertEquals("isDefaultVersion should remain true after provider change (issue #5038)",
+                Boolean.TRUE, apiAfterProviderChange.getIsDefaultVersion());
         Assert.assertEquals(apiAfterProviderChange.getProvider(), newProviderName,
                 "API provider should be changed to " + newProviderName);
 
