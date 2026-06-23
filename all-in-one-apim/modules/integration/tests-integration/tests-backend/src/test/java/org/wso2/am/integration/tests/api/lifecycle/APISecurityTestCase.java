@@ -371,8 +371,10 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
             "types")
     public void testCreateAndDeployRevisionWithInternalKeyTesting() throws JSONException, ApiException,
             XPathExpressionException, APIManagerIntegrationTestException, IOException,
-            org.wso2.am.integration.clients.store.api.ApiException, InterruptedException {
-        createAPIRevisionAndDeployUsingRest(apiId1, restAPIPublisher);
+            org.wso2.am.integration.clients.store.api.ApiException {
+        String revisionUUID1 = createAPIRevisionAndDeployUsingRest(apiId1, restAPIPublisher);
+        Assert.assertTrue(waitForAPIRevisionDeploymentSync(apiId1, revisionUUID1, restAPIPublisher, 120000L),
+                "Revision " + revisionUUID1 + " of API " + apiId1 + " was not deployed to the gateway in time");
         APIDTO api1 = restAPIPublisher.getAPIByID(apiId1);
         waitForAPIDeploymentSync(api1.getProvider(), api1.getName(), api1.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -383,7 +385,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 API_END_POINT_METHOD, keyDTOApiResponse1.getData().getApikey());
         Assert.assertEquals(httpResponse1.getResponseCode(), 200);
         restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
-        createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
+        String revisionUUID2 = createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
+        Assert.assertTrue(waitForAPIRevisionDeploymentSync(apiId2, revisionUUID2, restAPIPublisher, 120000L),
+                "Revision " + revisionUUID2 + " of API " + apiId2 + " was not deployed to the gateway in time");
         APIDTO api2 = restAPIPublisher.getAPIByID(apiId2);
         waitForAPIDeploymentSync(api2.getProvider(), api2.getName(), api2.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -401,7 +405,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 API_END_POINT_METHOD, keyDTOApiResponse2.getData().getApikey());
         Assert.assertEquals(httpResponse2.getResponseCode(), 200);
 
-        createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
+        String revisionUUID3 = createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
+        Assert.assertTrue(waitForAPIRevisionDeploymentSync(apiId3, revisionUUID3, restAPIPublisher, 120000L),
+                "Revision " + revisionUUID3 + " of API " + apiId3 + " was not deployed to the gateway in time");
         APIDTO api3 = restAPIPublisher.getAPIByID(apiId3);
         waitForAPIDeploymentSync(api3.getProvider(), api3.getName(), api3.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -413,7 +419,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(httpResponse4.getResponseCode(), 200);
         restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction());
 
-        createAPIRevisionAndDeployUsingRest(apiId4, restAPIPublisher);
+        String revisionUUID4 = createAPIRevisionAndDeployUsingRest(apiId4, restAPIPublisher);
+        Assert.assertTrue(waitForAPIRevisionDeploymentSync(apiId4, revisionUUID4, restAPIPublisher, 120000L),
+                "Revision " + revisionUUID4 + " of API " + apiId4 + " was not deployed to the gateway in time");
         APIDTO api4 = restAPIPublisher.getAPIByID(apiId4);
         waitForAPIDeploymentSync(api4.getProvider(), api4.getName(), api4.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -445,9 +453,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse httpResponseAfterPublish = invokeApiWithInternalKey(mutualSSLOnlyAPIContext, API_VERSION_1_0_0,
                 API_END_POINT_METHOD, keyDTOApiResponse1.getData().getApikey());
         Assert.assertEquals(httpResponseAfterPublish.getResponseCode(), 200);
-
-        // wait until certificates loaded
-        Thread.sleep(120000);
     }
 
     private HttpResponse invokeApiWithInternalKey(String context, String version, String resource,
@@ -713,14 +718,12 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "text/xml");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
-        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "new-keystore.jks",
+        String keyStorePath = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                + File.separator + "new-keystore.jks";
+        HttpResponse response = doMutualSSLGetWithRetry(keyStorePath,
                 getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders);
-        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "new-keystore.jks",
+        HttpResponse defaultResponse = doMutualSSLGetWithRetry(keyStorePath,
                 getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext) + API_END_POINT_METHOD,
                 requestHeaders);
 
@@ -728,6 +731,27 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 "Mutual SSL Authentication has not succeed");
         Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Mutual SSL Authentication has not succeed");
+    }
+
+    // The client certificate uploaded in initialize() is loaded into the gateway HTTPS listener SSL profile only on a
+    // periodic reload (apim.certificate_reloader period ~1m), so a fresh invocation can race the reload and get a 401.
+    // Retry on 401 within a ~120s ceiling to cover at least one reload cycle; return early on any other response.
+    private HttpResponse doMutualSSLGetWithRetry(String keyStorePath, String url, Map<String, String> requestHeaders)
+            throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
+            UnrecoverableKeyException {
+        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(keyStorePath, url, requestHeaders);
+        int retries = 0;
+        while (response.getResponseCode() == HttpStatus.SC_UNAUTHORIZED && retries < 40) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            response = HTTPSClientUtils.doMutulSSLGet(keyStorePath, url, requestHeaders);
+            retries++;
+        }
+        return response;
     }
 
     @Test(description = "API invocation with mutual ssl and oauth mandatory", dependsOnMethods =
