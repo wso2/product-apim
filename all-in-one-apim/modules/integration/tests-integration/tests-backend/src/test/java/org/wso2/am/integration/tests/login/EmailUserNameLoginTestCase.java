@@ -136,7 +136,7 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
         // check for Admin Portal login with email user name
         restAPIAdmin = new RestAPIAdminImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN, "https://localhost:9943/");
         ApplicationThrottlePolicyListDTO listDTO =
-                restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null, null, null);
+                restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null);
         assertNotNull(listDTO, "Login to Admin portal with email username failed");
     }
 
@@ -170,7 +170,7 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
         // check for Admin Portal login with email user name
         restAPIAdmin = new RestAPIAdminImpl(TENANT_USER_USERNAME, PASSWORD, TENANT_DOMAIN, adminURLHttps);
         ApplicationThrottlePolicyListDTO listDTO =
-                restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null, null, null);
+                restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null);
         assertNotNull(listDTO, "Login to Admin portal with email username failed");
     }
 

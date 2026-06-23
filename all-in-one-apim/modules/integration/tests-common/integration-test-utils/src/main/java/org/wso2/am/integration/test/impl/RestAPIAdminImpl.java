@@ -55,22 +55,22 @@ public class RestAPIAdminImpl {
     private AdvancedPolicyIndividualApi advancedPolicyIndividualApi = new AdvancedPolicyIndividualApi();
     private AdvancedPolicyCollectionApi advancedPolicyCollectionApi = new AdvancedPolicyCollectionApi();
     private ApplicationCollectionApi applicationCollectionApi = new ApplicationCollectionApi();
-    private ImportExportThrottlingPolicyApi exportImportThrottlingPolicyApi = new ImportExportThrottlingPolicyApi();
-    private ThrottlingPolicySearchApi throttlingPolicySearchApi = new ThrottlingPolicySearchApi();
+    private ImportExportApi importExportApi = new ImportExportApi();
+    private UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
     private SystemScopesApi systemScopesApi = new SystemScopesApi();
     private ApplicationApi applicationApi = new ApplicationApi();
     private ApiProviderChangeApi apiProviderChangeApi = new ApiProviderChangeApi();
-    private LabelApi labelApi = new LabelApi();
-    private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
-    private EnvironmentApi environmentApi = new EnvironmentApi();
+    private LabelIndividualApi labelIndividualApi = new LabelIndividualApi();
+    private LabelsCollectionApi labelsCollectionApi = new LabelsCollectionApi();
+    private EnvironmentsApi environmentsApi = new EnvironmentsApi();
     private LlmProviderApi llmProviderApi = new LlmProviderApi();
     private LlmProvidersApi llmProvidersApi = new LlmProvidersApi();
     private AiServiceProviderApi aiServiceProviderApi = new AiServiceProviderApi();
     private AiServiceProvidersApi aiServiceProvidersApi = new AiServiceProvidersApi();
-    private EnvironmentCollectionApi environmentCollectionApi = new EnvironmentCollectionApi();
     private TenantConfigApi tenantConfigApi = new TenantConfigApi();
     private TenantConfigSchemaApi tenantConfigSchemaApi = new TenantConfigSchemaApi();
     private OrganizationsApi organizationApi = new OrganizationsApi();
+    private PlatformGatewaysApi platformGatewaysApi = new PlatformGatewaysApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -144,18 +144,17 @@ public class RestAPIAdminImpl {
         denyPolicyIndividualApi.setApiClient(apiAdminClient);
         advancedPolicyIndividualApi.setApiClient(apiAdminClient);
         advancedPolicyCollectionApi.setApiClient(apiAdminClient);
-        exportImportThrottlingPolicyApi.setApiClient(apiAdminClient);
-        throttlingPolicySearchApi.setApiClient(apiAdminClient);
+        importExportApi.setApiClient(apiAdminClient);
+        unifiedSearchApi.setApiClient(apiAdminClient);
         applicationCollectionApi.setApiClient(apiAdminClient);
         applicationApi.setApiClient(apiAdminClient);
-        labelApi.setApiClient(apiAdminClient);
-        labelCollectionApi.setApiClient(apiAdminClient);
-        environmentApi.setApiClient(apiAdminClient);
+        labelIndividualApi.setApiClient(apiAdminClient);
+        labelsCollectionApi.setApiClient(apiAdminClient);
+        environmentsApi.setApiClient(apiAdminClient);
         llmProviderApi.setApiClient(apiAdminClient);
         llmProvidersApi.setApiClient(apiAdminClient);
         aiServiceProviderApi.setApiClient(apiAdminClient);
         aiServiceProvidersApi.setApiClient(apiAdminClient);
-        environmentCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
         apiCategoryCollectionApi.setApiClient(apiAdminClient);
@@ -165,6 +164,7 @@ public class RestAPIAdminImpl {
         tenantConfigSchemaApi.setApiClient(apiAdminClient);
         apiProviderChangeApi.setApiClient(apiAdminClient);
         organizationApi.setApiClient(apiAdminClient);
+        platformGatewaysApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -177,7 +177,7 @@ public class RestAPIAdminImpl {
      */
     public ThrottlePolicyDetailsListDTO getThrottlePolicies (String query) throws ApiException {
 
-        return throttlingPolicySearchApi.throttlingPolicySearch(query);
+        return unifiedSearchApi.throttlingPolicySearch(query);
     }
 
     /**
@@ -191,7 +191,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<ExportThrottlePolicyDTO> exportThrottlePolicy(String policyName, String policyType)
             throws ApiException {
 
-        return exportImportThrottlingPolicyApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType);
+        return importExportApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType);
     }
 
     /**
@@ -204,7 +204,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> importThrottlePolicy(File file, Boolean overwrite) throws ApiException {
 
-        return exportImportThrottlingPolicyApi.importThrottlingPolicyWithHttpInfo(file, overwrite);
+        return importExportApi.importThrottlingPolicyWithHttpInfo(file, overwrite);
     }
 
     /***
@@ -253,7 +253,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteApiCategory(String uuid) throws ApiException {
 
-        return apiCategoryIndividualApi.apiCategoriesApiCategoryIdDeleteWithHttpInfo(uuid, null, null);
+        return apiCategoryIndividualApi.apiCategoriesApiCategoryIdDeleteWithHttpInfo(uuid);
     }
 
     /**
@@ -263,7 +263,7 @@ public class RestAPIAdminImpl {
      * @throws ApiException if there is an error during the API call.
      */
     public ApiResponse<LLMProviderSummaryResponseListDTO> getLLMProviders() throws ApiException {
-        return llmProvidersApi.llmProvidersGetWithHttpInfo();
+        return llmProvidersApi.getLLMProvidersWithHttpInfo();
     }
 
     /**
@@ -274,7 +274,7 @@ public class RestAPIAdminImpl {
      * @throws ApiException if there is an error during the API call.
      */
     public ApiResponse<LLMProviderResponseDTO> getLLMProvider(String llmProviderId) throws ApiException {
-        return llmProviderApi.llmProvidersLlmProviderIdGetWithHttpInfo(llmProviderId);
+        return llmProviderApi.getLLMProviderWithHttpInfo(llmProviderId);
     }
 
     /**
@@ -292,7 +292,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<LLMProviderResponseDTO> addLLMProvider(String name, String apiVersion, String description,
             String configuration, File apiDefinition, String modelList) throws ApiException {
 
-        return llmProvidersApi.llmProvidersPostWithHttpInfo(name, apiVersion, description, configuration, apiDefinition,
+        return llmProvidersApi.addLLMProviderWithHttpInfo(name, apiVersion, description, configuration, apiDefinition,
                 modelList);
     }
 
@@ -311,7 +311,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<LLMProviderResponseDTO> updateLLMProvider(String llmProviderId, String name, String apiVersion,
             String description, String configuration, File apiDefinition, String modelList) throws ApiException {
-        return llmProviderApi.llmProvidersLlmProviderIdPutWithHttpInfo(llmProviderId, name, apiVersion, description,
+        return llmProviderApi.updateLLMProviderWithHttpInfo(llmProviderId, name, apiVersion, description,
                 configuration, apiDefinition, modelList);
     }
 
@@ -323,7 +323,7 @@ public class RestAPIAdminImpl {
      * @throws ApiException if there is an error during the API call.
      */
     public ApiResponse<Void> deleteLLMProvider(String llmProviderId) throws ApiException {
-        return llmProviderApi.llmProvidersLlmProviderIdDeleteWithHttpInfo(llmProviderId);
+        return llmProviderApi.deleteLLMProviderWithHttpInfo(llmProviderId);
     }
 
     /**
@@ -478,7 +478,7 @@ public class RestAPIAdminImpl {
             throws ApiException {
 
         return applicationPolicyIndividualApi
-                .throttlingPoliciesApplicationPolicyIdGetWithHttpInfo(policyId, null, null);
+                .throttlingPoliciesApplicationPolicyIdGetWithHttpInfo(policyId);
     }
 
     /**
@@ -494,7 +494,7 @@ public class RestAPIAdminImpl {
 
         return applicationPolicyIndividualApi
                 .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, Constants.APPLICATION_JSON,
-                        applicationThrottlePolicyDTO, null, null);
+                        applicationThrottlePolicyDTO);
     }
 
     /**
@@ -507,7 +507,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<Void> deleteApplicationThrottlingPolicy(String policyId) throws ApiException {
 
         return applicationPolicyIndividualApi
-                .throttlingPoliciesApplicationPolicyIdDeleteWithHttpInfo(policyId, null, null);
+                .throttlingPoliciesApplicationPolicyIdDeleteWithHttpInfo(policyId);
     }
 
     /**
@@ -536,7 +536,7 @@ public class RestAPIAdminImpl {
             throws ApiException {
 
         return subscriptionPolicyIndividualApi
-                .throttlingPoliciesSubscriptionPolicyIdGetWithHttpInfo(policyId, null, null);
+                .throttlingPoliciesSubscriptionPolicyIdGetWithHttpInfo(policyId);
     }
 
     /**
@@ -552,7 +552,7 @@ public class RestAPIAdminImpl {
 
         return subscriptionPolicyIndividualApi
                 .throttlingPoliciesSubscriptionPolicyIdPutWithHttpInfo(policyId,
-                        Constants.APPLICATION_JSON, subscriptionThrottlePolicyDTO, null, null);
+                        Constants.APPLICATION_JSON, subscriptionThrottlePolicyDTO);
     }
 
     /**
@@ -565,7 +565,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<Void> deleteSubscriptionThrottlingPolicy(String policyId) throws ApiException {
 
         return subscriptionPolicyIndividualApi
-                .throttlingPoliciesSubscriptionPolicyIdDeleteWithHttpInfo(policyId, null, null);
+                .throttlingPoliciesSubscriptionPolicyIdDeleteWithHttpInfo(policyId);
     }
 
     /**
@@ -590,7 +590,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<CustomRuleDTO> getCustomThrottlingPolicy(String policyId) throws ApiException {
 
         return customRulesIndividualApi
-                .throttlingPoliciesCustomRuleIdGetWithHttpInfo(policyId, null, null);
+                .throttlingPoliciesCustomRuleIdGetWithHttpInfo(policyId);
     }
 
     /**
@@ -605,7 +605,7 @@ public class RestAPIAdminImpl {
             throws ApiException {
 
         return customRulesIndividualApi.throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId,
-                Constants.APPLICATION_JSON, customRuleDTO, null, null);
+                Constants.APPLICATION_JSON, customRuleDTO);
     }
 
     /**
@@ -617,7 +617,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteCustomThrottlingPolicy(String policyId) throws ApiException {
 
-        return customRulesIndividualApi.throttlingPoliciesCustomRuleIdDeleteWithHttpInfo(policyId, null, null);
+        return customRulesIndividualApi.throttlingPoliciesCustomRuleIdDeleteWithHttpInfo(policyId);
     }
 
     /**
@@ -637,17 +637,16 @@ public class RestAPIAdminImpl {
      * Updates an deny throttling policy.
      *
      * @param conditionId policy id of the deny throttling policy to be updated.
-     * @param conditionType condition type of the deny throttling policy to be.
      * @param blockingConditionStatusDTO deny throttling policy status DTO to be updated.
      * @return API response returned by API call.
      * @throws ApiException if an error occurs while creating the deny throttling policy.
      */
-    public ApiResponse<BlockingConditionDTO> updateDenyThrottlingPolicy(String conditionId, String conditionType, BlockingConditionStatusDTO blockingConditionStatusDTO) throws ApiException {
+    public ApiResponse<BlockingConditionDTO> updateDenyThrottlingPolicy(String conditionId,
+            BlockingConditionStatusDTO blockingConditionStatusDTO) throws ApiException {
 
         return denyPolicyIndividualApi
-                .throttlingDenyPolicyConditionIdPatchWithHttpInfo(conditionId,conditionType,blockingConditionStatusDTO,
-                        null,
-                        null);
+                .throttlingDenyPolicyConditionIdPatchWithHttpInfo(conditionId, Constants.APPLICATION_JSON,
+                        blockingConditionStatusDTO);
     }
 
     /**
@@ -659,7 +658,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<BlockingConditionDTO> getDenyThrottlingPolicy(String policyId) throws ApiException {
 
         return denyPolicyIndividualApi
-                .throttlingDenyPolicyConditionIdGetWithHttpInfo(policyId, null, null);
+                .throttlingDenyPolicyConditionIdGetWithHttpInfo(policyId);
     }
 
     /**
@@ -670,7 +669,7 @@ public class RestAPIAdminImpl {
      */
     public BlockingConditionListDTO getBlockingConditionsByConditionTypeAndValue(String query) throws ApiException {
 
-        return denyPolicyCollectionApi.throttlingDenyPoliciesGet(Constants.APPLICATION_JSON, null, null, query);
+        return denyPolicyCollectionApi.throttlingDenyPoliciesGet(Constants.APPLICATION_JSON, query);
     }
 
 
@@ -683,7 +682,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteDenyThrottlingPolicy(String policyId) throws ApiException {
 
-        return denyPolicyIndividualApi.throttlingDenyPolicyConditionIdDeleteWithHttpInfo(policyId, null, null);
+        return denyPolicyIndividualApi.throttlingDenyPolicyConditionIdDeleteWithHttpInfo(policyId);
     }
 
     /**
@@ -709,7 +708,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<AdvancedThrottlePolicyDTO> getAdvancedThrottlingPolicy(String policyId) throws ApiException {
 
-        return advancedPolicyIndividualApi.throttlingPoliciesAdvancedPolicyIdGetWithHttpInfo(policyId, null, null);
+        return advancedPolicyIndividualApi.throttlingPoliciesAdvancedPolicyIdGetWithHttpInfo(policyId);
     }
 
     /**
@@ -725,7 +724,7 @@ public class RestAPIAdminImpl {
 
         return advancedPolicyIndividualApi
                 .throttlingPoliciesAdvancedPolicyIdPutWithHttpInfo(policyId, Constants.APPLICATION_JSON,
-                        advancedThrottlePolicyDTO, null, null);
+                        advancedThrottlePolicyDTO);
     }
 
     /**
@@ -737,7 +736,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteAdvancedThrottlingPolicy(String policyId) throws ApiException {
 
-        return advancedPolicyIndividualApi.throttlingPoliciesAdvancedPolicyIdDeleteWithHttpInfo(policyId, null, null);
+        return advancedPolicyIndividualApi.throttlingPoliciesAdvancedPolicyIdDeleteWithHttpInfo(policyId);
     }
 
     /**
@@ -749,7 +748,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<LabelDTO> addLabel(LabelDTO labelDTO) throws ApiException {
 
-        return labelApi.labelsPostWithHttpInfo(labelDTO);
+        return labelIndividualApi.createLabelWithHttpInfo(labelDTO);
     }
 
     /**
@@ -760,7 +759,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<LabelListDTO> getLabels() throws ApiException {
 
-        return labelCollectionApi.labelsGetWithHttpInfo();
+        return labelsCollectionApi.getAllLabelsWithHttpInfo();
     }
 
     /**
@@ -773,7 +772,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<LabelDTO> updateLabel(String labelId, LabelDTO labelDTO) throws ApiException {
 
-        return labelApi.labelsLabelIdPutWithHttpInfo(labelId, labelDTO);
+        return labelIndividualApi.updateLabelWithHttpInfo(labelId, labelDTO);
     }
 
     /**
@@ -785,7 +784,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteLabel(String labelId) throws ApiException {
 
-        return labelApi.labelsLabelIdDeleteWithHttpInfo(labelId, null, null);
+        return labelIndividualApi.deleteLabelWithHttpInfo(labelId);
     }
 
     /**
@@ -797,7 +796,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<EnvironmentDTO> addEnvironment(EnvironmentDTO environmentDTO) throws ApiException {
 
-        return environmentApi.environmentsPostWithHttpInfo(environmentDTO);
+        return environmentsApi.environmentsPostWithHttpInfo(environmentDTO);
     }
 
     /**
@@ -808,7 +807,48 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<EnvironmentListDTO> getEnvironments() throws ApiException {
 
-        return environmentCollectionApi.environmentsGetWithHttpInfo();
+        return environmentsApi.environmentsGetWithHttpInfo();
+    }
+
+    /**
+     * Retrieves a gateway environment by id (including APIPlatform gateways by gateway UUID).
+     * {@link #getEnvironments()} intentionally omits platform gateways; use this for deploy-target lookups.
+     *
+     * @param environmentId Gateway environment UUID (same as platform gateway id for APIPlatform type).
+     * @return API response containing {@link EnvironmentDTO}.
+     * @throws ApiException if retrieval fails or the environment does not exist.
+     */
+    public ApiResponse<EnvironmentDTO> getEnvironment(String environmentId) throws ApiException {
+
+        return environmentsApi.environmentsEnvironmentIdGetWithHttpInfo(environmentId);
+    }
+
+    public ApiResponse<GatewayResponseWithTokenDTO> createPlatformGateway(
+            CreatePlatformGatewayRequestDTO body) throws ApiException {
+
+        return platformGatewaysApi.createPlatformGatewayWithHttpInfo(body);
+    }
+
+    public ApiResponse<GatewayListDTO> getPlatformGateways() throws ApiException {
+
+        return platformGatewaysApi.getPlatformGatewaysWithHttpInfo();
+    }
+
+    public ApiResponse<PlatformGatewayResponseDTO> updatePlatformGateway(String gatewayId,
+            UpdatePlatformGatewayRequestDTO body) throws ApiException {
+
+        return platformGatewaysApi.updatePlatformGatewayWithHttpInfo(gatewayId, body);
+    }
+
+    public ApiResponse<GatewayResponseWithTokenDTO> regeneratePlatformGatewayToken(String gatewayId)
+            throws ApiException {
+
+        return platformGatewaysApi.regeneratePlatformGatewayTokenWithHttpInfo(gatewayId);
+    }
+
+    public ApiResponse<Void> deletePlatformGateway(String gatewayId) throws ApiException {
+
+        return platformGatewaysApi.deletePlatformGatewayWithHttpInfo(gatewayId);
     }
 
     /**
@@ -822,7 +862,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<EnvironmentDTO> updateEnvironment(String environmentId, EnvironmentDTO environmentDTO)
             throws ApiException {
 
-        return environmentApi.environmentsEnvironmentIdPutWithHttpInfo(environmentId, environmentDTO);
+        return environmentsApi.environmentsEnvironmentIdPutWithHttpInfo(environmentId, environmentDTO);
     }
 
     /**
@@ -834,7 +874,7 @@ public class RestAPIAdminImpl {
      */
     public ApiResponse<Void> deleteEnvironment(String environmentId) throws ApiException {
 
-        return environmentApi.environmentsEnvironmentIdDeleteWithHttpInfo(environmentId);
+        return environmentsApi.environmentsEnvironmentIdDeleteWithHttpInfo(environmentId);
     }
     
     /**
@@ -851,7 +891,7 @@ public class RestAPIAdminImpl {
             String appTenantDomain, String name) throws ApiException {
 
         return applicationCollectionApi.applicationsGetWithHttpInfo(user, limit, offset, null,
-                null, name, appTenantDomain);
+                name, appTenantDomain, null, null);
     }
 
     /**
@@ -911,7 +951,7 @@ public class RestAPIAdminImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            workflowInfodto = workflowsIndividualApi.workflowsExternalWorkflowRefGet(externalWorkflowRef, null);
+            workflowInfodto = workflowsIndividualApi.workflowsExternalWorkflowRefGet(externalWorkflowRef);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -926,7 +966,7 @@ public class RestAPIAdminImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            workflowListdto = workflowCollectionApi.workflowsGet(null, null, null, null, workflowType);
+            workflowListdto = workflowCollectionApi.workflowsGet(null, null, null, workflowType);
             response = new HttpResponse(gson.toJson(workflowListdto), 200);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
@@ -996,7 +1036,8 @@ public class RestAPIAdminImpl {
      * @throws ApiException if an error occurs updating the tenant conf.
      */
     public Object updateTenantConfig(Object tenantConf) throws ApiException {
-        return tenantConfigApi.updateTenantConfig(tenantConf);
+        String body = tenantConf instanceof String ? (String) tenantConf : new Gson().toJson(tenantConf);
+        return tenantConfigApi.updateTenantConfig(body);
     }
 
     /**
@@ -1011,7 +1052,7 @@ public class RestAPIAdminImpl {
 
 
     public WorkflowListDTO getWorkflowsByWorkflowType(String workflowType) throws ApiException {
-        return workflowCollectionApi.workflowsGet(null, null, null, null, workflowType);
+        return workflowCollectionApi.workflowsGet(null, null, null, workflowType);
     }
     
     /***
