@@ -37,7 +37,7 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 public class APIMANAGER5834APICreationWithInvalidInputsTestCase extends APIMIntegrationBaseTest {
-    private final String apiNameTest = "APIM18PublisherTest";
+    private final String apiNameTest = "APIMANAGER5834PublisherTest";
     private final String apiProductionEndpointPostfixUrl =
             "jaxrs_basic/services/customers/customerservice/customers/123";
     private final String contextMisMatchErrorMsg = "API Context does not exist";

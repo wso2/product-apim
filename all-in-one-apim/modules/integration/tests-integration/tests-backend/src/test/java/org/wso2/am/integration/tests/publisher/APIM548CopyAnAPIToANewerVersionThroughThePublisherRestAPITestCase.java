@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -133,10 +134,16 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
             APIListDTO apiResponsePublisher = restAPIPublisher
                     .getAllAPIs();
             if (apiResponsePublisher != null) {
-                String json = gson.toJson(apiResponsePublisher);
-                jsonObject = new JSONObject(json);
-                available = true;
-                break;
+                List<APIInfoDTO> list = apiResponsePublisher.getList();
+                for (int i = 0; i < apiResponsePublisher.getCount(); i++) {
+                    APIInfoDTO api = list.get(i);
+                    if (apiOldVersion.equals(api.getVersion())) {
+                        String json = gson.toJson(apiResponsePublisher);
+                        jsonObject = new JSONObject(json);
+                        available = true;
+                        break;
+                    }
+                }
             }
             
             currentTry++;
@@ -165,10 +172,16 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
             Thread.sleep(2000);
             APIListDTO allApiResponse = restAPIPublisher.getAllAPIs();
             if (allApiResponse != null) {
-                String json = gson.toJson(allApiResponse);
-                allApiObject = new JSONObject(json);
-                available = true;
-                break;
+                List<APIInfoDTO> list = allApiResponse.getList();
+                for (int i = 0; i < allApiResponse.getCount(); i++) {
+                    APIInfoDTO api = list.get(i);
+                    if (apiNewVersion.equals(api.getVersion())) {
+                        String json = gson.toJson(allApiResponse);
+                        allApiObject = new JSONObject(json);
+                        available = true;
+                        break;
+                    }
+                }
             }
             currentTry++;
         } while (currentTry <= maxRetry);

@@ -549,12 +549,17 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(workflowResponse.getLifecycleState().getState(), LIFECYCLE_STATE_PUBLISHED,
                 "MCP Server lifecycle state mismatch.");
 
-        Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis()*10);
-
-        final List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
-                restAPIStore.getAllMCPServers(10, 0, tenantDomain, null));
-        Assert.assertTrue(isMCPServerAvailableInList(SERVER_NAME_PETSTORE_OPENAPI, publisherAPIList),
-                DEVPORTAL_VISIBILITY_ERROR);
+        boolean mcpServerAvailable = false;
+        for (int attempt = 0; attempt < 10; attempt++) {
+            Thread.sleep(POST_PUBLISH_SETTLE_WAIT.toMillis());
+            final List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
+                    restAPIStore.getAllMCPServers(10, 0, tenantDomain, null));
+            if (isMCPServerAvailableInList(SERVER_NAME_PETSTORE_OPENAPI, publisherAPIList)) {
+                mcpServerAvailable = true;
+                break;
+            }
+        }
+        Assert.assertTrue(mcpServerAvailable, DEVPORTAL_VISIBILITY_ERROR);
 
         final HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME, APP_DESC,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, TokenTypeEnum.JWT);
