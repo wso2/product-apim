@@ -276,8 +276,8 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
 
         // Assert isDefaultVersion before provider change (issue #5038 baseline)
         APIDTO apiBeforeProviderChange = restAPIPublisher.getAPIByID(apiID);
-        Assert.assertEquals("API should be marked as default version before provider change",
-                Boolean.TRUE, apiBeforeProviderChange.getIsDefaultVersion());
+        Assert.assertEquals(apiBeforeProviderChange.getIsDefaultVersion(), Boolean.TRUE,
+                "API should be marked as default version before provider change");
 
         ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newProviderName, apiID);
         Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
@@ -285,8 +285,8 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         // Verify the provider was actually changed
         APIDTO apiAfterProviderChange = restAPIPublisher.getAPIByID(apiID);
         // Verify isDefaultVersion is preserved after provider change (fix for issue #5038)
-        Assert.assertEquals("isDefaultVersion should remain true after provider change (issue #5038)",
-                Boolean.TRUE, apiAfterProviderChange.getIsDefaultVersion());
+        Assert.assertEquals(apiAfterProviderChange.getIsDefaultVersion(), Boolean.TRUE,
+                "isDefaultVersion should remain true after provider change (issue #5038)");
         Assert.assertEquals(apiAfterProviderChange.getProvider(), newProviderName,
                 "API provider should be changed to " + newProviderName);
 
