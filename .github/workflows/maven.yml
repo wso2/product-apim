@@ -107,3 +107,102 @@ jobs:
         uses: malinthaprasan/action-surefire-report@v1
         with:
           report_paths: 'reports/**/TEST-*.xml'
+  # Builds the distribution + Docker images ONCE, then shares the images (docker save -> artifact) and the
+  # Maven repo (run-scoped cache) with the integration-v2 matrix. The image-build execs in the testcontainers
+  # module bind to pre-integration-test, which `mvn install` runs but `mvn test` does not - so matrix entries
+  # `docker load` these images and never rebuild them.
+  v2-build-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run hostname
+        run: hostname
+      - name: Fix host entry
+        run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      # Run-scoped key so the matrix restores exactly this run's repo (incl. the 4.7.0-SNAPSHOT artifacts the
+      # dist build installs); restore-keys warm-starts from the shared cache.
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-v2-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build APIM distribution (skip tests)
+        run: >
+          mvn clean install -f all-in-one-apim/pom.xml
+          -Dmaven.test.skip=true -DskipBenchMarkTest=true -DskipRestartTests=true
+      - name: Build APIM + node Docker images (no suite)
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          mvn install -pl tests-integration/cucumber-tests -am -DskipTests
+          -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      - name: Save Docker images
+        run: |
+          mkdir -p /tmp/v2-images
+          docker save wso2am:4.7.0-SNAPSHOT-jdk21 node-app-server:latest | gzip > /tmp/v2-images/images.tar.gz
+      - name: Upload Docker images
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-images
+          path: /tmp/v2-images/images.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+  integration-v2:
+    needs: v2-build-images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: v2-1
+            suite: testng-v2.xml
+    steps:
+      - name: Run hostname
+        run: hostname
+      - name: Fix host entry
+        run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Restore Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-v2-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: v2-images
+          path: /tmp/v2-images
+      - name: Load Docker images
+        run: docker load < /tmp/v2-images/images.tar.gz
+      # `mvn test` (not install) keeps the testcontainers pre-integration-test image-build execs from firing,
+      # so the loaded images are reused. `-am` builds only the integration-v2 reactor deps up to the test
+      # phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored Maven repo.
+      - name: Run integration-v2 suite (reuses prebuilt images)
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          mvn test -pl tests-integration/cucumber-tests -am
+          -Dsurefire.suite.xml=${{ matrix.suite }}
+          -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      - name: Archive test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-v2-reports-${{ matrix.id }}
+          path: |
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/cucumber-report/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
+          if-no-files-found: warn
