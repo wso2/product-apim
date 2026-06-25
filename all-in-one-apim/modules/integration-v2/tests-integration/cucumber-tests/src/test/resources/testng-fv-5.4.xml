@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 5.4): legacy provisioning parity (regression). Runs the UNCHANGED legacy
+  trio in order - SystemInitializationRunner (boots a legacy fixed-port APIMContainer), then
+  TenantUserInitializationRunner (provisions + asserts the default tenant set via tenant_users_initialisation
+  .feature), then SystemShutdown (stops the legacy container). No blockLabel is declared, so
+  BlockLifecycleListener OPTS OUT entirely - this lane drives its own legacy lifecycle, exactly as production
+  testng.xml does. Proves the 5.1/5.2 extraction (TenantUserProvisioner + listener-driven provisioning) left
+  the legacy provisioning path untouched and still green. parallel="false": ordered legacy lifecycle.
+-->
+<suite name="Framework Verification 5.4" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+    </listeners>
+    <test name="Phase5.4-LegacyParity">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.TenantUserInitializationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.common.SystemShutdown"/>
+        </classes>
+    </test>
+</suite>

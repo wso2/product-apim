@@ -1,0 +1,16 @@
+type: operation_policy_specification
+version: v4.5.0
+data:
+  category: Mediation
+  version: v1
+  displayName: custom_invalid_header
+  description: Invalid spec used by the negative case - the required 'name' field is omitted.
+  applicableFlows:
+   - request
+   - response
+   - fault
+  supportedGateways:
+   - Synapse
+  supportedApiTypes:
+   - HTTP
+  policyAttributes: []
