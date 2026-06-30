@@ -54,11 +54,17 @@ import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.identity.application.common.model.xsd.InboundAuthenticationConfig;
+import org.wso2.carbon.identity.application.common.model.xsd.InboundAuthenticationRequestConfig;
+import org.wso2.carbon.identity.application.common.model.xsd.Property;
+import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
+import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -86,6 +92,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
     private String apiLoggingApiId;
     private String apiLoggingApplicationId;
     private static final String BASIC_AUTH_HEADER = "admin:admin";
+    private static final String CP_REVOKE_TOKEN_SP_NAME = "CPRevokedTokenTest-SP";
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -272,6 +279,59 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
 
         ctx.setAttribute("jwtRevocationAppId", jwtRevocationAppId);
         ctx.setAttribute("jwtRevocationApiId", jwtRevocationApiId);
+
+        //Register a service provider with TokenType JWT directly through the OAuth admin SOAP service and
+        //obtain its client credentials. The password grant is enabled so a JWT user access token can be issued.
+        OAuthConsumerAppDTO cpRevokeTokenApp = createCpRevokeTokenServiceProvider();
+        String cpRevokeTokenConsumerKey = cpRevokeTokenApp.getOauthConsumerKey();
+        String cpRevokeTokenConsumerSecret = cpRevokeTokenApp.getOauthConsumerSecret();
+
+        //Obtain a user access token through the password grant with Control Plane scopes
+        String cpScope = URLEncoder.encode("apim:subscribe apim:app_manage apim:store_settings openid",
+                StandardCharsets.UTF_8.name());
+        String cpTokenRequestBody = "grant_type=password&username=" + user.getUserName() + "&password="
+                + user.getPassword() + "&scope=" + cpScope;
+        URL cpTokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
+        HttpResponse cpTokenResponse = restAPIStore.generateUserAccessKey(cpRevokeTokenConsumerKey,
+                cpRevokeTokenConsumerSecret, cpTokenRequestBody, cpTokenEndpointURL);
+        Assert.assertEquals(cpTokenResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Token generation for the Control Plane revoked token test failed");
+        String cpRevokedAccessToken = new JSONObject(cpTokenResponse.getData()).getString("access_token");
+
+        //The service provider token type is JWT, hence the issued access token must be a self contained JWT
+        Assert.assertEquals(StringUtils.split(cpRevokedAccessToken, ".").length, 3,
+                "Access token issued for the JWT application is not a JWT");
+
+        String cpApplicationsUrl = getStoreURLHttps() + "api/am/devportal/v3/applications";
+        Map<String, String> cpRequestHeaders = new HashMap<>();
+        cpRequestHeaders.put("Authorization", "Bearer " + cpRevokedAccessToken);
+
+        //The token must be accepted by the Control Plane REST API before revocation
+        HttpResponse cpInvocationBeforeRevoke = HTTPSClientUtils.doGet(cpApplicationsUrl, cpRequestHeaders);
+        Assert.assertEquals(cpInvocationBeforeRevoke.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Control Plane REST API invocation failed with a valid token before revocation");
+
+        //Revoke the access token
+        String cpBasicAuthHeader = cpRevokeTokenConsumerKey + ":" + cpRevokeTokenConsumerSecret;
+        byte[] cpEncodedBytes = Base64.encodeBase64(cpBasicAuthHeader.getBytes(StandardCharsets.UTF_8));
+        Map<String, String> cpRevokeRequestHeaders = new HashMap<>();
+        cpRevokeRequestHeaders.put("Authorization", "Basic " + new String(cpEncodedBytes, StandardCharsets.UTF_8));
+        cpRevokeRequestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+        HttpResponse cpRevokeResponse = HTTPSClientUtils.doPost(keyManagerHTTPSURL + "oauth2/revoke",
+                cpRevokeRequestHeaders, "token=" + cpRevokedAccessToken);
+        Assert.assertEquals(cpRevokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Token revocation request failed");
+
+        //Allow the token revocation to propagate, then verify once that the Control Plane REST API rejects
+        //the revoked token before the restart.
+        Thread.sleep(5000L);
+        HttpResponse cpInvocationAfterRevoke = HTTPSClientUtils.doGet(cpApplicationsUrl, cpRequestHeaders);
+        Assert.assertEquals(cpInvocationAfterRevoke.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
+                "Revoked token is not rejected by the Control Plane REST API before the server restart. "
+                        + "Expected response code: " + HTTP_RESPONSE_CODE_UNAUTHORIZED + ", but got: "
+                        + cpInvocationAfterRevoke.getResponseCode());
+
+        ctx.setAttribute("cpRevokedAccessToken", cpRevokedAccessToken);
 
         /*
           Populate data for API Revision Test Case
@@ -636,6 +696,52 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         serverConfigurationManager.restartGracefully();
     }
 
+    /**
+     * Registers an OAuth service provider with token type JWT directly through the OAuth admin SOAP service
+     * and binds it to a service provider so that tokens can be issued for its client credentials.
+     *
+     * @return the registered OAuth consumer application, including its consumer key and secret
+     */
+    private OAuthConsumerAppDTO createCpRevokeTokenServiceProvider() throws Exception {
+        OAuthConsumerAppDTO appDTO = new OAuthConsumerAppDTO();
+        appDTO.setApplicationName(CP_REVOKE_TOKEN_SP_NAME);
+        appDTO.setCallbackUrl("http://localhost:9999");
+        appDTO.setOAuthVersion("OAuth-2.0");
+        appDTO.setGrantTypes("password client_credentials");
+        appDTO.setTokenType("JWT");
+
+        oAuthAdminServiceClient.registerOAuthApplicationData(appDTO);
+        OAuthConsumerAppDTO createdApp = oAuthAdminServiceClient.getOAuthAppByName(CP_REVOKE_TOKEN_SP_NAME);
+        Assert.assertNotNull(createdApp,
+                "Service provider registration for the Control Plane revoked token test failed");
+
+        String consumerKey = createdApp.getOauthConsumerKey();
+        String consumerSecret = createdApp.getOauthConsumerSecret();
+
+        ServiceProvider serviceProvider = new ServiceProvider();
+        serviceProvider.setApplicationName(CP_REVOKE_TOKEN_SP_NAME);
+        applicationManagementClient.createApplication(serviceProvider);
+        serviceProvider = applicationManagementClient.getApplication(CP_REVOKE_TOKEN_SP_NAME);
+
+        InboundAuthenticationRequestConfig requestConfig = new InboundAuthenticationRequestConfig();
+        requestConfig.setInboundAuthKey(consumerKey);
+        requestConfig.setInboundAuthType("oauth2");
+        if (consumerSecret != null && !consumerSecret.isEmpty()) {
+            Property property = new Property();
+            property.setName("oauthConsumerSecret");
+            property.setValue(consumerSecret);
+            requestConfig.setProperties(new Property[]{property});
+        }
+
+        InboundAuthenticationConfig inboundAuthenticationConfig = new InboundAuthenticationConfig();
+        inboundAuthenticationConfig
+                .setInboundAuthenticationRequestConfigs(new InboundAuthenticationRequestConfig[]{requestConfig});
+        serviceProvider.setInboundAuthenticationConfig(inboundAuthenticationConfig);
+        applicationManagementClient.updateApplication(serviceProvider);
+
+        return createdApp;
+    }
+
     private HttpResponse invokeDefaultAPIWithWait(String invocationUrl, Map<String, String> headers,
                                                   int statusCode) throws IOException, InterruptedException {
         HttpResponse response = invokeWithGet(invocationUrl, headers);
@@ -688,6 +794,8 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(jwtRevocationAppId);
         undeployAndDeleteAPIRevisionsUsingRest(jwtRevocationApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(jwtRevocationApiId);
+
+        applicationManagementClient.deleteApplication(CP_REVOKE_TOKEN_SP_NAME);
 
         restAPIPublisher.deleteAPI(apiRevisionApiId);
 
