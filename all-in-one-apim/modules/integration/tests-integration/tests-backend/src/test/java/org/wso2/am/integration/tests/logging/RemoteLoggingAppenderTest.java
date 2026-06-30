@@ -39,7 +39,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,7 +49,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.awaitility.Awaitility.with;
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Integration tests for the remote logging appender management behaviour
@@ -127,9 +128,11 @@ public class RemoteLoggingAppenderTest extends APIMIntegrationBaseTest {
 
         originalLog4j2Content = FileManager.readFile(log4j2PropertiesServerPath.toString());
 
-        /* Start a lightweight HTTP server to act as the remote log receiver */
-        mockServerPort = findFreePort();
-        mockLogServer = HttpServer.create(new InetSocketAddress(mockServerPort), 0);
+        /* Start a lightweight HTTP server to act as the remote log receiver.
+         * Binding to port 0 lets the OS assign a free port atomically, avoiding the
+         * TOCTOU race in a find-then-bind approach. */
+        mockLogServer = HttpServer.create(new InetSocketAddress(0), 0);
+        mockServerPort = mockLogServer.getAddress().getPort();
         mockLogServer.createContext("/api/logs/consume", exchange -> {
             try (InputStream body = exchange.getRequestBody()) {
                 byte[] bytes = body.readAllBytes();
@@ -583,17 +586,26 @@ public class RemoteLoggingAppenderTest extends APIMIntegrationBaseTest {
                 "Remote URL must be present in the AUDIT_LOGFILE block");
 
         /*
+         * Snapshot the payload count before triggering so the wait condition detects a
+         * genuinely new delivery rather than passing on traffic received in earlier tests.
+         */
+        final int payloadCountBeforeTrigger;
+        synchronized (receivedLogPayloads) {
+            payloadCountBeforeTrigger = receivedLogPayloads.size();
+        }
+
+        /*
          * Trigger an admin action that produces an audit log entry.
          * The admin REST API is authenticated, so calling any admin resource with valid
          * credentials generates an AUDIT_LOG entry.
          */
         triggerAuditLogEntry();
 
-        /* Wait for the log entry to arrive at the mock server (up to 30 seconds) */
+        /* Wait for at least one new log entry to arrive at the mock server (up to 30 seconds) */
         with().pollInterval(2, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
             synchronized (receivedLogPayloads) {
-                assertFalse(receivedLogPayloads.isEmpty(),
-                        "Mock log server must have received at least one log payload from the AUDIT appender");
+                assertTrue(receivedLogPayloads.size() > payloadCountBeforeTrigger,
+                        "Mock log server must have received at least one new log payload from the AUDIT appender");
             }
         });
 
@@ -669,11 +681,29 @@ public class RemoteLoggingAppenderTest extends APIMIntegrationBaseTest {
      * Runs after every test method (pass or fail) to isolate tests from each other.
      * Disables all active remote logging configurations and restores log4j2.properties
      * to the snapshot taken in {@link #initialize()}.
+     * Both steps always run; any failure is surfaced as a test failure so dirty server
+     * state does not silently contaminate subsequent tests.
      */
     @AfterMethod(alwaysRun = true)
-    public void restoreAfterMethod() {
-        disableAllActiveRemoteConfigs();
-        restoreLog4j2Properties();
+    public void restoreAfterMethod() throws Exception {
+        Exception firstError = null;
+        try {
+            disableAllActiveRemoteConfigs();
+        } catch (Exception e) {
+            firstError = e;
+            log.error("Failed to disable remote logging configs during @AfterMethod cleanup", e);
+        }
+        try {
+            restoreLog4j2Properties();
+        } catch (Exception e) {
+            if (firstError == null) {
+                firstError = e;
+            }
+            log.error("Failed to restore log4j2.properties during @AfterMethod cleanup", e);
+        }
+        if (firstError != null) {
+            throw new RuntimeException("Test cleanup failed — server state may be dirty", firstError);
+        }
     }
 
     /**
@@ -690,44 +720,43 @@ public class RemoteLoggingAppenderTest extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Resets every remote logging configuration that currently has a non-blank URL,
-     * effectively disabling remote logging for all log types.
-     * Errors are logged as warnings so that subsequent cleanup steps are not skipped.
+     * Resets every remote logging configuration that currently has a non-blank URL.
+     * All entries are attempted; if any reset fails the exception is re-thrown after
+     * all entries have been processed so a single failure does not skip the rest.
      */
-    private void disableAllActiveRemoteConfigs() {
-        try {
-            RemoteServerLoggerData[] configs = remoteLoggingConfigClient.getRemoteServerConfigs();
-            if (configs != null) {
-                for (RemoteServerLoggerData cfg : configs) {
-                    if (cfg != null && cfg.getUrl() != null && !cfg.getUrl().isEmpty()) {
-                        try {
-                            remoteLoggingConfigClient.resetRemoteServerConfig(cfg);
-                            waitForLog4j2ConfigSync(5);
-                        } catch (Exception e) {
-                            log.warn("Failed to reset remote config for log type: " + cfg.getLogType(), e);
-                        }
+    private void disableAllActiveRemoteConfigs() throws Exception {
+        RemoteServerLoggerData[] configs = remoteLoggingConfigClient.getRemoteServerConfigs();
+        if (configs == null) {
+            return;
+        }
+        Exception firstError = null;
+        for (RemoteServerLoggerData cfg : configs) {
+            if (cfg != null && cfg.getUrl() != null && !cfg.getUrl().isEmpty()) {
+                try {
+                    remoteLoggingConfigClient.resetRemoteServerConfig(cfg);
+                    waitForLog4j2ConfigSync(5);
+                } catch (Exception e) {
+                    if (firstError == null) {
+                        firstError = e;
                     }
+                    log.error("Failed to reset remote config for log type: " + cfg.getLogType(), e);
                 }
             }
-        } catch (Exception e) {
-            log.warn("Could not retrieve remote logging configurations for cleanup", e);
+        }
+        if (firstError != null) {
+            throw firstError;
         }
     }
 
     /**
      * Writes the original log4j2.properties content back to disk.
-     * Errors are logged as warnings so the test report is not masked.
      */
-    private void restoreLog4j2Properties() {
+    private void restoreLog4j2Properties() throws IOException {
         if (originalLog4j2Content == null || log4j2PropertiesServerPath == null) {
             return;
         }
-        try {
-            FileManager.writeToFile(log4j2PropertiesServerPath.toString(), originalLog4j2Content);
-            log.debug("Restored original log4j2.properties");
-        } catch (IOException e) {
-            log.warn("Failed to restore log4j2.properties", e);
-        }
+        FileManager.writeToFile(log4j2PropertiesServerPath.toString(), originalLog4j2Content);
+        log.debug("Restored original log4j2.properties");
     }
 
     // ----- Helpers ----------------------------------------------------------
@@ -888,13 +917,4 @@ public class RemoteLoggingAppenderTest extends APIMIntegrationBaseTest {
         TimeUnit.SECONDS.sleep(seconds);
     }
 
-    /**
-     * Finds an ephemeral free TCP port on localhost.
-     */
-    private static int findFreePort() throws IOException {
-        try (ServerSocket socket = new ServerSocket(0)) {
-            socket.setReuseAddress(true);
-            return socket.getLocalPort();
-        }
-    }
 }
