@@ -289,8 +289,9 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         //Obtain a user access token through the password grant with Control Plane scopes
         String cpScope = URLEncoder.encode("apim:subscribe apim:app_manage apim:store_settings openid",
                 StandardCharsets.UTF_8.name());
-        String cpTokenRequestBody = "grant_type=password&username=" + user.getUserName() + "&password="
-                + user.getPassword() + "&scope=" + cpScope;
+        String cpTokenRequestBody = "grant_type=password&username="
+                + URLEncoder.encode(user.getUserName(), StandardCharsets.UTF_8.name()) + "&password="
+                + URLEncoder.encode(user.getPassword(), StandardCharsets.UTF_8.name()) + "&scope=" + cpScope;
         URL cpTokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         HttpResponse cpTokenResponse = restAPIStore.generateUserAccessKey(cpRevokeTokenConsumerKey,
                 cpRevokeTokenConsumerSecret, cpTokenRequestBody, cpTokenEndpointURL);
@@ -322,10 +323,17 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(cpRevokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Token revocation request failed");
 
-        //Allow the token revocation to propagate, then verify once that the Control Plane REST API rejects
-        //the revoked token before the restart.
-        Thread.sleep(5000L);
-        HttpResponse cpInvocationAfterRevoke = HTTPSClientUtils.doGet(cpApplicationsUrl, cpRequestHeaders);
+        //Token revocation propagates asynchronously (the revocation event has to invalidate the token
+        //validation cache), so the Control Plane can still return 200 for a short window right after the
+        //revoke call. Poll until the revoked token is rejected (401) or the timeout is reached; if it never
+        //becomes 401, the assertion below fails on the last (200) response.
+        HttpResponse cpInvocationAfterRevoke;
+        long revokeCheckDeadline = System.currentTimeMillis() + 30000L;
+        do {
+            Thread.sleep(1000L);
+            cpInvocationAfterRevoke = HTTPSClientUtils.doGet(cpApplicationsUrl, cpRequestHeaders);
+        } while (cpInvocationAfterRevoke.getResponseCode() != HTTP_RESPONSE_CODE_UNAUTHORIZED
+                && System.currentTimeMillis() < revokeCheckDeadline);
         Assert.assertEquals(cpInvocationAfterRevoke.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
                 "Revoked token is not rejected by the Control Plane REST API before the server restart. "
                         + "Expected response code: " + HTTP_RESPONSE_CODE_UNAUTHORIZED + ", but got: "
