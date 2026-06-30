@@ -591,6 +591,11 @@
                 <version>${carbon.commons.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.commons</groupId>
+                <artifactId>org.wso2.carbon.logging.remote.config.stub</artifactId>
+                <version>${carbon.commons.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.utils</artifactId>
                 <version>${carbon.kernel.version}</version>
@@ -1323,7 +1328,7 @@
 
         <cipher.tool.version>1.1.30</cipher.tool.version>
 
-        <carbon.commons.version>4.13.3</carbon.commons.version>
+        <carbon.commons.version>4.13.4</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
