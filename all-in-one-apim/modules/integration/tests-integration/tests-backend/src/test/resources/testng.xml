@@ -39,6 +39,7 @@
             <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
             <class name="org.wso2.am.integration.tests.aiapi.GeminiAPIUnlimitedTierDisabledTestCase"/>
             <class name="org.wso2.am.integration.tests.mcp.MCPServerTestCase"/>
+            <class name="org.wso2.am.integration.tests.mcp.MCPAssociatedAPIResourceUpdateTestCase"/>
         </classes>
     </test>
 
