@@ -266,9 +266,19 @@ public class MCPAssociatedAPIResourceUpdateTestCase extends APIMIntegrationBaseT
                 }
                 restAPIStore.deleteApplication(applicationId);
             }
+        } catch (Exception e) {
+            log.warn("Application cleanup failed", e);
+        }
+
+        try {
             if (mcpServerId != null) {
                 restAPIPublisher.deleteMCPServer(mcpServerId);
             }
+        } catch (Exception e) {
+            log.warn("MCP server cleanup failed", e);
+        }
+
+        try {
             if (apiId != null) {
                 restAPIPublisher.deleteAPI(apiId);
             }
