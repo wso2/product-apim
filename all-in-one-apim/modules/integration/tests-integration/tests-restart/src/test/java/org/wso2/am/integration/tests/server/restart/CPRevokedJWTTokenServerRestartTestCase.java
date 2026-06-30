@@ -63,12 +63,20 @@ public class CPRevokedJWTTokenServerRestartTestCase extends APIManagerLifecycleB
                 "Revoked access token was not set up before the server restart");
 
         // The token was revoked before the server restart (verified in ServerRestartTestCase). After the
-        // restart, the Control Plane REST API must continue to reject the revoked token. Allow the server a
-        // short while to settle after the restart, then invoke the Control Plane once and assert the revoked
-        // token is rejected.
-        Thread.sleep(5000L);
-        HttpResponse invocationResponse = HTTPSClientUtils.doGet(cpApplicationsUrl, requestHeaders);
-        int responseCode = invocationResponse.getResponseCode();
+        // restart, the Control Plane REST API must continue to reject the revoked token. The server may take
+        // a short while to settle after the restart and return transient responses (e.g. 503/404), so poll
+        // until it returns a decisive 401/200 or the timeout is reached, then assert the revoked token is
+        // rejected.
+        HttpResponse invocationResponse;
+        int responseCode;
+        long restartCheckDeadline = System.currentTimeMillis() + 30000L;
+        do {
+            Thread.sleep(1000L);
+            invocationResponse = HTTPSClientUtils.doGet(cpApplicationsUrl, requestHeaders);
+            responseCode = invocationResponse.getResponseCode();
+        } while (responseCode != HTTP_RESPONSE_CODE_UNAUTHORIZED
+                && responseCode != HTTP_RESPONSE_CODE_OK
+                && System.currentTimeMillis() < restartCheckDeadline);
 
         if (responseCode != HTTP_RESPONSE_CODE_UNAUTHORIZED && responseCode != HTTP_RESPONSE_CODE_OK) {
             throw new APIManagerIntegrationTestException("Unexpected response received when invoking the "
