@@ -69,10 +69,15 @@ public class APIInvocationSteps {
         long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
         long endTime = System.currentTimeMillis() + deadlineMillis;
         do {
-            invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
-            HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-            if (response != null && response.getResponseCode() == expectedStatus) {
-                return;
+            try {
+                invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
+                HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+                if (response != null && response.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (Exception transientDuringWarmup) {
+                // A transient error (e.g. an SSL handshake against a gateway listener still coming up after a
+                // server restart or a fresh deploy) must be retried, not fatal — keep polling until the deadline.
             }
             Thread.sleep(2000);
         } while (System.currentTimeMillis() < endTime);
@@ -93,10 +98,15 @@ public class APIInvocationSteps {
         long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
         long endTime = System.currentTimeMillis() + deadlineMillis;
         do {
-            invokeApiByContext(resolvedContext, httpMethod, accessToken, payload, headerName);
-            HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-            if (response != null && response.getResponseCode() == expectedStatus) {
-                return;
+            try {
+                invokeApiByContext(resolvedContext, httpMethod, accessToken, payload, headerName);
+                HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+                if (response != null && response.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (Exception transientDuringWarmup) {
+                // A transient error (e.g. an SSL handshake against a gateway listener still coming up after a
+                // server restart or a fresh deploy) must be retried, not fatal — keep polling until the deadline.
             }
             Thread.sleep(2000);
         } while (System.currentTimeMillis() < endTime);
@@ -217,10 +227,15 @@ public class APIInvocationSteps {
         long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
         long endTime = System.currentTimeMillis() + deadlineMillis;
         do {
-            invokeWithApiKey(endpointUrl, httpMethod, apikey);
-            HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-            if (response != null && response.getResponseCode() == expectedStatus) {
-                return;
+            try {
+                invokeWithApiKey(endpointUrl, httpMethod, apikey);
+                HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+                if (response != null && response.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (Exception transientDuringWarmup) {
+                // A transient error (e.g. an SSL handshake against a gateway listener still coming up after a
+                // server restart or a fresh deploy) must be retried, not fatal — keep polling until the deadline.
             }
             Thread.sleep(2000);
         } while (System.currentTimeMillis() < endTime);
@@ -272,10 +287,15 @@ public class APIInvocationSteps {
         long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
         long endTime = System.currentTimeMillis() + deadlineMillis;
         do {
-            invokeApiUsingKey(path, httpMethod, apikey);
-            HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-            if (response != null && response.getResponseCode() == expectedStatus) {
-                return;
+            try {
+                invokeApiUsingKey(path, httpMethod, apikey);
+                HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+                if (response != null && response.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (Exception transientDuringWarmup) {
+                // A transient error (e.g. an SSL handshake against a gateway listener still coming up after a
+                // server restart or a fresh deploy) must be retried, not fatal — keep polling until the deadline.
             }
             Thread.sleep(2000);
         } while (System.currentTimeMillis() < endTime);
@@ -303,10 +323,15 @@ public class APIInvocationSteps {
         long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
         long endTime = System.currentTimeMillis() + deadlineMillis;
         do {
-            invokeApiUsingAccessToken(path, httpMethod, accessToken, payload);
-            HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-            if (response != null && response.getResponseCode() == expectedStatus) {
-                return;
+            try {
+                invokeApiUsingAccessToken(path, httpMethod, accessToken, payload);
+                HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+                if (response != null && response.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (Exception transientDuringWarmup) {
+                // A transient error (e.g. an SSL handshake against a gateway listener still coming up after a
+                // server restart or a fresh deploy) must be retried, not fatal — keep polling until the deadline.
             }
             Thread.sleep(2000);
         } while (System.currentTimeMillis() < endTime);
