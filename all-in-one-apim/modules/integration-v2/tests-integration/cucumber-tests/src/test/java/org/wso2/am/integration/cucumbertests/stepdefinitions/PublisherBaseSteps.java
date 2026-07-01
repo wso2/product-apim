@@ -30,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -83,7 +84,7 @@ public class PublisherBaseSteps {
         Object createdId = Utils.extractValueFromPayload(apiCreateResponse.getData(), "id");
         TestContext.set(resourceID, createdId);
         // Register for scenario teardown so a shared-server suite does not accumulate APIs across scenarios.
-        TestContext.addToList(Constants.CREATED_API_IDS, createdId);
+        ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
     }
 
     /**
@@ -460,7 +461,7 @@ public class PublisherBaseSteps {
         Object newVersionId = Utils.extractValueFromPayload(apiNewVersionResponse.getData(), "id");
         TestContext.set(newVersionID, newVersionId);
         // Register for scenario teardown so the version copy is cleaned up alongside the base API.
-        TestContext.addToList(Constants.CREATED_API_IDS, newVersionId);
+        ResourceCleanup.register(Constants.CREATED_API_IDS, newVersionId);
     }
 
     /**
@@ -752,7 +753,7 @@ public class PublisherBaseSteps {
         // Register for teardown: a shared scope is a tenant-wide resource that ResourceCleanup must remove so
         // it does not leak (and 409 a re-run on the same container) if the scenario fails before deleting it.
         if (scopeId != null) {
-            TestContext.addToList(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
+            ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
         }
       }
 
@@ -885,7 +886,7 @@ public class PublisherBaseSteps {
         Object createdId = Utils.extractValueFromPayload(apiCreateResponse.getData(), "id");
         TestContext.set(apiID, createdId);
         // Register for scenario teardown so a shared-server suite does not accumulate APIs across scenarios.
-        TestContext.addToList(Constants.CREATED_API_IDS, createdId);
+        ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
     }
 
     /**
@@ -987,7 +988,7 @@ public class PublisherBaseSteps {
                         // policies are tied to their API and removed when the API is deleted, so only the
                         // tenant-global common policies need explicit cleanup registration here.
                         if (apiId == null || apiId.isEmpty()) {
-                            TestContext.addToList(Constants.CREATED_OPERATION_POLICY_IDS, createdId);
+                            ResourceCleanup.register(Constants.CREATED_OPERATION_POLICY_IDS, createdId);
                         }
                     }
                 } catch (Exception e) {
@@ -1093,7 +1094,7 @@ public class PublisherBaseSteps {
         Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(resourceId, createdId);
         // Register for scenario teardown so imported APIs do not accumulate across scenarios on a shared server.
-        TestContext.addToList(Constants.CREATED_API_IDS, createdId);
+        ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
     }
 
 }

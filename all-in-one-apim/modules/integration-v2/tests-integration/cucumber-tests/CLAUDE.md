@@ -49,8 +49,15 @@ mutable.**
 - Every resource a test creates is removed.
 - Cleanup is **idempotent** and **runs even on failure** — do it in hooks, not as inline teardown
   scenarios that get skipped when an earlier step fails. Register created ids via
-  `TestContext.addToList(CREATED_API_IDS / CREATED_APPLICATION_IDS, …)`; both teardown paths below sweep
-  them through `utils/ResourceCleanup`.
+  `ResourceCleanup.register(CREATED_API_IDS / CREATED_APPLICATION_IDS, …)` (NOT bare
+  `TestContext.addToList` — `register` tags each id with the **actor that created it** so teardown can delete
+  it as that principal); both teardown paths below sweep them through `utils/ResourceCleanup`.
+- **Teardown deletes each resource as its creating actor.** `ResourceCleanup` resolves the owner recorded at
+  registration and deletes with that actor's token (devportal token for applications, publisher token for
+  APIs/policies/scopes) — so a resource created by, say, `admin@tenant1` is deleted as `admin@tenant1`, not
+  as whoever happens to be acting when cleanup runs. You therefore do **not** need to switch actor before
+  `@cleanup` for teardown's sake (see §12). A non-2xx/404 delete is logged as a WARN (a real leak signal);
+  don't ignore those.
 - **Two teardown granularities — pick by lifetime of the resource:**
   - **Per-scenario:** tag the feature `@cleanup`. The `@After("@cleanup")` hook deletes the scenario's
     resources right after it. Use for self-contained single-scenario features (e.g. a full lifecycle in one
@@ -177,8 +184,9 @@ tenants (`carbon.super` and `tenant1.com`) on boot — pick the one with the lea
   - `I have valid access tokens as "<actor>"` — incl. the admin token (actor must be an admin). Pair with a
     separate `Given The system is ready` (this composite has no readiness prefix).
   - `I act as "<actor>"` — switch the acting actor mid-scenario (no new tokens). Needed when a scenario acts
-    as one actor then another; also use it to **switch back to the resource-owner before `@cleanup`** so
-    teardown deletes with a token that has permission.
+    as one actor then another. (You no longer need to switch back to the resource-owner before `@cleanup`:
+    teardown deletes each resource as the actor that created it — see §5 — so cleanup is correct regardless
+    of who is acting at the end.)
 - **Tenant ×2.** Run a feature in both tenants with a `Scenario Outline` over an actor column
   (`| admin | admin@tenant1.com |`, etc.) — no per-step changes; the actor's `@domain` drives tenant routing.
 - **The acting actor leaks across scenarios — always set it explicitly.** There is no per-scenario reset:
