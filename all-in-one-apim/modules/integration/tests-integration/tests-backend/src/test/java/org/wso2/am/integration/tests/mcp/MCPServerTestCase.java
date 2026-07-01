@@ -169,6 +169,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
     private static final String APP_NAME = "MCP Application";
     private static final String SCOPES_APP_NAME_1 = "MCP Application for Scopes 1";
     private static final String SCOPES_APP_NAME_2 = "MCP Application for Scopes 2";
+    private static final String SCOPES_APP_NAME_3 = "MCP Application for Scopes 3";
     private static final String APP_DESC = "Test Application";
     private static final String DEVPORTAL_VISIBILITY_ERROR = "MCP Server is not visible in Developer Portal.";
 
@@ -443,6 +444,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
 
     private static String SCOPE_1 = "mcp-scope-1";
     private static String SCOPE_2 = "mcp-scope-2";
+    private static String SCOPE_3 = "mcp-scope-3";
     private static String ADMIN_ROLE = "admin";
 
     private static int WAIT_FOR_DEPLOYMENT_IN_MILLISECONDS = 5000;
@@ -458,9 +460,11 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
     private String applicationId;
     private String applicationForScopesId_1;
     private String applicationForScopesId_2;
+    private String applicationForScopesId_3;
     private String accessToken;
     private String accessTokenWithScopes_1;
     private String accessTokenWithScopes_2;
+    private String accessTokenWithScopes_3;
     private String throttlingPolicyName = "throttlePolicy5PerMin";
     private int port;
     private MCPWireMock mcpWireMock;
@@ -1071,6 +1075,80 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(toolCallResponse2.getResponseCode(), 403, "Tool call should fail due to missing scopes");
     }
 
+    @Test(groups = {GROUP_WSO2_AM}, description = "Update MCP server scopes and validate invocation",
+            dependsOnMethods = {"testMCPServerToolOperationsForDirectBackendSubtype"})
+    public void testScopesForDirectBackendSubtype() throws Exception {
+
+        // Fetch server and ensure operations exist
+        final MCPServerDTO mcpServer = fetchMCPServer(mcpServerFromOpenApiId);
+        assertNonEmpty(mcpServer.getOperations(), "MCP Server operations list is empty");
+
+        // Update operation with scope
+        final MCPServerOperationDTO sourceOp = getOperationByTarget(mcpServer.getOperations(), TARGET_GET_PETS);
+        Assert.assertNotNull(sourceOp, "MCP Server operation not found: " + TARGET_GET_PETS);
+        final MCPServerOperationDTO updateOp = new MCPServerOperationDTO();
+        copyOperation(sourceOp, updateOp);
+
+        List<String> roles = Collections.singletonList(ADMIN_ROLE);
+        ScopeDTO scopeObject = new ScopeDTO();
+        scopeObject.setName(SCOPE_3);
+        scopeObject.setBindings(roles);
+
+        MCPServerScopeDTO apiScope3DTO = new MCPServerScopeDTO();
+        apiScope3DTO.setScope(scopeObject);
+        mcpServer.setScopes(Collections.singletonList(apiScope3DTO));
+        ArrayList<String> scopes = new ArrayList<>();
+        scopes.add(SCOPE_3);
+        updateOp.setScopes(scopes);
+        for (int i = 0; i < mcpServer.getOperations().size(); i++) {
+            if (TARGET_GET_PETS.equals(mcpServer.getOperations().get(i).getTarget())) {
+                mcpServer.getOperations().set(i, updateOp);
+                break;
+            }
+        }
+
+        final MCPServerDTO updated = restAPIPublisher.updateMCPServer(mcpServerFromOpenApiId, mcpServer);
+        Assert.assertNotNull(updated, "MCP Server update response is null");
+        final MCPServerOperationDTO getPetsOp =
+                getOperationByTarget(updated.getOperations(), TARGET_GET_PETS);
+        Assert.assertNotNull(getPetsOp, "MCP Server operation not found: " + TARGET_GET_PETS);
+        Assert.assertEquals(getPetsOp.getScopes(), scopes, "Scopes are not updated properly");
+
+        deployRevision(mcpServerFromOpenApiId);
+
+        final HttpResponse applicationResponse = restAPIStore.createApplication(
+                SCOPES_APP_NAME_3, APP_DESC,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, TokenTypeEnum.JWT);
+        applicationForScopesId_3 = applicationResponse.getData();
+
+        final HttpResponse subscribeResponse =
+                restAPIStore.createSubscription(mcpServerFromOpenApiId, applicationForScopesId_3,
+                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        Assert.assertEquals(subscribeResponse.getResponseCode(), HttpStatus.SC_OK, "MCP Server subscription failed");
+        Assert.assertTrue(StringUtils.isNotEmpty(subscribeResponse.getData()),
+                "MCP Server subscription failed. Subscription data is missing");
+
+        ApplicationKeyDTO applicationKeyDTO = generateKeysForApp(applicationForScopesId_3, scopes);
+        accessTokenWithScopes_3 = applicationKeyDTO.getToken().getAccessToken();
+        String petstoreBackendURL = getAPIInvocationURLHttps(
+                SERVER_CONTEXT_PETSTORE_OPENAPI + "/" + SERVER_VERSION_1 + MCP_PATH);
+
+        Map<String, String> headersWithScopes = createRequestHeaders(accessTokenWithScopes_3);
+        HttpResponse toolCallResponse1 =
+                HTTPSClientUtils.doPost(petstoreBackendURL, headersWithScopes, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
+        assertHttpOk(toolCallResponse1, "Tool call with scopes failed");
+        Assert.assertEquals(compactJson(toolCallResponse1.getData()),
+                compactJson(EXPECTED_TOOL_CALL_GET_PETS_RESPONSE),
+                mismatch("Tool call response", TARGET_GET_PETS,
+                        EXPECTED_TOOL_CALL_GET_PETS_RESPONSE, toolCallResponse1.getData()));
+
+        Map<String, String> headersWithoutScopes = createRequestHeaders(accessToken);
+        HttpResponse toolCallResponse2 =
+                HTTPSClientUtils.doPost(petstoreBackendURL, headersWithoutScopes, TOOL_CALL_GET_PETS_REQUEST_PAYLOAD);
+        Assert.assertEquals(toolCallResponse2.getResponseCode(), 403,
+                "Tool call should fail due to missing scopes");
+    }
+
 //    @Test(groups = {GROUP_WSO2_AM}, description = "Create MCP server using a third-party MCP Server (proxy)",
 //            dependsOnMethods = {"testScopesForProxySubtype"})
     public void testThrottlingForProxySubtype() throws Exception {
@@ -1595,9 +1673,19 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         for (org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO subscriptionDTO : subs3DTO.getList()) {
             restAPIStore.removeSubscription(subscriptionDTO);
         }
+        if (StringUtils.isNotBlank(applicationForScopesId_3)) {
+            SubscriptionListDTO subs4DTO =
+                    restAPIStore.getAllSubscriptionsOfApplication(applicationForScopesId_3, tenantDomain);
+            for (org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO subscriptionDTO : subs4DTO.getList()) {
+                restAPIStore.removeSubscription(subscriptionDTO);
+            }
+        }
         restAPIStore.deleteApplication(applicationId);
         restAPIStore.deleteApplication(applicationForScopesId_1);
         restAPIStore.deleteApplication(applicationForScopesId_2);
+        if (StringUtils.isNotBlank(applicationForScopesId_3)) {
+            restAPIStore.deleteApplication(applicationForScopesId_3);
+        }
         restAPIPublisher.deleteMCPServer(mcpServerFromApiId);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteMCPServer(mcpServerFromOpenApiId);
