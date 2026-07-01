@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.7): two-level concurrency on real containers, scaled to bound
+  resources. Suite parallel="tests" thread-count="2" => at most K=2 blocks (and therefore K=2 APIM
+  containers) run simultaneously; N=3 blocks, so the 3rd queues until a slot frees. Each block runs
+  parallel="classes" thread-count="2" over THREE probe classes => at most M=2 classes run at once on the
+  block's single shared container. All three blocks share the docker label block=fv-4.7 (so the gate can
+  count live containers with one filter) but have distinct <test> names (distinct shared scopes). Wired
+  to no legacy runners, so running it cannot affect the legacy testng.xml run.
+-->
+<suite name="Framework Verification 4.7" parallel="tests" thread-count="2">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase4.7-BlockA" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="fv-4.7"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerThree"/>
+        </classes>
+    </test>
+    <test name="Phase4.7-BlockB" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="fv-4.7"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerThree"/>
+        </classes>
+    </test>
+    <test name="Phase4.7-BlockC" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="fv-4.7"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerThree"/>
+        </classes>
+    </test>
+</suite>

@@ -1,0 +1,20 @@
+# Feature-specific TOML overlay for the IntegrationV2-ServerRestart block.
+#
+# Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter.
+#
+#   - enable_restart_from_api : exposes the Carbon ServerAdmin `restartGracefully` operation so a test can
+#     bounce the server in place (the "I gracefully restart the API Manager server" step). Verified: the call
+#     returns 200/true and the carbon JVM restarts inside the same container, leaving host ports and the
+#     in-container DB intact — which is what makes token-persistence-across-restart testable.
+#   - oauth.token_persistence : persist issued/revoked token state to the DB so it survives the restart.
+
+[server]
+enable_restart_from_api = true
+enable_shutdown_from_api = true
+
+[oauth.token_persistence]
+enable = true
+
+[oauth.revoked_token_headers_in_response]
+enable = true

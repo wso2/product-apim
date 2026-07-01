@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.13): the readiness gate must reject a partial boot. A real
+  Testcontainers nginx stub opens its TCP port but, by default, 404s on the gateway health-check path;
+  ServerReadiness.awaitReady must therefore time out to false (negative control) even though the port is
+  open. A second nginx, configured to answer 200 on every path, must make the same gate return true
+  (positive control) - proving the rejection is driven by the HTTP 200 check, not Wait.forListeningPort.
+  No block listeners are needed: this exercises the readiness helper directly. Wired to no legacy runners.
+-->
+<suite name="Framework Verification 4.13" parallel="false">
+    <test name="Phase4.13-Readiness">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.verification.PartialBootReadinessVerificationTest"/>
+        </classes>
+    </test>
+</suite>
