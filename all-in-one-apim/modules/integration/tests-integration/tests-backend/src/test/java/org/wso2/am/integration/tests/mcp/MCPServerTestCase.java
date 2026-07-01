@@ -978,7 +978,8 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
             }
         }
 
-        Assert.assertTrue(hasEcho && hasOrderPizza, "MCP Server tool list response mismatch.");
+        Assert.assertTrue(hasEcho && hasOrderPizza, mismatch("Tool list response", "tool-list",
+            PROXY_EXPECTED_UPDATED_TOOL_LIST_RESPONSE, toolListResponse.getData()));
     }
 
     @Test(groups = {GROUP_WSO2_AM}, description = "Update MCP server scopes and validate invocation",
