@@ -1,0 +1,680 @@
+/*
+ * WSO2 API Manager - Admin
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - **Admin Portal**. Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/master/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin.v1/src/main/resources/admin-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.  # Authentication The Admin REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A sample payload is shown below. ```   {   \"callbackUrl\":\"www.example.com\",   \"clientName\":\"rest_api_admin\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown bellow to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_admin\", \"callBackURL\": \"www.example.com\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.example.com\\\",\\\"client_name\\\":\\\"rest_api_admin\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Note that in a distributed deployment or IS as KM separated environment to invoke RESTful APIs (product APIs), users must generate tokens through API-M Control Plane's token endpoint. The tokens generated using third party key managers, are to manage end-user authentication when accessing APIs.  Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for Admin REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorizations** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_passowrd>&scope=<scopes seperated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<server_port>/oauth2/token ``` **Sample request** ``` curl https://localhost:9443/oauth2/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:admin apim:tier_view\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:admin apim:tier_view\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/32294946-71bea2bc-f808-4208-a4f6-861ede6f0434) 
+ *
+ * The version of the OpenAPI document: v4
+ * Contact: architecture@wso2.com
+ *
+ * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
+ * https://openapi-generator.tech
+ * Do not edit the class manually.
+ */
+
+
+package org.wso2.am.integration.clients.admin.api.dto;
+
+import java.util.Objects;
+import java.util.Arrays;
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import org.wso2.am.integration.clients.admin.api.dto.AdditionalPropertyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EnvironmentPermissionsDTO;
+import org.wso2.am.integration.clients.admin.api.dto.GatewayEnvironmentProtocolURIDTO;
+import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
+import com.fasterxml.jackson.annotation.JsonCreator;
+/**
+* EnvironmentDTO
+*/
+
+public class EnvironmentDTO {
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private String id;
+
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
+
+        public static final String SERIALIZED_NAME_DISPLAY_NAME = "displayName";
+        @SerializedName(SERIALIZED_NAME_DISPLAY_NAME)
+            private String displayName;
+
+        public static final String SERIALIZED_NAME_PROVIDER = "provider";
+        @SerializedName(SERIALIZED_NAME_PROVIDER)
+            private String provider;
+
+        public static final String SERIALIZED_NAME_TYPE = "type";
+        @SerializedName(SERIALIZED_NAME_TYPE)
+            private String type = "hybrid";
+
+        public static final String SERIALIZED_NAME_GATEWAY_TYPE = "gatewayType";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_TYPE)
+            private String gatewayType = "Regular";
+
+        public static final String SERIALIZED_NAME_DESCRIPTION = "description";
+        @SerializedName(SERIALIZED_NAME_DESCRIPTION)
+            private String description;
+
+        public static final String SERIALIZED_NAME_IS_READ_ONLY = "isReadOnly";
+        @SerializedName(SERIALIZED_NAME_IS_READ_ONLY)
+            private Boolean isReadOnly = false;
+
+            /**
+* The mode of the environment. This indicates whether the environment is in read-only or read-write mode. **READ_ONLY:** The environment is in read-only mode. API cannot be deployed, only discovery is possible. **READ_WRITE:** The environment is in read-write mode. APIs can be deployed and discovered. **WRITE_ONLY:** The environment is in write-only mode/ APIs only can be deployed. 
+*/
+    @JsonAdapter(ModeEnum.Adapter.class)
+public enum ModeEnum {
+        READ_ONLY("READ_ONLY"),
+        
+        READ_WRITE("READ_WRITE"),
+        
+        WRITE_ONLY("WRITE_ONLY");
+
+private String value;
+
+ModeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static ModeEnum fromValue(String value) {
+    if (value == null) {
+        return null;
+    }
+    for (ModeEnum b : ModeEnum.values()) {
+        if (b.name().equalsIgnoreCase(value) || b.getValue().equalsIgnoreCase(value)) {
+            return b;
+        }
+    }
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<ModeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final ModeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public ModeEnum read(final JsonReader jsonReader) throws IOException {
+        if (jsonReader.peek() == JsonToken.NULL) {
+            jsonReader.nextNull();
+            return null;
+        }
+        String value = jsonReader.nextString();
+        return ModeEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_MODE = "mode";
+        @SerializedName(SERIALIZED_NAME_MODE)
+            // Aligns with admin-api.yaml Environment.mode default: WRITE_ONLY (example in spec is READ_WRITE).
+            private ModeEnum mode = ModeEnum.WRITE_ONLY;
+
+        public static final String SERIALIZED_NAME_API_DISCOVERY_SCHEDULED_WINDOW = "apiDiscoveryScheduledWindow";
+        @SerializedName(SERIALIZED_NAME_API_DISCOVERY_SCHEDULED_WINDOW)
+            private Integer apiDiscoveryScheduledWindow = 60;
+
+        public static final String SERIALIZED_NAME_VHOSTS = "vhosts";
+        @SerializedName(SERIALIZED_NAME_VHOSTS)
+            private List<VHostDTO> vhosts = new ArrayList<VHostDTO>();
+
+        public static final String SERIALIZED_NAME_ENDPOINT_U_R_IS = "endpointURIs";
+        @SerializedName(SERIALIZED_NAME_ENDPOINT_U_R_IS)
+            private List<GatewayEnvironmentProtocolURIDTO> endpointURIs = null;
+
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
+            private List<AdditionalPropertyDTO> additionalProperties = null;
+
+        public static final String SERIALIZED_NAME_PERMISSIONS = "permissions";
+        @SerializedName(SERIALIZED_NAME_PERMISSIONS)
+            private EnvironmentPermissionsDTO permissions;
+
+            /**
+* For platform gateway environments (gatewayType Universal), connection status to the control plane (Active or Inactive).
+*/
+    @JsonAdapter(StatusEnum.Adapter.class)
+public enum StatusEnum {
+        ACTIVE("Active"),
+        
+        INACTIVE("Inactive");
+
+private String value;
+
+StatusEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static StatusEnum fromValue(String value) {
+    if (value == null) {
+        return null;
+    }
+    for (StatusEnum b : StatusEnum.values()) {
+        if (b.name().equalsIgnoreCase(value) || b.getValue().equalsIgnoreCase(value)) {
+            return b;
+        }
+    }
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<StatusEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final StatusEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public StatusEnum read(final JsonReader jsonReader) throws IOException {
+        if (jsonReader.peek() == JsonToken.NULL) {
+            jsonReader.nextNull();
+            return null;
+        }
+        String value = jsonReader.nextString();
+        return StatusEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_STATUS = "status";
+        @SerializedName(SERIALIZED_NAME_STATUS)
+            private StatusEnum status;
+
+        public static final String SERIALIZED_NAME_VHOST = "vhost";
+        @SerializedName(SERIALIZED_NAME_VHOST)
+            private URI vhost;
+
+        public static final String SERIALIZED_NAME_UNIVERSAL_GATEWAY_VERSION = "universalGatewayVersion";
+        @SerializedName(SERIALIZED_NAME_UNIVERSAL_GATEWAY_VERSION)
+            private String universalGatewayVersion;
+
+
+        public EnvironmentDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
+    /**
+        * Get id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "ece92bdc-e1e6-325c-b6f4-656208a041e9", value = "")
+    
+    public String getId() {
+        return id;
+    }
+
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+
+        public EnvironmentDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * Get name
+    * @return name
+    **/
+      @ApiModelProperty(example = "us-region", required = true, value = "")
+    
+    public String getName() {
+        return name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+        public EnvironmentDTO displayName(String displayName) {
+        
+        this.displayName = displayName;
+        return this;
+        }
+
+    /**
+        * Get displayName
+    * @return displayName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "US Region", value = "")
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+
+        public EnvironmentDTO provider(String provider) {
+        
+        this.provider = provider;
+        return this;
+        }
+
+    /**
+        * Get provider
+    * @return provider
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getProvider() {
+        return provider;
+    }
+
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+
+        public EnvironmentDTO type(String type) {
+        
+        this.type = type;
+        return this;
+        }
+
+    /**
+        * Get type
+    * @return type
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "hybrid", value = "")
+    
+    public String getType() {
+        return type;
+    }
+
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+
+        public EnvironmentDTO gatewayType(String gatewayType) {
+        
+        this.gatewayType = gatewayType;
+        return this;
+        }
+
+    /**
+        * Get gatewayType
+    * @return gatewayType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Regular", value = "")
+    
+    public String getGatewayType() {
+        return gatewayType;
+    }
+
+
+    public void setGatewayType(String gatewayType) {
+        this.gatewayType = gatewayType;
+    }
+
+
+        public EnvironmentDTO description(String description) {
+        
+        this.description = description;
+        return this;
+        }
+
+    /**
+        * Get description
+    * @return description
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Gateway environment in US Region", value = "")
+    
+    public String getDescription() {
+        return description;
+    }
+
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
+        public EnvironmentDTO isReadOnly(Boolean isReadOnly) {
+        
+        this.isReadOnly = isReadOnly;
+        return this;
+        }
+
+    /**
+        * Get isReadOnly
+    * @return isReadOnly
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "")
+    
+    public Boolean isIsReadOnly() {
+        return isReadOnly;
+    }
+
+
+    public void setIsReadOnly(Boolean isReadOnly) {
+        this.isReadOnly = isReadOnly;
+    }
+
+
+        public EnvironmentDTO mode(ModeEnum mode) {
+        
+        this.mode = mode;
+        return this;
+        }
+
+    /**
+        * The mode of the environment. This indicates whether the environment is in read-only or read-write mode. **READ_ONLY:** The environment is in read-only mode. API cannot be deployed, only discovery is possible. **READ_WRITE:** The environment is in read-write mode. APIs can be deployed and discovered. **WRITE_ONLY:** The environment is in write-only mode/ APIs only can be deployed. 
+    * @return mode
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "READ_WRITE", value = "The mode of the environment. This indicates whether the environment is in read-only or read-write mode. **READ_ONLY:** The environment is in read-only mode. API cannot be deployed, only discovery is possible. **READ_WRITE:** The environment is in read-write mode. APIs can be deployed and discovered. **WRITE_ONLY:** The environment is in write-only mode/ APIs only can be deployed. ")
+    
+    public ModeEnum getMode() {
+        return mode;
+    }
+
+
+    public void setMode(ModeEnum mode) {
+        this.mode = mode;
+    }
+
+
+        public EnvironmentDTO apiDiscoveryScheduledWindow(Integer apiDiscoveryScheduledWindow) {
+        
+        this.apiDiscoveryScheduledWindow = apiDiscoveryScheduledWindow;
+        return this;
+        }
+
+    /**
+        * The time window in minutes to schedule the API discovery task. This is used to discover APIs from the API Gateway and update the API list in the environment. 
+    * @return apiDiscoveryScheduledWindow
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "The time window in minutes to schedule the API discovery task. This is used to discover APIs from the API Gateway and update the API list in the environment. ")
+    
+    public Integer getApiDiscoveryScheduledWindow() {
+        return apiDiscoveryScheduledWindow;
+    }
+
+
+    public void setApiDiscoveryScheduledWindow(Integer apiDiscoveryScheduledWindow) {
+        this.apiDiscoveryScheduledWindow = apiDiscoveryScheduledWindow;
+    }
+
+
+        public EnvironmentDTO vhosts(List<VHostDTO> vhosts) {
+        
+        this.vhosts = vhosts;
+        return this;
+        }
+
+    /**
+        * Get vhosts
+    * @return vhosts
+    **/
+      @ApiModelProperty(required = true, value = "")
+    
+    public List<VHostDTO> getVhosts() {
+        return vhosts;
+    }
+
+
+    public void setVhosts(List<VHostDTO> vhosts) {
+        this.vhosts = vhosts;
+    }
+
+
+        public EnvironmentDTO endpointURIs(List<GatewayEnvironmentProtocolURIDTO> endpointURIs) {
+        
+        this.endpointURIs = endpointURIs;
+        return this;
+        }
+
+    /**
+        * Get endpointURIs
+    * @return endpointURIs
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<GatewayEnvironmentProtocolURIDTO> getEndpointURIs() {
+        return endpointURIs;
+    }
+
+
+    public void setEndpointURIs(List<GatewayEnvironmentProtocolURIDTO> endpointURIs) {
+        this.endpointURIs = endpointURIs;
+    }
+
+
+        public EnvironmentDTO additionalProperties(List<AdditionalPropertyDTO> additionalProperties) {
+        
+        this.additionalProperties = additionalProperties;
+        return this;
+        }
+
+    /**
+        * Get additionalProperties
+    * @return additionalProperties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<AdditionalPropertyDTO> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+
+    public void setAdditionalProperties(List<AdditionalPropertyDTO> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+
+        public EnvironmentDTO permissions(EnvironmentPermissionsDTO permissions) {
+        
+        this.permissions = permissions;
+        return this;
+        }
+
+    /**
+        * Get permissions
+    * @return permissions
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public EnvironmentPermissionsDTO getPermissions() {
+        return permissions;
+    }
+
+
+    public void setPermissions(EnvironmentPermissionsDTO permissions) {
+        this.permissions = permissions;
+    }
+
+
+        public EnvironmentDTO status(StatusEnum status) {
+        
+        this.status = status;
+        return this;
+        }
+
+    /**
+        * For platform gateway environments (gatewayType Universal), connection status to the control plane (Active or Inactive).
+    * @return status
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Active", value = "For platform gateway environments (gatewayType Universal), connection status to the control plane (Active or Inactive).")
+    
+    public StatusEnum getStatus() {
+        return status;
+    }
+
+
+    public void setStatus(StatusEnum status) {
+        this.status = status;
+    }
+
+
+        public EnvironmentDTO vhost(URI vhost) {
+        
+        this.vhost = vhost;
+        return this;
+        }
+
+    /**
+        * For platform gateway environments, the gateway URL (e.g. https://host:9443). Same as Platform Gateways API; only set when this environment represents a platform gateway.
+    * @return vhost
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://mg.wso2.com", value = "For platform gateway environments, the gateway URL (e.g. https://host:9443). Same as Platform Gateways API; only set when this environment represents a platform gateway.")
+    
+    public URI getVhost() {
+        return vhost;
+    }
+
+
+    public void setVhost(URI vhost) {
+        this.vhost = vhost;
+    }
+
+
+        public EnvironmentDTO universalGatewayVersion(String universalGatewayVersion) {
+        
+        this.universalGatewayVersion = universalGatewayVersion;
+        return this;
+        }
+
+    /**
+        * Universal Gateway version from config (e.g. \&quot;1.0.0\&quot;). Set for deploy targets so UI can show quick-start version; from apim.universal_gateway.version.
+    * @return universalGatewayVersion
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1.0.0", value = "Universal Gateway version from config (e.g. \"1.0.0\"). Set for deploy targets so UI can show quick-start version; from apim.universal_gateway.version.")
+    
+    public String getUniversalGatewayVersion() {
+        return universalGatewayVersion;
+    }
+
+
+    public void setUniversalGatewayVersion(String universalGatewayVersion) {
+        this.universalGatewayVersion = universalGatewayVersion;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            EnvironmentDTO environment = (EnvironmentDTO) o;
+            return Objects.equals(this.id, environment.id) &&
+            Objects.equals(this.name, environment.name) &&
+            Objects.equals(this.displayName, environment.displayName) &&
+            Objects.equals(this.provider, environment.provider) &&
+            Objects.equals(this.type, environment.type) &&
+            Objects.equals(this.gatewayType, environment.gatewayType) &&
+            Objects.equals(this.description, environment.description) &&
+            Objects.equals(this.isReadOnly, environment.isReadOnly) &&
+            Objects.equals(this.mode, environment.mode) &&
+            Objects.equals(this.apiDiscoveryScheduledWindow, environment.apiDiscoveryScheduledWindow) &&
+            Objects.equals(this.vhosts, environment.vhosts) &&
+            Objects.equals(this.endpointURIs, environment.endpointURIs) &&
+            Objects.equals(this.additionalProperties, environment.additionalProperties) &&
+            Objects.equals(this.permissions, environment.permissions) &&
+            Objects.equals(this.status, environment.status) &&
+            Objects.equals(this.vhost, environment.vhost) &&
+            Objects.equals(this.universalGatewayVersion, environment.universalGatewayVersion);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, displayName, provider, type, gatewayType, description, isReadOnly, mode, apiDiscoveryScheduledWindow, vhosts, endpointURIs, additionalProperties, permissions, status, vhost, universalGatewayVersion);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class EnvironmentDTO {\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
+    sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    gatewayType: ").append(toIndentedString(gatewayType)).append("\n");
+    sb.append("    description: ").append(toIndentedString(description)).append("\n");
+    sb.append("    isReadOnly: ").append(toIndentedString(isReadOnly)).append("\n");
+    sb.append("    mode: ").append(toIndentedString(mode)).append("\n");
+    sb.append("    apiDiscoveryScheduledWindow: ").append(toIndentedString(apiDiscoveryScheduledWindow)).append("\n");
+    sb.append("    vhosts: ").append(toIndentedString(vhosts)).append("\n");
+    sb.append("    endpointURIs: ").append(toIndentedString(endpointURIs)).append("\n");
+    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    permissions: ").append(toIndentedString(permissions)).append("\n");
+    sb.append("    status: ").append(toIndentedString(status)).append("\n");
+    sb.append("    vhost: ").append(toIndentedString(vhost)).append("\n");
+    sb.append("    universalGatewayVersion: ").append(toIndentedString(universalGatewayVersion)).append("\n");
+sb.append("}");
+return sb.toString();
+}
+
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
+
+}
+
