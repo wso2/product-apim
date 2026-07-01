@@ -85,8 +85,8 @@ public class BlockLifecycleListener implements ITestListener {
     public void onStart(ITestContext context) {
 
         // Opt-in gate: a block joins the parallel-on-shared lane only by declaring a blockLabel param.
-        // Without it (e.g. a legacy fixed-port <test> driving its own SystemInitializationRunner), the
-        // listener no-ops so it never boots a stray container or disturbs that block's own lifecycle.
+        // Without it, the listener no-ops so it never boots a stray container or disturbs a <test> block
+        // that manages its own container lifecycle.
         String label = param(context, PARAM_BLOCK_LABEL);
         if (label == null || label.isBlank()) {
             return;
@@ -95,6 +95,10 @@ public class BlockLifecycleListener implements ITestListener {
         String sharedScopeId = TestContext.sharedScopeId(context);
         TestContext.setScope(sharedScopeId, sharedScopeId);
 
+        // Held outside the try so the catch can stop a container that started but then failed before it was
+        // handed off to TestContext (below). Without this a boot failure on the start()/URL/readiness path
+        // leaks a live Docker container for the JVM lifetime (only reaped later by Ryuk).
+        DynamicApimContainer container = null;
         try {
             // Start the shared backend first (idempotent singleton on the shared network) when the block opts
             // in, so APIs deployed by gateway-invocation tests have a reachable "nodebackend" upstream.
@@ -103,14 +107,13 @@ public class BlockLifecycleListener implements ITestListener {
                 logger.info("Block '" + label + "' ensured NodeAppServer backend is running");
             }
 
-            DynamicApimContainer container = new DynamicApimContainer(label, resolveTomlContent(context));
+            container = new DynamicApimContainer(label, resolveTomlContent(context));
             container.withLabel("block", label);
             container.start();
 
             String baseUrl = container.getServletHttpsUrl();
             String gatewayUrl = container.getGatewayHttpsUrl();
             if (!ServerReadiness.awaitReady(baseUrl)) {
-                container.stop();
                 throw new IllegalStateException("APIM block '" + label + "' did not become ready within "
                         + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
             }
@@ -126,7 +129,25 @@ public class BlockLifecycleListener implements ITestListener {
             }
         } catch (Throwable t) {
             context.setAttribute(BOOT_ERROR_ATTRIBUTE, t);
-            logger.error("Block '" + label + "' boot/readiness failed; its classes will be skipped", t);
+            // Not "skipped": BaseBlockRunner's @BeforeClass rethrows this bootError, so the block's classes
+            // are reported FAILED and the build stays red (a skip would leave it green — see BaseBlockRunner).
+            logger.error("Block '" + label + "' boot/readiness failed; its classes will be reported as failed", t);
+            // Stop the failed container here (the readiness/URL/start path never handed it to TestContext, so
+            // onFinish can't reap it). Guard the stop in its own try so a stop() failure doesn't mask the
+            // original boot cause. A container already stored/stopped tolerates a redundant stop() as a no-op.
+            if (container != null) {
+                try {
+                    container.stop();
+                } catch (Throwable stopErr) {
+                    logger.warn("Block '" + label + "' failed-container stop() also failed", stopErr);
+                }
+            }
+        } finally {
+            // Defensive hygiene: never leave this block's scope bound to the (pooled) thread that ran
+            // onStart. Per-invocation scoping in BlockScopeListener already resets scope before any body
+            // reads it, and the block's shared entries persist (keyed by scope id in the static map), so
+            // clearing the ThreadLocal here is safe and mirrors onFinish.
+            TestContext.clearScope();
         }
     }
 

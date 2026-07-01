@@ -111,8 +111,8 @@ crashed run never poisons the next.
 ## Phase 1 — Dynamic-port container (new class)
 
 Implements the **Port robustness** decision: `portOffset=0` + `withExposedPorts` +
-`getMappedPort`, with named URL accessors. `APIMContainer` (fixed ports) is **left
-untouched** so the legacy path keeps working.
+`getMappedPort`, with named URL accessors. (The legacy fixed-port `APIMContainer` was **removed
+2026-07-01** as unused dead code — `DynamicApimContainer` is now the sole container.)
 
 - `[x]` **1.1 Create `DynamicApimContainer`** in `tests-common/testcontainers`,
   copied from `APIMContainer` with these deltas:
@@ -145,7 +145,7 @@ untouched** so the legacy path keeps working.
   `DynamicApimContainerParallelVerificationTest`: 2 containers booted concurrently, 8 distinct
   host ports, both healthy, all ports released, no leaks.)*
 
-- `[-]` _(DEPRECATED 2026-06-30 — old direct-container e2e-invoke probe; its gateway-invocation property is superseded by **7.7** (and already green via `gateway/*` + the 159-test suite). `verify-1.3.sh` is guarded (exits 0, not run).)_ **1.3 Verify — accepted self-URL caveat is actually harmless end-to-end (B).**
+- `[-]` _(DEPRECATED 2026-06-30 — old direct-container e2e-invoke probe; its gateway-invocation property is superseded by **7.7** (and already green via `gateway/*` + the 159-test suite). **REMOVED 2026-07-01**: `testng-fv-1.3.xml`, `verify-1.3.sh`, `DynamicLifecycleVerificationRunner`, and `dynamic_lifecycle.feature` deleted as superseded dead code. `TestNameMdcListener` and the `...verification.steps` glue are retained — still used by 2.1 and the block probe runners respectively.)_ **1.3 Verify — accepted self-URL caveat is actually harmless end-to-end (B).**
   The risk we accepted: host port ≠ internal port. Prove the flows we *use* still work
   through dynamic ports: DCR → obtain a token (via mapped servlet-https port) → deploy a
   trivial API → **invoke it through the mapped gateway port** and get a valid gateway
@@ -481,7 +481,7 @@ not used by this new lane.
        block_probe_overlay.feature, testng-fv-4.14.xml, verify-4.14.sh. -->
 
 
-- `[-]` _(N/A 2026-06-30 — exercises legacy-lane + lifecycle-lane co-existence; the legacy lane it depends on was superseded, so this no longer applies.)_ **4.15 Verify — mixed-lane co-existence (B).** Because listeners are suite-global,
+- `[-]` _(N/A 2026-06-30 — exercises legacy-lane + lifecycle-lane co-existence; the legacy lane it depends on was superseded, so this no longer applies. Suite + script removed 2026-07-01, along with the legacy `SystemInitializationRunner`/`APIMContainer` they drove.)_ **4.15 Verify — mixed-lane co-existence (B).** Because listeners are suite-global,
   run a suite containing **both** a legacy fixed-port `<test>` block (SystemInitializationRunner
   + SystemShutdown) **and** a new lifecycle block. The `BlockLifecycleListener` must **no-op**
   for the legacy block (it isn't opted in) and not disturb it; both lanes pass.
@@ -564,7 +564,7 @@ outside a scenario.
        BlockProbeSteps.java. verify-5.3.sh: Maven SUCCESS, 1 observation / 1 distinct real
        container id, no fv-5.3 leak. Re-runnable. VERIFY 5.3: PASS. -->
 
-- `[-]` _(N/A 2026-06-30 — verifies the legacy provisioning path, intentionally superseded by the lifecycle-driven actor-model provisioning; current provisioning is covered by 7.2/7.3.)_ **5.4 Verify — legacy parity (regression).** The legacy path
+- `[-]` _(N/A 2026-06-30 — verifies the legacy provisioning path, intentionally superseded by the lifecycle-driven actor-model provisioning; current provisioning is covered by 7.2/7.3. Suite + script removed 2026-07-01, along with the legacy `SystemInitializationRunner`/`APIMContainer` they drove.)_ **5.4 Verify — legacy parity (regression).** The legacy path
   (`SystemInitializationRunner` + `TenantUserInitializationRunner` + `SystemShutdown`)
   still provisions and runs green, unchanged.
   - **Confirm gate.**

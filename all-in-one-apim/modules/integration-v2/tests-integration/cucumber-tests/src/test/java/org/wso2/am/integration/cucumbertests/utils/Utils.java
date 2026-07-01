@@ -192,7 +192,7 @@ public class Utils {
             throw new IllegalArgumentException("Either apiId or applicationId must be provided.");
         }
 
-        StringBuilder urlBuilder = new StringBuilder(baseUrl + Constants.DEFAULT_DEVPORTAL + "/subscriptions");
+        StringBuilder urlBuilder = new StringBuilder(baseUrl + Constants.DEFAULT_DEVPORTAL + "subscriptions");
 
         List<String> params = new ArrayList<>();
         if (StringUtils.isNotBlank(apiId)) {
@@ -348,7 +348,9 @@ public class Utils {
     }
 
     public static String getSubscriptionUnBlockingURL(String baseUrl, String subscriptionID) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/unblock-subscription?subscriptionId=" + subscriptionID + "&blockState=BLOCKED";
+        // unblock-subscription takes only subscriptionId (per publisher-api.yaml); blockState is a
+        // block-subscription param and is ignored here, so it is intentionally omitted.
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/unblock-subscription?subscriptionId=" + subscriptionID;
     }
 
     public static String getSubscriptions(String baseUrl, String resourceID) {

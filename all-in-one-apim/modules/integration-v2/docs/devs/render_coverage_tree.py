@@ -45,8 +45,12 @@ def parse_capability_map(path):
                 caps[cur] = {"name": cur, "features": OrderedDict()}
                 in_feats = False
             elif indent == 4 and content.startswith("name:"):
+                if cur is None:
+                    sys.exit("capability-map malformed: 'name:' at indent 4 before any capability header")
                 caps[cur]["name"] = content[len("name:"):].strip()
             elif indent == 4 and content.startswith("features:"):
+                if cur is None:
+                    sys.exit("capability-map malformed: 'features:' at indent 4 before any capability header")
                 in_feats = True
             elif indent == 6 and in_feats and cur is not None:
                 m = re.match(r"([\w-]+):\s*(.*)$", content)

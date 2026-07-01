@@ -11,7 +11,7 @@
 <suite name="Framework Verification C.2" parallel="false">
     <test name="PhaseC.2-SharedScopeWriteStress">
         <classes>
-            <class name="org.wso2.am.integration.cucumbertests.utils.TestContextConcurrencyStressTest"/>
+            <class name="org.wso2.am.integration.cucumbertests.verification.TestContextConcurrencyStressTest"/>
         </classes>
     </test>
 </suite>

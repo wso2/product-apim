@@ -6,7 +6,7 @@ Feature: Publisher API Definition Import
   imported API at the gateway is covered by gateway/rest-invocation. Each row is self-contained and torn
   down by the per-scenario cleanup hook.
 
-  @cap:publisher @feat:definitions @type:regression @legacy:ImportOpenApiDefinitionTestCase
+  @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
   Scenario Outline: Import an OpenAPI definition and publish it as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I import open api definition from "<apiDefinition>" , additional properties from "<additionalProperty>" and create api as "importedApiId"
@@ -42,7 +42,7 @@ Feature: Publisher API Definition Import
       | publisherUser@tenant1.com | artifacts/payloads/OAS/OAS3ApiDefinition.json   | artifacts/payloads/OAS/OAS3AdditionalProperties.json   |
       | publisherUser@tenant1.com | artifacts/payloads/OAS/OAS3.1ApiDefinition.json | artifacts/payloads/OAS/OAS3.1AdditionalProperties.json |
 
-  @cap:publisher @feat:definitions @type:negative @legacy:ImportOpenApiDefinitionTestCase
+  @cap:publisher @feat:definitions @type:negative @legacy:OASTestCase
   Scenario Outline: A subscriber-role user cannot create an API to import a definition into as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "subscriberApiPayload"

@@ -41,7 +41,17 @@ public class TestContext {
 
     private static final Map<String, Map<String, Object>> sharedContexts = new ConcurrentHashMap<>();
     private static final Map<String, Map<String, Object>> localContexts = new ConcurrentHashMap<>();
-    private static final InheritableThreadLocal<ContextScope> currentScope = new InheritableThreadLocal<>();
+    /**
+     * Scope is strictly per-invocation: {@code BlockScopeListener.beforeInvocation} binds it on the very
+     * worker thread that runs each invocation (test or config method) and {@code afterInvocation} clears it,
+     * so a reused pool thread never carries a stale scope into the next invocation. Deliberately a plain
+     * {@link ThreadLocal}, not {@code InheritableThreadLocal}: inheritance is not the isolation mechanism
+     * (verified — FV-2.2 {@code BlockScopeThreadVisibilityVerificationTest} passes either way), and a plain
+     * ThreadLocal fails <em>closed</em> to the global default rather than silently leaking a stale
+     * inherited snapshot. A child thread a step might spawn does NOT inherit the scenario scope and must
+     * call {@link #setScope} itself.
+     */
+    private static final ThreadLocal<ContextScope> currentScope = new ThreadLocal<>();
 
     private static final class ContextScope {
         private final String sharedScopeId;

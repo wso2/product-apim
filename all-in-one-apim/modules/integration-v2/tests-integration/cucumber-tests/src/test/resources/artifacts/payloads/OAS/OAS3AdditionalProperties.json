@@ -1,7 +1,7 @@
 {
-  "name": "OAS3RestAPI",
+  "name": "${UNIQUE:OAS3RestAPI}",
   "version": "1.0.0",
-  "context": "oas3",
+  "context": "${UNIQUE:oas3}",
   "gatewayType": "wso2/synapse",
   "policies": [
     "Unlimited",

@@ -1,7 +1,7 @@
 {
-  "name": "OAS2RestAPI",
+  "name": "${UNIQUE:OAS2RestAPI}",
   "version": "1.0.0",
-  "context": "oas2",
+  "context": "${UNIQUE:oas2}",
   "gatewayType": "wso2/synapse",
   "policies": [
     "Unlimited",
