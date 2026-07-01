@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -70,7 +71,7 @@ public class ApplicationBaseSteps {
         Object createdAppId = Utils.extractValueFromPayload(applicationCreateResponse.getData(), "applicationId");
         TestContext.set("createdAppId", createdAppId);
         // Register for scenario teardown so a shared-server suite does not accumulate applications across scenarios.
-        TestContext.addToList(Constants.CREATED_APPLICATION_IDS, createdAppId);
+        ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, createdAppId);
     }
 
     /**

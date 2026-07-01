@@ -98,6 +98,16 @@ public final class Identity {
         return resolveActor(ref == null ? null : ref.toString());
     }
 
+    /**
+     * The current acting-actor reference string (or {@code null} for the super-tenant admin default). Recorded
+     * against each created resource at registration time so teardown can delete it as its OWNING actor rather
+     * than whoever happens to be acting when cleanup runs. See {@code ResourceCleanup}.
+     */
+    public static String actingActorRef() {
+        Object ref = TestContext.get(ACTING_ACTOR_KEY);
+        return ref == null ? null : ref.toString();
+    }
+
     /** The tenant bean owning the given actor (resolved by the actor's domain). */
     public static Tenant tenantOf(User actor) {
         return Utils.getTenantFromContext(actor.getUserDomain());
