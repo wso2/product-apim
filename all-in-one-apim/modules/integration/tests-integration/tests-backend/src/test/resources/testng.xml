@@ -470,6 +470,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
             <!--<class name="org.wso2.am.integration.tests.logging.CorrelationLoggingTest"/>-->
+            <class name="org.wso2.am.integration.tests.logging.RemoteLoggingAppenderTest"/>
         </classes>
     </test>
 
