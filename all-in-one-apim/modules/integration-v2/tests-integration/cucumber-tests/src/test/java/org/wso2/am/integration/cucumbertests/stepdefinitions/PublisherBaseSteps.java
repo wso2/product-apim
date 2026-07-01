@@ -17,8 +17,6 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -57,7 +55,6 @@ public class PublisherBaseSteps {
 
         return baseSteps.getBaseUrl();
     }
-
 
     /**
      * Creates a new resource (API, API Product, etc.) using a JSON payload and stores
@@ -136,50 +133,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Verifies that the HTTP response contains the expected API policies.
-     *
-     * @param dataTable Data table containing policy type and expected policy name pairs
-     */
-    @Then("The response should contain the following api policies")
-    public void theResponseShouldContainFollowingApiPolicies(DataTable dataTable) throws IOException {
-
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        String responsePayload = response.getData();
-        JsonNode apiPolicies = new ObjectMapper().readTree(responsePayload).path("apiPolicies");
-
-        Map<String, String> expectedPolicies = dataTable.asMap();
-
-        for (Map.Entry<String, String> expectedPolicy : expectedPolicies.entrySet()) {
-            validatePolicy(apiPolicies, expectedPolicy.getKey(), expectedPolicy.getValue());
-        }
-    }
-
-    /**
-     * Validates that the given API policies JSON contains a policy of the specified
-     * type with the expected policy name and a non-empty policy ID.
-     *
-     * @param apiPolicies        JSON node containing API policies
-     * @param expectedPolicyName Expected policy name
-     * @param policyType         Type of policy
-     */
-    private void validatePolicy(JsonNode apiPolicies, String policyType, String expectedPolicyName) {
-
-        JsonNode receivedPolicesArray = apiPolicies.path(policyType);
-
-        boolean policyExists = false;
-        for (JsonNode node : receivedPolicesArray) {
-            String policyName = node.path("policyName").asText(null);
-            String policyId = node.path("policyId").asText(null);
-            if (expectedPolicyName.equals(policyName) && StringUtils.isNotBlank(policyId)) {
-                policyExists = true;
-                break;
-            }
-        }
-        Assert.assertTrue(policyExists, "Policy '" + expectedPolicyName + "' not found or missing policyId under apiPolicies['" + policyType
-                + "']");
-    }
-
-    /**
      * Creates a new revision for a resource (API or API Product).
      * The revision ID is stored in the test context as "revisionId" for use in deployment steps.
      *
@@ -208,64 +161,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Retrieves the list of existing revisions for a resource and extracts the first revision ID.
-     *
-     * @param revisionID Context key where the first revision ID will be stored
-     * @param resourceType Type of resource (e.g., "apis", "api-products")
-     * @param resourceId Context key containing the resource ID
-     */
-    @When("I get the existing revision as {string} for {string} resource with {string}")
-    public void iGetTheExistingRevisionAsForResourceWith(String revisionID, String resourceType, String resourceId) throws IOException {
-
-        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse getRevisionResponse = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getRevisionURL(getBaseUrl(),resourceType, actualResourceId), headers);
-
-        TestContext.set("httpResponse", getRevisionResponse);
-        Assert.assertEquals(getRevisionResponse.getResponseCode(), 200, getRevisionResponse.getData());
-
-        // extract and store  exiting revision ID in context
-        JSONObject responseJson = new JSONObject(getRevisionResponse.getData());
-        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
-            String firstRevisionId = responseJson
-                    .getJSONArray("list")
-                    .getJSONObject(0)
-                    .getString("id");
-            TestContext.set(revisionID, firstRevisionId);
-        } else {
-            throw new RuntimeException("No revisions found for API: " + actualResourceId);
-        }
-    }
-
-    /**
-     * Deletes a specific revision of a resource.
-     *
-     * @param resourceType Type of resource (e.g., "apis", "api-products")
-     * @param revisionId Context key containing the revision ID to delete
-     * @param resourceId Context key containing the resource ID
-     */
-    @When("I Delete the {string} resource revision with {string} for {string}")
-    public void iDeleteTheRevisionWithFor(String resourceType,String revisionId, String resourceId) throws IOException{
-
-        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
-        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse getRevisionResponse = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getRevisionByID(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers);
-
-        TestContext.set("httpResponse", getRevisionResponse);
-    }
-
-    /**
      * Deploys a specific revision of a resource to the gateway environment.
      *
      * @param revisionId Context key containing the revision ID to deploy
@@ -290,58 +185,6 @@ public class PublisherBaseSteps {
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", deployRevisionResponse);
-    }
-
-    /**
-     * Undeploy a specific revision of a resource from the gateway environment.
-     *
-     * @param revisionId Context key containing the revision ID to undeploy
-     * @param resourceType Type of resource (e.g., "apis", "api-products")
-     * @param resourceId Context key containing the resource ID
-     */
-    @When("I undeploy revision {string} of {string} resource {string}")
-    public void iUndeployRevision(String revisionId, String resourceType, String resourceId) throws IOException{
-
-        baseSteps.putJsonPayloadInContext("<undeployRevisionPayload>",
-                "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
-
-        String actualrRsourceId = Utils.resolveFromContext(resourceId).toString();
-        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
-        String jsonPayload = Utils.resolveFromContext("<undeployRevisionPayload>").toString();
-        jsonPayload = jsonPayload.replace("{{gatewayEnvironment}}", System.getenv(Constants.GATEWAY_ENVIRONMENT));
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse unDeployRevisionResponse = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualrRsourceId, actualRevisionId), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", unDeployRevisionResponse);
-    }
-
-    /**
-     * Restores a previous revision of a resource, making it the current version.
-     *
-     * @param revisionId Context key containing the revision ID to restore
-     * @param resourceType Type of resource (e.g., "apis", "api-products")
-     * @param resourceId Context key containing the resource ID
-     */
-    @When("I restore a previous revision {string} of {string} resource {string}")
-    public void iRestoreAPreviousRevision(String revisionId, String resourceType, String resourceId) throws IOException{
-
-        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
-        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse restoreRevisionResponse = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getRevisionRestoreURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers, null, null);
-
-        TestContext.set("httpResponse", restoreRevisionResponse);
     }
 
      /**
@@ -475,68 +318,6 @@ public class PublisherBaseSteps {
                 "API lifecycle state did not reach '" + status + "' within the retry window");
     }
 
-
-    /**
-     * Searches for an API by name and version, then stores its UUID in the test context.
-     * This step implements a retry mechanism to handle eventual consistency, waiting for the API
-     * to be indexed before searching.
-     *
-     * @param apiName Name of the API to search for
-     * @param apiVersion Version of the API to search for
-     * @param apiID Context key where the found API UUID will be stored
-     */
-    @When("I find the apiUUID of the API created with the name {string} and version {string} as {string}")
-    public void iFindTheApiUUIDOfTheAPICreatedWithTheNameAndVersionAs(String apiName, String apiVersion, String apiID) throws IOException, InterruptedException {
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        String searchQuery = String.format("name:%s version:%s", apiName, apiVersion);
-
-        logger.info("Searching for API: name={}, version={}. Waiting {}ms for initial indexing...",
-                apiName, apiVersion, Constants.INITIAL_INDEXING_TIME);
-        Thread.sleep(Constants.INITIAL_INDEXING_TIME);
-
-        HttpResponse response = null;
-        String apiUUID = null;
-
-        for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
-            response = SimpleHTTPClient.getInstance()
-                    .doGet(Utils.getAPISearchEndpointURL(getBaseUrl(), searchQuery, null, null), headers);
-
-            if (response.getResponseCode() == 200) {
-                apiUUID = Utils.extractAPIUUID(response.getData());
-                if (apiUUID != null && !apiUUID.isEmpty()) {
-                    logger.info("API found on attempt {}/{}: UUID={}", attempt, Constants.MAX_RETRIES, apiUUID);
-                    break;
-                }
-            }
-
-            // Log and wait before retrying
-            if (attempt < Constants.MAX_RETRIES) {
-                logger.warn("Attempt {}/{}: API '{}' version '{}' not found yet (response code: {}). Retrying in {}ms...",
-                        attempt, Constants.MAX_RETRIES, apiName, apiVersion, response.getResponseCode(),Constants.RETRY_INTERVAL_TIME);
-                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
-            }
-        }
-
-        // Final assertion after all retries
-        if (apiUUID == null || apiUUID.isEmpty()) {
-            String errorMsg = String.format(
-                    "Failed to find API with name '%s' and version '%s' after %d attempts (waited %dms + %d retries × %dms). " +
-                            "Last response code: %d, Last response data: %s",
-                    apiName, apiVersion, Constants.MAX_RETRIES, Constants.INITIAL_INDEXING_TIME, Constants.MAX_RETRIES - 1, Constants.RETRY_INTERVAL_TIME,
-                    response != null ? response.getResponseCode() : -1,
-                    response != null ? response.getData() : "no response");
-            logger.error(errorMsg);
-            throw new AssertionError(errorMsg);
-        }
-
-        TestContext.set("httpResponse", response);
-        TestContext.set(apiID, apiUUID);
-    }
-
     /**
      * Composite step that creates an API, creates a revision, and deploys it.
      * This step combines multiple operations of creating and deploying an API
@@ -556,7 +337,6 @@ public class PublisherBaseSteps {
         iDeployApiRevisionGivenPayload("<revisionId>", "apis",apiID, "<deployRevisionPayload>");
         baseSteps.theResponseStatusCodeShouldBe(201);
     }
-
 
     /**
      * Composite step that deploys a revision using a default deployment payload.
@@ -772,38 +552,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Searches for a document (or other resource) by name in the most recent HTTP response
-     * and stores its ID in the test context.
-     *
-     * @param key The field name to extract
-     * @param name The name of the document/resource to search for
-     * @param id Context key where the found ID will be stored
-     */
-    @When("I find the {string} with name {string} as {string}")
-    public void iFindTheDocumentWithNameAs(String key,String name, String id) {
-
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        JSONObject json = new JSONObject(response.getData());
-
-        JSONArray docs = json.getJSONArray("list");
-        String foundId = null;
-
-        for (int i = 0; i < docs.length(); i++) {
-            JSONObject doc = docs.getJSONObject(i);
-            if (doc.has("name") && doc.getString("name").equalsIgnoreCase(name)) {
-                foundId = doc.getString(key);
-                break;
-            }
-        }
-
-        if (foundId == null) {
-            throw new AssertionError("Resource with name '" + name + "' not found");
-        }
-
-        TestContext.set(id, foundId);
-    }
-
-    /**
      * Retrieves a specific document by its ID for a given API.
      *
      * @param documentID Context key containing the document ID to retrieve
@@ -844,37 +592,6 @@ public class PublisherBaseSteps {
         HttpResponse response = SimpleHTTPClient.getInstance()
                 .doDelete(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers);
         TestContext.set("httpResponse", response);
-    }
-
-    /**
-     * Updates a specific field of a document with a new value.
-     * This step retrieves the existing document payload, updates the specified configuration field,
-     * and then performs the update operation.
-     *
-     * @param documentID Context key containing the document ID to update
-     * @param documentPayload Context key containing the existing document payload
-     * @param apiID Context key containing the API ID
-     * @param config The configuration field name to update
-     * @param configValue The new value for the configuration field (can be JSON, boolean, number, or string)
-     */
-    @When("I update the document {string} with {string} for {string} as {string} and value:")
-    public void iUpdateTheDocumentWithForAsAndValue(String documentID, String documentPayload, String apiID, String config, String configValue) throws InterruptedException, IOException {
-
-        // Retrieve a JSON object safely
-        Object ctxValue = Utils.resolveFromContext(documentPayload);
-        JSONObject jsonPayload = (ctxValue instanceof JSONObject)
-                ? (JSONObject) ctxValue
-                : new JSONObject(ctxValue.toString());
-
-        Object parsedValue = parseConfigValue(configValue);
-
-        // update or overwrite the payload
-        jsonPayload.put(config, parsedValue);
-        String updatedJsonPayload = jsonPayload.toString();
-        TestContext.set(Utils.normalizeContextKey("<newDocumentPayload>"), updatedJsonPayload);
-
-        iUpdateTheDocumentWithForAPI(documentID, apiID);
-        Thread.sleep(3000);
     }
 
     /**
@@ -959,29 +676,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Prepares an endpoint update payload by loading a base template file
-     * and replacing placeholders with the provided endpoint configuration values.
-     *
-     * @param type Endpoint type (e.g., "http", "https")
-     * @param productionEndpoint The production endpoint URL
-     * @param sandboxEndpoint The sandbox endpoint URL
-     * @param contextKey Context key where the prepared payload will be stored
-     */
-    @When("I prepare an endpoint update with {string}, {string} and {string} as {string}")
-    public void iPrepareAnEndpointUpdateWithAnd(String type, String productionEndpoint, String sandboxEndpoint, String contextKey) throws IOException{
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("artifacts/payloads/update_api_endpoint.json")) {
-            if (inputStream == null) {
-                throw new FileNotFoundException("File not found on classpath: " + "artifacts/payloads/update_api_endpoint.json");
-            }
-            String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            jsonPayload = jsonPayload.replace("<type>", type)
-                    .replace("<productionEndpoint>", productionEndpoint)
-                    .replace("<sandboxEndpoint>", sandboxEndpoint);
-            TestContext.set(Utils.normalizeContextKey(contextKey), jsonPayload);
-        }
-    }
-
-    /**
      * Blocks a subscription, preventing it from being used for API invocation.
      *
      * @param subscriptionID Context key containing the subscription ID to block
@@ -1019,25 +713,6 @@ public class PublisherBaseSteps {
                 .doPost(Utils.getSubscriptionUnBlockingURL(getBaseUrl(), subscriptionId), headers, null, null);
 
         TestContext.set("httpResponse", documentUpdateResponse);
-    }
-
-    /**
-     * Retrieves all subscriptions associated with a resource (API or API Product).
-     *
-     * @param resourceID Context key containing the resource ID
-     */
-    @When("I retrieve the subscriptions for resource {string}")
-    public void iRetrieveTheSubscriptionsForResource(String resourceID) throws IOException {
-
-        String actualResourceID = Utils.resolveFromContext(resourceID).toString();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getSubscriptions(getBaseUrl(), actualResourceID), headers);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1130,30 +805,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Updates a shared scope with a new payload.
-     *
-     * @param scopeID Context key containing the scope ID to update
-     * @param scopePayload Context key containing the updated scope JSON payload
-     */
-    @And("I update shared scope {string} with payload {string}")
-    public void iUpdateSharedScopeWithPayload(String scopeID, String scopePayload) throws IOException {
-
-        String scopeId = Utils.resolveFromContext(scopeID).toString();
-        String jsonPayload = Utils.resolveFromContext(scopePayload).toString();
-
-        jsonPayload = jsonPayload.replace("<scopeID>", scopeID);
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
-    }
-
-    /**
      * Searches for a shared scope by name and stores its ID in the test context.
      *
      * @param scopeName Name of the shared scope to search for
@@ -1235,114 +886,6 @@ public class PublisherBaseSteps {
         TestContext.set(apiID, createdId);
         // Register for scenario teardown so a shared-server suite does not accumulate APIs across scenarios.
         TestContext.addToList(Constants.CREATED_API_IDS, createdId);
-    }
-
-    /**
-     * Searches for an API Product by name and stores its ID in the test context.
-     *
-     * @param productName Name of the API Product to search for
-     * @param productId Context key where the found product ID will be stored
-     */
-    @When("I find the api product created with the name {string} as {string}")
-    public void iFindTheApiProductCreatedWithTheNameAs(String productName, String productId) throws IOException {
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getProductSearchEndpointURL(getBaseUrl(), productName), headers);
-
-        TestContext.set("httpResponse", response);
-        TestContext.set(productId, Utils.extractAPIUUID(response.getData()));
-    }
-
-    /**
-     * Creates a new API Product by combining multiple APIs.
-     * This step loads a template payload and replaces placeholders with the provided API IDs.
-     *
-     * @param productID Context key where the created product ID will be stored
-     * @param firstAPIID Context key containing the first API ID to include in the product
-     * @param secondAPIID Context key containing the second API ID to include in the product
-     */
-    @When("I create a new API product as {string} from apis {string} and {string}")
-    public void iCreateANewAPIProductAsFromApis(String productID, String firstAPIID, String secondAPIID) throws IOException {
-
-        String firstApiUuid = Utils.resolveFromContext(firstAPIID).toString();
-        String secondApiUuid = Utils.resolveFromContext(secondAPIID).toString();
-
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("artifacts/payloads/create_apim_test_product.json")) {
-            if (inputStream == null) {
-                throw new FileNotFoundException("File not found on classpath: " + "artifacts/payloads/create_apim_test_product.json");
-            }
-            String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            jsonPayload = jsonPayload.replace("<FirstAPIId>", firstApiUuid)
-                    .replace("<SecondAPIId>", secondApiUuid);
-            TestContext.set(Utils.normalizeContextKey("<newAPIProductPayload>"), jsonPayload);
-        }
-        iCreateAnAPIWithPayloadAs("api-products","<newAPIProductPayload>",productID );
-    }
-
-    /**
-     * Updates an API Product resource with a new payload.
-     *
-     * @param resourceId Context key containing the API Product ID to update
-     * @param payload Context key containing the update JSON payload
-     */
-    @And("I update api product resource of id {string} with payload {string}")
-    public void iUpdateApiProductResourceOfIdWithPayload(String resourceId, String payload) throws IOException {
-
-        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
-        String firstApiUuid = Utils.resolveFromContext("firstApiUuid").toString();
-        String secondApiUuid = Utils.resolveFromContext("secondApiUuid").toString();
-
-        jsonPayload = jsonPayload.replace("<FirstAPIId>", firstApiUuid)
-                .replace("<SecondAPIId>", secondApiUuid);
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse apiUpdateResponse = SimpleHTTPClient.getInstance().doPut(
-                Utils.getResourceEndpointURL(getBaseUrl(),"api-products" ,actualResourceId), headers, jsonPayload,
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", apiUpdateResponse);
-    }
-
-    /**
-     * Searches for a resource ( policy etc.) by name and version
-     *
-     * @param key The field name to extract (typically "id")
-     * @param name The name of the resource to search for
-     * @param version The version of the resource to search for
-     * @param id Context key where the found ID will be stored
-     */
-    @When("I find the {string} with name {string} and version {string} as {string}")
-    public void iFindTheResourceWithNameAndVersionAs(String key, String name, String version, String id) {
-
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        JSONObject json = new JSONObject(response.getData());
-
-        JSONArray list = json.getJSONArray("list");
-        String foundId = null;
-
-        for (int i = 0; i < list.length(); i++) {
-            JSONObject item = list.getJSONObject(i);
-            String itemName = item.optString("name", "");
-            String itemVersion = item.optString("version", "");
-
-            if (itemName.equalsIgnoreCase(name) && itemVersion.equalsIgnoreCase(version)) {
-                foundId = item.getString(key);
-                break;
-            }
-        }
-
-        if (foundId == null) {
-            throw new AssertionError("Resource with name '" + name + "' and version '" + version + "' not found");
-        }
-
-        TestContext.set(id, foundId);
     }
 
     /**
@@ -1492,81 +1035,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Creates a new global policy (gateway policy) from a common policy.
-     *
-     * @param globalPolicyId Context key where the created global policy ID will be stored
-     * @param policyPayload Context key containing the global policy creation JSON payload
-     */
-    @And("I create a new global policy as {string} with {string}")
-    public void iCreateANewGlobalPolicyAs(String globalPolicyId, String policyPayload) throws IOException {
-
-        String jsonPayload = Utils.resolveFromContext(policyPayload).toString();
-        String commonPolicyId = Utils.resolveFromContext("existingPolicyId").toString();
-
-        jsonPayload = jsonPayload.replace("<id>", commonPolicyId);
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGlobalPolicy(getBaseUrl()), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
-        TestContext.set(globalPolicyId, Utils.extractValueFromPayload(response.getData(), "id"));
-    }
-
-    /**
-     * Deploys a global policy mapping to specific gateway environments.
-     * This step associates the global policy with gateway environments, making it available for use.
-     *
-     * @param globalPolicyId Context key containing the global policy ID to engage
-     * @param payload Context key containing the deployment configuration JSON payload
-     */
-    @And("I engage the gateway policy mapping {string} to the gateways {string}")
-    public void iEngageTheGatewayPolicyMappingToTheGateways(String globalPolicyId, String payload) throws IOException, InterruptedException {
-
-        String policyId = Utils.resolveFromContext(globalPolicyId).toString();
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
-
-        jsonPayload = jsonPayload.replace("{{gatewayEnvironment}}", System.getenv(Constants.GATEWAY_ENVIRONMENT));
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGlobalPolicyDeploy(getBaseUrl(),policyId), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
-        Thread.sleep(10000);
-    }
-
-    /**
-     * Retrieves the API definition for a resource.
-     * This step fetches the current API definition document (Swagger/OpenAPI specification).
-     *
-     * @param resourceType Type of resource (e.g., "apis", "api-products")
-     * @param resourceId Context key containing the resource ID
-     */
-    @And("I retrieve {string} resource definition for {string}")
-    public void iRetrieveResourceDefinitionFor(String resourceType, String resourceId) throws IOException {
-
-        String actualResourceID = Utils.resolveFromContext(resourceId).toString();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getSwaggerURL(getBaseUrl(), resourceType, actualResourceID), headers);
-
-        TestContext.set("httpResponse", response);
-    }
-
-    /**
      * Imports an OpenAPI definition from a file and creates an API.
      * This step handles the multipart file upload required for API import, including both
      * the OpenAPI definition file and additional properties file.
@@ -1596,12 +1064,18 @@ public class PublisherBaseSteps {
                 throw new FileNotFoundException("Additional properties file not found: " + additionalData);
             }
 
+            // The additional-properties file carries the created API's name/context, so resolve any
+            // ${UNIQUE:...} placeholders here (this file is uploaded as-is, not routed through the
+            // context-payload steps) to keep every imported API unique-named across parallel runs.
+            String additionalProperties = Utils.resolvePayloadPlaceholders(
+                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+
             // Create temporary file object
             additionalPropertiesFile = File.createTempFile("data", ".json");
             additionalPropertiesFile.deleteOnExit();
-            Files.copy(inputStream, additionalPropertiesFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.write(additionalPropertiesFile.toPath(),
+                    additionalProperties.getBytes(StandardCharsets.UTF_8));
         }
-
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
@@ -1622,42 +1096,4 @@ public class PublisherBaseSteps {
         TestContext.addToList(Constants.CREATED_API_IDS, createdId);
     }
 
-    /**
-     * Updates the API definition (OpenAPI/Swagger) for a resource.
-     * This step uploads a new API definition file to replace the existing one.
-     *
-     * @param resourceType Type of resource (e.g., "apis", "api-products")
-     * @param filepath Path to the new API definition file (.json or .yaml) in classpath resources
-     * @param resourceId Context key containing the resource ID to update
-     */
-    @And("I update the {string} resource definition with {string} for {string}")
-    public void iUpdateTheResourceDefinitionWith(String resourceType, String filepath,  String resourceId) throws IOException,InterruptedException {
-
-        String actualResourceID = Utils.resolveFromContext(resourceId).toString();
-
-        File swaggerFile;
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filepath)) {
-            if (inputStream == null) {
-                throw new FileNotFoundException("API definition file not found: " + filepath);
-            }
-
-            // Create temporary file object
-            swaggerFile = File.createTempFile("swagger", ".json");
-            swaggerFile.deleteOnExit();
-            Files.copy(inputStream, swaggerFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            Thread.sleep(3000);
-        }
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-
-        Map<String, File> files = new HashMap<>();
-        files.put("apiDefinition", swaggerFile);
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPutMultipartWithFiles(Utils.getSwaggerURL(getBaseUrl(), resourceType, actualResourceID), headers, files, null);
-
-        TestContext.set("httpResponse", response);
-    }
 }

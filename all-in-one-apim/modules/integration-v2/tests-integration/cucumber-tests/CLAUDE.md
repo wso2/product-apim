@@ -72,6 +72,23 @@ mutable.**
 ## 7. Step definitions (glue)
 - **Reuse** existing steps. If one doesn't quite fit, **extend it** to cover the new need — never add
   a near-duplicate step. Search the glue before writing.
+- **The `httpResponse` contract.** A request-making step publishes its result to the shared context key
+  `"httpResponse"`; the generic assertion steps (`Then The response status code should be N`,
+  `The response should contain …`) read it back. This decoupling has a **stale-response trap**: if your
+  step throws *after* a previous step already stored an `httpResponse`, the old response lingers and a
+  following assertion can pass against the **wrong** call (a false pass). So a step that makes a request
+  must **clear `httpResponse` before the call** (`TestContext.remove("httpResponse")`), so a throw leaves
+  it *absent* rather than stale — then set it only on a real response.
+- **Invocation steps funnel through `APIInvocationSteps.execute(...)`** — the single primitive that does
+  exactly this (clear → call → set → **return** the response). Add new invocation variants by calling
+  `execute`, not by hand-writing another `TestContext.set("httpResponse", client.doX(...))` (that
+  re-introduces the stale-response trap and the ~15-way duplication it replaced).
+- **Retry-until-status loops:** catch only `IOException` (transient gateway warm-up — retry), so a bad
+  token/payload context key (`IllegalArgumentException` from `Utils.resolveFromContext`) fails **fast**
+  instead of being masked as a timeout. Keep the last *returned* response in a **local** variable and
+  **assert after the loop** (`assertNotNull` then `assertEquals` on the expected status) — the step must
+  fail on its own, never rely on a following `Then` to notice a persistent failure. See
+  `assertReachedExpectedStatus`.
 
 ## 8. Run & verify locally
 Run the suite reusing prebuilt images (use `mvn test`, not `install`, so the testcontainers image-build
@@ -204,4 +221,6 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
 ## Anti-patterns (don't)
 Fixed ports · hardcoded resource names · `Thread.sleep` · depending on another scenario's order or
 artifacts · shared mutable static state · cleanup in inline scenarios instead of hooks · duplicate
-steps or duplicate tests · full-file `tomlOverlayPath` for product tests (use `tomlExtraOverlayPath`).
+steps or duplicate tests · full-file `tomlOverlayPath` for product tests (use `tomlExtraOverlayPath`) ·
+leaving a **stale `httpResponse`** when a request step throws (clear it first / funnel through
+`execute`) · retry loops that catch bare `Exception` or don't assert the expected status after the loop.

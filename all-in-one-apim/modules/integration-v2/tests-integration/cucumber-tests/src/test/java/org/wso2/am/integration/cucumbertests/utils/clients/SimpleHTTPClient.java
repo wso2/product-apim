@@ -444,6 +444,10 @@ public class SimpleHTTPClient {
                 return IOUtils.toString(inputStreamContent, StandardCharsets.UTF_8);
             }
         }
-        return null;
+        // Return "" (not null) for a bodyless response (204/304, or a bodyless error). Callers
+        // dereference HttpResponse.getData() unguarded (getData().contains(...), new JSONObject(getData())),
+        // so a null body would surface as an opaque NPE instead of a meaningful assertion failure; an empty
+        // string makes contains(...) behave and turns a JSON parse into a descriptive JSONException.
+        return "";
     }
 }

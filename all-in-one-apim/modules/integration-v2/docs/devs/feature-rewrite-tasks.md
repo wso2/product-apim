@@ -74,7 +74,7 @@ live checklist; tick boxes as work lands.
   `utils/Identity.java` resolves actors by reference from the block-provisioned set (default = super-tenant
   admin); `tenant`/`currentuser` fields + `currentTenant` slot removed from `BaseSteps`; `theSystemIsReady`
   is now a readiness no-op; `theResourceShouldReflectTheUpdatedAs` derives domain from the actor;
-  `DynamicLifecycleVerificationRunner` publishes the super tenant under its domain key. Zero
+  `DynamicLifecycleVerificationRunner` publishes the super tenant under its domain key _(runner since removed 2026-07-01 with the deprecated 1.3 lane)_. Zero
   `currentTenant`/`CURRENT_TENANT`/`getContextUser` residue in `stepdefinitions/`. *Original scope below:* Delete the
   `tenant`/`currentuser` instance fields and the `currentTenant` context slot entirely
   (`BaseSteps.java:55-56,73-74`; the slot is read at `:73` and `:510`, keyed `"currentTenant"` — separate from

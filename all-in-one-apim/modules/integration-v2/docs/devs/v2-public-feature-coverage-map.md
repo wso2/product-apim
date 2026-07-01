@@ -12,7 +12,7 @@
 > - `features/migration/` (22 files: `migrated_*`, `legacy_api_key`, `api_policies`, `api_provider_change`,
 >   `new_api_product_from_migrated_apis`, …) — **migration tests**, wired via the
 >   `runners.migration.*` classes in `testng.xml` (the suite AnuGayan added in commit *"Improve v2 test execution"*).
-> - `features/framework-verification/` (9 files: `block_probe*`, `dynamic_lifecycle`) — framework self-tests.
+> - `features/framework-verification/` (11 files: `block_probe*`, `framework_features_probe`, `fv_handoff_*`) — framework self-tests.
 > - `features/common/` (6 files: system init/shutdown, tenant init) — infrastructure, not coverage.
 > - The `testng-parity-baseline.xml` and `testng-auth-context-validation.xml` suites AnuGayan added are
 >   migration/parity-validation harnesses; the publisher features they reference (`jwt_token_format`,
@@ -287,5 +287,5 @@ integration-v2 product tests (master-new-test-framework-public)
 | Bucket | Dir | Files | Why excluded |
 | ------ | --- | ----- | ------------ |
 | Migration tests | `features/migration/` | 22 | Migration coverage (`runners.migration.*` in `testng.xml`, added by AnuGayan in *"Improve v2 test execution"*) |
-| Framework verification | `features/framework-verification/` | 9 | `block_probe*`, `dynamic_lifecycle` — framework self-tests |
+| Framework verification | `features/framework-verification/` | 11 | `block_probe*`, `framework_features_probe`, `fv_handoff_*` — framework self-tests |
 | Infrastructure | `features/common/` | 6 | System init/shutdown, tenant init — not product coverage |

@@ -1,7 +1,7 @@
 {
-  "name": "OAS31RestAPI",
+  "name": "${UNIQUE:OAS31RestAPI}",
   "version": "1.0.0",
-  "context": "oas31",
+  "context": "${UNIQUE:oas31}",
   "gatewayType": "wso2/synapse",
   "policies": [
     "Unlimited",
