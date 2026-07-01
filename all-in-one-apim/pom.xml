@@ -591,6 +591,11 @@
                 <version>${carbon.commons.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.commons</groupId>
+                <artifactId>org.wso2.carbon.logging.remote.config.stub</artifactId>
+                <version>${carbon.commons.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.utils</artifactId>
                 <version>${carbon.kernel.version}</version>
@@ -1323,11 +1328,11 @@
 
         <cipher.tool.version>1.1.30</cipher.tool.version>
 
-        <carbon.commons.version>4.13.3</carbon.commons.version>
+        <carbon.commons.version>4.13.4</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.8.16</carbon.mediation.version>
+        <carbon.mediation.version>4.8.19</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.27.21</carbon.identity.version>
@@ -1370,7 +1375,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.1.0-wso2v40</synapse.version>
+        <synapse.version>4.1.0-wso2v57</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v125</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v37</axiom.wso2.version>
