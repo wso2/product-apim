@@ -1,6 +1,6 @@
 # Throttling and Policy Related Tables
 
-This section lists out all the throttling and policy related tables and their attributes in the WSO2 API Manager database.
+This section lists all the throttling- and policy-related tables and their attributes in the WSO2 API Manager database.
 
 ---
 

@@ -1,6 +1,6 @@
 # Subscription and Application Related Tables
 
-This section lists out all the subscription and application related tables and their attributes in the WSO2 API Manager database.
+This section lists all the subscription- and application-related tables and their attributes in the WSO2 API Manager database.
 
 ---
 

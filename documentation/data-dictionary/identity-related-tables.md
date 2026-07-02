@@ -949,7 +949,7 @@ This table persists SAML 2.0 assertions issued by the server, storing both the a
 
 ### IDN_SCIM_GROUP
 
-This table stores the SCIM attributes of user roles (groups), such as the group identifier, created and modified timestamps, and other SCIM metadata, as attribute name-value pairs keyed by role name and tenant.
+This table stores the SCIM attributes of user roles (groups) as attribute name-value pairs keyed by role name and tenant.
 
 | Column | Description |
 |--------|-------------|

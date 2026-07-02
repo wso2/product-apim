@@ -108,7 +108,7 @@ Maps workflow definitions from the `WF_WORKFLOW` table to events that trigger th
 
 ### WF_WORKFLOW_CONFIG_PARAM
 
-Stores the configuration parameters for each workflow definition, providing the runtime settings needed by the workflow template and implementation to execute. Records are created when an administrator configures a workflow's parameters through the management console, such as approval roles, notification settings, or escalation timeouts. The composite key structure with `PARAM_QNAME` and `PARAM_HOLDER` allows parameters to be scoped to specific sections of the workflow configuration. The `WORKFLOW_ID` column is a foreign key to the `WF_WORKFLOW` table.
+Stores the configuration parameters for each workflow definition, providing the runtime settings needed by the workflow template and implementation to execute. Records are created when an administrator configures a workflow's parameters through the management console, such as approval roles, notification settings, or escalation timeouts. The primary key spans `WORKFLOW_ID`, `PARAM_NAME`, `PARAM_QNAME`, and `PARAM_HOLDER`, which scopes each parameter to a specific workflow definition and configuration section. The `WORKFLOW_ID` column is a foreign key to the `WF_WORKFLOW` table.
 
 | Column | Description |
 |--------|-------------|
