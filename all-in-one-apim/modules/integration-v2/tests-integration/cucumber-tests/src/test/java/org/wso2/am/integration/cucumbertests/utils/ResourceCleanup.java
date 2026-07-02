@@ -88,7 +88,11 @@ public final class ResourceCleanup {
         if (TestContext.getList(Constants.CREATED_APPLICATION_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_API_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_OPERATION_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_SHARED_SCOPE_IDS).isEmpty()) {
+                && TestContext.getList(Constants.CREATED_SHARED_SCOPE_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_APPLICATION_POLICY_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_SUBSCRIPTION_POLICY_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_ADVANCED_POLICY_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_CUSTOM_POLICY_IDS).isEmpty()) {
             return;
         }
         String baseUrl = baseUrlObj.toString();
@@ -105,11 +109,31 @@ public final class ResourceCleanup {
             // Shared scopes last: an API that references a scope must be deleted before the scope itself.
             deleteResources(Constants.CREATED_SHARED_SCOPE_IDS, Identity::publisherTokenKey,
                     id -> Utils.getAPIScopesById(baseUrl, id));
+            // Application throttling policies (admin, tenant-global) after the applications that reference
+            // them are gone — else the policy delete is rejected as in-use. Deleted with the admin token.
+            deleteResources(Constants.CREATED_APPLICATION_POLICY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getApplicationThrottlingPolicyByIdURL(baseUrl, id));
+            // Subscription throttling policies (admin, tenant-global) likewise after the subscriptions that
+            // reference them are gone (a subscription is removed when its application is deleted above).
+            deleteResources(Constants.CREATED_SUBSCRIPTION_POLICY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getSubscriptionThrottlingPolicyByIdURL(baseUrl, id));
+            // Advanced (API-level) throttling policies (admin, tenant-global) after the APIs that reference them
+            // via apiThrottlingPolicy are gone — else the policy delete is rejected as in-use.
+            deleteResources(Constants.CREATED_ADVANCED_POLICY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getAdvancedThrottlingPolicyByIdURL(baseUrl, id));
+            // Custom (Siddhi) throttling rules (admin, global). No resource references them, but they are
+            // global rules that would keep matching traffic, so delete them explicitly.
+            deleteResources(Constants.CREATED_CUSTOM_POLICY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getCustomThrottlingPolicyByIdURL(baseUrl, id));
         } finally {
             TestContext.remove(Constants.CREATED_API_IDS);
             TestContext.remove(Constants.CREATED_APPLICATION_IDS);
             TestContext.remove(Constants.CREATED_SHARED_SCOPE_IDS);
             TestContext.remove(Constants.CREATED_OPERATION_POLICY_IDS);
+            TestContext.remove(Constants.CREATED_APPLICATION_POLICY_IDS);
+            TestContext.remove(Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
+            TestContext.remove(Constants.CREATED_ADVANCED_POLICY_IDS);
+            TestContext.remove(Constants.CREATED_CUSTOM_POLICY_IDS);
         }
     }
 

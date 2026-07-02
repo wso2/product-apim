@@ -170,6 +170,41 @@ public class APIInvocationSteps {
         assertReachedExpectedStatus(last, expectedStatus);
     }
 
+    /**
+     * Invokes a deployed API by its full gateway context, retrying until the response is a 200 whose body
+     * CONTAINS the given marker (or the deadline elapses). Used where two responses share a status code and
+     * only the body distinguishes them — e.g. default-version routing, where a versionless context returns 200
+     * from whichever version is default and the body reveals which backend served it. The last response is left
+     * in context, so a following {@code The response should contain} can re-assert it.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} until response body contains {string} within {int} seconds")
+    public void invokeApiByContextUntilBodyContains(String context, String httpMethod, String accessToken,
+                                                    String payload, String expectedBody, int timeoutSeconds)
+            throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String marker = Utils.resolveContextPlaceholders(expectedBody);
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                last = invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
+                if (last.getResponseCode() == 200 && last.getData() != null && last.getData().contains(marker)) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, 200);
+        String body = last.getData();
+        Assert.assertTrue(body != null && body.contains(marker),
+                "Response body was missing/null or never contained '" + marker + "' within the deadline; last response: "
+                        + body);
+    }
+
     /** Single invocation addressing the API by its full gateway context path (no tenant prefixing). */
     private HttpResponse invokeApiByContext(String resolvedContext, String httpMethod, String accessToken,
                                             String payload) throws IOException {
@@ -271,6 +306,46 @@ public class APIInvocationSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put("accept", "application/json");
         headers.put("ApiKey", actualKey);
+
+        return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+    }
+
+    /**
+     * Invokes a deployed API by its full gateway context using a publisher **internal API key** (the
+     * {@code Internal-Key} header), retrying until the expected status. Unlike a devportal application API key
+     * or a subscription token, the internal key can invoke a deployed-but-unpublished (CREATED-stage) API — the
+     * publisher try-out path. Addresses the API by context verbatim (no tenant prefixing).
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using internal key {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUsingInternalKeyUntilStatus(String context, String httpMethod, String internalKey,
+                                                              int expectedStatus, int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                last = invokeWithInternalKey(endpointUrl, httpMethod, internalKey);
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /** Single internal-key invocation against a fully-built gateway URL (token in the {@code Internal-Key} header). */
+    private HttpResponse invokeWithInternalKey(String endpointUrl, String httpMethod, String internalKey) throws IOException {
+
+        String actualKey = Utils.resolveFromContext(internalKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put("accept", "*/*");
+        headers.put("Internal-Key", actualKey);
 
         return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
     }

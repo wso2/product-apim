@@ -130,6 +130,10 @@ public class Constants {
     public static final String CREATED_APPLICATION_IDS = "createdApplicationIds";
     public static final String CREATED_SHARED_SCOPE_IDS = "createdSharedScopeIds";
     public static final String CREATED_OPERATION_POLICY_IDS = "createdOperationPolicyIds";
+    public static final String CREATED_APPLICATION_POLICY_IDS = "createdApplicationPolicyIds";
+    public static final String CREATED_SUBSCRIPTION_POLICY_IDS = "createdSubscriptionPolicyIds";
+    public static final String CREATED_ADVANCED_POLICY_IDS = "createdAdvancedPolicyIds";
+    public static final String CREATED_CUSTOM_POLICY_IDS = "createdCustomPolicyIds";
 
     public static class REQUEST_HEADERS {
 

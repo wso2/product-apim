@@ -75,6 +75,301 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Creates a custom application-level throttling policy (admin API) with a low request-count limit, so a
+     * subsequent invocation can be driven past it to prove throttling enforcement (429). Built-in tiers are
+     * far too high (thousands/min) to trip in a test, so a bespoke low policy is required. The resolved
+     * (uniquified) policy name is published as {@code appThrottlePolicyName} for the application payload to
+     * reference, and the created policy is registered for admin-token teardown.
+     *
+     * @param policyBaseName     policy name, may contain a {@code ${UNIQUE:...}} token for parallel safety
+     * @param requestsPerMinute  the request-count limit per minute
+     */
+    @When("I create an application throttling policy {string} allowing {int} requests per minute")
+    public void iCreateApplicationThrottlingPolicy(String policyBaseName, int requestsPerMinute) throws IOException {
+
+        String policyName = Utils.resolvePayloadPlaceholders(policyBaseName);
+        String payload = String.format(
+                "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Throttle-enforcement test: %d req/min\","
+                        + "\"type\":\"ApplicationThrottlePolicy\",\"defaultLimit\":{\"type\":\"REQUESTCOUNTLIMIT\","
+                        + "\"requestCount\":{\"timeUnit\":\"min\",\"unitTime\":1,\"requestCount\":%d}}}",
+                policyName, policyName, requestsPerMinute, requestsPerMinute);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getApplicationThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+        TestContext.set("appThrottlePolicyName", policyName);
+
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
+            if (policyId != null) {
+                TestContext.set("appThrottlePolicyId", policyId);
+                ResourceCleanup.register(Constants.CREATED_APPLICATION_POLICY_IDS, policyId);
+            }
+        }
+    }
+
+    /**
+     * Creates a subscription-tier throttling policy with a per-minute request-count limit (admin API), for
+     * subscription-level throttling enforcement. Stores {@code subThrottlePolicyName}/{@code subThrottlePolicyId}
+     * and registers the id for owner-aware teardown. {@code rateLimitCount == 0} disables burst control.
+     */
+    @When("I create a subscription throttling policy {string} allowing {int} requests per minute")
+    public void iCreateSubscriptionThrottlingPolicy(String policyBaseName, int requestsPerMinute) throws IOException {
+        createSubscriptionThrottlingPolicy(policyBaseName, requestsPerMinute, 0);
+    }
+
+    /**
+     * As above, but with **burst control**: a low {@code rateLimitCount} per minute on top of a (typically high)
+     * request-count quota, so a 429 within the first few calls is unambiguously the burst limit, not the quota.
+     * Burst is set at MINUTE granularity so it trips deterministically via the cumulative until-429 retry (a
+     * sub-second burst window would reset between the retry's spaced attempts).
+     */
+    @When("I create a subscription throttling policy {string} allowing {int} requests per minute with burst limit {int} per minute")
+    public void iCreateSubscriptionThrottlingPolicyWithBurst(String policyBaseName, int requestsPerMinute,
+                                                             int burstPerMinute) throws IOException {
+        createSubscriptionThrottlingPolicy(policyBaseName, requestsPerMinute, burstPerMinute);
+    }
+
+    private void createSubscriptionThrottlingPolicy(String policyBaseName, int requestsPerMinute, int burstPerMinute)
+            throws IOException {
+
+        String policyName = Utils.resolvePayloadPlaceholders(policyBaseName);
+        String payload = String.format(
+                "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Throttle-enforcement test: %d req/min,"
+                        + " burst %d/min\",\"type\":\"SubscriptionThrottlePolicy\",\"defaultLimit\":{\"type\":"
+                        + "\"REQUESTCOUNTLIMIT\",\"requestCount\":{\"timeUnit\":\"min\",\"unitTime\":1,"
+                        + "\"requestCount\":%d}},\"rateLimitCount\":%d,\"rateLimitTimeUnit\":\"min\","
+                        + "\"stopOnQuotaReach\":true,\"billingPlan\":\"FREE\",\"customAttributes\":[],"
+                        // Subscription tiers are role-gated: without an ALLOW permission the tier is rejected as
+                        // "not allowed for user" (902002) at subscribe time. Internal/everyone → usable by any actor.
+                        + "\"permissions\":{\"permissionType\":\"ALLOW\",\"roles\":[\"Internal/everyone\"]}}",
+                policyName, policyName, requestsPerMinute, burstPerMinute, requestsPerMinute, burstPerMinute);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getSubscriptionThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+        TestContext.set("subThrottlePolicyName", policyName);
+
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
+            if (policyId != null) {
+                TestContext.set("subThrottlePolicyId", policyId);
+                ResourceCleanup.register(Constants.CREATED_SUBSCRIPTION_POLICY_IDS, policyId);
+            }
+        }
+    }
+
+    /**
+     * Creates an advanced (API-level) throttling policy with a per-minute request-count limit (admin API). An
+     * advanced policy is set as an API's {@code apiThrottlingPolicy} and enforced across ALL subscriptions to
+     * that API. Stores {@code advThrottlePolicyName}/{@code advThrottlePolicyId} and registers the id for
+     * owner-aware teardown.
+     */
+    @When("I create an advanced throttling policy {string} allowing {int} requests per minute")
+    public void iCreateAdvancedThrottlingPolicy(String policyBaseName, int requestsPerMinute) throws IOException {
+
+        String policyName = Utils.resolvePayloadPlaceholders(policyBaseName);
+        String payload = String.format(
+                "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Throttle-enforcement test: %d req/min\","
+                        + "\"type\":\"AdvancedThrottlePolicy\",\"defaultLimit\":{\"type\":\"REQUESTCOUNTLIMIT\","
+                        + "\"requestCount\":{\"timeUnit\":\"min\",\"unitTime\":1,\"requestCount\":%d}},"
+                        + "\"conditionalGroups\":[]}",
+                policyName, policyName, requestsPerMinute, requestsPerMinute);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+        TestContext.set("advThrottlePolicyName", policyName);
+
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
+            if (policyId != null) {
+                TestContext.set("advThrottlePolicyId", policyId);
+                ResourceCleanup.register(Constants.CREATED_ADVANCED_POLICY_IDS, policyId);
+            }
+        }
+    }
+
+    /**
+     * Creates an application throttling policy with a BANDWIDTH limit (KB/min) rather than a request count
+     * (admin API). Stores {@code appThrottlePolicyName}/{@code appThrottlePolicyId} (so the existing
+     * "create an application with throttling policy from …" step can bind to it) and registers for teardown.
+     * Used for bandwidth-throttling coverage/investigation.
+     */
+    @When("I create an application throttling policy {string} allowing {int} KB per minute")
+    public void iCreateApplicationBandwidthPolicy(String policyBaseName, int kbPerMinute) throws IOException {
+
+        String policyName = Utils.resolvePayloadPlaceholders(policyBaseName);
+        String payload = String.format(
+                "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Bandwidth-enforcement test: %d KB/min\","
+                        + "\"type\":\"ApplicationThrottlePolicy\",\"defaultLimit\":{\"type\":\"BANDWIDTHLIMIT\","
+                        + "\"bandwidth\":{\"timeUnit\":\"min\",\"unitTime\":1,\"dataAmount\":%d,\"dataUnit\":\"KB\"}}}",
+                policyName, policyName, kbPerMinute, kbPerMinute);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getApplicationThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+        TestContext.set("appThrottlePolicyName", policyName);
+
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
+            if (policyId != null) {
+                TestContext.set("appThrottlePolicyId", policyId);
+                ResourceCleanup.register(Constants.CREATED_APPLICATION_POLICY_IDS, policyId);
+            }
+        }
+    }
+
+    /**
+     * Creates a custom (Siddhi) throttling rule that throttles requests to ONE specific API context after N
+     * requests/min (admin API). Custom rules are GLOBAL, so keying the Siddhi eligibility on the test's unique
+     * apiContext keeps it isolation-safe (only the test's own API is affected). Stores
+     * {@code customThrottlePolicyName}/{@code customThrottlePolicyId} and registers for teardown.
+     */
+    @When("I create a custom throttling policy {string} throttling API context {string} after {int} requests per minute")
+    public void iCreateCustomThrottlingPolicy(String policyBaseName, String apiContext, int requestsPerMinute)
+            throws IOException {
+
+        String policyName = Utils.resolvePayloadPlaceholders(policyBaseName);
+        String context = Utils.resolveContextPlaceholders(apiContext);
+        // Isolation-safe: throttle ONLY this test's unique apiContext. Emit the request's apiContext as the
+        // throttleKey and set keyTemplate=$apiContext so template and emitted key always align at runtime; match
+        // both the bare context and the /version form (the runtime apiContext value differs across paths).
+        String siddhiQuery = "FROM RequestStream\n"
+                + "SELECT userId, apiContext, ( apiContext == '" + context + "' or apiContext == '" + context
+                + "/1.0.0' ) AS isEligible, apiContext as throttleKey\n"
+                + "INSERT INTO EligibilityStream;\n\n"
+                + "FROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min)\n"
+                + "SELECT throttleKey, (count(userId) >= " + requestsPerMinute + ") as isThrottled, expiryTimeStamp "
+                + "group by throttleKey\n"
+                + "INSERT ALL EVENTS into ResultStream;";
+
+        // Build via JSONObject so the Siddhi query's newlines/quotes are correctly escaped.
+        String payload = new JSONObject()
+                .put("policyName", policyName)
+                .put("description", "Custom throttle-enforcement test: context " + context + " @ " + requestsPerMinute + "/min")
+                .put("siddhiQuery", siddhiQuery)
+                .put("keyTemplate", "$apiContext")
+                .toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getCustomThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+        TestContext.set("customThrottlePolicyName", policyName);
+
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
+            if (policyId != null) {
+                TestContext.set("customThrottlePolicyId", policyId);
+                ResourceCleanup.register(Constants.CREATED_CUSTOM_POLICY_IDS, policyId);
+            }
+        }
+    }
+
+    /** Retrieves an application throttling policy by id (admin API), storing the raw response for assertions. */
+    @When("I retrieve the application throttling policy {string}")
+    public void iRetrieveApplicationThrottlingPolicy(String policyIdKey) throws IOException {
+
+        String policyId = Utils.resolveFromContext(policyIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getApplicationThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Deletes an application throttling policy by id (admin API), storing the raw response for assertions. */
+    @When("I delete the application throttling policy {string}")
+    public void iDeleteApplicationThrottlingPolicy(String policyIdKey) throws IOException {
+
+        String policyId = Utils.resolveFromContext(policyIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doDelete(Utils.getApplicationThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Retrieves a custom (Siddhi) throttling rule by id (admin API), storing the raw response for assertions. */
+    @When("I retrieve the custom throttling policy {string}")
+    public void iRetrieveCustomThrottlingPolicy(String policyIdKey) throws IOException {
+
+        String policyId = Utils.resolveFromContext(policyIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getCustomThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Deletes a custom (Siddhi) throttling rule by id (admin API), storing the raw response for assertions. */
+    @When("I delete the custom throttling policy {string}")
+    public void iDeleteCustomThrottlingPolicy(String policyIdKey) throws IOException {
+
+        String policyId = Utils.resolveFromContext(policyIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doDelete(Utils.getCustomThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Creates an application bound to a given application-throttling-policy name (read from context). Used by
+     * the throttling-enforcement flow: the application tier is the low custom policy created above, so its
+     * invocations are what get throttled. The created id is stored as {@code createdAppId} and registered for
+     * teardown, mirroring {@link #iCreateAnApplicationWithJsonPayload}.
+     *
+     * @param appName        application name (may contain a {@code ${UNIQUE:...}} token)
+     * @param policyNameKey  context key holding the application throttling-policy name to bind
+     */
+    @When("I create an application {string} with throttling policy from {string}")
+    public void iCreateApplicationWithThrottlingPolicy(String appName, String policyNameKey) throws IOException {
+
+        String resolvedName = Utils.resolvePayloadPlaceholders(appName);
+        String policyName = Utils.resolveFromContext(policyNameKey).toString();
+        String jsonPayload = String.format(
+                "{\"name\":\"%s\",\"throttlingPolicy\":\"%s\",\"description\":\"Throttle-enforcement test application\"}",
+                resolvedName, policyName);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+        Object createdAppId = Utils.extractValueFromPayload(response.getData(), "applicationId");
+        TestContext.set("createdAppId", createdAppId);
+        ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, createdAppId);
+    }
+
+    /**
      * Attempts to create an application without asserting success, storing the raw response as
      * {@code httpResponse} for the feature to assert. For negative / access-control scenarios where the
      * create is expected to be rejected (e.g. a non-consumer actor lacking the app-management scope): unlike
@@ -205,6 +500,10 @@ public class ApplicationBaseSteps {
         String jsonPayload = Utils.resolveFromContext(payload).toString();
         jsonPayload = jsonPayload.replace("{{applicationId}}", actualAppId);
         jsonPayload = jsonPayload.replace("{{apiId}}", actualApiId);
+        // Resolve any remaining {{contextKey}} placeholders (e.g. a custom subscription throttling policy name
+        // captured into context). The applicationId/apiId markers are already substituted above, so only genuine
+        // context keys remain — resolveContextPlaceholders is a no-op when the payload has none.
+        jsonPayload = Utils.resolveContextPlaceholders(jsonPayload);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());

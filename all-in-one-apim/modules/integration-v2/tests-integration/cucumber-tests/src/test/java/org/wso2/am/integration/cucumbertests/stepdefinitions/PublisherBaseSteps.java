@@ -664,6 +664,10 @@ public class PublisherBaseSteps {
 
         if ("endpointConfig".equals(configType)){
             configValue = Utils.resolveFromContext(configValue).toString();
+        } else {
+            // Resolve any {{contextKey}} placeholders in the value (e.g. a custom throttle-tier name captured
+            // into context, when setting an API's business-plan "policies"). No-op when the value has none.
+            configValue = Utils.resolveContextPlaceholders(configValue);
         }
         Object parsedValue = parseConfigValue(configValue);
 
@@ -806,6 +810,41 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Updates a shared scope's description. Fetches the current scope DTO by id, mutates its {@code
+     * description}, and PUTs it back (the update API needs the full DTO — this mirrors the legacy
+     * get-then-update flow). {@code scopeIdKey} is a context key holding the scope id (e.g. {@code scopeID}).
+     *
+     * @param scopeIdKey     context key holding the scope id
+     * @param newDescription the new description to set
+     */
+    @When("I update the shared scope {string} setting its description to {string}")
+    public void iUpdateSharedScopeDescription(String scopeIdKey, String newDescription) throws IOException {
+
+        String scopeId = Utils.resolveFromContext(scopeIdKey).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + Identity.publisherToken());
+
+        HttpResponse current = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers);
+        // Confirm the GET succeeded with a body BEFORE parsing/mutating — otherwise new JSONObject(null/"") throws
+        // an opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
+                        && current.getData() != null && !current.getData().isEmpty(),
+                "Failed to fetch shared scope '" + scopeId + "' before update: expected a 2xx response with a body, got "
+                        + (current == null ? "no response" : current.getResponseCode() + " / body="
+                        + current.getData()));
+        JSONObject scope = new JSONObject(current.getData());
+        scope.put("description", newDescription);
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPut(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers, scope.toString(),
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
      * Searches for a shared scope by name and stores its ID in the test context.
      *
      * @param scopeName Name of the shared scope to search for
@@ -822,6 +861,14 @@ public class PublisherBaseSteps {
                 .doGet(Utils.getAPIScopes(getBaseUrl()), headers);
 
         TestContext.set("httpResponse", response);
+
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isEmpty(),
+                "Failed to list shared scopes while searching for '" + scopeName + "': expected a 2xx response with a "
+                        + "body, got " + (response == null ? "no response" : response.getResponseCode() + " / body="
+                        + response.getData()));
 
         // --- Parse JSON to extract scope id ---
         JSONObject json = new JSONObject(response.getData());
@@ -887,6 +934,65 @@ public class PublisherBaseSteps {
         TestContext.set(apiID, createdId);
         // Register for scenario teardown so a shared-server suite does not accumulate APIs across scenarios.
         ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+    }
+
+    /** Loads a .graphql (or any) resource off the classpath into a temp file for multipart upload. */
+    private File loadResourceAsTempFile(String resourcePath) throws IOException {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Resource not found: " + resourcePath);
+            }
+            File temp = File.createTempFile("gql-schema", ".graphql");
+            temp.deleteOnExit();
+            Files.copy(inputStream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            return temp;
+        }
+    }
+
+    /** Retrieves a GraphQL API's schema definition (publisher), storing the raw response for assertions. */
+    @When("I retrieve the GraphQL schema of API {string}")
+    public void iRetrieveGraphQLSchemaOfApi(String apiIdKey) throws IOException {
+
+        String apiId = Utils.resolveFromContext(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getGraphQLSchemaOfApiURL(getBaseUrl(), apiId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Updates a GraphQL API's schema definition (publisher, PUT multipart {@code schemaDefinition}). */
+    @When("I update the GraphQL schema of API {string} with schema file {string}")
+    public void iUpdateGraphQLSchemaOfApi(String apiIdKey, String schemaFilePath) throws IOException {
+
+        String apiId = Utils.resolveFromContext(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        Map<String, File> files = new HashMap<>();
+        files.put("schemaDefinition", loadResourceAsTempFile(schemaFilePath));
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPutMultipartWithFiles(Utils.getGraphQLSchemaOfApiURL(getBaseUrl(), apiId), headers, files,
+                        new HashMap<>());
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Validates a GraphQL schema file (publisher, POST multipart {@code file}), storing the raw response. */
+    @When("I validate the GraphQL schema file {string}")
+    public void iValidateGraphQLSchemaFile(String schemaFilePath) throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        Map<String, File> files = new HashMap<>();
+        files.put("file", loadResourceAsTempFile(schemaFilePath));
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(Utils.getValidateGraphQLSchemaURL(getBaseUrl()), headers, files,
+                        new HashMap<>());
+        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1095,6 +1201,123 @@ public class PublisherBaseSteps {
         TestContext.set(resourceId, createdId);
         // Register for scenario teardown so imported APIs do not accumulate across scenarios on a shared server.
         ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+    }
+
+    /**
+     * Transitions an API through an arbitrary lifecycle action (e.g. {@code Block}, {@code Deprecate},
+     * {@code Retire}, {@code Re-Publish}) via the publisher change-lifecycle API — the general form of the
+     * publish-only {@code I publish the … resource} step. Does not assert the status itself, so the feature can
+     * confirm it (a valid transition returns 200). Used by lifecycle-stage gateway invocation tests.
+     */
+    @When("I change the lifecycle of API {string} with action {string}")
+    public void iChangeTheLifecycleOfApi(String apiId, String action) throws IOException {
+
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getChangeLifecycleURL(getBaseUrl(), "apis", actualApiId, action, null), headers,
+                        null, null);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Lists an API's revisions (no filter). Non-asserting — the feature confirms the 200. */
+    @When("I retrieve the revisions of {string} resource {string}")
+    public void iRetrieveTheRevisions(String resourceType, String resourceId) throws IOException {
+
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Lists an API's currently-deployed revisions ({@code query=deployed:true}). Non-asserting. */
+    @When("I retrieve the deployed revisions of {string} resource {string}")
+    public void iRetrieveTheDeployedRevisions(String resourceType, String resourceId) throws IOException {
+
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getRevisionDeployments(getBaseUrl(), resourceType, actualResourceId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Undeploys a revision from the gateway environment. Non-asserting (a successful undeploy returns 201), so
+     * the feature can confirm the code. Sends the same deployment descriptor shape as the deploy step.
+     */
+    @When("I undeploy revision {string} of {string} resource {string}")
+    public void iUndeployRevision(String revisionId, String resourceType, String resourceId) throws IOException {
+
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
+        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
+        String payload = "[{\"name\":\"" + System.getenv(Constants.GATEWAY_ENVIRONMENT)
+                + "\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]";
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+                        headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Restores the API's working copy from a revision. Non-asserting (a successful restore returns 201). */
+    @When("I restore revision {string} of {string} resource {string}")
+    public void iRestoreRevision(String revisionId, String resourceType, String resourceId) throws IOException {
+
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
+        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getRevisionRestoreURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+                        headers, null, null);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Deletes a revision. Non-asserting so the feature can confirm BOTH the reject-while-deployed case (400)
+     * and the successful delete after undeploy (200).
+     */
+    @When("I delete revision {string} of {string} resource {string}")
+    public void iDeleteRevision(String revisionId, String resourceType, String resourceId) throws IOException {
+
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
+        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doDelete(Utils.getRevisionByID(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Generates a publisher-plane internal API key ({@code apis/{id}/generate-key}) and stores it. This is the
+     * short-lived test key sent in the {@code Internal-Key} header — it lets a deployed-but-not-yet-published
+     * (CREATED-stage) API be invoked for try-out, distinct from the devportal application API key.
+     */
+    @When("I generate an internal API key for API {string} and store it as {string}")
+    public void iGenerateInternalApiKey(String apiId, String keyContextKey) throws IOException {
+
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getInternalAPIKey(getBaseUrl(), actualApiId), headers, null, null);
+        TestContext.set("httpResponse", response);
+        Object apiKey = Utils.extractValueFromPayload(response.getData(), "apikey");
+        TestContext.set(Utils.normalizeContextKey(keyContextKey), apiKey);
     }
 
 }

@@ -75,6 +75,19 @@ Feature: Publisher API Shared Scopes
       | admin             |
       | admin@tenant1.com |
 
+  @cap:publisher @feat:scopes @type:regression @legacy:SharedScopeTestWithRestart
+  Scenario Outline: Update a shared scope's description as <admin>
+    Given The system is ready and I have valid publisher access tokens as "<admin>"
+    When I create a new shared scope as "scope-update-test"
+    Then The response status code should be 201
+    When I update the shared scope "scopeID" setting its description to "Updated shared scope description"
+    Then The response status code should be 200
+    And The response should contain "Updated shared scope description"
+
+    Examples:
+      | admin             |
+      | admin@tenant1.com |
+
   @cap:publisher @feat:scopes @type:negative @legacy:SharedScopeTestCase
   Scenario Outline: A subscriber-role user cannot create a shared scope as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
