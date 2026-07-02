@@ -13,7 +13,7 @@
 To build the WSO2 API Manager distribution from source, follow these steps:
 
 1. Install **Java SE Development Kit 11**.
-2. Install **Apache Maven 3.x.x** ([Download Maven](https://maven.apache.org/download.cgi#)).
+2. Install **Apache Maven 3.x.x** ([Download Maven](https://maven.apache.org/download.cgi)).
 3. Clone the repository: `https://github.com/wso2/product-apim.git` or download the source.
 4. From the `product-apim` directory, run one of the following Maven commands:
     - `mvn clean install`  
