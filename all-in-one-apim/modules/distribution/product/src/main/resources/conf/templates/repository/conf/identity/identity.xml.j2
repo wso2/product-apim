@@ -1523,6 +1523,9 @@
         {% if authentication_policy.disable_account_disable_handler is defined %}
         <DisableAccountDisableHandler>{{authentication_policy.disable_account_disable_handler}}</DisableAccountDisableHandler>
         {% endif %}
+        {% if authentication_policy.disable_account_confirmation_validation_handler is defined %}
+        <DisableAccountConfirmationValidationHandler>{{authentication_policy.disable_account_confirmation_validation_handler}}</DisableAccountConfirmationValidationHandler>
+        {% endif %}
     </AuthenticationPolicy>
 
     <!-- Show authenticated user name in audit logs. -->
