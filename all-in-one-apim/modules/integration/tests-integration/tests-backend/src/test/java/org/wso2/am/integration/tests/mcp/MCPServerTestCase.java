@@ -710,7 +710,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         ));
 
         final MCPServerProxyRequestDTO proxyRequest = new MCPServerProxyRequestDTO();
-        proxyRequest.setUrl("http://localhost:" + port);
+        proxyRequest.setUrl("http://localhost:" + port + MCP_PATH);
 
         final SecurityInfoDTO securityInfoDTO = new SecurityInfoDTO();
         securityInfoDTO.setIsSecure(false);
@@ -1258,7 +1258,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
     private Map<String, Object> buildDefaultEndpointConfig(int port) {
 
         Map<String, Object> endpointConfig = new HashMap<>();
-        Map<String, String> endpoints = Collections.singletonMap("url", "http://localhost:" + port);
+        Map<String, String> endpoints = Collections.singletonMap("url", "http://localhost:" + port + MCP_PATH);
         endpointConfig.put(PROD_ENDPOINTS, endpoints);
         endpointConfig.put(SANDBOX_ENDPOINTS, endpoints);
         endpointConfig.put(ENDPOINT_TYPE, "http");
