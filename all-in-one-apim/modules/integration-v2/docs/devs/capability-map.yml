@@ -1,0 +1,87 @@
+# Curated capability skeleton — the source of truth for @cap / @feat tags.
+#
+# Hand-maintained from the product's understanding; DISCONNECTED from code. The renderer reads this
+# to build the coverage tree and to lint scenario tags: a @cap/@feat pair not defined here fails lint.
+# A feature listed here with no scenarios renders as an empty branch — a visible gap to fill by eye.
+#
+# Add/rename/reorder freely as the product grows. Keep ids short, lowercase, kebab-case, stable.
+# Non-product scenarios use @infra / @framework / @migration instead and are excluded from this tree.
+
+capabilities:
+
+  publisher:
+    name: Publisher — API authoring & lifecycle
+    features:
+      api-lifecycle:     { name: Create / deploy / publish / retire / delete }
+      api-config:        { name: Runtime config, endpoints, custom properties, resources, CORS }
+      operation-policies: { name: Operation policy CRUD (common & API-specific) }
+      scopes:            { name: API scopes & shared scopes (assignment) }
+      versioning:        { name: API versioning & version-copy }
+      definitions:       { name: OAS / WSDL import-export, SOAP-to-REST }
+      docs:              { name: API documentation }
+      products:          { name: API Products }
+      revisions:         { name: API revisions }
+      visibility:        { name: Publisher-side visibility & access control }
+      graphql-design:    { name: GraphQL API design & schema }
+      streaming-design:  { name: Streaming (WebSocket/WebSub/Async) API design }
+      soap-design:       { name: SOAP (passthrough) API design }
+      service-catalog:   { name: Service catalog }
+
+  devportal:
+    name: DevPortal — discovery & consumption
+    features:
+      search:                  { name: Search & discovery }
+      browse:                  { name: Browse / catalog view / tags }
+      applications:            { name: Application CRUD }
+      subscribe:               { name: Subscribe / unsubscribe }
+      subscription-management: { name: Subscription update / blocking }
+      comments:                { name: Comments }
+      ratings:                 { name: Ratings }
+      try-out:                 { name: Try-out console }
+
+  gateway:
+    name: Gateway — runtime invocation & enforcement
+    features:
+      rest-invocation:        { name: REST API invocation }
+      soap-invocation:        { name: SOAP API invocation }
+      graphql-invocation:     { name: GraphQL invocation (query/mutation/subscription) }
+      streaming-invocation:   { name: WebSocket / WebSub invocation }
+      ai-invocation:          { name: AI API invocation }
+      mediation-policies:     { name: Mediation / message transformation }
+      header-transformation:  { name: Header handling & rewriting }
+      fault-handling:         { name: Fault / error responses }
+      failover:               { name: Endpoint failover & load balancing }
+      throttling-enforcement: { name: Runtime throttling enforcement }
+      security-enforcement:   { name: Token / scope / mutual-SSL enforcement }
+      custom-auth-header:     { name: Custom authorization header }
+
+  admin:
+    name: Admin — governance, policies & configuration
+    features:
+      throttling-policies: { name: Throttling policy CRUD }
+      governance:          { name: Governance policies }
+      compliance:          { name: Compliance checks }
+      workflows:           { name: Approval workflows }
+      key-manager-config:  { name: Key manager registration & config }
+      environments:        { name: Gateway environments }
+      tenants-orgs:        { name: Tenants & organizations }
+      bot-detection:       { name: Bot detection }
+
+  key-manager:
+    name: Key Manager — keys, tokens & OAuth
+    features:
+      oauth-keys:              { name: OAuth application key generation }
+      api-key:                 { name: API key management }
+      multiple-client-secrets: { name: Multiple client secrets }
+      token-issuance:          { name: Token issuance (access / refresh / sandbox) }
+      token-revocation:        { name: Token revocation }
+      token-persistence:       { name: Token state persistence across server restart }
+      backend-jwt:             { name: Backend JWT generation }
+      scope-issuance:          { name: Scope issuance in tokens }
+
+  analytics:
+    name: Analytics — logging & observability
+    features:
+      request-logging:  { name: Request / access logging }
+      analytics-events: { name: Analytics events }
+      alerts:           { name: Alerts }
