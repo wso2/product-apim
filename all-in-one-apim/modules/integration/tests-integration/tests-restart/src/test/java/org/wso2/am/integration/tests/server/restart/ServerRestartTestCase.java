@@ -37,6 +37,7 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
+import org.wso2.am.admin.clients.application.ApplicationManagementClient;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -803,6 +804,10 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(jwtRevocationApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(jwtRevocationApiId);
 
+        //The two graceful server restarts in setEnvironment invalidate the SOAP admin session established in
+        //init(), so re-authenticate before deleting the sp created for the Control Plane revoked token test.
+        applicationManagementClient = new ApplicationManagementClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(), createSession(keyManagerContext));
         applicationManagementClient.deleteApplication(CP_REVOKE_TOKEN_SP_NAME);
 
         restAPIPublisher.deleteAPI(apiRevisionApiId);
