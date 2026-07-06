@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 2.2): shared-scope visibility on the executing worker thread under
+  parallel data providers. Registers only the NEW BlockScopeListener, so running it cannot affect the
+  legacy testng.xml run. The single test orchestrates a parallel nested TestNG suite internally — no
+  Docker required.
+-->
+<suite name="Framework Verification 2.2" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase2.2-ScopeThreadVisibility">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.verification.BlockScopeThreadVisibilityVerificationTest"/>
+        </classes>
+    </test>
+</suite>
