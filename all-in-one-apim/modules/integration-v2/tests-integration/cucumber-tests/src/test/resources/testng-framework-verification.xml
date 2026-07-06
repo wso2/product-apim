@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Capstone verification suite (Phase 6.1): the whole parallel-on-shared-container model end to end.
+
+  Two-level concurrency, scaled to bound resources:
+    * suite parallel="tests" thread-count="2"  => at most K=2 blocks (and so K=2 APIM containers) alive
+      at once. Three blocks are declared, so the third queues until a slot frees.
+    * each <test> parallel="classes" thread-count="2" => at most M=2 probe classes run at once on that
+      block's single shared container.
+
+  Three uniquely-named <test> blocks (distinct shared scopes under suiteName::testName), all sharing the
+  docker label block=fv-6.1 so the gate can count live containers with one filter:
+    * Phase6.1-BlockA  - initTenantUsers=true (default tenant set); two probe classes share its container.
+    * Phase6.1-BlockB  - initTenantUsers=true (default tenant set); two probe classes share its container.
+                         A & B provision the SAME tenant set into their OWN containers in parallel; the gate
+                         asserts two distinct container ids and two distinct baseUrls => no cross-block
+                         shared-var override.
+    * Phase6.1-BrokenBlock - initTenantUsers=true, tenantSet=adpsample. On a FRESH (non-migrated) container
+                         adpsample.com does not exist server-side, so provisioning throws inside onStart and
+                         is recorded as bootError; BaseBlockRunner rethrows that as a hard IllegalStateException
+                         (a @BeforeClass config FAILURE). The gate asserts this block FAILS the build (red) in
+                         isolation - recorded as an abortIfBlockBootFailed config FAILURE - while A & B PASS,
+                         and that its container is still released by onFinish (no leak).
+
+  Wired to no legacy runners, so running it cannot affect the legacy testng.xml run.
+-->
+<suite name="Framework Verification 6.1" parallel="tests" thread-count="2">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase6.1-BlockA" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="fv-6.1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+        </classes>
+    </test>
+    <test name="Phase6.1-BlockB" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="fv-6.1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+        </classes>
+    </test>
+    <test name="Phase6.1-BrokenBlock" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="fv-6.1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tenantSet" value="adpsample"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerThree"/>
+        </classes>
+    </test>
+</suite>

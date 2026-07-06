@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 1.2): concurrent DynamicApimContainer instances.
+  Wired to NONE of the legacy listeners, so running it cannot affect the legacy testng.xml run.
+-->
+<suite name="Framework Verification 1.2" parallel="false">
+    <test name="Phase1.2-ParallelContainers">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.verification.DynamicApimContainerParallelVerificationTest"/>
+        </classes>
+    </test>
+</suite>
