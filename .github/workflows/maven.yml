@@ -195,6 +195,7 @@ jobs:
         run: >
           mvn test -pl tests-integration/cucumber-tests -am
           -Dsurefire.suite.xml=${{ matrix.suite }}
+          -Dapim.coverage=true
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       - name: Archive test reports
         if: always()
@@ -205,4 +206,11 @@ jobs:
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/cucumber-report/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/**
           if-no-files-found: warn
+      - name: Upload v2 integration coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
+          flags: integration-v2_tests

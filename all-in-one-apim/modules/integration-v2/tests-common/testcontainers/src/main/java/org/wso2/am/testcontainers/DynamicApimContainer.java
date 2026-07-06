@@ -24,8 +24,11 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.MountableFile;
 import org.wso2.am.integration.test.utils.Constants;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 
 /**
@@ -107,6 +110,39 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
         withLogConsumer(logConsumer);
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(20)));
+    }
+
+    /**
+     * Enables JaCoCo integration coverage (opt-in; the caller decides when to attach it). Copies the JaCoCo
+     * runtime agent into the container, attaches it to the server JVM via {@code JAVA_TOOL_OPTIONS} in
+     * tcpserver mode, and exposes the agent port so counters can be dumped over a mapped host port at
+     * teardown (see {@link JacocoCoverage}). Must be called before {@link #start()}.
+     */
+    public DynamicApimContainer withCoverage() {
+        try {
+            File agentJar = JacocoCoverage.extractAgentJar();
+            withCopyToContainer(MountableFile.forHostPath(agentJar.getAbsolutePath()),
+                    JacocoCoverage.CONTAINER_AGENT_PATH);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to stage JaCoCo agent jar", e);
+        }
+        // JAVA_TOOL_OPTIONS is honoured by the JVM itself, so no need to touch the WSO2 startup script.
+        withEnv("JAVA_TOOL_OPTIONS", JacocoCoverage.containerAgentVmArg());
+        // addExposedPort (not withExposedPorts) so the canonical APIM ports set in the constructor are kept.
+        addExposedPort(JacocoCoverage.TCP_PORT);
+        logger.info("JaCoCo coverage enabled: agent at {}, tcpserver port {}",
+                JacocoCoverage.CONTAINER_AGENT_PATH, JacocoCoverage.TCP_PORT);
+        return this;
+    }
+
+    /** Host for dumping coverage (valid after start). */
+    public String getCoverageDumpHost() {
+        return getHost();
+    }
+
+    /** Ephemeral host port mapped to the in-container JaCoCo agent tcpserver (valid after start). */
+    public int getCoverageDumpPort() {
+        return getMappedPort(JacocoCoverage.TCP_PORT);
     }
 
     public String getServletHttpsUrl() {
