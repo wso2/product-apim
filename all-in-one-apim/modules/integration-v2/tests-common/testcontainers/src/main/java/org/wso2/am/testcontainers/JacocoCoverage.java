@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -79,7 +80,7 @@ public final class JacocoCoverage {
 
     /** Default scoping — instrument APIM code only, skip generated/stub/test classes. */
     public static final String DEFAULT_INCLUDES = "org.wso2.carbon.apimgt.*";
-    public static final String DEFAULT_EXCLUDES = "*.stub.*:*.dto.*:*.gen.*:*Test";
+    public static final String DEFAULT_EXCLUDES = "*.stub.*:*.dto.*:*.gen.*:*Test:*.thrift.*";
 
     /** Upper bound on a single dump, so an unresponsive agent can't stall test teardown forever. */
     private static final int DUMP_TIMEOUT_SECONDS = 60;
@@ -162,17 +163,7 @@ public final class JacocoCoverage {
      * @return the classfile roots to analyze (only non-empty ones), for {@link #report}.
      */
     public static List<File> extractApimgtClassfiles(File distributionZip, File destDir) throws IOException {
-        // Start clean so a stale extraction from a previous (possibly different) distribution can't leak in.
-        deleteRecursively(destDir);
-        File pluginsDir = new File(destDir, "plugins");
-        File webappClasses = new File(destDir, "webapp-classes");
-        File webappLib = new File(destDir, "webapp-lib");
-        for (File d : new File[]{pluginsDir, webappClasses, webappLib}) {
-            Files.createDirectories(d.toPath());
-        }
-        int plugins = 0, warClasses = 0, warJars = 0;
-        java.util.Set<String> seenJar = new java.util.HashSet<>();
-
+        ClassfileExtraction ex = new ClassfileExtraction(destDir);
         try (ZipFile zip = new ZipFile(distributionZip)) {
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
@@ -181,64 +172,286 @@ public final class JacocoCoverage {
                 if (e.isDirectory()) {
                     continue;
                 }
-                // 1) OSGi plugin bundles.
+                // 1) OSGi plugin bundles — matched by their full path in the distribution layout.
                 if (name.contains("/repository/components/plugins/org.wso2.carbon.apimgt.") && name.endsWith(".jar")) {
                     try (InputStream in = zip.getInputStream(e)) {
-                        Files.copy(in, new File(pluginsDir, baseName(name)).toPath(),
-                                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        ex.addPlugin(baseName(name), in);
                     }
-                    plugins++;
-                    continue;
-                }
                 // 2) Webapp WARs (nested zip): pull apimgt WEB-INF/classes and WEB-INF/lib apimgt jars.
-                if (name.contains("/repository/deployment/server/webapps/") && name.endsWith(".war")) {
-                    try (java.util.zip.ZipInputStream war =
-                                 new java.util.zip.ZipInputStream(zip.getInputStream(e))) {
-                        ZipEntry we;
-                        while ((we = war.getNextEntry()) != null) {
-                            String wn = we.getName();
-                            if (we.isDirectory()) {
-                                continue;
-                            }
-                            if (wn.startsWith("WEB-INF/classes/org/wso2/carbon/apimgt/") && wn.endsWith(".class")) {
-                                File out = new File(webappClasses, wn.substring("WEB-INF/classes/".length()));
-                                if (!out.exists()) { // first-wins dedupe across wars
-                                    out.getParentFile().mkdirs();
-                                    Files.copy(war, out.toPath());
-                                    warClasses++;
-                                }
-                            } else if (wn.startsWith("WEB-INF/lib/") && wn.contains("apimgt") && wn.endsWith(".jar")) {
-                                String b = baseName(wn);
-                                if (seenJar.add(b)) {
-                                    Files.copy(war, new File(webappLib, b).toPath());
-                                    warJars++;
-                                }
-                            }
+                } else if (name.contains("/repository/deployment/server/webapps/") && name.endsWith(".war")) {
+                    try (InputStream in = zip.getInputStream(e)) {
+                        ex.mineWar(in);
+                    }
+                }
+            }
+        }
+        return ex.finish(distributionZip.getName());
+    }
+
+    /**
+     * Directory-source analogue of {@link #extractApimgtClassfiles(File, File)}, for CI where the class files are
+     * pulled out of the already-shared Docker image (a {@code docker cp} of {@code repository/components/plugins}
+     * and {@code repository/deployment/server/webapps}) instead of shipping the whole ~538 MB distribution zip as
+     * a second artifact. The image is what actually ran, so its classes are byte-identical to the executed ones —
+     * exact JaCoCo class-id match (see docs/devs/v2-coverage-architecture.md §8).
+     *
+     * <p>{@code serverDir} is any directory tree holding the apimgt plugin bundle jars and the webapp WARs;
+     * matching is by file NAME (the cp'd tree is already scoped to plugins + webapps, so the path-substring rule
+     * the zip path uses isn't needed). Identical filtering, dedupe, and layout to the zip path — both funnel
+     * through {@link ClassfileExtraction}, so the apimgt-selection rules live in ONE place.
+     *
+     * @return the classfile roots to analyze (only non-empty ones), for {@link #report}.
+     */
+    public static List<File> extractApimgtClassfilesFromDir(File serverDir, File destDir) throws IOException {
+        if (serverDir == null || !serverDir.isDirectory()) {
+            throw new IOException("Coverage classfiles source is not a directory: " + serverDir);
+        }
+        ClassfileExtraction ex = new ClassfileExtraction(destDir);
+        List<Path> files;
+        try (java.util.stream.Stream<Path> walk = Files.walk(serverDir.toPath())) {
+            files = walk.filter(Files::isRegularFile).toList();
+        }
+        for (Path p : files) {
+            String fileName = p.getFileName().toString();
+            // Plugin bundles land directly in the cp'd plugins/ dir; WARs are copied whole (not exploded), so a
+            // name match is sufficient and safe within this already-scoped tree.
+            if (fileName.startsWith("org.wso2.carbon.apimgt.") && fileName.endsWith(".jar")) {
+                try (InputStream in = Files.newInputStream(p)) {
+                    ex.addPlugin(fileName, in);
+                }
+            } else if (fileName.endsWith(".war")) {
+                try (InputStream in = Files.newInputStream(p)) {
+                    ex.mineWar(in);
+                }
+            }
+        }
+        return ex.finish(serverDir.getPath());
+    }
+
+    /**
+     * Accumulates extracted APIM class files into the standard {@code {plugins, webapp-classes, webapp-lib}}
+     * layout. Shared by the distribution-zip and the (docker-cp'd) directory extractors so the apimgt-selection,
+     * zip-slip, dedupe, and partial-drift rules live in exactly ONE place (no reimplementation drift).
+     */
+    private static final class ClassfileExtraction {
+        private final File pluginsDir;
+        private final File webappClasses;
+        private final File webappLib;
+        private final java.util.Set<String> seenJar = new java.util.HashSet<>();
+        private int plugins = 0;
+        private int warClasses = 0;
+        private int warJars = 0;
+
+        ClassfileExtraction(File destDir) throws IOException {
+            // Start clean so a stale extraction from a previous (possibly different) source can't leak in.
+            deleteRecursively(destDir);
+            pluginsDir = new File(destDir, "plugins");
+            webappClasses = new File(destDir, "webapp-classes");
+            webappLib = new File(destDir, "webapp-lib");
+            for (File d : new File[]{pluginsDir, webappClasses, webappLib}) {
+                Files.createDirectories(d.toPath());
+            }
+        }
+
+        /** Copy an OSGi apimgt plugin bundle jar (by base name) into the plugins dir. */
+        void addPlugin(String jarBaseName, InputStream in) throws IOException {
+            Files.copy(in, new File(pluginsDir, jarBaseName).toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            plugins++;
+        }
+
+        /** Mine one webapp WAR (a nested zip): apimgt {@code WEB-INF/classes} and {@code WEB-INF/lib} apimgt jars. */
+        void mineWar(InputStream warStream) throws IOException {
+            try (java.util.zip.ZipInputStream war = new java.util.zip.ZipInputStream(warStream)) {
+                ZipEntry we;
+                while ((we = war.getNextEntry()) != null) {
+                    String wn = we.getName();
+                    if (we.isDirectory()) {
+                        continue;
+                    }
+                    if (wn.startsWith("WEB-INF/classes/org/wso2/carbon/apimgt/") && wn.endsWith(".class")) {
+                        File out = new File(webappClasses, wn.substring("WEB-INF/classes/".length()));
+                        // Zip-Slip guard: the entry name keeps its sub-path, so a `..` segment could escape
+                        // webappClasses. Require the resolved path to stay inside it before writing.
+                        if (!isWithin(out, webappClasses)) {
+                            logger.warn("Skipping WAR entry that escapes the extraction dir (zip-slip): {}", wn);
+                        } else if (!out.exists()) { // first-wins dedupe across wars
+                            out.getParentFile().mkdirs();
+                            Files.copy(war, out.toPath());
+                            warClasses++;
+                        } else if (we.getSize() >= 0 && out.length() != we.getSize()) {
+                            // Same FQN in another WAR with a different size: the first-wins copy may not be the
+                            // bytecode the container loaded, so JaCoCo would silently report this class 0%
+                            // (class-id mismatch). Surface it instead of dropping it silently. (getSize() is -1
+                            // when unknown from the WAR's ZipInputStream — skip the check then.)
+                            logger.warn("Duplicate webapp class across WARs with differing size (kept first "
+                                    + "copy; may show 0% if it is not the loaded one): {}", wn);
+                        }
+                    } else if (wn.startsWith("WEB-INF/lib/") && wn.contains("apimgt") && wn.endsWith(".jar")) {
+                        String b = baseName(wn);
+                        File libOut = new File(webappLib, b);
+                        // baseName already strips any path, so this can't traverse — guard kept for symmetry
+                        // with the classes branch (and to satisfy zip-slip scanners).
+                        if (!isWithin(libOut, webappLib)) {
+                            logger.warn("Skipping WAR lib entry that escapes the extraction dir: {}", wn);
+                        } else if (seenJar.add(b)) {
+                            Files.copy(war, libOut.toPath());
+                            warJars++;
                         }
                     }
                 }
             }
         }
-        logger.info("Extracted APIM classfiles from {}: plugins={} jars, webapp .class={}, webapp libs={} jars",
-                distributionZip.getName(), plugins, warClasses, warJars);
-        if (plugins == 0 && warClasses == 0 && warJars == 0) {
-            throw new IOException("No org.wso2.carbon.apimgt.* class files found in " + distributionZip);
-        }
-        List<File> roots = new ArrayList<>();
-        for (File d : new File[]{pluginsDir, webappClasses, webappLib}) {
-            String[] kids = d.list();
-            if (kids != null && kids.length > 0) {
-                roots.add(d);
+
+        /** Log the tally, fail on a total miss, warn on partial drift, and return the non-empty roots. */
+        List<File> finish(String sourceLabel) throws IOException {
+            logger.info("Extracted APIM classfiles from {}: plugins={} jars, webapp .class={}, webapp libs={} jars",
+                    sourceLabel, plugins, warClasses, warJars);
+            if (plugins == 0 && warClasses == 0 && warJars == 0) {
+                throw new IOException("No org.wso2.carbon.apimgt.* class files found in " + sourceLabel);
             }
+            // Partial-layout drift: one category empty while another is populated signals the paths moved (only a
+            // TOTAL miss throws above). Coverage would silently shrink, so make the skew visible.
+            if ((plugins == 0) != (warClasses == 0 && warJars == 0)) {
+                logger.warn("APIM classfile extraction looks partial (plugins={} jars, webapp .class={}, webapp "
+                        + "libs={} jars) — layout may have drifted; coverage denominator is understated.",
+                        plugins, warClasses, warJars);
+            }
+            List<File> roots = new ArrayList<>();
+            for (File d : new File[]{pluginsDir, webappClasses, webappLib}) {
+                String[] kids = d.list();
+                if (kids != null && kids.length > 0) {
+                    roots.add(d);
+                }
+            }
+            return roots;
         }
-        return roots;
     }
 
     private static String baseName(String path) {
         return path.substring(path.lastIndexOf('/') + 1);
     }
 
-    private static void deleteRecursively(File dir) throws IOException {
+    /** Zip-Slip containment check: true iff {@code child}'s canonical path is inside {@code parent}. Used to
+     *  reject archive entries whose name contains {@code ..} segments that would escape the extraction dir. */
+    private static boolean isWithin(File child, File parent) {
+        try {
+            return child.getCanonicalPath().startsWith(parent.getCanonicalPath() + File.separator);
+        } catch (IOException e) {
+            return false; // can't resolve → don't trust it
+        }
+    }
+
+    /** Compiles {@link #DEFAULT_EXCLUDES} (JaCoCo-style, colon-separated, {@code *}/{@code ?} wildcards over the
+     *  dotted FQN) into regexes, so the report denominator can apply the same excludes the agent uses. */
+    private static List<Pattern> excludePatterns() {
+        List<Pattern> patterns = new ArrayList<>();
+        for (String glob : DEFAULT_EXCLUDES.split(":")) {
+            if (glob.isEmpty()) {
+                continue;
+            }
+            StringBuilder re = new StringBuilder();
+            for (int i = 0; i < glob.length(); i++) {
+                char c = glob.charAt(i);
+                if (c == '*') {
+                    re.append(".*");
+                } else if (c == '?') {
+                    re.append('.');
+                } else if ("\\.[]{}()^$+|".indexOf(c) >= 0) {
+                    re.append('\\').append(c);
+                } else {
+                    re.append(c);
+                }
+            }
+            patterns.add(Pattern.compile(re.toString()));
+        }
+        return patterns;
+    }
+
+    private static boolean isExcluded(String fqn, List<Pattern> excludes) {
+        for (Pattern p : excludes) {
+            if (p.matcher(fqn).matches()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Like {@code Analyzer.analyzeAll}, but skips classes whose FQN matches {@code excludes} — so the analyzed
+     *  (denominator) set matches the agent's instrumented set. Handles a jar or a class directory (the two root
+     *  shapes {@link #extractApimgtClassfiles} produces); an unexpected shape is skipped loudly (see below).
+     *  @return the number of classes skipped due to a read/parse <em>failure</em> (NOT the intentional exclude
+     *  skips), so {@link #report} can surface a systemic analysis loss as a single summary line. */
+    private static int analyzeFiltered(Analyzer analyzer, File root, List<Pattern> excludes) throws IOException {
+        int failed = 0;
+        if (root.isDirectory()) {
+            // A directory root may hold loose .class files (webapp-classes) AND .jar files (plugins, webapp-lib)
+            // — recurse into BOTH, matching what analyzeAll(dir) covered (missing the jars drops ~all classes).
+            Path base = root.toPath();
+            List<Path> files;
+            try (java.util.stream.Stream<Path> walk = Files.walk(base)) {
+                files = walk.filter(Files::isRegularFile).toList();
+            }
+            for (Path p : files) {
+                String fileName = p.getFileName().toString();
+                if (fileName.endsWith(".jar")) {
+                    failed += analyzeJarFiltered(analyzer, p.toFile(), excludes);
+                } else if (fileName.endsWith(".class")) {
+                    String rel = base.relativize(p).toString().replace(File.separatorChar, '.');
+                    String fqn = rel.substring(0, rel.length() - ".class".length());
+                    if (isExcluded(fqn, excludes)) {
+                        continue;
+                    }
+                    try (InputStream in = Files.newInputStream(p)) {
+                        analyzer.analyzeClass(in, p.toString());
+                    } catch (Exception perClass) {
+                        failed++;
+                        logger.warn("Skipping class {} during analysis: {}", fqn, perClass.getMessage());
+                    }
+                }
+            }
+        } else if (root.getName().endsWith(".jar")) {
+            failed += analyzeJarFiltered(analyzer, root, excludes);
+        } else {
+            // Contract: extractApimgtClassfiles returns only directory roots (each may contain .class and .jar).
+            // Anything else means the contract drifted — skip it loudly rather than analyze it UNFILTERED (which
+            // would pull excluded stub/dto/gen classes into the denominator at a forced 0% and understate coverage).
+            logger.warn("Unexpected classfile root shape (neither dir nor .jar): {} — skipped (would bypass excludes)",
+                    root);
+        }
+        return failed;
+    }
+
+    /** Analyzes the {@code .class} entries of a jar, skipping any whose FQN matches {@code excludes}.
+     *  @return the number of classes skipped due to a read/parse failure (for the {@link #report} summary). */
+    private static int analyzeJarFiltered(Analyzer analyzer, File jar, List<Pattern> excludes) throws IOException {
+        int failed = 0;
+        try (ZipFile zf = new ZipFile(jar)) {
+            Enumeration<? extends ZipEntry> entries = zf.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry e = entries.nextElement();
+                if (e.isDirectory() || !e.getName().endsWith(".class")) {
+                    continue;
+                }
+                String name = e.getName();
+                String fqn = name.substring(0, name.length() - ".class".length()).replace('/', '.');
+                if (isExcluded(fqn, excludes)) {
+                    continue;
+                }
+                try (InputStream in = zf.getInputStream(e)) {
+                    analyzer.analyzeClass(in, name);
+                } catch (Exception perClass) {
+                    failed++;
+                    logger.warn("Skipping class {} during analysis: {}", fqn, perClass.getMessage());
+                }
+            }
+        }
+        return failed;
+    }
+
+    /** Recursively deletes {@code dir} (best-effort) for a clean slate — used to reset the classfiles dir before
+     *  extraction and the exec dir before a suite run. */
+    public static void deleteRecursively(File dir) throws IOException {
         if (dir == null || !dir.exists()) {
             return;
         }
@@ -289,13 +502,24 @@ public final class JacocoCoverage {
 
         CoverageBuilder builder = new CoverageBuilder();
         Analyzer analyzer = new Analyzer(loader.getExecutionDataStore(), builder);
+        // Apply the SAME excludes as the agent (DEFAULT_EXCLUDES) to the report DENOMINATOR, so the analyzed set
+        // == the instrumented set. Otherwise generated stub/dto/gen/thrift classes (present in the jars but never
+        // instrumented) would sit in the denominator at a forced 0%, systematically understating coverage.
+        List<Pattern> excludes = excludePatterns();
+        int skipped = 0;
         for (File cf : classfiles) {
             // Per-root so a hiccup in one root (e.g. a duplicate class) can't sink the whole report.
             try {
-                analyzer.analyzeAll(cf); // handles a jar, a .class, or a directory (recursively)
+                skipped += analyzeFiltered(analyzer, cf, excludes);
             } catch (Exception ex) {
                 logger.warn("Skipping classfile root {} during analysis: {}", cf, ex.getMessage());
             }
+        }
+        if (skipped > 0) {
+            // Individual per-class failures are logged above; this one line makes a SYSTEMIC loss (bytecode-version
+            // mismatch, mass duplicates) visible instead of hiding it in log spam — the denominator is short by N.
+            logger.warn("Coverage analysis skipped {} class(es) due to read/parse failures — the denominator is "
+                    + "reduced by that many classes (check the per-class warnings above for a systemic cause).", skipped);
         }
         IBundleCoverage bundle = builder.getBundle(title);
 

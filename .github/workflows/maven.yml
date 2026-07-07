@@ -142,10 +142,16 @@ jobs:
         run: >
           mvn install -pl tests-integration/cucumber-tests -am -DskipTests
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      # Derive the APIM image name from the same pom property the build uses, so a version bump needs no workflow
+      # edit (single source of truth: apim.docker.image.name = wso2am:${apim.server.version}-jdk21).
+      - name: Resolve APIM artifact names
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
       - name: Save Docker images
         run: |
           mkdir -p /tmp/v2-images
-          docker save wso2am:4.7.0-SNAPSHOT-jdk21 node-app-server:latest | gzip > /tmp/v2-images/images.tar.gz
+          docker save "$APIM_IMAGE" node-app-server:latest | gzip > /tmp/v2-images/images.tar.gz
       - name: Upload Docker images
         uses: actions/upload-artifact@v4
         with:
@@ -153,16 +159,9 @@ jobs:
           path: /tmp/v2-images/images.tar.gz
           retention-days: 1
           if-no-files-found: error
-      # Coverage report rendering needs the product class files, which JacocoCoverage extracts from the built
-      # distribution zip. The integration-v2 job restores only the m2 cache + Docker images, so share the zip
-      # here too (same pattern as the images) — without it the report can't render (`Distribution zip not found`).
-      - name: Upload APIM distribution zip (for coverage report)
-        uses: actions/upload-artifact@v4
-        with:
-          name: v2-dist-zip
-          path: all-in-one-apim/modules/distribution/product/target/wso2am-4.7.0-SNAPSHOT.zip
-          retention-days: 1
-          if-no-files-found: error
+      # NOTE: coverage report rendering needs the product class files, but we do NOT ship the ~538 MB distribution
+      # zip as a second artifact — the integration-v2 job extracts them from the already-shared image via docker cp
+      # (see docs/devs/v2-coverage-architecture.md §8). The image IS what ran, so its classes are byte-identical.
   integration-v2:
     needs: v2-build-images
     runs-on: ubuntu-latest
@@ -197,14 +196,23 @@ jobs:
           path: /tmp/v2-images
       - name: Load Docker images
         run: docker load < /tmp/v2-images/images.tar.gz
-      # Restore the distribution zip to the exact path CoverageSupport.distributionZip resolves
-      # (modules/distribution/product/target), so JacocoCoverage can extract the product class files and render
-      # the coverage report at suite end. `-am` never rebuilds the distribution module, so this file persists.
-      - name: Download APIM distribution zip (for coverage report)
-        uses: actions/download-artifact@v4
-        with:
-          name: v2-dist-zip
-          path: all-in-one-apim/modules/distribution/product/target
+      # Pull the product class files out of the already-loaded image instead of shipping the ~538 MB distribution
+      # zip (docker cp is a LOCAL copy — zero extra artifact transfer). The image is what ran, so its classes are
+      # byte-identical to the executed ones → exact JaCoCo class-id match. The suite reads them via
+      # -Dapim.coverage.classfiles below. See docs/devs/v2-coverage-architecture.md §8.
+      - name: Extract APIM class files from image (for coverage report)
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)
+          APIM_SERVER_NAME=$(mvn -q -N help:evaluate -Dexpression=apim.server.name -DforceStdout)
+          SRC="$RUNNER_TEMP/cov-classfiles"
+          mkdir -p "$SRC"
+          cid=$(docker create "$APIM_IMAGE")
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          BASE="/home/wso2carbon/$APIM_SERVER_NAME/repository"
+          docker cp "$cid:$BASE/components/plugins"        "$SRC/plugins"
+          docker cp "$cid:$BASE/deployment/server/webapps" "$SRC/webapps"
+          echo "APIM_COVERAGE_CLASSFILES=$SRC" >> "$GITHUB_ENV"
       # `mvn test` (not install) keeps the testcontainers pre-integration-test image-build execs from firing,
       # so the loaded images are reused. `-am` builds only the integration-v2 reactor deps up to the test
       # phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored Maven repo.
@@ -214,6 +222,7 @@ jobs:
           mvn test -pl tests-integration/cucumber-tests -am
           -Dsurefire.suite.xml=${{ matrix.suite }}
           -Dapim.coverage=true
+          -Dapim.coverage.classfiles="$APIM_COVERAGE_CLASSFILES"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       - name: Archive test reports
         if: always()
@@ -226,6 +235,21 @@ jobs:
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/**
           if-no-files-found: warn
+      # Guard against a silent coverage regression: if the suite PASSED but no report was produced (dist-zip not
+      # shared, agent didn't attach, etc.), fail loudly here rather than uploading nothing and staying green. No
+      # `if:` → skipped when the suite itself failed (that run is already red), so it fires only in the
+      # "green build, coverage silently missing" case. Purely local — a Codecov outage never trips it.
+      - name: Verify coverage report was generated
+        run: |
+          REPORT=all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
+          # Check validity, not mere existence: -s rejects a 0-byte file, and the grep for the LINE counter
+          # rejects a truncated/partial XML that never reached the bundle summary (either would sail through
+          # a plain `-f` and then upload an empty report to Codecov).
+          if [ ! -s "$REPORT" ] || ! grep -q '<counter type="LINE"' "$REPORT"; then
+            echo "::error::Coverage report missing, empty, or malformed at $REPORT — coverage did not render correctly (check the image-classfiles extraction step and that the suite ran with -Dapim.coverage=true)."
+            exit 1
+          fi
+          echo "Coverage report present and valid ($(wc -c <"$REPORT") bytes)"
       - name: Upload v2 integration coverage to Codecov
         if: always()
         uses: codecov/codecov-action@v5

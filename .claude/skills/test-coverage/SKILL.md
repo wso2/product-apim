@@ -101,7 +101,7 @@ artifact (grep the glue for a reusable step; confirm no existing feature fits).
 - **Minimal first:** unit → run the affected class(es); integration → a scratch/minimal testng suite with just
   the new block(s). Confirm green.
 - **Then ASK** before the full local suite. Run it with `-Dapim.coverage=true` to capture the coverage delta
-  (the quantitative re-eval; purge `target/coverage/exec/` first).
+  (the quantitative re-eval). The exec dir is auto-purged at suite start, so no manual cleanup is needed.
 - **Blockers** (infra gaps, product quirks) → surface and discuss; park with a documented reason if unresolved
   (never massage a suspicious failure to green).
 

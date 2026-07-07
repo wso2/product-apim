@@ -114,9 +114,22 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
     /**
      * Enables JaCoCo integration coverage (opt-in; the caller decides when to attach it). Copies the JaCoCo
-     * runtime agent into the container, attaches it to the server JVM via {@code JAVA_TOOL_OPTIONS} in
-     * tcpserver mode, and exposes the agent port so counters can be dumped over a mapped host port at
+     * runtime agent into the container and attaches it to the SERVER JVM ONLY, via the {@code JVM_MEM_OPTS}
+     * env var. Exposes the agent's tcpserver port so counters can be dumped over a mapped host port at
      * teardown (see {@link JacocoCoverage}). Must be called before {@link #start()}.
+     *
+     * <p>Getting the agent onto ONLY the server JVM is essential. {@code JAVA_TOOL_OPTIONS} cannot be used: the
+     * JVM honours it for EVERY process, so the helper JVMs {@code bin/api-manager.sh} spawns — and especially
+     * the {@code diagnostics-tool} JVM it launches in the BACKGROUND, concurrently with the server — also load
+     * the agent, race the server to bind its tcpserver port 6300, hit {@code BindException: Address already in
+     * use}, and abort with {@code FATAL ERROR ... processing of -javaagent failed}. That non-deterministic race
+     * intermittently kills the boot-critical JVM and fails the block boot. {@code JAVA_OPTS} does not work
+     * either — {@code diagnostics.sh} also references {@code $JAVA_OPTS}. We therefore use {@code JVM_MEM_OPTS}:
+     * {@code api-manager.sh} applies it (from the env) to the main Carbon launch line only, while
+     * {@code diagnostics.sh} overwrites it with its own {@code -Xms128m -Xmx256m} and the other helper JVMs
+     * never reference it — so the agent reaches the single server JVM and there is no port race. (A
+     * {@code -javaagent} passed as a container command arg does NOT attach at all: api-manager.sh places command
+     * args after the {@code Bootstrap} main class, i.e. as program args, not JVM options.)
      */
     public DynamicApimContainer withCoverage() {
         try {
@@ -126,11 +139,14 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage JaCoCo agent jar", e);
         }
-        // JAVA_TOOL_OPTIONS is honoured by the JVM itself, so no need to touch the WSO2 startup script.
-        withEnv("JAVA_TOOL_OPTIONS", JacocoCoverage.containerAgentVmArg());
+        // Attach the agent to the SERVER JVM ONLY via JVM_MEM_OPTS. Preserve api-manager.sh's own default heap
+        // (-Xms256m -Xmx1024m) and append the agent, so behaviour is unchanged except for the added agent. The
+        // background diagnostics-tool JVM overwrites JVM_MEM_OPTS with its own value, so it never sees the agent
+        // → no tcpserver port-6300 race (the cause of the intermittent block-boot failures).
+        withEnv("JVM_MEM_OPTS", "-Xms256m -Xmx1024m " + JacocoCoverage.containerAgentVmArg());
         // addExposedPort (not withExposedPorts) so the canonical APIM ports set in the constructor are kept.
         addExposedPort(JacocoCoverage.TCP_PORT);
-        logger.info("JaCoCo coverage enabled: agent at {}, tcpserver port {}",
+        logger.info("JaCoCo coverage enabled (server-JVM-only via JVM_MEM_OPTS): agent at {}, tcpserver port {}",
                 JacocoCoverage.CONTAINER_AGENT_PATH, JacocoCoverage.TCP_PORT);
         return this;
     }

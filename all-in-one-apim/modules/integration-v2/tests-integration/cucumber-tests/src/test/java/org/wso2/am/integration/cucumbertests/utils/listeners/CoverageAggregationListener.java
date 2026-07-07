@@ -43,7 +43,19 @@ public class CoverageAggregationListener implements ISuiteListener {
 
     @Override
     public void onStart(ISuite suite) {
-        // no-op
+        if (!CoverageSupport.enabled()) {
+            return;
+        }
+        // Clean slate: purge any .exec files left by a previous run, so a rerun without `mvn clean` does not
+        // merge stale dumps into this run's report (which would inflate the numbers / block count). Mirrors the
+        // clean-slate reset extractApimgtClassfiles does for the classfiles dir. Best-effort — never fail a run.
+        try {
+            File execDir = CoverageSupport.execDir(ModulePathResolver.getModuleDir(CoverageAggregationListener.class));
+            JacocoCoverage.deleteRecursively(execDir);
+            logger.info("Coverage enabled: cleared stale exec dir before suite: " + execDir);
+        } catch (Exception e) {
+            logger.warn("Could not clear coverage exec dir at suite start: " + e.getMessage());
+        }
     }
 
     @Override
@@ -63,13 +75,28 @@ public class CoverageAggregationListener implements ISuiteListener {
             List<File> execFiles = new ArrayList<>(List.of(execs));
             logger.info("Aggregating coverage from " + execFiles.size() + " block exec file(s): " + execDir);
 
-            File distZip = CoverageSupport.distributionZip(moduleDir);
-            if (!distZip.exists()) {
-                logger.warn("Distribution zip not found (" + distZip + "); cannot render coverage report");
-                return;
-            }
             File classfiles = CoverageSupport.classfilesDir(moduleDir);
-            List<File> classfileRoots = JacocoCoverage.extractApimgtClassfiles(distZip, classfiles);
+            List<File> classfileRoots;
+            File classfilesSrc = CoverageSupport.classfilesSourceDir();
+            if (classfilesSrc != null) {
+                // CI path: class files were docker-cp'd out of the already-shared image (no 538 MB dist-zip
+                // artifact — see docs/devs/v2-coverage-architecture.md §8). The image is what ran, so its classes
+                // are byte-identical to the executed ones.
+                if (!classfilesSrc.isDirectory()) {
+                    logger.warn("Coverage classfiles source (" + classfilesSrc + ") is not a directory; "
+                            + "cannot render coverage report");
+                    return;
+                }
+                classfileRoots = JacocoCoverage.extractApimgtClassfilesFromDir(classfilesSrc, classfiles);
+            } else {
+                // Local path: mine the built distribution zip.
+                File distZip = CoverageSupport.distributionZip(moduleDir);
+                if (!distZip.exists()) {
+                    logger.warn("Distribution zip not found (" + distZip + "); cannot render coverage report");
+                    return;
+                }
+                classfileRoots = JacocoCoverage.extractApimgtClassfiles(distZip, classfiles);
+            }
 
             List<File> sourceRoots = new ArrayList<>();
             String src = CoverageSupport.sourcesRoot();
