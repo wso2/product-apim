@@ -153,6 +153,16 @@ jobs:
           path: /tmp/v2-images/images.tar.gz
           retention-days: 1
           if-no-files-found: error
+      # Coverage report rendering needs the product class files, which JacocoCoverage extracts from the built
+      # distribution zip. The integration-v2 job restores only the m2 cache + Docker images, so share the zip
+      # here too (same pattern as the images) — without it the report can't render (`Distribution zip not found`).
+      - name: Upload APIM distribution zip (for coverage report)
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-dist-zip
+          path: all-in-one-apim/modules/distribution/product/target/wso2am-4.7.0-SNAPSHOT.zip
+          retention-days: 1
+          if-no-files-found: error
   integration-v2:
     needs: v2-build-images
     runs-on: ubuntu-latest
@@ -187,6 +197,14 @@ jobs:
           path: /tmp/v2-images
       - name: Load Docker images
         run: docker load < /tmp/v2-images/images.tar.gz
+      # Restore the distribution zip to the exact path CoverageSupport.distributionZip resolves
+      # (modules/distribution/product/target), so JacocoCoverage can extract the product class files and render
+      # the coverage report at suite end. `-am` never rebuilds the distribution module, so this file persists.
+      - name: Download APIM distribution zip (for coverage report)
+        uses: actions/download-artifact@v4
+        with:
+          name: v2-dist-zip
+          path: all-in-one-apim/modules/distribution/product/target
       # `mvn test` (not install) keeps the testcontainers pre-integration-test image-build execs from firing,
       # so the loaded images are reused. `-am` builds only the integration-v2 reactor deps up to the test
       # phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored Maven repo.
