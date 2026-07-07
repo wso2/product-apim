@@ -214,3 +214,12 @@ jobs:
         with:
           files: all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
           flags: integration-v2_tests
+      # Surface the actual scenario failures (name + assertion message) at the top of the run as a check +
+      # annotations, so a red build is diagnosable without expanding logs. Same action the legacy show-report
+      # job uses; the v2 surefire XML is standard Surefire JUnit, so it parses identically.
+      - name: Publish v2 test report
+        if: always()
+        uses: malinthaprasan/action-surefire-report@v1
+        with:
+          report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
+          check_name: 'integration-v2 results'
