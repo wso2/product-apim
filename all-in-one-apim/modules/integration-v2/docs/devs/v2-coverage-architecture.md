@@ -1,6 +1,6 @@
 # v2 integration-test coverage — architecture & local verification (all-in-one)
 
-**Status:** Implemented (opt-in `-Dapim.coverage=true`; agent-at-boot → per-block dump → suite-end merge+report). CI upload to Codecov is **deferred** (§8).
+**Status:** Implemented — opt-in `-Dapim.coverage=true` drives agent-at-boot → per-block dump → suite-end merge+report (verified locally end-to-end). The CI wiring is committed too: the `integration-v2` job runs the suite with coverage and has a Codecov upload step (flag `integration-v2_tests`). **One CI gap remains** before it is end-to-end in CI: that job doesn't yet have the built distribution zip on disk, so the report can't render there (§8).
 **Scope:** Server-side JaCoCo coverage for the **integration-v2 all-in-one lane** (the `DynamicApimContainer` Testcontainers path), uploaded to the **product-apim** Codecov project **standalone** — the same model the legacy lane uses (flag `integration_tests`). The coverage requirement is **all-in-one only** — the distributed lane is **not** a coverage target (by requirement, not merely deferred).
 **Prior art:** modelled on the api-platform (Go) coverage pipeline, adapted to Java/JVM + JaCoCo.
 
@@ -45,7 +45,7 @@ Toolchain note: JaCoCo `0.8.12` is already available in the build (`jacoco.agent
 [report]    jacococli report coverage/it.exec
               --classfiles <apimgt jars from distribution>   (SCOPED, §4)
               --sourcefiles <carbon-apimgt / module source>
-              --xml coverage/output/jacoco-it.xml --html coverage/output/html
+              --xml coverage/output/txt/jacoco-it.xml --html coverage/output/html
 [CI only]   codecov upload coverage/output/txt/jacoco-it.xml --flag integration-v2_tests  (-> product-apim project)
 [codecov]   stands alone in the product-apim project (like legacy integration_tests); no unit merge here
 ```
@@ -118,7 +118,7 @@ mvn -pl tests-integration/cucumber-tests test \
 java -jar org.jacoco.cli-0.8.12-nodeps.jar report coverage/it.exec \
     --classfiles <unpacked-dist>/.../org.wso2.carbon.apimgt.*.jar \
     --sourcefiles <carbon-apimgt-src> \
-    --xml coverage/output/jacoco-it.xml --html coverage/output/html
+    --xml coverage/output/txt/jacoco-it.xml --html coverage/output/html
 open coverage/output/html/index.html      # total % also printed to stdout
 ```
 Confirms: agent attached, tcpserver dump over mapped port worked, classfiles/sources map correctly.
@@ -159,7 +159,7 @@ Add a `make coverage-it` (or script) that runs Level 1 end-to-end and opens the 
 ## 8. Where the report goes — DECIDED: product-apim (standalone), matching legacy
 The v2 integration tests exercise `org.wso2.carbon.apimgt.*` code, so in principle a *combined* number would live in the carbon-apimgt project (where its unit tests are). We chose **not** to do that.
 
-**Decision (locked): upload v2 integration coverage to the product-apim Codecov project, standalone, PER PR — exactly the legacy mechanism.** A per-PR workflow (same `on: pull_request` trigger as legacy's "APIM builder", in product-apim) builds + runs the v2 lane and uploads `jacoco-it.xml` to product-apim's own project under flag **`integration-v2_tests`** — landing on the same PR commit as legacy's `integration_tests`, as a separate flag (Codecov keeps both). No cross-repo upload, no commit-SHA alignment, no unit merge. The CI workflow + `codecov.yml` are **deferred — not yet committed** (only local report generation is implemented today); the inline `codecov.yml` in §6.2 is the intended shape when CI upload is wired.
+**Decision (locked): upload v2 integration coverage to the product-apim Codecov project, standalone, PER PR — exactly the legacy mechanism.** A per-PR workflow (same `on: pull_request` trigger as legacy's "APIM builder", in product-apim) builds + runs the v2 lane and uploads `jacoco-it.xml` to product-apim's own project under flag **`integration-v2_tests`** — landing on the same PR commit as legacy's `integration_tests`, as a separate flag (Codecov keeps both). No cross-repo upload, no commit-SHA alignment, no unit merge. The CI workflow is now **committed**: the `integration-v2` job runs with `-Dapim.coverage=true` and a `codecov/codecov-action` upload step (flag `integration-v2_tests`). No `codecov.yml` is required (none committed — the flag is passed via the action, exactly like legacy's `integration_tests`). **Remaining gap (why it is not yet end-to-end in CI):** the `integration-v2` job restores the Maven repo + Docker images but not the built distribution zip (`distribution/product/target/wso2am-*.zip`), so `CoverageSupport.distributionZip(...)` can't find it and the report doesn't render (`Distribution zip not found` WARN → nothing to upload). To close it, artifact the dist zip from `v2-build-images` and restore it in `integration-v2` (the same share pattern already used for the Docker images). The inline `codecov.yml` in §6.2 remains the intended shape if per-flag tuning is ever wanted.
 
 **Consequence (accepted):** there is **no combined unit+integration number** — product-apim has no unit tests, and carbon-apimgt's unit coverage stays in the carbon-apimgt project. v2 integration coverage stands alone (like legacy's ~9.4%).
 
@@ -169,6 +169,6 @@ The v2 integration tests exercise `org.wso2.carbon.apimgt.*` code, so in princip
 
 ## 9. Phased rollout
 1. **Spike (Level 1):** `-Dapim.coverage=true` on `DynamicApimContainer`; tcpserver-dump one block; hand-run `jacococli report`; eyeball HTML. Proves instrumentation + classfile mapping.
-2. **Collector + listener:** generalise into `tests-common`; wire `BlockLifecycleListener` dump; suite-end merge + report; emit `coverage/output/jacoco-it.xml`.
+2. **Collector + listener:** generalise into `tests-common`; wire `BlockLifecycleListener` dump; suite-end merge + report; emit `coverage/output/txt/jacoco-it.xml`.
 3. **CI + Codecov:** per-PR workflow (same trigger as legacy) uploads the integration report to the **product-apim** project under flag `integration-v2_tests` (standalone, like legacy); add `codecov.yml`. Unit+integration merge, if ever wanted, is carbon-apimgt's concern (§8).
 4. **Later:** extend the same collector to the distributed lane (per-component dump + `jacoco merge`) — deferred.

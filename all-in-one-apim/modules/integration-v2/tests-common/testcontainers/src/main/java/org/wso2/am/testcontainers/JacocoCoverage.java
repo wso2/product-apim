@@ -45,6 +45,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -74,6 +80,9 @@ public final class JacocoCoverage {
     /** Default scoping — instrument APIM code only, skip generated/stub/test classes. */
     public static final String DEFAULT_INCLUDES = "org.wso2.carbon.apimgt.*";
     public static final String DEFAULT_EXCLUDES = "*.stub.*:*.dto.*:*.gen.*:*Test";
+
+    /** Upper bound on a single dump, so an unresponsive agent can't stall test teardown forever. */
+    private static final int DUMP_TIMEOUT_SECONDS = 60;
 
     private JacocoCoverage() {
     }
@@ -106,10 +115,36 @@ public final class JacocoCoverage {
         client.setDump(true);     // request a dump
         client.setReset(false);   // keep counters (do not reset the server)
         client.setRetryCount(20); // the agent may still be binding right after boot
-        ExecFileLoader loader = client.dump(host, port);
-        destExec.getParentFile().mkdirs();
-        loader.save(destExec, false);
-        logger.info("Wrote coverage exec ({} bytes)", destExec.length());
+
+        // ExecDumpClient retries the CONNECT but has no read timeout, so a connected-but-silent agent would
+        // block indefinitely and stall teardown (the caller can't help — dump() would never return to throw).
+        // Run it on a daemon thread with a hard deadline; a leaked daemon thread can't hold up JVM exit.
+        ExecutorService exec = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "jacoco-dump-" + host + ":" + port);
+            t.setDaemon(true);
+            return t;
+        });
+        try {
+            Future<ExecFileLoader> future = exec.submit(() -> client.dump(host, port));
+            ExecFileLoader loader = future.get(DUMP_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            destExec.getParentFile().mkdirs();
+            loader.save(destExec, false);
+            logger.info("Wrote coverage exec ({} bytes)", destExec.length());
+        } catch (TimeoutException e) {
+            throw new IOException("JaCoCo dump from " + host + ":" + port + " timed out after "
+                    + DUMP_TIMEOUT_SECONDS + "s (agent unresponsive); skipping this block's coverage", e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;   // preserve the original dump/connection failure
+            }
+            throw new IOException("JaCoCo dump from " + host + ":" + port + " failed: " + cause, cause);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("JaCoCo dump from " + host + ":" + port + " was interrupted", e);
+        } finally {
+            exec.shutdownNow();
+        }
     }
 
     /**
