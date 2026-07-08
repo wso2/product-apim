@@ -23,6 +23,7 @@ import org.jaxen.JaxenException;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.xml.XmlTest;
+import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
@@ -30,6 +31,7 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.NodeAppServer;
 
 import java.nio.file.Files;
@@ -109,6 +111,10 @@ public class BlockLifecycleListener implements ITestListener {
 
             container = new DynamicApimContainer(label, resolveTomlContent(context));
             container.withLabel("block", label);
+            // Opt-in integration coverage: attach the JaCoCo agent before boot (see CoverageSupport).
+            if (CoverageSupport.enabled()) {
+                container.withCoverage();
+            }
             container.start();
 
             String baseUrl = container.getServletHttpsUrl();
@@ -165,6 +171,17 @@ public class BlockLifecycleListener implements ITestListener {
         try {
             Object stored = TestContext.get(CONTAINER_KEY);
             if (stored instanceof DynamicApimContainer container) {
+                // Dump JaCoCo counters over the mapped tcpserver port BEFORE stopping (all-in-one lane).
+                // Best-effort: a dump failure must never break teardown or fail the block.
+                if (CoverageSupport.enabled()) {
+                    try {
+                        String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
+                        JacocoCoverage.dump(container.getCoverageDumpHost(), container.getCoverageDumpPort(),
+                                CoverageSupport.execFile(moduleDir, label));
+                    } catch (Exception e) {
+                        logger.warn("Coverage dump failed for block '" + label + "': " + e.getMessage());
+                    }
+                }
                 container.stop();
                 logger.info("Block '" + context.getName()
                         + "' container stopped; dynamic host ports released by Docker");

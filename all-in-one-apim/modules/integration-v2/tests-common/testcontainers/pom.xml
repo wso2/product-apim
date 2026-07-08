@@ -34,6 +34,9 @@
         <skipCertificateFetch>true</skipCertificateFetch>
         <!-- Docker extra hosts for host.docker.internal resolution (needed on Linux/CI) -->
         <docker.extra.hosts></docker.extra.hosts>
+        <!-- JaCoCo for the (opt-in) integration-coverage collector: agent jar to inject into the server
+             container, core (tcp dump + analysis) and report (HTML/XML) to render coverage in-process. -->
+        <jacoco.version>0.8.12</jacoco.version>
     </properties>
 
     <dependencies>
@@ -41,6 +44,27 @@
             <groupId>org.wso2.am</groupId>
             <artifactId>integration-test-utils</artifactId>
             <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Provides org.jacoco.agent.AgentJar to extract the runtime agent jar copied into the server container. -->
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.agent</artifactId>
+            <version>${jacoco.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- ExecDumpClient (dump over tcpserver), ExecFileLoader (merge), Analyzer/CoverageBuilder (analysis). -->
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.core</artifactId>
+            <version>${jacoco.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- HTML/XML report formatters. -->
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.report</artifactId>
+            <version>${jacoco.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
