@@ -13,6 +13,8 @@
     <listeners>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+        <!-- No-op unless -Dapim.coverage=true; then merges per-block JaCoCo dumps into one report at suite end. -->
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.CoverageAggregationListener"/>
     </listeners>
     <!-- Publisher features sharing the default container config run as parallel classes in one block,
          so a single container boots for all of them instead of one boot per feature. Split into a second

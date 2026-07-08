@@ -74,6 +74,12 @@
         <apim.debug.enabled>False</apim.debug.enabled>
         <apim.debug.port>5006</apim.debug.port>
 
+        <!-- Integration coverage (opt-in): -Dapim.coverage=true attaches the JaCoCo agent to each block's
+             container and renders a merged report at suite end. -Dapim.coverage.sources=<path> is an optional
+             source tree (e.g. carbon-apimgt) for HTML line detail. Off/empty by default; default runs unaffected. -->
+        <apim.coverage>false</apim.coverage>
+        <apim.coverage.sources></apim.coverage.sources>
+
         <!-- Dependency versions (defined here so the integration-v2 reactor is self-contained) -->
         <testcontainers.version>2.0.2</testcontainers.version>
         <jackson.databind.version>2.16.1</jackson.databind.version>
@@ -173,6 +179,8 @@
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
                                 <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
+                                <apim.coverage>${apim.coverage}</apim.coverage>
+                                <apim.coverage.sources>${apim.coverage.sources}</apim.coverage.sources>
                                 <active.profile>migration</active.profile>
                             </systemPropertyVariables>
                             <environmentVariables>
@@ -236,6 +244,8 @@
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
                                 <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
+                                <apim.coverage>${apim.coverage}</apim.coverage>
+                                <apim.coverage.sources>${apim.coverage.sources}</apim.coverage.sources>
                                 <active.profile>default</active.profile>
                             </systemPropertyVariables>
                             <environmentVariables>
