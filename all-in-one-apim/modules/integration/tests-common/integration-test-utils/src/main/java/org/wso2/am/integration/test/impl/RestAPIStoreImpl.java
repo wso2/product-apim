@@ -2198,7 +2198,29 @@ public class RestAPIStoreImpl {
 
         ApiResponse<String> response =
                 apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, Constants.GATEWAY_ENVIRONMENT, null, tenantDomain);
-        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
+    }
+
+    /**
+     * Retrieve the Swagger definition of an API from the Developer Portal.
+     * <p>
+     * When {@code environmentName} is {@code null}, the gateway environment (and hence the {@code servers} URL) is
+     * resolved internally by the server based on the environments the API is actually deployed to. This mirrors the
+     * real Developer Portal invocation (GET /apis/{apiId}/swagger without the environmentName query parameter) and is
+     * required to exercise the server side environment resolution logic.
+     *
+     * @param apiId           API UUID
+     * @param environmentName gateway environment name, or {@code null} to let the server resolve it
+     * @param tenantDomain    tenant domain
+     * @return the Swagger definition as a String
+     * @throws ApiException if the REST call fails
+     */
+    public String getSwaggerByID(String apiId, String environmentName, String tenantDomain) throws ApiException {
+
+        ApiResponse<String> response =
+                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, environmentName, null, tenantDomain);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
     }
 
