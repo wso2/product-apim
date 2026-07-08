@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.12): suite cap negative control, mirroring the pure-TestNG
+  SmokeTest2. N=3 blocks under suite parallel="tests" thread-count="2" (K=2). Unlike 4.7 each block holds
+  a SINGLE probe class, so this isolates the SUITE-level container cap from any inner class parallelism:
+  with three blocks but only two block slots, at most K=2 APIM containers may be alive at once and the 3rd
+  block must wait for a slot. All three share the docker label block=fv-4.12 (distinct <test> names) so the
+  gate can count live containers with one filter. Wired to no legacy runners.
+-->
+<suite name="Framework Verification 4.12" parallel="tests" thread-count="2">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase4.12-BlockA">
+        <parameter name="blockLabel" value="fv-4.12"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+        </classes>
+    </test>
+    <test name="Phase4.12-BlockB">
+        <parameter name="blockLabel" value="fv-4.12"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+        </classes>
+    </test>
+    <test name="Phase4.12-BlockC">
+        <parameter name="blockLabel" value="fv-4.12"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerThree"/>
+        </classes>
+    </test>
+</suite>

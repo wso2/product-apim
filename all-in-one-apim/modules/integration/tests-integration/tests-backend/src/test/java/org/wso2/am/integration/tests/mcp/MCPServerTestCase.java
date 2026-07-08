@@ -18,8 +18,6 @@
 
 package org.wso2.am.integration.tests.mcp;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.gson.Gson;
@@ -336,21 +334,25 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
             "  }\n" +
             "}";
 
+    // After an update, operations are submitted as [addOp=delete_oldpets, updateOp=get_pets]. The URL mappings are
+    // (re)inserted in that submission order, so URL_MAPPING_ID follows it, and the gateway now reads the deployed
+    // revision's URL mappings ordered by URL_MAPPING_ID. The tool list is therefore [delete_oldpets, get_pets]
+    // deterministically for both the direct-backend and existing-API subtypes.
     private static final String EXPECTED_UPDATED_TOOL_LIST_RESPONSE = "{\n" +
             "  \"jsonrpc\" : \"2.0\",\n" +
             "  \"id\" : 0,\n" +
             "  \"result\" : {\n" +
             "    \"tools\" : [ {\n" +
-            "      \"name\" : \"get_pets\",\n" +
-            "      \"description\" : \"Return a list of pets\",\n" +
+            "      \"name\" : \"delete_oldpets\",\n" +
+            "      \"description\" : \"Delete all old pets\",\n" +
             "      \"inputSchema\" : {\n" +
             "        \"type\" : \"object\",\n" +
             "        \"properties\" : { },\n" +
             "        \"required\" : [ ]\n" +
             "      }\n" +
             "    }, {\n" +
-            "      \"name\" : \"delete_oldpets\",\n" +
-            "      \"description\" : \"Delete all old pets\",\n" +
+            "      \"name\" : \"get_pets\",\n" +
+            "      \"description\" : \"Return a list of pets\",\n" +
             "      \"inputSchema\" : {\n" +
             "        \"type\" : \"object\",\n" +
             "        \"properties\" : { },\n" +
@@ -507,7 +509,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(mcpServer.getId(), "MCP Server ID is null (OpenAPI flow)");
         mcpServerFromOpenApiId = mcpServer.getId();
         assertNonEmpty(mcpServer.getOperations(), "No operations found in MCP Server (OpenAPI flow)");
-        assertTargets(mcpServer.getOperations(), listOf(TARGET_GET_PETS, TARGET_GET_PETS_BY_ID),
+        assertTargetsInOrder(mcpServer.getOperations(), listOf(TARGET_GET_PETS, TARGET_GET_PETS_BY_ID),
                 "OpenAPI flow: Missing expected operations");
 
         final MCPServerOperationDTO getByIdOp = getOperationByTarget(mcpServer.getOperations(), TARGET_GET_PETS_BY_ID);
@@ -645,7 +647,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         mcpServerFromApiId = mcpServer.getId();
 
         assertNonEmpty(mcpServer.getOperations(), "No operations found in MCP Server (API flow)");
-        assertTargets(mcpServer.getOperations(), listOf(TARGET_GET_PETS, TARGET_GET_PETS_BY_ID),
+        assertTargetsInOrder(mcpServer.getOperations(), listOf(TARGET_GET_PETS, TARGET_GET_PETS_BY_ID),
                 "API flow: Missing expected operations");
 
         final MCPServerOperationDTO getByIdOp =
@@ -726,7 +728,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         ));
 
         final MCPServerProxyRequestDTO proxyRequest = new MCPServerProxyRequestDTO();
-        proxyRequest.setUrl("http://localhost:" + port);
+        proxyRequest.setUrl("http://localhost:" + port + MCP_PATH);
 
         final SecurityInfoDTO securityInfoDTO = new SecurityInfoDTO();
         securityInfoDTO.setIsSecure(false);
@@ -817,7 +819,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         mcpServer.setOperations(Arrays.asList(addOp, updateOp));
 
         final MCPServerDTO updated = restAPIPublisher.updateMCPServer(mcpServerFromOpenApiId, mcpServer);
-        assertTargets(updated.getOperations(), listOf(TARGET_GET_PETS, TARGET_DELETE_OLD_PETS),
+        assertTargetsInOrder(updated.getOperations(), listOf(TARGET_DELETE_OLD_PETS, TARGET_GET_PETS),
                 "API flow: Expected operations do not match after update");
 
         final MCPServerOperationDTO deleteOldPets =
@@ -878,7 +880,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
         mcpServer.setOperations(Arrays.asList(addOp, updateOp));
 
         final MCPServerDTO updated = restAPIPublisher.updateMCPServer(mcpServerFromApiId, mcpServer);
-        assertTargets(updated.getOperations(), listOf(TARGET_GET_PETS, TARGET_DELETE_OLD_PETS),
+        assertTargetsInOrder(updated.getOperations(), listOf(TARGET_DELETE_OLD_PETS, TARGET_GET_PETS),
                 "API flow: Expected operations do not match after update");
 
         final MCPServerOperationDTO deleteOldPets =
@@ -1302,7 +1304,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
     private Map<String, Object> buildDefaultEndpointConfig(int port) {
 
         Map<String, Object> endpointConfig = new HashMap<>();
-        Map<String, String> endpoints = Collections.singletonMap("url", "http://localhost:" + port);
+        Map<String, String> endpoints = Collections.singletonMap("url", "http://localhost:" + port + MCP_PATH);
         endpointConfig.put(PROD_ENDPOINTS, endpoints);
         endpointConfig.put(SANDBOX_ENDPOINTS, endpoints);
         endpointConfig.put(ENDPOINT_TYPE, "http");
@@ -1481,6 +1483,28 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
                 ", received=" + received;
 
         Assert.assertTrue(missing.isEmpty() && unexpected.isEmpty() && duplicates.isEmpty(), diag);
+    }
+
+    /**
+     * Assert that the given operations contain exactly the provided targets in the exact expected order. This
+     * validates resource/tool ordering in addition to presence, uniqueness and absence of unexpected targets.
+     *
+     * @param operations             operations to inspect
+     * @param expectedTargetsInOrder expected targets in the exact expected order
+     * @param messagePrefix          a short prefix to identify the assertion context
+     */
+    private static void assertTargetsInOrder(List<MCPServerOperationDTO> operations,
+                                             List<String> expectedTargetsInOrder, String messagePrefix) {
+
+        // First validate presence, uniqueness and that there are no unexpected targets.
+        assertTargets(operations, expectedTargetsInOrder, messagePrefix);
+
+        List<String> actualOrder = Optional.ofNullable(operations).orElse(Collections.emptyList()).stream()
+                .map(MCPServerOperationDTO::getTarget)
+                .collect(Collectors.toList());
+        Assert.assertEquals(actualOrder, expectedTargetsInOrder,
+                messagePrefix + ": operation order mismatch. Expected order=" + expectedTargetsInOrder
+                        + ", actual order=" + actualOrder);
     }
 
     /**
