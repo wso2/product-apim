@@ -1316,6 +1316,9 @@ public class PublisherBaseSteps {
         HttpResponse response = SimpleHTTPClient.getInstance()
                 .doPost(Utils.getInternalAPIKey(getBaseUrl(), actualApiId), headers, null, null);
         TestContext.set("httpResponse", response);
+        // Assert success before extracting: generate-key returns 200 (APIKey). Without this, a non-2xx body has no
+        // "apikey" field and surfaces as a confusing "Path 'apikey' not found" IOException instead of the status.
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         Object apiKey = Utils.extractValueFromPayload(response.getData(), "apikey");
         TestContext.set(Utils.normalizeContextKey(keyContextKey), apiKey);
     }
