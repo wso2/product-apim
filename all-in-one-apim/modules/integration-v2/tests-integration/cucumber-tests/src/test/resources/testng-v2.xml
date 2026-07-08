@@ -34,6 +34,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphQLDesignRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherStreamingDesignRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherSoapDesignRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionsRunner"/>
         </classes>
     </test>
     <!-- DevPortal features share their own container (separate capability, consumer-plane actors). -->
@@ -57,6 +58,10 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySecurityEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLScopeEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultVersionRoutingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayLifecycleStageInvocationRunner"/>
         </classes>
     </test>
     <!-- Key-manager features (token/key issuance). initBackend for the refresh/sandbox gateway invocations. -->
@@ -85,6 +90,14 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationSharingRunner"/>
         </classes>
     </test>
+    <!-- Admin-plane governance/policy tests (default config, no gateway backend). Concurrent block. -->
+    <test name="IntegrationV2-Admin" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="admin"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlingPolicyRunner"/>
+        </classes>
+    </test>
     <!-- Token persistence across a graceful server restart. MUST run sequentially (thread-count=1): the
          restart step bounces the shared APIM server in place via the ServerAdmin restartGracefully API, so no
          sibling class may share this container. Overlay enables token persistence + enable_restart_from_api;
@@ -96,6 +109,7 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/serverRestart/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartTokenPersistenceRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartSharedScopeRunner"/>
         </classes>
     </test>
 </suite>

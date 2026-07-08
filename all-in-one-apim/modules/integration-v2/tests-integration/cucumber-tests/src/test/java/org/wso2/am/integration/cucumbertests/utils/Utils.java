@@ -365,6 +365,16 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "scopes/" + scopeId;
     }
 
+    /** Publisher — retrieve (GET) or update (PUT multipart {@code schemaDefinition}) a GraphQL API's schema. */
+    public static String getGraphQLSchemaOfApiURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/graphql-schema";
+    }
+
+    /** Publisher — validate a GraphQL schema (POST multipart {@code file}). */
+    public static String getValidateGraphQLSchemaURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-graphql-schema";
+    }
+
     public static String getGraphQLSchema(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-graphql-schema";
     }
@@ -395,6 +405,46 @@ public class Utils {
 
     public static String getGlobalPolicyDeploy(String baseUrl, String policyMappingId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "gateway-policies/" + policyMappingId + "/deploy";
+    }
+
+    /** Admin REST API — application throttling policies (create/list). */
+    public static String getApplicationThrottlingPoliciesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/application";
+    }
+
+    /** Admin REST API — a single application throttling policy by id (get/update/delete). */
+    public static String getApplicationThrottlingPolicyByIdURL(String baseUrl, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/application/" + policyId;
+    }
+
+    /** Admin REST API — subscription throttling policies (create/list). */
+    public static String getSubscriptionThrottlingPoliciesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/subscription";
+    }
+
+    /** Admin REST API — a single subscription throttling policy by id (get/update/delete). */
+    public static String getSubscriptionThrottlingPolicyByIdURL(String baseUrl, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/subscription/" + policyId;
+    }
+
+    /** Admin REST API — advanced (API-level) throttling policies (create/list). */
+    public static String getAdvancedThrottlingPoliciesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/advanced";
+    }
+
+    /** Admin REST API — a single advanced throttling policy by id (get/update/delete). */
+    public static String getAdvancedThrottlingPolicyByIdURL(String baseUrl, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/advanced/" + policyId;
+    }
+
+    /** Admin REST API — custom (Siddhi) throttling rules (create/list). */
+    public static String getCustomThrottlingPoliciesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/custom";
+    }
+
+    /** Admin REST API — a single custom throttling rule by id (get/update/delete). */
+    public static String getCustomThrottlingPolicyByIdURL(String baseUrl, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/custom/" + policyId;
     }
 
     public static String getSwaggerURL(String baseUrl, String resourceType, String resourceId) {
