@@ -114,6 +114,14 @@ mutable.**
   following assertion can pass against the **wrong** call (a false pass). So a step that makes a request
   must **clear `httpResponse` before the call** (`TestContext.remove("httpResponse")`), so a throw leaves
   it *absent* rather than stale — then set it only on a real response.
+- **Guard a response before parsing its body.** Before `new JSONObject(resp.getData())` (or drilling into
+  fields), assert the call **succeeded with a body** — otherwise a failed/empty response throws an opaque
+  `JSONException`/NPE instead of a clear failure. Use
+  `Assert.assertTrue(resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300 &&
+  resp.getData() != null && !resp.getData().isEmpty(), "<what failed, incl. the id and got=<code>/<body>>")`.
+  This applies to **intermediate reads too** — the GET half of a GET-then-mutate-then-PUT (e.g.
+  `buildApiProductPayload`, `fetchSharedScopeByName`), where the response isn't published to `httpResponse`
+  but is still parsed locally.
 - **Invocation steps funnel through `APIInvocationSteps.execute(...)`** — the single primitive that does
   exactly this (clear → call → set → **return** the response). Add new invocation variants by calling
   `execute`, not by hand-writing another `TestContext.set("httpResponse", client.doX(...))` (that

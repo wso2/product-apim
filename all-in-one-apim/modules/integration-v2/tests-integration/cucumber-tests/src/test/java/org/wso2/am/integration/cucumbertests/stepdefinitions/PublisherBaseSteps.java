@@ -337,9 +337,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getAPISearchEndpointURL(getBaseUrl(), null, null, null), headers);
-
-        TestContext.set("httpResponse", response);
+        Requests.get(Utils.getAPISearchEndpointURL(getBaseUrl(), null, null, null), headers);
     }
 
     /**
@@ -567,9 +565,8 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getNewAPIVersionURL(getBaseUrl(), resourceType, newVersion, defaultVersion,
-                        actualResourceID), headers, null, null);
+        Requests.post(Utils.getNewAPIVersionURL(getBaseUrl(), resourceType, newVersion, defaultVersion,
+                actualResourceID), headers, null, null);
     }
 
     /**
@@ -1325,8 +1322,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getAPISpecificPolicyById(getBaseUrl(), actualApiId, policyID), headers);
+        Requests.delete(Utils.getAPISpecificPolicyById(getBaseUrl(), actualApiId, policyID), headers);
     }
 
     /**
@@ -1648,6 +1644,13 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse apiResp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(apiResp != null && apiResp.getResponseCode() >= 200 && apiResp.getResponseCode() < 300
+                        && apiResp.getData() != null && !apiResp.getData().isEmpty(),
+                "Failed to fetch API '" + apiId + "' while building the API-product payload: expected a 2xx response "
+                        + "with a body, got " + (apiResp == null ? "no response" : apiResp.getResponseCode()
+                        + " / body=" + apiResp.getData()));
         JSONObject api = new JSONObject(apiResp.getData());
         JSONArray operations = api.optJSONArray("operations");
         JSONObject productApi = new JSONObject()

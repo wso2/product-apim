@@ -21,6 +21,8 @@ import com.sun.net.httpserver.HttpServer;
 import io.cucumber.java.After;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
@@ -60,9 +62,15 @@ public class RemoteLoggingSteps {
     private static final String DATA_NS = "http://data.service.logging.carbon.wso2.org/xsd";
     private static final String SERVICE_PATH = "services/RemoteLoggingConfig";
 
+    private static final Log log = LogFactory.getLog(RemoteLoggingSteps.class);
+
     /* Mock HTTP sink shared across steps + the teardown hook. */
     private static HttpServer sinkServer;
     private static final List<String> sinkPayloads = new CopyOnWriteArrayList<>();
+
+    /* Log types enabled via addRemoteServerConfig, reset in teardown — failure-safe, since the inline "disable"
+       step is skipped if a scenario fails after enabling. */
+    private static final List<String> enabledLogTypes = new CopyOnWriteArrayList<>();
 
     private String baseUrl() {
         return TestContext.get("baseUrl").toString();
@@ -81,12 +89,16 @@ public class RemoteLoggingSteps {
     public void enableRemoteLogging(String logType, String url) throws Exception {
         sendConfigOp("addRemoteServerConfig", "urn:addRemoteServerConfig", logType,
                 Utils.resolveContextPlaceholders(url));
+        if (!enabledLogTypes.contains(logType)) {
+            enabledLogTypes.add(logType);
+        }
     }
 
     /** Resets (disables) remote logging for a log type — its appender reverts to the local RollingFile. */
     @When("I disable remote logging for log type {string}")
     public void disableRemoteLogging(String logType) throws Exception {
         sendConfigOp("resetRemoteServerConfig", "urn:resetRemoteServerConfig", logType, "");
+        enabledLogTypes.remove(logType);
     }
 
     private void sendConfigOp(String op, String soapAction, String logType, String url) throws Exception {
@@ -207,6 +219,17 @@ public class RemoteLoggingSteps {
     /** Stops the host mock sink after the remote-logging scenarios (idempotent). */
     @After("@remote-logging")
     public void stopMockSink() {
+        // Failure-safe teardown: if a scenario failed before its inline "disable remote logging" step, the server
+        // is still redirecting logs — reset every type we enabled (idempotent) so this block's container isn't
+        // left mutated. On the happy path the disable step already cleared enabledLogTypes, so this no-ops.
+        for (String logType : enabledLogTypes) {
+            try {
+                sendConfigOp("resetRemoteServerConfig", "urn:resetRemoteServerConfig", logType, "");
+            } catch (Exception e) {
+                log.warn("Teardown: failed to reset remote logging for type '" + logType + "': " + e.getMessage());
+            }
+        }
+        enabledLogTypes.clear();
         if (sinkServer != null) {
             sinkServer.stop(0);
             sinkServer = null;

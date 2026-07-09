@@ -824,8 +824,6 @@ public class ApplicationBaseSteps {
 
         HttpResponse response = Requests.get(Utils.getApplicationSearchURL(getBaseUrl(), applicationName), headers);
 
-        TestContext.set("httpResponse", response);
-
         JSONObject responseJson = new JSONObject(response.getData());
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
             String applicationId = responseJson
@@ -1729,9 +1727,8 @@ public class ApplicationBaseSteps {
 
         JSONObject entry = new JSONObject().put("role", role).put("aliases", new JSONArray().put(alias));
         JSONObject payload = new JSONObject().put("count", 1).put("list", new JSONArray().put(entry));
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getRoleAliasesURL(getBaseUrl()),
-                adminAuthHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Requests.put(Utils.getRoleAliasesURL(getBaseUrl()), adminAuthHeaders(), payload.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Retrieves the system-scope role-alias mappings (admin REST {@code GET /role-aliases}). Non-asserting. */
@@ -2106,9 +2103,8 @@ public class ApplicationBaseSteps {
     public void iUpdateTenantConfiguration(String contextKey) throws IOException {
 
         String payload = TestContext.resolve(contextKey).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getTenantConfigURL(getBaseUrl()),
-                adminAuthHeaders(), payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Requests.put(Utils.getTenantConfigURL(getBaseUrl()), adminAuthHeaders(), payload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Attempts to update the tenant configuration with a syntactically-invalid (bad-signature) bearer JWT. */
