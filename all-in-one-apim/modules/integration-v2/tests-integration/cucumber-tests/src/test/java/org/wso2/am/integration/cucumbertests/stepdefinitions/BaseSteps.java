@@ -395,14 +395,14 @@ public class BaseSteps {
      */
     @When("I replace {string} with {string} in context {string}")
     public void iReplaceInContext(String token, String value, String key) {
-        String resolved = Utils.resolveFromContext(key).toString().replace(token, value);
+        String resolved = TestContext.resolve(key).toString().replace(token, value);
         TestContext.set(Utils.normalizeContextKey(key), resolved);
     }
 
     @When("I put value {string} in context as {string}")
     public void iPutValueInContextAs(String value, String contextKey) {
         // Resolve value if it's a reference to another context key
-        Object resolvedValue = Utils.resolveFromContext(value);
+        Object resolvedValue = TestContext.resolve(value);
 
         log.info("Setting context key: " + contextKey + " with value: " + resolvedValue);
         TestContext.set(Utils.normalizeContextKey(contextKey), resolvedValue.toString());
@@ -418,7 +418,7 @@ public class BaseSteps {
      */
     @Then("The JWT stored as {string} should contain {string}")
     public void theJwtStoredShouldContain(String contextKey, String expected) {
-        String jwt = Utils.resolveFromContext(contextKey).toString();
+        String jwt = TestContext.resolve(contextKey).toString();
         String[] segments = jwt.split("\\.");
         Assert.assertTrue(segments.length >= 2, "Malformed JWT (expected >= 2 segments): " + jwt);
         String payload;
@@ -474,7 +474,7 @@ public class BaseSteps {
     @When("I set the field {string} to {string} in the payload {string}")
     public void iSetFieldInPayload(String field, String value, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(Utils.resolveFromContext(contextKey).toString());
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
         // Resolve any {{contextKey}} placeholders in the value (e.g. reusing an existing API's context to build a
         // duplicate-context negative). Values with no placeholders pass through unchanged; an unknown key throws.
         payload.put(field, Utils.resolveContextPlaceholders(value));
@@ -494,7 +494,7 @@ public class BaseSteps {
      */
     @When("I replace {string} with {string} in the payload {string}")
     public void iReplaceInPayload(String target, String replacement, String contextKey) {
-        String json = Utils.resolveFromContext(contextKey).toString();
+        String json = TestContext.resolve(contextKey).toString();
         String resolvedTarget = Utils.resolveContextPlaceholders(target);
         String resolvedReplacement = Utils.resolveContextPlaceholders(replacement);
         TestContext.set(Utils.normalizeContextKey(contextKey), json.replace(resolvedTarget, resolvedReplacement));
@@ -510,7 +510,7 @@ public class BaseSteps {
     @When("I remove the field {string} from the payload {string}")
     public void iRemoveFieldFromPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(Utils.resolveFromContext(contextKey).toString());
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
         payload.remove(field);
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -519,7 +519,7 @@ public class BaseSteps {
     @When("I set the field {string} to an empty array in the payload {string}")
     public void iSetFieldToEmptyArrayInPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(Utils.resolveFromContext(contextKey).toString());
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
         payload.put(field, new org.json.JSONArray());
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -528,7 +528,7 @@ public class BaseSteps {
     @When("I set the boolean field {string} to {string} in the payload {string}")
     public void iSetBooleanFieldInPayload(String field, String value, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(Utils.resolveFromContext(contextKey).toString());
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
         payload.put(field, Boolean.parseBoolean(value));
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -690,7 +690,7 @@ public class BaseSteps {
     public void iExtractFieldFromJsonPayloadAndStoreItAs(String fieldPath, String sourceContextKey,
                                                          String targetContextKey) throws IOException {
 
-        Object sourceValue = Utils.resolveFromContext(sourceContextKey);
+        Object sourceValue = TestContext.resolve(sourceContextKey);
 
         Object value = Utils.extractValueFromPayload(String.valueOf(sourceValue), fieldPath);
         if (value == null) {
@@ -720,14 +720,14 @@ public class BaseSteps {
      */
     @And("I copy context value {string} to {string}")
     public void iCopyContextValueTo(String fromKey, String toKey) {
-        Object value = Utils.resolveFromContext(fromKey);
+        Object value = TestContext.resolve(fromKey);
         TestContext.set(Utils.normalizeContextKey(toKey), value);
     }
 
     @And("I extract field {string} from {string} and store it as {string}")
     public void iExtractFieldFromAndStoreItAs(String fieldName, String sourceKey, String targetKey) {
 
-        Object contextValue = Utils.resolveFromContext(sourceKey);
+        Object contextValue = TestContext.resolve(sourceKey);
 
         if (!(contextValue instanceof JSONObject jsonObject)) {
             throw new IllegalStateException("Expected JSONObject in TestContext for key '" + sourceKey
@@ -805,7 +805,7 @@ public class BaseSteps {
         String tenantDomain = actor.getUserDomain();
 
         if ("endpointConfig".equals(config)){
-            expectedConfigValue = Utils.resolveFromContext(expectedConfigValue).toString();
+            expectedConfigValue = TestContext.resolve(expectedConfigValue).toString();
         }
 
         Object parsedExpectedValue = Utils.parseConfigValue(expectedConfigValue);
@@ -873,7 +873,7 @@ public class BaseSteps {
     public void theResourceShouldReflectTheUpdatedAsValueFromContext(String resourceType, String config,
                String configValueContextKey) throws IOException, InterruptedException {
 
-        Object ctxValue = Utils.resolveFromContext(configValueContextKey);
+        Object ctxValue = TestContext.resolve(configValueContextKey);
         theResourceShouldReflectTheUpdatedAs(resourceType, config, ctxValue.toString());
     }
 
@@ -936,7 +936,7 @@ public class BaseSteps {
     @Then("I wait for deployment of the resource in {string}")
     public void waitForAPIDeployment(String apiDetailsPayload) throws IOException, InterruptedException {
 
-        String actualApiDetailsPayload = Utils.resolveFromContext(apiDetailsPayload).toString();
+        String actualApiDetailsPayload = TestContext.resolve(apiDetailsPayload).toString();
 
         String apiName  = Utils.extractValueFromPayload(actualApiDetailsPayload, "name").toString();
         String apiVersion = Utils.extractValueFromPayload(actualApiDetailsPayload, "version").toString();
@@ -987,7 +987,7 @@ public class BaseSteps {
     @Then("I wait for undeployment of the previous API revision in {string}")
     public void waitForPreviousAPIRevisionUndeployment(String apiDetailsPayload) throws IOException {
 
-        String actualApiDetailsPayload = Utils.resolveFromContext(apiDetailsPayload).toString();
+        String actualApiDetailsPayload = TestContext.resolve(apiDetailsPayload).toString();
 
         String apiName  = Utils.extractValueFromPayload(actualApiDetailsPayload, "name").toString();
         String apiVersion = Utils.extractValueFromPayload(actualApiDetailsPayload, "version").toString();
@@ -1035,7 +1035,7 @@ public class BaseSteps {
     public void iGetTheValueFromPayloadAtPathAndStoreItAs(String payloadContextKey, String path,
                                                           String outputContextKey) throws IOException {
 
-        Object ctxValue = Utils.resolveFromContext(payloadContextKey);
+        Object ctxValue = TestContext.resolve(payloadContextKey);
         Object value = Utils.extractValueFromPayload(ctxValue.toString(), path);
         TestContext.set(Utils.normalizeContextKey(outputContextKey), String.valueOf(value));
     }
@@ -1049,7 +1049,7 @@ public class BaseSteps {
     @And("I append the following value to the json array {string}:")
     public void iAppendTheFollowingValueToTheJsonArray(String arrayContextKey, String valueToAppend) {
 
-        Object ctxValue = Utils.resolveFromContext(arrayContextKey);
+        Object ctxValue = TestContext.resolve(arrayContextKey);
         JSONArray jsonArray;
         // Convert the stored context value into a JSONArray
         if (ctxValue instanceof JSONArray) {
@@ -1077,7 +1077,7 @@ public class BaseSteps {
     public void iFindTheResourceWithFollowingPropertiesInAs(String contextKey, String outputKey,
                                                             DataTable propertiesTable) {
 
-        Object contextValue = Utils.resolveFromContext(contextKey);
+        Object contextValue = TestContext.resolve(contextKey);
         if (!(contextValue instanceof JSONArray jsonArray)) {
             throw new IllegalStateException(
                     "Expected JSONArray in TestContext for key '" + contextKey + "' but found: "
@@ -1108,7 +1108,7 @@ public class BaseSteps {
     @Then("the actual value of {string} should match the expected value:")
     public void theActualValueShouldMatchTheExpectedValue(String actualKey, String expectedValue) {
 
-        Object actualValue = Utils.resolveFromContext(actualKey);
+        Object actualValue = TestContext.resolve(actualKey);
         String finalExpectedValue = Utils.resolveIfContextKey(expectedValue).toString();
         Utils.assertConfigValueMatchesExpectedValue(actualValue, finalExpectedValue);
     }

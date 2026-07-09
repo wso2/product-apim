@@ -23,9 +23,9 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
-import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.carbon.automation.engine.context.beans.User;
@@ -102,9 +102,8 @@ public class RemoteLoggingSteps {
                 + "</soapenv:Body></soapenv:Envelope>";
 
         User admin = Identity.resolveActor("admin");
-        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(baseUrl() + SERVICE_PATH, envelope,
+        HttpResponse response = Requests.soap(baseUrl() + SERVICE_PATH, envelope,
                 soapAction, admin.getUserName(), admin.getPassword());
-        TestContext.set("httpResponse", response);
         // These are one-way (Robust In-Only) SOAP ops — Axis2 acknowledges with 202 Accepted (no response body),
         // not 200. A SOAP fault would surface as 500, so 202 confirms the config was accepted.
         Assert.assertEquals(response.getResponseCode(), 202, op + " SOAP call failed: " + response.getData());
@@ -157,8 +156,7 @@ public class RemoteLoggingSteps {
     public void triggerAuditLogEntry() throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance().doGet(Utils.getKeyManagersURL(baseUrl()), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getKeyManagersURL(baseUrl()), headers);
     }
 
     /** Asserts the mock sink receives at least one payload within the deadline, re-triggering audit actions. */

@@ -21,6 +21,8 @@ import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Requests;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -75,14 +77,14 @@ public class MCPServerSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getMCPServerProxyURL(getBaseUrl()), headers, requestJson,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.post(Utils.getMCPServerProxyURL(getBaseUrl()), headers, requestJson,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             TestContext.set(idKey, createdId);
+            // Register for teardown so a scenario that fails before its explicit delete step still has the MCP
+            // server swept by the @cleanup / @AfterClass hook.
+            ResourceCleanup.register(ResourceCleanup.CREATED_MCP_SERVER_IDS, createdId);
         }
     }
 
@@ -96,7 +98,7 @@ public class MCPServerSteps {
      */
     @When("I update the MCP server {string} to expose tools {string}")
     public void iUpdateMcpServerTools(String idKey, String tools) throws IOException {
-        String id = Utils.resolveFromContext(idKey).toString();
+        String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
@@ -105,11 +107,8 @@ public class MCPServerSteps {
         JSONObject dto = new JSONObject(getResp.getData());
         dto.put("operations", new org.json.JSONArray(buildToolOperations(tools)));
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /**
@@ -125,7 +124,7 @@ public class MCPServerSteps {
      */
     @When("I gate the MCP server {string} tool {string} with scope {string} bound to role {string}")
     public void iGateMcpTool(String idKey, String tool, String scopeName, String role) throws IOException {
-        String id = Utils.resolveFromContext(idKey).toString();
+        String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
@@ -149,11 +148,8 @@ public class MCPServerSteps {
             }
         }
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /**
@@ -167,7 +163,7 @@ public class MCPServerSteps {
      */
     @When("I update the MCP server {string} to offer policies {string}")
     public void iUpdateMcpServerPolicies(String idKey, String csvPolicies) throws IOException {
-        String id = Utils.resolveFromContext(idKey).toString();
+        String id = TestContext.resolve(idKey).toString();
         String resolved = Utils.resolveContextPlaceholders(csvPolicies);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
@@ -180,11 +176,8 @@ public class MCPServerSteps {
         }
         dto.put("policies", policies);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Builds the MCP operations JSON array (one TOOL op per name) from a comma-separated tool list. */
@@ -248,13 +241,14 @@ public class MCPServerSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("additionalProperties", additionalProperties);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPostMultipartWithFiles(Utils.getMCPServerFromOpenAPIURL(getBaseUrl()), headers, files, formFields);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.postMultipart(Utils.getMCPServerFromOpenAPIURL(getBaseUrl()), headers,
+                files, formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             TestContext.set(idKey, createdId);
+            // Register for teardown so a scenario that fails before its explicit delete step still has the MCP
+            // server swept by the @cleanup / @AfterClass hook.
+            ResourceCleanup.register(ResourceCleanup.CREATED_MCP_SERVER_IDS, createdId);
         }
     }
 
@@ -271,7 +265,7 @@ public class MCPServerSteps {
      */
     @When("I create an MCP server from api {string} exposing paths {string} as {string}")
     public void iCreateMcpFromApi(String apiKey, String paths, String idKey) throws IOException {
-        String apiId = Utils.resolveFromContext(apiKey).toString();
+        String apiId = TestContext.resolve(apiKey).toString();
         StringBuilder ops = new StringBuilder("[");
         String[] targets = paths.split(",");
         for (int i = 0; i < targets.length; i++) {
@@ -294,14 +288,14 @@ public class MCPServerSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getMCPServerFromAPIURL(getBaseUrl()), headers, requestJson,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.post(Utils.getMCPServerFromAPIURL(getBaseUrl()), headers, requestJson,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             TestContext.set(idKey, createdId);
+            // Register for teardown so a scenario that fails before its explicit delete step still has the MCP
+            // server swept by the @cleanup / @AfterClass hook.
+            ResourceCleanup.register(ResourceCleanup.CREATED_MCP_SERVER_IDS, createdId);
         }
     }
 
@@ -315,7 +309,7 @@ public class MCPServerSteps {
      */
     @When("I update the MCP server {string} removing tool {string}")
     public void iRemoveMcpTool(String idKey, String tool) throws IOException {
-        String id = Utils.resolveFromContext(idKey).toString();
+        String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
@@ -337,11 +331,8 @@ public class MCPServerSteps {
         }
         dto.put("operations", kept);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /**
@@ -354,8 +345,8 @@ public class MCPServerSteps {
      */
     @When("I re-add the removed tool to the MCP server {string}")
     public void iReAddMcpTool(String idKey) throws IOException {
-        String id = Utils.resolveFromContext(idKey).toString();
-        String removed = Utils.resolveFromContext("removedMcpTool").toString();
+        String id = TestContext.resolve(idKey).toString();
+        String removed = TestContext.resolve("removedMcpTool").toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
@@ -363,14 +354,12 @@ public class MCPServerSteps {
                 .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
         dto.getJSONArray("operations").put(new JSONObject(removed));
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
-    /** Deletes an MCP server (DELETE /mcp-servers/{id}). Best-effort teardown (no ResourceCleanup hook). */
+    /** Deletes an MCP server (DELETE /mcp-servers/{id}) — the explicit delete scenarios use to assert removal.
+     *  Teardown is additionally covered by ResourceCleanup (the create side registers the server). */
     @When("I delete the MCP server {string}")
     public void iDeleteMcpServer(String idKey) throws IOException {
         Object id = TestContext.get(idKey);
@@ -379,10 +368,7 @@ public class MCPServerSteps {
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getMCPServerByIdURL(getBaseUrl(), id.toString()), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.delete(Utils.getMCPServerByIdURL(getBaseUrl(), id.toString()), headers);
     }
 
     // ---- MCP backend-endpoint management (/mcp-servers/{id}/backends) ----
@@ -403,11 +389,9 @@ public class MCPServerSteps {
      */
     @When("I retrieve the backends of MCP server {string} and store the first backend id as {string}")
     public void iRetrieveMcpServerBackends(String mcpServerId, String idKey) throws IOException {
-        String actualId = Utils.resolveFromContext(mcpServerId).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerBackendsURL(getBaseUrl(), actualId), publisherHeaders());
-        TestContext.set("httpResponse", response);
+        String actualId = TestContext.resolve(mcpServerId).toString();
+        HttpResponse response = Requests.get(Utils.getMCPServerBackendsURL(getBaseUrl(), actualId),
+                publisherHeaders());
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             // The MCP backends collection is a BARE JSON array ([{id,name,endpointConfig,...}]), not a
             // {"list":[…]} envelope — index the array root directly.
@@ -418,24 +402,19 @@ public class MCPServerSteps {
     /** GET /mcp-servers/{id}/backends/{backendId} — retrieves a single MCP backend endpoint by id. */
     @When("I retrieve backend {string} of MCP server {string}")
     public void iRetrieveMcpServerBackend(String backendId, String mcpServerId) throws IOException {
-        String actualId = Utils.resolveFromContext(mcpServerId).toString();
-        String actualBackendId = Utils.resolveFromContext(backendId).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerBackendByIdURL(getBaseUrl(), actualId, actualBackendId), publisherHeaders());
-        TestContext.set("httpResponse", response);
+        String actualId = TestContext.resolve(mcpServerId).toString();
+        String actualBackendId = TestContext.resolve(backendId).toString();
+        HttpResponse response = Requests.get(Utils.getMCPServerBackendByIdURL(getBaseUrl(), actualId, actualBackendId),
+                publisherHeaders());
     }
 
     /** PUT /mcp-servers/{id}/backends/{backendId} — updates a single MCP backend endpoint (body = BackendDTO). */
     @When("I update backend {string} of MCP server {string} with payload {string}")
     public void iUpdateMcpServerBackend(String backendId, String mcpServerId, String payload) throws IOException {
-        String actualId = Utils.resolveFromContext(mcpServerId).toString();
-        String actualBackendId = Utils.resolveFromContext(backendId).toString();
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getMCPServerBackendByIdURL(getBaseUrl(), actualId, actualBackendId), publisherHeaders(),
-                        jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        String actualId = TestContext.resolve(mcpServerId).toString();
+        String actualBackendId = TestContext.resolve(backendId).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
+        HttpResponse response = Requests.put(Utils.getMCPServerBackendByIdURL(getBaseUrl(), actualId, actualBackendId),
+                publisherHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 }

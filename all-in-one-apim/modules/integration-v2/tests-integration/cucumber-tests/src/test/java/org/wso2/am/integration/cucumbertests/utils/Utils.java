@@ -875,24 +875,6 @@ public class Utils {
     }
 
     /**
-     * Resolves a value from the {@link TestContext} using the given key.
-     *
-     * @param key the key
-     * @return the resolved value
-     * @throws IllegalArgumentException if the key is not found
-     */
-    public static Object resolveFromContext(String key) {
-
-        String lookupKey = (key.startsWith("<") && key.endsWith(">")) ? key.substring(1, key.length() - 1) : key;
-
-        Object value = TestContext.get(lookupKey);
-        if (value == null) {
-            throw new IllegalArgumentException("No value found in context for key: " + lookupKey);
-        }
-        return value;
-    }
-
-    /**
      * Resolves the value from context only if the input is a context key (e.g., "<sampleKey>").
      * If the input is not wrapped in brackets, it returns the input string as-is.
      *
@@ -901,7 +883,7 @@ public class Utils {
      */
     public static Object resolveIfContextKey(String input) {
         if (input != null && input.startsWith("<") && input.endsWith(">")) {
-            return resolveFromContext(input);
+            return TestContext.resolve(input);
         }
         return input;
     }

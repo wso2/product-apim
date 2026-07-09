@@ -68,29 +68,41 @@ public class APIInvocationSteps {
      * retry loops can hold the last real response locally without re-reading shared context.
      */
     private HttpResponse execute(CurlOption.HttpMethod method, String endpointUrl, Map<String, String> headers,
-                                 String payload, String contentType) throws IOException {
+                                 String payload, String contentType, boolean rawGet) throws IOException {
 
         TestContext.remove(HTTP_RESPONSE_KEY);
         SimpleHTTPClient client = SimpleHTTPClient.getInstance();
         HttpResponse response;
-        switch (method) {
-            case GET:
-                response = client.doGet(endpointUrl, headers);
-                break;
-            case DELETE:
-                response = client.doDelete(endpointUrl, headers);
-                break;
-            case POST:
-                response = client.doPost(endpointUrl, headers, payload, contentType);
-                break;
-            case PUT:
-                response = client.doPut(endpointUrl, headers, payload, contentType);
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
+        if (rawGet) {
+            // GET with the client's URI normalization DISABLED, so a percent-encoded path segment reaches the
+            // gateway verbatim; method/payload/contentType are unused on this path.
+            response = client.doGetRaw(endpointUrl, headers);
+        } else {
+            switch (method) {
+                case GET:
+                    response = client.doGet(endpointUrl, headers);
+                    break;
+                case DELETE:
+                    response = client.doDelete(endpointUrl, headers);
+                    break;
+                case POST:
+                    response = client.doPost(endpointUrl, headers, payload, contentType);
+                    break;
+                case PUT:
+                    response = client.doPut(endpointUrl, headers, payload, contentType);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
+            }
         }
         TestContext.set(HTTP_RESPONSE_KEY, response);
         return response;
+    }
+
+    /** {@link #execute(CurlOption.HttpMethod, String, Map, String, String, boolean)} for a normalized request. */
+    private HttpResponse execute(CurlOption.HttpMethod method, String endpointUrl, Map<String, String> headers,
+                                 String payload, String contentType) throws IOException {
+        return execute(method, endpointUrl, headers, payload, contentType, false);
     }
 
     /** {@link #execute(CurlOption.HttpMethod, String, Map, String, String)} defaulting to a JSON content type. */
@@ -176,7 +188,7 @@ public class APIInvocationSteps {
     /** GET a full gateway context with the raw (un-normalized) path; publishes the response to {@code httpResponse}. */
     private HttpResponse invokeApiByRawContext(String resolvedContext, String accessToken) throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
         // Join base + context with exactly one slash. The default invoke relies on the client's URI
         // normalization to collapse a "//", but doGetRaw disables normalization, so a double slash would reach
         // the gateway verbatim and be rejected as "Invalid URL".
@@ -187,10 +199,8 @@ public class APIInvocationSteps {
         String endpointUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualAccessToken);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doGetRaw(endpointUrl, headers);
-        TestContext.set("httpResponse", response);
-        return response;
+        return execute(CurlOption.HttpMethod.GET, endpointUrl, headers, "",
+                Constants.CONTENT_TYPES.APPLICATION_JSON, true);
     }
 
     /**
@@ -269,9 +279,9 @@ public class APIInvocationSteps {
         HttpResponse last = null;
         do {
             try {
-                String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
+                String actualAccessToken = TestContext.resolve(accessToken).toString();
                 String actualPayload = (payload == null || payload.isEmpty())
-                        ? "" : Utils.resolveFromContext(payload).toString();
+                        ? "" : TestContext.resolve(payload).toString();
                 String endpointUrl = getBaseGatewayUrl()
                         + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
                 Map<String, String> headers = new HashMap<>();
@@ -335,8 +345,8 @@ public class APIInvocationSteps {
     private HttpResponse invokeApiByContext(String resolvedContext, String httpMethod, String accessToken,
                                             String payload, String authHeaderName) throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualPayload = (payload == null || payload.isEmpty()) ? "" : Utils.resolveFromContext(payload).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
         // The context already carries any /t/<tenant> prefix, so append it directly to the gateway base URL.
         String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
@@ -360,8 +370,8 @@ public class APIInvocationSteps {
     public HttpResponse invokeApiUsingAccessToken(String path, String httpMethod, String accessToken, String payload)
             throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualPayload = (payload == null || payload.isEmpty()) ? "" : Utils.resolveFromContext(payload).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
         // Resolve {{contextKey}} placeholders in the path so the invocation can target a uniquely-generated
         // API context (names/contexts are randomized by ${UNIQUE:...}), e.g. "{{apiContext}}/1.0.0/...".
         String resolvedPath = Utils.resolveContextPlaceholders(path);
@@ -435,9 +445,9 @@ public class APIInvocationSteps {
         HttpResponse last = null;
         do {
             try {
-                String actualKey = Utils.resolveFromContext(apikey).toString();
+                String actualKey = TestContext.resolve(apikey).toString();
                 String actualPayload = (payload == null || payload.isEmpty())
-                        ? "" : Utils.resolveFromContext(payload).toString();
+                        ? "" : TestContext.resolve(payload).toString();
                 Map<String, String> headers = new HashMap<>();
                 headers.put("accept", "application/json");
                 headers.put("ApiKey", actualKey);
@@ -473,7 +483,7 @@ public class APIInvocationSteps {
             try {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("accept", "application/json");
-                headers.put("ApiKey", Utils.resolveFromContext(apikey).toString());
+                headers.put("ApiKey", TestContext.resolve(apikey).toString());
                 headers.put("X-Forwarded-For", Utils.resolveContextPlaceholders(forwardedFor));
                 last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
                 if (last.getResponseCode() == expectedStatus) {
@@ -506,7 +516,7 @@ public class APIInvocationSteps {
             try {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("accept", "application/json");
-                headers.put("ApiKey", Utils.resolveFromContext(apikey).toString());
+                headers.put("ApiKey", TestContext.resolve(apikey).toString());
                 headers.put("Referer", Utils.resolveContextPlaceholders(referer));
                 last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
                 if (last.getResponseCode() == expectedStatus) {
@@ -591,7 +601,7 @@ public class APIInvocationSteps {
     /** Single API-key invocation against a fully-built gateway URL. */
     private HttpResponse invokeWithApiKey(String endpointUrl, String httpMethod, String apikey) throws IOException {
 
-        String actualKey = Utils.resolveFromContext(apikey).toString();
+        String actualKey = TestContext.resolve(apikey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put("accept", "application/json");
         headers.put("ApiKey", actualKey);
@@ -631,7 +641,7 @@ public class APIInvocationSteps {
     /** Single internal-key invocation against a fully-built gateway URL (token in the {@code Internal-Key} header). */
     private HttpResponse invokeWithInternalKey(String endpointUrl, String httpMethod, String internalKey) throws IOException {
 
-        String actualKey = Utils.resolveFromContext(internalKey).toString();
+        String actualKey = TestContext.resolve(internalKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put("accept", "*/*");
         headers.put("Internal-Key", actualKey);
@@ -712,7 +722,7 @@ public class APIInvocationSteps {
     @When("I invoke the OpenID userinfo endpoint using access token {string}")
     public void invokeUserInfoEndpoint(String accessToken) throws Exception {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
         String baseUrl = TestContext.get("baseUrl").toString();
 
         Map<String, String> headers = new HashMap<>();
@@ -735,8 +745,8 @@ public class APIInvocationSteps {
     @When("I invoke the SOAP API at path {string} using access token {string} and payload {string} and soap action {string}")
     public void iInvokeTheSOAPAPIAtPathUsingAccessTokenAndPayloadAndSoapAction(String path, String accessToken, String payload, String soapAction) throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualPayload = Utils.resolveFromContext(payload).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = TestContext.resolve(payload).toString();
         String endpointUrl = Utils.getAPIInvocationURL(getBaseGatewayUrl(),
                 Utils.resolveContextPlaceholders(path), actingTenantDomain());
 
@@ -759,8 +769,8 @@ public class APIInvocationSteps {
     @When("I invoke the SOAP API at gateway context {string} using access token {string} and payload {string} and soap action {string}")
     public void invokeSoapByGatewayContext(String context, String accessToken, String payload, String soapAction) throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualPayload = Utils.resolveFromContext(payload).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = TestContext.resolve(payload).toString();
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 

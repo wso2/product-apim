@@ -71,7 +71,7 @@ public class MCPInvocationSteps {
                               String expected, int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String token = Utils.resolveFromContext(accessToken).toString();
+        String token = TestContext.resolve(accessToken).toString();
         String base = getBaseGatewayUrl();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
@@ -131,7 +131,7 @@ public class MCPInvocationSteps {
     public void invokeMcpMultiCall(String context, String version, String accessToken, String calls,
                                    int timeoutSeconds) throws Exception {
         String mcpUrl = buildMcpUrl(context, version);
-        String token = Utils.resolveFromContext(accessToken).toString();
+        String token = TestContext.resolve(accessToken).toString();
         String[] specs = calls.split(";");
 
         long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
@@ -182,7 +182,7 @@ public class MCPInvocationSteps {
     public void invokeMcpToolExpectError(String toolName, String argsJson, String context, String version,
                                          String accessToken, int timeoutSeconds) throws Exception {
         String mcpUrl = buildMcpUrl(context, version);
-        String token = Utils.resolveFromContext(accessToken).toString();
+        String token = TestContext.resolve(accessToken).toString();
 
         long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
@@ -265,7 +265,7 @@ public class MCPInvocationSteps {
                                           String accessToken, int expectedStatus, int timeoutSeconds)
             throws Exception {
         String mcpUrl = buildMcpUrl(context, version);
-        String token = Utils.resolveFromContext(accessToken).toString();
+        String token = TestContext.resolve(accessToken).toString();
         String callPayload = "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{"
                 + "\"name\":\"" + toolName + "\",\"arguments\":" + argsJson + "}}";
 

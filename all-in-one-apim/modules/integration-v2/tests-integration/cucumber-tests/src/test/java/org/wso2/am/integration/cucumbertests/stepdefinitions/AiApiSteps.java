@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -54,10 +55,7 @@ public class AiApiSteps {
     public void iRetrieveAiServiceProviders() throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAIServiceProvidersURL(getBaseUrl()), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getAIServiceProvidersURL(getBaseUrl()), headers);
     }
 
     /**
@@ -88,10 +86,8 @@ public class AiApiSteps {
         Map<String, File> files = new HashMap<>();
         files.put("apiDefinition", defFile);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPostMultipartWithFiles(Utils.getAIServiceProvidersURL(getBaseUrl()), headers, files, formFields);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.postMultipart(Utils.getAIServiceProvidersURL(getBaseUrl()), headers,
+                files, formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             TestContext.set(idKey, createdId);
@@ -132,10 +128,8 @@ public class AiApiSteps {
         Map<String, File> files = new HashMap<>();
         files.put("apiDefinition", defFile);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPostMultipartWithFiles(Utils.getAIServiceProvidersURL(getBaseUrl()), headers, files, formFields);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.postMultipart(Utils.getAIServiceProvidersURL(getBaseUrl()), headers,
+                files, formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             TestContext.set(idKey, createdId);
@@ -150,7 +144,7 @@ public class AiApiSteps {
     @When("I update the AI service provider {string} named {string} version {string} to config {string} with definition {string} and description {string}")
     public void iUpdateAiServiceProvider(String idKey, String name, String apiVersion, String configPath,
                                          String defPath, String description) throws Exception {
-        Object id = Utils.resolveFromContext(idKey);
+        Object id = TestContext.resolve(idKey);
         String configurations = readClasspath(configPath);
         File defFile = classpathToTempFile(defPath, ".json");
 
@@ -164,23 +158,17 @@ public class AiApiSteps {
         Map<String, File> files = new HashMap<>();
         files.put("apiDefinition", defFile);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPutMultipartWithFiles(Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()), headers,
-                        files, formFields);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.putMultipart(
+                Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()), headers, files, formFields);
     }
 
     /** Admin — GET /ai-service-providers/{id}. Retrieves a single provider (e.g. to assert an update persisted). */
     @When("I retrieve the AI service provider {string}")
     public void iRetrieveAiServiceProvider(String idKey) throws Exception {
-        Object id = Utils.resolveFromContext(idKey);
+        Object id = TestContext.resolve(idKey);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()), headers);
     }
 
     /**
@@ -189,30 +177,24 @@ public class AiApiSteps {
      */
     @When("I retrieve the models of AI service provider {string}")
     public void iRetrieveAiServiceProviderModels(String idKey) throws Exception {
-        Object id = Utils.resolveFromContext(idKey);
+        Object id = TestContext.resolve(idKey);
         Map<String, String> headers = new HashMap<>();
         // The publisher models endpoint requires apim:llm_provider_read — carried by the admin token (llm provider
         // scopes are admin-oriented; the publisher token's role does not grant them).
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAIServiceProviderModelsURL(getBaseUrl(), id.toString()), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getAIServiceProviderModelsURL(getBaseUrl(), id.toString()),
+                headers);
     }
 
-    /** Admin — DELETE /ai-service-providers/{id}. Best-effort provider teardown (no ResourceCleanup hook). */
+    /** Admin — DELETE /ai-service-providers/{id} — the explicit delete scenarios use to assert removal.
+     *  Teardown is additionally covered by ResourceCleanup (the create side registers the provider). */
     @When("I delete the AI service provider {string}")
     public void iDeleteAiServiceProvider(String idKey) throws Exception {
-        Object id = TestContext.get(idKey);
-        if (id == null) {
-            return;
-        }
+        Object id = TestContext.resolve(idKey);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.delete(Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()),
+                headers);
     }
 
     /**
@@ -232,8 +214,8 @@ public class AiApiSteps {
     @When("I apply the AI mediation policy {string} with parameter {string} value {string} to API {string}")
     public void iApplyAiMediationPolicy(String policyName, String paramName, String configKey, String apiId)
             throws Exception {
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String config = Utils.resolveContextPlaceholders(Utils.resolveFromContext(configKey).toString());
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String config = Utils.resolveContextPlaceholders(TestContext.resolve(configKey).toString());
         // Legacy contract: the JSON config is embedded in a String parameter with single quotes.
         String singleQuotedConfig = config.replace("\"", "'");
 
@@ -270,11 +252,8 @@ public class AiApiSteps {
                 .put("fault", new JSONArray());
         api.put("apiPolicies", apiPolicies);
 
-        TestContext.remove("httpResponse");
-        HttpResponse putResp = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers, api.toString(),
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", putResp);
+        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers,
+                api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /**
@@ -284,19 +263,16 @@ public class AiApiSteps {
      */
     @When("I set the primary production endpoint of API {string} to {string}")
     public void iSetPrimaryProductionEndpoint(String apiId, String endpointId) throws Exception {
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String actualEndpointId = Utils.resolveFromContext(endpointId).toString();
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String actualEndpointId = TestContext.resolve(endpointId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
         JSONObject api = new JSONObject(getApi.getData());
         api.put("primaryProductionEndpointId", actualEndpointId);
-        TestContext.remove("httpResponse");
-        HttpResponse putResp = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers, api.toString(),
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", putResp);
+        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers,
+                api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     private String readClasspath(String path) throws Exception {

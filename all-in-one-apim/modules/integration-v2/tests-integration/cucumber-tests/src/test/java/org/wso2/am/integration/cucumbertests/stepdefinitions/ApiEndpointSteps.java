@@ -19,9 +19,9 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
-import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -55,14 +55,11 @@ public class ApiEndpointSteps {
      */
     @When("I add an endpoint to API {string} with payload {string} as {string}")
     public void iAddApiEndpoint(String apiId, String payload, String idKey) throws IOException {
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getApiEndpointsURL(getBaseUrl(), actualApiId), publisherJsonHeaders(), jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.post(Utils.getApiEndpointsURL(getBaseUrl(), actualApiId),
+                publisherJsonHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             TestContext.set(idKey, Utils.extractValueFromPayload(response.getData(), "id"));
         }
@@ -71,47 +68,36 @@ public class ApiEndpointSteps {
     /** GET /apis/{apiId}/endpoints — lists all endpoints of the API. */
     @When("I retrieve the endpoints of API {string}")
     public void iRetrieveApiEndpoints(String apiId) throws IOException {
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApiEndpointsURL(getBaseUrl(), actualApiId), publisherJsonHeaders());
-        TestContext.set("httpResponse", response);
+        String actualApiId = TestContext.resolve(apiId).toString();
+        HttpResponse response = Requests.get(Utils.getApiEndpointsURL(getBaseUrl(), actualApiId),
+                publisherJsonHeaders());
     }
 
     /** GET /apis/{apiId}/endpoints/{endpointId} — retrieves a single endpoint by id. */
     @When("I retrieve endpoint {string} of API {string}")
     public void iRetrieveApiEndpoint(String endpointId, String apiId) throws IOException {
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String actualEndpointId = Utils.resolveFromContext(endpointId).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId, actualEndpointId),
-                        publisherJsonHeaders());
-        TestContext.set("httpResponse", response);
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String actualEndpointId = TestContext.resolve(endpointId).toString();
+        HttpResponse response = Requests.get(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId, actualEndpointId),
+                publisherJsonHeaders());
     }
 
     /** PUT /apis/{apiId}/endpoints/{endpointId} — updates a single endpoint (body = full APIEndpointDTO). */
     @When("I update endpoint {string} of API {string} with payload {string}")
     public void iUpdateApiEndpoint(String endpointId, String apiId, String payload) throws IOException {
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String actualEndpointId = Utils.resolveFromContext(endpointId).toString();
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId, actualEndpointId),
-                        publisherJsonHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String actualEndpointId = TestContext.resolve(endpointId).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
+        HttpResponse response = Requests.put(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId, actualEndpointId),
+                publisherJsonHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** DELETE /apis/{apiId}/endpoints/{endpointId} — removes a single endpoint. */
     @When("I delete endpoint {string} of API {string}")
     public void iDeleteApiEndpoint(String endpointId, String apiId) throws IOException {
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String actualEndpointId = Utils.resolveFromContext(endpointId).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId, actualEndpointId),
-                        publisherJsonHeaders());
-        TestContext.set("httpResponse", response);
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String actualEndpointId = TestContext.resolve(endpointId).toString();
+        HttpResponse response = Requests.delete(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId,
+                actualEndpointId), publisherJsonHeaders());
     }
 }

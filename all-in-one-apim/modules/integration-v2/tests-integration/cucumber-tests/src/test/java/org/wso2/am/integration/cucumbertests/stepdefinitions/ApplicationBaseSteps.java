@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
+import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -60,16 +61,13 @@ public class ApplicationBaseSteps {
     @When("I create an application with payload {string}")
     public void iCreateAnApplicationWithJsonPayload(String payload) throws IOException {
 
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse applicationCreateResponse = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
+        HttpResponse applicationCreateResponse = Requests.post(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", applicationCreateResponse);
         Assert.assertEquals(applicationCreateResponse.getResponseCode(), 201, applicationCreateResponse.getData());
         Object createdAppId = Utils.extractValueFromPayload(applicationCreateResponse.getData(), "applicationId");
         TestContext.set("createdAppId", createdAppId);
@@ -100,10 +98,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getApplicationThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getApplicationThrottlingPoliciesURL(getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         TestContext.set("appThrottlePolicyName", policyName);
 
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
@@ -171,10 +167,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getSubscriptionThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getSubscriptionThrottlingPoliciesURL(getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         TestContext.set("subThrottlePolicyName", policyName);
 
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
@@ -206,10 +200,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         TestContext.set("advThrottlePolicyName", policyName);
 
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
@@ -227,9 +219,7 @@ public class ApplicationBaseSteps {
                                  String cleanupListKey) throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(listUrl, headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.post(listUrl, headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set(nameKey, policyName);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
@@ -331,14 +321,12 @@ public class ApplicationBaseSteps {
      */
     @When("I set the GraphQL complexity for API {string} from payload {string}")
     public void iSetGraphqlComplexity(String apiId, String payloadKey) throws IOException {
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String payload = Utils.resolveFromContext(payloadKey).toString();
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String payload = TestContext.resolve(payloadKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getGraphQLComplexityURL(getBaseUrl(), actualApiId), headers, payload,
+        HttpResponse response = Requests.put(Utils.getGraphQLComplexityURL(getBaseUrl(), actualApiId), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /** Advanced (API-level) throttling policy with a BANDWIDTH limit (KB/min). */
@@ -375,39 +363,33 @@ public class ApplicationBaseSteps {
     /** Generic retrieve of a throttling policy by type + id (admin API). Non-asserting. */
     @When("I retrieve the {string} throttling policy with id {string}")
     public void iRetrieveThrottlingPolicyByType(String policyType, String idKey) throws IOException {
-        String policyId = Utils.resolveFromContext(idKey).toString();
+        String policyId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId), headers);
     }
 
     /** Generic delete of a throttling policy by type + id (admin API). Non-asserting (also used for 404 checks). */
     @When("I delete the {string} throttling policy with id {string}")
     public void iDeleteThrottlingPolicyByType(String policyType, String idKey) throws IOException {
-        String policyId = Utils.resolveFromContext(idKey).toString();
+        String policyId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.delete(Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId), headers);
     }
 
     /** Generic update: retrieve the policy, set a new description, and PUT it back. */
     @When("I update the {string} throttling policy {string} setting its description to {string}")
     public void iUpdateThrottlingPolicyDescription(String policyType, String idKey, String description)
             throws IOException {
-        String policyId = Utils.resolveFromContext(idKey).toString();
+        String policyId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         String url = Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
         JSONObject policy = new JSONObject(getResp.getData());
         policy.put("description", description);
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(url, headers, policy.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.put(url, headers, policy.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Retrieve all throttling policies of a type (admin API). Non-asserting. */
@@ -415,9 +397,7 @@ public class ApplicationBaseSteps {
     public void iRetrieveAllThrottlingPolicies(String policyType) throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getThrottlingPoliciesByTypeURL(getBaseUrl(), policyType), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getThrottlingPoliciesByTypeURL(getBaseUrl(), policyType), headers);
     }
 
     // ---- Admin gateway environment CRUD ----
@@ -458,10 +438,8 @@ public class ApplicationBaseSteps {
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getEnvironmentsURL(getBaseUrl()), headers, env.toString(),
+        HttpResponse response = Requests.post(Utils.getEnvironmentsURL(getBaseUrl()), headers, env.toString(),
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object id = Utils.extractValueFromPayload(response.getData(), "id");
             if (id != null) {
@@ -499,35 +477,29 @@ public class ApplicationBaseSteps {
     public void iRetrieveAllGatewayEnvironments() throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getEnvironmentsURL(getBaseUrl()), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getEnvironmentsURL(getBaseUrl()), headers);
     }
 
     /** Retrieve a gateway environment by id (admin API). */
     @When("I retrieve the gateway environment with id {string}")
     public void iRetrieveGatewayEnvironment(String idKey) throws IOException {
-        String id = Utils.resolveFromContext(idKey).toString();
+        String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getEnvironmentByIdURL(getBaseUrl(), id), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getEnvironmentByIdURL(getBaseUrl(), id), headers);
     }
 
     /** Update a gateway environment's description (GET → set → PUT). */
     @When("I update the gateway environment {string} setting its description to {string}")
     public void iUpdateGatewayEnvironment(String idKey, String description) throws IOException {
-        String id = Utils.resolveFromContext(idKey).toString();
+        String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         String url = Utils.getEnvironmentByIdURL(getBaseUrl(), id);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
         JSONObject env = new JSONObject(getResp.getData());
         env.put("description", description);
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.put(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Delete a gateway environment by id (admin API). Non-asserting (also used for 404 / delete-Default 400).
@@ -537,9 +509,7 @@ public class ApplicationBaseSteps {
         String id = TestContext.contains(idKey) ? TestContext.get(idKey).toString() : idKey;
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getEnvironmentByIdURL(getBaseUrl(), id), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.delete(Utils.getEnvironmentByIdURL(getBaseUrl(), id), headers);
     }
 
     /** Retrieve the gateway instances of an environment (admin API). The id may be a context key
@@ -549,9 +519,7 @@ public class ApplicationBaseSteps {
         String id = TestContext.contains(idKey) ? TestContext.get(idKey).toString() : idKey;
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getEnvironmentGatewaysURL(getBaseUrl(), id), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getEnvironmentGatewaysURL(getBaseUrl(), id), headers);
     }
 
     /** A vhost JSON object for a Regular (Synapse) gateway — http/https/ws/wss ports. */
@@ -564,10 +532,8 @@ public class ApplicationBaseSteps {
     private void postEnvironment(JSONObject env) throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getEnvironmentsURL(getBaseUrl()), headers, env.toString(),
+        HttpResponse response = Requests.post(Utils.getEnvironmentsURL(getBaseUrl()), headers, env.toString(),
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object id = Utils.extractValueFromPayload(response.getData(), "id");
             if (id != null) {
@@ -610,10 +576,7 @@ public class ApplicationBaseSteps {
         String owner = Identity.resolveActor(actorRef).getUserName();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAdminApplicationsByOwnerURL(getBaseUrl(), owner), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getAdminApplicationsByOwnerURL(getBaseUrl(), owner), headers);
     }
 
     /**
@@ -627,25 +590,20 @@ public class ApplicationBaseSteps {
         String actualName = Utils.resolveContextPlaceholders(name);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAdminApplicationsByNameURL(getBaseUrl(), actualName), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getAdminApplicationsByNameURL(getBaseUrl(), actualName), headers);
     }
 
     /** Update a gateway environment to a single vhost host (removing any others). Non-asserting. */
     @When("I update the gateway environment {string} to only vhost host {string}")
     public void iUpdateGatewayEnvironmentToSingleVhost(String idKey, String host) throws IOException {
-        String id = Utils.resolveFromContext(idKey).toString();
+        String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         String url = Utils.getEnvironmentByIdURL(getBaseUrl(), id);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
         JSONObject env = new JSONObject(getResp.getData());
         env.put("vhosts", new JSONArray().put(regularVhost(host)));
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.put(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /**
@@ -667,10 +625,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getApplicationThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getApplicationThrottlingPoliciesURL(getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         TestContext.set("appThrottlePolicyName", policyName);
 
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
@@ -717,10 +673,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getCustomThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getCustomThrottlingPoliciesURL(getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         TestContext.set("customThrottlePolicyName", policyName);
 
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
@@ -736,52 +690,44 @@ public class ApplicationBaseSteps {
     @When("I retrieve the application throttling policy {string}")
     public void iRetrieveApplicationThrottlingPolicy(String policyIdKey) throws IOException {
 
-        String policyId = Utils.resolveFromContext(policyIdKey).toString();
+        String policyId = TestContext.resolve(policyIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getApplicationThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
     }
 
     /** Deletes an application throttling policy by id (admin API), storing the raw response for assertions. */
     @When("I delete the application throttling policy {string}")
     public void iDeleteApplicationThrottlingPolicy(String policyIdKey) throws IOException {
 
-        String policyId = Utils.resolveFromContext(policyIdKey).toString();
+        String policyId = TestContext.resolve(policyIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getApplicationThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.delete(Utils.getApplicationThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
     }
 
     /** Retrieves a custom (Siddhi) throttling rule by id (admin API), storing the raw response for assertions. */
     @When("I retrieve the custom throttling policy {string}")
     public void iRetrieveCustomThrottlingPolicy(String policyIdKey) throws IOException {
 
-        String policyId = Utils.resolveFromContext(policyIdKey).toString();
+        String policyId = TestContext.resolve(policyIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getCustomThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getCustomThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
     }
 
     /** Deletes a custom (Siddhi) throttling rule by id (admin API), storing the raw response for assertions. */
     @When("I delete the custom throttling policy {string}")
     public void iDeleteCustomThrottlingPolicy(String policyIdKey) throws IOException {
 
-        String policyId = Utils.resolveFromContext(policyIdKey).toString();
+        String policyId = TestContext.resolve(policyIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getCustomThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.delete(Utils.getCustomThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
     }
 
     /**
@@ -797,7 +743,7 @@ public class ApplicationBaseSteps {
     public void iCreateApplicationWithThrottlingPolicy(String appName, String policyNameKey) throws IOException {
 
         String resolvedName = Utils.resolvePayloadPlaceholders(appName);
-        String policyName = Utils.resolveFromContext(policyNameKey).toString();
+        String policyName = TestContext.resolve(policyNameKey).toString();
         String jsonPayload = String.format(
                 "{\"name\":\"%s\",\"throttlingPolicy\":\"%s\",\"description\":\"Throttle-enforcement test application\"}",
                 resolvedName, policyName);
@@ -805,10 +751,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object createdAppId = Utils.extractValueFromPayload(response.getData(), "applicationId");
         TestContext.set("createdAppId", createdAppId);
@@ -824,15 +768,13 @@ public class ApplicationBaseSteps {
     @When("I attempt to create an application with payload {string}")
     public void iAttemptToCreateAnApplicationWithPayload(String payload) throws IOException {
 
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -843,15 +785,12 @@ public class ApplicationBaseSteps {
     @When("I delete the application with id {string}")
     public void iDeleteApplication(String appId) throws IOException{
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse applicationDeleteResponse = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getApplicationEndpointURL(getBaseUrl(), actualAppId), headers);
-
-        TestContext.set("httpResponse", applicationDeleteResponse);
+        HttpResponse applicationDeleteResponse = Requests.delete(Utils.getApplicationEndpointURL(getBaseUrl(), actualAppId), headers);
     }
 
     /**
@@ -862,15 +801,12 @@ public class ApplicationBaseSteps {
     @When("I retrieve the application with id {string}")
     public void iShouldBeAbleToRetrieveApplication(String appId) throws Exception {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse applicationRetrieveResponse = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationEndpointURL(getBaseUrl(), actualAppId), headers);
-
-        TestContext.set("httpResponse", applicationRetrieveResponse);
+        HttpResponse applicationRetrieveResponse = Requests.get(Utils.getApplicationEndpointURL(getBaseUrl(), actualAppId), headers);
     }
 
     /**
@@ -886,8 +822,7 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationSearchURL(getBaseUrl(), applicationName), headers);
+        HttpResponse response = Requests.get(Utils.getApplicationSearchURL(getBaseUrl(), applicationName), headers);
 
         TestContext.set("httpResponse", response);
 
@@ -912,20 +847,18 @@ public class ApplicationBaseSteps {
     @When("I update the application {string} with payload {string}")
     public void iUpdateTheApplicationWithPayload(String appId, String updatePayload) throws IOException {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
         // Resolve any {{contextKey}} placeholders (e.g. a captured application name so the PUT keeps its
         // required name). No-op when the payload has none.
-        String jsonPayload = Utils.resolveContextPlaceholders(Utils.resolveFromContext(updatePayload).toString());
+        String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(updatePayload).toString());
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(
+        HttpResponse response = Requests.put(
                 Utils.getApplicationEndpointURL(getBaseUrl(), actualAppId), headers, jsonPayload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -941,11 +874,11 @@ public class ApplicationBaseSteps {
     @When("I subscribe to API {string} using application {string} with payload {string} as {string}")
     public void iSubscribeToApi(String apiId, String appId, String payload, String subscriptionID) throws Exception {
 
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
 
         // Add application id and API id to the payload
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
         jsonPayload = jsonPayload.replace("{{applicationId}}", actualAppId);
         jsonPayload = jsonPayload.replace("{{apiId}}", actualApiId);
         // Resolve any remaining {{contextKey}} placeholders (e.g. a custom subscription throttling policy name
@@ -956,10 +889,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getCreateSubscriptionURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getCreateSubscriptionURL(getBaseUrl()),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         TestContext.set(subscriptionID,Utils.extractValueFromPayload(response.getData(), "subscriptionId"));
     }
@@ -973,10 +904,10 @@ public class ApplicationBaseSteps {
     @When("I attempt to subscribe to API {string} using application {string} with payload {string}")
     public void iAttemptToSubscribeToApi(String apiId, String appId, String payload) throws Exception {
 
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
 
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
         jsonPayload = jsonPayload.replace("{{applicationId}}", actualAppId);
         jsonPayload = jsonPayload.replace("{{apiId}}", actualApiId);
         // Resolve any remaining {{contextKey}} placeholders, mirroring the positive iSubscribeToApi step. This
@@ -988,9 +919,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getCreateSubscriptionURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getCreateSubscriptionURL(getBaseUrl()),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1002,17 +932,14 @@ public class ApplicationBaseSteps {
     @Then("I retrieve the subscription for Api {string} by Application {string}")
     public void iShouldBeAbleToRetrieveSubscription(String apiId, String appId) throws Exception {
 
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAllSubscriptionsURL(getBaseUrl(), actualApiId, actualAppId, null, null,
+        HttpResponse response = Requests.get(Utils.getAllSubscriptionsURL(getBaseUrl(), actualApiId, actualAppId, null, null,
                         null), headers);
-
-        TestContext.set("httpResponse", response);
 
         JSONObject responseJson = new JSONObject(response.getData());
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
@@ -1035,15 +962,12 @@ public class ApplicationBaseSteps {
     @When("I retrieve existing application keys for {string}")
     public void iRetrieveExistingApplicationKeys(String appId) throws IOException {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationAllKeys(getBaseUrl(), actualAppId), headers);
-
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getApplicationAllKeys(getBaseUrl(), actualAppId), headers);
 
         JSONObject responseJson = new JSONObject(response.getData());
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
@@ -1076,17 +1000,15 @@ public class ApplicationBaseSteps {
     @And("I update the keys for application with {string}")
     public void iUpdateTheKeysForApplicationWith(String appId) throws IOException {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
-        String jsonPayload =Utils.resolveFromContext("updateKeysPayload").toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+        String keyMappingId = TestContext.resolve("keyMappingId").toString();
+        String jsonPayload =TestContext.resolve("updateKeysPayload").toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPut(Utils.getUpdateKey(getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
+        HttpResponse response = Requests.put(Utils.getUpdateKey(getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1097,15 +1019,13 @@ public class ApplicationBaseSteps {
     @When("I delete the generated keys for {string}")
     public void iDeleteTheGeneratedKeysFor(String appId) throws IOException {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+        String keyMappingId = TestContext.resolve("keyMappingId").toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getUpdateKey(getBaseUrl(), actualAppId, keyMappingId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.delete(Utils.getUpdateKey(getBaseUrl(), actualAppId, keyMappingId), headers);
     }
 
     /**
@@ -1118,18 +1038,15 @@ public class ApplicationBaseSteps {
     @When("I generate client credentials for application id {string} with payload {string}")
     public void iGenerateClientCredentialsForApplication(String appId, String payload) throws Exception {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
         // Resolve any {{contextKey}} placeholders (e.g. a captured key-manager name for a specific-KM key-gen).
-        String jsonPayload = Utils.resolveContextPlaceholders(Utils.resolveFromContext(payload).toString());
+        String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payload).toString());
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGenerateApplicationKeysURL(getBaseUrl(), actualAppId), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getGenerateApplicationKeysURL(getBaseUrl(), actualAppId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
         // Only extract key fields on success — a non-2xx (e.g. a KM that denies the user's role → 403) has no
         // consumerKey, and extracting it would throw before the feature can assert the rejection status.
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
@@ -1169,15 +1086,18 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
+        HttpResponse response = Requests.post(
                 Utils.getDCREndpointURL(getBaseUrl()), headers, json.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         Assert.assertEquals(response.getResponseCode(), 200,
                 "BYO OAuth client registration (DCR) failed: " + response.getData());
-        TestContext.set(idKey + "ClientId", Utils.extractValueFromPayload(response.getData(), "clientId"));
+        Object clientId = Utils.extractValueFromPayload(response.getData(), "clientId");
+        TestContext.set(idKey + "ClientId", clientId);
         TestContext.set(idKey + "ClientSecret", Utils.extractValueFromPayload(response.getData(), "clientSecret"));
+        // A DCR client is a standalone OAuth service provider not removed by app deletion, and the DCR REST
+        // endpoint has no delete — so register its consumer key for teardown, which deregisters it via the
+        // OAuthAdminService SOAP admin service (as its owner) rather than leaking it onto the shared server.
+        ResourceCleanup.register(ResourceCleanup.CREATED_DCR_CLIENT_IDS, clientId);
     }
 
     /**
@@ -1194,9 +1114,9 @@ public class ApplicationBaseSteps {
     @When("I map OAuth client {string} to application {string} via key manager {string}")
     public void iMapOAuthClientToApplication(String idKey, String appId, String keyManager) throws IOException {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String consumerKey = Utils.resolveFromContext(idKey + "ClientId").toString();
-        String consumerSecret = Utils.resolveFromContext(idKey + "ClientSecret").toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+        String consumerKey = TestContext.resolve(idKey + "ClientId").toString();
+        String consumerSecret = TestContext.resolve(idKey + "ClientSecret").toString();
 
         JSONObject json = new JSONObject();
         json.put("consumerKey", consumerKey);
@@ -1207,11 +1127,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
+        HttpResponse response = Requests.post(
                 Utils.getMapKeysURL(getBaseUrl(), actualAppId), headers, json.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1225,17 +1143,15 @@ public class ApplicationBaseSteps {
     @When("I clean up the key registration for application {string} with key mapping {string}")
     public void iCleanUpKeyRegistration(String appId, String keyMappingIdKey) throws IOException {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String keyMappingId = Utils.resolveFromContext(keyMappingIdKey).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
+        HttpResponse response = Requests.post(
                 Utils.getCleanupRegistrationURL(getBaseUrl(), actualAppId, keyMappingId), headers, "",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1291,15 +1207,13 @@ public class ApplicationBaseSteps {
     @When("I regenerate the consumer secret for application {string} with key mapping {string}")
     public void iRegenerateConsumerSecret(String appId, String keyMappingIdKey) throws IOException {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String keyMappingId = Utils.resolveFromContext(keyMappingIdKey).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
+        HttpResponse response = Requests.post(
                 Utils.getRegenerateConsumerSecretURL(getBaseUrl(), actualAppId, keyMappingId), headers, "",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1313,22 +1227,19 @@ public class ApplicationBaseSteps {
     @When("I request an access token for application id {string} using payload {string}")
     public void iRequestAccessToken(String appId, String payload) throws Exception {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String keyMappingId = Utils.resolveFromContext("keyMappingId").toString();
-        String consumerSecret = Utils.resolveFromContext("consumerSecret").toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+        String keyMappingId = TestContext.resolve("keyMappingId").toString();
+        String consumerSecret = TestContext.resolve("consumerSecret").toString();
 
         // Add consumer secret to the payload
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
         jsonPayload = jsonPayload.replace("{{appConsumerSecret}}", consumerSecret);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGenerateApplicationTokenURL(getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getGenerateApplicationTokenURL(getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
         String accessToken = Utils.extractValueFromPayload(response.getData(), "accessToken").toString();
         TestContext.set("generatedAccessToken", accessToken);
     }
@@ -1353,10 +1264,8 @@ public class ApplicationBaseSteps {
             body.append("&scope=").append(urlEncode(scope));
         }
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
                 clientCredentialsHeader(), body.toString(), Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-
-        TestContext.set("httpResponse", response);
         captureTokens(response);
     }
 
@@ -1369,14 +1278,12 @@ public class ApplicationBaseSteps {
     @When("I request a new OAuth access token using refresh token {string}")
     public void iRequestTokenUsingRefreshToken(String refreshTokenKey) throws Exception {
 
-        String refreshToken = Utils.resolveFromContext(refreshTokenKey).toString();
+        String refreshToken = TestContext.resolve(refreshTokenKey).toString();
 
         String body = "grant_type=refresh_token&refresh_token=" + urlEncode(refreshToken);
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
                 clientCredentialsHeader(), body, Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-
-        TestContext.set("httpResponse", response);
         captureTokens(response);
     }
 
@@ -1393,13 +1300,11 @@ public class ApplicationBaseSteps {
     @When("I revoke the OAuth access token {string}")
     public void iRevokeOAuthAccessToken(String tokenKey) throws Exception {
 
-        String token = Utils.resolveFromContext(tokenKey).toString();
+        String token = TestContext.resolve(tokenKey).toString();
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getRevokeEndpointURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getRevokeEndpointURL(getBaseUrl()),
                 clientCredentialsHeader(), "token=" + token,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1408,8 +1313,8 @@ public class ApplicationBaseSteps {
      */
     private Map<String, String> clientCredentialsHeader() {
 
-        String consumerKey = Utils.resolveFromContext("consumerKey").toString();
-        String consumerSecret = Utils.resolveFromContext("consumerSecret").toString();
+        String consumerKey = TestContext.resolve("consumerKey").toString();
+        String consumerSecret = TestContext.resolve("consumerSecret").toString();
         String credentials = Base64.getEncoder().encodeToString(
                 (consumerKey + ":" + consumerSecret).getBytes(StandardCharsets.UTF_8));
 
@@ -1445,7 +1350,7 @@ public class ApplicationBaseSteps {
     @Then("The generated access token should be in JWT format")
     public void theGeneratedAccessTokenShouldBeInJWTFormat() {
 
-        String token = Utils.resolveFromContext("generatedAccessToken").toString();
+        String token = TestContext.resolve("generatedAccessToken").toString();
         String[] parts = token.split("\\.");
         Assert.assertEquals(parts.length, 3,
                 "Access token is not in JWT format (expected 3 dot-separated segments): " + token);
@@ -1465,17 +1370,14 @@ public class ApplicationBaseSteps {
     @And("I request an api key for application id {string} using payload {string}")
     public void iRequestAnApiKeyForApplicationIdUsingPayload(String appId, String payload) throws IOException {
 
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+        String jsonPayload = TestContext.resolve(payload).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getGenerateAPIKeyURL(getBaseUrl(), actualAppId), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getGenerateAPIKeyURL(getBaseUrl(), actualAppId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
         String apikey = Utils.extractValueFromPayload(response.getData(), "apikey").toString();
         TestContext.set("apiKey", apikey);
     }
@@ -1490,14 +1392,12 @@ public class ApplicationBaseSteps {
      */
     @When("I retrieve the api key UUID for application id {string} as {string}")
     public void iRetrieveApiKeyUuid(String appId, String ctxKey) throws IOException {
-        String actualAppId = Utils.resolveFromContext(appId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getListAPIKeysURL(getBaseUrl(), actualAppId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getListAPIKeysURL(getBaseUrl(), actualAppId), headers);
         // The endpoint returns either a bare array [{...}] or a {"count":n,"list":[...]} wrapper depending on
         // the pack — handle both. Each scenario's app has a single key, so the first entry is the one to revoke.
         String data = response.getData().trim();
@@ -1519,17 +1419,15 @@ public class ApplicationBaseSteps {
      */
     @When("I revoke the api key with UUID {string} for application id {string}")
     public void iRevokeApiKeyByUuid(String uuidRef, String appId) throws IOException {
-        String actualAppId = Utils.resolveFromContext(appId).toString();
-        String uuid = Utils.resolveFromContext(uuidRef).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+        String uuid = TestContext.resolve(uuidRef).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String payload = "{\"keyUUID\":\"" + uuid + "\"}";
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getRevokeAPIKeyURL(getBaseUrl(), actualAppId), headers, payload,
+        HttpResponse response = Requests.post(Utils.getRevokeAPIKeyURL(getBaseUrl(), actualAppId), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1539,15 +1437,13 @@ public class ApplicationBaseSteps {
      */
     @When("I delete the subscription with id {string}")
     public void iDeleteSubscription(String subscriptionId) throws Exception {
-        String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+        String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doDelete(Utils.getSubscriptionURL(getBaseUrl(),
+        HttpResponse response = Requests.delete(Utils.getSubscriptionURL(getBaseUrl(),
                 actualSubscriptionId), headers);
-
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1560,10 +1456,10 @@ public class ApplicationBaseSteps {
     @When("I update the subscription {string} with subscription plan {string}")
     public void iUpdateTheSubscriptionWithSubscriptionPlan(String subscriptionId, String subscriptionPlan) throws IOException {
 
-        String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+        String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
 
         // Add application id and API id to the payload
-        String jsonPayload = Utils.resolveFromContext("subscriptionPayload").toString();
+        String jsonPayload = TestContext.resolve("subscriptionPayload").toString();
         // Set the throttling policy to the requested plan regardless of the current value or JSON spacing
         // (the payload may be a pretty-printed template or a compact subscription response).
         jsonPayload = jsonPayload.replaceAll("(\"throttlingPolicy\"\\s*:\\s*)\"[^\"]*\"",
@@ -1582,10 +1478,8 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getSubscriptionURL(getBaseUrl(), actualSubscriptionId),
+        HttpResponse response = Requests.put(Utils.getSubscriptionURL(getBaseUrl(), actualSubscriptionId),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1596,15 +1490,13 @@ public class ApplicationBaseSteps {
     @When("I get the subscription with id {string}")
     public void iGetSubscription(String subscriptionId) throws Exception {
 
-        String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+        String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doGet(Utils.getSubscriptionURL(getBaseUrl(),
+        HttpResponse response = Requests.get(Utils.getSubscriptionURL(getBaseUrl(),
                 actualSubscriptionId), headers);
-
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1617,7 +1509,7 @@ public class ApplicationBaseSteps {
     @Then("The subscription with id {string} should be in the list of all subscriptions")
     public void subscriptionShouldBeInTheListOfAllSubscriptions(String subscriptionId) {
 
-        String actualSubscriptionId = Utils.resolveFromContext(subscriptionId).toString();
+        String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         JSONArray subscriptionsList= new JSONObject(response.getData()).getJSONArray("list");
 
@@ -1811,15 +1703,12 @@ public class ApplicationBaseSteps {
      */
     @And("I retrieve devportal documents for {string}")
     public void iRetrieveDevportalDocumentsFor(String resourceId) throws IOException {
-        String actualApiId = Utils.resolveFromContext(resourceId).toString();
+        String actualApiId = TestContext.resolve(resourceId).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApiDocumentsURL(getBaseUrl(), actualApiId), headers);
-
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getApiDocumentsURL(getBaseUrl(), actualApiId), headers);
     }
 
     // ---- Key manager configuration (admin) -------------------------------------------------------------
@@ -1843,17 +1732,14 @@ public class ApplicationBaseSteps {
         TestContext.remove("httpResponse");
         HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getRoleAliasesURL(getBaseUrl()),
                 adminAuthHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /** Retrieves the system-scope role-alias mappings (admin REST {@code GET /role-aliases}). Non-asserting. */
     @When("I retrieve the role aliases")
     public void iRetrieveRoleAliases() throws IOException {
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doGet(Utils.getRoleAliasesURL(getBaseUrl()),
+        HttpResponse response = Requests.get(Utils.getRoleAliasesURL(getBaseUrl()),
                 adminAuthHeaders());
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -1864,10 +1750,8 @@ public class ApplicationBaseSteps {
     public void iClearRoleAliases() throws IOException {
 
         JSONObject payload = new JSONObject().put("count", 0).put("list", new JSONArray());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getRoleAliasesURL(getBaseUrl()),
+        HttpResponse response = Requests.put(Utils.getRoleAliasesURL(getBaseUrl()),
                 adminAuthHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /** Maps a friendly throttling-policy kind to the export/import {@code type} token. */
@@ -1890,11 +1774,9 @@ public class ApplicationBaseSteps {
     @When("I export the {string} throttling policy named {string} as {string}")
     public void iExportThrottlePolicy(String kind, String nameKey, String exportKey) throws IOException {
 
-        String name = Utils.resolveFromContext(nameKey).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doGet(
+        String name = TestContext.resolve(nameKey).toString();
+        HttpResponse response = Requests.get(
                 Utils.getThrottlePolicyExportURL(getBaseUrl(), name, throttleExportType(kind)), adminAuthHeaders());
-        TestContext.set("httpResponse", response);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             TestContext.set(Utils.normalizeContextKey(exportKey), response.getData());
         }
@@ -1909,17 +1791,15 @@ public class ApplicationBaseSteps {
     @When("I import the throttling policy from {string} with overwrite {string}")
     public void iImportThrottlePolicy(String exportKey, String overwrite) throws IOException {
 
-        String body = Utils.resolveFromContext(exportKey).toString();
+        String body = TestContext.resolve(exportKey).toString();
         java.io.File temp = java.io.File.createTempFile("throttle-policy", ".json");
         temp.deleteOnExit();
         java.nio.file.Files.write(temp.toPath(), body.getBytes(StandardCharsets.UTF_8));
 
         Map<String, java.io.File> files = new HashMap<>();
         files.put("file", temp);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPostMultipartWithFiles(
+        HttpResponse response = Requests.postMultipart(
                 Utils.getThrottlePolicyImportURL(getBaseUrl(), overwrite), adminAuthHeaders(), files, new HashMap<>());
-        TestContext.set("httpResponse", response);
     }
 
     /** Loads a key-manager JSON payload off the classpath, resolving {@code ${UNIQUE:...}} name placeholders. */
@@ -1936,10 +1816,8 @@ public class ApplicationBaseSteps {
 
     private HttpResponse postKeyManager(JSONObject payload) throws IOException {
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getKeyManagersURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getKeyManagersURL(getBaseUrl()),
                 adminAuthHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         return response;
     }
 
@@ -1987,21 +1865,15 @@ public class ApplicationBaseSteps {
     @When("I retrieve the key manager {string}")
     public void iRetrieveKeyManager(String idKey) throws IOException {
 
-        String kmId = Utils.resolveFromContext(idKey).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
-        TestContext.set("httpResponse", response);
+        String kmId = TestContext.resolve(idKey).toString();
+        HttpResponse response = Requests.get(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
     }
 
     /** Lists all key managers. */
     @When("I retrieve all key managers")
     public void iRetrieveAllKeyManagers() throws IOException {
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getKeyManagersURL(getBaseUrl()), adminAuthHeaders());
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getKeyManagersURL(getBaseUrl()), adminAuthHeaders());
     }
 
     /**
@@ -2011,7 +1883,7 @@ public class ApplicationBaseSteps {
     @When("I update the key manager {string} setting its description to {string}")
     public void iUpdateKeyManagerDescription(String idKey, String newDescription) throws IOException {
 
-        String kmId = Utils.resolveFromContext(idKey).toString();
+        String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
         Assert.assertEquals(current.getResponseCode(), 200, current.getData());
@@ -2019,22 +1891,17 @@ public class ApplicationBaseSteps {
         JSONObject km = new JSONObject(current.getData());
         km.put("description", newDescription);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(
+        HttpResponse response = Requests.put(
                 Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders(), km.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /** Deletes the key manager held under {@code idKey}. Non-asserting — the feature asserts the status. */
     @When("I delete the key manager {string}")
     public void iDeleteKeyManager(String idKey) throws IOException {
 
-        String kmId = Utils.resolveFromContext(idKey).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
-        TestContext.set("httpResponse", response);
+        String kmId = TestContext.resolve(idKey).toString();
+        HttpResponse response = Requests.delete(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
     }
 
     /**
@@ -2082,7 +1949,7 @@ public class ApplicationBaseSteps {
     @When("I set the allowed organizations of key manager {string} to {string}")
     public void iSetKeyManagerAllowedOrgs(String idKey, String allowedOrgs) throws IOException {
 
-        String kmId = Utils.resolveFromContext(idKey).toString();
+        String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
         Assert.assertEquals(current.getResponseCode(), 200, current.getData());
@@ -2092,11 +1959,9 @@ public class ApplicationBaseSteps {
             orgs.put(o);
         }
         km.put("allowedOrganizations", orgs);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(
+        HttpResponse response = Requests.put(
                 Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders(), km.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     // ---- Deny (blocking-condition) policies (admin) ----------------------------------------------------
@@ -2107,10 +1972,8 @@ public class ApplicationBaseSteps {
         dto.put("conditionType", conditionType);
         dto.put("conditionValue", conditionValue);
         dto.put("conditionStatus", true);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getDenyPoliciesURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getDenyPoliciesURL(getBaseUrl()),
                 adminAuthHeaders(), dto.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         return response;
     }
 
@@ -2181,36 +2044,28 @@ public class ApplicationBaseSteps {
     @When("I retrieve the deny policy {string}")
     public void iRetrieveDenyPolicy(String idKey) throws IOException {
 
-        String id = Utils.resolveFromContext(idKey).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getDenyPolicyByIdURL(getBaseUrl(), id), adminAuthHeaders());
-        TestContext.set("httpResponse", response);
+        String id = TestContext.resolve(idKey).toString();
+        HttpResponse response = Requests.get(Utils.getDenyPolicyByIdURL(getBaseUrl(), id), adminAuthHeaders());
     }
 
     /** Updates a deny policy's enabled status (PATCH conditionStatus). Non-asserting — the feature asserts. */
     @When("I set the deny policy {string} status to {string}")
     public void iSetDenyPolicyStatus(String idKey, String status) throws IOException {
 
-        String id = Utils.resolveFromContext(idKey).toString();
+        String id = TestContext.resolve(idKey).toString();
         JSONObject dto = new JSONObject();
         dto.put("conditionStatus", Boolean.parseBoolean(status));
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPatch(
+        HttpResponse response = Requests.patch(
                 Utils.getDenyPolicyByIdURL(getBaseUrl(), id), adminAuthHeaders(), dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /** Deletes the deny policy held under {@code idKey}. Non-asserting — the feature asserts the status. */
     @When("I delete the deny policy {string}")
     public void iDeleteDenyPolicy(String idKey) throws IOException {
 
-        String id = Utils.resolveFromContext(idKey).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doDelete(Utils.getDenyPolicyByIdURL(getBaseUrl(), id), adminAuthHeaders());
-        TestContext.set("httpResponse", response);
+        String id = TestContext.resolve(idKey).toString();
+        HttpResponse response = Requests.delete(Utils.getDenyPolicyByIdURL(getBaseUrl(), id), adminAuthHeaders());
     }
 
     /** Searches deny policies by condition type and value (query grammar: conditionType:X&conditionValue:Y). */
@@ -2218,10 +2073,7 @@ public class ApplicationBaseSteps {
     public void iSearchDenyPolicies(String conditionType, String conditionValue) throws IOException {
 
         String query = urlEncode("conditionType:" + conditionType + "&conditionValue:" + conditionValue);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getDenyPoliciesURL(getBaseUrl()) + "?query=" + query, adminAuthHeaders());
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getDenyPoliciesURL(getBaseUrl()) + "?query=" + query, adminAuthHeaders());
     }
 
     // ---- Tenant configuration (admin) ------------------------------------------------------------------
@@ -2230,28 +2082,21 @@ public class ApplicationBaseSteps {
     @When("I retrieve the tenant configuration")
     public void iRetrieveTenantConfiguration() throws IOException {
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getTenantConfigURL(getBaseUrl()), adminAuthHeaders());
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getTenantConfigURL(getBaseUrl()), adminAuthHeaders());
     }
 
     /** Retrieves the tenant configuration JSON schema. */
     @When("I retrieve the tenant configuration schema")
     public void iRetrieveTenantConfigurationSchema() throws IOException {
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getTenantConfigSchemaURL(getBaseUrl()), adminAuthHeaders());
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getTenantConfigSchemaURL(getBaseUrl()), adminAuthHeaders());
     }
 
     /** Captures the current tenant configuration body under {@code contextKey} (for a round-trip update/restore). */
     @When("I capture the tenant configuration as {string}")
     public void iCaptureTenantConfiguration(String contextKey) throws IOException {
 
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getTenantConfigURL(getBaseUrl()), adminAuthHeaders());
+        HttpResponse response = Requests.get(Utils.getTenantConfigURL(getBaseUrl()), adminAuthHeaders());
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         TestContext.set(Utils.normalizeContextKey(contextKey), response.getData());
     }
@@ -2260,27 +2105,24 @@ public class ApplicationBaseSteps {
     @When("I update the tenant configuration from {string}")
     public void iUpdateTenantConfiguration(String contextKey) throws IOException {
 
-        String payload = Utils.resolveFromContext(contextKey).toString();
+        String payload = TestContext.resolve(contextKey).toString();
         TestContext.remove("httpResponse");
         HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getTenantConfigURL(getBaseUrl()),
                 adminAuthHeaders(), payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /** Attempts to update the tenant configuration with a syntactically-invalid (bad-signature) bearer JWT. */
     @When("I attempt to update the tenant configuration from {string} with an invalid token")
     public void iAttemptUpdateTenantConfigInvalidToken(String contextKey) throws IOException {
 
-        String payload = Utils.resolveFromContext(contextKey).toString();
+        String payload = TestContext.resolve(contextKey).toString();
         // A structurally-valid JWT with a bogus signature the server cannot verify.
         String invalidJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
                 + "eyJzdWIiOiJhZG1pbiIsInNjb3BlIjoib3BlbmlkIGFwaW06YWRtaW4ifQ.aW52YWxpZF9zaWduYXR1cmU";
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + invalidJwt);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getTenantConfigURL(getBaseUrl()),
+        HttpResponse response = Requests.put(Utils.getTenantConfigURL(getBaseUrl()),
                 headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -2290,13 +2132,11 @@ public class ApplicationBaseSteps {
     @When("I attempt to update the tenant configuration from {string} without admin scope")
     public void iAttemptUpdateTenantConfigNonAdmin(String contextKey) throws IOException {
 
-        String payload = Utils.resolveFromContext(contextKey).toString();
+        String payload = TestContext.resolve(contextKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(Utils.getTenantConfigURL(getBaseUrl()),
+        HttpResponse response = Requests.put(Utils.getTenantConfigURL(getBaseUrl()),
                 headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     // ---- Application organization sharing (devportal) --------------------------------------------------
@@ -2318,10 +2158,8 @@ public class ApplicationBaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getApplicationCreateURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getApplicationCreateURL(getBaseUrl()),
                 headers, app.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object appId = Utils.extractValueFromPayload(response.getData(), "applicationId");
         TestContext.set(idKey, appId);
@@ -2332,20 +2170,17 @@ public class ApplicationBaseSteps {
     @When("I retrieve the application {string}")
     public void iRetrieveApplicationById(String idKey) throws IOException {
 
-        String appId = Utils.resolveFromContext(idKey).toString();
+        String appId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationEndpointURL(getBaseUrl(), appId), headers);
-        TestContext.set("httpResponse", response);
+        HttpResponse response = Requests.get(Utils.getApplicationEndpointURL(getBaseUrl(), appId), headers);
     }
 
     /** Updates a devportal application's visibility in place (GET→modify→PUT). Non-asserting. */
     @When("I set the visibility of application {string} to {string}")
     public void iSetApplicationVisibility(String idKey, String visibility) throws IOException {
 
-        String appId = Utils.resolveFromContext(idKey).toString();
+        String appId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         HttpResponse current = SimpleHTTPClient.getInstance()
@@ -2353,11 +2188,9 @@ public class ApplicationBaseSteps {
         Assert.assertEquals(current.getResponseCode(), 200, current.getData());
         JSONObject app = new JSONObject(current.getData());
         app.put("visibility", visibility);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPut(
+        HttpResponse response = Requests.put(
                 Utils.getApplicationEndpointURL(getBaseUrl(), appId), headers, app.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     // ---- Consumer secret management (multiple client secrets, devportal) -------------------------------
@@ -2382,8 +2215,8 @@ public class ApplicationBaseSteps {
     public void iGenerateConsumerSecret(String description, String appIdKey, String keyMappingIdKey,
                                         String secretIdKey) throws IOException {
 
-        String appId = Utils.resolveFromContext(appIdKey).toString();
-        String keyMappingId = Utils.resolveFromContext(keyMappingIdKey).toString();
+        String appId = TestContext.resolve(appIdKey).toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
 
         JSONObject additionalProperties = new JSONObject();
         if (description != null && !description.isEmpty()) {
@@ -2392,11 +2225,9 @@ public class ApplicationBaseSteps {
         JSONObject request = new JSONObject();
         request.put("additionalProperties", additionalProperties);
 
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
+        HttpResponse response = Requests.post(
                 Utils.getGenerateApplicationSecretURL(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders(),
                 request.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
         if (response.getResponseCode() < 300) {
             TestContext.set(secretIdKey, Utils.extractValueFromPayload(response.getData(), "secretId"));
         }
@@ -2406,12 +2237,9 @@ public class ApplicationBaseSteps {
     @When("I retrieve the consumer secrets for application {string} with key mapping {string}")
     public void iRetrieveConsumerSecrets(String appIdKey, String keyMappingIdKey) throws IOException {
 
-        String appId = Utils.resolveFromContext(appIdKey).toString();
-        String keyMappingId = Utils.resolveFromContext(keyMappingIdKey).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAllApplicationSecretsURL(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders());
-        TestContext.set("httpResponse", response);
+        String appId = TestContext.resolve(appIdKey).toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
+        HttpResponse response = Requests.get(Utils.getAllApplicationSecretsURL(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders());
     }
 
     /** Revokes a consumer secret (by the id held under {@code secretIdKey}). Non-asserting. */
@@ -2419,28 +2247,23 @@ public class ApplicationBaseSteps {
     public void iRevokeConsumerSecret(String secretIdKey, String appIdKey, String keyMappingIdKey)
             throws IOException {
 
-        String appId = Utils.resolveFromContext(appIdKey).toString();
-        String keyMappingId = Utils.resolveFromContext(keyMappingIdKey).toString();
-        String secretId = Utils.resolveFromContext(secretIdKey).toString();
+        String appId = TestContext.resolve(appIdKey).toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
+        String secretId = TestContext.resolve(secretIdKey).toString();
 
         JSONObject request = new JSONObject();
         request.put("secretId", secretId);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(
+        HttpResponse response = Requests.post(
                 Utils.getRevokeApplicationSecretURL(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders(),
                 request.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        TestContext.set("httpResponse", response);
     }
 
     /** Fetches an application's OAuth key details by key-mapping id. */
     @When("I fetch the oauth key details for application {string} with key mapping {string}")
     public void iFetchKeyDetailsByKeyMappingId(String appIdKey, String keyMappingIdKey) throws IOException {
 
-        String appId = Utils.resolveFromContext(appIdKey).toString();
-        String keyMappingId = Utils.resolveFromContext(keyMappingIdKey).toString();
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getUpdateKey(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders());
-        TestContext.set("httpResponse", response);
+        String appId = TestContext.resolve(appIdKey).toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
+        HttpResponse response = Requests.get(Utils.getUpdateKey(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders());
     }
 }
