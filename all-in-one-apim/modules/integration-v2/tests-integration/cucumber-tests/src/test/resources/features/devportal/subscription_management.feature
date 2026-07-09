@@ -76,3 +76,31 @@ Feature: DevPortal Subscription Management
       | tenantSuffix |
       |              |
       | @tenant1.com |
+
+  # Wave B-3: force-changing a subscription's business plan to an invalid plan is rejected (400). Ports the 400
+  # negatives of ChangeSubscriptionBusinessPlanForcefullyTestCase via the PUBLISHER change-business-plan endpoint
+  # (which validates the plan). verify-first FINDING: the devportal subscription PUT does NOT validate — it
+  # silently keeps the current plan and returns 200 — so this uses the publisher force-change endpoint instead.
+  @cap:devportal @feat:subscription-management @rule:invalid-plan @type:negative @legacy:ChangeSubscriptionBusinessPlanForcefullyTestCase
+  Scenario Outline: Force-changing a subscription to an invalid business plan is rejected as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    When I publish the "apis" resource with id "createdApiId"
+    Then The lifecycle status of API "createdApiId" should be "Published"
+    When I have set up application with keys, subscribed to API "createdApiId", and obtained access token for "subscriptionId"
+    Then The response status code should be 200
+    # An empty business plan is rejected.
+    When I change the subscription business plan of "subscriptionId" to ""
+    Then The response status code should be 400
+    # A nonexistent business plan is rejected.
+    When I change the subscription business plan of "subscriptionId" to "INVALID_BUSINESS_PLAN"
+    Then The response status code should be 400
+    # A plan not among the API's allowed tiers (the API offers Gold/Bronze/Unlimited; Silver is a global default it does not offer).
+    When I change the subscription business plan of "subscriptionId" to "Silver"
+    Then The response status code should be 400
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

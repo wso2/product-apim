@@ -202,6 +202,15 @@ tenants (`carbon.super` and `tenant1.com`) on boot — pick the one with the lea
   can't be reused for negatives — use the non-asserting **`I attempt to …`** variants (create API / new
   version / shared scope / application / subscribe) and assert the status in the feature. Add a negative only
   where enforcement is real; skip hollow ones (e.g. "search rejected", "key-gen rejected").
+- **Assert the EXACT expected value — never relax an assertion to make a test pass.** If two cases return
+  different codes, assert each one's exact value in its own scenario/row; do not widen the check to accept
+  several (e.g. `status == 401 || status == 403`). A permissive assertion passes today but silently swallows a
+  future regression — including an actual security bypass that returns a *different but still-4xx* code.
+  Example: an invalid token at the MCP `tools/call` is rejected with **401** for the *proxy* subtype but **403**
+  for the *DirectBackend (OpenAPI)* subtype. The right fix is two strict assertions (`gateway/mcp_proxy_invocation`
+  asserts 401, `gateway/mcp_openapi_invocation` asserts 403), each pinning its subtype's real behaviour — NOT a
+  step that accepts either. When you discover such a per-case difference, record it (backlog/comment) and encode
+  it as separate exact assertions.
 
 ## 13. Container config & TOML overlays
 Each block boots a container whose `deployment.toml` is resolved by `BlockLifecycleListener`. Most blocks need

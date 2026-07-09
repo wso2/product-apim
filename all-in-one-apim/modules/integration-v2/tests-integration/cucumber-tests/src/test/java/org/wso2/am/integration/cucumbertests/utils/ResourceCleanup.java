@@ -55,6 +55,14 @@ public final class ResourceCleanup {
 
     private static final Log logger = LogFactory.getLog(ResourceCleanup.class);
 
+    /**
+     * Teardown list for custom AI service providers (LLM providers). Not in the shared {@link Constants}
+     * because it is specific to the AI-API glue. An AI provider cannot be deleted while an AIAPI-subtype API
+     * still references it (an {@code AM_API_AI_CONFIGURATION} foreign key), so it is swept AFTER the APIs — see
+     * the ordering in {@link #deleteRegisteredResources()}.
+     */
+    public static final String CREATED_AI_PROVIDER_IDS = "createdAiProviderIds";
+
     private ResourceCleanup() {
     }
 
@@ -92,7 +100,14 @@ public final class ResourceCleanup {
                 && TestContext.getList(Constants.CREATED_APPLICATION_POLICY_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_SUBSCRIPTION_POLICY_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_ADVANCED_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_CUSTOM_POLICY_IDS).isEmpty()) {
+                && TestContext.getList(Constants.CREATED_CUSTOM_POLICY_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_API_PRODUCT_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_ENVIRONMENT_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_GOVERNANCE_POLICY_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_GOVERNANCE_RULESET_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_KEY_MANAGER_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_DENY_POLICY_IDS).isEmpty()
+                && TestContext.getList(CREATED_AI_PROVIDER_IDS).isEmpty()) {
             return;
         }
         String baseUrl = baseUrlObj.toString();
@@ -100,8 +115,17 @@ public final class ResourceCleanup {
         try {
             deleteResources(Constants.CREATED_APPLICATION_IDS, Identity::devportalTokenKey,
                     id -> Utils.getApplicationEndpointURL(baseUrl, id));
+            // API Products BEFORE their underlying APIs — a product references APIs, so an API delete is
+            // rejected while a product still uses it. Deleted with the publisher token.
+            deleteResources(Constants.CREATED_API_PRODUCT_IDS, Identity::publisherTokenKey,
+                    id -> Utils.getResourceEndpointURL(baseUrl, "api-products", id));
             deleteResources(Constants.CREATED_API_IDS, Identity::publisherTokenKey,
                     id -> Utils.getResourceEndpointURL(baseUrl, "apis", id));
+            // Custom AI service providers AFTER the AIAPI-subtype APIs that reference them — an AI provider
+            // delete is rejected with a foreign-key violation (AM_API_AI_CONFIGURATION → AM_LLM_PROVIDER) while
+            // any API still binds it. Deleted with the admin token (the provider is an admin-plane resource).
+            deleteResources(CREATED_AI_PROVIDER_IDS, Identity::adminTokenKey,
+                    id -> Utils.getAIServiceProviderByIdURL(baseUrl, id));
             // Common (reusable) operation policies are tenant-global, so they outlive their API and must be
             // swept explicitly (API-specific policies are removed when their API is deleted above).
             deleteResources(Constants.CREATED_OPERATION_POLICY_IDS, Identity::publisherTokenKey,
@@ -125,7 +149,25 @@ public final class ResourceCleanup {
             // global rules that would keep matching traffic, so delete them explicitly.
             deleteResources(Constants.CREATED_CUSTOM_POLICY_IDS, Identity::adminTokenKey,
                     id -> Utils.getCustomThrottlingPolicyByIdURL(baseUrl, id));
+            // Gateway environments (admin). No revisions are deployed to test envs, so delete is unblocked.
+            deleteResources(Constants.CREATED_ENVIRONMENT_IDS, Identity::adminTokenKey,
+                    id -> Utils.getEnvironmentByIdURL(baseUrl, id));
+            // Governance policies BEFORE governance rulesets — a policy references rulesets, so a ruleset
+            // delete is rejected with 409 while a policy still attaches it. Both deleted with the governance
+            // token (apim:gov_*), not the admin token.
+            deleteResources(Constants.CREATED_GOVERNANCE_POLICY_IDS, Identity::governanceTokenKey,
+                    id -> Utils.getGovernancePolicyByIdURL(baseUrl, id));
+            deleteResources(Constants.CREATED_GOVERNANCE_RULESET_IDS, Identity::governanceTokenKey,
+                    id -> Utils.getGovernanceRulesetByIdURL(baseUrl, id));
+            // Key managers (admin, tenant-scoped config registry). No resource references them at test time, so
+            // delete is unblocked.
+            deleteResources(Constants.CREATED_KEY_MANAGER_IDS, Identity::adminTokenKey,
+                    id -> Utils.getKeyManagerByIdURL(baseUrl, id));
+            // Deny (blocking-condition) policies (admin, tenant-global). Deleted via the singular by-id path.
+            deleteResources(Constants.CREATED_DENY_POLICY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getDenyPolicyByIdURL(baseUrl, id));
         } finally {
+            TestContext.remove(Constants.CREATED_API_PRODUCT_IDS);
             TestContext.remove(Constants.CREATED_API_IDS);
             TestContext.remove(Constants.CREATED_APPLICATION_IDS);
             TestContext.remove(Constants.CREATED_SHARED_SCOPE_IDS);
@@ -134,6 +176,12 @@ public final class ResourceCleanup {
             TestContext.remove(Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
             TestContext.remove(Constants.CREATED_ADVANCED_POLICY_IDS);
             TestContext.remove(Constants.CREATED_CUSTOM_POLICY_IDS);
+            TestContext.remove(Constants.CREATED_ENVIRONMENT_IDS);
+            TestContext.remove(Constants.CREATED_GOVERNANCE_POLICY_IDS);
+            TestContext.remove(Constants.CREATED_GOVERNANCE_RULESET_IDS);
+            TestContext.remove(Constants.CREATED_KEY_MANAGER_IDS);
+            TestContext.remove(Constants.CREATED_DENY_POLICY_IDS);
+            TestContext.remove(CREATED_AI_PROVIDER_IDS);
         }
     }
 

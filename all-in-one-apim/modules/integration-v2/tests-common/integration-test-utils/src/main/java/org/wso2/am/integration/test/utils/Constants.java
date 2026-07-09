@@ -52,6 +52,10 @@ public class Constants {
     public static final int HTTP_PORT = 9763;
     public static final int GATEWAY_HTTPS_PORT = 8243;
     public static final int GATEWAY_HTTP_PORT = 8280;
+    /** Gateway WebSocket inbound port (apim.ws.port). Used by WebSocket-API invocation tests. */
+    public static final int GATEWAY_WS_PORT = 9099;
+    /** Gateway SECURE WebSocket inbound port (apim.wss.port, enabled by default). Used by wss:// invocation tests. */
+    public static final int GATEWAY_WSS_PORT = 8099;
 
     public static final String MIGRATION_PROFILE = "migration";
     public  static final String DEFAULT_PROFILE = "default";
@@ -95,6 +99,7 @@ public class Constants {
     public static final String DEFAULT_APIM_API_DEPLOYER = "api/am/publisher/v4/";
     public static final String DEFAULT_DEVPORTAL = "api/am/devportal/v3/";
     public static final String DEFAULT_APIM_ADMIN = "api/am/admin/v4/";
+    public static final String DEFAULT_APIM_GOVERNANCE = "api/am/governance/v1/";
     public static final String GATEWAY = "api/am/gateway/v2/";
     public static final String DEFAULT_APIM_TOKEN_EP = "oauth2/token";
     public static final String DEFAULT_DCR_EP = "client-registration/v0.17/register";
@@ -134,6 +139,12 @@ public class Constants {
     public static final String CREATED_SUBSCRIPTION_POLICY_IDS = "createdSubscriptionPolicyIds";
     public static final String CREATED_ADVANCED_POLICY_IDS = "createdAdvancedPolicyIds";
     public static final String CREATED_CUSTOM_POLICY_IDS = "createdCustomPolicyIds";
+    public static final String CREATED_API_PRODUCT_IDS = "createdApiProductIds";
+    public static final String CREATED_ENVIRONMENT_IDS = "createdEnvironmentIds";
+    public static final String CREATED_GOVERNANCE_RULESET_IDS = "createdGovernanceRulesetIds";
+    public static final String CREATED_GOVERNANCE_POLICY_IDS = "createdGovernancePolicyIds";
+    public static final String CREATED_KEY_MANAGER_IDS = "createdKeyManagerIds";
+    public static final String CREATED_DENY_POLICY_IDS = "createdDenyPolicyIds";
 
     public static class REQUEST_HEADERS {
 

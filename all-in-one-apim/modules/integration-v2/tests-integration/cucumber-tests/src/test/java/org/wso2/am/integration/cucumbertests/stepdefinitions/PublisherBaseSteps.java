@@ -111,6 +111,22 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Attempts to create a resource with NO Authorization header — the unauthenticated-create negative (401).
+     * Non-asserting; the feature asserts the status.
+     */
+    @When("I attempt to create an {string} resource with payload {string} without authentication")
+    public void iAttemptToCreateAnAPIWithoutAuth(String resourceType, String payload) throws IOException {
+
+        String jsonPayload = Utils.resolveFromContext(payload).toString();
+
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getAPICreateEndpointURL(getBaseUrl(), resourceType), new HashMap<>(), jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
      * Updates an existing resource using a JSON payload stored in the test context.
      *
      * @param resourceType Type of resource to update (e.g., "apis", "api-products")
@@ -162,6 +178,28 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Attempts to create a revision without asserting success — for negatives (e.g. a revision expected to be
+     * blocked by a governance BLOCK-on-deploy policy with 903300). The feature asserts the resulting status
+     * and error code.
+     */
+    @When("I attempt to create a revision for {string} resource {string} with payload {string}")
+    public void iAttemptToCreateResourceRevision(String resourceType, String resourceId, String contextKey)
+            throws IOException {
+
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
+        String jsonPayload = Utils.resolveFromContext(contextKey).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
      * Deploys a specific revision of a resource to the gateway environment.
      *
      * @param revisionId Context key containing the revision ID to deploy
@@ -176,6 +214,9 @@ public class PublisherBaseSteps {
         String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
         String jsonPayload = Utils.resolveFromContext(payload).toString();
         jsonPayload = jsonPayload.replace("{{gatewayEnvironment}}", System.getenv(Constants.GATEWAY_ENVIRONMENT));
+        // Resolve any remaining {{contextKey}} placeholders (e.g. a captured custom environment name for a
+        // deploy-to-vhost scenario). No-op when the payload has none; fails fast on an unknown key.
+        jsonPayload = Utils.resolveContextPlaceholders(jsonPayload);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
@@ -214,6 +255,80 @@ public class PublisherBaseSteps {
      * @param resourceType Type of resource to publish (e.g., "apis", "api-products")
      * @param resourceId Context key containing the resource ID to publish
      */
+    /**
+     * Generates the inline mock implementation script for an API (POST /apis/{id}/generate-mock-scripts).
+     * Ports the generateMockScript call of PrototypedAPITestcase inline-mock tests. Non-asserting.
+     *
+     * @param apiId context key holding the API id
+     */
+    @When("I generate the mock implementation script for API {string}")
+    public void iGenerateMockScript(String apiId) throws IOException {
+
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getGenerateMockScriptsURL(getBaseUrl(), actualApiId), headers, "", null);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Retrieves the generated inline mock implementation script for an API
+     * (GET /apis/{id}/generate-mock-scripts). Ports getGenerateMockScript. Non-asserting.
+     *
+     * @param apiId context key holding the API id
+     */
+    @When("I retrieve the mock implementation script for API {string}")
+    public void iRetrieveMockScript(String apiId) throws IOException {
+
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getGeneratedMockScriptsURL(getBaseUrl(), actualApiId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Validates a system role via the publisher {@code GET /roles/{base64url(role)}} endpoint. Ports APIM638.
+     * Non-asserting — the feature asserts 200 (existing role) or 404 (non-existing).
+     *
+     * @param role the role name (e.g. {@code admin}, {@code Internal/publisher})
+     */
+    @When("I validate the role {string}")
+    public void iValidateRole(String role) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        // Legacy validates roles with a publisher token (api_create/publish/manage) → 200; the earlier 401 was
+        // a padded-base64 path bug, not a scope issue (see Utils.getValidateRoleURL).
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doHead(Utils.getValidateRoleURL(getBaseUrl(), role), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Force-changes a subscription's business plan via the publisher endpoint
+     * (POST /subscriptions/change-business-plan?subscriptionId=&throttlingPolicy=). Unlike the devportal
+     * subscription PUT (which silently ignores an invalid plan → 200), this endpoint validates the plan.
+     * Ports ChangeSubscriptionBusinessPlanForcefullyTestCase. Non-asserting.
+     *
+     * @param subId context key holding the subscription id
+     * @param plan  the throttling policy / business plan to set
+     */
+    @When("I change the subscription business plan of {string} to {string}")
+    public void iChangeSubscriptionBusinessPlan(String subId, String plan) throws IOException {
+        String actualSubId = Utils.resolveFromContext(subId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getChangeSubscriptionBusinessPlanURL(getBaseUrl(), actualSubId, plan), headers, "", null);
+        TestContext.set("httpResponse", response);
+    }
+
     @When("I publish the {string} resource with id {string}")
     public void iPublishTheResource(String resourceType, String resourceId) throws IOException {
 
@@ -362,11 +477,21 @@ public class PublisherBaseSteps {
      */
     @Given("I deploy the API with id {string}")
     public void iDeployAPI(String apiID) throws IOException, InterruptedException{
+        iDeployResource("apis", apiID);
+    }
+
+    /**
+     * Resource-typed deploy (create a revision + deploy it to the gateway env) — the general form of
+     * {@link #iDeployAPI(String)} for other deployable resource types, e.g. {@code "mcp-servers"}. The revision
+     * and deploy-revision endpoints are path-typed by resourceType, so the same payloads apply.
+     */
+    @Given("I deploy the {string} resource with id {string}")
+    public void iDeployResource(String resourceType, String resourceID) throws IOException, InterruptedException {
         baseSteps.putJsonPayloadInContext("<createRevisionPayload>","{\"description\":\"new Revision\"}");
-        iCreateResourceRevision("apis", apiID , "<createRevisionPayload>");
+        iCreateResourceRevision(resourceType, resourceID , "<createRevisionPayload>");
         baseSteps.putJsonPayloadInContext("<deployRevisionPayload>",
                 "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
-        iDeployApiRevisionGivenPayload("<revisionId>", "apis" ,apiID, "<deployRevisionPayload>");
+        iDeployApiRevisionGivenPayload("<revisionId>", resourceType ,resourceID, "<deployRevisionPayload>");
     }
 
     /**
@@ -617,6 +742,64 @@ public class PublisherBaseSteps {
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         TestContext.set("httpResponse", documentUpdateResponse);
+    }
+
+    /**
+     * Prepares a document payload for any doc type / source, built programmatically so the source-specific field
+     * is set correctly: INLINE/MARKDOWN → {@code inlineContent}, URL → {@code sourceUrl}, FILE → no content
+     * field (uploaded separately). An OTHER type sets {@code otherTypeName}. The name is resolved for
+     * {@code ${UNIQUE:...}} so several documents can be added to one API without name collisions.
+     */
+    @When("I prepare a document named {string} of type {string} with sourceType {string} and content {string}")
+    public void iPrepareDocumentOfTypeAndSource(String name, String type, String sourceType, String content) {
+
+        JSONObject doc = new JSONObject();
+        doc.put("name", Utils.resolvePayloadPlaceholders(name));
+        doc.put("type", type);
+        doc.put("summary", "Summary of test Documentation");
+        doc.put("sourceType", sourceType);
+        doc.put("visibility", "API_LEVEL");
+        if ("URL".equals(sourceType)) {
+            doc.put("sourceUrl", content);
+        } else if ("INLINE".equals(sourceType) || "MARKDOWN".equals(sourceType)) {
+            doc.put("inlineContent", content);
+        }
+        if ("OTHER".equals(type)) {
+            doc.put("otherTypeName", "CustomDocType");
+        }
+        TestContext.set(Utils.normalizeContextKey("<newDocumentPayload>"), doc.toString());
+    }
+
+    /**
+     * Uploads a file as the content of a FILE-source document (multipart, form field {@code file}). The document
+     * must already exist (created with sourceType FILE via the add step).
+     */
+    @When("I upload the document file {string} for document {string} of API {string}")
+    public void iUploadDocumentFile(String resourcePath, String documentID, String apiID) throws IOException {
+
+        String docId = Utils.resolveFromContext(documentID).toString();
+        String actualApiId = Utils.resolveFromContext(apiID).toString();
+
+        File temp;
+        String suffix = resourcePath.substring(resourcePath.lastIndexOf('.'));
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Resource not found: " + resourcePath);
+            }
+            temp = File.createTempFile("doc-content", suffix);
+            temp.deleteOnExit();
+            Files.copy(inputStream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", temp);
+
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance().doPostMultipartWithFiles(
+                Utils.getAPIDocumentContent(getBaseUrl(), actualApiId, docId), headers, files, new HashMap<>());
+        TestContext.set("httpResponse", response);
     }
 
     // Helper to parse the values correctly for update document steps
@@ -936,6 +1119,96 @@ public class PublisherBaseSteps {
         ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
     }
 
+    /**
+     * Creates a GraphQL API from an ENDPOINT URL (import-graphql-schema with a {@code url} form field instead of a
+     * schema file) — the gateway derives the schema from the URL (introspection of a live endpoint, or fetching an
+     * SDL served at that URL). Ports GraphqlTestCase's "create using endpoint" / SDL-URL paths. Non-asserting on the
+     * create status so the feature can assert it; stores the id on 2xx.
+     *
+     * @param endpointUrl the GraphQL endpoint (introspection) or SDL URL, reachable from the gateway
+     * @param additionalPropertiesKey context key holding the additionalProperties JSON
+     * @param apiID context key to store the created API id under
+     */
+    @When("I create a GraphQL API from endpoint URL {string} with additional properties {string} as {string}")
+    public void iCreateAGraphQLAPIFromEndpointURL(String endpointUrl, String additionalPropertiesKey, String apiID)
+            throws IOException {
+        String url = Utils.resolveContextPlaceholders(endpointUrl);
+        String additionalProperties = Utils.resolveFromContext(additionalPropertiesKey).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("type", "GRAPHQL");
+        formFields.put("url", url);
+        formFields.put("additionalProperties", additionalProperties);
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(Utils.getGraphQLSchema(getBaseUrl()), headers, new HashMap<>(), formFields);
+        TestContext.set("httpResponse", response);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(apiID, createdId);
+            ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        }
+    }
+
+    /**
+     * Validates a GraphQL schema obtained from an endpoint URL — via INTROSPECTION of a live endpoint
+     * ({@code useIntrospection=true}) or by fetching an SDL at the URL ({@code false}) — and stores the derived
+     * SDL (from {@code graphQLInfo.graphQLSchema.schemaDefinition}) under {@code schemaKey}. Ports the
+     * validateGraphqlSchemaDefinitionByURL step of GraphqlTestCase (the create-using-endpoint / SDL-URL paths).
+     */
+    @When("I validate the GraphQL schema from endpoint URL {string} with introspection {string} and store schema as {string}")
+    public void iValidateGraphQLSchemaFromURL(String endpointUrl, String useIntrospection, String schemaKey)
+            throws IOException {
+        String url = Utils.resolveContextPlaceholders(endpointUrl);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("url", url);
+
+        String validateUrl = Utils.getValidateGraphQLSchemaURL(getBaseUrl()) + "?useIntrospection=" + useIntrospection;
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(validateUrl, headers, new HashMap<>(), formFields);
+        TestContext.set("httpResponse", response);
+        String sdl = new org.json.JSONObject(response.getData())
+                .getJSONObject("graphQLInfo").getJSONObject("graphQLSchema").getString("schemaDefinition");
+        TestContext.set(Utils.normalizeContextKey(schemaKey), sdl);
+    }
+
+    /**
+     * Creates a GraphQL API from a schema STRING held in context (e.g. an SDL derived by introspecting an
+     * endpoint) — import-graphql-schema with the schema uploaded as a file. Non-asserting; stores the id on 2xx.
+     */
+    @When("I create a GraphQL API with schema {string} and additional properties {string} as {string}")
+    public void iCreateAGraphQLAPIWithSchemaStringAs(String schemaKey, String additionalPropertiesKey, String apiID)
+            throws IOException {
+        String schema = Utils.resolveFromContext(schemaKey).toString();
+        String additionalProperties = Utils.resolveFromContext(additionalPropertiesKey).toString();
+
+        File schemaFile = File.createTempFile("graphql-derived", ".graphql");
+        schemaFile.deleteOnExit();
+        Files.writeString(schemaFile.toPath(), schema);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("type", "GRAPHQL");
+        formFields.put("additionalProperties", additionalProperties);
+        Map<String, File> files = new HashMap<>();
+        files.put("file", schemaFile);
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(Utils.getGraphQLSchema(getBaseUrl()), headers, files, formFields);
+        TestContext.set("httpResponse", response);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(apiID, createdId);
+            ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        }
+    }
+
     /** Loads a .graphql (or any) resource off the classpath into a temp file for multipart upload. */
     private File loadResourceAsTempFile(String resourcePath) throws IOException {
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
@@ -1204,6 +1477,251 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Imports an API from an OpenAPI ARCHIVE (.zip, may contain remote $refs) — POST /apis/import-openapi,
+     * multipart {@code file} (the .zip, extension preserved) + {@code additionalProperties} (name/context/
+     * endpoint/policies, ${UNIQUE} resolved). Non-asserting — the feature asserts (valid archive → 201;
+     * incorrect archive → the observed error). On 2xx the created id is stored + registered for teardown.
+     * Ports APIM18 testCreateApiWithArchivesWithRemoteReferences[WithIncorrectSwagger].
+     *
+     * @param archivePath    classpath path to the .zip archive
+     * @param additionalData classpath path to the additional-properties JSON
+     * @param resourceId     context key to store the created API id under (on success)
+     */
+    @When("I import api from archive {string} with additional properties {string} as {string}")
+    public void iImportApiFromArchive(String archivePath, String additionalData, String resourceId) throws IOException {
+
+        File archiveFile = loadResourceAsTempFile(archivePath, ".zip");
+
+        String additionalProperties;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Additional properties file not found: " + additionalData);
+            }
+            additionalProperties = Utils.resolvePayloadPlaceholders(
+                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+        }
+        File additionalPropertiesFile = File.createTempFile("data", ".json");
+        additionalPropertiesFile.deleteOnExit();
+        Files.write(additionalPropertiesFile.toPath(), additionalProperties.getBytes(StandardCharsets.UTF_8));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archiveFile);
+        files.put("additionalProperties", additionalPropertiesFile);
+
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(Utils.getAPIDefinitionURL(getBaseUrl()), headers, files, null);
+        TestContext.set("httpResponse", response);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(resourceId, createdId);
+            ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        }
+    }
+
+    /** Loads a classpath resource into a temp .json file (for multipart OAS upload). */
+    private File loadJsonResourceAsTempFile(String resourcePath) throws IOException {
+        return loadResourceAsTempFile(resourcePath, ".json");
+    }
+
+    /** Loads a classpath resource into a temp file PRESERVING a given suffix — needed when the server cares
+     *  about the uploaded file's extension (e.g. {@code .png} thumbnails, {@code .zip} OpenAPI archives). */
+    private File loadResourceAsTempFile(String resourcePath, String suffix) throws IOException {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Resource not found: " + resourcePath);
+            }
+            File temp = File.createTempFile("res", suffix);
+            temp.deleteOnExit();
+            Files.copy(inputStream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            return temp;
+        }
+    }
+
+    /**
+     * Uploads a thumbnail image for an API (POST /apis/{id}/thumbnail, multipart form field {@code file}).
+     * Ports the thumbnail-set half of APIMANAGER5872. Non-asserting.
+     *
+     * @param imagePath classpath path to the image (e.g. artifacts/images/thumbnail.png)
+     * @param apiId     context key holding the API id
+     */
+    @When("I upload thumbnail {string} for API {string}")
+    public void iUploadThumbnail(String imagePath, String apiId) throws IOException {
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", loadResourceAsTempFile(imagePath, ".png"));
+        TestContext.remove("httpResponse");
+        // Thumbnail upload is a PUT (updateAPIThumbnail), not POST — a POST returns 405.
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPutMultipartWithFiles(Utils.getThumbnailURL(getBaseUrl(), actualApiId), headers, files,
+                        new HashMap<>());
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Downloads an API's thumbnail (GET /apis/{id}/thumbnail) — 200 when a thumbnail is set. Non-asserting.
+     *
+     * @param apiId context key holding the API id
+     */
+    @When("I retrieve the thumbnail for API {string}")
+    public void iRetrieveThumbnail(String apiId) throws IOException {
+        String actualApiId = Utils.resolveFromContext(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getThumbnailURL(getBaseUrl(), actualApiId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Updates an API's OpenAPI definition (PUT /apis/{id}/swagger, form field {@code apiDefinition}) from a
+     * classpath OAS file. Non-asserting — the feature asserts the status (a valid definition → 200; an invalid
+     * one, e.g. empty resource paths, → 400).
+     */
+    @When("I update the swagger of {string} resource {string} from file {string}")
+    public void iUpdateSwaggerFromFile(String resourceType, String resourceId, String filepath) throws IOException {
+
+        String actualId = Utils.resolveFromContext(resourceId).toString();
+        String definition;
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(filepath)) {
+            if (in == null) {
+                throw new FileNotFoundException("OAS file not found: " + filepath);
+            }
+            definition = IOUtils.toString(in, StandardCharsets.UTF_8);
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        // The swagger PUT is multipart/form-data with the definition as the text field "apiDefinition".
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("apiDefinition", definition);
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance().doPutMultipartWithFiles(
+                Utils.getSwaggerURL(getBaseUrl(), resourceType, actualId), headers, new HashMap<>(), formFields);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Retrieves the publisher linter custom rules. */
+    @When("I retrieve the linter custom rules")
+    public void iRetrieveLinterCustomRules() throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getLinterCustomRulesURL(getBaseUrl()), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Retrieves the available publisher throttling policies for a policy level (subscription / api / application). */
+    @When("I retrieve the publisher {string} throttling policies")
+    public void iRetrievePublisherThrottlingPolicies(String policyLevel) throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getPublisherThrottlingPoliciesURL(getBaseUrl(), policyLevel), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Retrieves an API's OpenAPI definition (GET /apis/{id}/swagger). */
+    @When("I retrieve the swagger of {string} resource {string}")
+    public void iRetrieveSwagger(String resourceType, String resourceId) throws IOException {
+
+        String actualId = Utils.resolveFromContext(resourceId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getSwaggerURL(getBaseUrl(), resourceType, actualId), headers);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Validates an OpenAPI definition file (POST /apis/validate-openapi, multipart {@code file}). The response
+     * carries an {@code isValid} flag; the feature asserts it (a valid def → isValid true; an invalid one →
+     * isValid false).
+     */
+    @When("I validate the openapi definition from file {string}")
+    public void iValidateOpenApiFromFile(String filepath) throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", loadJsonResourceAsTempFile(filepath));
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(Utils.getValidateOpenAPIURL(getBaseUrl()), headers, files, new HashMap<>());
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Attempts to import an OpenAPI definition without asserting success — for the invalid-definition negative
+     * (an empty-resource-path OAS import → 400). Mirrors the positive import step but neither asserts nor
+     * registers (nothing is created on failure).
+     */
+    @When("I attempt to import openapi definition from {string} with additional properties from {string}")
+    public void iAttemptImportOpenApi(String filepath, String additionalData) throws IOException {
+        importOpenApiDefinition(filepath, additionalData, null);
+    }
+
+    /**
+     * Imports an API from an OpenAPI DEFINITION file (.json/.yaml, not an archive) and STORES the created API id
+     * for the deploy/publish/subscribe/invoke arc that follows. Non-asserting (the feature asserts 201); on a
+     * 2xx the id is stored under {@code resourceId} and registered for teardown. Used by the gateway
+     * schema-validation port, which must import an OAS carrying the request/response schemas (a create-from-
+     * payload API has only operation targets, not the body schemas the gateway validates against).
+     *
+     * @param filepath       classpath path to the OpenAPI definition
+     * @param additionalData classpath path to the additional-properties JSON (name/context/endpoint/
+     *                       enableSchemaValidation, ${UNIQUE} resolved)
+     * @param resourceId     context key to store the created API id under (on success)
+     */
+    @When("I import openapi definition from {string} with additional properties {string} as {string}")
+    public void iImportOpenApiAsResource(String filepath, String additionalData, String resourceId)
+            throws IOException {
+        importOpenApiDefinition(filepath, additionalData, resourceId);
+    }
+
+    /** Shared OpenAPI-definition import (multipart {@code file} + {@code additionalProperties}); when
+     *  {@code resourceId} is non-null and the import succeeds, stores + registers the created API id. */
+    private void importOpenApiDefinition(String filepath, String additionalData, String resourceId)
+            throws IOException {
+
+        File openapiFile = loadJsonResourceAsTempFile(filepath);
+        File additionalPropertiesFile;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Additional properties file not found: " + additionalData);
+            }
+            String additionalProperties = Utils.resolvePayloadPlaceholders(
+                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            additionalPropertiesFile = File.createTempFile("data", ".json");
+            additionalPropertiesFile.deleteOnExit();
+            Files.write(additionalPropertiesFile.toPath(), additionalProperties.getBytes(StandardCharsets.UTF_8));
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", openapiFile);
+        files.put("additionalProperties", additionalPropertiesFile);
+        TestContext.remove("httpResponse");
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPostMultipartWithFiles(Utils.getAPIDefinitionURL(getBaseUrl()), headers, files, null);
+        TestContext.set("httpResponse", response);
+        if (resourceId != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(resourceId, createdId);
+            ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        }
+    }
+
+    /**
      * Transitions an API through an arbitrary lifecycle action (e.g. {@code Block}, {@code Deprecate},
      * {@code Retire}, {@code Re-Publish}) via the publisher change-lifecycle API — the general form of the
      * publish-only {@code I publish the … resource} step. Does not assert the status itself, so the feature can
@@ -1211,14 +1729,128 @@ public class PublisherBaseSteps {
      */
     @When("I change the lifecycle of API {string} with action {string}")
     public void iChangeTheLifecycleOfApi(String apiId, String action) throws IOException {
+        changeLifecycle("apis", apiId, action);
+    }
 
-        String actualApiId = Utils.resolveFromContext(apiId).toString();
+    /**
+     * Resource-typed variant of the lifecycle transition (e.g. {@code "api-products"}) — the change-lifecycle
+     * endpoint keys on {@code apiProductId} for products. Non-asserting; the feature confirms the status.
+     */
+    @When("I change the lifecycle of {string} resource {string} with action {string}")
+    public void iChangeTheLifecycleOfResource(String resourceType, String resourceId, String action) throws IOException {
+        changeLifecycle(resourceType, resourceId, action);
+    }
+
+    private void changeLifecycle(String resourceType, String resourceId, String action) throws IOException {
+        String actualId = Utils.resolveFromContext(resourceId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getChangeLifecycleURL(getBaseUrl(), resourceType, actualId, action, null), headers,
+                        null, null);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Builds an API-Product create payload that aggregates an existing API's operations: retrieves the API,
+     * embeds its {@code operations} under a single {@code ProductAPIDTO}, and wraps it with the product's
+     * name/context/version/policies. (Products reference existing APIs + a selected set of their resources.)
+     */
+    private String buildApiProductPayload(String name, String context, String apiId) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse apiResp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
+        JSONObject api = new JSONObject(apiResp.getData());
+        JSONArray operations = api.optJSONArray("operations");
+        JSONObject productApi = new JSONObject()
+                .put("apiId", apiId)
+                .put("name", api.optString("name"))
+                .put("operations", operations == null ? new JSONArray() : operations);
+        return new JSONObject()
+                .put("name", name)
+                .put("context", context)
+                .put("version", "1.0.0")
+                // Offer the standard business plans so the shared "set up application …" composite (which
+                // subscribes with Bronze) can subscribe to the product.
+                .put("policies", new JSONArray().put("Gold").put("Bronze").put("Unlimited"))
+                .put("apis", new JSONArray().put(productApi))
+                .toString();
+    }
+
+    /**
+     * Creates an API Product aggregating the resources of an existing API, and stores its id
+     * (registered for owner-aware teardown — swept before the underlying APIs). Asserts 201.
+     */
+    @When("I create an API product {string} with context {string} from API {string} as {string}")
+    public void iCreateApiProduct(String nameBase, String contextBase, String apiIdKey, String productIdKey)
+            throws IOException {
+
+        String apiId = Utils.resolveFromContext(apiIdKey).toString();
+        String payload = buildApiProductPayload(Utils.resolvePayloadPlaceholders(nameBase),
+                Utils.resolvePayloadPlaceholders(contextBase), apiId);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(Utils.getChangeLifecycleURL(getBaseUrl(), "apis", actualApiId, action, null), headers,
-                        null, null);
+                .doPost(Utils.getAPICreateEndpointURL(getBaseUrl(), "api-products"), headers, payload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+        Object productId = Utils.extractValueFromPayload(response.getData(), "id");
+        TestContext.set(productIdKey, productId);
+        ResourceCleanup.register(Constants.CREATED_API_PRODUCT_IDS, productId);
+    }
+
+    /**
+     * Non-asserting API-Product create (for negatives such as a malformed context → 400): stores the raw
+     * response for the feature to assert; does not extract an id or register anything.
+     */
+    @When("I attempt to create an API product {string} with context {string} from API {string}")
+    public void iAttemptToCreateApiProduct(String nameBase, String contextBase, String apiIdKey) throws IOException {
+
+        String apiId = Utils.resolveFromContext(apiIdKey).toString();
+        String payload = buildApiProductPayload(Utils.resolvePayloadPlaceholders(nameBase),
+                Utils.resolvePayloadPlaceholders(contextBase), apiId);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getAPICreateEndpointURL(getBaseUrl(), "api-products"), headers, payload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+    }
+
+    /** Creates a new version (copy) of an API Product; stores the new product's id and registers it for teardown. */
+    @When("I create a new version {string} of API product {string} with default version {string} as {string}")
+    public void iCreateNewApiProductVersion(String newVersion, String productIdKey, String isDefault,
+                                            String newProductIdKey) throws IOException {
+
+        String productId = Utils.resolveFromContext(productIdKey).toString();
+        boolean defaultVersion = Boolean.parseBoolean(isDefault);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getAPIProductNewVersionURL(getBaseUrl(), newVersion, defaultVersion, productId),
+                        headers, null, null);
+        TestContext.set("httpResponse", response);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object newId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(newProductIdKey, newId);
+            ResourceCleanup.register(Constants.CREATED_API_PRODUCT_IDS, newId);
+        }
+    }
+
+    /** Retrieves an API Product's swagger/OpenAPI definition, storing the raw response for assertions. */
+    @When("I retrieve the API product swagger of {string}")
+    public void iRetrieveApiProductSwagger(String productIdKey) throws IOException {
+
+        String productId = Utils.resolveFromContext(productIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getAPIProductSwaggerURL(getBaseUrl(), productId), headers);
         TestContext.set("httpResponse", response);
     }
 
@@ -1266,6 +1898,30 @@ public class PublisherBaseSteps {
         HttpResponse response = SimpleHTTPClient.getInstance()
                 .doPost(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
                         headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", response);
+    }
+
+    /**
+     * Undeploys a revision using a caller-supplied deployment payload — needed to undeploy from a specific
+     * (e.g. custom) environment/vhost rather than the default. Resolves {@code {{gatewayEnvironment}}} and any
+     * {@code {{contextKey}}} placeholders (e.g. a captured custom environment name). Non-asserting.
+     */
+    @When("I undeploy revision {string} of {string} resource {string} with payload {string}")
+    public void iUndeployRevisionGivenPayload(String revisionId, String resourceType, String resourceId,
+                                              String payload) throws IOException {
+
+        String actualResourceId = Utils.resolveFromContext(resourceId).toString();
+        String actualRevisionId = Utils.resolveFromContext(revisionId).toString();
+        String jsonPayload = Utils.resolveFromContext(payload).toString();
+        jsonPayload = jsonPayload.replace("{{gatewayEnvironment}}", System.getenv(Constants.GATEWAY_ENVIRONMENT));
+        jsonPayload = Utils.resolveContextPlaceholders(jsonPayload);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = SimpleHTTPClient.getInstance()
+                .doPost(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+                        headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set("httpResponse", response);
     }
 

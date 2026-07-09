@@ -7,7 +7,7 @@ Feature: DevPortal Search & Discovery
   asynchronous index, so the search step polls until the result appears (no fixed sleep). Self-contained
   scenario, torn down by the per-scenario cleanup hook.
 
-  @cap:devportal @feat:search @type:smoke @legacy:DevPortalSearchVisibilityTestCase
+  @cap:devportal @feat:discovery @rule:search @type:smoke @legacy:DevPortalSearchVisibilityTestCase
   Scenario Outline: Search a newly published API by name and context as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it

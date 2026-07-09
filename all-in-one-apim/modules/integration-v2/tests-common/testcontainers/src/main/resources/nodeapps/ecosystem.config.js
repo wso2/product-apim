@@ -159,6 +159,14 @@ module.exports = {
         env: {
           PORT: 3019
     }
+  },
+  {
+    name: "mcp-server",
+    script: "./mcp-server/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3020
+    }
   }
   ]
 };

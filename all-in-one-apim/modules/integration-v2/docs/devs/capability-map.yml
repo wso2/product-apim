@@ -12,7 +12,7 @@ capabilities:
   publisher:
     name: Publisher — API authoring & lifecycle
     features:
-      api-lifecycle:     { name: Create / deploy / publish / retire / delete }
+      api-lifecycle:     { name: Create / deploy / publish / prototype / retire / delete }
       api-config:        { name: Runtime config, endpoints, custom properties, resources, CORS }
       operation-policies: { name: Operation policy CRUD (common & API-specific) }
       scopes:            { name: API scopes & shared scopes (assignment) }
@@ -26,13 +26,14 @@ capabilities:
       streaming-design:  { name: Streaming (WebSocket/WebSub/Async) API design }
       soap-design:       { name: SOAP (passthrough) API design }
       service-catalog:   { name: Service catalog }
+      mcp-servers:       { name: MCP server authoring (create proxy/from-OpenAPI/from-API, CRUD, backends) }
 
   devportal:
     name: DevPortal — discovery & consumption
     features:
-      search:                  { name: Search & discovery }
-      browse:                  { name: Browse / catalog view / tags }
+      discovery:               { name: Search & browse }
       applications:            { name: Application CRUD }
+      application-attributes:  { name: Custom application attributes (store + JWT claim) }
       subscribe:               { name: Subscribe / unsubscribe }
       subscription-management: { name: Subscription update / blocking }
       comments:                { name: Comments }
@@ -54,18 +55,29 @@ capabilities:
       throttling-enforcement: { name: Runtime throttling enforcement }
       security-enforcement:   { name: Token / scope / mutual-SSL enforcement }
       custom-auth-header:     { name: Custom authorization header }
+      schema-validation:      { name: Request / response schema validation }
+      mcp-invocation:         { name: MCP tool invocation (proxy / from-OpenAPI / from-API) }
 
   admin:
-    name: Admin — governance, policies & configuration
+    name: Admin — policies & configuration
     features:
       throttling-policies: { name: Throttling policy CRUD }
-      governance:          { name: Governance policies }
-      compliance:          { name: Compliance checks }
       workflows:           { name: Approval workflows }
       key-manager-config:  { name: Key manager registration & config }
       environments:        { name: Gateway environments }
       tenants-orgs:        { name: Tenants & organizations }
+      application-management: { name: Admin application search & management }
       bot-detection:       { name: Bot detection }
+      role-scope-mapping:  { name: System scope role-alias mapping }
+
+  # API Governance is a distinct product API (/api/am/governance/v1) with its own token scopes (apim:gov_*),
+  # so it is a top-level capability — not folded under admin (whose contract is /api/am/admin/v4).
+  governance:
+    name: API Governance — rulesets, policies & compliance
+    features:
+      rulesets:   { name: Governance ruleset CRUD (spectral rules) }
+      policies:   { name: Governance policy CRUD (ruleset attachment) }
+      compliance: { name: Artifact compliance evaluation }
 
   key-manager:
     name: Key Manager — keys, tokens & OAuth
@@ -73,6 +85,7 @@ capabilities:
       oauth-keys:              { name: OAuth application key generation }
       api-key:                 { name: API key management }
       multiple-client-secrets: { name: Multiple client secrets }
+      map-application-keys:    { name: Map pre-existing (BYO) OAuth client keys }
       token-issuance:          { name: Token issuance (access / refresh / sandbox) }
       token-revocation:        { name: Token revocation }
       token-persistence:       { name: Token state persistence across server restart }
@@ -83,5 +96,6 @@ capabilities:
     name: Analytics — logging & observability
     features:
       request-logging:  { name: Request / access logging }
+      remote-logging:   { name: Remote server log publishing }
       analytics-events: { name: Analytics events }
       alerts:           { name: Alerts }
