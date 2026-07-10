@@ -68,6 +68,34 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlEndpointSecurityRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphqlFromUrlRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAiApiInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayPrototypeApiRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySchemaValidationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
+        </classes>
+    </test>
+    <!-- Mutual-SSL gateway invocation. Own block: needs a client-cert TOML overlay + the node backend; restarts
+         nothing but runs thread-count=1 so its cert config doesn't bleed into a sibling class. -->
+    <test name="IntegrationV2-MutualSSL" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="mutual-ssl"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mutualssl/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- WebSocket CORS. Own block: needs a CORS TOML overlay + the node backend; thread-count=1 so the CORS
+         config is isolated to this block's container. -->
+    <test name="IntegrationV2-WebSocketCORS" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-cors"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wscors/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketCorsRunner"/>
         </classes>
     </test>
     <!-- MCP servers span planes (publisher-plane CRUD + gateway-plane invocation) but share one backend-enabled
@@ -183,6 +211,7 @@
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartTokenPersistenceRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartSharedScopeRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartMultiProtocolRunner"/>
         </classes>
     </test>
     <!-- Remote server logging (RemoteLoggingAppenderTest). MUST run sequentially (thread-count=1): it mutates

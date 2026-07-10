@@ -1,0 +1,46 @@
+{
+  "name": "${UNIQUE:APIMWsEcho}",
+  "context": "${UNIQUE:apimWsEchoContext}",
+  "version": "1.0.0",
+  "type": "WS",
+  "enableSchemaValidation": false,
+  "transport": [],
+  "tags": ["websocket"],
+  "policies": ["AsyncUnlimited"],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": "Authorization",
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": ["oauth2", "api_key"],
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "accessControl": "NONE",
+  "endpointConfig": {
+    "endpoint_type": "ws",
+    "sandbox_endpoints": {
+      "url": "ws://nodebackend:3001"
+    },
+    "production_endpoints": {
+      "url": "ws://nodebackend:3001"
+    }
+  },
+  "endpointImplementationType": "ENDPOINT",
+  "operations": [
+    {
+      "target": "/*",
+      "verb": "SUBSCRIBE",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    },
+    {
+      "target": "/*",
+      "verb": "PUBLISH",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ]
+}

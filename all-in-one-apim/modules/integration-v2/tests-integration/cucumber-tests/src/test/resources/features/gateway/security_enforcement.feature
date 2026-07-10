@@ -114,3 +114,38 @@ Feature: Gateway Security Enforcement
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Basic-auth application security: an API whose securityScheme is basic_auth accepts a valid carbon user's HTTP
+  # Basic credentials at the gateway (200) and rejects invalid credentials (401). Ports the basic-auth cases of
+  # APISecurityTestCase (a distinct auth SCHEME, not tested elsewhere in the suite).
+  @cap:gateway @feat:security-enforcement @rule:basic-auth @type:regression @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: A basic-auth-secured API accepts valid user credentials and rejects invalid ones as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    When I retrieve the "apis" resource with id "createdApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "createdApiPayload"
+    When I update the "apis" resource "createdApiId" and "createdApiPayload" with configuration type "securityScheme" and value:
+      """
+      ["basic_auth", "oauth_basic_auth_api_key_mandatory"]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "createdApiId"
+    And I extract response field "context" and store it as "apiContext"
+    When I deploy the API with id "createdApiId"
+    Then The response status code should be 201
+    And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    When I publish the "apis" resource with id "createdApiId"
+    Then The lifecycle status of API "createdApiId" should be "Published"
+    # Valid carbon user credentials → 200
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # A valid user with the WRONG password → 401
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" with password "totallyWrongPassword" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

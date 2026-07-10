@@ -314,3 +314,60 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 200
     When I invoke the API at gateway context "{{custApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 90 seconds
     Then The response status code should be 429
+
+  # OPERATION-LEVEL (advanced) request-count: the advanced policy is set on a specific operation (not the whole
+  # API via apiThrottlingPolicy), so exceeding it on that operation → 429. Complements the API-LEVEL scenario
+  # above — together they port the operation↔API-level change of AdvancedThrottlingPolicyTestCase (#9/#10).
+  @cap:gateway @feat:rest-invocation @type:regression @dep:admin @legacy:AdvancedThrottlingPolicyTestCase
+  Scenario Outline: An operation is throttled with 429 once it exceeds its OPERATION-LEVEL advanced limit as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+
+    # A bespoke advanced policy allowing only 3 requests/min, assigned to a single operation.
+    When I create an advanced throttling policy "${UNIQUE:advOp3perMin}" allowing 3 requests per minute
+    Then The response status code should be 201
+
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "opThrottleApiId" and deployed it
+    When I retrieve the "apis" resource with id "opThrottleApiId"
+    And I put the response payload in context as "opApiPayload"
+    And I update the "apis" resource "opThrottleApiId" and "opApiPayload" with configuration type "operations" and value:
+    """
+    [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"{{advThrottlePolicyName}}","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "opThrottleApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "opThrottleApiId"
+    Then The lifecycle status of API "opThrottleApiId" should be "Published"
+    When I retrieve the "apis" resource with id "opThrottleApiId"
+    And I extract response field "context" and store it as "opApiContext"
+
+    # A normal Unlimited-tier application (the limit is on the operation, not the app/subscription).
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "generateApplicationKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "opThrottleApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "opSubscriptionId"
+    Then The response status code should be 201
+    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    Then The response status code should be 200
+
+    # Drive past the operation's 3/min limit — the gateway must refuse with 429 on that operation.
+    And I invoke the API at gateway context "{{opApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{opApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

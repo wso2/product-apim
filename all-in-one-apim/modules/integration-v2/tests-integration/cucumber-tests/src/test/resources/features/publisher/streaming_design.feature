@@ -28,3 +28,17 @@ Feature: Publisher Streaming API Design
       | actor                       |
       | subscriberUser              |
       | subscriberUser@tenant1.com  |
+
+  # Negative: creating a WebSocket API whose context is malformed (an illegal {version} placement) is rejected
+  # with 400 at the publisher. Ports WebSocketAPITestCase#testCreateWebSocketAPIWithMalformedContext.
+  @cap:publisher @feat:streaming-design @rule:malformed-context @type:negative @legacy:WebSocketAPITestCase
+  Scenario Outline: Creating a WebSocket API with a malformed context is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_ws_malformed_context_api.json" in context as "wsMalformedPayload"
+    And I attempt to create an "apis" resource with payload "wsMalformedPayload"
+    Then The response status code should be 400
+
+    Examples:
+      | actor                      |
+      | publisherUser              |
+      | publisherUser@tenant1.com  |

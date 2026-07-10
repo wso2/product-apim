@@ -1,0 +1,9 @@
+# Extra overlay for the WebSocket CORS origin-validation test, merged on top of the shared `basic` overlay.
+#
+# WS CORS validation is OFF by default (unlike REST). It requires the gateway-wide toggle
+# `enable_validation_for_ws = true`, plus an explicit `allow_origins` allow-list so a disallowed Origin can be
+# rejected (the default is "*", which allows everything and can't demonstrate a rejection). Ports the config the
+# legacy WebSocketAPICorsValidationTestCase applied.
+[apim.cors]
+allow_origins = ["http://allowed.example.com"]
+enable_validation_for_ws = true
