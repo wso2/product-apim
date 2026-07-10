@@ -20,17 +20,17 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for key-manager/token-issuance — JWT-format, OpenID, refresh-token and sandbox token variants.
- * Self-contained {@code @cleanup} scenarios. Extends {@link BaseBlockRunner} for the block boot-failure guard
- * and runner-scoped cleanup safety net. Its block opts into the backend (initBackend) for the refresh/sandbox
- * gateway invocations.
+ * Runner for mandatory custom API property enforcement — the port of MandatoryPropertiesTestWithRestart. Runs
+ * in the IntegrationV2-MandatoryProperties block, whose overlay declares a required custom property.
  */
 @CucumberOptions(
-        features = "src/test/resources/features/key-manager/token_issuance.feature",
+        features = {
+                "src/test/resources/features/publisher/mandatory_properties.feature"
+        },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },
-        plugin = {"pretty", "html:target/cucumber-report/keymanager-token-issuance.html"}
+        plugin = {"pretty", "html:target/cucumber-report/publisher-mandatory-properties.html"}
 )
-public class KeyManagerTokenIssuanceRunner extends BaseBlockRunner {
+public class PublisherMandatoryPropertiesRunner extends BaseBlockRunner {
 }

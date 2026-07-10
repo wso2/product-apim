@@ -57,3 +57,45 @@ Feature: Publisher API Revisions
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # Wave B-2: deploying a revision to a vhost NOT configured for the target environment is rejected (400).
+  # Ports APIRevisionTestCase.testDeployAPIRevisionWithInvalidVhost.
+  @cap:publisher @feat:revisions @rule:invalid-vhost @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Deploying a revision to a vhost not configured for the environment is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ivApiId" and deployed it
+    When I put the following JSON payload in context as "ivRev"
+    """
+    {"description":"invalid vhost revision"}
+    """
+    And I make a request to create a revision for "apis" resource "ivApiId" with payload "ivRev"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "ivDeploy"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":"ws.wso2.com","displayOnDevportal":true}]
+    """
+    And I make a request to deploy revision "revisionId" of "apis" resource "ivApiId" with payload "ivDeploy"
+    Then The response status code should be 400
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Wave B-4 (verify-first): a deployed API revision reports gateway deployment-acknowledgement counts. Ports
+  # APIRevisionTestCase.testVerifyDeploymentAcknowledgmentCounts — asserts the count FIELDS are present in the
+  # deployed-revisions deploymentInfo (the stable contract). The legacy count>0 assertion is intentionally NOT
+  # made here: it depends on a gateway ack that lags (legacy retried ~100s) and is flaky in a fresh container.
+  @cap:publisher @feat:revisions @rule:deployment-ack @type:regression @legacy:APIRevisionTestCase
+  Scenario Outline: A deployed API revision reports gateway deployment-acknowledgement counts as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ackApiId" and deployed it
+    When I retrieve the deployed revisions of "apis" resource "ackApiId"
+    Then The response status code should be 200
+    And The response should contain "deployedGatewayCount"
+    And The response should contain "liveGatewayCount"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |

@@ -20,17 +20,18 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for key-manager/token-issuance — JWT-format, OpenID, refresh-token and sandbox token variants.
- * Self-contained {@code @cleanup} scenarios. Extends {@link BaseBlockRunner} for the block boot-failure guard
- * and runner-scoped cleanup safety net. Its block opts into the backend (initBackend) for the refresh/sandbox
- * gateway invocations.
+ * Runner for API Governance policy CRUD (the port of the legacy PolicyMgtTestCase, plus the ruleset-attached
+ * integrity rule). Runs in the concurrent IntegrationV2-Governance block; each scenario uses uniquely-named
+ * rulesets/policies, so it is parallel-safe.
  */
 @CucumberOptions(
-        features = "src/test/resources/features/key-manager/token_issuance.feature",
+        features = {
+                "src/test/resources/features/governance/policies.feature"
+        },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },
-        plugin = {"pretty", "html:target/cucumber-report/keymanager-token-issuance.html"}
+        plugin = {"pretty", "html:target/cucumber-report/governance-policies.html"}
 )
-public class KeyManagerTokenIssuanceRunner extends BaseBlockRunner {
+public class GovernancePoliciesRunner extends BaseBlockRunner {
 }

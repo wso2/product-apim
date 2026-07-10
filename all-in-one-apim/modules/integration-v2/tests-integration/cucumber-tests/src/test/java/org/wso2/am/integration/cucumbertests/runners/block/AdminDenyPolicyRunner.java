@@ -20,17 +20,18 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for key-manager/token-issuance — JWT-format, OpenID, refresh-token and sandbox token variants.
- * Self-contained {@code @cleanup} scenarios. Extends {@link BaseBlockRunner} for the block boot-failure guard
- * and runner-scoped cleanup safety net. Its block opts into the backend (initBackend) for the refresh/sandbox
- * gateway invocations.
+ * Runner for admin-plane deny (blocking-condition) policies — the port of the legacy APIDenyPolicyTestCase +
+ * DenyPolicySearchTestCase (self-contained IP / IP-range / USER types). Runs in the concurrent
+ * IntegrationV2-Admin block; each scenario uses distinct IPs, so it is parallel-safe.
  */
 @CucumberOptions(
-        features = "src/test/resources/features/key-manager/token_issuance.feature",
+        features = {
+                "src/test/resources/features/admin/deny_policies.feature"
+        },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },
-        plugin = {"pretty", "html:target/cucumber-report/keymanager-token-issuance.html"}
+        plugin = {"pretty", "html:target/cucumber-report/admin-deny-policies.html"}
 )
-public class KeyManagerTokenIssuanceRunner extends BaseBlockRunner {
+public class AdminDenyPolicyRunner extends BaseBlockRunner {
 }

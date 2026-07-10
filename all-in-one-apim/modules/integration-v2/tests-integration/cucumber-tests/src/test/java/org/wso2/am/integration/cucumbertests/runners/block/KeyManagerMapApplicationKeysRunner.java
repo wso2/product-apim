@@ -20,17 +20,19 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for key-manager/token-issuance — JWT-format, OpenID, refresh-token and sandbox token variants.
- * Self-contained {@code @cleanup} scenarios. Extends {@link BaseBlockRunner} for the block boot-failure guard
- * and runner-scoped cleanup safety net. Its block opts into the backend (initBackend) for the refresh/sandbox
- * gateway invocations.
+ * Runner for map-application-keys (bind a pre-existing/BYO OAuth client to an application) — the port of the
+ * legacy ApplicationTestCase#mapApplicationKeys / mapApplicationKeysNegative arc. Runs in the standard
+ * IntegrationV2-KeyManager block; the map targets the resident Key Manager which ships in every pack, so no
+ * external Key Manager backend or config overlay is needed.
  */
 @CucumberOptions(
-        features = "src/test/resources/features/key-manager/token_issuance.feature",
+        features = {
+                "src/test/resources/features/key-manager/map_application_keys.feature"
+        },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },
-        plugin = {"pretty", "html:target/cucumber-report/keymanager-token-issuance.html"}
+        plugin = {"pretty", "html:target/cucumber-report/keymanager-map-application-keys.html"}
 )
-public class KeyManagerTokenIssuanceRunner extends BaseBlockRunner {
+public class KeyManagerMapApplicationKeysRunner extends BaseBlockRunner {
 }

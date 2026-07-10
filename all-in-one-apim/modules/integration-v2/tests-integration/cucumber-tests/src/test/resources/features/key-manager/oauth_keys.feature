@@ -35,3 +35,26 @@ Feature: Key Manager OAuth Application Keys
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  @cap:key-manager @feat:oauth-keys @type:regression @legacy:ApplicationTestCase
+  Scenario Outline: Clean up an application's key registration as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+
+    When I put the following JSON payload in context as "generateApplicationKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
+    Then The response status code should be 200
+
+    When I clean up the key registration for application "createdAppId" with key mapping "keyMappingId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
