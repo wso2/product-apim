@@ -1,0 +1,25 @@
+{
+  "name": "${UNIQUE:APIMAdvertise}",
+  "context": "${UNIQUE:apiAdvertiseCtx}",
+  "version": "1.0.0",
+  "advertiseInfo": {
+    "advertised": true,
+    "apiExternalProductionEndpoint": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+    "apiExternalSandboxEndpoint": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+    "originalDevPortalUrl": "https://test.com",
+    "vendor": "WSO2"
+  },
+  "description": "Advertise-only API, aggregated into a product",
+  "tags": ["advertise"],
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

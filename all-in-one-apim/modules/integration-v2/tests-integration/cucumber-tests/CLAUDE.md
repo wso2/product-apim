@@ -66,6 +66,22 @@ mutable.**
     across the runner's later scenarios, **leave the feature untagged** and rely on `BaseBlockRunner`'s
     `@AfterClass` sweep, which deletes once after all the runner's scenarios. A per-scenario `@cleanup` here
     would delete the shared fixture out from under the scenarios that follow.
+- **Introducing a NEW top-level resource type? `register(...)` alone is NOT enough — wire the sweep too.**
+  `ResourceCleanup.register(key, id)` only enqueues an id; it is deleted only if
+  `ResourceCleanup.deleteRegisteredResources()` actually sweeps that list. Registering to a list nothing sweeps
+  leaks **silently** — no error, just residue. So for a new resource kind, do all four: (1) add a
+  `CREATED_<X>_IDS` list constant; (2) `register(...)` it on every successful create; (3) add a
+  `deleteResources(CREATED_<X>_IDS, <owner-token>, <delete-URL>)` call in **FK-safe order** (a resource another
+  one references must be deleted first — e.g. applications before APIs, API products before APIs, an AI
+  provider after the APIs binding it); and (4) add the list to **both** the early-return guard and the
+  `finally` block. Only child/sub-resources that vanish with their parent (a subscription with its app, a
+  document/revision/endpoint with its API) need no separate registration.
+    - **Don't assume a bearer-token REST delete exists — and verify the sweep actually deletes.** Some
+      resources have no REST delete or don't use a bearer token, so `deleteResources(...)` doesn't fit and they
+      need a **bespoke sweep** (see `deleteDcrClients`: a DCR-registered OAuth client has no working REST delete
+      and isn't removed by app deletion, so it is deregistered via the `OAuthAdminService` SOAP admin service as
+      its owner). Whatever the mechanism, **prove it against a container** — a delete that silently 404s/faults
+      and is treated as "already gone" looks green while leaking. Log a WARN on any non-2xx so a real leak is visible.
 - Leave zero residue (APIs, apps, subscriptions, tenants, keys).
 
 ## 6. Gherkin style
@@ -79,6 +95,18 @@ mutable.**
 ## 7. Step definitions (glue)
 - **Reuse** existing steps. If one doesn't quite fit, **extend it** to cover the new need — never add
   a near-duplicate step. Search the glue before writing.
+- **Reading from context — one class, `TestContext`, three intents.** Don't reach for a `utils` helper:
+  - `TestContext.resolve(key)` — a **required** value. Strips an optional `<...>` reference wrapper and
+    **throws** `IllegalArgumentException` if absent. Use this for a caller-supplied `{string}` key (an id /
+    token / payload key a step receives) so a missing/typo'd key fails **fast** with a clear message instead
+    of a downstream NPE. This is the default for step arguments.
+  - `TestContext.get(key)` — the **nullable** primitive (returns `null` if absent, no `<>` handling). Use
+    only for a framework-managed key you null-check yourself (`"baseUrl"`, `"httpResponse"`,
+    `"blockApimContainer"`) or where absence is a legitimate branch.
+  - `TestContext.contains(key)` — presence check.
+
+  (There is no `Utils.resolveFromContext` — it was consolidated into `TestContext.resolve`. Picking the
+  method IS the statement of intent; don't fold them into one flagged call.)
 - **The `httpResponse` contract.** A request-making step publishes its result to the shared context key
   `"httpResponse"`; the generic assertion steps (`Then The response status code should be N`,
   `The response should contain …`) read it back. This decoupling has a **stale-response trap**: if your
@@ -86,12 +114,34 @@ mutable.**
   following assertion can pass against the **wrong** call (a false pass). So a step that makes a request
   must **clear `httpResponse` before the call** (`TestContext.remove("httpResponse")`), so a throw leaves
   it *absent* rather than stale — then set it only on a real response.
+- **Guard a response before parsing its body.** Before `new JSONObject(resp.getData())` (or drilling into
+  fields), assert the call **succeeded with a body** — otherwise a failed/empty response throws an opaque
+  `JSONException`/NPE instead of a clear failure. Use
+  `Assert.assertTrue(resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300 &&
+  resp.getData() != null && !resp.getData().isEmpty(), "<what failed, incl. the id and got=<code>/<body>>")`.
+  This applies to **intermediate reads too** — the GET half of a GET-then-mutate-then-PUT (e.g.
+  `buildApiProductPayload`, `fetchSharedScopeByName`), where the response isn't published to `httpResponse`
+  but is still parsed locally.
 - **Invocation steps funnel through `APIInvocationSteps.execute(...)`** — the single primitive that does
   exactly this (clear → call → set → **return** the response). Add new invocation variants by calling
   `execute`, not by hand-writing another `TestContext.set("httpResponse", client.doX(...))` (that
   re-introduces the stale-response trap and the ~15-way duplication it replaced).
+- **Management-plane requests funnel through `Requests.*`** (`utils/Requests`) — the counterpart of
+  `execute` for non-invocation calls (create/update/delete/import, GET/POST/PUT/DELETE **and** multipart).
+  Each method does clear → call → set(`httpResponse`) → **return** in one place, so you never hand-write the
+  `remove`/`set` dance. Call a `Requests.*` method for **the one request whose response the step publishes
+  for the following assertion** (the "response under test").
+- **Use `SimpleHTTPClient.*` directly ONLY for an intermediate read** whose body is consumed locally within
+  the same step and is NOT the asserted response — e.g. a GET-then-mutate-then-PUT round trip: `HttpResponse
+  dtoResp = SimpleHTTPClient.getInstance().doGet(...)` into a **local variable** to build the payload, then
+  `Requests.put(...)` the result (that PUT is what publishes). Such a read must **not** touch `httpResponse`.
+  Do **not** try to route it through the funnel with a "don't publish" flag: `SimpleHTTPClient` *is* the raw
+  HTTP chokepoint that `Requests` wraps, so a non-publishing funnel call collapses to exactly the raw client
+  call — there is nothing to centralize. The layering is deliberate: `SimpleHTTPClient` = raw HTTP (all calls
+  go through it; the home for cross-cutting HTTP concerns); `Requests` = the thin layer that additionally
+  publishes the response as the step's assertion target.
 - **Retry-until-status loops:** catch only `IOException` (transient gateway warm-up — retry), so a bad
-  token/payload context key (`IllegalArgumentException` from `Utils.resolveFromContext`) fails **fast**
+  token/payload context key (`IllegalArgumentException` from `TestContext.resolve`) fails **fast**
   instead of being masked as a timeout. Keep the last *returned* response in a **local** variable and
   **assert after the loop** (`assertNotNull` then `assertEquals` on the expected status) — the step must
   fail on its own, never rely on a following `Then` to notice a persistent failure. See
@@ -202,6 +252,15 @@ tenants (`carbon.super` and `tenant1.com`) on boot — pick the one with the lea
   can't be reused for negatives — use the non-asserting **`I attempt to …`** variants (create API / new
   version / shared scope / application / subscribe) and assert the status in the feature. Add a negative only
   where enforcement is real; skip hollow ones (e.g. "search rejected", "key-gen rejected").
+- **Assert the EXACT expected value — never relax an assertion to make a test pass.** If two cases return
+  different codes, assert each one's exact value in its own scenario/row; do not widen the check to accept
+  several (e.g. `status == 401 || status == 403`). A permissive assertion passes today but silently swallows a
+  future regression — including an actual security bypass that returns a *different but still-4xx* code.
+  Example: an invalid token at the MCP `tools/call` is rejected with **401** for the *proxy* subtype but **403**
+  for the *DirectBackend (OpenAPI)* subtype. The right fix is two strict assertions (`gateway/mcp_proxy_invocation`
+  asserts 401, `gateway/mcp_openapi_invocation` asserts 403), each pinning its subtype's real behaviour — NOT a
+  step that accepts either. When you discover such a per-case difference, record it (backlog/comment) and encode
+  it as separate exact assertions.
 
 ## 13. Container config & TOML overlays
 Each block boots a container whose `deployment.toml` is resolved by `BlockLifecycleListener`. Most blocks need

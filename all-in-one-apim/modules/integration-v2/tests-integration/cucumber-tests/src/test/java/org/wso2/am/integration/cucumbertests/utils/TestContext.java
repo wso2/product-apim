@@ -122,6 +122,22 @@ public class TestContext {
         return getCurrentSharedContext().get(key);
     }
 
+    /**
+     * Resolves a REQUIRED value from context: strips an optional {@code <...>} reference wrapper, then reads the
+     * key. Throws {@link IllegalArgumentException} if the value is absent — use this for a caller-supplied key
+     * that must exist, so a missing/typo'd key fails fast with a clear message instead of a downstream NPE. For a
+     * key that may legitimately be absent (or a framework-managed key you null-check yourself), use
+     * {@link #get(String)} (nullable) or {@link #contains(String)}.
+     */
+    public static Object resolve(String key) {
+        String lookupKey = (key.startsWith("<") && key.endsWith(">")) ? key.substring(1, key.length() - 1) : key;
+        Object value = get(lookupKey);
+        if (value == null) {
+            throw new IllegalArgumentException("No value found in context for key: " + lookupKey);
+        }
+        return value;
+    }
+
     public static boolean contains(String key) {
         return getCurrentLocalContext().containsKey(key) || getCurrentSharedContext().containsKey(key);
     }
