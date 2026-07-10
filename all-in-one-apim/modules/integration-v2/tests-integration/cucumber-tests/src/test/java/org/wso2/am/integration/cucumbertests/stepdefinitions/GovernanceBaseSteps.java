@@ -260,7 +260,14 @@ public class GovernanceBaseSteps {
         String policyId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
-        org.testng.Assert.assertEquals(current.getResponseCode(), 200, current.getData());
+        // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
+        // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
+        org.testng.Assert.assertTrue(current != null && current.getResponseCode() >= 200
+                        && current.getResponseCode() < 300 && current.getData() != null
+                        && !current.getData().isEmpty(),
+                "Failed to fetch governance policy '" + policyId + "' before updating its description: expected a 2xx "
+                        + "response with a body, got " + (current == null ? "no response"
+                        : current.getResponseCode() + " / body=" + current.getData()));
 
         JSONObject policy = new JSONObject(current.getData());
         policy.put("description", newDescription);
@@ -363,7 +370,9 @@ public class GovernanceBaseSteps {
         while (System.nanoTime() < deadline) {
             try {
                 last = SimpleHTTPClient.getInstance().doGet(url, governanceAuthHeaders());
-                if (last.getResponseCode() == 200) {
+                // Only parse a 200 that actually has a body; an empty 200 during warm-up falls through and we
+                // keep polling rather than throwing an uncaught JSONException (the catch below is IOException-only).
+                if (last.getResponseCode() == 200 && last.getData() != null && !last.getData().isEmpty()) {
                     actualStatus = new JSONObject(last.getData()).optString("status", null);
                     if (expectedStatus.equals(actualStatus)) {
                         break;

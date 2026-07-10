@@ -18,6 +18,7 @@ Feature: Admin System Scope Role-Alias Mapping
     Then The response status code should be 200
     When I retrieve the role aliases
     Then The response status code should be 200
+    And The response should not contain "testRole"
 
     Examples:
       | actor             |

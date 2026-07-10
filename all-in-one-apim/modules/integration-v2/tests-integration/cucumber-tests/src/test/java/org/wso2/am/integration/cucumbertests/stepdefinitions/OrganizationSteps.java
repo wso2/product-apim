@@ -244,7 +244,14 @@ public class OrganizationSteps {
 
         HttpResponse current = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
-        org.testng.Assert.assertEquals(current.getResponseCode(), 200, current.getData());
+        // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
+        // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
+        org.testng.Assert.assertTrue(current != null && current.getResponseCode() >= 200
+                        && current.getResponseCode() < 300 && current.getData() != null
+                        && !current.getData().isEmpty(),
+                "Failed to fetch API '" + apiId + "' before setting its visible organizations: expected a 2xx "
+                        + "response with a body, got " + (current == null ? "no response"
+                        : current.getResponseCode() + " / body=" + current.getData()));
         JSONObject api = new JSONObject(current.getData());
         api.put("visibleOrganizations", new JSONArray().put(resolved));
 
@@ -268,7 +275,14 @@ public class OrganizationSteps {
 
         HttpResponse current = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
-        org.testng.Assert.assertEquals(current.getResponseCode(), 200, current.getData());
+        // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
+        // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
+        org.testng.Assert.assertTrue(current != null && current.getResponseCode() >= 200
+                        && current.getResponseCode() < 300 && current.getData() != null
+                        && !current.getData().isEmpty(),
+                "Failed to fetch API '" + apiId + "' before setting its organization policies: expected a 2xx "
+                        + "response with a body, got " + (current == null ? "no response"
+                        : current.getResponseCode() + " / body=" + current.getData()));
         JSONObject api = new JSONObject(current.getData());
         api.put("visibleOrganizations", new JSONArray().put(orgId));
         JSONObject policy = new JSONObject();

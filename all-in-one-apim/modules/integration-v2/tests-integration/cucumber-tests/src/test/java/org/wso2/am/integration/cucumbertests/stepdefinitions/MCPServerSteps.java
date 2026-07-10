@@ -104,6 +104,13 @@ public class MCPServerSteps {
 
         HttpResponse getResp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        org.testng.Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200
+                        && getResp.getResponseCode() < 300 && getResp.getData() != null && !getResp.getData().isEmpty(),
+                "Failed to fetch MCP server '" + id + "' before updating its tools: expected a 2xx response with a "
+                        + "body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
+                        + " / body=" + getResp.getData()));
         JSONObject dto = new JSONObject(getResp.getData());
         dto.put("operations", new org.json.JSONArray(buildToolOperations(tools)));
 

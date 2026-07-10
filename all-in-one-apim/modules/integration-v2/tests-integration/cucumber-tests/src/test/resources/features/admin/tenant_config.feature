@@ -34,6 +34,7 @@ Feature: Admin Tenant Configuration
     Then The response status code should be 200
     When I retrieve the tenant configuration
     Then The response status code should be 200
+    And The response should contain "EnableMonetization"
     When I update the tenant configuration from "tcOriginal"
     Then The response status code should be 200
 
