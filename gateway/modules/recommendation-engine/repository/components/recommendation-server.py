@@ -180,8 +180,8 @@ def add_clicked_API(clicked_API, organization):
 def get_company_from_jwt(encoded_jwt):
     content = encoded_jwt.split(".")
     base64_bytes = content[1].encode('ascii')
-    un_encoded_bytes = base64.b64decode(base64_bytes)
-    message = un_encoded_bytes.decode('ascii')
+    decoded_bytes = base64.b64decode(base64_bytes)
+    message = decoded_bytes.decode('ascii')
     messageJson = json.loads(message)
     company = messageJson["http://wso2.org/claims/applicationname"]
     return company 
