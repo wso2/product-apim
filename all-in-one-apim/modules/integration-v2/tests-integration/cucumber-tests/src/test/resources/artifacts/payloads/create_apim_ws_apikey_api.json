@@ -1,6 +1,6 @@
 {
-  "name": "${UNIQUE:APIMWsEcho}",
-  "context": "${UNIQUE:apimWsEchoContext}",
+  "name": "${UNIQUE:APIMWsApiKey}",
+  "context": "${UNIQUE:apimWsApiKeyContext}",
   "version": "1.0.0",
   "type": "WS",
   "enableSchemaValidation": false,

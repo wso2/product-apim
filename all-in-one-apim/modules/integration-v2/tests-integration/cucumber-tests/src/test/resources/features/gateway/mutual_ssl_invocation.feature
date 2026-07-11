@@ -5,7 +5,8 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
   CLIENT by its TLS certificate. The publisher uploads the accepted certificate to the API; a client presenting
   the matching certificate on the gateway HTTPS handshake is authorised (200), while a client presenting NO
   certificate is rejected (401). The gateway HTTPS listener already ships SSLVerifyClient=optional (default 4.7.0
-  pack) and the container exposes 8243, so no config overlay is needed. Ports
+  pack) and the container exposes 8243; the block's TOML overlay shrinks the SSL-profile read interval so an
+  uploaded client certificate is picked up within seconds instead of the 10-minute default. Ports
   APISecurityMutualSSLCertificateChainValidationTestCase. Teardown via the per-scenario hook.
 
   @cap:gateway @feat:security-enforcement @rule:mutual-ssl @type:regression @dep:publisher @legacy:APISecurityMutualSSLCertificateChainValidationTestCase

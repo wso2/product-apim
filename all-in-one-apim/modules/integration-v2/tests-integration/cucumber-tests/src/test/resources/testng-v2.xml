@@ -74,39 +74,27 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
-        </classes>
-    </test>
-    <!-- Mutual-SSL gateway invocation. Own block: needs a client-cert TOML overlay + the node backend; restarts
-         nothing but runs thread-count=1 so its cert config doesn't bleed into a sibling class. -->
-    <test name="IntegrationV2-MutualSSL" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="mutual-ssl"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mutualssl/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslInvocationRunner"/>
-        </classes>
-    </test>
-    <!-- WebSocket CORS. Own block: needs a CORS TOML overlay + the node backend; thread-count=1 so the CORS
-         config is isolated to this block's container. -->
-    <test name="IntegrationV2-WebSocketCORS" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="ws-cors"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wscors/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketCorsRunner"/>
-        </classes>
-    </test>
-    <!-- MCP servers span planes (publisher-plane CRUD + gateway-plane invocation) but share one backend-enabled
-         container: proxy create-validation and tool invocation both call the node mcp-server backend. -->
-    <test name="IntegrationV2-MCP" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="mcp"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <classes>
+            <!-- MCP servers (publisher-plane create/CRUD + gateway-plane invocation): both need the node
+                 mcp-server backend, which this block already starts, so they run here rather than in a separate
+                 backend-enabled block. -->
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMcpServersRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMcpInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- Mutual-SSL invocation + WebSocket CORS share ONE block: their overlays are orthogonal (mTLS shrinks the
+         SSL-profile read interval with client auth still "optional"; WS-CORS enables the WS origin allow-list —
+         different TOML tables, neither breaks the other's flows), so they co-locate on one container instead of
+         two. Needs the node backend. Runs the two runners as parallel classes (thread-count=2): they use
+         different data planes — mTLS on the 8243 HTTPS passthrough, WS-CORS on the ws:// inbound — so they don't
+         interfere. -->
+    <test name="IntegrationV2-MutualSslWsCors" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="mtls-ws-cors"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mtlsWsCors/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketCorsRunner"/>
         </classes>
     </test>
     <!-- Key-manager features (token/key issuance). initBackend for the refresh/sandbox gateway invocations. -->
