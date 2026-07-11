@@ -13,6 +13,23 @@ Folders are shallow and by capability: `features/{publisher,devportal,gateway,ad
 plus non-product `common/`, `framework-verification/`, `migration/`. The folder is just the physical
 home and shared-fixture context — **`@cap` is the source of truth**, so a file may live in `publisher/`
 yet be `@cap:gateway`.
+- **A scenario lives in the folder of its `@cap`, UNLESS it is bound to another feature's shared fixture.**
+  When you add a scenario whose `@cap` differs from the file's folder, apply this test:
+  - **Move it to its `@cap` folder** if it is **self-contained** (creates its own resources inline; no
+    dependence on a `Background`/`_setup_*`/block fixture in the host file) **and thematically orthogonal**
+    to the host feature's subject — i.e. it was merely *parked* here because it happens to touch the host's
+    resource. Example (do NOT repeat): a `@cap:devportal` "API reflects a custom environment's vhost"
+    scenario does not belong in `admin/gateway_environments.feature` just because it creates an environment;
+    it is self-contained, so it moves to `devportal/` and tags the env/publish prerequisites `@dep:admin` /
+    `@dep:publisher`.
+  - **Leave it co-located** (the legitimate case §2 permits) if it **depends on the host's shared fixture or
+    block setup** (e.g. an org-provisioning harness, an AI-API setup) or is an **intrinsic facet of a
+    cohesive cross-plane suite**. Example: the `@cap:devportal` application-visibility scenario in
+    `admin/organization_visibility.feature` needs that block's org-claim SOAP + org-user provisioning, so it
+    stays — correctly tagged `@cap:devportal @dep:admin`.
+  - Either way, **`@cap` states the true subject and every cross-capability prerequisite is a `@dep:<cap>`**
+    (see §3) — never let a scenario's `@cap` drift to the folder, and never leave an admin/publisher/etc.
+    prerequisite untagged.
 
 ## 3. Tags
 Every product scenario is tagged. Valid `@cap`/`@feat` values are the closed vocabulary defined in

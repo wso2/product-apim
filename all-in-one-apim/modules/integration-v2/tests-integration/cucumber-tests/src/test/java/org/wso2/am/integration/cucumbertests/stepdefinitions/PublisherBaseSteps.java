@@ -381,9 +381,14 @@ public class PublisherBaseSteps {
         String actualState = null;
         for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
             lifecycleStatusResponse = Requests.get(url, headers);
-            actualState = new JSONObject(lifecycleStatusResponse.getData()).optString("state", null);
-            if (status.equals(actualState)) {
-                return;
+            // Only parse a 200 that actually has a body; a non-2xx/empty response during warm-up falls through
+            // and we keep polling rather than throwing an uncaught JSONException.
+            if (lifecycleStatusResponse != null && lifecycleStatusResponse.getResponseCode() == 200
+                    && lifecycleStatusResponse.getData() != null && !lifecycleStatusResponse.getData().isEmpty()) {
+                actualState = new JSONObject(lifecycleStatusResponse.getData()).optString("state", null);
+                if (status.equals(actualState)) {
+                    return;
+                }
             }
             try {
                 Thread.sleep(Constants.RETRY_INTERVAL_TIME);

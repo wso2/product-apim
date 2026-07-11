@@ -124,6 +124,7 @@ public final class ResourceCleanup {
                 && TestContext.getList(Constants.CREATED_GOVERNANCE_RULESET_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_KEY_MANAGER_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_DENY_POLICY_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_ORGANIZATION_IDS).isEmpty()
                 && TestContext.getList(CREATED_AI_PROVIDER_IDS).isEmpty()
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
                 && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()) {
@@ -190,6 +191,12 @@ public final class ResourceCleanup {
             // Deny (blocking-condition) policies (admin, tenant-global). Deleted via the singular by-id path.
             deleteResources(Constants.CREATED_DENY_POLICY_IDS, Identity::adminTokenKey,
                     id -> Utils.getDenyPolicyByIdURL(baseUrl, id));
+            // B2B organizations (admin) AFTER the APIs — an API restricted via visibleOrganizations references
+            // the org, so an org delete would be rejected while such an API still exists. The APIs are swept
+            // above, so this is unblocked. The org-visibility feature also deletes these inline on its happy
+            // path; this sweep is the failure-safe backstop and idempotently 404s on the already-deleted ones.
+            deleteResources(Constants.CREATED_ORGANIZATION_IDS, Identity::adminTokenKey,
+                    id -> Utils.getOrganizationByIdURL(baseUrl, id));
             // BYO OAuth clients registered via DCR: swept separately because they authenticate with the owner's
             // Basic credentials (not a bearer token) and are not removed by the DevPortal application's deletion.
             deleteDcrClients(baseUrl);
@@ -208,6 +215,7 @@ public final class ResourceCleanup {
             TestContext.remove(Constants.CREATED_GOVERNANCE_RULESET_IDS);
             TestContext.remove(Constants.CREATED_KEY_MANAGER_IDS);
             TestContext.remove(Constants.CREATED_DENY_POLICY_IDS);
+            TestContext.remove(Constants.CREATED_ORGANIZATION_IDS);
             TestContext.remove(CREATED_AI_PROVIDER_IDS);
             TestContext.remove(CREATED_MCP_SERVER_IDS);
             TestContext.remove(CREATED_DCR_CLIENT_IDS);

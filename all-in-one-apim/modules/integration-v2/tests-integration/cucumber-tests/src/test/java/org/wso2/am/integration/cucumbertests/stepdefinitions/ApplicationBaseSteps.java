@@ -387,6 +387,13 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         String url = Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
+                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                "Failed to fetch " + policyType + " throttling policy '" + policyId + "' before updating it: expected a "
+                        + "2xx response with a body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
+                        + " / body=" + getResp.getData()));
         JSONObject policy = new JSONObject(getResp.getData());
         policy.put("description", description);
         HttpResponse response = Requests.put(url, headers, policy.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -497,6 +504,13 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         String url = Utils.getEnvironmentByIdURL(getBaseUrl(), id);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
+                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                "Failed to fetch gateway environment '" + id + "' before updating it: expected a 2xx response with a "
+                        + "body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
+                        + " / body=" + getResp.getData()));
         JSONObject env = new JSONObject(getResp.getData());
         env.put("description", description);
         HttpResponse response = Requests.put(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -601,6 +615,13 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         String url = Utils.getEnvironmentByIdURL(getBaseUrl(), id);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
+                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                "Failed to fetch gateway environment '" + id + "' before updating its vhost: expected a 2xx response "
+                        + "with a body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
+                        + " / body=" + getResp.getData()));
         JSONObject env = new JSONObject(getResp.getData());
         env.put("vhosts", new JSONArray().put(regularVhost(host)));
         HttpResponse response = Requests.put(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -1883,7 +1904,13 @@ public class ApplicationBaseSteps {
         String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
-        Assert.assertEquals(current.getResponseCode(), 200, current.getData());
+        // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
+        // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
+                        && current.getData() != null && !current.getData().isEmpty(),
+                "Failed to fetch key manager '" + kmId + "' before updating its description: expected a 2xx response "
+                        + "with a body, got " + (current == null ? "no response" : current.getResponseCode()
+                        + " / body=" + current.getData()));
 
         JSONObject km = new JSONObject(current.getData());
         km.put("description", newDescription);
@@ -1949,7 +1976,13 @@ public class ApplicationBaseSteps {
         String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
-        Assert.assertEquals(current.getResponseCode(), 200, current.getData());
+        // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
+        // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
+                        && current.getData() != null && !current.getData().isEmpty(),
+                "Failed to fetch key manager '" + kmId + "' before updating its allowed organizations: expected a 2xx "
+                        + "response with a body, got " + (current == null ? "no response" : current.getResponseCode()
+                        + " / body=" + current.getData()));
         JSONObject km = new JSONObject(current.getData());
         JSONArray orgs = new JSONArray();
         for (String o : Utils.resolveContextPlaceholders(allowedOrgs).split("\\s*,\\s*")) {
@@ -2181,7 +2214,13 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         HttpResponse current = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getApplicationEndpointURL(getBaseUrl(), appId), headers);
-        Assert.assertEquals(current.getResponseCode(), 200, current.getData());
+        // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
+        // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
+                        && current.getData() != null && !current.getData().isEmpty(),
+                "Failed to fetch application '" + appId + "' before updating its visibility: expected a 2xx response "
+                        + "with a body, got " + (current == null ? "no response" : current.getResponseCode()
+                        + " / body=" + current.getData()));
         JSONObject app = new JSONObject(current.getData());
         app.put("visibility", visibility);
         HttpResponse response = Requests.put(

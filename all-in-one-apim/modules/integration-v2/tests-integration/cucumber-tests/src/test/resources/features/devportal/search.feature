@@ -31,3 +31,40 @@ Feature: DevPortal Search & Discovery
       | actor                      |
       | publisherUser              |
       | publisherUser@tenant1.com  |
+
+  # An API deployed to a custom gateway environment reflects that environment's vhost in its Developer Portal
+  # endpoint URLs. NEW verified coverage (legacy-disabled testValidateDevportalAPIAndSwaggerResponse). Creating
+  # the custom environment and publishing the API are admin/publisher prerequisites (@dep), not the subject —
+  # the assertion is the DevPortal view reflecting the environment's vhost.
+  @cap:devportal @feat:discovery @rule:environment @type:regression @dep:publisher @dep:admin @legacy:EnvironmentTestCase
+  Scenario Outline: A devportal API reflects the custom environment vhost it is deployed to as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "e5ApiPayload"
+    And I create an "apis" resource with payload "e5ApiPayload" as "e5ApiId"
+    Then The response status code should be 201
+    When I create a gateway environment "${UNIQUE:e5Env}" with vhost hosts "e5.gw.example.com"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "e5EnvName"
+    When I put the following JSON payload in context as "e5RevPayload"
+    """
+    {"description":"revision for devportal env check"}
+    """
+    And I make a request to create a revision for "apis" resource "e5ApiId" with payload "e5RevPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "e5DeployPayload"
+    """
+    [{"name":"{{e5EnvName}}","vhost":"e5.gw.example.com","displayOnDevportal":true}]
+    """
+    And I make a request to deploy revision "revisionId" of "apis" resource "e5ApiId" with payload "e5DeployPayload"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "e5ApiId"
+    Then The lifecycle status of API "e5ApiId" should be "Published"
+    # The devportal view of the API carries the custom environment's vhost among its endpoint URLs.
+    When I retrieve the devportal API "e5ApiId" until it contains "e5.gw.example.com" within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

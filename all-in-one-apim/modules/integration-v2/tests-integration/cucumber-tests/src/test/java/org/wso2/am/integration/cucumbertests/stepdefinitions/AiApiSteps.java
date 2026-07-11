@@ -21,6 +21,7 @@ import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -224,6 +225,13 @@ public class AiApiSteps {
 
         // 1. Resolve the shipped common policy's id by name.
         HttpResponse listResp = SimpleHTTPClient.getInstance().doGet(Utils.getCommonPolicy(getBaseUrl()), headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(listResp != null && listResp.getResponseCode() >= 200 && listResp.getResponseCode() < 300
+                        && listResp.getData() != null && !listResp.getData().isEmpty(),
+                "Failed to list common policies while resolving '" + policyName + "': expected a 2xx response with a "
+                        + "body, got " + (listResp == null ? "no response" : listResp.getResponseCode()
+                        + " / body=" + listResp.getData()));
         String policyId = null;
         JSONArray policies = new JSONObject(listResp.getData()).optJSONArray("list");
         for (int i = 0; policies != null && i < policies.length(); i++) {
@@ -240,6 +248,13 @@ public class AiApiSteps {
         // 2. GET the API, 3. inject apiPolicies.request, 4. PUT it back.
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
+                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                "Failed to fetch API '" + actualApiId + "' before applying the AI mediation policy: expected a 2xx "
+                        + "response with a body, got " + (getApi == null ? "no response" : getApi.getResponseCode()
+                        + " / body=" + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
         JSONObject policyEntry = new JSONObject()
                 .put("policyName", policyName)
@@ -269,6 +284,13 @@ public class AiApiSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
+                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                "Failed to fetch API '" + actualApiId + "' before setting its primary production endpoint: expected a "
+                        + "2xx response with a body, got " + (getApi == null ? "no response" : getApi.getResponseCode()
+                        + " / body=" + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
         api.put("primaryProductionEndpointId", actualEndpointId);
         HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers,
