@@ -1,0 +1,14 @@
+# Enables the non-IP conditional-throttling condition types, which are OFF by default in the distribution
+# deployment.toml. Without these flags the gateway delivers a header/query/JWT-claim condition to the request
+# path but never EVALUATES it for throttling, so a conditional group never trips (it just falls through to the
+# default limit). IP-based conditional throttling is enabled by default and needs no flag here.
+# Merged on top of the shared basic overlay (tomlExtraOverlayPath), so all distribution defaults are retained.
+[apim.throttling]
+enable_header_based_throttling = true
+enable_query_param_based_throttling = true
+enable_jwt_claim_based_throttling = true
+
+# JWT-claim conditional throttling evaluates the backend JWT's claims (e.g. applicationname), so backend JWT
+# generation must be on — otherwise the claim is unavailable and the JWT-claim condition cannot be enforced.
+[apim.jwt]
+enable = true

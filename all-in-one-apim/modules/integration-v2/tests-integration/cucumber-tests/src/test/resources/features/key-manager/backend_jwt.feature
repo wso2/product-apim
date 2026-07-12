@@ -62,6 +62,60 @@ Feature: Backend JWT Claims
       | admin             |
       | admin@tenant1.com |
 
+  # applicationAttributes empty-value flag: with enable_empty_values_in_application_attributes = true (set in
+  # this block's overlay), an OPTIONAL application attribute left with an EMPTY value still appears in the
+  # backend JWT's applicationAttributes claim (as ""). Ports the empty-value assertion of JWTTestCase (which
+  # asserts the claim carries "Optional attribute":""). ×2 tenant — the block provisions tenant1 actors and
+  # the flag is tenant-agnostic. Only the TRUE side is covered: the FALSE side (empty optional attribute
+  # ABSENT with the flag defaulted off) would require a separate default-config overlay/block, which §13
+  # forbids adding solely for the false side — deferred as a follow-up (documented in the overlay).
+  @cap:key-manager @feat:backend-jwt @rule:app-attributes-empty-value @type:regression @dep:gateway @legacy:JWTTestCase
+  Scenario Outline: An empty optional application attribute surfaces in the backend JWT claim as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_reflect_api.json" as "eApiId" and deployed it
+    When I publish the "apis" resource with id "eApiId"
+    Then The lifecycle status of API "eApiId" should be "Published"
+    When I retrieve the "apis" resource with id "eApiId"
+    And I extract response field "context" and store it as "eApiContext"
+
+    # The application supplies the required attribute and leaves the optional attribute EMPTY.
+    When I put JSON payload from file "artifacts/payloads/create_apim_app_with_empty_attribute.json" in context as "eAppPayload"
+    And I set the field "tokenType" to "JWT" in the payload "eAppPayload"
+    And I create an application with payload "eAppPayload"
+    Then The response status code should be 201
+
+    When I put the following JSON payload in context as "eKeys"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "eKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "eSub"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Gold"}
+    """
+    And I subscribe to API "eApiId" using application "createdAppId" with payload "eSub" as "eSubId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "eToken"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "eToken"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{eApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # enable_empty_values_in_application_attributes=true => the empty optional attribute is present as "".
+    And The reflected backend JWT applicationAttributes claim should contain "Optional attribute" with an empty value
+    # The required attribute is still carried with its non-empty value.
+    And The reflected backend JWT should contain application attribute "External Reference Id" with value "c1237890"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Backend-JWT generation for a resource owner whose username matches the [string].[string] pattern (contains a
   # dot). This previously broke JWT claim decoding; the fix is guarded by invoking TWICE with a password-grant
   # token whose subject is the dotted user (the repeat call failed before the fix). Ported ×2 tenant — the dot is

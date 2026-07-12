@@ -46,12 +46,16 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class Utils {
     
@@ -299,6 +303,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-state";
     }
 
+    /** Publisher — the lifecycle audit-trail / state-transition history of an API (GET). */
+    public static String getAPILifecycleHistoryURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-history";
+    }
+
     public static String getApplicationCreateURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications";
     }
@@ -317,6 +326,27 @@ public class Utils {
 
     public static String getApiDocumentsURL(String baseUrl, String resourceId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + resourceId + "/documents";
+    }
+
+    /** Publisher WSDL-definition endpoint: {@code /apis/{apiId}/wsdl} (GET) — the WSDL of a WSDL-imported API. */
+    public static String getWsdlOfApiURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/wsdl";
+    }
+
+    /** DevPortal WSDL-download endpoint: {@code /apis/{apiId}/wsdl?environmentName=} (GET) — downloads the
+     *  deployed API's WSDL from the store for a given gateway environment. */
+    public static String getDevPortalWsdlOfApiURL(String baseUrl, String apiId, String environmentName) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/wsdl?environmentName="
+                + URLEncoder.encode(environmentName, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * DevPortal client-SDK generation endpoint: {@code /apis/{apiId}/sdks/{language}} (GET). Returns a
+     * downloadable client-SDK zip for the given supported language. Ports the legacy
+     * {@code restAPIStore.generateSDKUpdated} (SdKsApi#apisApiIdSdksLanguageGet).
+     */
+    public static String getApiSdkURL(String baseUrl, String apiId, String language) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/sdks/" + language;
     }
 
     public static String getApplicationEndpointURL(String baseUrl, String applicationId) {
@@ -1359,5 +1389,57 @@ public class Utils {
         RequestAction requestAction = (RequestAction) TestContext.get(Constants.PENDING_HTTP_REQUEST);
         Assert.assertNotNull(requestAction, "No pending request found in TestContext");
         return requestAction;
+    }
+
+    /**
+     * Extracts a zip archive into {@code destDir} (creating parent directories). Used by the export-archive
+     * content-assertion steps (operation policy / API export) to read files out of a downloaded zip. Guards
+     * against zip-slip by rejecting entries that would escape {@code destDir}.
+     */
+    public static void unzip(File zipFile, File destDir) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                File outFile = new File(destDir, entry.getName());
+                if (!outFile.getCanonicalPath().startsWith(destDir.getCanonicalPath() + File.separator)) {
+                    throw new IOException("Zip entry escapes target directory: " + entry.getName());
+                }
+                if (entry.isDirectory()) {
+                    outFile.mkdirs();
+                } else {
+                    File parent = outFile.getParentFile();
+                    if (parent != null) {
+                        parent.mkdirs();
+                    }
+                    try (OutputStream os = new BufferedOutputStream(new FileOutputStream(outFile))) {
+                        byte[] buffer = new byte[4096];
+                        int len;
+                        while ((len = zis.read(buffer)) != -1) {
+                            os.write(buffer, 0, len);
+                        }
+                    }
+                }
+                zis.closeEntry();
+            }
+        }
+    }
+
+    /**
+     * Zips the contents of {@code sourceDir} into {@code zipFile} — each file placed under a top-level directory
+     * named after {@code sourceDir} (so an extracted archive keeps the {@code <policyName_version>/...} layout the
+     * operation-policy import expects). Used by the malformed-archive import negative.
+     */
+    public static void zipDirectory(File sourceDir, File zipFile) throws IOException {
+        String rootName = sourceDir.getName();
+        try (ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)))) {
+            File[] children = sourceDir.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    zos.putNextEntry(new ZipEntry(rootName + "/" + child.getName()));
+                    zos.write(Files.readAllBytes(child.toPath()));
+                    zos.closeEntry();
+                }
+            }
+        }
     }
 }

@@ -149,3 +149,72 @@ Feature: Gateway Security Enforcement
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # A large request body does NOT bypass gateway authentication: a POST of a ~1 MB body with an INVALID bearer token
+  # is rejected, regardless of body size. Ports InvalidAuthTokenLargePayloadTestCase (uploads 1KB/100KB/1MB with a
+  # bad token and asserts the upload is rejected). The API exposes a POST /reflect-body resource so the request
+  # reaches the auth check — a POST to a GET-only resource returns 405 before auth (verified live); with a POST
+  # resource, the invalid token is rejected with 401 (the large body is captured cleanly, no connection drop needed).
+  @cap:gateway @feat:security-enforcement @type:negative @rule:invalid-token @dep:publisher @legacy:InvalidAuthTokenLargePayloadTestCase
+  Scenario Outline: A large payload with an invalid token is rejected at the gateway as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_postbody_api.json" as "lpApiId" and deployed it
+    When I publish the "apis" resource with id "lpApiId"
+    Then The lifecycle status of API "lpApiId" should be "Published"
+    When I retrieve the "apis" resource with id "lpApiId"
+    And I extract response field "context" and store it as "lpContext"
+
+    When I put the following JSON payload in context as "lpInvalidToken"
+    """
+    abcdefgh
+    """
+    # Warm-up: confirm the POST resource is routable and a small invalid-token POST is rejected (401).
+    And I invoke the API at gateway context "{{lpContext}}/1.0.0/reflect-body" with method "POST" using access token "lpInvalidToken" and payload "" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    # The large body must NOT bypass auth — single shot, expect rejection (401 response, or a connection drop).
+    When I invoke the API at gateway context "{{lpContext}}/1.0.0/reflect-body" with method "POST" using access token "lpInvalidToken" and a 1024 KB payload expecting authentication rejection
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Malformed XML robustness: an API whose POST operation carries a body-parsing policy (jsonToXML) forces the Synapse
+  # message builder to run on the request. POSTing a malformed XML body (Content-Type application/xml) must be handled
+  # cleanly — a server error, not a gateway crash / dropped connection. Ports MalformedRequestTest, which POSTs the
+  # malformed body to getGatewayURLNhttp()+"response". That is NOT a bare path: in the shared legacy suite a
+  # "/response" API is deployed by another test, so the request matches it and its sequence tries to BUILD the body
+  # -> Woodstox WstxEOFException on the unclosed <request> -> fault sequence -> 500 (confirmed in CI: wire log shows
+  # {api:Response_API_1} ... "HTTP/1.1 500 Internal Server Error"). A bare /response with no API deployed just 404s
+  # (unmatched context) — expected, not a change. Rather than depend on a stray cross-test API, this isolated test
+  # deploys its OWN body-building API (a jsonToXML request policy forces the same builder), reproducing the identical
+  # malformed-parse 500. Unlike the legacy (which asserted only the 500 status), the fault body here exposes the
+  # Synapse error code (601000) and the Woodstox message, so this asserts the exact root cause, not just the code.
+  @cap:gateway @feat:security-enforcement @type:negative @rule:malformed-request @dep:publisher @legacy:MalformedRequestTest
+  Scenario Outline: A malformed XML request body is handled cleanly by the gateway message builder as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_jsontoxml_api.json" as "mfApiId" and deployed it
+    When I publish the "apis" resource with id "mfApiId"
+    Then The lifecycle status of API "mfApiId" should be "Published"
+    When I retrieve the "apis" resource with id "mfApiId"
+    And I extract response field "context" and store it as "mfContext"
+    When I have set up application with keys, subscribed to API "mfApiId", and obtained access token for "mfSubId"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "mfBody"
+    """
+    <request>Request<request>
+    """
+    # A malformed XML body (unclosed element) with an application/xml content type drives the builder → clean 500.
+    And I invoke the API at gateway context "{{mfContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "mfBody" with content type "application/xml" until response status code becomes 500 within 60 seconds
+    Then The response status code should be 500
+    # Pin the ROOT CAUSE, not just the status: the fault body carries Synapse error code 601000 and the exact
+    # Woodstox parser message, proving the 500 is the malformed-XML build failure (not some incidental 500).
+    And The response should contain "601000"
+    And The response should contain "Unexpected EOF; was expecting a close tag for element <request>"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

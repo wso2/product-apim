@@ -1,0 +1,9 @@
+{
+  "name": "${UNIQUE:APIMEmptyAttrApp}",
+  "throttlingPolicy": "Unlimited",
+  "description": "Application with a required attribute set and an optional attribute left empty",
+  "attributes": {
+    "External Reference Id": "c1237890",
+    "Optional attribute": ""
+  }
+}

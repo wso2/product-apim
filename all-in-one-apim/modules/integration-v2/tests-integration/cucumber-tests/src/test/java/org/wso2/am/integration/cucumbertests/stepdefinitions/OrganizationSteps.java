@@ -230,6 +230,26 @@ public class OrganizationSteps {
     }
 
     /**
+     * Provisions an (empty) internal role in the acting actor's tenant (SOAP addRole). Enabler for access-control
+     * tests: an API restricted to a role can only be authored/exported by users carrying it. Idempotent.
+     *
+     * @param roleName the (unqualified) role name to create
+     */
+    @When("I provision role {string}")
+    public void iProvisionRole(String roleName) throws Exception {
+
+        String tenantDomain = Identity.defaultActor().getUserDomain();
+        TenantUserProvisioner.addRole(tenantDomain, roleName);
+    }
+
+    /** Tenant variant of {@link #iProvisionRole}. */
+    @When("I provision role {string} in tenant {string}")
+    public void iProvisionRoleInTenant(String roleName, String tenantDomain) throws Exception {
+
+        TenantUserProvisioner.addRole(tenantDomain, roleName);
+    }
+
+    /**
      * Registers the OIDC user-profile claim mappings (mobile/organization external claims) and binds the
      * profile claims to the {@code openid} scope, in the given tenant — so a token requesting {@code openid}
      * surfaces those claims. Ports the claim-mapping setup of JWTTestCase's user-profile-claims case.

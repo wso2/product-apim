@@ -34,6 +34,7 @@ capabilities:
       discovery:               { name: Search & browse }
       applications:            { name: Application CRUD }
       application-attributes:  { name: Custom application attributes (store + JWT claim) }
+      sdk-generation:          { name: Client SDK generation (per-language download) }
       subscribe:               { name: Subscribe / unsubscribe }
       subscription-management: { name: Subscription update / blocking }
       comments:                { name: Comments }

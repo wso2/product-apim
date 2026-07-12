@@ -185,6 +185,38 @@ public final class TenantUserProvisioner {
     }
 
     /**
+     * Adds an (empty) internal role to the given tenant's user store via the RemoteUserStoreManagerService SOAP
+     * {@code addRole} operation (authenticated as the tenant admin), skipping creation if the role already
+     * exists. Enabler for access-control tests: an API restricted to a role can only be authored/exported by a
+     * user carrying that role. Idempotent (a duplicate {@code addRole} SOAP-faults, which is treated as "already
+     * present").
+     *
+     * @param tenantDomain the tenant to create the role in
+     * @param roleName     the (unqualified) role name (e.g. {@code apiAccessRole})
+     */
+    public static void addRole(String tenantDomain, String roleName) throws IOException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<ser:addRole>" +
+                "<ser:roleName>" + roleName + "</ser:roleName>" +
+                "</ser:addRole>" +
+                "</soapenv:Body></soapenv:Envelope>";
+
+        String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:addRole",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        // A 500 SOAP fault here is (almost always) "role already exists" — idempotent, so don't fail the run.
+        if (response.getResponseCode() != 200) {
+            logger.info("addRole for '" + roleName + "' in tenant '" + tenantDomain + "' returned "
+                    + response.getResponseCode() + " (treated as already-present): " + response.getData());
+        }
+    }
+
+    /**
      * Polls the Tenant Management Admin Service until it answers 200, closing the race between gateway
      * readiness ({@link ServerReadiness#awaitReady}) and admin-service deployment: the gateway health-check
      * can pass seconds before the SOAP admin services finish deploying, so firing provisioning immediately

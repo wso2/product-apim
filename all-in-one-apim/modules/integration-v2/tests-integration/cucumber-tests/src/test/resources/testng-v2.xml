@@ -47,6 +47,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSubscriptionManagementRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSubscribeRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSdkGenerationRunner"/>
         </classes>
     </test>
     <!-- Gateway features (runtime invocation) share their own container. -->
@@ -154,6 +155,28 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/backendJwtUrlSafe/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerBackendJwtUrlSafeRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-SandboxGateway" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="sandbox-gateway"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/sandboxGateway/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySandboxEnvRunner"/>
+        </classes>
+    </test>
+    <!-- Conditional-group advanced throttling enforcement (IP/header/query/JWT-claim). Its overlay enables the
+         header/query/JWT-claim throttling flags (off by default). Needs the backend for gateway invocation.
+         thread-count=1: throttle enforcement is timing-sensitive, so no sibling class shares the container. -->
+    <test name="IntegrationV2-ConditionalThrottling" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="conditional-throttling"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/conditionalThrottling/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ConditionalThrottlingRunner"/>
         </classes>
     </test>
     <!-- Admin-plane governance/policy tests (default config, no gateway backend). Concurrent block. -->

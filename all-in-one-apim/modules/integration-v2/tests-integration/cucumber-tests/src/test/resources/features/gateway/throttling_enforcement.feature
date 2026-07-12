@@ -416,6 +416,66 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 200
     When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    # Re-drive past the limit again -> 429: proves the reset CLEARED the counter (not disabled throttling) — it
+    # re-accumulates and trips the 3/min limit once more.
+    When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Bandwidth reset: the same reset arc, but the application is bound to a low BANDWIDTH policy (1 KB/min) rather
+  # than a request-count policy — the reset endpoint clears the bandwidth counter too, so the next invocation
+  # succeeds (200) without waiting out the window. Complements the request-count reset above; ports the bandwidth
+  # variant of ApplicationThrottlingResetTestCase.
+  @cap:gateway @feat:throttling-enforcement @rule:throttle-reset @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
+  Scenario Outline: Resetting an application's BANDWIDTH throttle counter clears the 429 as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+
+    # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type). Small GET responses accumulate
+    # past the quota within the window, so the until-429 retry trips it.
+    When I create an application throttling policy "${UNIQUE:resetBw1KB}" allowing 1 KB per minute
+    Then The response status code should be 201
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "resetBwApiId" and deployed it
+    When I publish the "apis" resource with id "resetBwApiId"
+    Then The lifecycle status of API "resetBwApiId" should be "Published"
+    When I retrieve the "apis" resource with id "resetBwApiId"
+    And I extract response field "context" and store it as "resetBwContext"
+
+    # An application bound to the bandwidth policy, subscribed and keyed.
+    When I create an application "${UNIQUE:ResetBwApp}" with throttling policy from "appThrottlePolicyName"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "generateApplicationKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "resetBwApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "resetBwSubId"
+    Then The response status code should be 201
+    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    Then The response status code should be 200
+
+    # Drive small GETs until the 1 KB/min bandwidth quota is exceeded -> 429.
+    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+
+    # Reset the application's throttle counter -> invocation succeeds again.
+    When I reset the application throttle policy for "createdAppId" owned by "<actor>"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # Re-drive small GETs past the 1 KB/min quota again -> 429: proves the reset cleared the bandwidth accumulator
+    # (throttling still enforced afterwards).
+    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
 
     Examples:
       | actor             |

@@ -1,0 +1,46 @@
+{
+  "name": "${UNIQUE:APIMMultiPolicy}",
+  "context": "${UNIQUE:apiMultiPolicyContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API chaining MULTIPLE request-flow operation policies (shipped addHeader + custom_add_common_header) on its GET operation",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/reflect-headers",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "addHeader",
+            "policyVersion": "v3",
+            "parameters": { "headerName": "TestHeader", "headerValue": "TestValue" }
+          },
+          {
+            "policyName": "custom_add_common_header",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

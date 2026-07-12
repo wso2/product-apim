@@ -246,18 +246,61 @@ Feature: Publisher API Lifecycle
       | publisherUser@tenant1.com |
 
   # Lifecycle transitions beyond publish: an API moves Created -> Published -> Blocked -> Deprecated, each state
-  # reflected in its lifecycle status. Ports RegistryLifeCycleInclusionTest (LC state transitions).
+  # reflected in its lifecycle status, and — at each state — the set of AVAILABLE transitions and the recorded LC
+  # HISTORY/audit-trail are asserted. Ports RegistryLifeCycleInclusionTest (state transitions + available
+  # transitions per state + lifecycle history). The available-transitions sets are the exact events the 4.7.0
+  # default (registry) lifecycle offers per state — pinned and verified against a live container.
   @cap:publisher @feat:api-lifecycle @type:regression @legacy:RegistryLifeCycleInclusionTest
   Scenario Outline: An API transitions through Published, Blocked and Deprecated states as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "lcApiId" and deployed it
     And The lifecycle status of API "lcApiId" should be "Created"
+
     When I publish the "apis" resource with id "lcApiId"
     Then The lifecycle status of API "lcApiId" should be "Published"
+    # A Published API can be prototyped, blocked, demoted back to Created, or deprecated.
+    And The available lifecycle transitions of API "lcApiId" should be exactly "Deploy as a Prototype,Block,Demote to Created,Deprecate"
+    And The lifecycle history of API "lcApiId" should record a transition from "Created" to "Published"
+
     When I change the lifecycle of API "lcApiId" with action "Block"
     Then The lifecycle status of API "lcApiId" should be "Blocked"
+    # A Blocked API can be re-published or deprecated.
+    And The available lifecycle transitions of API "lcApiId" should be exactly "Re-Publish,Deprecate"
+    And The lifecycle history of API "lcApiId" should record a transition from "Published" to "Blocked"
+
     When I change the lifecycle of API "lcApiId" with action "Deprecate"
     Then The lifecycle status of API "lcApiId" should be "Deprecated"
+    # A Deprecated API can only be retired.
+    And The available lifecycle transitions of API "lcApiId" should be exactly "Retire"
+    And The lifecycle history of API "lcApiId" should record a transition from "Blocked" to "Deprecated"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Copy-version-in-CREATED checklist (ports RegistryLifeCycleInclusionTest#testChecklistItemsVisibility):
+  # copying a PUBLISHED API to a new version yields a NEW version whose lifecycle state is CREATED (not
+  # inherited-Published) and whose available transitions offer Publish and Deploy as a Prototype — the "checklist
+  # items" a freshly-copied version exposes. Distinct from the Published->Blocked->Deprecated scenario above:
+  # here the subject is the copied version's own fresh CREATED state and its offered transitions. The CREATED
+  # transition set is pinned exactly (verified live on 4.7.0): a CREATED API offers exactly Publish +
+  # Deploy as a Prototype.
+  @cap:publisher @feat:api-lifecycle @type:regression @legacy:RegistryLifeCycleInclusionTest
+  Scenario Outline: Copying a published API to a new version yields a CREATED version offering Publish as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "copyBaseApiId" and deployed it
+    When I publish the "apis" resource with id "copyBaseApiId"
+    Then The lifecycle status of API "copyBaseApiId" should be "Published"
+
+    # Copy the published API to a new version (2.0.0), not as default.
+    When I create a new version "2.0.0" of "apis" resource "copyBaseApiId" with default version "false" as "copyNewVersionId"
+    Then The response status code should be 201
+
+    # The copied version is in CREATED (a fresh version does not inherit the source's Published state).
+    And The lifecycle status of API "copyNewVersionId" should be "Created"
+    # Its available transitions are exactly Publish + Deploy as a Prototype (the CREATED checklist items).
+    And The available lifecycle transitions of API "copyNewVersionId" should be exactly "Publish,Deploy as a Prototype"
 
     Examples:
       | actor                     |

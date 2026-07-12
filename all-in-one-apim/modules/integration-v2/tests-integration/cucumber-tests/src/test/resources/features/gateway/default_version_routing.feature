@@ -34,6 +34,16 @@ Feature: Gateway Default Version Routing
     # Create v2.0.0 as the new default version, repoint it at the "File 2" backend, then deploy + publish it.
     When I create a new version "2.0.0" of "apis" resource "dvV1Id" with default version "true" as "dvV2Id"
     Then The response status code should be 201
+
+    # DEFAULT HOLDS UNTIL DEPLOY (ports DefaultVersionAPITestCase mid-assertion): v2 is now marked the default
+    # version, but it is still in CREATED — not yet deployed+published — so the versionless context must STILL
+    # route to the OLD default (v1 / "File 1"). The default-version routing only follows v2 once v2 is actually
+    # deployed and published (asserted as G2 below). This proves marking-default alone does not break the live
+    # default route before the new version becomes routable.
+    When I invoke the API at gateway context "{{dvContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 1" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "File 1"
+
     When I retrieve the "apis" resource with id "dvV2Id"
     And I put the response payload in context as "dvV2Payload"
     When I put the following JSON payload in context as "dvV2Endpoint"
@@ -72,6 +82,32 @@ Feature: Gateway Default Version Routing
     # G3: with no default version, the versionless context is not routable → 404.
     When I invoke the API at gateway context "{{dvContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
     Then The response status code should be 404
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Context==version collision: an API whose context TAIL equals its version (context ".../v1", version "v1") is
+  # set as the default version. A versionless invoke of that context (which is textually indistinguishable from a
+  # versioned invoke of ".../<context>" at version "v1") must still route to the default version → 200. This
+  # proves the gateway's default-version routing correctly disambiguates the URL. Ports
+  # DefaultVersionAPITestCase#testDefaultVersionAPIWithContextAndVersionSimilar.
+  @cap:gateway @feat:rest-invocation @rule:context-version-collision @type:regression @dep:publisher @legacy:DefaultVersionAPITestCase
+  Scenario Outline: A default API whose context tail equals its version is invocable versionless as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_context_version_collision_api.json" as "cvcApiId" and deployed it
+    When I publish the "apis" resource with id "cvcApiId"
+    Then The lifecycle status of API "cvcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "cvcApiId"
+    And I extract response field "context" and store it as "cvcContext"
+    When I have set up application with keys, subscribed to API "cvcApiId", and obtained access token for "cvcSubId"
+    Then The response status code should be 200
+
+    # Versionless invoke of the ".../v1" context (no version segment appended) routes to the default version → 200.
+    When I invoke the API at gateway context "{{cvcContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
 
     Examples:
       | actor             |

@@ -61,7 +61,9 @@ public class ApplicationBaseSteps {
     @When("I create an application with payload {string}")
     public void iCreateAnApplicationWithJsonPayload(String payload) throws IOException {
 
-        String jsonPayload = TestContext.resolve(payload).toString();
+        // Resolve any {{contextKey}} in the payload (e.g. an application name set to a generated unique value
+        // referenced from context) — a file/doc-string payload with no placeholders is returned unchanged.
+        String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payload).toString());
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
@@ -73,6 +75,25 @@ public class ApplicationBaseSteps {
         TestContext.set("createdAppId", createdAppId);
         // Register for scenario teardown so a shared-server suite does not accumulate applications across scenarios.
         ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, createdAppId);
+    }
+
+    /**
+     * Requests a client SDK for a subscribed/published API in a given programming language via the DevPortal
+     * SDK-generation endpoint {@code GET /apis/{apiId}/sdks/{language}} and publishes the response for the
+     * following assertion. Ports {@code restAPIStore.generateSDKUpdated} used by
+     * CORSAccessControlAllowCredentialsHeaderTestCase#testAllSupportedSDKGeneration — a 200 response carries a
+     * downloadable SDK zip. Uses the devportal (store) token of the acting actor.
+     *
+     * @param language context-resolvable SDK language (e.g. "java", "python", "swift5")
+     * @param apiIdKey context key holding the API id
+     */
+    @When("I generate a client SDK in language {string} for API {string}")
+    public void iGenerateClientSdk(String language, String apiIdKey) throws IOException {
+        String lang = Utils.resolveContextPlaceholders(language);
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        Requests.get(Utils.getApiSdkURL(getBaseUrl(), apiId, lang), headers);
     }
 
     /**
@@ -378,6 +399,64 @@ public class ApplicationBaseSteps {
                 policyName, policyName, requestsPerMinute, requestsPerMinute);
         postAdminPolicy(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), payload, "advThrottlePolicyName",
                 policyName, "advThrottlePolicyId", Constants.CREATED_ADVANCED_POLICY_IDS);
+    }
+
+    /**
+     * Builds and POSTs an advanced (API-level) throttling policy carrying ONE conditional group, with a HIGH
+     * default limit and a LOW group limit so a request that matches the condition is throttled long before the
+     * default would trip — the mechanism the four condition steps below exercise. {@code conditionJson} is the
+     * single ThrottleCondition object (ipCondition / headerCondition / queryParameterCondition /
+     * jwtClaimsCondition). Ports the policy shape from JWTRequestCountThrottlingTestCase.
+     */
+    private void postConditionalAdvancedPolicy(String policyBaseName, int defaultLimit, int groupLimit,
+                                               String conditionJson) throws IOException {
+        String policyName = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(policyBaseName));
+        // Resolve any {{contextKey}} in the condition value (e.g. a JWT-claim attribute set to a generated
+        // application name) — otherwise the literal placeholder is stored and never matches at runtime.
+        conditionJson = Utils.resolveContextPlaceholders(conditionJson);
+        String payload = String.format(
+                "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Advanced with a conditional group\","
+                        + "\"type\":\"AdvancedThrottlePolicy\",\"defaultLimit\":{\"type\":\"REQUESTCOUNTLIMIT\","
+                        + "\"requestCount\":{\"timeUnit\":\"min\",\"unitTime\":1,\"requestCount\":%d}},"
+                        + "\"conditionalGroups\":[{\"description\":\"conditional group\",\"conditions\":[%s],"
+                        + "\"limit\":{\"type\":\"REQUESTCOUNTLIMIT\",\"requestCount\":{\"timeUnit\":\"min\","
+                        + "\"unitTime\":1,\"requestCount\":%d}}}]}",
+                policyName, policyName, defaultLimit, conditionJson, groupLimit);
+        postAdminPolicy(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), payload, "advThrottlePolicyName",
+                policyName, "advThrottlePolicyId", Constants.CREATED_ADVANCED_POLICY_IDS);
+    }
+
+    @When("I create an advanced throttling policy {string} allowing {int} requests per minute with an IP conditional group of {int} requests per minute for IP {string}")
+    public void iCreateAdvancedIpConditionalPolicy(String policyBaseName, int defaultLimit, int groupLimit,
+                                                   String ip) throws IOException {
+        String condition = String.format("{\"type\":\"IPCONDITION\",\"invertCondition\":false,\"ipCondition\":"
+                + "{\"ipConditionType\":\"IPSPECIFIC\",\"specificIP\":\"%s\"}}", ip);
+        postConditionalAdvancedPolicy(policyBaseName, defaultLimit, groupLimit, condition);
+    }
+
+    @When("I create an advanced throttling policy {string} allowing {int} requests per minute with a header conditional group of {int} requests per minute for header {string} value {string}")
+    public void iCreateAdvancedHeaderConditionalPolicy(String policyBaseName, int defaultLimit, int groupLimit,
+                                                       String headerName, String headerValue) throws IOException {
+        String condition = String.format("{\"type\":\"HEADERCONDITION\",\"invertCondition\":false,"
+                + "\"headerCondition\":{\"headerName\":\"%s\",\"headerValue\":\"%s\"}}", headerName, headerValue);
+        postConditionalAdvancedPolicy(policyBaseName, defaultLimit, groupLimit, condition);
+    }
+
+    @When("I create an advanced throttling policy {string} allowing {int} requests per minute with a query conditional group of {int} requests per minute for query {string} value {string}")
+    public void iCreateAdvancedQueryConditionalPolicy(String policyBaseName, int defaultLimit, int groupLimit,
+                                                      String paramName, String paramValue) throws IOException {
+        String condition = String.format("{\"type\":\"QUERYPARAMETERCONDITION\",\"invertCondition\":false,"
+                + "\"queryParameterCondition\":{\"parameterName\":\"%s\",\"parameterValue\":\"%s\"}}",
+                paramName, paramValue);
+        postConditionalAdvancedPolicy(policyBaseName, defaultLimit, groupLimit, condition);
+    }
+
+    @When("I create an advanced throttling policy {string} allowing {int} requests per minute with a JWT claim conditional group of {int} requests per minute for claim {string} value {string}")
+    public void iCreateAdvancedJwtClaimConditionalPolicy(String policyBaseName, int defaultLimit, int groupLimit,
+                                                         String claimUrl, String attribute) throws IOException {
+        String condition = String.format("{\"type\":\"JWTCLAIMSCONDITION\",\"invertCondition\":false,"
+                + "\"jwtClaimsCondition\":{\"claimUrl\":\"%s\",\"attribute\":\"%s\"}}", claimUrl, attribute);
+        postConditionalAdvancedPolicy(policyBaseName, defaultLimit, groupLimit, condition);
     }
 
     /** Generic retrieve of a throttling policy by type + id (admin API). Non-asserting. */
@@ -1210,6 +1289,35 @@ public class ApplicationBaseSteps {
                 "Decoded backend JWT does not contain attribute name '" + attributeName + "': " + payload);
         Assert.assertTrue(payload.contains(attributeValue),
                 "Decoded backend JWT does not contain attribute value '" + attributeValue + "': " + payload);
+    }
+
+    /**
+     * Asserts the reflected backend JWT's applicationAttributes claim carries the given attribute name mapped to
+     * an EMPTY value (i.e. the exact JSON fragment {@code "<name>":""}). Proves
+     * enable_empty_values_in_application_attributes = true surfaces an optional attribute left empty (a
+     * plain "contains value" check with value "" would be trivially true, so this pins the empty-value form).
+     * Ports the applicationAttributes empty-value assertion of JWTTestCase. The claim serialises the attributes
+     * map as a JSON string, so the fragment appears with escaped quotes inside the decoded payload.
+     *
+     * @param attributeName the application attribute name (e.g. "Optional attribute")
+     */
+    @Then("The reflected backend JWT applicationAttributes claim should contain {string} with an empty value")
+    public void theReflectedBackendJwtAttributeIsEmpty(String attributeName) {
+        String payload = decodeReflectedBackendJwtPayload();
+        // The applicationAttributes claim is a nested JSON object (e.g. {"External Reference Id":"c1237890",
+        //   "Optional attribute":""}). Parse it and assert the attribute key is present with an empty-string
+        //   value — robust to key order and to whether the gateway renders the claim as an object or a
+        //   string-encoded object.
+        JSONObject jwt = new JSONObject(payload);
+        Object attrsClaim = jwt.opt("http://wso2.org/claims/applicationAttributes");
+        Assert.assertNotNull(attrsClaim,
+                "Decoded backend JWT has no applicationAttributes claim: " + payload);
+        JSONObject attrs = (attrsClaim instanceof JSONObject)
+                ? (JSONObject) attrsClaim
+                : new JSONObject(attrsClaim.toString());
+        Assert.assertTrue(attrs.has(attributeName) && attrs.optString(attributeName).isEmpty(),
+                "Decoded backend JWT applicationAttributes claim does not carry '" + attributeName
+                        + "' with an empty value: " + payload);
     }
 
     /**
