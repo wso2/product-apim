@@ -6,7 +6,7 @@ Feature: Gateway Security Enforcement
   to the API is refused access (403). The valid-token happy path is covered by gateway/rest-invocation.
   Teardown via the per-scenario cleanup hook.
 
-  @cap:gateway @feat:security-enforcement @type:negative @rule:invalid-token @dep:publisher @legacy:APIMANAGERInvocationTestCase
+  @cap:gateway @feat:security-enforcement @type:negative @rule:invalid-token @dep:publisher @legacy:APIMANAGERInvocationTestCase @legacy:InvalidTokenTestCase
   Scenario Outline: Invoke a published API with an invalid token is rejected as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

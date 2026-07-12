@@ -1,0 +1,9 @@
+# Feature-specific overlay for the IntegrationV2-BackendJwtUrlSafe block. Enables backend JWT generation with
+# URL-SAFE base64 encoding, so the gateway emits the X-JWT-Assertion header base64url-encoded. Ports the config
+# of URLSafeJWTTestCase. Merged on top of the shared `basic` overlay.
+[apim.jwt]
+enable = true
+encoding = "base64url"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"

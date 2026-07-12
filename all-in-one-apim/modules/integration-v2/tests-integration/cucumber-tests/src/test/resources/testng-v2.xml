@@ -74,6 +74,8 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
             <!-- MCP servers (publisher-plane create/CRUD + gateway-plane invocation): both need the node
                  mcp-server backend, which this block already starts, so they run here rather than in a separate
                  backend-enabled block. -->
@@ -137,6 +139,21 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/applicationAttributes/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationAttributesRunner"/>
+            <!-- Backend-JWT claims co-locate here: the same overlay enables [apim.jwt], the block starts the node
+                 backend (/reflect-headers), and both create apps that supply the required application attribute. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerBackendJwtRunner"/>
+        </classes>
+    </test>
+    <!-- Backend-JWT URL-safe encoding: its own block because [apim.jwt] encoding = base64url is a gateway-wide
+         setting that would change the base64 encoding the ApplicationAttributes block relies on. Needs the node
+         backend (/reflect-headers). -->
+    <test name="IntegrationV2-BackendJwtUrlSafe" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="backend-jwt-urlsafe"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/backendJwtUrlSafe/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerBackendJwtUrlSafeRunner"/>
         </classes>
     </test>
     <!-- Admin-plane governance/policy tests (default config, no gateway backend). Concurrent block. -->
@@ -152,6 +169,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminTenantConfigRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminSystemScopesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlePolicyExportImportRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApiCategoriesRunner"/>
         </classes>
     </test>
     <!-- B2B organization visibility. Own block: registers the organizationId local claim (SOAP) and provisions

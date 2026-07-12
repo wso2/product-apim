@@ -10,7 +10,7 @@ Feature: Gateway Default Version Routing
   API is addressed by its full /t/<tenant> context). Runs in the concurrent IntegrationV2-Gateway block
   (backend started). Teardown via the per-scenario cleanup hook.
 
-  @cap:gateway @feat:rest-invocation @type:regression @dep:publisher @legacy:DefaultVersionAPIServerRestartTestCase
+  @cap:gateway @feat:rest-invocation @type:regression @dep:publisher @legacy:DefaultVersionAPIServerRestartTestCase @legacy:DefaultVersionAPITestCase
   Scenario Outline: A versionless context routes to the default version and follows default-version changes as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

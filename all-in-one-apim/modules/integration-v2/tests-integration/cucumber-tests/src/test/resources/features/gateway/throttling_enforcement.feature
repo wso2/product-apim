@@ -371,3 +371,53 @@ Feature: Gateway Throttling Enforcement
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Reset-throttle-policy: after an application trips its low request-count limit (429), the DevPortal
+  # reset-throttle-policy endpoint clears the application's counters so the very next invocation succeeds (200)
+  # again — without waiting out the throttle window. Ports ApplicationThrottlingResetTestCase.
+  @cap:gateway @feat:throttling-enforcement @rule:throttle-reset @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
+  Scenario Outline: Resetting an application's throttle counter clears the 429 as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+
+    # A bespoke application policy allowing only 3 requests/min, so the limit is reachable in a test.
+    When I create an application throttling policy "${UNIQUE:resetThrottle3}" allowing 3 requests per minute
+    Then The response status code should be 201
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "resetApiId" and deployed it
+    When I publish the "apis" resource with id "resetApiId"
+    Then The lifecycle status of API "resetApiId" should be "Published"
+    When I retrieve the "apis" resource with id "resetApiId"
+    And I extract response field "context" and store it as "resetContext"
+
+    # An application bound to the low policy, subscribed and keyed.
+    When I create an application "${UNIQUE:ResetApp}" with throttling policy from "appThrottlePolicyName"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "generateApplicationKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "resetApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "resetSubId"
+    Then The response status code should be 201
+    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    Then The response status code should be 200
+
+    # Drive past the 3/min limit -> 429.
+    When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+
+    # Reset the application's throttle counter -> invocation succeeds again.
+    When I reset the application throttle policy for "createdAppId" owned by "<actor>"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

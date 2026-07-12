@@ -1,0 +1,34 @@
+{
+  "name": "${UNIQUE:APIMProdSandbox}",
+  "context": "${UNIQUE:apiProdSandboxContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/prod"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/sandbox",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API with distinct production and sandbox endpoints for token-type routing",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/x",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

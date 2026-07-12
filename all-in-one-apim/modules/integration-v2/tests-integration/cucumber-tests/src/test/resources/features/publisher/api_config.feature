@@ -236,3 +236,22 @@ Feature: Publisher API Runtime & Common Configuration
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # The publisher endpoint-validation API probes a backend endpoint and reports its reachability. The target is
+  # the APIM's own Carbon Version service, reachable from the server itself (no separate backend needed). Verified
+  # live on 4.7.0: a reachable endpoint validates with statusCode 202 (Accepted) — the auth-protected sample
+  # webapp instead reports its 401, so 202 is the healthy/reachable signal. Ports APIMANAGER2611.
+  @cap:publisher @feat:api-config @type:regression @legacy:APIMANAGER2611EndpointValidationTestCase
+  Scenario Outline: A reachable backend endpoint validates successfully as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "valApiPayload"
+    And I create an "apis" resource with payload "valApiPayload" as "valApiId"
+    When I validate the endpoint "https://localhost:9443/services/Version" for API "valApiId"
+    Then The response status code should be 200
+    And The response should contain "\"statusCode\":202"
+    And The response should contain "Accepted"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |

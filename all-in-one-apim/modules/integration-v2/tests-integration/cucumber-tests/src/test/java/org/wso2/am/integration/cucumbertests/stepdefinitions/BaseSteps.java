@@ -30,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.RequestAction;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -178,7 +179,7 @@ public class BaseSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
-        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:api_generate_key apim:gateway_policy_manage apim:mcp_server_create apim:mcp_server_manage apim:mcp_server_publish apim:mcp_server_view apim:mcp_server_delete apim:mcp_server_list_view");
+        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:policies_import_export apim:api_generate_key apim:gateway_policy_manage apim:mcp_server_create apim:mcp_server_manage apim:mcp_server_publish apim:mcp_server_view apim:mcp_server_delete apim:mcp_server_list_view");
 
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
             json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -515,6 +516,57 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
 
+    /**
+     * Generates one fresh unique token and stores it, so a value that must be REUSED across several requests in a
+     * scenario (e.g. a common tag shared by two APIs, or a name reused as a case-variant) stays stable — unlike an
+     * inline {@code ${UNIQUE:...}}, which mints a new value on every reference. Reference it later via
+     * {@code {{contextKey}}}.
+     *
+     * @param contextKey the context key under which the generated value is stored
+     */
+    @When("I generate a unique value and store it as {string}")
+    public void iGenerateUniqueValueAndStore(String contextKey) {
+        String key = Utils.normalizeContextKey(contextKey);
+        TestContext.set(key, Names.unique(key));
+    }
+
+    /**
+     * Stores the fully upper-cased form of a stored value. Used to build a case-variant that is case-insensitively
+     * equal to the source (e.g. proving API-name uniqueness is case-insensitive) while both values remain unique
+     * across parallel scenarios (the source is itself a uniquely generated token).
+     *
+     * @param sourceKey context key holding the source value
+     * @param targetKey context key under which the upper-cased value is stored
+     */
+    @When("I store the uppercase of {string} as {string}")
+    public void iStoreUppercaseOf(String sourceKey, String targetKey) {
+        Object value = TestContext.resolve(sourceKey);
+        TestContext.set(Utils.normalizeContextKey(targetKey), value.toString().toUpperCase(java.util.Locale.ROOT));
+    }
+
+    /**
+     * Sets a top-level field of a JSON payload (in context) to a JSON OBJECT parsed from a classpath file — for
+     * injecting a nested structure (e.g. embedding a custom "LifeCycle" definition into the tenant configuration)
+     * that the string setter cannot express. Writes the merged payload back under the same key.
+     *
+     * @param field        the top-level field to set to the parsed JSON object
+     * @param jsonFilePath classpath path of the JSON file whose content becomes the field value
+     * @param contextKey   context key holding the JSON payload to mutate
+     */
+    @When("I set the JSON field {string} from file {string} in the payload {string}")
+    public void iSetJsonFieldFromFileInPayload(String field, String jsonFilePath, String contextKey)
+            throws IOException {
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(jsonFilePath)) {
+            if (in == null) {
+                throw new FileNotFoundException("JSON file not found: " + jsonFilePath);
+            }
+            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            payload.put(field, new JSONObject(content));
+        }
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
     /** Sets a top-level field of a JSON payload in context to an empty array, writing it back under the key. */
     @When("I set the field {string} to an empty array in the payload {string}")
     public void iSetFieldToEmptyArrayInPayload(String field, String contextKey) {
@@ -531,6 +583,19 @@ public class BaseSteps {
         org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
         payload.put(field, Boolean.parseBoolean(value));
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
+    /**
+     * Generates a runner-unique alphanumeric value (Names.unique with non-alphanumerics stripped) and stores it
+     * under the given context key. Use when a scenario needs a SINGLE unique value reused across several later
+     * steps (e.g. a category name referenced in create, update, list and attach) — an inline {@code ${UNIQUE:...}}
+     * placeholder can't serve this because it regenerates a fresh value on every resolution.
+     */
+    @When("I generate a unique alphanumeric value and store it as {string}")
+    public void iGenerateUniqueAlphanumericValueAndStore(String contextKey) {
+        String key = Utils.normalizeContextKey(contextKey);
+        TestContext.set(key, org.wso2.am.integration.cucumbertests.utils.Names.unique(key)
+                .replaceAll("[^A-Za-z0-9]", ""));
     }
 
     /**
@@ -647,6 +712,28 @@ public class BaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response.getData().contains(expectedValue),
                 "Expected response to contain '" + expectedValue + "' but it did not: " + response.getData());
+    }
+
+    /**
+     * Asserts both substrings are present in the response and that the first occurs BEFORE the second — an
+     * order-preserving check (e.g. resource order in a returned swagger) that is robust to server reformatting,
+     * unlike matching a whole pre-formatted block verbatim.
+     *
+     * @param first  the substring expected to appear first
+     * @param second the substring expected to appear after the first
+     */
+    @Then("The response should contain {string} before {string}")
+    public void responseShouldContainBefore(String first, String second) {
+        first = Utils.resolveContextPlaceholders(first);
+        second = Utils.resolveContextPlaceholders(second);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        String data = response.getData();
+        int firstIdx = data.indexOf(first);
+        int secondIdx = data.indexOf(second);
+        Assert.assertTrue(firstIdx >= 0, "Expected response to contain '" + first + "': " + data);
+        Assert.assertTrue(secondIdx >= 0, "Expected response to contain '" + second + "': " + data);
+        Assert.assertTrue(firstIdx < secondIdx,
+                "Expected '" + first + "' to appear before '" + second + "' in the response: " + data);
     }
 
     /**
@@ -786,6 +873,46 @@ public class BaseSteps {
         Assert.assertFalse(response.getHeaders().containsKey(headerName), "Header " + headerName + "found in response");
         Assert.assertNotEquals(response.getHeaders().get(headerName), expectedValue, "Header value match for " + headerName);
 
+    }
+
+    /**
+     * Asserts a response header is present and its value CONTAINS the given substring (case-insensitive header
+     * lookup). The substring variant our exact-value {@code should contain the header X with value Y} cannot
+     * express — needed e.g. for a forwarded {@code Location} header whose host segment may be rewritten, so only
+     * the path portion is asserted.
+     */
+    @Then("The response header {string} should contain {string}")
+    public void responseHeaderShouldContain(String headerName, String expected) {
+        String resolved = Utils.resolveContextPlaceholders(expected);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+        Assert.assertTrue(actual.contains(resolved),
+                "Response header '" + headerName + "' (" + actual + ") does not contain '" + resolved + "'");
+    }
+
+    /** Asserts a response header is present and its value does NOT contain the substring (e.g. no doubled slash). */
+    @Then("The response header {string} should not contain {string}")
+    public void responseHeaderShouldNotContain(String headerName, String unexpected) {
+        String resolved = Utils.resolveContextPlaceholders(unexpected);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+        Assert.assertFalse(actual.contains(resolved),
+                "Response header '" + headerName + "' (" + actual + ") unexpectedly contains '" + resolved + "'");
+    }
+
+    /** Case-insensitive lookup of a response header value from the stored httpResponse (null if absent). */
+    private String responseHeaderValue(String headerName) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No response captured");
+        Map<String, String> headers = response.getHeaders();
+        if (headers != null) {
+            for (Map.Entry<String, String> e : headers.entrySet()) {
+                if (e.getKey() != null && e.getKey().equalsIgnoreCase(headerName)) {
+                    return e.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     /**

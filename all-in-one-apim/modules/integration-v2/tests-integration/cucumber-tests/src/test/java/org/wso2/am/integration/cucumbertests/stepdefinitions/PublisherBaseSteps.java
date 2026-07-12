@@ -327,6 +327,24 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Probes a backend endpoint URL via the Publisher endpoint-validation API and publishes the response for
+     * assertion. A reachable endpoint validates with statusCode 202 (Accepted) in 4.7.0. The {@code endpointUrl}
+     * may carry {{...}} placeholders; the API id is a context key.
+     *
+     * @param endpointUrl the backend endpoint URL to probe (placeholders resolved)
+     * @param apiId       context key holding the API id the probe is associated with
+     */
+    @When("I validate the endpoint {string} for API {string}")
+    public void iValidateEndpointForApi(String endpointUrl, String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String resolvedEndpoint = Utils.resolveContextPlaceholders(endpointUrl);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.post(Utils.getValidateEndpointURL(getBaseUrl(), resolvedEndpoint, actualApiId), headers, "",
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
      * Retrieves a list of all APIs created through the Publisher REST API.
      * This step performs a search query without filters to get all available APIs.
      */
@@ -1309,6 +1327,252 @@ public class PublisherBaseSteps {
                 "Bearer " + Identity.publisherToken());
 
         HttpResponse response = Requests.get(Utils.getCommonPolicy(getBaseUrl()), headers);
+    }
+
+    /**
+     * Exports a common operation policy by name/version/format (GET /operation-policies/export, returns a zip) and
+     * stores the downloaded archive path under the given key. Asserts 200. First half of the common-policy
+     * export/import round-trip (OperationPolicyTestCase). Binary download so the zip is not corrupted.
+     */
+    @When("I export the common operation policy named {string} version {string} format {string} as {string}")
+    public void iExportCommonPolicy(String name, String version, String format, String archivePathKey)
+            throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        SimpleHTTPClient.DownloadResult result = SimpleHTTPClient.getInstance()
+                .doGetToFile(Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
+        Assert.assertEquals(result.getStatusCode(), 200,
+                "Common operation policy export did not return 200 (archive download failed)");
+        TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
+    }
+
+    /**
+     * Attempts to export a common operation policy that does not exist, asserting the expected status (404). A
+     * binary download whose status is checked directly (nothing published to httpResponse).
+     */
+    @When("I export a non-existing common operation policy named {string} version {string} format {string} expecting status {int}")
+    public void iExportNonExistingCommonPolicy(String name, String version, String format, int expectedStatus)
+            throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        SimpleHTTPClient.DownloadResult result = SimpleHTTPClient.getInstance()
+                .doGetToFile(Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
+        Assert.assertEquals(result.getStatusCode(), expectedStatus,
+                "Non-existing common operation policy export status mismatch");
+    }
+
+    /**
+     * Deletes a common operation policy by id (DELETE /operation-policies/{id}) and drops it from the teardown
+     * sweep (the test removed it itself, so a later sweep-delete would log a spurious 404). Publishes the response.
+     */
+    @When("I delete the common operation policy {string}")
+    public void iDeleteCommonPolicy(String policyIdKey) throws IOException {
+        String policyId = TestContext.resolve(policyIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.delete(Utils.getCommonPolicyById(getBaseUrl(), policyId), headers);
+        ResourceCleanup.deregister(Constants.CREATED_OPERATION_POLICY_IDS, policyId);
+    }
+
+    /**
+     * Imports a common operation policy from a previously-exported archive (multipart field "file"). Stores the
+     * created policy id (if the 201 body carries one) and registers it for teardown. Second half of the round-trip.
+     */
+    @When("I import the common operation policy archive {string} as {string}")
+    public void iImportCommonPolicy(String archivePathKey, String policyIdKey) throws IOException {
+        String path = TestContext.resolve(archivePathKey).toString();
+        File archiveFile = new File(path);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archiveFile);
+        HttpResponse response = Requests.postMultipart(Utils.getCommonPolicyImportURL(getBaseUrl()), headers, files,
+                null);
+        // A successful import (201) returns the recreated policy JSON carrying its new id; store and register it so
+        // the re-imported policy is swept by teardown.
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                && response.getData() != null && !response.getData().isEmpty()) {
+            Object id = Utils.extractValueFromPayload(response.getData(), "id");
+            if (id != null) {
+                if (policyIdKey != null) {
+                    TestContext.set(Utils.normalizeContextKey(policyIdKey), id);
+                }
+                ResourceCleanup.register(Constants.CREATED_OPERATION_POLICY_IDS, id);
+            }
+        }
+    }
+
+    /**
+     * Exports a published API as an archive (GET /apis/export, returns a zip) and stores the downloaded file's
+     * path under the given context key. Asserts 200. First half of the API import/export round-trip
+     * (APIImportExportTestCase). Binary download so the zip is not corrupted.
+     */
+    @When("I export the API {string} to an archive as {string}")
+    public void iExportApiToArchive(String apiId, String archivePathKey) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        SimpleHTTPClient.DownloadResult result = SimpleHTTPClient.getInstance()
+                .doGetToFile(Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
+        Assert.assertEquals(result.getStatusCode(), 200,
+                "API export did not return 200 (archive download failed)");
+        TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
+    }
+
+    /**
+     * Imports a previously-exported API archive (the temp-file path stored by the export step) with an inline
+     * additionalProperties JSON, publishing the response. Second half of the round-trip. The /apis/import response
+     * is a plain-text message (not the API id), so the imported API is located by name afterwards (see the
+     * find-by-name step) for verification + cleanup.
+     */
+    @When("I import the exported archive {string} with additional properties {string} as {string}")
+    public void iImportExportedArchive(String archivePathKey, String additionalPropsJson, String resourceId)
+            throws IOException {
+        String path = TestContext.resolve(archivePathKey).toString();
+        File archiveFile = new File(path);
+
+        File additionalPropertiesFile = File.createTempFile("data", ".json");
+        additionalPropertiesFile.deleteOnExit();
+        Files.write(additionalPropertiesFile.toPath(),
+                Utils.resolveContextPlaceholders(additionalPropsJson).getBytes(StandardCharsets.UTF_8));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archiveFile);
+        files.put("additionalProperties", additionalPropertiesFile);
+
+        HttpResponse response = Requests.postMultipart(Utils.getApiArchiveImportURL(getBaseUrl()), headers, files,
+                null);
+        TestContext.set(Utils.normalizeContextKey(resourceId), response.getData());
+    }
+
+    /**
+     * Searches the Publisher API list for an API by exact name, stores the first match's id under the given key,
+     * and registers it for teardown. Used to locate an API created out-of-band (e.g. by an archive import, whose
+     * response carries only a message) so it can be asserted on and cleaned up. The Publisher search index is
+     * eventually consistent, so this polls until the named API appears (or times out).
+     */
+    @When("I find the Publisher API named {string} and store its id as {string}")
+    public void iFindPublisherApiByName(String name, String idKey) throws IOException, InterruptedException {
+        String resolvedName = Utils.resolveContextPlaceholders(name);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String url = Utils.getAPISearchEndpointURL(getBaseUrl(), "name:" + resolvedName, null, null);
+        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        HttpResponse response = null;
+        Object id = null;
+        while (true) {
+            response = Requests.get(url, headers);
+            if (response != null && response.getResponseCode() == 200
+                    && response.getData() != null && !response.getData().isEmpty()) {
+                JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+                if (list != null && list.length() > 0) {
+                    id = list.getJSONObject(0).get("id");
+                    break;
+                }
+            }
+            if (System.currentTimeMillis() >= endTime) {
+                break;
+            }
+            Thread.sleep(2000);
+        }
+        Assert.assertNotNull(id, "No Publisher API named '" + resolvedName + "' was found within the deadline");
+        TestContext.set(Utils.normalizeContextKey(idKey), id);
+        ResourceCleanup.register(Constants.CREATED_API_IDS, id);
+    }
+
+    /**
+     * Uploads a custom Synapse sequence as an API's sequence backend (PUT /apis/{id}/sequence-backend, multipart:
+     * the sequence XML as the "sequence" part + a "type" form field PRODUCTION/SANDBOX). The API's endpoint type
+     * must be sequence_backend. Publishes the response. Ports the sequence-backend side of REST invocation.
+     */
+    @When("I upload the sequence backend {string} of type {string} for API {string}")
+    public void iUploadSequenceBackend(String sequencePath, String type, String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        File sequenceFile = loadResourceAsTempFile(sequencePath, ".xml");
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("sequence", sequenceFile);
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("type", type);
+        Requests.putMultipart(Utils.getSequenceBackendURL(getBaseUrl(), actualApiId), headers, files, formFields);
+    }
+
+    /**
+     * Imports an API from a WSDL file (POST /apis/import-wsdl, multipart: the WSDL as the "file" part plus the
+     * additionalProperties JSON and implementationType form fields). implementationType is "SOAP" (pass-through
+     * SOAP proxy) or "SOAPTOREST" (generate REST resources from the WSDL). Publishes the response and, on a 2xx,
+     * stores the created API id and registers it for teardown. Ports WSDLImportTestCase / the create side of SOAP.
+     */
+    @When("I import a WSDL API from file {string} with additional properties {string} and implementation type {string} as {string}")
+    public void iImportWsdlApi(String wsdlPath, String additionalProps, String implType, String resourceId)
+            throws IOException {
+        File wsdlFile = loadResourceAsTempFile(wsdlPath, ".wsdl");
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", wsdlFile);
+        // additionalProps is a context key holding the JSON doc-string; resolve the key then any inner {{...}}.
+        String additionalPropsJson = Utils.resolveContextPlaceholders(
+                TestContext.resolve(additionalProps).toString());
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("additionalProperties", additionalPropsJson);
+        formFields.put("implementationType", implType);
+        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(getBaseUrl()), headers, files,
+                formFields);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(Utils.normalizeContextKey(resourceId), createdId);
+            ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        }
+    }
+
+    /**
+     * Creates + deploys an API from a payload file, injecting a comma-separated tag list into its {@code tags}
+     * field first (each tag placeholder resolved), so a DevPortal tag search can match on those tags. Registers
+     * the API for teardown via the create primitive.
+     */
+    @Given("I have created an api from {string} with tags {string} as {string} and deployed it")
+    public void iHaveCreatedAnApiFromWithTagsAsAndDeployedIt(String payloadPath, String tagsCsv, String apiID)
+            throws IOException, InterruptedException {
+        baseSteps.putJsonPayloadFromFile(payloadPath, "<createApiPayload>");
+        JSONObject json = new JSONObject(TestContext.resolve("<createApiPayload>").toString());
+        JSONArray tags = new JSONArray();
+        for (String t : tagsCsv.split(",")) {
+            tags.put(Utils.resolveContextPlaceholders(t.trim()));
+        }
+        json.put("tags", tags);
+        baseSteps.putJsonPayloadInContext("<createApiPayload>", json.toString());
+        iCreateAnAPIWithPayloadAs("apis", "<createApiPayload>", apiID);
+        baseSteps.putJsonPayloadInContext("<createRevisionPayload>", "{\"description\":\"Initial Revision\"}");
+        iCreateResourceRevision("apis", apiID, "<createRevisionPayload>");
+        baseSteps.putJsonPayloadInContext("<deployRevisionPayload>",
+                "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
+        iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiID, "<deployRevisionPayload>");
+        baseSteps.theResponseStatusCodeShouldBe(201);
+    }
+
+    /**
+     * Bulk-creates and publishes {@code count} APIs whose name and context are {@code prefix}0..N-1, so a single
+     * DevPortal search by {@code prefix} matches exactly this scenario's set (the prefix must be a scenario-unique
+     * value — see the unique-value step — so parallel scenarios never collide). No revision/deploy: DevPortal store
+     * visibility follows the PUBLISHED lifecycle state, not gateway deployment, so this stays light for pagination
+     * coverage. Each API is registered for teardown by the create primitive.
+     */
+    @Given("I create and publish {int} APIs from {string} named {string}")
+    public void iCreateAndPublishApis(int count, String payloadPath, String namePrefixRef) throws IOException {
+        String prefix = Utils.resolveContextPlaceholders(namePrefixRef);
+        for (int i = 0; i < count; i++) {
+            baseSteps.putJsonPayloadFromFile(payloadPath, "<bulkApiPayload>");
+            JSONObject json = new JSONObject(TestContext.resolve("<bulkApiPayload>").toString());
+            json.put("name", prefix + i);
+            json.put("context", prefix + i);
+            baseSteps.putJsonPayloadInContext("<bulkApiPayload>", json.toString());
+            iCreateAnAPIWithPayloadAs("apis", "<bulkApiPayload>", "bulkApiId");
+            iPublishTheResource("apis", "bulkApiId");
+        }
     }
 
     /**

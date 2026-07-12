@@ -146,6 +146,7 @@ public class Constants {
     public static final String CREATED_KEY_MANAGER_IDS = "createdKeyManagerIds";
     public static final String CREATED_DENY_POLICY_IDS = "createdDenyPolicyIds";
     public static final String CREATED_ORGANIZATION_IDS = "createdOrganizationIds";
+    public static final String CREATED_API_CATEGORY_IDS = "createdApiCategoryIds";
 
     public static class REQUEST_HEADERS {
 

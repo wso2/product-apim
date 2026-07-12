@@ -164,3 +164,55 @@ Feature: Publisher API Definition Import
   # to assert instead (it's a garbage-input path). Per the no-500-enshrinement principle this product
   # robustness issue is documented (increment-2 backlog), not asserted. The archive-import glue + fixture
   # (incorrect-swagger-archive.zip) are kept for when the product returns a clean 400.
+
+  # Resource order in the OpenAPI definition is preserved through update + retrieve: paths declared in the
+  # order /*, /post, /list keep that order in the returned swagger. Ports APIM4765ResourceOrderInSwagger.
+  # Asserted as an ordering check (robust to server reformatting) rather than matching a verbatim block.
+  @cap:publisher @feat:definitions @type:regression @legacy:APIM4765ResourceOrderInSwagger
+  Scenario Outline: Resource order in the OpenAPI definition is preserved as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "orderApiPayload"
+    And I create an "apis" resource with payload "orderApiPayload" as "orderApiId"
+    When I update the swagger of "apis" resource "orderApiId" from file "artifacts/payloads/OAS/ordered_resources_api_oas.json"
+    Then The response status code should be 200
+    When I retrieve the swagger of "apis" resource "orderApiId"
+    Then The response status code should be 200
+    And The response should contain "/*" before "/post"
+    And The response should contain "/post" before "/list"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # API export/import round-trip: export an API to an archive (GET /apis/export -> zip), delete it, then re-import
+  # the archive (POST /apis/import) and confirm it is recreated with the same name. Ports the core archive
+  # round-trip of APIImportExportTestCase. Uses a binary download so the zip is not corrupted. Runs as admin:
+  # import (POST /apis/import) needs the apim:api_import_export scope the least-privilege publisher role lacks
+  # (export/GET works for it, but import/POST returns 401).
+  @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:APIImportExportTestCase
+  Scenario Outline: An API can be exported to an archive and re-imported as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "ieApiPayload"
+    And I create an "apis" resource with payload "ieApiPayload" as "ieApiId"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "ieApiName"
+    # Export to an archive
+    When I export the API "ieApiId" to an archive as "ieArchive"
+    # Delete the original (not deployed) so the re-import does not collide on the case-insensitive-unique name
+    When I delete the "apis" resource with id "ieApiId"
+    Then The response status code should be 200
+    # Re-import the archive -> the API is recreated with the same name (the import response is a plain message).
+    When I import the exported archive "ieArchive" with additional properties "{}" as "ieImportResult"
+    Then The response status code should be 200
+    # Locate the recreated API by name (also registers it for teardown) and confirm the round-trip.
+    When I find the Publisher API named "{{ieApiName}}" and store its id as "ieImportedApiId"
+    Then The response status code should be 200
+    And The response should contain "{{ieApiName}}"
+    When I retrieve the "apis" resource with id "ieImportedApiId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

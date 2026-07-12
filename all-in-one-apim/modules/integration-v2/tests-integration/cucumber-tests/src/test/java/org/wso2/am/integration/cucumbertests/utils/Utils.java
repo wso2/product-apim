@@ -92,6 +92,13 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/endpoints";
     }
 
+    /** Publisher endpoint-validation probe: {@code /apis/validate-endpoint?endpointUrl=&apiId=} (POST). */
+    public static String getValidateEndpointURL(String baseUrl, String endpointUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-endpoint?endpointUrl="
+                + URLEncoder.encode(endpointUrl, StandardCharsets.UTF_8) + "&apiId="
+                + URLEncoder.encode(apiId, StandardCharsets.UTF_8);
+    }
+
     /** Publisher GraphQL per-field complexity config: {@code /apis/{apiId}/graphql-policies/complexity} (GET/PUT). */
     public static String getGraphQLComplexityURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/graphql-policies/complexity";
@@ -320,6 +327,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/generate-keys";
     }
 
+    /** DevPortal — reset (clear) an application's throttle counters so a throttled invocation succeeds again. */
+    public static String getResetThrottlePolicyURL(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/reset-throttle-policy";
+    }
+
     /** DevPortal — regenerate (rotate) the consumer secret of an application's key mapping (by key-mapping id). */
     public static String getRegenerateConsumerSecretURL(String baseUrl, String applicationId, String keyMappingId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/"
@@ -412,6 +424,21 @@ public class Utils {
         return baseUrl + "services/RemoteUserStoreManagerService";
     }
 
+    /** Carbon admin SOAP service — claim metadata management (OIDC external-claim mappings). */
+    public static String getClaimMetadataManagementServiceURL(String baseUrl) {
+        return baseUrl + "services/ClaimMetadataManagementService";
+    }
+
+    /** Carbon admin SOAP service — OAuth admin (OIDC scope-to-claim mappings). */
+    public static String getOAuthAdminServiceURL(String baseUrl) {
+        return baseUrl + "services/OAuthAdminService";
+    }
+
+    /** Carbon admin SOAP service — identity application management (service-provider get/update). */
+    public static String getIdentityApplicationManagementServiceURL(String baseUrl) {
+        return baseUrl + "services/IdentityApplicationManagementService";
+    }
+
     public static String getNewAPIVersionURL(String baseUrl, String resourceType, String newVersion, Boolean defaultVersion, String apiId) {
 
         String endpointPath;
@@ -490,6 +517,57 @@ public class Utils {
 
     public static String getCommonPolicy(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies";
+    }
+
+    /** Publisher REST — a single common operation policy by id (GET/DELETE). */
+    public static String getCommonPolicyById(String baseUrl, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies/" + policyId;
+    }
+
+    /** Publisher REST — export a common operation policy by name/version to a zip ({@code format} = yaml|json). */
+    public static String getCommonPolicyExportURL(String baseUrl, String name, String version, String format) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies/export?name="
+                + URLEncoder.encode(name, StandardCharsets.UTF_8) + "&version="
+                + URLEncoder.encode(version, StandardCharsets.UTF_8) + "&format="
+                + URLEncoder.encode(format, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher REST — import a common operation policy from a zip (POST multipart field {@code fileName}). */
+    public static String getCommonPolicyImportURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies/import";
+    }
+
+    /** Publisher REST API — export an API as an archive (GET, returns a zip). */
+    public static String getApiExportURL(String baseUrl, String apiId, String format) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/export?apiId="
+                + URLEncoder.encode(apiId, StandardCharsets.UTF_8) + "&format="
+                + URLEncoder.encode(format, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher REST API — import an API archive (POST multipart with the zip as the "file" part). */
+    public static String getApiArchiveImportURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import";
+    }
+
+    /** Publisher REST API — upload a custom Synapse sequence backend for an API (PUT multipart: sequence + type). */
+    public static String getSequenceBackendURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/sequence-backend";
+    }
+
+    /** Publisher REST API — import an API from a WSDL (POST multipart: file + additionalProperties + type). */
+    public static String getImportWsdlURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-wsdl";
+    }
+
+    /** DevPortal — the tenant tag cloud (high limit so a full tag cloud is returned in one page). */
+    public static String getTagsURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "tags?limit=200";
+    }
+
+    /** DevPortal — search APIs with an explicit page-size {@code limit} (to prove the page cap). */
+    public static String getApiSearchURLWithLimit(String baseUrl, String query, int limit) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?limit=" + limit + "&query="
+                + URLEncoder.encode(query, StandardCharsets.UTF_8);
     }
 
     public static String getAPISpecificPolicy(String baseUrl, String apiId) {
@@ -662,6 +740,16 @@ public class Utils {
     /** Admin REST API — a single deny policy by condition id (get/update-status/delete). NOTE: singular path. */
     public static String getDenyPolicyByIdURL(String baseUrl, String conditionId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/deny-policy/" + conditionId;
+    }
+
+    /** Admin REST API — API categories collection (list/create). */
+    public static String getApiCategoriesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "api-categories";
+    }
+
+    /** Admin REST API — a single API category by id (update/delete). */
+    public static String getApiCategoryByIdURL(String baseUrl, String categoryId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "api-categories/" + categoryId;
     }
 
     /** Admin REST API — key managers collection (list/create). */

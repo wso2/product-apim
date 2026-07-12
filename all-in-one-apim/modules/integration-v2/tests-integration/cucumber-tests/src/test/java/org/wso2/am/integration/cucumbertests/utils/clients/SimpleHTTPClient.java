@@ -141,6 +141,54 @@ public class SimpleHTTPClient {
     }
 
     /**
+     * GETs a URL and writes the raw response body BYTES to a temp file, returning it. Needed for binary payloads
+     * (e.g. an API export archive zip) that {@link #doGet} would corrupt by decoding the body as a UTF-8 String.
+     * The HTTP status is returned separately so callers can assert it. On a non-2xx status the (text) error body
+     * is written to the file too, so the caller can inspect it.
+     *
+     * @param url     target endpoint URL
+     * @param headers request headers
+     * @param suffix  temp-file suffix (e.g. ".zip")
+     * @return a DownloadResult carrying the status code and the temp file
+     * @throws IOException if the request or file write fails
+     */
+    public DownloadResult doGetToFile(String url, Map<String, String> headers, String suffix) throws IOException {
+        HttpGet request = new HttpGet(url);
+        setHeaders(headers, request);
+        try (CloseableHttpResponse response = client.execute(request)) {
+            int code = response.getStatusLine().getStatusCode();
+            File file = File.createTempFile("download", suffix);
+            file.deleteOnExit();
+            if (response.getEntity() != null) {
+                try (InputStream in = response.getEntity().getContent();
+                     FileOutputStream out = new FileOutputStream(file)) {
+                    in.transferTo(out);
+                }
+            }
+            return new DownloadResult(code, file);
+        }
+    }
+
+    /** Result of {@link #doGetToFile}: the HTTP status and the temp file holding the response body bytes. */
+    public static final class DownloadResult {
+        private final int statusCode;
+        private final File file;
+
+        public DownloadResult(int statusCode, File file) {
+            this.statusCode = statusCode;
+            this.file = file;
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public File getFile() {
+            return file;
+        }
+    }
+
+    /**
      * Send a HTTP HEAD request to the specified URL. Used for existence-check endpoints that respond with a
      * status code and no body (e.g. publisher role validation {@code HEAD /roles/{roleId}}).
      *
