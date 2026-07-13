@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.10): teardown idempotency / double-stop. Two blocks run serially
+  (parallel="false"). Phase4.10-DoubleStop boots a real container, the probe records its observation then
+  stops the container itself, so BlockLifecycleListener.onFinish's later stop() is a double-stop that must
+  no-op. Phase4.10-NoContainer points tomlOverlayPath at a nonexistent file so boot produces no container;
+  its class FAILS (the guard rethrows the bootError as an IllegalStateException @BeforeClass config FAILURE,
+  turning the build RED), yet onFinish must still hit its null-guard and no-op (nothing to stop, nothing to
+  leak, no NPE). Both share the docker label block=fv-4.10 (distinct <test> names). Wired to no legacy
+  runners.
+-->
+<suite name="Framework Verification 4.10" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase4.10-DoubleStop">
+        <parameter name="blockLabel" value="fv-4.10"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeDoubleStopRunner"/>
+        </classes>
+    </test>
+    <test name="Phase4.10-NoContainer">
+        <parameter name="blockLabel" value="fv-4.10"/>
+        <parameter name="tomlOverlayPath" value="/nonexistent/fv-4.10/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+        </classes>
+    </test>
+</suite>

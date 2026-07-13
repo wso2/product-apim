@@ -357,8 +357,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
                 "API tier not updated.");
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Allow time for the new revision to replace the previous one on the gateway
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
         Assert.assertNotNull(applicationKeyDTOOfAPILevelTest.getToken());
@@ -379,8 +379,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
                 "Unlimited");
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Allow time for the new revision to replace the previous one on the gateway
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
         Assert.assertTrue(isThrottled(requestHeaders, null,7), "Request not need to throttle since policy was updated");

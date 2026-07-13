@@ -49,6 +49,9 @@
     <!-- Configuration to disable appending the charset parameter to each part of multipart form data -->
     <parameter name="disableSendingMultipartPartCharset" locked="false">{{message_formatter.options.disableSendingMultipartPartCharset | default(true)}}</parameter>
 
+    <!-- Configuration to preserve Content-Transfer-Encoding header in each part of multipart form data -->
+    <parameter name="preserveMultipartPartContentTransferEncoding" locked="false">{{message_formatter.options.preserveMultipartPartContentTransferEncoding | default(true)}}</parameter>
+
     <!--the directory in which .aar services are deployed inside axis2 repository-->
     <parameter name="ServicesDirectory">axis2services</parameter>
 

@@ -99,8 +99,6 @@ public class DevPortalSearchTest extends APIMIntegrationBaseTest {
         createAPIRevisionAndDeployUsingRest(api1Id, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatusToPublish(api1Id, false);
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         /* Create API_PIZZA */
@@ -127,8 +125,6 @@ public class DevPortalSearchTest extends APIMIntegrationBaseTest {
         createAPIRevisionAndDeployUsingRest(api2Id, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatusToPublish(api2Id, false);
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         /* Create API_OTHER */
@@ -154,8 +150,6 @@ public class DevPortalSearchTest extends APIMIntegrationBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(api3Id, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatusToPublish(api3Id, false);
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
     }

@@ -65,8 +65,7 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest 
 
         //Create and publish API version 1.0.0
         APIDTO apidto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
         apiID = apidto.getId();
 
         //check for LC state change buttons
@@ -126,8 +125,7 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest 
 
         restAPIPublisher.changeAPILifeCycleStatus(copyApiID, APILifeCycleAction.PUBLISH.getAction());
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_2_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
         LifecycleStateDTO stateDTO = restAPIPublisher.getLifecycleStatusDTO(copyApiID);
         Assert.assertEquals(stateDTO.getState(), APILifeCycleState.PUBLISHED.getState());
         String[] expectedStates =

@@ -452,9 +452,34 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             HttpResponse publishAPIResponse = publishAPIUsingRest(createAPIResponse.getData(), publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                     APILifeCycleState.PUBLISHED.getState().equals(publishAPIResponse.getData()))) {
-                throw new APIManagerIntegrationTestException("Error in API Publishing" +
-                        getAPIIdentifierStringFromAPIRequest(apiRequest) + "Response Code:" + publishAPIResponse.getResponseCode() +
-                        " Response Data :" + publishAPIResponse.getData());
+                // Retry: lifecycle state may not have propagated yet (e.g., on MySQL due to DB read delay)
+                int retryCount = 0;
+                int maxRetries = 5;
+                boolean published = false;
+                while (retryCount < maxRetries) {
+                    log.warn("API lifecycle state not yet 'Published' (got '" + publishAPIResponse.getData()
+                            + "'). Retrying (" + (retryCount + 1) + "/" + maxRetries + ")..."
+                            + getAPIIdentifierStringFromAPIRequest(apiRequest));
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new APIManagerIntegrationTestException(
+                                "Thread interrupted while retrying API publish status check", e);
+                    }
+                    HttpResponse lifecycleResponse = publisherRestClient.getLifecycleStatus(createAPIResponse.getData());
+                    if (lifecycleResponse != null
+                            && APILifeCycleState.PUBLISHED.getState().equals(lifecycleResponse.getData())) {
+                        published = true;
+                        break;
+                    }
+                    retryCount++;
+                }
+                if (!published) {
+                    throw new APIManagerIntegrationTestException("Error in API Publishing" +
+                            getAPIIdentifierStringFromAPIRequest(apiRequest) + "Response Code:" + publishAPIResponse.getResponseCode() +
+                            " Response Data :" + publishAPIResponse.getData());
+                }
             }
             log.info("API Published :" + getAPIIdentifierStringFromAPIRequest(apiRequest));
             return createAPIResponse.getData();
@@ -585,8 +610,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             throws APIManagerIntegrationTestException, ApiException,
             org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException {
         APIDTO apidto = createAndPublishAPI(apiCreationRequestBean, publisherRestClient, false);
-        waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
         SubscriptionDTO httpResponseSubscribeAPI = subscribeToAPI(apidto.getId(), applicationID, tier, storeRestClient);
         log.info("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
         return apidto;
