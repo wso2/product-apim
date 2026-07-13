@@ -107,3 +107,161 @@ jobs:
         uses: malinthaprasan/action-surefire-report@v1
         with:
           report_paths: 'reports/**/TEST-*.xml'
+  # Builds the distribution + Docker images ONCE, then shares the images (docker save -> artifact) and the
+  # Maven repo (run-scoped cache) with the integration-v2 matrix. The image-build execs in the testcontainers
+  # module bind to pre-integration-test, which `mvn install` runs but `mvn test` does not - so matrix entries
+  # `docker load` these images and never rebuild them.
+  v2-build-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run hostname
+        run: hostname
+      - name: Fix host entry
+        run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      # Run-scoped key so the matrix restores exactly this run's repo (incl. the 4.7.0-SNAPSHOT artifacts the
+      # dist build installs); restore-keys warm-starts from the shared cache.
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-v2-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build APIM distribution (skip tests)
+        run: >
+          mvn clean install -f all-in-one-apim/pom.xml
+          -Dmaven.test.skip=true -DskipBenchMarkTest=true -DskipRestartTests=true
+      - name: Build APIM + node Docker images (no suite)
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          mvn install -pl tests-integration/cucumber-tests -am -DskipTests
+          -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      # Derive the APIM image name from the same pom property the build uses, so a version bump needs no workflow
+      # edit (single source of truth: apim.docker.image.name = wso2am:${apim.server.version}-jdk21).
+      - name: Resolve APIM artifact names
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
+      - name: Save Docker images
+        run: |
+          mkdir -p /tmp/v2-images
+          docker save "$APIM_IMAGE" node-app-server:latest | gzip > /tmp/v2-images/images.tar.gz
+      - name: Upload Docker images
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-images
+          path: /tmp/v2-images/images.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+      # NOTE: coverage report rendering needs the product class files, but we do NOT ship the ~538 MB distribution
+      # zip as a second artifact — the integration-v2 job extracts them from the already-shared image via docker cp
+      # (see docs/devs/v2-coverage-architecture.md §8). The image IS what ran, so its classes are byte-identical.
+  integration-v2:
+    needs: v2-build-images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: v2-1
+            suite: testng-v2.xml
+    steps:
+      - name: Run hostname
+        run: hostname
+      - name: Fix host entry
+        run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Restore Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-v2-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: v2-images
+          path: /tmp/v2-images
+      - name: Load Docker images
+        run: docker load < /tmp/v2-images/images.tar.gz
+      # Pull the product class files out of the already-loaded image instead of shipping the ~538 MB distribution
+      # zip (docker cp is a LOCAL copy — zero extra artifact transfer). The image is what ran, so its classes are
+      # byte-identical to the executed ones → exact JaCoCo class-id match. The suite reads them via
+      # -Dapim.coverage.classfiles below. See docs/devs/v2-coverage-architecture.md §8.
+      - name: Extract APIM class files from image (for coverage report)
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)
+          APIM_SERVER_NAME=$(mvn -q -N help:evaluate -Dexpression=apim.server.name -DforceStdout)
+          SRC="$RUNNER_TEMP/cov-classfiles"
+          mkdir -p "$SRC"
+          cid=$(docker create "$APIM_IMAGE")
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          BASE="/home/wso2carbon/$APIM_SERVER_NAME/repository"
+          docker cp "$cid:$BASE/components/plugins"        "$SRC/plugins"
+          docker cp "$cid:$BASE/deployment/server/webapps" "$SRC/webapps"
+          echo "APIM_COVERAGE_CLASSFILES=$SRC" >> "$GITHUB_ENV"
+      # `mvn test` (not install) keeps the testcontainers pre-integration-test image-build execs from firing,
+      # so the loaded images are reused. `-am` builds only the integration-v2 reactor deps up to the test
+      # phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored Maven repo.
+      - name: Run integration-v2 suite (reuses prebuilt images)
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          mvn test -pl tests-integration/cucumber-tests -am
+          -Dsurefire.suite.xml=${{ matrix.suite }}
+          -Dapim.coverage=true
+          -Dapim.coverage.classfiles="$APIM_COVERAGE_CLASSFILES"
+          -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      - name: Archive test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-v2-reports-${{ matrix.id }}
+          path: |
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/cucumber-report/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/**
+          if-no-files-found: warn
+      # Guard against a silent coverage regression: if the suite PASSED but no report was produced (dist-zip not
+      # shared, agent didn't attach, etc.), fail loudly here rather than uploading nothing and staying green. No
+      # `if:` → skipped when the suite itself failed (that run is already red), so it fires only in the
+      # "green build, coverage silently missing" case. Purely local — a Codecov outage never trips it.
+      - name: Verify coverage report was generated
+        run: |
+          REPORT=all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
+          # Check validity, not mere existence: -s rejects a 0-byte file, and the grep for the LINE counter
+          # rejects a truncated/partial XML that never reached the bundle summary (either would sail through
+          # a plain `-f` and then upload an empty report to Codecov).
+          if [ ! -s "$REPORT" ] || ! grep -q '<counter type="LINE"' "$REPORT"; then
+            echo "::error::Coverage report missing, empty, or malformed at $REPORT — coverage did not render correctly (check the image-classfiles extraction step and that the suite ran with -Dapim.coverage=true)."
+            exit 1
+          fi
+          echo "Coverage report present and valid ($(wc -c <"$REPORT") bytes)"
+      - name: Upload v2 integration coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
+          flags: integration-v2_tests
+      # Surface the actual scenario failures (name + assertion message) at the top of the run as a check +
+      # annotations, so a red build is diagnosable without expanding logs. Same action the legacy show-report
+      # job uses; the v2 surefire XML is standard Surefire JUnit, so it parses identically.
+      - name: Publish v2 test report
+        if: always()
+        uses: malinthaprasan/action-surefire-report@v1
+        with:
+          report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
+          check_name: 'integration-v2 results'

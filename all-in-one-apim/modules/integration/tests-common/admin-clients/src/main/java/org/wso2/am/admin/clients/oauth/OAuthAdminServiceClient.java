@@ -79,4 +79,22 @@ public class OAuthAdminServiceClient {
         return oAuthAdminServiceStub.getOAuthApplicationDataByAppName(applicationName);
     }
 
+    public void updateOAuthApplicationState(String consumerKey, String newState)
+            throws RemoteException, OAuthAdminServiceIdentityOAuthAdminException {
+
+        oAuthAdminServiceStub.updateConsumerAppState(consumerKey, newState);
+    }
+
+    public void removeOAuthApplicationData(String consumerkey)
+            throws RemoteException, OAuthAdminServiceIdentityOAuthAdminException {
+
+        oAuthAdminServiceStub.removeOAuthApplicationData(consumerkey);
+    }
+
+    public void updateOAuthApplicationData(OAuthConsumerAppDTO consumerAppDTO)
+            throws RemoteException, OAuthAdminServiceIdentityOAuthAdminException {
+
+        oAuthAdminServiceStub.updateConsumerApplication(consumerAppDTO);
+    }
+
 }

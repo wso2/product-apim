@@ -1,0 +1,1 @@
+Sample documentation file content for the doc-type matrix port.

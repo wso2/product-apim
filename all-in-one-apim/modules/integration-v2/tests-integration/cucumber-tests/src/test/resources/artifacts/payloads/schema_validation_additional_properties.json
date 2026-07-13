@@ -1,0 +1,24 @@
+{
+  "name": "${UNIQUE:SchemaValidationAPI}",
+  "context": "${UNIQUE:schemaValidationTest}",
+  "version": "1.0.0",
+  "enableSchemaValidation": true,
+  "type": "HTTP",
+  "transport": ["http", "https"],
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "apiThrottlingPolicy": "Unlimited",
+  "securityScheme": ["oauth2", "oauth_basic_auth_mandatory"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  }
+}

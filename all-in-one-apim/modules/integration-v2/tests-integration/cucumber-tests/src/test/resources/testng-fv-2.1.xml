@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 2.1): namespaced shared-scope key. Registers the NEW
+  BlockScopeListener (never the legacy TestNameMdcListener), so running it cannot affect the legacy
+  testng.xml run. The single test orchestrates nested TestNG suites internally — no Docker required.
+-->
+<suite name="Framework Verification 2.1" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase2.1-BlockScopeIsolation">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.verification.BlockScopeIsolationVerificationTest"/>
+        </classes>
+    </test>
+</suite>
