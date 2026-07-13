@@ -26,7 +26,7 @@ import io.cucumber.testng.CucumberOptions;
  * gateway invocations.
  */
 @CucumberOptions(
-        features = "src/test/resources/features/keymanager/token_issuance.feature",
+        features = "src/test/resources/features/key-manager/token_issuance.feature",
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },

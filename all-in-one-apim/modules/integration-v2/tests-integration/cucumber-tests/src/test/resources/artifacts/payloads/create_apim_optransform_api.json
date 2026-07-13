@@ -1,0 +1,50 @@
+{
+  "name": "${UNIQUE:APIMOpPolicy}",
+  "context": "${UNIQUE:apiOpPolicyContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API with a jsonToXML request operation policy, aggregated into a product",
+  "tags": ["op-policy"],
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "POST",
+      "target": "/reflect-body",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "jsonToXML",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": [
+          {
+            "policyName": "jsonFault",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ]
+      }
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

@@ -54,8 +54,11 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         logger.info("SHARED DB URL: {}", sharedDbUrl);
 
         // Expose canonical ports; Docker assigns ephemeral host ports resolved via getMappedPort.
+        // GATEWAY_WS_PORT (9099) is the gateway WebSocket inbound; GATEWAY_WSS_PORT (8099) is the SECURE WebSocket
+        // inbound — both needed by WebSocket-API invocation tests (ws:// and wss://).
         withExposedPorts(Constants.HTTPS_PORT, Constants.HTTP_PORT,
-                Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT);
+                Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
+                Constants.GATEWAY_WSS_PORT);
 
         // Env vars for APIMGT_DB
         withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
@@ -177,8 +180,53 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return String.format("http://%s:%d/", getHost(), getMappedPort(Constants.GATEWAY_HTTP_PORT));
     }
 
+    /** Gateway WebSocket base URL (ws://host:mappedWsPort/) for WebSocket-API invocation. */
+    public String getGatewayWsUrl() {
+        return String.format("ws://%s:%d/", getHost(), getMappedPort(Constants.GATEWAY_WS_PORT));
+    }
+
+    /** Gateway SECURE WebSocket base URL (wss://host:mappedWssPort/) for wss:// WebSocket-API invocation. */
+    public String getGatewayWssUrl() {
+        return String.format("wss://%s:%d/", getHost(), getMappedPort(Constants.GATEWAY_WSS_PORT));
+    }
+
+    /**
+     * The container's docker-network GATEWAY IP — the source IP the gateway observes for a host→published-port
+     * connection (verified: a WS client on the host is seen by APIM as this address). Used to pin an api-key
+     * {@code permittedIP} to the test client's effective IP so the api-key IP-restriction POSITIVE case can be
+     * asserted (matching IP → allowed). Read from the live container inspect, so it adapts per environment.
+     */
+    public String getGatewayClientIp() {
+        var networks = getContainerInfo().getNetworkSettings().getNetworks();
+        for (com.github.dockerjava.api.model.ContainerNetwork net : networks.values()) {
+            if (net.getGateway() != null && !net.getGateway().isEmpty()) {
+                return net.getGateway();
+            }
+        }
+        throw new IllegalStateException("Could not determine the container network gateway IP");
+    }
+
     public String getContainerTomlPath() {
         return Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name") +
                 Constants.DEPLOYMENT_TOML_PATH;
+    }
+
+    /** In-container path of the running server's {@code log4j2.properties} (for remote-logging appender checks). */
+    public String getContainerLog4j2Path() {
+        return Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name") +
+                "/repository/conf/log4j2.properties";
+    }
+
+    /**
+     * Reads a file's content from inside the running container as UTF-8. Used by the remote-logging tests to
+     * assert how the server rewrote {@code log4j2.properties} (e.g. an appender flipped to a SecuredHttp type).
+     */
+    public String readContainerFile(String containerPath) {
+        try {
+            return copyFileFromContainer(containerPath,
+                    is -> new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read container file: " + containerPath, e);
+        }
     }
 }

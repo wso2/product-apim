@@ -25,6 +25,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -136,6 +137,93 @@ public class SimpleHTTPClient {
         setHeaders(headers, request);
         try (CloseableHttpResponse response = client.execute(request)) {
             return constructResponse(response);
+        }
+    }
+
+    /**
+     * Send a HTTP HEAD request to the specified URL. Used for existence-check endpoints that respond with a
+     * status code and no body (e.g. publisher role validation {@code HEAD /roles/{roleId}}).
+     *
+     * @param url     Target endpoint URL
+     * @param headers Any HTTP headers that should be added to the request
+     * @return Returned HTTP response (status code; body is empty for HEAD)
+     * @throws IOException If an error occurs while making the invocation
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doHead(String url, Map<String, String> headers)
+            throws IOException {
+
+        HttpHead request = new HttpHead(url);
+        setHeaders(headers, request);
+        try (CloseableHttpResponse response = client.execute(request)) {
+            return constructResponse(response);
+        }
+    }
+
+    /**
+     * Send a HTTP GET request WITHOUT URI normalization, so a percent-encoded path (e.g. {@code %28}/{@code %29})
+     * is sent to the server verbatim rather than being decoded by the client. Needed to test how the gateway
+     * routes an encoded URI path segment — the default {@link #doGet} lets Apache HttpClient normalize/decode the
+     * path, changing what the gateway receives.
+     *
+     * @param url     Target endpoint URL (with any percent-encoding already applied)
+     * @param headers Any HTTP headers that should be added to the request
+     * @return Returned HTTP response
+     * @throws IOException If an error occurs while making the invocation
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGetRaw(String url,
+            Map<String, String> headers) throws IOException {
+
+        HttpGet request = new HttpGet(url);
+        request.setConfig(RequestConfig.custom().setNormalizeUri(false).build());
+        setHeaders(headers, request);
+        try (CloseableHttpResponse response = client.execute(request)) {
+            return constructResponse(response);
+        }
+    }
+
+    /**
+     * Send a HTTPS GET presenting a CLIENT CERTIFICATE (mutual SSL). Builds a transient HttpClient whose
+     * SSLContext loads the given JKS keystore's KEY material (the client cert + private key) — so the client
+     * offers that cert during the TLS handshake — while still trusting the gateway's server cert (trust-all).
+     * Used to invoke an API whose securityScheme is {@code mutualssl}/{@code mutualssl_mandatory}. The singleton
+     * client can't do this (it loads no key material), so this is a per-call client keyed to the keystore.
+     *
+     * @param clientKeyStorePath filesystem path to the client JKS keystore
+     * @param keyStorePassword   the keystore (and key) password
+     * @param url                target gateway HTTPS URL
+     * @param headers            request headers
+     * @return the HTTP response
+     * @throws IOException on connectivity or keystore/SSL setup failure
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doMutualSSLGet(
+            String clientKeyStorePath, String keyStorePassword, String url, Map<String, String> headers)
+            throws IOException {
+        try {
+            KeyStore clientKeyStore = KeyStore.getInstance("JKS");
+            try (InputStream in = new FileInputStream(clientKeyStorePath)) {
+                clientKeyStore.load(in, keyStorePassword.toCharArray());
+            }
+            KeyStore emptyTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            emptyTrustStore.load(null, null);
+            SSLContext sslContext = SSLContexts.custom()
+                    .loadTrustMaterial(emptyTrustStore, new TrustAllStrategy())
+                    .loadKeyMaterial(clientKeyStore, keyStorePassword.toCharArray())
+                    .build();
+            SSLConnectionSocketFactory sslSocketFactory =
+                    new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+            try (CloseableHttpClient mtlsClient = HttpClients.custom()
+                    .setSSLSocketFactory(sslSocketFactory)
+                    .setDefaultRequestConfig(RequestConfig.custom().setRedirectsEnabled(false).build())
+                    .disableCookieManagement()
+                    .build()) {
+                HttpGet request = new HttpGet(url);
+                setHeaders(headers, request);
+                try (CloseableHttpResponse response = mtlsClient.execute(request)) {
+                    return constructResponse(response);
+                }
+            }
+        } catch (java.security.GeneralSecurityException e) {
+            throw new IOException("Failed to build mutual-SSL client for keystore " + clientKeyStorePath, e);
         }
     }
 

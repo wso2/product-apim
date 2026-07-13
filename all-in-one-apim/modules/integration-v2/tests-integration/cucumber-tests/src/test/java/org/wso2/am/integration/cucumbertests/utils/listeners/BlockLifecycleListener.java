@@ -61,6 +61,9 @@ public class BlockLifecycleListener implements ITestListener {
     static final String CONTAINER_KEY = "blockApimContainer";
     static final String BASE_URL_KEY = "baseUrl";
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
+    static final String BASE_GATEWAY_WS_URL_KEY = "baseGatewayWsUrl";
+    static final String BASE_GATEWAY_WSS_URL_KEY = "baseGatewayWssUrl";
+    static final String GATEWAY_CLIENT_IP_KEY = "gatewayClientIp";
 
     /** Optional {@code <parameter>} names read from the block's {@code <test>}. */
     static final String PARAM_BLOCK_LABEL = "blockLabel";
@@ -127,6 +130,9 @@ public class BlockLifecycleListener implements ITestListener {
             TestContext.setShared(CONTAINER_KEY, container);
             TestContext.setShared(BASE_URL_KEY, baseUrl);
             TestContext.setShared(BASE_GATEWAY_URL_KEY, gatewayUrl);
+            TestContext.setShared(BASE_GATEWAY_WS_URL_KEY, container.getGatewayWsUrl());
+            TestContext.setShared(BASE_GATEWAY_WSS_URL_KEY, container.getGatewayWssUrl());
+            TestContext.setShared(GATEWAY_CLIENT_IP_KEY, container.getGatewayClientIp());
             logger.info("Block '" + label + "' booted and ready: baseUrl=" + baseUrl
                     + " baseGatewayUrl=" + gatewayUrl);
 

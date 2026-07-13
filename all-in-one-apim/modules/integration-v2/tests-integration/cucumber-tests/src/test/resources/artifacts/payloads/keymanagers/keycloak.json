@@ -1,0 +1,22 @@
+{
+  "name": "${UNIQUE:KeycloakKM}",
+  "displayName": "Test Key Manager Keycloak",
+  "type": "KeyCloak",
+  "issuer": "https://localhost:8443/auth/realms/master",
+  "introspectionEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/token/introspect",
+  "clientRegistrationEndpoint": "https://localhost:8443/auth/realms/master/clients-registrations/openid-connect",
+  "tokenEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/token",
+  "revokeEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/revoke",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableOAuthAppCreation": true,
+  "availableGrantTypes": [],
+  "additionalProperties": {
+    "client_id": "clientIdValue",
+    "client_secret": "clientSecretValue",
+    "self_validate_jwt": true
+  }
+}

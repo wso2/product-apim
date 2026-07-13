@@ -34,6 +34,8 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphQLDesignRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherStreamingDesignRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherSoapDesignRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
         </classes>
     </test>
     <!-- DevPortal features share their own container (separate capability, consumer-plane actors). -->
@@ -57,6 +59,42 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySecurityEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLScopeEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultVersionRoutingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayLifecycleStageInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayApiProductInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlQueryLimitsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlEndpointSecurityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphqlFromUrlRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAiApiInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayPrototypeApiRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySchemaValidationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
+            <!-- MCP servers (publisher-plane create/CRUD + gateway-plane invocation): both need the node
+                 mcp-server backend, which this block already starts, so they run here rather than in a separate
+                 backend-enabled block. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMcpServersRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMcpInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- Mutual-SSL invocation + WebSocket CORS share ONE block: their overlays are orthogonal (mTLS shrinks the
+         SSL-profile read interval with client auth still "optional"; WS-CORS enables the WS origin allow-list —
+         different TOML tables, neither breaks the other's flows), so they co-locate on one container instead of
+         two. Needs the node backend. Runs the two runners as parallel classes (thread-count=2): they use
+         different data planes — mTLS on the 8243 HTTPS passthrough, WS-CORS on the ws:// inbound — so they don't
+         interfere. -->
+    <test name="IntegrationV2-MutualSslWsCors" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="mtls-ws-cors"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mtlsWsCors/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketCorsRunner"/>
         </classes>
     </test>
     <!-- Key-manager features (token/key issuance). initBackend for the refresh/sandbox gateway invocations. -->
@@ -69,6 +107,8 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenRevocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApiKeyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOAuthKeysRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerMultipleClientSecretsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerMapApplicationKeysRunner"/>
         </classes>
     </test>
     <!-- Features needing extra (non-default) server config share one container via a feature-specific TOML
@@ -85,6 +125,68 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationSharingRunner"/>
         </classes>
     </test>
+    <!-- Custom application attributes: needs a feature-specific overlay (backend JWT generation + a declared
+         application attribute) and a backend (the header-reflecting /reflect-headers route) so the attribute
+         can be verified both stored and surfaced in the X-JWT-Assertion backend JWT claim. Its own block
+         because the overlay ([apim.jwt] enable, application_attributes required=true) is not orthogonal to
+         other blocks' config. -->
+    <test name="IntegrationV2-ApplicationAttributes" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="application-attributes"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/applicationAttributes/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationAttributesRunner"/>
+        </classes>
+    </test>
+    <!-- Admin-plane governance/policy tests (default config, no gateway backend). Concurrent block. -->
+    <test name="IntegrationV2-Admin" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="admin"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApplicationSearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlingPolicyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminGatewayEnvironmentsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminKeyManagerConfigRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminDenyPolicyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminTenantConfigRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminSystemScopesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlePolicyExportImportRunner"/>
+        </classes>
+    </test>
+    <!-- B2B organization visibility. Own block: registers the organizationId local claim (SOAP) and provisions
+         org-scoped users at scenario time. Default config, no gateway backend. -->
+    <test name="IntegrationV2-OrganizationVisibility" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="organization-visibility"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminOrganizationVisibilityRunner"/>
+        </classes>
+    </test>
+    <!-- API Governance plane (rulesets / policies / compliance) — its own product API (/api/am/governance/v1)
+         with its own apim:gov_* token scopes. Default config (compliance evaluates API definitions, not runtime,
+         so no gateway backend needed). Concurrent block. -->
+    <test name="IntegrationV2-Governance" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="governance"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <!-- initBackend: the MCP-proxy compliance scenario discovers tools from the node MCP server at create. -->
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceRulesetsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernancePoliciesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceComplianceRunner"/>
+        </classes>
+    </test>
+    <!-- Mandatory custom API property enforcement: overlay declares a required custom property. Own block
+         (the required-property config is not orthogonal to other blocks). No gateway backend needed. -->
+    <test name="IntegrationV2-MandatoryProperties" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="mandatory-properties"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mandatoryProperties/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMandatoryPropertiesRunner"/>
+        </classes>
+    </test>
     <!-- Token persistence across a graceful server restart. MUST run sequentially (thread-count=1): the
          restart step bounces the shared APIM server in place via the ServerAdmin restartGracefully API, so no
          sibling class may share this container. Overlay enables token persistence + enable_restart_from_api;
@@ -96,6 +198,18 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/serverRestart/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartTokenPersistenceRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartSharedScopeRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartMultiProtocolRunner"/>
+        </classes>
+    </test>
+    <!-- Remote server logging (RemoteLoggingAppenderTest). MUST run sequentially (thread-count=1): it mutates
+         the shared server's log4j2.properties via the RemoteLoggingConfig admin service, so no sibling class may
+         share this container. A host mock sink receives the streamed logs via host.docker.internal. -->
+    <test name="IntegrationV2-RemoteLogging" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="remote-logging"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.RemoteLoggingRunner"/>
         </classes>
     </test>
 </suite>

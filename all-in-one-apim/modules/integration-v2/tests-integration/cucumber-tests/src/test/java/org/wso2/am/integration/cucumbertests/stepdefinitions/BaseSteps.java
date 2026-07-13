@@ -178,7 +178,7 @@ public class BaseSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
-        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:api_generate_key apim:gateway_policy_manage");
+        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:api_generate_key apim:gateway_policy_manage apim:mcp_server_create apim:mcp_server_manage apim:mcp_server_publish apim:mcp_server_view apim:mcp_server_delete apim:mcp_server_list_view");
 
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
             json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -252,7 +252,7 @@ public class BaseSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
-        json.addProperty("scope", "apim:admin apim:tier_view apim:api_provider_change");
+        json.addProperty("scope", "apim:admin apim:tier_view apim:api_provider_change apim:llm_provider_manage apim:llm_provider_read");
 
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
                 json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -261,6 +261,41 @@ public class BaseSteps {
         String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
         TestContext.set(Identity.adminTokenKey(actor), accessToken);
         log.info("Obtained Admin access token for user " + actor.getUserName()
+                + " with expires_in (seconds): "
+                + Utils.extractValueFromPayload(response.getData(), "expires_in"));
+    }
+
+    /**
+     * Obtains a valid Governance API access token for a named actor (must have governance rights). Requires the
+     * actor's DCR application to already exist (e.g. via "I have valid access tokens as ..."). Governance is its
+     * own product API with its own {@code apim:gov_*} scopes — not reachable with the admin token.
+     */
+    @Given("I have a valid Governance access token as {string}")
+    public void iHaveValidGovernanceAccessTokenAs(String actorRef) throws Exception {
+
+        mintGovernanceToken(Identity.resolveActor(actorRef));
+    }
+
+    private void mintGovernanceToken(User actor) throws Exception {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Basic " + TestContext.get(Identity.dcrCredentialsKey(actor)).toString());
+
+        // create json payload to obtain governance access token
+        JsonObject json = new JsonObject();
+        json.addProperty("grant_type", "password");
+        json.addProperty("username", actor.getUserName());
+        json.addProperty("password", actor.getPassword());
+        json.addProperty("scope", "apim:gov_rule_read apim:gov_rule_manage apim:gov_policy_read apim:gov_policy_manage apim:gov_result_read openid");
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
+                json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+
+        String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
+        TestContext.set(Identity.governanceTokenKey(actor), accessToken);
+        log.info("Obtained Governance access token for user " + actor.getUserName()
                 + " with expires_in (seconds): "
                 + Utils.extractValueFromPayload(response.getData(), "expires_in"));
     }
@@ -349,13 +384,51 @@ public class BaseSteps {
      * @param value The raw string value or a context key to resolve
      * @param contextKey The key under which the value should be stored in TestContext
      */
+    /**
+     * Replaces a literal substring in a stored context value and writes it back. Used to resolve a server-side
+     * template placeholder that the publisher API returns verbatim — e.g. a version-first API's context is
+     * stored as {@code /{version}/ctx}, and the gateway invocation needs {@code /1.0.0/ctx}.
+     *
+     * @param token    literal substring to replace (e.g. {@code {version}})
+     * @param value    replacement value (e.g. {@code 1.0.0})
+     * @param key      context key whose value is rewritten in place
+     */
+    @When("I replace {string} with {string} in context {string}")
+    public void iReplaceInContext(String token, String value, String key) {
+        String resolved = TestContext.resolve(key).toString().replace(token, value);
+        TestContext.set(Utils.normalizeContextKey(key), resolved);
+    }
+
     @When("I put value {string} in context as {string}")
     public void iPutValueInContextAs(String value, String contextKey) {
         // Resolve value if it's a reference to another context key
-        Object resolvedValue = Utils.resolveFromContext(value);
+        Object resolvedValue = TestContext.resolve(value);
 
         log.info("Setting context key: " + contextKey + " with value: " + resolvedValue);
         TestContext.set(Utils.normalizeContextKey(contextKey), resolvedValue.toString());
+    }
+
+    /**
+     * Decodes the JWT stored under a context key (a {@code header.payload.signature} token) and asserts its
+     * payload segment contains the expected substring. Used to verify token claims such as the internal API
+     * key's {@code keytype}. Base64url-decodes tolerantly (falls back to standard base64).
+     *
+     * @param contextKey context key holding the JWT
+     * @param expected   substring expected in the decoded JWT payload (e.g. {@code "keytype":"SANDBOX"})
+     */
+    @Then("The JWT stored as {string} should contain {string}")
+    public void theJwtStoredShouldContain(String contextKey, String expected) {
+        String jwt = TestContext.resolve(contextKey).toString();
+        String[] segments = jwt.split("\\.");
+        Assert.assertTrue(segments.length >= 2, "Malformed JWT (expected >= 2 segments): " + jwt);
+        String payload;
+        try {
+            payload = new String(Base64.getUrlDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            payload = new String(Base64.getDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        }
+        Assert.assertTrue(payload.contains(expected),
+                "Decoded JWT payload does not contain '" + expected + "': " + payload);
     }
 
     /**
@@ -386,6 +459,78 @@ public class BaseSteps {
     public void putJsonPayloadInContext(String key, String docStringJson)  {
 
         TestContext.set(Utils.normalizeContextKey(key), Utils.resolvePayloadPlaceholders(docStringJson));
+    }
+
+    /**
+     * Sets a top-level field of a JSON payload already in context to the given value, writing it back under the
+     * same key. Used to build create-validation negatives from a valid base payload (e.g. blank name/context/
+     * version, or an invalid context) without a separate fixture per case. An empty {@code value} sets the
+     * field to an empty string.
+     *
+     * @param field      the top-level JSON field to set
+     * @param value      the value to set (may be empty)
+     * @param contextKey the context key holding the JSON payload
+     */
+    @When("I set the field {string} to {string} in the payload {string}")
+    public void iSetFieldInPayload(String field, String value, String contextKey) {
+
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        // Resolve any {{contextKey}} placeholders in the value (e.g. reusing an existing API's context to build a
+        // duplicate-context negative). Values with no placeholders pass through unchanged; an unknown key throws.
+        payload.put(field, Utils.resolveContextPlaceholders(value));
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
+    /**
+     * Replaces every occurrence of a literal substring in a payload already in context, writing it back under
+     * the same key. A text-level edit for cases where a structured setter can't reach — e.g. a field whose value
+     * is itself a STRINGIFIED JSON blob (an MCP backend's {@code endpointConfig} is a JSON string, not a nested
+     * object), where changing a URL inside it means editing the raw text. {@code {{contextKey}}} placeholders in
+     * both arguments are resolved.
+     *
+     * @param target      the literal substring to replace
+     * @param replacement the replacement text
+     * @param contextKey  the context key holding the payload
+     */
+    @When("I replace {string} with {string} in the payload {string}")
+    public void iReplaceInPayload(String target, String replacement, String contextKey) {
+        String json = TestContext.resolve(contextKey).toString();
+        String resolvedTarget = Utils.resolveContextPlaceholders(target);
+        String resolvedReplacement = Utils.resolveContextPlaceholders(replacement);
+        TestContext.set(Utils.normalizeContextKey(contextKey), json.replace(resolvedTarget, resolvedReplacement));
+    }
+
+    /**
+     * Removes a top-level field from a JSON payload already in context, writing it back under the same key.
+     * Used to build create-validation negatives where a field must be absent rather than blank.
+     *
+     * @param field      the top-level JSON field to remove
+     * @param contextKey the context key holding the JSON payload
+     */
+    @When("I remove the field {string} from the payload {string}")
+    public void iRemoveFieldFromPayload(String field, String contextKey) {
+
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        payload.remove(field);
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
+    /** Sets a top-level field of a JSON payload in context to an empty array, writing it back under the key. */
+    @When("I set the field {string} to an empty array in the payload {string}")
+    public void iSetFieldToEmptyArrayInPayload(String field, String contextKey) {
+
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, new org.json.JSONArray());
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
+    /** Sets a top-level boolean field of a JSON payload in context, writing it back under the key. */
+    @When("I set the boolean field {string} to {string} in the payload {string}")
+    public void iSetBooleanFieldInPayload(String field, String value, String contextKey) {
+
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, Boolean.parseBoolean(value));
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
 
     /**
@@ -545,7 +690,7 @@ public class BaseSteps {
     public void iExtractFieldFromJsonPayloadAndStoreItAs(String fieldPath, String sourceContextKey,
                                                          String targetContextKey) throws IOException {
 
-        Object sourceValue = Utils.resolveFromContext(sourceContextKey);
+        Object sourceValue = TestContext.resolve(sourceContextKey);
 
         Object value = Utils.extractValueFromPayload(String.valueOf(sourceValue), fieldPath);
         if (value == null) {
@@ -568,10 +713,21 @@ public class BaseSteps {
      * @param fieldName JSON field name to extract
      * @param targetKey TestContext key to store the extracted value
      */
+    /**
+     * Copies a context value from one key to another. Useful when a later composite step overwrites a shared key
+     * (e.g. {@code generatedAccessToken}) but an earlier value must be preserved — e.g. keeping a REST, GraphQL and
+     * WebSocket token side-by-side to invoke all three across a single server restart.
+     */
+    @And("I copy context value {string} to {string}")
+    public void iCopyContextValueTo(String fromKey, String toKey) {
+        Object value = TestContext.resolve(fromKey);
+        TestContext.set(Utils.normalizeContextKey(toKey), value);
+    }
+
     @And("I extract field {string} from {string} and store it as {string}")
     public void iExtractFieldFromAndStoreItAs(String fieldName, String sourceKey, String targetKey) {
 
-        Object contextValue = Utils.resolveFromContext(sourceKey);
+        Object contextValue = TestContext.resolve(sourceKey);
 
         if (!(contextValue instanceof JSONObject jsonObject)) {
             throw new IllegalStateException("Expected JSONObject in TestContext for key '" + sourceKey
@@ -595,8 +751,12 @@ public class BaseSteps {
     @Then("The response should not contain {string}")
     public void responseShouldNotContainFieldValue(String unexpectedValue) {
 
+        // Resolve {{contextKey}} placeholders (mirrors "The response should contain") so a captured value — e.g.
+        // a deleted tier's name — is matched literally, not as the placeholder text (which would falsely pass).
+        String resolved = Utils.resolveContextPlaceholders(unexpectedValue);
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertFalse(response.getData().contains(unexpectedValue));
+        Assert.assertFalse(response.getData().contains(resolved),
+                "Response unexpectedly contains \"" + resolved + "\"");
     }
 
     /**
@@ -645,7 +805,7 @@ public class BaseSteps {
         String tenantDomain = actor.getUserDomain();
 
         if ("endpointConfig".equals(config)){
-            expectedConfigValue = Utils.resolveFromContext(expectedConfigValue).toString();
+            expectedConfigValue = TestContext.resolve(expectedConfigValue).toString();
         }
 
         Object parsedExpectedValue = Utils.parseConfigValue(expectedConfigValue);
@@ -713,7 +873,7 @@ public class BaseSteps {
     public void theResourceShouldReflectTheUpdatedAsValueFromContext(String resourceType, String config,
                String configValueContextKey) throws IOException, InterruptedException {
 
-        Object ctxValue = Utils.resolveFromContext(configValueContextKey);
+        Object ctxValue = TestContext.resolve(configValueContextKey);
         theResourceShouldReflectTheUpdatedAs(resourceType, config, ctxValue.toString());
     }
 
@@ -776,7 +936,7 @@ public class BaseSteps {
     @Then("I wait for deployment of the resource in {string}")
     public void waitForAPIDeployment(String apiDetailsPayload) throws IOException, InterruptedException {
 
-        String actualApiDetailsPayload = Utils.resolveFromContext(apiDetailsPayload).toString();
+        String actualApiDetailsPayload = TestContext.resolve(apiDetailsPayload).toString();
 
         String apiName  = Utils.extractValueFromPayload(actualApiDetailsPayload, "name").toString();
         String apiVersion = Utils.extractValueFromPayload(actualApiDetailsPayload, "version").toString();
@@ -827,7 +987,7 @@ public class BaseSteps {
     @Then("I wait for undeployment of the previous API revision in {string}")
     public void waitForPreviousAPIRevisionUndeployment(String apiDetailsPayload) throws IOException {
 
-        String actualApiDetailsPayload = Utils.resolveFromContext(apiDetailsPayload).toString();
+        String actualApiDetailsPayload = TestContext.resolve(apiDetailsPayload).toString();
 
         String apiName  = Utils.extractValueFromPayload(actualApiDetailsPayload, "name").toString();
         String apiVersion = Utils.extractValueFromPayload(actualApiDetailsPayload, "version").toString();
@@ -875,7 +1035,7 @@ public class BaseSteps {
     public void iGetTheValueFromPayloadAtPathAndStoreItAs(String payloadContextKey, String path,
                                                           String outputContextKey) throws IOException {
 
-        Object ctxValue = Utils.resolveFromContext(payloadContextKey);
+        Object ctxValue = TestContext.resolve(payloadContextKey);
         Object value = Utils.extractValueFromPayload(ctxValue.toString(), path);
         TestContext.set(Utils.normalizeContextKey(outputContextKey), String.valueOf(value));
     }
@@ -889,7 +1049,7 @@ public class BaseSteps {
     @And("I append the following value to the json array {string}:")
     public void iAppendTheFollowingValueToTheJsonArray(String arrayContextKey, String valueToAppend) {
 
-        Object ctxValue = Utils.resolveFromContext(arrayContextKey);
+        Object ctxValue = TestContext.resolve(arrayContextKey);
         JSONArray jsonArray;
         // Convert the stored context value into a JSONArray
         if (ctxValue instanceof JSONArray) {
@@ -917,7 +1077,7 @@ public class BaseSteps {
     public void iFindTheResourceWithFollowingPropertiesInAs(String contextKey, String outputKey,
                                                             DataTable propertiesTable) {
 
-        Object contextValue = Utils.resolveFromContext(contextKey);
+        Object contextValue = TestContext.resolve(contextKey);
         if (!(contextValue instanceof JSONArray jsonArray)) {
             throw new IllegalStateException(
                     "Expected JSONArray in TestContext for key '" + contextKey + "' but found: "
@@ -948,7 +1108,7 @@ public class BaseSteps {
     @Then("the actual value of {string} should match the expected value:")
     public void theActualValueShouldMatchTheExpectedValue(String actualKey, String expectedValue) {
 
-        Object actualValue = Utils.resolveFromContext(actualKey);
+        Object actualValue = TestContext.resolve(actualKey);
         String finalExpectedValue = Utils.resolveIfContextKey(expectedValue).toString();
         Utils.assertConfigValueMatchesExpectedValue(actualValue, finalExpectedValue);
     }

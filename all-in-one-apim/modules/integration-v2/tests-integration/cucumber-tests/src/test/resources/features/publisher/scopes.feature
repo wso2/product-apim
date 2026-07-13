@@ -75,6 +75,19 @@ Feature: Publisher API Shared Scopes
       | admin             |
       | admin@tenant1.com |
 
+  @cap:publisher @feat:scopes @type:regression @legacy:SharedScopeTestWithRestart
+  Scenario Outline: Update a shared scope's description as <admin>
+    Given The system is ready and I have valid publisher access tokens as "<admin>"
+    When I create a new shared scope as "scope-update-test"
+    Then The response status code should be 201
+    When I update the shared scope "scopeID" setting its description to "Updated shared scope description"
+    Then The response status code should be 200
+    And The response should contain "Updated shared scope description"
+
+    Examples:
+      | admin             |
+      | admin@tenant1.com |
+
   @cap:publisher @feat:scopes @type:negative @legacy:SharedScopeTestCase
   Scenario Outline: A subscriber-role user cannot create a shared scope as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
@@ -85,3 +98,22 @@ Feature: Publisher API Shared Scopes
       | actor                       |
       | subscriberUser              |
       | subscriberUser@tenant1.com  |
+
+  # I3: validate a system role via HEAD /roles/{base64url(role)} — an existing role → 200, a non-existing one →
+  # 404. Ports APIM638ValidateTheRoleOfAnExistingUser / ...NonExistingUser. (The earlier 401 was a v2 glue bug:
+  # a literal '=' base64 pad in the path segment; fixed by URL-safe base64 WITHOUT padding — see
+  # Utils.getValidateRoleURL. Legacy runs this green with a publisher token, so we do too.)
+  @cap:publisher @feat:scopes @rule:role-validation @type:regression @legacy:APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase
+  Scenario Outline: Validating a system role returns 200 for an existing role and 404 for a non-existing one as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I validate the role "admin"
+    Then The response status code should be 200
+    When I validate the role "Internal/publisher"
+    Then The response status code should be 200
+    When I validate the role "no-such-role-xyz-000"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |

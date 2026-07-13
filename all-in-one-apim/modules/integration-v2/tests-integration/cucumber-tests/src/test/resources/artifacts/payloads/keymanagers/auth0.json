@@ -1,0 +1,24 @@
+{
+  "name": "${UNIQUE:Auth0KM}",
+  "displayName": "Test Key Manager Auth0",
+  "type": "Auth0",
+  "introspectionEndpoint": "none",
+  "issuer": "https://dev-ted144kt.us.auth0.com",
+  "clientRegistrationEndpoint": "https://dev-ted144kt.us.auth0.com/oidc/register",
+  "tokenEndpoint": "https://dev-ted144kt.us.auth0.com/oauth/token",
+  "revokeEndpoint": "https://dev-ted144kt.us.auth0.com/oauth/revoke",
+  "authorizeEndpoint": "https://dev-ted144kt.us.auth0.com/authorize",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableOAuthAppCreation": true,
+  "availableGrantTypes": [],
+  "additionalProperties": {
+    "client_id": "clientIdValue",
+    "client_secret": "clientSecretValue",
+    "audience": "audienceValue",
+    "self_validate_jwt": true
+  }
+}

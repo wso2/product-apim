@@ -162,3 +162,77 @@ Feature: Publisher API Runtime & Common Configuration
       | tenant      | tenantSuffix |
       | super       |              |
       | tenant1.com | @tenant1.com |
+
+  # Small self-contained publisher read endpoints (no shared config API needed). Ports GetLinterCustomRules and
+  # the publisher throttling-policies read (APIM634 tiers / APIMGetAllSubscriptionThrottlingPolicies).
+  @cap:publisher @feat:api-config @type:smoke @legacy:GetLinterCustomRulesThroughThePublisherRestAPITestCase
+  Scenario Outline: Retrieve the linter custom rules as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I retrieve the linter custom rules
+    Then The response status code should be 200
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:api-config @type:smoke @legacy:APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase @legacy:APIMGetAllSubscriptionThrottlingPolicies
+  Scenario Outline: Retrieve available <level> throttling policies as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I retrieve the publisher "<level>" throttling policies
+    Then The response status code should be 200
+    And The response should contain "Unlimited"
+
+    Examples:
+      | level        | actor                     |
+      | subscription | publisherUser             |
+      | subscription | publisherUser@tenant1.com |
+      | api          | publisherUser             |
+      | api          | publisherUser@tenant1.com |
+
+  # I1: a CORS-disabled API returns EMPTY arrays (not null) for the CORS allow-lists. Ports
+  # CheckEmptyCORSConfigurationsTestCase — creating an API with an explicit CORS object whose lists are null
+  # makes the product normalise them to [] (not null) in the API response. This is a CREATE-time normalisation:
+  # the legacy test passes null lists to addAPI and asserts the GET returns []. (A whole-null corsConfiguration
+  # instead yields the full CORS defaults like ["*"], and updating an existing API's CORS to null does not
+  # renormalise — so this must be asserted at create, via a payload carrying the explicit null-list CORS object.)
+  @cap:publisher @feat:api-config @rule:cors @type:regression @legacy:CheckEmptyCORSConfigurationsTestCase
+  Scenario Outline: A CORS-disabled API with null CORS lists returns empty arrays rather than null as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_cors_null_api.json" as "corsApiId" and deployed it
+    When I retrieve the "apis" resource with id "corsApiId"
+    Then The response status code should be 200
+    And The response should contain "\"accessControlAllowOrigins\":[]"
+    And The response should contain "\"accessControlAllowHeaders\":[]"
+    And The response should contain "\"accessControlAllowMethods\":[]"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # I2: a thumbnail uploaded to an API survives a subsequent API update that doesn't touch it (the thumbnail is
+  # a separate resource, not a field in the API JSON). Ports APIMANAGER5872.
+  @cap:publisher @feat:api-config @rule:thumbnail @type:regression @legacy:APIMANAGER5872UpdateAPIWithoutThumbnailValueAndAPISummaryTestCase
+  Scenario Outline: An API thumbnail is preserved across an API update that omits it as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "thumbApiId" and deployed it
+    When I upload thumbnail "artifacts/images/thumbnail.png" for API "thumbApiId"
+    Then The response status code should be 201
+    When I retrieve the thumbnail for API "thumbApiId"
+    Then The response status code should be 200
+    # Update the API (description only) — the thumbnail must survive.
+    When I retrieve the "apis" resource with id "thumbApiId"
+    And I put the response payload in context as "thumbApiPayload"
+    When I update the "apis" resource "thumbApiId" and "thumbApiPayload" with configuration type "description" and value:
+      """
+      Updated without touching the thumbnail
+      """
+    Then The response status code should be 200
+    When I retrieve the thumbnail for API "thumbApiId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
