@@ -36,6 +36,10 @@ under the License.
             <artifactId>org.wso2.carbon.logging.view.stub</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.commons</groupId>
+            <artifactId>org.wso2.carbon.logging.remote.config.stub</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.utils</artifactId>
         </dependency>

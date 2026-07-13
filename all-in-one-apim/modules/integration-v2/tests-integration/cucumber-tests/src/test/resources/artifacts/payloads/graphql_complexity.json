@@ -1,0 +1,10 @@
+{
+  "list": [
+    {"type": "Subscription", "field": "liftStatusChange", "complexityValue": 1},
+    {"type": "Lift", "field": "id", "complexityValue": 1},
+    {"type": "Lift", "field": "name", "complexityValue": 1},
+    {"type": "Lift", "field": "status", "complexityValue": 1},
+    {"type": "Lift", "field": "capacity", "complexityValue": 1},
+    {"type": "Lift", "field": "night", "complexityValue": 1}
+  ]
+}
