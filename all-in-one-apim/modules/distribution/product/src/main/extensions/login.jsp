@@ -331,7 +331,9 @@
                                                             placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "domain.name")%>">
                                                     </div>
                                                     <input type="button" class="ui button primary"
-                                                        onClick="javascript: myFunction('<%=idpName%>','<%=idpEntry.getValue()%>','domainName')"
+                                                        onClick="javascript: myFunction(
+                                                        '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpName))%>',
+                                                        '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpEntry.getValue()))%>','domainName')"
                                                         value="<%=AuthenticationEndpointUtil.i18n(resourceBundle,"go")%>"/>
                                                 </form>
                                             </div>
