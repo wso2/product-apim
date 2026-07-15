@@ -420,8 +420,10 @@ public final class TenantUserProvisioner {
                 tenant.getTenantAdmin().getPassword());
         java.util.regex.Matcher m = java.util.regex.Pattern
                 .compile("<[^>]*applicationName>([^<]*)</[^>]*applicationName>").matcher(response.getData());
+        // Body omitted from the message — the getOAuthApplicationData response carries the OAuth consumer
+        // secret and must not reach CI logs; the status code is enough to diagnose a failed lookup.
         Assert.assertTrue(m.find(),
-                "Could not resolve SP name from getOAuthApplicationData: " + response.getData());
+                "Could not resolve SP name from getOAuthApplicationData (HTTP " + response.getResponseCode() + ")");
         return m.group(1);
     }
 
@@ -465,7 +467,9 @@ public final class TenantUserProvisioner {
         java.util.regex.Matcher rm = java.util.regex.Pattern
                 .compile("<(\\w+):return\\b([^>]*)>(.*)</\\1:return>", java.util.regex.Pattern.DOTALL)
                 .matcher(getResp);
-        Assert.assertTrue(rm.find(), "getApplication returned no service provider for " + spName + ": " + getResp);
+        // Body omitted from the message — getResp (the getApplication ServiceProvider body) carries the OAuth
+        // consumer secret and must not reach CI logs (see getServiceProvider); the SP name is enough to diagnose.
+        Assert.assertTrue(rm.find(), "getApplication returned no service provider for " + spName);
         // Keep the return element's xmlns declarations but DROP its top-level xsi:type="...ServiceProvider":
         // the updateApplication schema already types the serviceProvider param as ServiceProvider, and a
         // self-referential xsi:type on it makes Axis2 ADB recurse resolving the type extension -> StackOverflowError.
@@ -500,7 +504,9 @@ public final class TenantUserProvisioner {
                 + "<" + ax + ":roleClaimURI xsi:nil=\"true\"/><" + ax + ":userClaimURI xsi:nil=\"true\"/>"
                 + "</" + ax + ":claimConfig>";
 
-        String newInner = inner.replaceAll("<" + ax + ":claimConfig\\b[^>]*>.*?</" + ax + ":claimConfig>",
+        // (?s) DOTALL so .*? spans a claimConfig body that may contain newlines (matches the <return> extraction
+        // above); the reluctant quantifier + non-nesting claimConfig keeps it matching exactly one element.
+        String newInner = inner.replaceAll("(?s)<" + ax + ":claimConfig\\b[^>]*>.*?</" + ax + ":claimConfig>",
                 java.util.regex.Matcher.quoteReplacement(newClaimConfig));
         Assert.assertNotEquals(newInner, inner, "claimConfig element not found/replaced in the service provider");
         // Drop ALL xsi:type hints (keep xsi:nil): every field is a concrete type inferable from its element
