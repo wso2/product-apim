@@ -413,7 +413,9 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     And The response header "Location" should contain "/abc/domain"
     And The response header "Location" should not contain "//abc/domain"
-    # Relative Location: preserved.
+    # Relative Location: the backend's relative "/abc/domain" is resolved against the gateway base
+    # (https://<gw>:8243/abc/domain) — so it is NOT relative in the client-visible response; what is preserved is
+    # the path segment intact (verified: a "not contain ://" assertion fails because the client sees an absolute URL).
     When I invoke the API at gateway context "{{locContext}}/1.0.0/location-rel" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response header "Location" should contain "/abc/domain"

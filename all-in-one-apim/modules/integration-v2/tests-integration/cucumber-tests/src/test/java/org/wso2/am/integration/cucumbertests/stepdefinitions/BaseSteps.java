@@ -90,7 +90,7 @@ public class BaseSteps {
     @When("I have a valid DCR application for the current user")
     public void iHaveADCRApplication() throws IOException {
 
-        createDcrApplication(Identity.defaultActor());
+        createDcrApplication(Identity.actingActor());
     }
 
     /**
@@ -156,7 +156,7 @@ public class BaseSteps {
     @Given("I have a valid Publisher access token for the current user")
     public void iHaveValidPublisherAccessToken() throws Exception {
 
-        mintPublisherToken(Identity.defaultActor());
+        mintPublisherToken(Identity.actingActor());
     }
 
     /**
@@ -198,7 +198,7 @@ public class BaseSteps {
     @Given("I have a valid Devportal access token for the current user")
     public void iHaveValidDevportalAccessToken() throws Exception {
 
-        mintDevportalToken(Identity.defaultActor());
+        mintDevportalToken(Identity.actingActor());
     }
 
     /**
@@ -239,7 +239,7 @@ public class BaseSteps {
      */
     public void iHaveValidAdminAccessToken() throws Exception {
 
-        mintAdminToken(Identity.defaultActor());
+        mintAdminToken(Identity.actingActor());
     }
 
     private void mintAdminToken(User actor) throws Exception {
@@ -308,7 +308,7 @@ public class BaseSteps {
     public void iHaveSystemAndTokens() throws Exception {
 
         theSystemIsReady();
-        User actor = Identity.defaultActor();
+        User actor = Identity.actingActor();
         createDcrApplication(actor);
         mintPublisherToken(actor);
         mintDevportalToken(actor);
@@ -357,7 +357,7 @@ public class BaseSteps {
     public void iHaveSystemAndDevportalToken() throws Exception {
 
         theSystemIsReady();
-        User actor = Identity.defaultActor();
+        User actor = Identity.actingActor();
         createDcrApplication(actor);
         mintDevportalToken(actor);
     }
@@ -928,7 +928,7 @@ public class BaseSteps {
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
         JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
         String resourceId = updateResponseJson.optString("id", null);
-        User actor = Identity.defaultActor();
+        User actor = Identity.actingActor();
         String tenantDomain = actor.getUserDomain();
 
         if ("endpointConfig".equals(config)){

@@ -238,7 +238,7 @@ public class OrganizationSteps {
     @When("I provision role {string}")
     public void iProvisionRole(String roleName) throws Exception {
 
-        String tenantDomain = Identity.defaultActor().getUserDomain();
+        String tenantDomain = Identity.actingActor().getUserDomain();
         TenantUserProvisioner.addRole(tenantDomain, roleName);
     }
 

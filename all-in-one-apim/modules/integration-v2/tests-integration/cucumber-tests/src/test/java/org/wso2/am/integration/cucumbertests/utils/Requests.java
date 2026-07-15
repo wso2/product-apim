@@ -64,6 +64,19 @@ public final class Requests {
         return execute(() -> SimpleHTTPClient.getInstance().doGet(url, headers));
     }
 
+    /**
+     * Binary GET whose response bytes are written to a temp file (for archive/zip downloads a String
+     * {@code doGet} would corrupt). Clears {@code httpResponse} BEFORE the call like every other funnel method,
+     * so a throw leaves no stale response behind; nothing is PUBLISHED to {@code httpResponse} because the status
+     * travels on the returned {@link SimpleHTTPClient.DownloadResult} (the caller asserts
+     * {@code result.getStatusCode()} directly).
+     */
+    public static SimpleHTTPClient.DownloadResult getToFile(String url, Map<String, String> headers, String suffix)
+            throws IOException {
+        TestContext.remove(HTTP_RESPONSE_KEY);
+        return SimpleHTTPClient.getInstance().doGetToFile(url, headers, suffix);
+    }
+
     public static HttpResponse delete(String url, Map<String, String> headers) throws IOException {
         return execute(() -> SimpleHTTPClient.getInstance().doDelete(url, headers));
     }

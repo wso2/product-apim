@@ -120,7 +120,7 @@ public final class ResourceCleanup {
 
         // Nothing was registered (e.g. a framework-probe block that boots a container but creates no resources
         // and never sets an acting actor). Skip before resolving any actor-scoped token key — doing so would
-        // call Identity.defaultActor() and fail with "Tenant not found in context" for an actor-less block.
+        // call Identity.actingActor() and fail with "Tenant not found in context" for an actor-less block.
         if (TestContext.getList(Constants.CREATED_APPLICATION_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_API_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_OPERATION_POLICY_IDS).isEmpty()

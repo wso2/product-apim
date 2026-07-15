@@ -1407,8 +1407,8 @@ public class PublisherBaseSteps {
             throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        SimpleHTTPClient.DownloadResult result = SimpleHTTPClient.getInstance()
-                .doGetToFile(Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
         Assert.assertEquals(result.getStatusCode(), 200,
                 "Common operation policy export did not return 200 (archive download failed)");
         TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
@@ -1423,8 +1423,8 @@ public class PublisherBaseSteps {
             throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        SimpleHTTPClient.DownloadResult result = SimpleHTTPClient.getInstance()
-                .doGetToFile(Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
         Assert.assertEquals(result.getStatusCode(), expectedStatus,
                 "Non-existing common operation policy export status mismatch");
     }
@@ -1438,8 +1438,13 @@ public class PublisherBaseSteps {
         String policyId = TestContext.resolve(policyIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.delete(Utils.getCommonPolicyById(getBaseUrl(), policyId), headers);
-        ResourceCleanup.deregister(Constants.CREATED_OPERATION_POLICY_IDS, policyId);
+        HttpResponse response = Requests.delete(Utils.getCommonPolicyById(getBaseUrl(), policyId), headers);
+        // Drop it from the teardown sweep ONLY when it is actually gone (2xx) or already absent (404). A failed
+        // delete (401/409/500/...) leaves the still-existing policy TRACKED so the AfterClass sweep can retry it.
+        int code = response == null ? -1 : response.getResponseCode();
+        if ((code >= 200 && code < 300) || code == 404) {
+            ResourceCleanup.deregister(Constants.CREATED_OPERATION_POLICY_IDS, policyId);
+        }
     }
 
     /**
@@ -1480,8 +1485,8 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        SimpleHTTPClient.DownloadResult result = SimpleHTTPClient.getInstance()
-                .doGetToFile(Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
         Assert.assertEquals(result.getStatusCode(), 200,
                 "API export did not return 200 (archive download failed)");
         TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
@@ -1555,8 +1560,8 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        SimpleHTTPClient.DownloadResult result = SimpleHTTPClient.getInstance()
-                .doGetToFile(Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
         Assert.assertEquals(result.getStatusCode(), expectedStatus,
                 "API export status mismatch for api=" + actualApiId);
     }
@@ -1609,10 +1614,12 @@ public class PublisherBaseSteps {
         JSONObject endpointSecurity = data.getJSONObject("endpointConfig").getJSONObject("endpoint_security");
         String productionPassword = endpointSecurity.getJSONObject("production").optString("password", "");
         String sandboxPassword = endpointSecurity.getJSONObject("sandbox").optString("password", "");
+        // Assert the password was stripped WITHOUT echoing the value — a non-empty value here is a real backend
+        // credential and must not be printed into CI output (the very leak this test guards against).
         Assert.assertTrue(productionPassword.isEmpty(),
-                "Production endpoint password was exported in plain text: " + productionPassword);
+                "Production endpoint password was exported in plain text (expected empty)");
         Assert.assertTrue(sandboxPassword.isEmpty(),
-                "Sandbox endpoint password was exported in plain text: " + sandboxPassword);
+                "Sandbox endpoint password was exported in plain text (expected empty)");
     }
 
     /** Depth-first search for a file with the given name under {@code root}. */

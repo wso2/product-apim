@@ -305,7 +305,7 @@ Feature: Publisher API Definition Import
   # A second admin-capable user is provisioned inline (via the existing TenantUserProvisioner) to act as the
   # distinct importer — the framework ships only one admin per tenant, so the "different importer" is created here.
   @cap:publisher @feat:definitions @rule:import-export @type:regression @dep:admin @legacy:APIImportExportTestCase
-  Scenario Outline: preserveProvider=false re-owns the API to the importing publisher as <actor>
+  Scenario Outline: preserveProvider=false re-owns the API to the importing publisher as <importer>
     Given The system is ready
     And I have valid access tokens as "<owner>"
     And I provision user "<importerKey>" with roles "admin" in tenant "<tenant>"
@@ -403,7 +403,7 @@ Feature: Publisher API Definition Import
   @cap:publisher @feat:definitions @rule:import-export @type:negative @dep:admin @legacy:APIImportExportTestCase
   # The access role is lowercase: APIM stores/validates accessControlRoles case-folded (the legacy asserts the
   # stored role is lowercase), so a mixed-case role fails the accessControlRoles validation with a 400.
-  Scenario Outline: Restricted-API export is allowed only for users with the access role as <actor>
+  Scenario Outline: Restricted-API export is allowed only for users with the access role as <owner>
     Given The system is ready
     And I have valid access tokens as "<owner>"
     And I provision role "<role>" in tenant "<tenant>"

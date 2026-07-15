@@ -1424,7 +1424,7 @@ public class ApplicationBaseSteps {
     @When("I request an OAuth access token for the current user using password grant with scope {string}")
     public void iRequestOAuthAccessTokenWithScope(String scope) throws Exception {
 
-        User currentUser = Identity.defaultActor();
+        User currentUser = Identity.actingActor();
 
         StringBuilder body = new StringBuilder("grant_type=password")
                 .append("&username=").append(urlEncode(currentUser.getUserName()))

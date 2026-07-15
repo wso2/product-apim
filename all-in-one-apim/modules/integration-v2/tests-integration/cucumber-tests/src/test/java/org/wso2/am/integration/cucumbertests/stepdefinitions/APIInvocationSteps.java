@@ -38,7 +38,7 @@ import java.util.Map;
  * Gateway runtime-invocation steps. Invokes deployed APIs through the block's gateway (REST/SOAP, by access
  * token or API key, with optional retry-until-status for eventual consistency), plus the OpenID userinfo
  * endpoint. The tenant context segment of the invocation URL is derived from the scenario's acting actor
- * ({@link Identity#defaultActor()}) rather than the retired {@code currentTenant} pointer.
+ * ({@link Identity#actingActor()}) rather than the retired {@code currentTenant} pointer.
  */
 public class APIInvocationSteps {
 
@@ -56,7 +56,7 @@ public class APIInvocationSteps {
 
     /** Tenant domain for the invocation URL — taken from the scenario's acting actor. */
     private String actingTenantDomain() {
-        return Identity.defaultActor().getUserDomain();
+        return Identity.actingActor().getUserDomain();
     }
 
     /**

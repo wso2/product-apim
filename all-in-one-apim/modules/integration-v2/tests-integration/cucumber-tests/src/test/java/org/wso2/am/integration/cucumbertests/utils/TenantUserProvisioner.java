@@ -188,8 +188,8 @@ public final class TenantUserProvisioner {
      * Adds an (empty) internal role to the given tenant's user store via the RemoteUserStoreManagerService SOAP
      * {@code addRole} operation (authenticated as the tenant admin), skipping creation if the role already
      * exists. Enabler for access-control tests: an API restricted to a role can only be authored/exported by a
-     * user carrying that role. Idempotent (a duplicate {@code addRole} SOAP-faults, which is treated as "already
-     * present").
+     * user carrying that role. Idempotent: a duplicate {@code addRole} is a 2xx no-op (not a fault); any non-2xx
+     * (auth/service error) fails fast.
      *
      * @param tenantDomain the tenant to create the role in
      * @param roleName     the (unqualified) role name (e.g. {@code apiAccessRole})
@@ -209,10 +209,15 @@ public final class TenantUserProvisioner {
         String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
         HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:addRole",
                 tenantAdmin.getUserName(), tenantAdmin.getPassword());
-        // A 500 SOAP fault here is (almost always) "role already exists" — idempotent, so don't fail the run.
-        if (response.getResponseCode() != 200) {
-            logger.info("addRole for '" + roleName + "' in tenant '" + tenantDomain + "' returned "
-                    + response.getResponseCode() + " (treated as already-present): " + response.getData());
+        // The RemoteUserStoreManagerService addRole returns 2xx (202 Accepted) for BOTH a fresh role and a
+        // duplicate — a duplicate is a no-op, not a SOAP fault (verified: create and duplicate both return 202
+        // with an empty body). So any 2xx is success/idempotent; a non-2xx (auth failure, service down, or a
+        // genuine UserStoreException) is a real provisioning error and must fail fast rather than be silently
+        // swallowed (which would surface later as a confusing "role not found").
+        int code = response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException("addRole for '" + roleName + "' in tenant '" + tenantDomain + "' failed with "
+                    + code + ": " + response.getData());
         }
     }
 
@@ -435,7 +440,9 @@ public final class TenantUserProvisioner {
         String url = Utils.getIdentityApplicationManagementServiceURL(getBaseUrl());
         HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:getApplication",
                 tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
-        logger.info("getApplication(" + spName + ") -> " + response.getResponseCode() + " : " + response.getData());
+        // Log only the SP name and status — the getApplication body carries the OAuth consumer secret and must
+        // not be written to CI output.
+        logger.info("getApplication(" + spName + ") -> " + response.getResponseCode());
         return response.getData();
     }
 
