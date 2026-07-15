@@ -1,0 +1,8 @@
+{
+  "name": "${UNIQUE:APIMAttrApp}",
+  "throttlingPolicy": "Unlimited",
+  "description": "Application carrying a custom application attribute",
+  "attributes": {
+    "External Reference Id": "c1237890"
+  }
+}

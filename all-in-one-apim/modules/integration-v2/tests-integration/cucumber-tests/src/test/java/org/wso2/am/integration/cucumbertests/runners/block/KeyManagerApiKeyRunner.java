@@ -24,7 +24,7 @@ import io.cucumber.testng.CucumberOptions;
  * for the block boot-failure guard and runner-scoped cleanup safety net.
  */
 @CucumberOptions(
-        features = "src/test/resources/features/keymanager/api_key.feature",
+        features = "src/test/resources/features/key-manager/api_key.feature",
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },

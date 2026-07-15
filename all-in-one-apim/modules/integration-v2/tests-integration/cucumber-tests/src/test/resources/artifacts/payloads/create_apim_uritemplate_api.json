@@ -1,0 +1,43 @@
+{
+  "name": "${UNIQUE:UriTemplateAPI}",
+  "context": "${UNIQUE:uriTemplateContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/sub{uri.var.val}"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/sub{uri.var.val}"
+    }
+  },
+  "description": "Legacy-faithful uri-template resource + uri-var endpoint for the encoded URI-path routing test",
+  "tags": [
+    "uri-encoding"
+  ],
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "businessInformation": {
+    "businessOwner": "api18b",
+    "businessOwnerEmail": "api18b@ee.com",
+    "technicalOwner": "api18t",
+    "technicalOwnerEmail": "api18t@ww.com"
+  },
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/{val}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

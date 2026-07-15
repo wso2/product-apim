@@ -138,6 +138,10 @@ public final class Identity {
         return qualify("adminAccessToken", actor);
     }
 
+    public static String governanceTokenKey(User actor) {
+        return qualify("governanceAccessToken", actor);
+    }
+
     /** Reads the cached Publisher token for the default actor (super-tenant admin). */
     public static String publisherToken() {
         return publisherToken(defaultActor());
@@ -163,6 +167,15 @@ public final class Identity {
 
     public static String adminToken(User actor) {
         return require(adminTokenKey(actor), "Admin access token", actor);
+    }
+
+    /** Reads the cached Governance token for the acting actor. */
+    public static String governanceToken() {
+        return governanceToken(defaultActor());
+    }
+
+    public static String governanceToken(User actor) {
+        return require(governanceTokenKey(actor), "Governance access token", actor);
     }
 
     private static String qualify(String base, User actor) {

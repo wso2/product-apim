@@ -25,9 +25,12 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,29 +68,41 @@ public class APIInvocationSteps {
      * retry loops can hold the last real response locally without re-reading shared context.
      */
     private HttpResponse execute(CurlOption.HttpMethod method, String endpointUrl, Map<String, String> headers,
-                                 String payload, String contentType) throws IOException {
+                                 String payload, String contentType, boolean rawGet) throws IOException {
 
         TestContext.remove(HTTP_RESPONSE_KEY);
         SimpleHTTPClient client = SimpleHTTPClient.getInstance();
         HttpResponse response;
-        switch (method) {
-            case GET:
-                response = client.doGet(endpointUrl, headers);
-                break;
-            case DELETE:
-                response = client.doDelete(endpointUrl, headers);
-                break;
-            case POST:
-                response = client.doPost(endpointUrl, headers, payload, contentType);
-                break;
-            case PUT:
-                response = client.doPut(endpointUrl, headers, payload, contentType);
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
+        if (rawGet) {
+            // GET with the client's URI normalization DISABLED, so a percent-encoded path segment reaches the
+            // gateway verbatim; method/payload/contentType are unused on this path.
+            response = client.doGetRaw(endpointUrl, headers);
+        } else {
+            switch (method) {
+                case GET:
+                    response = client.doGet(endpointUrl, headers);
+                    break;
+                case DELETE:
+                    response = client.doDelete(endpointUrl, headers);
+                    break;
+                case POST:
+                    response = client.doPost(endpointUrl, headers, payload, contentType);
+                    break;
+                case PUT:
+                    response = client.doPut(endpointUrl, headers, payload, contentType);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
+            }
         }
         TestContext.set(HTTP_RESPONSE_KEY, response);
         return response;
+    }
+
+    /** {@link #execute(CurlOption.HttpMethod, String, Map, String, String, boolean)} for a normalized request. */
+    private HttpResponse execute(CurlOption.HttpMethod method, String endpointUrl, Map<String, String> headers,
+                                 String payload, String contentType) throws IOException {
+        return execute(method, endpointUrl, headers, payload, contentType, false);
     }
 
     /** {@link #execute(CurlOption.HttpMethod, String, Map, String, String)} defaulting to a JSON content type. */
@@ -142,6 +157,82 @@ public class APIInvocationSteps {
     }
 
     /**
+     * Invokes a deployed API at its full gateway context using a RAW (un-normalized) path, so a percent-encoded
+     * segment (e.g. {@code %28}/{@code %29}) is sent to the gateway verbatim rather than being decoded by the
+     * HTTP client. GET only. Needed to test the gateway's routing of an encoded URI path segment — the default
+     * invoke lets Apache HttpClient normalize/decode the path before it reaches the gateway. Retries until the
+     * expected status (transient IOExceptions only), then asserts.
+     */
+    @When("I invoke the API at raw gateway context {string} using access token {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByRawContextUntilStatus(String context, String accessToken, int expectedStatus,
+                                                 int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                last = invokeApiByRawContext(resolvedContext, accessToken);
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Only transient connectivity errors are retried (see invokeApiByContextUntilStatus).
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /** GET a full gateway context with the raw (un-normalized) path; publishes the response to {@code httpResponse}. */
+    private HttpResponse invokeApiByRawContext(String resolvedContext, String accessToken) throws IOException {
+
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        // Join base + context with exactly one slash. The default invoke relies on the client's URI
+        // normalization to collapse a "//", but doGetRaw disables normalization, so a double slash would reach
+        // the gateway verbatim and be rejected as "Invalid URL".
+        String base = getBaseGatewayUrl();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String endpointUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + actualAccessToken);
+        return execute(CurlOption.HttpMethod.GET, endpointUrl, headers, "",
+                Constants.CONTENT_TYPES.APPLICATION_JSON, true);
+    }
+
+    /**
+     * Invokes a deployed API at its full gateway context with NO Authorization header, retrying until the
+     * expected status. Used for prototyped APIs (invocable without a subscription/token → 200) and as the
+     * negative for a normal secured API (no token → 401).
+     */
+    @When("I invoke the API at gateway context {string} with method {string} without authentication until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextNoAuthUntilStatus(String context, String httpMethod, int expectedStatus,
+                                                     int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl,
+                        new HashMap<>(), "");
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
      * Invokes a deployed API at its full gateway context, sending the bearer token in a CUSTOM authorization
      * header instead of the standard {@code Authorization} one, retrying until the expected status. Used by the
      * custom-auth-header feature, whose container sets {@code [apim.oauth_config] auth_header} so the gateway
@@ -159,6 +250,45 @@ public class APIInvocationSteps {
         do {
             try {
                 last = invokeApiByContext(resolvedContext, httpMethod, accessToken, payload, headerName);
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
+     * Invokes a deployed API at its full gateway context with an extra CUSTOM request header (name + value)
+     * alongside the bearer token, retrying until the expected status. Needed by the gateway schema-validation
+     * test, where a resource declares a REQUIRED request header (X-Request-ID): omitting it is rejected by the
+     * gateway's request schema validation (400), while sending it lets the call through (200). Distinct from the
+     * {@code in header} variant, which places the TOKEN in a custom header rather than adding an arbitrary one.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with request header {string} set to {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextWithHeaderUntilStatus(String context, String httpMethod, String accessToken,
+                                                        String payload, String headerName, String headerValue,
+                                                        int expectedStatus, int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                String actualAccessToken = TestContext.resolve(accessToken).toString();
+                String actualPayload = (payload == null || payload.isEmpty())
+                        ? "" : TestContext.resolve(payload).toString();
+                String endpointUrl = getBaseGatewayUrl()
+                        + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + actualAccessToken);
+                headers.put(headerName, headerValue);
+                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                        actualPayload);
                 if (last.getResponseCode() == expectedStatus) {
                     return;
                 }
@@ -215,8 +345,8 @@ public class APIInvocationSteps {
     private HttpResponse invokeApiByContext(String resolvedContext, String httpMethod, String accessToken,
                                             String payload, String authHeaderName) throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualPayload = (payload == null || payload.isEmpty()) ? "" : Utils.resolveFromContext(payload).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
         // The context already carries any /t/<tenant> prefix, so append it directly to the gateway base URL.
         String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
@@ -240,8 +370,8 @@ public class APIInvocationSteps {
     public HttpResponse invokeApiUsingAccessToken(String path, String httpMethod, String accessToken, String payload)
             throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualPayload = (payload == null || payload.isEmpty()) ? "" : Utils.resolveFromContext(payload).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
         // Resolve {{contextKey}} placeholders in the path so the invocation can target a uniquely-generated
         // API context (names/contexts are randomized by ${UNIQUE:...}), e.g. "{{apiContext}}/1.0.0/...".
         String resolvedPath = Utils.resolveContextPlaceholders(path);
@@ -299,10 +429,179 @@ public class APIInvocationSteps {
         assertReachedExpectedStatus(last, expectedStatus);
     }
 
+    /**
+     * API-key invocation with a request PAYLOAD (e.g. an AI API's {@code POST /chat/completions}), retrying
+     * until the expected status. The api-key {@code ApiKey} header carries auth; the payload is sent as the
+     * body. Needed because the no-payload api-key variant can't drive POST bodies.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using api key {string} and payload {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUsingKeyAndPayloadUntilStatus(String context, String httpMethod, String apikey,
+                                                                String payload, int expectedStatus,
+                                                                int timeoutSeconds) throws Exception {
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                String actualKey = TestContext.resolve(apikey).toString();
+                String actualPayload = (payload == null || payload.isEmpty())
+                        ? "" : TestContext.resolve(payload).toString();
+                Map<String, String> headers = new HashMap<>();
+                headers.put("accept", "application/json");
+                headers.put("ApiKey", actualKey);
+                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                        actualPayload);
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only.
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
+     * API-key invocation presenting an {@code X-Forwarded-For} header, retrying until the expected status. For an
+     * API key generated with a {@code permittedIP} restriction, the REST passthrough derives the client IP from
+     * {@code X-Forwarded-For}, so a matching XFF is authorised (200) and a non-matching one is rejected (403).
+     * (Verified on a standalone server.)
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using api key {string} and forwarded-for {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUsingKeyAndXffUntilStatus(String context, String httpMethod, String apikey,
+                                                            String forwardedFor, int expectedStatus,
+                                                            int timeoutSeconds) throws Exception {
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("accept", "application/json");
+                headers.put("ApiKey", TestContext.resolve(apikey).toString());
+                headers.put("X-Forwarded-For", Utils.resolveContextPlaceholders(forwardedFor));
+                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only.
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
+     * API-key invocation presenting a {@code Referer} header, retrying until the expected status. For a key
+     * generated with a {@code permittedReferer} restriction, the gateway matches the request's {@code Referer}
+     * against the permitted patterns — a matching Referer is authorised (200), a non-matching one is forbidden
+     * (403). Ports the REST api-key Referer-restriction case of APISecurityTestCase.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using api key {string} and referer {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUsingKeyAndRefererUntilStatus(String context, String httpMethod, String apikey,
+                                                                String referer, int expectedStatus,
+                                                                int timeoutSeconds) throws Exception {
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("accept", "application/json");
+                headers.put("ApiKey", TestContext.resolve(apikey).toString());
+                headers.put("Referer", Utils.resolveContextPlaceholders(referer));
+                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only.
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
+     * Basic-auth invocation using an ACTOR's carbon credentials (username:password → {@code Authorization: Basic}),
+     * retrying until the expected status. For an API whose securityScheme includes {@code basic_auth}, valid user
+     * credentials are authorised (200). Ports the basic-auth positive of APISecurityTestCase.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using basic auth for actor {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUsingBasicAuthActor(String context, String httpMethod, String actorRef,
+                                                      int expectedStatus, int timeoutSeconds) throws Exception {
+        User actor = Identity.resolveActor(actorRef);
+        String creds = Base64.getEncoder().encodeToString(
+                (actor.getUserName() + ":" + actor.getPassword()).getBytes(StandardCharsets.UTF_8));
+        invokeWithBasicAuthUntilStatus(context, httpMethod, "Basic " + creds, expectedStatus, timeoutSeconds);
+    }
+
+    /**
+     * Basic-auth invocation with EXPLICIT username/password (for the wrong-credentials negative), retrying until
+     * the expected status. Wrong credentials are rejected (401).
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using basic auth username {string} password {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUsingBasicAuthCreds(String context, String httpMethod, String username,
+                                                      String password, int expectedStatus, int timeoutSeconds)
+            throws Exception {
+        String creds = Base64.getEncoder().encodeToString(
+                (Utils.resolveContextPlaceholders(username) + ":" + Utils.resolveContextPlaceholders(password))
+                        .getBytes(StandardCharsets.UTF_8));
+        invokeWithBasicAuthUntilStatus(context, httpMethod, "Basic " + creds, expectedStatus, timeoutSeconds);
+    }
+
+    /**
+     * Basic-auth invocation using a VALID actor's username with an OVERRIDDEN (wrong) password — the faithful
+     * wrong-credentials negative (a valid user + bad password → 401, consistently across tenants; a made-up
+     * domainless username instead resolves against the super tenant and yields 403 on a tenant API).
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using basic auth for actor {string} with password {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUsingBasicAuthActorPassword(String context, String httpMethod, String actorRef,
+                                                              String password, int expectedStatus, int timeoutSeconds)
+            throws Exception {
+        User actor = Identity.resolveActor(actorRef);
+        String creds = Base64.getEncoder().encodeToString(
+                (actor.getUserName() + ":" + Utils.resolveContextPlaceholders(password)).getBytes(StandardCharsets.UTF_8));
+        invokeWithBasicAuthUntilStatus(context, httpMethod, "Basic " + creds, expectedStatus, timeoutSeconds);
+    }
+
+    /** Shared retry-until-status loop for a fixed {@code Authorization} header (Basic-auth invocations). */
+    private void invokeWithBasicAuthUntilStatus(String context, String httpMethod, String authHeader,
+                                                int expectedStatus, int timeoutSeconds) throws Exception {
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("accept", "application/json");
+                headers.put("Authorization", authHeader);
+                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only.
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
     /** Single API-key invocation against a fully-built gateway URL. */
     private HttpResponse invokeWithApiKey(String endpointUrl, String httpMethod, String apikey) throws IOException {
 
-        String actualKey = Utils.resolveFromContext(apikey).toString();
+        String actualKey = TestContext.resolve(apikey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put("accept", "application/json");
         headers.put("ApiKey", actualKey);
@@ -342,7 +641,7 @@ public class APIInvocationSteps {
     /** Single internal-key invocation against a fully-built gateway URL (token in the {@code Internal-Key} header). */
     private HttpResponse invokeWithInternalKey(String endpointUrl, String httpMethod, String internalKey) throws IOException {
 
-        String actualKey = Utils.resolveFromContext(internalKey).toString();
+        String actualKey = TestContext.resolve(internalKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put("accept", "*/*");
         headers.put("Internal-Key", actualKey);
@@ -423,7 +722,7 @@ public class APIInvocationSteps {
     @When("I invoke the OpenID userinfo endpoint using access token {string}")
     public void invokeUserInfoEndpoint(String accessToken) throws Exception {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
         String baseUrl = TestContext.get("baseUrl").toString();
 
         Map<String, String> headers = new HashMap<>();
@@ -446,8 +745,8 @@ public class APIInvocationSteps {
     @When("I invoke the SOAP API at path {string} using access token {string} and payload {string} and soap action {string}")
     public void iInvokeTheSOAPAPIAtPathUsingAccessTokenAndPayloadAndSoapAction(String path, String accessToken, String payload, String soapAction) throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualPayload = Utils.resolveFromContext(payload).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = TestContext.resolve(payload).toString();
         String endpointUrl = Utils.getAPIInvocationURL(getBaseGatewayUrl(),
                 Utils.resolveContextPlaceholders(path), actingTenantDomain());
 
@@ -470,8 +769,8 @@ public class APIInvocationSteps {
     @When("I invoke the SOAP API at gateway context {string} using access token {string} and payload {string} and soap action {string}")
     public void invokeSoapByGatewayContext(String context, String accessToken, String payload, String soapAction) throws IOException {
 
-        String actualAccessToken = Utils.resolveFromContext(accessToken).toString();
-        String actualPayload = Utils.resolveFromContext(payload).toString();
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = TestContext.resolve(payload).toString();
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 

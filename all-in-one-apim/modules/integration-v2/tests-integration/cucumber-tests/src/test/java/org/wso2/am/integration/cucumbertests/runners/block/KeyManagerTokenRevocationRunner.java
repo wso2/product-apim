@@ -24,7 +24,7 @@ import io.cucumber.testng.CucumberOptions;
  * for the block boot-failure guard and runner-scoped cleanup safety net.
  */
 @CucumberOptions(
-        features = "src/test/resources/features/keymanager/token_revocation.feature",
+        features = "src/test/resources/features/key-manager/token_revocation.feature",
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },

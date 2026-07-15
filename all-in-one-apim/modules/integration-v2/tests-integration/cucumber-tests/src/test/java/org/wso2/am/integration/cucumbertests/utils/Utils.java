@@ -87,6 +87,26 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId;
     }
 
+    /** Publisher API endpoints sub-resource collection: {@code /apis/{apiId}/endpoints} (POST add, GET list). */
+    public static String getApiEndpointsURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/endpoints";
+    }
+
+    /** Publisher GraphQL per-field complexity config: {@code /apis/{apiId}/graphql-policies/complexity} (GET/PUT). */
+    public static String getGraphQLComplexityURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/graphql-policies/complexity";
+    }
+
+    /** Publisher API client-certificates (mutual SSL) collection: {@code /apis/{apiId}/client-certificates}. */
+    public static String getClientCertificatesURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/client-certificates";
+    }
+
+    /** Publisher single API endpoint: {@code /apis/{apiId}/endpoints/{endpointId}} (GET, PUT, DELETE). */
+    public static String getApiEndpointByIdURL(String baseUrl, String apiId, String endpointId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/endpoints/" + endpointId;
+    }
+
     public static String getRevisionURL(String baseUrl, String resourceType, String resourceId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/revisions";
     }
@@ -157,7 +177,14 @@ public class Utils {
             throw new IllegalArgumentException("ID and Action must be provided.");
         }
 
-        String idParam = "apis".equals(resourceType) ? "apiId" : "apiProductId";
+        String idParam;
+        if ("apis".equals(resourceType)) {
+            idParam = "apiId";
+        } else if ("mcp-servers".equals(resourceType)) {
+            idParam = "mcpServerId";
+        } else {
+            idParam = "apiProductId";
+        }
 
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
                 .append(Constants.DEFAULT_APIM_API_DEPLOYER)
@@ -214,6 +241,53 @@ public class Utils {
         return urlBuilder.toString();
     }
 
+    /** Admin — list applications owned by a given user (owner search). */
+    public static String getAdminApplicationsByOwnerURL(String baseUrl, String owner) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "applications?user="
+                + URLEncoder.encode(owner, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher — force-change a subscription's business plan (validates the plan; POST, query params). */
+    public static String getChangeSubscriptionBusinessPlanURL(String baseUrl, String subscriptionId, String plan) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/change-business-plan?subscriptionId="
+                + URLEncoder.encode(subscriptionId, StandardCharsets.UTF_8) + "&throttlingPolicy="
+                + URLEncoder.encode(plan, StandardCharsets.UTF_8);
+    }
+
+    /** Admin — search applications by name (the admin /applications endpoint's {@code name} query param). */
+    public static String getAdminApplicationsByNameURL(String baseUrl, String name) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "applications?name="
+                + URLEncoder.encode(name, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher — upload (POST, multipart) / download (GET) an API's thumbnail image. */
+    public static String getThumbnailURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/thumbnail";
+    }
+
+    /** Publisher — import an API from an OpenAPI definition or archive (POST, multipart {@code file}). */
+    public static String getImportOpenAPIURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-openapi";
+    }
+
+    /** Publisher — validate a system role by name. The path segment is URL-safe base64 WITHOUT padding:
+     *  a literal '=' pad in the path breaks the auth-filter's resource match (→ 401). */
+    public static String getValidateRoleURL(String baseUrl, String role) {
+        String encoded = java.util.Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(role.getBytes(StandardCharsets.UTF_8));
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "roles/" + encoded;
+    }
+
+    /** Publisher — generate the inline mock implementation script for an API (POST). */
+    public static String getGenerateMockScriptsURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/generate-mock-scripts";
+    }
+
+    /** Publisher — retrieve the generated inline mock implementation script for an API (GET). */
+    public static String getGeneratedMockScriptsURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/generated-mock-scripts";
+    }
+
     public static String getAPILifecycleStateURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-state";
     }
@@ -246,8 +320,25 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/generate-keys";
     }
 
+    /** DevPortal — regenerate (rotate) the consumer secret of an application's key mapping (by key-mapping id). */
+    public static String getRegenerateConsumerSecretURL(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/"
+                + keyMappingId + "/regenerate-secret";
+    }
+
     public static String getApplicationAllKeys(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys";
+    }
+
+    /** DevPortal — map a pre-existing (BYO) OAuth client's consumer key/secret to an application. */
+    public static String getMapKeysURL(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/map-keys";
+    }
+
+    /** DevPortal — clean up an application's key registration for a key mapping (after a failed/partial key-gen). */
+    public static String getCleanupRegistrationURL(String baseUrl, String applicationId, String keyMappingId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/"
+                + keyMappingId + "/clean-up";
     }
 
     public static String getGenerateApplicationSecretURL(String baseUrl, String applicationId, String keyMappingId) {
@@ -272,6 +363,16 @@ public class Utils {
 
     public static String getGenerateAPIKeyURL(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION/generate";
+    }
+
+    /** DevPortal — revoke an application API key ({@code applications/{id}/api-keys/PRODUCTION/revoke}). */
+    public static String getRevokeAPIKeyURL(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION/revoke";
+    }
+
+    /** DevPortal — list an application's API keys ({@code applications/{id}/api-keys/PRODUCTION}); carries keyUUID. */
+    public static String getListAPIKeysURL(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION";
     }
 
     public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
@@ -407,6 +508,51 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "gateway-policies/" + policyMappingId + "/deploy";
     }
 
+    /** Publisher REST API — create an MCP server by proxying a third-party MCP server (POST, JSON {@code url}). */
+    public static String getMCPServerProxyURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/generate-from-mcp-server";
+    }
+
+    /** Publisher REST API — create an MCP server from an OpenAPI definition (POST, multipart file). */
+    public static String getMCPServerFromOpenAPIURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/generate-from-openapi";
+    }
+
+    /** Publisher REST API — create an MCP server from an existing API (POST, JSON MCPServer body). */
+    public static String getMCPServerFromAPIURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/generate-from-api";
+    }
+
+    /** Publisher REST API — a single MCP server by id (get/delete). */
+    public static String getMCPServerByIdURL(String baseUrl, String mcpServerId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/" + mcpServerId;
+    }
+
+    /** Publisher REST API — an MCP server's backend endpoints collection {@code /mcp-servers/{id}/backends} (GET). */
+    public static String getMCPServerBackendsURL(String baseUrl, String mcpServerId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/" + mcpServerId + "/backends";
+    }
+
+    /** Publisher REST API — a single MCP server backend endpoint by id (GET, PUT). */
+    public static String getMCPServerBackendByIdURL(String baseUrl, String mcpServerId, String backendId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/" + mcpServerId + "/backends/" + backendId;
+    }
+
+    /** Admin REST API — AI service providers (list/create). */
+    public static String getAIServiceProvidersURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "ai-service-providers";
+    }
+
+    /** Admin REST API — a single AI service provider by id (get/update/delete). */
+    public static String getAIServiceProviderByIdURL(String baseUrl, String providerId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "ai-service-providers/" + providerId;
+    }
+
+    /** Publisher REST API — an AI service provider's model list ({@code /ai-service-providers/{id}/models}). */
+    public static String getAIServiceProviderModelsURL(String baseUrl, String providerId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "ai-service-providers/" + providerId + "/models";
+    }
+
     /** Admin REST API — application throttling policies (create/list). */
     public static String getApplicationThrottlingPoliciesURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/application";
@@ -437,6 +583,127 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/advanced/" + policyId;
     }
 
+    /** Admin REST API — throttling policies of a given type (create/list): {@code application|subscription|advanced|custom}. */
+    public static String getThrottlingPoliciesByTypeURL(String baseUrl, String policyType) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/" + policyType;
+    }
+
+    /** Admin REST API — a single throttling policy of a given type by id (get/update/delete). */
+    public static String getThrottlingPolicyByTypeURL(String baseUrl, String policyType, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/" + policyType + "/" + policyId;
+    }
+
+    /** Admin REST API — gateway environments (create/list). */
+    public static String getEnvironmentsURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments";
+    }
+
+    /** Admin REST API — a single gateway environment by id (get/update/delete). */
+    public static String getEnvironmentByIdURL(String baseUrl, String environmentId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments/" + environmentId;
+    }
+
+    /** Admin REST API — the gateway instances of an environment. */
+    public static String getEnvironmentGatewaysURL(String baseUrl, String environmentId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments/" + environmentId + "/gateways";
+    }
+
+    /** Admin REST API — organizations collection (list/create). */
+    public static String getOrganizationsURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "organizations";
+    }
+
+    /** Admin REST API — a single organization by id (get/update/delete). */
+    public static String getOrganizationByIdURL(String baseUrl, String organizationId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "organizations/" + organizationId;
+    }
+
+    /** SOAP admin service — claim-metadata management (register local claims). */
+    public static String getClaimMetadataMgtServiceURL(String baseUrl) {
+        return baseUrl + "services/ClaimMetadataManagementService";
+    }
+
+    /** DevPortal REST API — key managers visible to the calling user's organization. */
+    public static String getDevportalKeyManagersURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "key-managers";
+    }
+
+    /** Admin REST API — tenant configuration (get/update). */
+    public static String getTenantConfigURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "tenant-config";
+    }
+
+    /** Admin REST API — tenant configuration JSON schema (get). */
+    public static String getTenantConfigSchemaURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "tenant-config-schema";
+    }
+
+    /** Admin REST API — system-scope role-alias mappings (get/put). */
+    public static String getRoleAliasesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "system-scopes/role-aliases";
+    }
+
+    /** Admin REST API — export a throttling policy by name + type ({@code sub}/{@code app}/{@code api}/{@code global}). */
+    public static String getThrottlePolicyExportURL(String baseUrl, String name, String type) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/export?name="
+                + java.net.URLEncoder.encode(name, java.nio.charset.StandardCharsets.UTF_8) + "&type=" + type;
+    }
+
+    /** Admin REST API — import a throttling policy (multipart file); {@code overwrite} controls update vs conflict. */
+    public static String getThrottlePolicyImportURL(String baseUrl, String overwrite) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/import?overwrite=" + overwrite;
+    }
+
+    /** Admin REST API — deny (blocking-condition) policies collection (list/create). */
+    public static String getDenyPoliciesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/deny-policies";
+    }
+
+    /** Admin REST API — a single deny policy by condition id (get/update-status/delete). NOTE: singular path. */
+    public static String getDenyPolicyByIdURL(String baseUrl, String conditionId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/deny-policy/" + conditionId;
+    }
+
+    /** Admin REST API — key managers collection (list/create). */
+    public static String getKeyManagersURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "key-managers";
+    }
+
+    /** Admin REST API — a single key manager by id (get/update/delete). */
+    public static String getKeyManagerByIdURL(String baseUrl, String keyManagerId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "key-managers/" + keyManagerId;
+    }
+
+    /** Governance REST API — rulesets collection (list/create). */
+    public static String getGovernanceRulesetsURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_GOVERNANCE + "rulesets";
+    }
+
+    /** Governance REST API — a single ruleset by id (get/update/delete). */
+    public static String getGovernanceRulesetByIdURL(String baseUrl, String rulesetId) {
+        return baseUrl + Constants.DEFAULT_APIM_GOVERNANCE + "rulesets/" + rulesetId;
+    }
+
+    /** Governance REST API — the raw ruleset content by id. */
+    public static String getGovernanceRulesetContentURL(String baseUrl, String rulesetId) {
+        return baseUrl + Constants.DEFAULT_APIM_GOVERNANCE + "rulesets/" + rulesetId + "/content";
+    }
+
+    /** Governance REST API — policies collection (list/create). */
+    public static String getGovernancePoliciesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_GOVERNANCE + "policies";
+    }
+
+    /** Governance REST API — a single policy by id (get/update/delete). */
+    public static String getGovernancePolicyByIdURL(String baseUrl, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_GOVERNANCE + "policies/" + policyId;
+    }
+
+    /** Governance REST API — artifact compliance for an API by id. */
+    public static String getGovernanceApiComplianceURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_GOVERNANCE + "artifact-compliance/api/" + apiId;
+    }
+
     /** Admin REST API — custom (Siddhi) throttling rules (create/list). */
     public static String getCustomThrottlingPoliciesURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/custom";
@@ -455,9 +722,36 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-openapi";
     }
 
+    /** Publisher REST API — OpenAPI definition validation (multipart file / url). */
+    public static String getValidateOpenAPIURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-openapi";
+    }
+
+    /** Publisher REST API — linter custom rules. */
+    public static String getLinterCustomRulesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "linter-custom-rules";
+    }
+
+    /** Publisher REST API — available throttling policies for a policy level (subscription / api / application). */
+    public static String getPublisherThrottlingPoliciesURL(String baseUrl, String policyLevel) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "throttling-policies/" + policyLevel;
+    }
+
 
     public static String getInternalAPIKey(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/generate-key";
+    }
+
+    /** Publisher REST API — an API Product's swagger/OpenAPI definition. */
+    public static String getAPIProductSwaggerURL(String baseUrl, String apiProductId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/" + apiProductId + "/swagger";
+    }
+
+    /** Publisher REST API — create a new version of an API Product (copy). */
+    public static String getAPIProductNewVersionURL(String baseUrl, String newVersion, boolean defaultVersion,
+                                                    String apiProductId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/copy-api-products?newVersion="
+                + newVersion + "&defaultVersion=" + defaultVersion + "&apiProductId=" + apiProductId;
     }
 
     // --- API-bound API Key endpoints (devportal) ---
@@ -536,6 +830,25 @@ public class Utils {
     }
 
     /**
+     * Finds an entry by {@code name} in a paginated list payload ({@code {"list":[{"id","name",...}]}}) and
+     * returns its {@code id}, or {@code null} if no entry matches. Used to reference a named resource (e.g. a
+     * built-in governance ruleset) whose id is not known ahead of time.
+     */
+    public static String extractIdByName(String jsonPayload, String name) throws IOException {
+
+        if (StringUtils.isBlank(jsonPayload)) {
+            throw new IOException("JSON payload is null or empty.");
+        }
+        try {
+            java.util.List<Object> ids = JsonPath.read(jsonPayload,
+                    "$.list[?(@.name == '" + name + "')].id");
+            return ids.isEmpty() ? null : String.valueOf(ids.get(0));
+        } catch (Exception e) {
+            throw new IOException("Failed to locate id for name '" + name + "' in list payload.", e);
+        }
+    }
+
+    /**
      * Normalizes shorthand paths into valid JSONPath expressions based on payload structure.
      * - If starts with "$", returns as-is (e.g., "$" -> "$").
      * - If starts with "[", prepends "$" (e.g., "[0].key" -> "$[0].key").
@@ -562,24 +875,6 @@ public class Utils {
     }
 
     /**
-     * Resolves a value from the {@link TestContext} using the given key.
-     *
-     * @param key the key
-     * @return the resolved value
-     * @throws IllegalArgumentException if the key is not found
-     */
-    public static Object resolveFromContext(String key) {
-
-        String lookupKey = (key.startsWith("<") && key.endsWith(">")) ? key.substring(1, key.length() - 1) : key;
-
-        Object value = TestContext.get(lookupKey);
-        if (value == null) {
-            throw new IllegalArgumentException("No value found in context for key: " + lookupKey);
-        }
-        return value;
-    }
-
-    /**
      * Resolves the value from context only if the input is a context key (e.g., "<sampleKey>").
      * If the input is not wrapped in brackets, it returns the input string as-is.
      *
@@ -588,7 +883,7 @@ public class Utils {
      */
     public static Object resolveIfContextKey(String input) {
         if (input != null && input.startsWith("<") && input.endsWith(">")) {
-            return resolveFromContext(input);
+            return TestContext.resolve(input);
         }
         return input;
     }
