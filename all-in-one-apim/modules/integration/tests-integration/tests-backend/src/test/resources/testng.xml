@@ -37,6 +37,7 @@
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
             <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.aiapi.GeminiAPIUnlimitedTierDisabledTestCase"/>
             <class name="org.wso2.am.integration.tests.mcp.MCPServerTestCase"/>
         </classes>
     </test>
@@ -131,6 +132,7 @@
             <class name="org.wso2.am.integration.tests.operationPolicy.OperationPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICreationForTenantsTestCase" />
             <class name="org.wso2.am.integration.tests.operationPolicy.JWTClaimBasedAccessValidatorPolicyTestCase"/>
+            <class name="org.wso2.am.integration.tests.operationPolicy.ContentAwareMediationPolicyEmptyBodyTestCase"/>
         </classes>
     </test>
 
@@ -285,6 +287,7 @@
             <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.MultipleClientSecretsTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationAttributesTestCase"/>
             <class name="org.wso2.am.integration.tests.application.PkceEnabledApplicationTestCase"/>
 <!--            <class name="org.wso2.am.integration.tests.application.SubscriptionValidationDisableTestCase"/>-->
@@ -442,6 +445,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.idp.TokenExchangeMultiValueClaimTestCase"/>
         </classes>
     </test>
 
@@ -466,6 +470,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
             <!--<class name="org.wso2.am.integration.tests.logging.CorrelationLoggingTest"/>-->
+            <class name="org.wso2.am.integration.tests.logging.RemoteLoggingAppenderTest"/>
         </classes>
     </test>
 

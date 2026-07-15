@@ -1,0 +1,14 @@
+<secureVaults xmlns:svns="http://org.wso2.securevault/configuration">
+    {% set external_vaults = external_vault if external_vault is defined else [] %}
+    {% for vault in external_vaults %}
+    {% if vault.name is defined %}
+    <secureVault name="{{vault.name}}">
+        {% for parameter_name, parameter_value in vault.items() %}
+        {% if parameter_name != "name" and parameter_value is defined %}
+        <parameter name="{{parameter_name}}">{{parameter_value}}</parameter>
+        {% endif %}
+        {% endfor %}
+    </secureVault>
+    {% endif %}
+    {% endfor %}
+</secureVaults>

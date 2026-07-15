@@ -1,0 +1,27 @@
+{
+  "name": "${UNIQUE:OktaKM}",
+  "displayName": "Test Key Manager Okta",
+  "type": "Okta",
+  "description": "Okta key manager with optional parameters",
+  "introspectionEndpoint": "https://dev-599740.okta.com/oauth2/default/v1/introspect",
+  "clientRegistrationEndpoint": "https://dev-599740.okta.com/oauth2/v1/clients",
+  "tokenEndpoint": "https://dev-599740.okta.com/oauth2/default/v1/token",
+  "revokeEndpoint": "https://dev-599740.okta.com/oauth2/default/v1/revoke",
+  "consumerKeyClaim": "cid",
+  "scopesClaim": "scp",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableOAuthAppCreation": true,
+  "availableGrantTypes": [],
+  "certificates": {
+    "type": "JWKS",
+    "value": "https://dev-599740.okta.com/oauth2/default/v1/keys"
+  },
+  "additionalProperties": {
+    "apiKey": "apiKeyValue",
+    "client_id": "clientIdValue",
+    "client_secret": "clientSecretValue",
+    "self_validate_jwt": true
+  }
+}

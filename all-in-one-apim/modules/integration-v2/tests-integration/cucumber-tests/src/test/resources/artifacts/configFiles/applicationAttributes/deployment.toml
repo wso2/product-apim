@@ -1,0 +1,25 @@
+# Feature-specific TOML overlay for the IntegrationV2-ApplicationAttributes block.
+#
+# Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the extra keys this feature
+# needs live here; everything else (DB, ports, gateway wiring) is inherited.
+#
+# Ports the config of the legacy ApplicationAttributesTestCase:
+#   - [apim.jwt] enable = true : turns on backend JWT generation, so the gateway injects the
+#     X-JWT-Assertion header (carrying the application-attribute claims) towards the backend.
+#   - [[apim.devportal.application_attributes]] : declares a custom application attribute
+#     ("External Reference Id"). required=true means every Developer Portal application creation in this
+#     block must supply it (this is also what makes the "reject create without the attribute" negative real).
+
+[apim.jwt]
+enable = true
+encoding = "base64"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+name = "External Reference Id"
+description = "External Reference Id"

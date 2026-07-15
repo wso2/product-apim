@@ -2871,6 +2871,7 @@
             <Enable>{{tenant_context.enable_tenant_qualified_urls}}</Enable>
             <RequireSuperTenantInUrls>{{tenant_context.enable_tenant_qualified_urls && tenant_context.require_super_tenant_in_urls}}</RequireSuperTenantInUrls>
             <EnableTenantedSessions>{{tenant_context.enable_tenant_qualified_urls && tenant_context.enable_tenanted_sessions}}</EnableTenantedSessions>
+            <SkipTenantValidationForOAuthEndpoints>{{tenant_context.enable_tenant_qualified_urls && tenant_context.skip_tenant_validation_for_oauth_endpoints}}</SkipTenantValidationForOAuthEndpoints>
        </TenantQualifiedUrls>
     </TenantContext>
 

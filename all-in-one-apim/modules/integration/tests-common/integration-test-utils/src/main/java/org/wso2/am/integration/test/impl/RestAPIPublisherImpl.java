@@ -32,6 +32,7 @@ import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.AiServiceProviderApi;
+import org.wso2.am.integration.clients.publisher.api.v1.AiServiceProvidersApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
@@ -68,6 +69,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformati
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AIServiceProviderSummaryResponseListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -186,6 +188,7 @@ public class RestAPIPublisherImpl {
     private GatewayPoliciesApi gatewayPoliciesApi = new GatewayPoliciesApi();
     private ApiEndpointsApi apiEndpointsApi = new ApiEndpointsApi();
     private AiServiceProviderApi aiServiceProviderApi = new AiServiceProviderApi();
+    private AiServiceProvidersApi aiServiceProvidersApi = new AiServiceProvidersApi();
     private ImportExportApi importExportApi = new ImportExportApi();
 
     private LinterCustomRulesApi linterCustomRulesApi = new LinterCustomRulesApi();
@@ -255,6 +258,7 @@ public class RestAPIPublisherImpl {
         mcpServersBackendsApi.setApiClient(apiPublisherClient);
         apiEndpointsApi.setApiClient(apiPublisherClient);
         aiServiceProviderApi.setApiClient(apiPublisherClient);
+        aiServiceProvidersApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -1383,6 +1387,39 @@ public class RestAPIPublisherImpl {
     public ApiResponse<APIDTO> importOASDefinitionResponse(File file, String properties) throws ApiException {
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties, null);
         return apiDtoApiResponse;
+    }
+
+    /**
+     * Import an OpenAPI Definition using inline content
+     *
+     * @param inlineDefinition Inline OpenAPI definition as YAML or JSON string
+     * @param properties       Additional attributes specified as a stringified JSON with API's schema
+     * @return APIDTO
+     * @throws ApiException If fail to call the API
+     */
+    public APIDTO importOASDefinitionWithInlineContent(String inlineDefinition, String properties) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(null, null,
+                properties, inlineDefinition);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    /**
+     * Import an OpenAPI Definition using inline content with HttpResponse return type
+     *
+     * @param inlineDefinition Inline OpenAPI definition as YAML or JSON string
+     * @param properties       Additional attributes specified as a stringified JSON with API's schema
+     * @return HttpResponse
+     */
+    public HttpResponse importOASDefinitionWithInlineContentResponse(String inlineDefinition, String properties) {
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(null, null, properties,
+                    inlineDefinition);
+            return new HttpResponse(gson.toJson(apiDtoApiResponse.getData()), apiDtoApiResponse.getStatusCode());
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
     }
 
     public GraphQLValidationResponseDTO validateGraphqlSchemaDefinition(File schemaDefinition) throws ApiException {
@@ -3113,6 +3150,39 @@ public class RestAPIPublisherImpl {
             ApiResponse<List<ModelProviderDTO>> modelListResponse = aiServiceProviderApi.getAIServiceProviderModelsWithHttpInfo(
                     aiServiceProviderId);
             return new HttpResponse(gson.toJson(modelListResponse.getData()), modelListResponse.getStatusCode());
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+    }
+
+    /**
+     * Get all AI Service providers
+     *
+     * @return HttpResponse
+     */
+    public HttpResponse getAIServiceProviders() {
+        Gson gson = new Gson();
+        try {
+            ApiResponse<AIServiceProviderSummaryResponseListDTO> response =
+                    aiServiceProvidersApi.getAIServiceProvidersWithHttpInfo();
+            return new HttpResponse(gson.toJson(response.getData()), response.getStatusCode());
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+    }
+
+    /**
+     * Get AI Service Provider's API Definition (OpenAPI/Swagger definition)
+     *
+     * @param aiServiceProviderId AI Service Provider ID
+     * @return HttpResponse containing the OpenAPI definition as a String (YAML or JSON)
+     */
+    public HttpResponse getAIServiceProviderApiDefinition(String aiServiceProviderId) {
+        Gson gson = new Gson();
+        try {
+            ApiResponse<String> response =
+                    aiServiceProviderApi.getAIServiceProviderApiDefinitionWithHttpInfo(aiServiceProviderId);
+            return new HttpResponse(response.getData(), response.getStatusCode());
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
