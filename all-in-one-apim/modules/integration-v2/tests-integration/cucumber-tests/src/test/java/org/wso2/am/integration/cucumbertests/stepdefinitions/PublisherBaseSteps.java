@@ -3560,6 +3560,39 @@ public class PublisherBaseSteps {
         importAsyncApiDefinition(filepath, additionalData, resourceId);
     }
 
+    /**
+     * Attempts to import a SOAP API from a WSDL ARCHIVE (.zip whose master {@code service.wsdl} may nest an
+     * {@code <xsd:import>}) — POST /apis/import-wsdl, multipart {@code file} (the .zip) + {@code additionalProperties}
+     * (name/context/version, ${UNIQUE} resolved) + {@code implementationType=SOAP}. Non-asserting — the feature
+     * asserts the status (a nested import to a blocked host → 400 "could not be resolved"); nothing is created/registered
+     * on failure. Ports the import-wsdl half of HostValidationWsdlNestedImportTestCase.
+     *
+     * @param archivePath    classpath path to the .zip WSDL archive
+     * @param additionalData classpath path to the additional-properties JSON
+     */
+    @When("I attempt to import wsdl from archive {string} with additional properties {string}")
+    public void iAttemptImportWsdlFromArchive(String archivePath, String additionalData) throws IOException {
+
+        File archiveFile = Utils.classpathToTempFile(archivePath, "fixture", ".zip");
+        String additionalProperties;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Additional properties file not found: " + additionalData);
+            }
+            additionalProperties = Utils.resolvePayloadPlaceholders(
+                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archiveFile);
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("additionalProperties", additionalProperties);
+        formFields.put("implementationType", "SOAP");
+        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(Utils.getBaseUrl()), headers, files,
+                formFields);
+    }
+
     /** Non-asserting AsyncAPI import for negative/invalid-spec scenarios (publishes {@code httpResponse}; stores
      *  no id). The feature asserts the rejection status and error message. */
     @When("I attempt to import asyncapi definition from {string} with additional properties {string}")
