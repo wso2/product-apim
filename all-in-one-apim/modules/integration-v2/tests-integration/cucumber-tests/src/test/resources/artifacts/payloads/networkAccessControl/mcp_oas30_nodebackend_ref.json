@@ -1,0 +1,46 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Host Validation MCP Allow Ref OAS3.0",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/pets": {
+      "get": {
+        "operationId": "getPets",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "http://nodebackend:3021/schema-fragment.yaml"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pets/{petId}": {
+      "get": {
+        "operationId": "getPetById",
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
