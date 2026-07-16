@@ -28,6 +28,7 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -98,7 +99,14 @@ public class ContentAwareMediationPolicyResponseFlowTestCase extends APIManagerL
                         + "synapseconfigs" + File.separator + "rest" + File.separator
                         + "all_methods_dummy_api.xml",
                 gatewayContextMgt, gatewaySessionCookie);
-        httpClient = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(30000)
+                .setSocketTimeout(30000)
+                .build();
+        httpClient = HttpClientBuilder.create()
+                .setDefaultRequestConfig(requestConfig)
+                .setHostnameVerifier(new AllowAllHostnameVerifier())
+                .build();
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Application for content-aware response policy test",
@@ -176,22 +184,23 @@ public class ContentAwareMediationPolicyResponseFlowTestCase extends APIManagerL
     public void testInvokeMethodsWithContentAwareResponsePolicy() throws Exception {
 
         for (String verb : HTTP_METHODS) {
-            CloseableHttpResponse response = invokeWithJsonBody(verb);
-            int statusCode = response.getStatusLine().getStatusCode();
+            try (CloseableHttpResponse response = invokeWithJsonBody(verb)) {
+                int statusCode = response.getStatusLine().getStatusCode();
 
-            String responseBody = response.getEntity() != null
-                    ? EntityUtils.toString(response.getEntity()) : "";
+                String responseBody = response.getEntity() != null
+                        ? EntityUtils.toString(response.getEntity()) : "";
 
-            log.info("Verb=" + verb + " status=" + statusCode + " body=" + responseBody);
+                log.info("Verb=" + verb + " status=" + statusCode + " body=" + responseBody);
 
-            Assert.assertFalse(responseBody.contains("Could not write JSON stream"),
-                    "Verb " + verb + " produced 'Could not write JSON stream' error. Body: " + responseBody);
-            Assert.assertFalse(responseBody.contains("Runtime Error"),
-                    "Verb " + verb + " produced a Runtime Error. Body: " + responseBody);
+                Assert.assertFalse(responseBody.contains("Could not write JSON stream"),
+                        "Verb " + verb + " produced 'Could not write JSON stream' error. Body: " + responseBody);
+                Assert.assertFalse(responseBody.contains("Runtime Error"),
+                        "Verb " + verb + " produced a Runtime Error. Body: " + responseBody);
 
-            assertEquals(statusCode, HTTP_RESPONSE_CODE_OK,
-                    "Verb " + verb + " did not return 200 OK when invoked with JSON body "
-                            + "against a content-aware response policy. Body: " + responseBody);
+                assertEquals(statusCode, HTTP_RESPONSE_CODE_OK,
+                        "Verb " + verb + " did not return 200 OK when invoked with JSON body "
+                                + "against a content-aware response policy. Body: " + responseBody);
+            }
         }
     }
 
