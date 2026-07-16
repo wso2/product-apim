@@ -41,7 +41,9 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -327,6 +329,24 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Probes a backend endpoint URL via the Publisher endpoint-validation API and publishes the response for
+     * assertion. A reachable endpoint validates with statusCode 202 (Accepted) in 4.7.0. The {@code endpointUrl}
+     * may carry {{...}} placeholders; the API id is a context key.
+     *
+     * @param endpointUrl the backend endpoint URL to probe (placeholders resolved)
+     * @param apiId       context key holding the API id the probe is associated with
+     */
+    @When("I validate the endpoint {string} for API {string}")
+    public void iValidateEndpointForApi(String endpointUrl, String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String resolvedEndpoint = Utils.resolveContextPlaceholders(endpointUrl);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.post(Utils.getValidateEndpointURL(getBaseUrl(), resolvedEndpoint, actualApiId), headers, "",
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
      * Retrieves a list of all APIs created through the Publisher REST API.
      * This step performs a search query without filters to get all available APIs.
      */
@@ -399,6 +419,72 @@ public class PublisherBaseSteps {
         }
         Assert.assertEquals(actualState, status,
                 "API lifecycle state did not reach '" + status + "' within the retry window");
+    }
+
+    /**
+     * Asserts that the API's current lifecycle state (GET /apis/{id}/lifecycle-state) offers exactly the given
+     * set of available transition events — no more, no fewer. The expected events are supplied as a
+     * comma-separated list (each a LifecycleStateAvailableTransitionsDTO {@code event}, e.g. "Block,Deprecate").
+     * Ports the available-transitions-per-state assertions of RegistryLifeCycleInclusionTest. Because the legacy
+     * only checked containment, this is a stricter set-equality check that also catches unexpected extra
+     * transitions.
+     */
+    @Then("The available lifecycle transitions of API {string} should be exactly {string}")
+    public void theAvailableTransitionsShouldBeExactly(String apiId, String expectedEventsCsv) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = Requests.get(Utils.getAPILifecycleStateURL(getBaseUrl(), actualApiId), headers);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty(),
+                "lifecycle-state fetch failed for api=" + actualApiId + " got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        JSONArray transitions = new JSONObject(response.getData()).optJSONArray("availableTransitions");
+        Set<String> actual = new HashSet<>();
+        if (transitions != null) {
+            for (int i = 0; i < transitions.length(); i++) {
+                actual.add(transitions.getJSONObject(i).getString("event"));
+            }
+        }
+        Set<String> expected = new HashSet<>();
+        for (String e : expectedEventsCsv.split(",")) {
+            expected.add(e.trim());
+        }
+        Assert.assertEquals(actual, expected,
+                "Available lifecycle transitions mismatch for api=" + actualApiId + " (got " + actual + ")");
+    }
+
+    /**
+     * Asserts that the API's lifecycle history / audit-trail (GET /apis/{id}/lifecycle-history) records a
+     * transition from {@code previousState} to {@code postState} (matched case-insensitively on the DTO's
+     * {@code previousState}/{@code postState}). Ports the lifecycle-history assertions of
+     * RegistryLifeCycleInclusionTest (CREATED→PUBLISHED, PUBLISHED→BLOCKED, BLOCKED→DEPRECATED).
+     */
+    @Then("The lifecycle history of API {string} should record a transition from {string} to {string}")
+    public void theLifecycleHistoryShouldRecord(String apiId, String previousState, String postState)
+            throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = Requests.get(Utils.getAPILifecycleHistoryURL(getBaseUrl(), actualApiId), headers);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty(),
+                "lifecycle-history fetch failed for api=" + actualApiId + " got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+        boolean found = false;
+        if (list != null) {
+            for (int i = 0; i < list.length(); i++) {
+                JSONObject item = list.getJSONObject(i);
+                if (previousState.equalsIgnoreCase(item.optString("previousState"))
+                        && postState.equalsIgnoreCase(item.optString("postState"))) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        Assert.assertTrue(found, "Lifecycle history did not record transition " + previousState + "->" + postState
+                + " for api=" + actualApiId + " (history=" + response.getData() + ")");
     }
 
     /**
@@ -1312,6 +1398,472 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Exports a common operation policy by name/version/format (GET /operation-policies/export, returns a zip) and
+     * stores the downloaded archive path under the given key. Asserts 200. First half of the common-policy
+     * export/import round-trip (OperationPolicyTestCase). Binary download so the zip is not corrupted.
+     */
+    @When("I export the common operation policy named {string} version {string} format {string} as {string}")
+    public void iExportCommonPolicy(String name, String version, String format, String archivePathKey)
+            throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
+        Assert.assertEquals(result.getStatusCode(), 200,
+                "Common operation policy export did not return 200 (archive download failed)");
+        TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
+    }
+
+    /**
+     * Attempts to export a common operation policy that does not exist, asserting the expected status (404). A
+     * binary download whose status is checked directly (nothing published to httpResponse).
+     */
+    @When("I export a non-existing common operation policy named {string} version {string} format {string} expecting status {int}")
+    public void iExportNonExistingCommonPolicy(String name, String version, String format, int expectedStatus)
+            throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
+        Assert.assertEquals(result.getStatusCode(), expectedStatus,
+                "Non-existing common operation policy export status mismatch");
+    }
+
+    /**
+     * Deletes a common operation policy by id (DELETE /operation-policies/{id}) and drops it from the teardown
+     * sweep (the test removed it itself, so a later sweep-delete would log a spurious 404). Publishes the response.
+     */
+    @When("I delete the common operation policy {string}")
+    public void iDeleteCommonPolicy(String policyIdKey) throws IOException {
+        String policyId = TestContext.resolve(policyIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = Requests.delete(Utils.getCommonPolicyById(getBaseUrl(), policyId), headers);
+        // Drop it from the teardown sweep ONLY when it is actually gone (2xx) or already absent (404). A failed
+        // delete (401/409/500/...) leaves the still-existing policy TRACKED so the AfterClass sweep can retry it.
+        int code = response == null ? -1 : response.getResponseCode();
+        if ((code >= 200 && code < 300) || code == 404) {
+            ResourceCleanup.deregister(Constants.CREATED_OPERATION_POLICY_IDS, policyId);
+        }
+    }
+
+    /**
+     * Imports a common operation policy from a previously-exported archive (multipart field "file"). Stores the
+     * created policy id (if the 201 body carries one) and registers it for teardown. Second half of the round-trip.
+     */
+    @When("I import the common operation policy archive {string} as {string}")
+    public void iImportCommonPolicy(String archivePathKey, String policyIdKey) throws IOException {
+        String path = TestContext.resolve(archivePathKey).toString();
+        File archiveFile = new File(path);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archiveFile);
+        HttpResponse response = Requests.postMultipart(Utils.getCommonPolicyImportURL(getBaseUrl()), headers, files,
+                null);
+        // A successful import (201) returns the recreated policy JSON carrying its new id; store and register it so
+        // the re-imported policy is swept by teardown.
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                && response.getData() != null && !response.getData().isEmpty()) {
+            Object id = Utils.extractValueFromPayload(response.getData(), "id");
+            if (id != null) {
+                if (policyIdKey != null) {
+                    TestContext.set(Utils.normalizeContextKey(policyIdKey), id);
+                }
+                ResourceCleanup.register(Constants.CREATED_OPERATION_POLICY_IDS, id);
+            }
+        }
+    }
+
+    /**
+     * Exports a published API as an archive (GET /apis/export, returns a zip) and stores the downloaded file's
+     * path under the given context key. Asserts 200. First half of the API import/export round-trip
+     * (APIImportExportTestCase). Binary download so the zip is not corrupted.
+     */
+    @When("I export the API {string} to an archive as {string}")
+    public void iExportApiToArchive(String apiId, String archivePathKey) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
+        Assert.assertEquals(result.getStatusCode(), 200,
+                "API export did not return 200 (archive download failed)");
+        TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
+    }
+
+    /**
+     * Imports a previously-exported API archive (the temp-file path stored by the export step) with an inline
+     * additionalProperties JSON, publishing the response. Second half of the round-trip. The /apis/import response
+     * is a plain-text message (not the API id), so the imported API is located by name afterwards (see the
+     * find-by-name step) for verification + cleanup.
+     */
+    @When("I import the exported archive {string} with additional properties {string} as {string}")
+    public void iImportExportedArchive(String archivePathKey, String additionalPropsJson, String resourceId)
+            throws IOException {
+        String path = TestContext.resolve(archivePathKey).toString();
+        File archiveFile = new File(path);
+
+        File additionalPropertiesFile = File.createTempFile("data", ".json");
+        additionalPropertiesFile.deleteOnExit();
+        Files.write(additionalPropertiesFile.toPath(),
+                Utils.resolveContextPlaceholders(additionalPropsJson).getBytes(StandardCharsets.UTF_8));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archiveFile);
+        files.put("additionalProperties", additionalPropertiesFile);
+
+        HttpResponse response = Requests.postMultipart(Utils.getApiArchiveImportURL(getBaseUrl()), headers, files,
+                null);
+        TestContext.set(Utils.normalizeContextKey(resourceId), response.getData());
+    }
+
+    /**
+     * Imports a previously-exported API archive with an explicit {@code preserveProvider} query flag, publishing
+     * the response. Ports the preserveProvider matrix of APIImportExportTestCase
+     * (testPreserveProviderTrue/FalseSameProviderApiImport): with {@code preserveProvider=true} the imported API
+     * keeps the archive's original provider; with {@code preserveProvider=false} it is re-owned by the importing
+     * user (the current acting actor). Uses the acting actor's publisher token so a DIFFERENT importer identity is
+     * driven purely by {@code I act as}.
+     */
+    @When("I import the exported archive {string} with additional properties {string} and preserveProvider {string} as {string}")
+    public void iImportExportedArchiveWithPreserveProvider(String archivePathKey, String additionalPropsJson,
+            String preserveProvider, String resourceId) throws IOException {
+        String path = TestContext.resolve(archivePathKey).toString();
+        File archiveFile = new File(path);
+
+        File additionalPropertiesFile = File.createTempFile("data", ".json");
+        additionalPropertiesFile.deleteOnExit();
+        Files.write(additionalPropertiesFile.toPath(),
+                Utils.resolveContextPlaceholders(additionalPropsJson).getBytes(StandardCharsets.UTF_8));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archiveFile);
+        files.put("additionalProperties", additionalPropertiesFile);
+
+        String url = Utils.getApiArchiveImportURL(getBaseUrl()) + "?preserveProvider=" + preserveProvider.trim();
+        HttpResponse response = Requests.postMultipart(url, headers, files, null);
+        TestContext.set(Utils.normalizeContextKey(resourceId), response.getData());
+    }
+
+    /**
+     * Attempts to export an API to an archive as the CURRENT acting actor, asserting the download returns the
+     * expected HTTP status (used by the restricted-role authz negative: a user lacking the access-control role
+     * gets 401). A binary download whose status is checked directly (nothing published to httpResponse).
+     */
+    @When("I attempt to export the API {string} to an archive expecting status {int}")
+    public void iAttemptToExportApi(String apiId, int expectedStatus) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
+        Assert.assertEquals(result.getStatusCode(), expectedStatus,
+                "API export status mismatch for api=" + actualApiId);
+    }
+
+    /**
+     * Asserts an API's {@code provider} field (GET /apis/{id}) equals the given actor's full username. Ports the
+     * provider assertions of the preserveProvider matrix (provider stays the original with preserveProvider=true;
+     * becomes the importer with preserveProvider=false).
+     */
+    @Then("The provider of API {string} should match actor {string}")
+    public void theProviderShouldMatchActor(String apiId, String actorRef) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        // The publisher API's provider field carries a tenant user's full username (e.g. admin@tenant1.com) but
+        // strips the carbon.super suffix for a super-tenant user (e.g. ppImporter, not ppImporter@carbon.super).
+        String expectedProvider = Identity.resolveActor(actorRef).getUserName();
+        String superSuffix = "@" + Constants.SUPER_TENANT_DOMAIN;
+        if (expectedProvider.endsWith(superSuffix)) {
+            expectedProvider = expectedProvider.substring(0, expectedProvider.length() - superSuffix.length());
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = Requests.get(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty(),
+                "API fetch failed for api=" + actualApiId + " got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        String actualProvider = new JSONObject(response.getData()).getString("provider");
+        Assert.assertEquals(actualProvider, expectedProvider,
+                "API provider mismatch for api=" + actualApiId);
+    }
+
+    /**
+     * Extracts a previously-downloaded API export archive (path under {@code archivePathKey}) and asserts the
+     * inner {@code <name>-<version>/api.json} has its production AND sandbox endpoint-security passwords stripped
+     * (empty). Ports APIImportExportTestCase#testAPIExport — the export must not leak backend credentials in
+     * plain text. The api.json is a wrapper: {@code data.endpointConfig.endpoint_security.<production|sandbox>.password}.
+     */
+    @Then("The exported API archive {string} should have empty endpoint-security passwords")
+    public void theExportedApiArchiveShouldStripSecrets(String archivePathKey) throws IOException {
+        String zipPath = TestContext.resolve(archivePathKey).toString();
+        File extractDir = Files.createTempDirectory("api-export-extract").toFile();
+        extractDir.deleteOnExit();
+        Utils.unzip(new File(zipPath), extractDir);
+
+        // The archive top-level directory is "<name>-<version>"; locate the api.json under it.
+        File apiJson = findFileByName(extractDir, "api.json");
+        Assert.assertNotNull(apiJson, "Exported archive does not contain an api.json");
+        String content = new String(Files.readAllBytes(apiJson.toPath()), StandardCharsets.UTF_8);
+        JSONObject data = new JSONObject(content).getJSONObject("data");
+        JSONObject endpointSecurity = data.getJSONObject("endpointConfig").getJSONObject("endpoint_security");
+        String productionPassword = endpointSecurity.getJSONObject("production").optString("password", "");
+        String sandboxPassword = endpointSecurity.getJSONObject("sandbox").optString("password", "");
+        // Assert the password was stripped WITHOUT echoing the value — a non-empty value here is a real backend
+        // credential and must not be printed into CI output (the very leak this test guards against).
+        Assert.assertTrue(productionPassword.isEmpty(),
+                "Production endpoint password was exported in plain text (expected empty)");
+        Assert.assertTrue(sandboxPassword.isEmpty(),
+                "Sandbox endpoint password was exported in plain text (expected empty)");
+    }
+
+    /** Depth-first search for a file with the given name under {@code root}. */
+    private File findFileByName(File root, String name) {
+        File[] children = root.listFiles();
+        if (children == null) {
+            return null;
+        }
+        for (File child : children) {
+            if (child.isDirectory()) {
+                File found = findFileByName(child, name);
+                if (found != null) {
+                    return found;
+                }
+            } else if (child.getName().equals(name)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Searches the Publisher API list for an API by exact name, stores the first match's id under the given key,
+     * and registers it for teardown. Used to locate an API created out-of-band (e.g. by an archive import, whose
+     * response carries only a message) so it can be asserted on and cleaned up. The Publisher search index is
+     * eventually consistent, so this polls until the named API appears (or times out).
+     */
+    @When("I find the Publisher API named {string} and store its id as {string}")
+    public void iFindPublisherApiByName(String name, String idKey) throws IOException, InterruptedException {
+        String resolvedName = Utils.resolveContextPlaceholders(name);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String url = Utils.getAPISearchEndpointURL(getBaseUrl(), "name:" + resolvedName, null, null);
+        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        HttpResponse response = null;
+        Object id = null;
+        while (true) {
+            response = Requests.get(url, headers);
+            if (response != null && response.getResponseCode() == 200
+                    && response.getData() != null && !response.getData().isEmpty()) {
+                JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+                if (list != null && list.length() > 0) {
+                    id = list.getJSONObject(0).get("id");
+                    break;
+                }
+            }
+            if (System.currentTimeMillis() >= endTime) {
+                break;
+            }
+            Thread.sleep(2000);
+        }
+        Assert.assertNotNull(id, "No Publisher API named '" + resolvedName + "' was found within the deadline");
+        TestContext.set(Utils.normalizeContextKey(idKey), id);
+        ResourceCleanup.register(Constants.CREATED_API_IDS, id);
+    }
+
+    /**
+     * Uploads a custom Synapse sequence as an API's sequence backend (PUT /apis/{id}/sequence-backend, multipart:
+     * the sequence XML as the "sequence" part + a "type" form field PRODUCTION/SANDBOX). The API's endpoint type
+     * must be sequence_backend. Publishes the response. Ports the sequence-backend side of REST invocation.
+     */
+    @When("I upload the sequence backend {string} of type {string} for API {string}")
+    public void iUploadSequenceBackend(String sequencePath, String type, String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        File sequenceFile = loadResourceAsTempFile(sequencePath, ".xml");
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("sequence", sequenceFile);
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("type", type);
+        Requests.putMultipart(Utils.getSequenceBackendURL(getBaseUrl(), actualApiId), headers, files, formFields);
+    }
+
+    /**
+     * Imports an API from a WSDL file (POST /apis/import-wsdl, multipart: the WSDL as the "file" part plus the
+     * additionalProperties JSON and implementationType form fields). implementationType is "SOAP" (pass-through
+     * SOAP proxy) or "SOAPTOREST" (generate REST resources from the WSDL). Publishes the response and, on a 2xx,
+     * stores the created API id and registers it for teardown. Ports WSDLImportTestCase / the create side of SOAP.
+     */
+    @When("I import a WSDL API from file {string} with additional properties {string} and implementation type {string} as {string}")
+    public void iImportWsdlApi(String wsdlPath, String additionalProps, String implType, String resourceId)
+            throws IOException {
+        // Preserve the source extension so an archive import (.zip) is detected as an archive, not a raw WSDL.
+        String suffix = wsdlPath.toLowerCase().endsWith(".zip") ? ".zip" : ".wsdl";
+        File wsdlFile = loadResourceAsTempFile(wsdlPath, suffix);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", wsdlFile);
+        // additionalProps is a context key holding the JSON doc-string; resolve the key then any inner {{...}}.
+        String additionalPropsJson = Utils.resolveContextPlaceholders(
+                TestContext.resolve(additionalProps).toString());
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("additionalProperties", additionalPropsJson);
+        formFields.put("implementationType", implType);
+        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(getBaseUrl()), headers, files,
+                formFields);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(Utils.normalizeContextKey(resourceId), createdId);
+            ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        }
+    }
+
+    /**
+     * Imports a WSDL API by URL (no file part) — the {@code url} form field of the import-wsdl endpoint. APIM
+     * fetches and parses the WSDL from the given in-network URL (served by the soap-stub at
+     * {@code http://nodebackend:3019/wsdl}). Ports the WSDL-URL import arc of WSDLImportTestCase (which used a
+     * WireMock-hosted WSDL). Registers the created API for teardown on success; publishes the response so a
+     * following assertion can check the status.
+     */
+    @When("I import a WSDL API from URL {string} with additional properties {string} and implementation type {string} as {string}")
+    public void iImportWsdlApiFromUrl(String wsdlUrl, String additionalProps, String implType, String resourceId)
+            throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String additionalPropsJson = Utils.resolveContextPlaceholders(
+                TestContext.resolve(additionalProps).toString());
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("url", wsdlUrl);
+        formFields.put("additionalProperties", additionalPropsJson);
+        formFields.put("implementationType", implType);
+        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(getBaseUrl()), headers,
+                new HashMap<>(), formFields);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(Utils.normalizeContextKey(resourceId), createdId);
+            ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        }
+    }
+
+    /**
+     * Retrieves the WSDL definition of a WSDL-imported API from the Publisher ({@code GET /apis/{id}/wsdl}).
+     * Publishes the response for a following status/content assertion. Ports WSDLImportTestCase#testGetWsdlDefinitions.
+     */
+    @When("I retrieve the WSDL definition of API {string}")
+    public void iRetrieveWsdlDefinition(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getWsdlOfApiURL(getBaseUrl(), actualApiId), headers);
+    }
+
+    /**
+     * Downloads the WSDL definition of a deployed API from the DevPortal store
+     * ({@code GET /apis/{id}/wsdl?environmentName=}). Publishes the response for a following assertion. Ports
+     * WSDLImportTestCase#testDownloadWsdlDefinitionsFromStore.
+     */
+    @When("I download the WSDL definition of API {string} from the devportal store")
+    public void iDownloadWsdlFromStore(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        String environmentName = System.getenv(Constants.GATEWAY_ENVIRONMENT);
+        Requests.get(Utils.getDevPortalWsdlOfApiURL(getBaseUrl(), actualApiId, environmentName), headers);
+    }
+
+    /**
+     * Creates + deploys an API from a payload file, injecting a comma-separated tag list into its {@code tags}
+     * field first (each tag placeholder resolved), so a DevPortal tag search can match on those tags. Registers
+     * the API for teardown via the create primitive.
+     */
+    @Given("I have created an api from {string} with tags {string} as {string} and deployed it")
+    public void iHaveCreatedAnApiFromWithTagsAsAndDeployedIt(String payloadPath, String tagsCsv, String apiID)
+            throws IOException, InterruptedException {
+        baseSteps.putJsonPayloadFromFile(payloadPath, "<createApiPayload>");
+        JSONObject json = new JSONObject(TestContext.resolve("<createApiPayload>").toString());
+        JSONArray tags = new JSONArray();
+        for (String t : tagsCsv.split(",")) {
+            tags.put(Utils.resolveContextPlaceholders(t.trim()));
+        }
+        json.put("tags", tags);
+        baseSteps.putJsonPayloadInContext("<createApiPayload>", json.toString());
+        iCreateAnAPIWithPayloadAs("apis", "<createApiPayload>", apiID);
+        baseSteps.putJsonPayloadInContext("<createRevisionPayload>", "{\"description\":\"Initial Revision\"}");
+        iCreateResourceRevision("apis", apiID, "<createRevisionPayload>");
+        baseSteps.putJsonPayloadInContext("<deployRevisionPayload>",
+                "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
+        iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiID, "<deployRevisionPayload>");
+        baseSteps.theResponseStatusCodeShouldBe(201);
+    }
+
+    /**
+     * Bulk-creates and publishes {@code count} APIs whose name and context are {@code prefix}0..N-1, so a single
+     * DevPortal search by {@code prefix} matches exactly this scenario's set (the prefix must be a scenario-unique
+     * value — see the unique-value step — so parallel scenarios never collide). No revision/deploy: DevPortal store
+     * visibility follows the PUBLISHED lifecycle state, not gateway deployment, so this stays light for pagination
+     * coverage. Each API is registered for teardown by the create primitive.
+     */
+    @Given("I create and publish {int} APIs from {string} named {string}")
+    public void iCreateAndPublishApis(int count, String payloadPath, String namePrefixRef) throws IOException {
+        String prefix = Utils.resolveContextPlaceholders(namePrefixRef);
+        for (int i = 0; i < count; i++) {
+            baseSteps.putJsonPayloadFromFile(payloadPath, "<bulkApiPayload>");
+            JSONObject json = new JSONObject(TestContext.resolve("<bulkApiPayload>").toString());
+            json.put("name", prefix + i);
+            json.put("context", prefix + i);
+            baseSteps.putJsonPayloadInContext("<bulkApiPayload>", json.toString());
+            iCreateAnAPIWithPayloadAs("apis", "<bulkApiPayload>", "bulkApiId");
+            iPublishTheResource("apis", "bulkApiId");
+        }
+    }
+
+    /**
+     * Asserts that an imported SOAP API's {@code wsdlUrl} field points at the correct tenant-scoped registry WSDL
+     * path. Ports SOAPAPIImportExportTestCase#testAPIWSDLUrl. The expected path is derived from the API's own
+     * {@code provider}/{@code name}/{@code version} fields (retrieved via GET /apis/{id}), so it is correct for
+     * both the super tenant and a sub-tenant without hard-coding a specific unique name. The registry layout is:
+     *   super:  /registry/resource/_system/governance/apimgt/applicationdata/provider/{p}/{name}/{ver}/{p}--{name}{ver}.wsdl
+     *   tenant: /t/{domain}/registry/resource/.../provider/{p-enc}/{name}/{ver}/{p-enc}--{name}{ver}.wsdl
+     * where the provider is registry-encoded (an '@' becomes '-AT-').
+     */
+    @Then("The wsdlUrl of API {string} should be the tenant-scoped registry WSDL path")
+    public void theWsdlUrlShouldBeTenantScoped(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = Requests.get(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty(),
+                "API fetch failed for api=" + actualApiId + " got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        JSONObject api = new JSONObject(response.getData());
+        String provider = api.getString("provider");
+        String name = api.getString("name");
+        String version = api.getString("version");
+        String actualWsdlUrl = api.optString("wsdlUrl", null);
+
+        // Registry-encode the provider (tenant users carry an '@domain' which the registry stores as '-AT-domain').
+        String providerEncoded = provider.replace("@", "-AT-");
+        String tenantPrefix = "";
+        int at = provider.indexOf('@');
+        if (at >= 0 && !Constants.SUPER_TENANT_DOMAIN.equals(provider.substring(at + 1))) {
+            tenantPrefix = "/t/" + provider.substring(at + 1);
+        }
+        String expectedWsdlUrl = tenantPrefix
+                + "/registry/resource/_system/governance/apimgt/applicationdata/provider/"
+                + providerEncoded + "/" + name + "/" + version + "/"
+                + providerEncoded + "--" + name + version + ".wsdl";
+        Assert.assertEquals(actualWsdlUrl, expectedWsdlUrl, "WSDL URI set to the imported API is incorrect");
+    }
+
+    /**
      * Deletes an API-specific operation policy.
      *
      * @param apiId Context key containing the API ID
@@ -1328,6 +1880,287 @@ public class PublisherBaseSteps {
                 "Bearer " + Identity.publisherToken());
 
         Requests.delete(Utils.getAPISpecificPolicyById(getBaseUrl(), actualApiId, policyID), headers);
+    }
+
+    /** Resolves a shipped/created COMMON operation policy (its {@code id}/{@code name}/{@code version}) by display
+     *  name (GET /operation-policies). Returns the list entry so callers get the version too — the attach path
+     *  validates policyName+policyVersion against the spec identified by policyId (a missing version → 400). */
+    private JSONObject resolveCommonPolicyByName(String policyName, Map<String, String> headers) throws IOException {
+        HttpResponse listResp = SimpleHTTPClient.getInstance().doGet(Utils.getCommonPolicy(getBaseUrl()), headers);
+        Assert.assertTrue(listResp != null && listResp.getResponseCode() >= 200 && listResp.getResponseCode() < 300
+                        && listResp.getData() != null && !listResp.getData().isEmpty(),
+                "Failed to list common policies while resolving '" + policyName + "': got "
+                        + (listResp == null ? "no response" : listResp.getResponseCode() + " / " + listResp.getData()));
+        JSONArray policies = new JSONObject(listResp.getData()).optJSONArray("list");
+        for (int i = 0; policies != null && i < policies.length(); i++) {
+            JSONObject p = policies.getJSONObject(i);
+            if (policyName.equals(p.optString("name"))) {
+                return p;
+            }
+        }
+        throw new IllegalStateException("Common operation policy '" + policyName + "' not found in the pack");
+    }
+
+    /**
+     * Attaches a shipped COMMON operation policy (looked up by name) to operation index {@code opIndex} of an API,
+     * in the given comma-separated flows ({@code request}/{@code response}/{@code fault}), then PUTs the API back —
+     * publishing the PUT response for the feature to assert. Parameters are supplied as an inline JSON object (use
+     * {@code {}} for none). Ports the operation-policy attach path of OperationPolicyTestCase — the negatives
+     * (missing required attributes → 400; a policy attached to an unsupported flow → 400) and the positive attach
+     * (whose clone is then checked by the md5 step below).
+     *
+     * @param policyName shipped common policy name (e.g. {@code addHeader}, {@code removeHeader}, {@code jsonFault})
+     * @param opIndex    zero-based index into the API's {@code operations} array
+     * @param apiId      context key holding the API id
+     * @param flowsCsv   comma-separated flows the policy is applied to
+     * @param paramsJson inline JSON object of policy parameters ({@code {}} for none/missing)
+     */
+    @When("I attach the common operation policy {string} to operation {int} of API {string} in flows {string} with parameters {string}")
+    public void iAttachCommonPolicyToOperation(String policyName, int opIndex, String apiId, String flowsCsv,
+            String paramsJson) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        JSONObject commonPolicy = resolveCommonPolicyByName(policyName, headers);
+        String policyId = commonPolicy.optString("id");
+        String policyVersion = commonPolicy.optString("version");
+
+        HttpResponse getApi = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
+                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                "Failed to fetch API '" + actualApiId + "' before attaching operation policy: got "
+                        + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
+        JSONObject api = new JSONObject(getApi.getData());
+        JSONObject operation = api.getJSONArray("operations").getJSONObject(opIndex);
+
+        JSONObject operationPolicies = operation.optJSONObject("operationPolicies");
+        if (operationPolicies == null) {
+            operationPolicies = new JSONObject();
+        }
+        for (String flow : flowsCsv.split(",")) {
+            String flowKey = flow.trim();
+            JSONObject policyEntry = new JSONObject()
+                    .put("policyName", policyName)
+                    .put("policyVersion", policyVersion)
+                    .put("policyType", "common")
+                    .put("policyId", policyId)
+                    .put("parameters", new JSONObject(paramsJson));
+            operationPolicies.put(flowKey, new JSONArray().put(policyEntry));
+        }
+        operation.put("operationPolicies", operationPolicies);
+
+        Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers, api.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Asserts that attaching a common operation policy cloned it to the API level: the policy id now recorded on
+     * operation {@code opIndex}'s {@code request} flow differs from the original common policy's id, but the two
+     * policies have an identical md5 (same content). Ports
+     * OperationPolicyTestCase#testCommonOperationPolicyCloneToAPILevelWithUpdate.
+     */
+    @Then("The operation {int} of API {string} should have a clone of common policy {string} with a new id and matching md5")
+    public void theClonedPolicyShouldMatchMd5(int opIndex, String apiId, String commonPolicyName) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        String commonPolicyId = resolveCommonPolicyByName(commonPolicyName, headers).optString("id");
+
+        HttpResponse getApi = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        Assert.assertTrue(getApi != null && getApi.getResponseCode() == 200
+                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                "Failed to fetch API '" + actualApiId + "' for clone md5 check: got "
+                        + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
+        JSONObject api = new JSONObject(getApi.getData());
+        String clonedPolicyId = api.getJSONArray("operations").getJSONObject(opIndex)
+                .getJSONObject("operationPolicies").getJSONArray("request").getJSONObject(0).getString("policyId");
+        Assert.assertNotEquals(clonedPolicyId, commonPolicyId,
+                "Attaching a common policy should clone it to the API level with a NEW id");
+
+        // md5 of the common policy vs the API-specific clone must match (identical content).
+        HttpResponse commonResp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getCommonPolicyById(getBaseUrl(), commonPolicyId), headers);
+        Assert.assertTrue(commonResp != null && commonResp.getResponseCode() == 200
+                        && commonResp.getData() != null && !commonResp.getData().isEmpty(),
+                "Failed to fetch common policy '" + commonPolicyId + "': got "
+                        + (commonResp == null ? "no response" : commonResp.getResponseCode() + " / " + commonResp.getData()));
+        HttpResponse clonedResp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getAPISpecificPolicyById(getBaseUrl(), actualApiId, clonedPolicyId), headers);
+        Assert.assertTrue(clonedResp != null && clonedResp.getResponseCode() == 200
+                        && clonedResp.getData() != null && !clonedResp.getData().isEmpty(),
+                "Failed to fetch API-specific clone '" + clonedPolicyId + "': got "
+                        + (clonedResp == null ? "no response" : clonedResp.getResponseCode() + " / " + clonedResp.getData()));
+        String commonMd5 = new JSONObject(commonResp.getData()).getString("md5");
+        String clonedMd5 = new JSONObject(clonedResp.getData()).getString("md5");
+        Assert.assertEquals(clonedMd5, commonMd5,
+                "Cloned API-level policy md5 must match the common policy md5");
+    }
+
+    /**
+     * Extracts a previously-downloaded common-operation-policy archive (path stored under {@code archivePathKey})
+     * and asserts it contains a spec file named {@code <policyName>.<ext>} whose content parses as the given
+     * format ({@code json} or {@code yaml}), plus the {@code <policyName>.j2} synapse template. Ports the
+     * archive-content assertion of OperationPolicyTestCase#testCommonOperationPolicyExportWithJSONContent (JSON)
+     * and complements the YAML round-trip already covered.
+     */
+    @Then("The exported operation policy archive {string} should contain a {string} spec for policy {string}")
+    public void theExportedPolicyArchiveShouldContain(String archivePathKey, String format, String policyName)
+            throws IOException {
+        String zipPath = TestContext.resolve(archivePathKey).toString();
+        File extractDir = Files.createTempDirectory("op-policy-extract").toFile();
+        extractDir.deleteOnExit();
+        Utils.unzip(new File(zipPath), extractDir);
+
+        String ext = "json".equalsIgnoreCase(format) ? "json" : "yaml";
+        File specFile = new File(extractDir, policyName + File.separator + policyName + "." + ext);
+        Assert.assertTrue(specFile.exists(),
+                "Exported archive is missing the " + ext + " policy spec: " + specFile.getPath());
+        File synapseFile = new File(extractDir, policyName + File.separator + policyName + ".j2");
+        Assert.assertTrue(synapseFile.exists(),
+                "Exported archive is missing the synapse template: " + synapseFile.getPath());
+
+        String specContent = new String(Files.readAllBytes(specFile.toPath()), StandardCharsets.UTF_8);
+        if ("json".equalsIgnoreCase(format)) {
+            // Must parse as JSON and carry the policy's name in its spec data.
+            JSONObject spec = new JSONObject(specContent);
+            String specName = spec.getJSONObject("data").getString("name");
+            Assert.assertEquals(specName, policyName, "Exported JSON spec name mismatch");
+        } else {
+            Assert.assertTrue(specContent.contains("name: " + policyName)
+                            || specContent.contains("name:" + policyName),
+                    "Exported YAML spec does not carry the policy name");
+        }
+    }
+
+    /**
+     * Builds a deliberately-malformed common-operation-policy archive whose inner spec/template are named
+     * differently from the archive's declared policy (a mismatched-name archive) and imports it, asserting the
+     * server rejects it. Ports OperationPolicyTestCase#testImportInvalidCommonOperationPolicy — verified live on
+     * 4.7.0: the import of a mismatched/malformed archive surfaces as HTTP 500. The 500 is the actual product
+     * contract for this garbage-input path (not enshrined as desirable; pinned to characterise it).
+     */
+    @When("I import a malformed common operation policy archive built from spec {string} and synapse {string} expecting status {int}")
+    public void iImportMalformedCommonPolicyArchive(String specResource, String synapseResource, int expectedStatus)
+            throws IOException {
+        // Assemble a <name>_<version> directory whose files are NOT named after the (mismatched) spec inside — the
+        // spec file omits the required name (custom_invalid_header) while the archive dir claims another policy.
+        String archiveBaseName = "mismatchedPolicy_v1";
+        File workDir = Files.createTempDirectory("op-policy-bad").toFile();
+        workDir.deleteOnExit();
+        File policyDir = new File(workDir, archiveBaseName);
+        policyDir.mkdirs();
+
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(specResource)) {
+            if (in == null) {
+                throw new FileNotFoundException("Policy spec resource not found: " + specResource);
+            }
+            Files.copy(in, new File(policyDir, "mismatchedPolicy.yaml").toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(synapseResource)) {
+            if (in == null) {
+                throw new FileNotFoundException("Synapse resource not found: " + synapseResource);
+            }
+            Files.copy(in, new File(policyDir, "mismatchedPolicy.j2").toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        File zipFile = new File(workDir, archiveBaseName + ".zip");
+        Utils.zipDirectory(policyDir, zipFile);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", zipFile);
+        HttpResponse response = Requests.postMultipart(Utils.getCommonPolicyImportURL(getBaseUrl()), headers, files,
+                null);
+        Assert.assertEquals(response.getResponseCode(), expectedStatus,
+                "Malformed common operation policy import status mismatch (body=" + response.getData() + ")");
+        // If the server unexpectedly created a policy, register it so teardown removes it (defensive).
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                && response.getData() != null && !response.getData().isEmpty()) {
+            Object id = Utils.extractValueFromPayload(response.getData(), "id");
+            if (id != null) {
+                ResourceCleanup.register(Constants.CREATED_OPERATION_POLICY_IDS, id);
+            }
+        }
+    }
+
+    /**
+     * Rewrites the {@code parameters} of the operation policy in a given flow of an operation and PUTs the API
+     * back — publishing the response for the feature to assert. Used to exercise the secret-attribute PRESERVE
+     * semantics: an UPDATE that supplies an EMPTY value for a Secret attribute must NOT clear the previously-set
+     * secret (the server preserves it). Ports the update side of
+     * OperationPolicyTestCase#testUpdatePolicyWithSecretAttributes.
+     *
+     * @param flow       flow whose policy is updated ({@code request}/{@code response}/{@code fault})
+     * @param opIndex    zero-based index into the API's {@code operations} array
+     * @param apiId      context key holding the API id
+     * @param paramsJson inline JSON object of the new policy parameters (e.g. {@code {"apiKey":"","token":""}})
+     */
+    @When("I update the parameters of the operation policy in flow {string} of operation {int} of API {string} to {string}")
+    public void iUpdateOperationPolicyParameters(String flow, int opIndex, String apiId, String paramsJson)
+            throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse getApi = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
+                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                "Failed to fetch API '" + actualApiId + "' before updating operation policy parameters: got "
+                        + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
+        JSONObject api = new JSONObject(getApi.getData());
+        JSONArray flowPolicies = api.getJSONArray("operations").getJSONObject(opIndex)
+                .getJSONObject("operationPolicies").getJSONArray(flow);
+        Assert.assertTrue(flowPolicies.length() > 0,
+                "No operation policy present in flow '" + flow + "' of operation " + opIndex + " to update");
+        flowPolicies.getJSONObject(0).put("parameters", new JSONObject(paramsJson));
+
+        Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers, api.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Asserts that a Secret operation-policy attribute is still SET (masked) on the API — i.e. it was preserved,
+     * not cleared. A set-but-masked secret is returned with the parameter key PRESENT and its value blanked to
+     * {@code ""} (the server never echoes a secret's real value); a cleared/never-set secret is absent (or null).
+     * So "present and blank" is the publisher-plane signature of a preserved secret. Ports the retrieve-side
+     * assertion of OperationPolicyTestCase#testRetrievePolicyWithSecretAttributes /
+     * testUpdatePolicyWithSecretAttributes.
+     *
+     * @param paramName the Secret attribute name (e.g. {@code apiKey})
+     * @param flow      flow whose policy is inspected ({@code request}/{@code response}/{@code fault})
+     * @param opIndex   zero-based index into the API's {@code operations} array
+     * @param apiId     context key holding the API id
+     */
+    @Then("The secret parameter {string} of the operation policy in flow {string} of operation {int} of API {string} should be preserved and masked")
+    public void theSecretParameterShouldBePreservedAndMasked(String paramName, String flow, int opIndex, String apiId)
+            throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse getApi = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        Assert.assertTrue(getApi != null && getApi.getResponseCode() == 200
+                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                "Failed to fetch API '" + actualApiId + "' for secret-preservation check: got "
+                        + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
+        JSONObject parameters = new JSONObject(getApi.getData()).getJSONArray("operations").getJSONObject(opIndex)
+                .getJSONObject("operationPolicies").getJSONArray(flow).getJSONObject(0).getJSONObject("parameters");
+        // Preserved secret: key present AND blank (masked). Cleared/never-set: absent (or null).
+        Assert.assertTrue(parameters.has(paramName) && !parameters.isNull(paramName),
+                "Secret parameter '" + paramName + "' was CLEARED (absent/null) — the empty-value update should have "
+                        + "preserved it. parameters=" + parameters);
+        Assert.assertEquals(parameters.getString(paramName), "",
+                "Secret parameter '" + paramName + "' should be masked to an empty string on retrieval, got: "
+                        + parameters.get(paramName));
     }
 
     /**

@@ -38,7 +38,7 @@ import java.util.Map;
  * Gateway runtime-invocation steps. Invokes deployed APIs through the block's gateway (REST/SOAP, by access
  * token or API key, with optional retry-until-status for eventual consistency), plus the OpenID userinfo
  * endpoint. The tenant context segment of the invocation URL is derived from the scenario's acting actor
- * ({@link Identity#defaultActor()}) rather than the retired {@code currentTenant} pointer.
+ * ({@link Identity#actingActor()}) rather than the retired {@code currentTenant} pointer.
  */
 public class APIInvocationSteps {
 
@@ -56,7 +56,7 @@ public class APIInvocationSteps {
 
     /** Tenant domain for the invocation URL — taken from the scenario's acting actor. */
     private String actingTenantDomain() {
-        return Identity.defaultActor().getUserDomain();
+        return Identity.actingActor().getUserDomain();
     }
 
     /**
@@ -91,6 +91,12 @@ public class APIInvocationSteps {
                 case PUT:
                     response = client.doPut(endpointUrl, headers, payload, contentType);
                     break;
+                case PATCH:
+                    response = client.doPatch(endpointUrl, headers, payload, contentType);
+                    break;
+                case HEAD:
+                    response = client.doHead(endpointUrl, headers);
+                    break;
                 default:
                     throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
             }
@@ -109,6 +115,38 @@ public class APIInvocationSteps {
     private HttpResponse execute(CurlOption.HttpMethod method, String endpointUrl, Map<String, String> headers,
                                  String payload) throws IOException {
         return execute(method, endpointUrl, headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * A large request body must NOT bypass gateway authentication: a POST of a {@code sizeKb}-KB body with an invalid
+     * bearer token is rejected, regardless of size. Ports InvalidAuthTokenLargePayloadTestCase — which uploads 1KB /
+     * 100KB / 1MB files with a bad token and asserts the upload is rejected. Two outcomes both satisfy the security
+     * property (the request never reaches the backend): the client captures a 401 response, OR the gateway rejects
+     * auth and closes the connection before consuming the body (a reset/broken pipe, exactly what the legacy catches).
+     * Only "connection refused"/"no route" (gateway down) is a genuine failure. A single shot (no retry) so a
+     * connection reset is not masked as a timeout.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and a {int} KB payload expecting authentication rejection")
+    public void invokeLargePayloadExpectAuthRejection(String context, String httpMethod, String token, int sizeKb)
+            throws Exception {
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String actualToken = TestContext.resolve(token).toString();
+        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + actualToken);
+        char[] buf = new char[sizeKb * 1024];
+        java.util.Arrays.fill(buf, 'A');
+        try {
+            HttpResponse response = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl,
+                    headers, new String(buf), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            Assert.assertEquals(response.getResponseCode(), 401,
+                    "A " + sizeKb + "KB payload with an invalid token must be rejected with 401, got "
+                            + response.getResponseCode() + ": " + response.getData());
+        } catch (IOException e) {
+            String msg = String.valueOf(e.getMessage()).toLowerCase();
+            Assert.assertFalse(msg.contains("connection refused") || msg.contains("no route to host"),
+                    "Gateway unreachable — not an auth rejection: " + e.getMessage());
+        }
     }
 
     /**
@@ -294,6 +332,79 @@ public class APIInvocationSteps {
                 }
             } catch (IOException transientDuringWarmup) {
                 // Retry transient connectivity only (see invokeApiByContextUntilStatus).
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
+     * Invokes a deployed API at its full gateway context sending the body with an EXPLICIT Content-Type (rather
+     * than the default application/json), retrying until the expected status. Needed to drive the gateway's
+     * message builder for a given content type — e.g. POSTing a malformed XML body as {@code application/xml}
+     * so the gateway attempts to build the message and returns a clean error rather than crashing
+     * (MalformedRequestTest). The content type is applied to the request entity, so the backend/gateway sees the
+     * declared type.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with content type {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextWithContentTypeUntilStatus(String context, String httpMethod, String accessToken,
+                                                             String payload, String contentType, int expectedStatus,
+                                                             int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                String actualAccessToken = TestContext.resolve(accessToken).toString();
+                String actualPayload = (payload == null || payload.isEmpty())
+                        ? "" : TestContext.resolve(payload).toString();
+                String endpointUrl = getBaseGatewayUrl()
+                        + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + actualAccessToken);
+                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                        actualPayload, contentType);
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
+     * Invokes a deployed API presenting an API key in a NAMED request header (rather than a bearer token),
+     * retrying until the expected status. Used to verify api_key security accepts the key only in the API's
+     * configured header (e.g. a custom {@code Custom-ApiKey-Header}) and rejects it in the default {@code ApiKey}.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using api key {string} in header {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUsingKeyInHeaderUntilStatus(String context, String httpMethod, String apiKey,
+                                                              String headerName, int expectedStatus,
+                                                              int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                String actualKey = TestContext.resolve(apiKey).toString();
+                String endpointUrl = getBaseGatewayUrl()
+                        + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+                Map<String, String> headers = new HashMap<>();
+                headers.put("accept", "application/json");
+                headers.put(headerName, actualKey);
+                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only.
             }
             Thread.sleep(2000);
         } while (System.currentTimeMillis() < endTime);

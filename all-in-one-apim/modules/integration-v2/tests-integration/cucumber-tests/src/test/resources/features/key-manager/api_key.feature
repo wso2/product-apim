@@ -266,3 +266,65 @@ Feature: Key Manager API Key
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  @cap:key-manager @feat:api-key @rule:custom-header @type:regression @dep:gateway @legacy:CustomHeaderTestCase
+  Scenario Outline: An API key is accepted only in the API's configured custom api-key header as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_apikeyheader_api.json" as "createdApiId" and deployed it
+    When I retrieve the "apis" resource with id "createdApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "createdApiPayload"
+
+    # Enable the api_key security scheme
+    When I update the "apis" resource "createdApiId" and "createdApiPayload" with configuration type "securityScheme" and value:
+      """
+      ["api_key", "oauth_basic_auth_api_key_mandatory", "oauth2"]
+      """
+    Then The response status code should be 200
+    # Set the custom api-key header on the API (a dedicated PUT, mirroring the legacy setApiKeyHeader)
+    When I retrieve the "apis" resource with id "createdApiId"
+    And I put the response payload in context as "createdApiPayload2"
+    When I update the "apis" resource "createdApiId" and "createdApiPayload2" with configuration type "apiKeyHeader" and value:
+      """
+      Custom-ApiKey-Header
+      """
+    Then The response status code should be 200
+    # (The publisher GET does not always echo apiKeyHeader back in its representation, so we don't assert it
+    #  here — the gateway invocation below is the real proof the header took effect.)
+    When I retrieve the "apis" resource with id "createdApiId"
+    And I extract response field "context" and store it as "apiContext"
+    When I deploy the API with id "createdApiId"
+    Then The response status code should be 201
+    And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    When I publish the "apis" resource with id "createdApiId"
+    Then The lifecycle status of API "createdApiId" should be "Published"
+
+    # Subscribe an application and generate an API key
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "createdApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "subscriptionId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "apiKeyGenerationPayload"
+    """
+    {"keyName": "CustomHeaderApiKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
+    """
+    And I request an api key for application id "createdAppId" using payload "apiKeyGenerationPayload"
+    Then The response status code should be 200
+
+    # The key in the API's configured custom header -> accepted (200).
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "Custom-ApiKey-Header" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # The same key in the default ApiKey header -> rejected (401).
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "ApiKey" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

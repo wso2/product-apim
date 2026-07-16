@@ -99,6 +99,17 @@ public final class ResourceCleanup {
         TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), Identity.actingActorRef()));
     }
 
+    /**
+     * Drops a previously-registered id from the teardown sweep — for a resource a test deletes itself mid-scenario
+     * (e.g. a common operation policy in an export/delete/import round-trip), so the later sweep does not attempt a
+     * spurious delete of an already-gone id and log a misleading 404. Matches on id only. No-op if not present.
+     */
+    public static void deregister(String listKey, Object id) {
+        String target = String.valueOf(id);
+        TestContext.getList(listKey).removeIf(entry ->
+                entry instanceof OwnedResource && ((OwnedResource) entry).id().equals(target));
+    }
+
     /** Deletes all registered applications then APIs from the context's current scope. No-op if no baseUrl. */
     public static void deleteRegisteredResources() {
 
@@ -109,7 +120,7 @@ public final class ResourceCleanup {
 
         // Nothing was registered (e.g. a framework-probe block that boots a container but creates no resources
         // and never sets an acting actor). Skip before resolving any actor-scoped token key — doing so would
-        // call Identity.defaultActor() and fail with "Tenant not found in context" for an actor-less block.
+        // call Identity.actingActor() and fail with "Tenant not found in context" for an actor-less block.
         if (TestContext.getList(Constants.CREATED_APPLICATION_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_API_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_OPERATION_POLICY_IDS).isEmpty()
@@ -125,6 +136,7 @@ public final class ResourceCleanup {
                 && TestContext.getList(Constants.CREATED_KEY_MANAGER_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_DENY_POLICY_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_ORGANIZATION_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_API_CATEGORY_IDS).isEmpty()
                 && TestContext.getList(CREATED_AI_PROVIDER_IDS).isEmpty()
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
                 && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()) {
@@ -197,6 +209,12 @@ public final class ResourceCleanup {
             // path; this sweep is the failure-safe backstop and idempotently 404s on the already-deleted ones.
             deleteResources(Constants.CREATED_ORGANIZATION_IDS, Identity::adminTokenKey,
                     id -> Utils.getOrganizationByIdURL(baseUrl, id));
+            // API categories (admin, tenant-global) AFTER the APIs — deleting a category that an API still
+            // references is not FK-blocked (APIM detaches it, returns 200), but sweeping after the APIs keeps the
+            // ordering consistent. The api-categories feature also deletes its category inline; this is the
+            // failure-safe backstop and idempotently 404s on the already-deleted ones.
+            deleteResources(Constants.CREATED_API_CATEGORY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getApiCategoryByIdURL(baseUrl, id));
             // BYO OAuth clients registered via DCR: swept separately because they authenticate with the owner's
             // Basic credentials (not a bearer token) and are not removed by the DevPortal application's deletion.
             deleteDcrClients(baseUrl);
@@ -216,6 +234,7 @@ public final class ResourceCleanup {
             TestContext.remove(Constants.CREATED_KEY_MANAGER_IDS);
             TestContext.remove(Constants.CREATED_DENY_POLICY_IDS);
             TestContext.remove(Constants.CREATED_ORGANIZATION_IDS);
+            TestContext.remove(Constants.CREATED_API_CATEGORY_IDS);
             TestContext.remove(CREATED_AI_PROVIDER_IDS);
             TestContext.remove(CREATED_MCP_SERVER_IDS);
             TestContext.remove(CREATED_DCR_CLIENT_IDS);

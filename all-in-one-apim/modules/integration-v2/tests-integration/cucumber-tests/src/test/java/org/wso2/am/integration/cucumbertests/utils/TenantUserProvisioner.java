@@ -185,6 +185,43 @@ public final class TenantUserProvisioner {
     }
 
     /**
+     * Adds an (empty) internal role to the given tenant's user store via the RemoteUserStoreManagerService SOAP
+     * {@code addRole} operation (authenticated as the tenant admin), skipping creation if the role already
+     * exists. Enabler for access-control tests: an API restricted to a role can only be authored/exported by a
+     * user carrying that role. Idempotent: a duplicate {@code addRole} is a 2xx no-op (not a fault); any non-2xx
+     * (auth/service error) fails fast.
+     *
+     * @param tenantDomain the tenant to create the role in
+     * @param roleName     the (unqualified) role name (e.g. {@code apiAccessRole})
+     */
+    public static void addRole(String tenantDomain, String roleName) throws IOException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<ser:addRole>" +
+                "<ser:roleName>" + roleName + "</ser:roleName>" +
+                "</ser:addRole>" +
+                "</soapenv:Body></soapenv:Envelope>";
+
+        String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:addRole",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        // The RemoteUserStoreManagerService addRole returns 2xx (202 Accepted) for BOTH a fresh role and a
+        // duplicate — a duplicate is a no-op, not a SOAP fault (verified: create and duplicate both return 202
+        // with an empty body). So any 2xx is success/idempotent; a non-2xx (auth failure, service down, or a
+        // genuine UserStoreException) is a real provisioning error and must fail fast rather than be silently
+        // swallowed (which would surface later as a confusing "role not found").
+        int code = response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException("addRole for '" + roleName + "' in tenant '" + tenantDomain + "' failed with "
+                    + code + ": " + response.getData());
+        }
+    }
+
+    /**
      * Polls the Tenant Management Admin Service until it answers 200, closing the race between gateway
      * readiness ({@link ServerReadiness#awaitReady}) and admin-service deployment: the gateway health-check
      * can pass seconds before the SOAP admin services finish deploying, so firing provisioning immediately
@@ -274,4 +311,220 @@ public final class TenantUserProvisioner {
         return Utils.getNodeTextsByXPath(response.getData(),
                 "//*[local-name()='listUsersResponse']/*[local-name()='return']");
     }
+
+    /**
+     * Sets a single user-profile claim value on an existing user via the RemoteUserStoreManagerService SOAP
+     * {@code setUserClaimValue} operation (authenticated as the tenant admin). Used to populate profile claims
+     * (givenname / lastname / mobile / organization) that a downstream flow expects to surface — e.g. in the
+     * backend JWT. {@code username} is the bare user name (no tenant suffix for the super tenant).
+     *
+     * @param tenantDomain the tenant the user belongs to
+     * @param username     bare user name (the user store user, without an {@code @tenant} suffix)
+     * @param claimUri     the local claim URI (e.g. {@code http://wso2.org/claims/mobile})
+     * @param claimValue   the value to set
+     */
+    public static void setUserClaimValue(String tenantDomain, String username, String claimUri, String claimValue)
+            throws IOException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<ser:setUserClaimValue>" +
+                "<ser:userName>" + username + "</ser:userName>" +
+                "<ser:claimURI>" + claimUri + "</ser:claimURI>" +
+                "<ser:claimValue>" + claimValue + "</ser:claimValue>" +
+                "<ser:profileName>default</ser:profileName>" +
+                "</ser:setUserClaimValue>" +
+                "</soapenv:Body></soapenv:Envelope>";
+
+        String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:setUserClaimValue",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        // setUserClaimValue is a void SOAP operation: Axis2 answers 202 Accepted (no response body) on success;
+        // a SOAP fault would be 500. Accept either 2xx-with-no-body form. The real verification that the claim
+        // actually took is the downstream assertion (e.g. the claim appearing in the backend JWT).
+        int code = response.getResponseCode();
+        Assert.assertTrue(code == 200 || code == 202,
+                "setUserClaimValue for " + claimUri + " failed (" + code + "): " + response.getData());
+    }
+
+    /**
+     * Registers an OIDC external claim (ClaimMetadataManagementService {@code addExternalClaim}) mapping an OIDC
+     * dialect claim to a local claim, so a non-standard claim (e.g. mobile, organization) can be requested and
+     * surfaced. Tolerant of a 500 "already exists" fault (idempotent across a shared container). Ports part of
+     * the legacy createClaimMapping.
+     */
+    public static void addOidcExternalClaim(String tenantDomain, String oidcClaimUri, String localClaimUri)
+            throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:xsd=\"http://org.apache.axis2/xsd\" " +
+                "xmlns:dto=\"http://dto.mgt.metadata.claim.identity.carbon.wso2.org/xsd\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<xsd:addExternalClaim><xsd:externalClaim>" +
+                "<dto:externalClaimDialectURI>http://wso2.org/oidc/claim</dto:externalClaimDialectURI>" +
+                "<dto:externalClaimURI>" + oidcClaimUri + "</dto:externalClaimURI>" +
+                "<dto:mappedLocalClaimURI>" + localClaimUri + "</dto:mappedLocalClaimURI>" +
+                "</xsd:externalClaim></xsd:addExternalClaim>" +
+                "</soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getClaimMetadataManagementServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:addExternalClaim",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        int code = response.getResponseCode();
+        boolean alreadyExists = response.getData() != null && response.getData().toLowerCase().contains("already");
+        Assert.assertTrue(code == 200 || code == 202 || alreadyExists,
+                "addExternalClaim " + oidcClaimUri + " failed (" + code + "): " + response.getData());
+    }
+
+    /**
+     * Binds OIDC claims to an OAuth scope (OAuthAdminService {@code updateScope}), so requesting that scope
+     * returns those claims. Ports the {@code updateScope("openid", ...)} part of the legacy createClaimMapping.
+     */
+    public static void updateOidcScopeClaims(String tenantDomain, String scope, String[] addClaims)
+            throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        StringBuilder claimsXml = new StringBuilder();
+        for (String c : addClaims) {
+            claimsXml.append("<xsd:addClaims>").append(c).append("</xsd:addClaims>");
+        }
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<xsd:updateScope><xsd:scope>" + scope + "</xsd:scope>" + claimsXml + "</xsd:updateScope>" +
+                "</soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getOAuthAdminServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:updateScope",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        int code = response.getResponseCode();
+        Assert.assertTrue(code == 200 || code == 202,
+                "updateScope " + scope + " failed (" + code + "): " + response.getData());
+    }
+
+    /**
+     * Resolves the service-provider (application) name backing an OAuth consumer key, via OAuthAdminService
+     * {@code getOAuthApplicationData} (SOAP). The SP name is NOT the DevPortal application name — it is a
+     * generated name only obtainable from the OAuth app data. Needed before getApplication/updateApplication.
+     */
+    public static String getSpNameByConsumerKey(String tenantDomain, String consumerKey) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<xsd:getOAuthApplicationData><xsd:consumerKey>" + consumerKey + "</xsd:consumerKey>" +
+                "</xsd:getOAuthApplicationData>" +
+                "</soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getOAuthAdminServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload,
+                "urn:getOAuthApplicationData", tenant.getTenantAdmin().getUserName(),
+                tenant.getTenantAdmin().getPassword());
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("<[^>]*applicationName>([^<]*)</[^>]*applicationName>").matcher(response.getData());
+        // Body omitted from the message — the getOAuthApplicationData response carries the OAuth consumer
+        // secret and must not reach CI logs; the status code is enough to diagnose a failed lookup.
+        Assert.assertTrue(m.find(),
+                "Could not resolve SP name from getOAuthApplicationData (HTTP " + response.getResponseCode() + ")");
+        return m.group(1);
+    }
+
+    /**
+     * Retrieves an OAuth service provider's full representation via IdentityApplicationManagementService
+     * {@code getApplication} (SOAP, super-tenant admin). Returns the raw response body. Used to round-trip the
+     * ServiceProvider when adding requested-claim mappings (the backend JWT only surfaces claims the SP requests).
+     */
+    public static String getServiceProvider(String tenantDomain, String spName) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<xsd:getApplication><xsd:applicationName>" + spName + "</xsd:applicationName></xsd:getApplication>" +
+                "</soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getIdentityApplicationManagementServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:getApplication",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        // Log only the SP name and status — the getApplication body carries the OAuth consumer secret and must
+        // not be written to CI output.
+        logger.info("getApplication(" + spName + ") -> " + response.getResponseCode());
+        return response.getData();
+    }
+
+    /**
+     * Configures the OAuth service provider (resolved from {@code consumerKey}) to REQUEST the given local user
+     * claims, so the backend JWT includes them. The APIM backend JWT only surfaces claims the SP requests, so the
+     * SP's ClaimConfig must carry a requested+mandatory claim mapping per URI. Done by round-tripping the full
+     * ServiceProvider (IdentityApplicationManagementService getApplication → updateApplication) so the OAuth
+     * inbound-auth binding and every other field are preserved; only the claimConfig element is replaced in place
+     * (localClaimDialect=false + one requested/mandatory mapping per claim). Ports the legacy
+     * updateServiceProviderWithRequiredClaims.
+     */
+    public static void addRequestedClaimsToServiceProvider(String tenantDomain, String consumerKey,
+                                                           String[] claimUris) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        String spName = getSpNameByConsumerKey(tenantDomain, consumerKey);
+        String getResp = getServiceProvider(tenantDomain, spName);
+
+        // Extract <p:return ATTRS>INNER</p:return> — ATTRS carries the SP's namespace declarations + xsi:type.
+        java.util.regex.Matcher rm = java.util.regex.Pattern
+                .compile("<(\\w+):return\\b([^>]*)>(.*)</\\1:return>", java.util.regex.Pattern.DOTALL)
+                .matcher(getResp);
+        // Body omitted from the message — getResp (the getApplication ServiceProvider body) carries the OAuth
+        // consumer secret and must not reach CI logs (see getServiceProvider); the SP name is enough to diagnose.
+        Assert.assertTrue(rm.find(), "getApplication returned no service provider for " + spName);
+        // Keep the return element's xmlns declarations but DROP its top-level xsi:type="...ServiceProvider":
+        // the updateApplication schema already types the serviceProvider param as ServiceProvider, and a
+        // self-referential xsi:type on it makes Axis2 ADB recurse resolving the type extension -> StackOverflowError.
+        String spAttrs = rm.group(2).replaceAll("\\s+xsi:type=\"[^\"]*\"", "");
+        String inner = rm.group(3);
+
+        // The model-namespace prefix (e.g. ax2231) is generated per response — capture it dynamically.
+        java.util.regex.Matcher pm = java.util.regex.Pattern
+                .compile("xmlns:(\\w+)=\"http://model\\.common\\.application\\.identity\\.carbon\\.wso2\\.org/xsd\"")
+                .matcher(spAttrs);
+        String ax = pm.find() ? pm.group(1) : "ax2231";
+
+        StringBuilder mappings = new StringBuilder();
+        for (String uri : claimUris) {
+            mappings.append("<").append(ax).append(":claimMappings xsi:type=\"").append(ax).append(":ClaimMapping\">")
+                    .append("<").append(ax).append(":localClaim xsi:type=\"").append(ax).append(":Claim\"><")
+                    .append(ax).append(":claimUri>").append(uri).append("</").append(ax).append(":claimUri></")
+                    .append(ax).append(":localClaim>")
+                    .append("<").append(ax).append(":mandatory>true</").append(ax).append(":mandatory>")
+                    .append("<").append(ax).append(":remoteClaim xsi:type=\"").append(ax).append(":Claim\"><")
+                    .append(ax).append(":claimUri>").append(uri).append("</").append(ax).append(":claimUri></")
+                    .append(ax).append(":remoteClaim>")
+                    .append("<").append(ax).append(":requested>true</").append(ax).append(":requested>")
+                    .append("</").append(ax).append(":claimMappings>");
+        }
+        // ClaimConfig children in ADB (alphabetical) order: alwaysSendMappedLocalSubjectId, claimMappings,
+        // localClaimDialect, roleClaimURI, userClaimURI. localClaimDialect=false so the explicit mappings apply.
+        String newClaimConfig = "<" + ax + ":claimConfig xsi:type=\"" + ax + ":ClaimConfig\">"
+                + "<" + ax + ":alwaysSendMappedLocalSubjectId>false</" + ax + ":alwaysSendMappedLocalSubjectId>"
+                + mappings
+                + "<" + ax + ":localClaimDialect>false</" + ax + ":localClaimDialect>"
+                + "<" + ax + ":roleClaimURI xsi:nil=\"true\"/><" + ax + ":userClaimURI xsi:nil=\"true\"/>"
+                + "</" + ax + ":claimConfig>";
+
+        // (?s) DOTALL so .*? spans a claimConfig body that may contain newlines (matches the <return> extraction
+        // above); the reluctant quantifier + non-nesting claimConfig keeps it matching exactly one element.
+        String newInner = inner.replaceAll("(?s)<" + ax + ":claimConfig\\b[^>]*>.*?</" + ax + ":claimConfig>",
+                java.util.regex.Matcher.quoteReplacement(newClaimConfig));
+        Assert.assertNotEquals(newInner, inner, "claimConfig element not found/replaced in the service provider");
+        // Drop ALL xsi:type hints (keep xsi:nil): every field is a concrete type inferable from its element
+        // name, and the xsi:type extension resolution is what makes Axis2 ADB recurse -> StackOverflowError.
+        newInner = newInner.replaceAll("\\s+xsi:type=\"[^\"]*\"", "");
+
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<xsd:updateApplication><xsd:serviceProvider" + spAttrs + ">" + newInner +
+                "</xsd:serviceProvider></xsd:updateApplication>" +
+                "</soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getIdentityApplicationManagementServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:updateApplication",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        int code = response.getResponseCode();
+        Assert.assertTrue(code == 200 || code == 202,
+                "updateApplication (requested claims) failed (" + code + "): " + response.getData());
+    }
+
 }

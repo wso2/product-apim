@@ -232,4 +232,18 @@ router.post('/failover-target/v1/chat/completions', (req, res) => {
   res.status(429).json({ error: 'model endpoint rate-limited (failover target)' });
 });
 
+// GET /location-abs — responds with an ABSOLUTE Location header (host + /abc/domain). Verifies the gateway
+// forwards the backend Location header without inserting a doubled slash (LocationHeaderTestCase).
+router.get('/location-abs', (req, res) => {
+  res.set('Location', 'http://localhost/abc/domain');
+  res.status(200).send('ok');
+});
+
+// GET /location-rel — responds with a RELATIVE Location header (/abc/domain). Verifies the gateway preserves a
+// relative Location header (RelativeUrlLocationHeaderTestCase).
+router.get('/location-rel', (req, res) => {
+  res.set('Location', '/abc/domain');
+  res.status(200).send('ok');
+});
+
 module.exports = router;

@@ -93,7 +93,7 @@ public final class Identity {
      * The actor the current scenario is acting as: the one set by {@link #setActingActor}, or the super-tenant
      * admin if none was set. This is the default for all no-arg token lookups.
      */
-    public static User defaultActor() {
+    public static User actingActor() {
         Object ref = TestContext.get(ACTING_ACTOR_KEY);
         return resolveActor(ref == null ? null : ref.toString());
     }
@@ -119,7 +119,7 @@ public final class Identity {
      * deployment status, which a least-privilege publisher actor cannot authenticate against.
      */
     public static User actingTenantAdmin() {
-        return tenantOf(defaultActor()).getTenantAdmin();
+        return tenantOf(actingActor()).getTenantAdmin();
     }
 
     public static String dcrCredentialsKey(User actor) {
@@ -144,7 +144,7 @@ public final class Identity {
 
     /** Reads the cached Publisher token for the default actor (super-tenant admin). */
     public static String publisherToken() {
-        return publisherToken(defaultActor());
+        return publisherToken(actingActor());
     }
 
     public static String publisherToken(User actor) {
@@ -153,7 +153,7 @@ public final class Identity {
 
     /** Reads the cached DevPortal token for the default actor (super-tenant admin). */
     public static String devportalToken() {
-        return devportalToken(defaultActor());
+        return devportalToken(actingActor());
     }
 
     public static String devportalToken(User actor) {
@@ -162,7 +162,7 @@ public final class Identity {
 
     /** Reads the cached Admin token for the default actor (super-tenant admin). */
     public static String adminToken() {
-        return adminToken(defaultActor());
+        return adminToken(actingActor());
     }
 
     public static String adminToken(User actor) {
@@ -171,7 +171,7 @@ public final class Identity {
 
     /** Reads the cached Governance token for the acting actor. */
     public static String governanceToken() {
-        return governanceToken(defaultActor());
+        return governanceToken(actingActor());
     }
 
     public static String governanceToken(User actor) {

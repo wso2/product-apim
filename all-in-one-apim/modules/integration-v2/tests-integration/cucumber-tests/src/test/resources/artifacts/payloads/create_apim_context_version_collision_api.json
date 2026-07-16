@@ -1,0 +1,32 @@
+{
+  "name": "${UNIQUE:CtxVerCollisionAPI}",
+  "context": "${UNIQUE:ctxVerCollisionGeneral}/v1",
+  "version": "v1",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API whose context tail equals its version (context .../v1, version v1), set as default version, to prove versionless default routing disambiguates the URL (APIMANAGER context==version edge).",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}
