@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api;
 
+import com.nimbusds.jose.util.Base64;
 import org.codehaus.plexus.util.StringUtils;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -32,8 +33,11 @@ import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.File;
+import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,6 +49,7 @@ public class APICreationTestCase extends APIManagerLifecycleBaseTest {
     private String apiId;
     private String apiIdAPK;
     private String apiIdSynapse;
+    private String apiIdDuplicateAPI;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APICreationTestCase(TestUserMode userMode) {
@@ -132,9 +137,59 @@ public class APICreationTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(addedGatewayType, "wso2/synapse", "Gateway type is not set as expected");
     }
 
+    // verifies https://github.com/wso2/api-manager/issues/5116
+    @Test(groups = {"wso2.am"}, description = "Test creating duplicate APIs with same name and context by different users")
+    public void testCreateDuplicateAPIs() throws Exception {
+        // Create API with admin user token
+        APIRequest apiRequest = new APIRequest("TestAM5116", "test-am5116/{version}", new URL(apiEndpointUrl));
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setProvider(user.getUserName());
+        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+        apiIdDuplicateAPI = apiResponse.getData();
+        Assert.assertEquals(apiResponse.getResponseCode(), 201);
+
+        // Generate credentials for non-admin user and create the same API above
+        String[] userRoles = { APIMIntegrationConstants.APIM_INTERNAL_ROLE.CREATOR };
+        String username = "user5116";
+        String password = "user5116";
+        userManagementClient.addUser(username, password, userRoles, username);
+        String basicAuthCredentials =  username + "@" + user.getUserDomain()+ ":" + password;
+        String authHeader = "Basic " + Base64.encode(basicAuthCredentials.getBytes(StandardCharsets.UTF_8));
+
+        URL url = new URL(publisherURLHttps + "api/am/publisher/v4/apis");
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+
+        String payload = "{" +
+                "\"name\": \"TestAM5116\"," +
+                "\"context\": \"/test-am5116/{version}\"," +
+                "\"version\": \"" + API_VERSION_1_0_0 + "\"," +
+                "\"provider\": \"" + user.getUserName() + "\"," +
+                "\"type\": \"HTTP\"," +
+                "\"lifeCycleStatus\": \"CREATED\"" +
+                "}";
+
+        connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER, authHeader);
+        connection.setRequestProperty("Content-Type", APIMIntegrationConstants.APPLICATION_JSON_MEDIA_TYPE);
+        connection.setRequestProperty("Accept", APIMIntegrationConstants.APPLICATION_JSON_MEDIA_TYPE);
+
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = payload.getBytes(StandardCharsets.UTF_8);
+            os.write(input);
+        }
+
+        int status = connection.getResponseCode();
+        Assert.assertEquals(status, 409);
+
+        connection.disconnect();
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
         restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(apiIdDuplicateAPI);
     }
 }
