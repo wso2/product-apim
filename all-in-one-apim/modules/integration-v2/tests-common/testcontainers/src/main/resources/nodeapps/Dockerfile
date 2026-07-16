@@ -63,6 +63,8 @@ COPY wildcard ./wildcard
 COPY node-people-service ./node-people-service
 COPY soap-stub ./soap-stub
 COPY mcp-server ./mcp-server
+# network-access-control-fixtures is dependency-free (pure Node http), so it needs no package.json COPY / npm install above.
+COPY network-access-control-fixtures ./network-access-control-fixtures
 
 # 6. Copy PM2 ecosystem config file
 COPY ecosystem.config.js .

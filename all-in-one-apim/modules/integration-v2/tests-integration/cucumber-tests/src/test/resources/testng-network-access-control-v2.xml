@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Focused verification suite for the network access-control port (Phase 1: private-block negatives). Boots ONLY the
+  network-access-control-private-block container so the port can be verified in isolation without the whole v2 suite. Run:
+    mvn test -pl tests-integration/cucumber-tests -am -Dsurefire.suite.xml=testng-network-access-control-v2.xml
+  (from all-in-one-apim/modules/integration-v2; build the images once first with
+   mvn install -pl tests-integration/cucumber-tests -am -DskipTests).
+-->
+<suite name="Integration Tests v2 - Network Access Control" parallel="tests" thread-count="1">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.CoverageAggregationListener"/>
+    </listeners>
+    <test name="IntegrationV2-NetworkAccessControlPrivateBlock" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="network-access-control-private-block"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlPrivateBlock/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlRefsPrivateBlockRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlWsdlPrivateBlockRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-NetworkAccessControlAllow" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="network-access-control-allow"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlAllow/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlAllowRunner"/>
+        </classes>
+    </test>
+</suite>

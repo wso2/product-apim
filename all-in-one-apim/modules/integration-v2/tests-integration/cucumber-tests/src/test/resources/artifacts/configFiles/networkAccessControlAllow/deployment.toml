@@ -1,0 +1,10 @@
+# Network access-control ALLOW-mode policy for the network access-control port (the network-access-control-allow container).
+# Merged on top of (distribution + basic) via the block's tomlExtraOverlayPath parameter.
+#
+# mode="allow" with the in-network fixtures host allow-listed: a remote reference to
+# http://nodebackend:3021/... is permitted and actually fetched (the positive control), while any other
+# host - including a nested reference from that allow-listed document to a loopback address - stays blocked.
+# Ports the old safeRefResolutionAllow overlay (SafeRefResolutionAllowTestSuite; there hosts=["127.0.0.1"]).
+[apim.network_security.access_control]
+mode = "allow"
+hosts = ["nodebackend"]

@@ -253,4 +253,29 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.RemoteLoggingRunner"/>
         </classes>
     </test>
+    <!-- Network access-control: outbound remote-reference host validation. Own block —
+         the [apim.network_security.access_control] deny + block-private-network policy is non-orthogonal
+         config. No gateway backend: the blocked-host references are rejected before any fetch, so no
+         allow-listed backend is needed for these negatives (the allow-mode positives are a later block). -->
+    <test name="IntegrationV2-NetworkAccessControlPrivateBlock" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="network-access-control-private-block"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlPrivateBlock/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlRefsPrivateBlockRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlWsdlPrivateBlockRunner"/>
+        </classes>
+    </test>
+    <!-- Network access-control allow-mode positive controls. Own block: the allow-mode policy (nodebackend
+         allow-listed) is non-orthogonal config, and it needs the node fixtures backend (initBackend) to serve
+         the allow-listed schema so the positive-control reference actually resolves. -->
+    <test name="IntegrationV2-NetworkAccessControlAllow" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="network-access-control-allow"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlAllow/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlAllowRunner"/>
+        </classes>
+    </test>
 </suite>

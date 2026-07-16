@@ -2265,6 +2265,39 @@ public class PublisherBaseSteps {
         }
     }
 
+    /**
+     * Attempts to import a SOAP API from a WSDL ARCHIVE (.zip whose master {@code service.wsdl} may nest an
+     * {@code <xsd:import>}) — POST /apis/import-wsdl, multipart {@code file} (the .zip) + {@code additionalProperties}
+     * (name/context/version, ${UNIQUE} resolved) + {@code implementationType=SOAP}. Non-asserting — the feature
+     * asserts the status (a nested import to a blocked host → 400 "not trusted"); nothing is created/registered
+     * on failure. Ports the import-wsdl half of HostValidationWsdlNestedImportTestCase.
+     *
+     * @param archivePath    classpath path to the .zip WSDL archive
+     * @param additionalData classpath path to the additional-properties JSON
+     */
+    @When("I attempt to import wsdl from archive {string} with additional properties {string}")
+    public void iAttemptImportWsdlFromArchive(String archivePath, String additionalData) throws IOException {
+
+        File archiveFile = loadResourceAsTempFile(archivePath, ".zip");
+        String additionalProperties;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Additional properties file not found: " + additionalData);
+            }
+            additionalProperties = Utils.resolvePayloadPlaceholders(
+                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archiveFile);
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("additionalProperties", additionalProperties);
+        formFields.put("implementationType", "SOAP");
+        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(getBaseUrl()), headers, files,
+                formFields);
+    }
+
     /** Loads a classpath resource into a temp .json file (for multipart OAS upload). */
     private File loadJsonResourceAsTempFile(String resourcePath) throws IOException {
         return loadResourceAsTempFile(resourcePath, ".json");
