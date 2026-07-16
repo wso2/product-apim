@@ -133,6 +133,7 @@
             <class name="org.wso2.am.integration.tests.other.APICreationForTenantsTestCase" />
             <class name="org.wso2.am.integration.tests.operationPolicy.JWTClaimBasedAccessValidatorPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.operationPolicy.ContentAwareMediationPolicyEmptyBodyTestCase"/>
+            <class name="org.wso2.am.integration.tests.operationPolicy.ContentAwareMediationPolicyResponseFlowTestCase"/>
         </classes>
     </test>
 
