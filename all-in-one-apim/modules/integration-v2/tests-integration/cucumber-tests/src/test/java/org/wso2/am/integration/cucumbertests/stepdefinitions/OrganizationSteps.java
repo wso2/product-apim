@@ -230,6 +230,59 @@ public class OrganizationSteps {
     }
 
     /**
+     * Provisions an (empty) internal role in the acting actor's tenant (SOAP addRole). Enabler for access-control
+     * tests: an API restricted to a role can only be authored/exported by users carrying it. Idempotent.
+     *
+     * @param roleName the (unqualified) role name to create
+     */
+    @When("I provision role {string}")
+    public void iProvisionRole(String roleName) throws Exception {
+
+        String tenantDomain = Identity.actingActor().getUserDomain();
+        TenantUserProvisioner.addRole(tenantDomain, roleName);
+    }
+
+    /** Tenant variant of {@link #iProvisionRole}. */
+    @When("I provision role {string} in tenant {string}")
+    public void iProvisionRoleInTenant(String roleName, String tenantDomain) throws Exception {
+
+        TenantUserProvisioner.addRole(tenantDomain, roleName);
+    }
+
+    /**
+     * Registers the OIDC user-profile claim mappings (mobile/organization external claims) and binds the
+     * profile claims to the {@code openid} scope, in the given tenant — so a token requesting {@code openid}
+     * surfaces those claims. Ports the claim-mapping setup of JWTTestCase's user-profile-claims case.
+     */
+    @When("I register the OIDC user-profile claim mappings and scope in tenant {string}")
+    public void iRegisterOidcClaims(String tenantDomain) throws Exception {
+        TenantUserProvisioner.addOidcExternalClaim(tenantDomain, "mobile", "http://wso2.org/claims/mobile");
+        TenantUserProvisioner.addOidcExternalClaim(tenantDomain, "organization", "http://wso2.org/claims/organization");
+        TenantUserProvisioner.updateOidcScopeClaims(tenantDomain, "openid",
+                new String[] {"given_name", "family_name", "mobile", "organization"});
+    }
+
+    /** Sets a user-profile claim value on a user (RemoteUserStoreManagerService setUserClaimValue) in a tenant. */
+    @When("I set the user claim {string} to {string} for user {string} in tenant {string}")
+    public void iSetUserClaim(String claimUri, String claimValue, String username, String tenantDomain)
+            throws Exception {
+        TenantUserProvisioner.setUserClaimValue(tenantDomain, Utils.resolveContextPlaceholders(username), claimUri,
+                Utils.resolveContextPlaceholders(claimValue));
+    }
+
+    /**
+     * Configures the OAuth service provider backing {@code consumerKey} to REQUEST the user-profile claims (the
+     * backend JWT only surfaces claims the SP requests), in the given tenant.
+     */
+    @When("I configure the service provider for consumer key {string} to request the user-profile claims in tenant {string}")
+    public void iRequestUserProfileClaims(String consumerKeyRef, String tenantDomain) throws Exception {
+        String ck = TestContext.resolve(consumerKeyRef).toString();
+        TenantUserProvisioner.addRequestedClaimsToServiceProvider(tenantDomain, ck,
+                new String[] {"http://wso2.org/claims/givenname", "http://wso2.org/claims/lastname",
+                        "http://wso2.org/claims/mobile", "http://wso2.org/claims/organization"});
+    }
+
+    /**
      * Sets an API's {@code visibleOrganizations} (GET the publisher API → replace the field → PUT). The value is
      * {@code none}, {@code all}, or an organization UUID (resolves {@code {{...}}}). Uses the acting actor's
      * publisher token. Non-asserting.

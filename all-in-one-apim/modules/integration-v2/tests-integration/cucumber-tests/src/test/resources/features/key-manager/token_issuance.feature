@@ -120,3 +120,61 @@ Feature: Key Manager Token Issuance
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  @cap:key-manager @feat:token-issuance @rule:scope-in-token @type:regression @legacy:TokenEncryptionScopeTestCase
+  Scenario Outline: A requested shared scope is granted in the issued token as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I create a new shared scope as "encTokenScope"
+    Then The response status code should be 201
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "encApiCreate"
+    And I create an "apis" resource with payload "encApiCreate" as "encApiId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "encApiId"
+    And I put the response payload in context as "encApiPayload"
+    When I update the "apis" resource "encApiId" and "encApiPayload" with configuration type "scopes" and value:
+      """
+      [{"shared":true,"scope":{"name":"encTokenScope","displayName":"encTokenScope","description":"scope in token","bindings":["admin"]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "encApiId"
+    And I put the response payload in context as "encApiPayload"
+    When I update the "apis" resource "encApiId" and "encApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["encTokenScope"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "encRevPayload"
+    """
+    {"description":"scope revision"}
+    """
+    And I make a request to create a revision for "apis" resource "encApiId" with payload "encRevPayload"
+    When I put the following JSON payload in context as "encDeployPayload"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
+    """
+    And I make a request to deploy revision "revisionId" of "apis" resource "encApiId" with payload "encDeployPayload"
+    When I publish the "apis" resource with id "encApiId"
+    Then The lifecycle status of API "encApiId" should be "Published"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "encAppPayload"
+    And I create an application with payload "encAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "encKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "encKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "encSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "encApiId" using application "createdAppId" with payload "encSubPayload" as "encSubId"
+    Then The response status code should be 201
+    When I request an OAuth access token for the current user using password grant with scope "encTokenScope"
+    Then The response status code should be 200
+    And The response should contain "encTokenScope"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

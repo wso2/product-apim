@@ -1,0 +1,17 @@
+{
+  "name": "${UNIQUE:APIMApiKeyHeader}",
+  "context": "${UNIQUE:apiApiKeyHeaderCtx}",
+  "version": "1.0.0",
+  "apiKeyHeader": "Custom-ApiKey-Header",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": { "template_not_supported": false, "config": null, "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/" },
+    "sandbox_endpoints": { "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/", "config": null, "template_not_supported": false }
+  },
+  "description": "API declaring a custom api-key header (apiKeyHeader) for the custom-api-key-header test",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [ { "verb": "GET", "target": "/customers/{id}", "scopes": [] } ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

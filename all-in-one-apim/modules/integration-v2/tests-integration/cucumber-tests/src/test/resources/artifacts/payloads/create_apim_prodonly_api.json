@@ -1,0 +1,19 @@
+{
+  "name": "${UNIQUE:APIMProdOnly}",
+  "context": "${UNIQUE:apiProdOnlyContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/prod"
+    }
+  },
+  "description": "API with only a production endpoint (no sandbox) for the sandbox-key negative",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [{ "verb": "GET", "target": "/x", "scopes": [] }],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}
