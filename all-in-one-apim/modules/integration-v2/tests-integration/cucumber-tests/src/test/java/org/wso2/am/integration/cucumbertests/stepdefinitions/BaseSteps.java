@@ -483,6 +483,30 @@ public class BaseSteps {
     }
 
     /**
+     * Loads a JSON object from a classpath file and sets it as a nested-object field on a JSON payload already
+     * in context (writing it back under the same key). The counterpart to {@link #iSetFieldInPayload} for when
+     * the value is itself a JSON object rather than a scalar string — e.g. injecting a
+     * {@code NetworkSecurityAccessControl} policy block into a captured tenant configuration before PUTting it
+     * back.
+     *
+     * @param field      the top-level JSON field to set
+     * @param filepath   classpath path to a JSON file whose parsed object becomes the field value
+     * @param contextKey the context key holding the JSON payload to mutate
+     */
+    @When("I set the JSON object field {string} from file {string} in the payload {string}")
+    public void iSetJsonObjectFieldFromFile(String field, String filepath, String contextKey) throws IOException {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filepath)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("File not found on classpath: " + filepath);
+            }
+            JSONObject value = new JSONObject(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+            payload.put(field, value);
+            TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+        }
+    }
+
+    /**
      * Replaces every occurrence of a literal substring in a payload already in context, writing it back under
      * the same key. A text-level edit for cases where a structured setter can't reach — e.g. a field whose value
      * is itself a STRINGIFIED JSON blob (an MCP backend's {@code endpointConfig} is a JSON string, not a nested

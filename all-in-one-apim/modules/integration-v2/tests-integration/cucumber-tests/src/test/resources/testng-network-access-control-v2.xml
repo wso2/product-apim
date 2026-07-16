@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <!--
-  Focused verification suite for the network access-control port (Phase 1: private-block negatives). Boots ONLY the
-  network-access-control-private-block container so the port can be verified in isolation without the whole v2 suite. Run:
+  Focused verification suite for the network access-control tests. Boots the three network-access-control
+  containers (private-block, allow, tenant-conf) so the feature can be verified in isolation without the whole
+  v2 suite. Run:
     mvn test -pl tests-integration/cucumber-tests -am -Dsurefire.suite.xml=testng-network-access-control-v2.xml
   (from all-in-one-apim/modules/integration-v2; build the images once first with
    mvn install -pl tests-integration/cucumber-tests -am -DskipTests).
@@ -20,6 +21,7 @@
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlRefsPrivateBlockRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlWsdlPrivateBlockRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlEntrypointsPrivateBlockRunner"/>
         </classes>
     </test>
     <test name="IntegrationV2-NetworkAccessControlAllow" parallel="classes" thread-count="1">
@@ -29,6 +31,17 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlAllow/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlAllowRunner"/>
+        </classes>
+    </test>
+    <!-- Tenant-conf policy source: NO platform overlay (clean container), so the gate is driven purely by the
+         per-tenant NetworkSecurityAccessControl policy the scenario sets at runtime. Needs the node backend for
+         the no-policy super-tenant positive control. -->
+    <test name="IntegrationV2-NetworkAccessControlTenantConf" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="network-access-control-tenant-conf"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlTenantConfRunner"/>
         </classes>
     </test>
 </suite>

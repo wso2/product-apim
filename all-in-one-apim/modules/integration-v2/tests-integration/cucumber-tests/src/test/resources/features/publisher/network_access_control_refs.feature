@@ -15,6 +15,7 @@ Feature: Publisher Network Access Control - Remote OpenAPI ref resolution
     When I validate the openapi definition from file "<definition>"
     Then The response status code should be 400
     And The response should contain "not trusted"
+    And The response should contain "definition contains a URL that is not trusted"
 
     Examples:
       | actor                     | variant     | definition                                          |
@@ -26,13 +27,17 @@ Feature: Publisher Network Access Control - Remote OpenAPI ref resolution
       | publisherUser@tenant1.com | Swagger 2.0 | artifacts/payloads/networkAccessControl/swagger20_loopback_ref.json |
 
   # Multi-file OpenAPI archive whose master document has a direct reference to a loopback host is blocked
-  # (the archive remote-reference gate rejects it before resolution) - OAS 3.0 and Swagger 2.0.
+  # (the archive remote-reference gate rejects it before resolution) - OAS 3.0 and Swagger 2.0. The import uses
+  # a props file whose backend endpoint is a public IP (8.8.8.8, never contacted) so it passes the policy - the
+  # archive $ref is then the only blockable URL, and asserting the definition-gate message pins the block to that gate
+  # (UNTRUSTED_URL_IN_DEFINITION) rather than the endpoint gate (900405).
   @cap:publisher @feat:network-access-control @rule:archive-ref @type:negative @legacy:SafeRefResolutionTestCase
   Scenario Outline: A loopback reference in a <variant> OpenAPI archive is rejected as not trusted as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I import api from archive "<archive>" with additional properties "artifacts/payloads/archive_additional_properties.json" as "networkAccessControlArchiveApiId"
+    When I import api from archive "<archive>" with additional properties "artifacts/payloads/networkAccessControl/nac_seed_public_props.json" as "networkAccessControlArchiveApiId"
     Then The response status code should be 400
     And The response should contain "not trusted"
+    And The response should contain "definition contains a URL that is not trusted"
 
     Examples:
       | actor                     | variant     | archive                                                |
