@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2026, WSO2 LLC. (http://www.wso2.com).
+  ~
+  ~ WSO2 LLC. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="openai_error_response_formatter">
+   <log level="custom">
+      <property name="STATUS" value="Executing 'openai_error_response_formatter' sequence"/>
+      <property name="API_ERROR_TYPE" expression="get-property('API_ERROR_TYPE')"/>
+      <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
+      <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
+   </log>
+   <switch source="$ctx:API_ERROR_TYPE">
+      <case regex="THROTTLE">
+         <property name="HTTP_SC" value="429" scope="axis2"/>
+      </case>
+      <case regex="THREAT">
+         <property name="ERROR_CODE" expression="$ctx:THREAT_CODE"/>
+         <property name="ERROR_MESSAGE" expression="$ctx:THREAT_MSG"/>
+         <property name="ERROR_DETAIL" expression="$ctx:THREAT_DESC"/>
+         <filter xpath="string-length(normalize-space(get-property('THREAT_CODE'))) &gt; 0">
+            <then>
+               <property name="HTTP_SC" expression="$ctx:THREAT_CODE" scope="axis2" type="STRING"/>
+            </then>
+            <else>
+               <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            </else>
+         </filter>
+      </case>
+      <case regex="RESOURCE_MISMATCH">
+         <property name="HTTP_SC" expression="$ctx:CUSTOM_HTTP_SC" scope="axis2" type="STRING"/>
+         <property name="ERROR_DETAIL" expression="$ctx:ERROR_MESSAGE"/>
+         <property name="ERROR_MESSAGE" value="Runtime Error"/>
+      </case>
+      <case regex="BLOCKED">
+         <property name="ERROR_CODE" value="700700"/>
+         <property name="ERROR_MESSAGE" value="API blocked"/>
+         <property name="ERROR_DETAIL" value="This API has been blocked temporarily. Please try again later or contact the system administrators."/>
+         <property name="HTTP_SC" value="503" scope="axis2"/>
+      </case>
+      <case regex="KEY_ERROR">
+         <property name="HTTP_SC" expression="$ctx:CUSTOM_HTTP_SC" scope="axis2" type="STRING"/>
+         <property name="ERROR_DETAIL" expression="$ctx:ERROR_MESSAGE"/>
+         <property name="ERROR_MESSAGE" value="Runtime Error"/>
+      </case>
+      <case regex="GUARDRAIL">
+         <property name="ERROR_DETAIL" expression="$ctx:ERROR_MESSAGE"/>
+         <property name="ERROR_MESSAGE" expression="$ctx:ERROR_TYPE"/>
+         <filter xpath="$ctx:CUSTOM_HTTP_SC">
+            <then>
+               <property name="HTTP_SC" expression="$ctx:CUSTOM_HTTP_SC" scope="axis2"/>
+            </then>
+            <else>
+               <property name="HTTP_SC" value="500" scope="axis2"/>
+            </else>
+         </filter>
+      </case>
+      <case regex="AUTH|BACKEND">
+         <filter xpath="$ctx:HTTP_RESPONSE_STATUS_CODE">
+            <then>
+               <property name="HTTP_SC" expression="$ctx:HTTP_RESPONSE_STATUS_CODE" scope="axis2"/>
+            </then>
+            <else>
+               <property name="HTTP_SC" value="401" scope="axis2"/>
+            </else>
+         </filter>
+      </case>
+      <default>
+         <filter xpath="$ctx:CUSTOM_HTTP_SC">
+            <then>
+               <property name="HTTP_SC" expression="$ctx:CUSTOM_HTTP_SC" scope="axis2"/>
+            </then>
+            <else>
+               <property name="HTTP_SC" value="500" scope="axis2"/>
+            </else>
+         </filter>
+         <property name="ERROR_DETAIL" expression="$ctx:ERROR_MESSAGE"/>
+         <property name="ERROR_MESSAGE" value="Runtime Error"/>
+      </default>
+   </switch>
+   <filter source="$ctx:API_ERROR_TYPE" regex="GUARDRAIL">
+      <then>
+         <payloadFactory media-type="json">
+            <format>{"error":{"code":"$1","type":"$2","message":$3}}</format>
+            <args>
+               <arg evaluator="xml" expression="$ctx:ERROR_CODE"/>
+               <arg evaluator="xml" expression="$ctx:ERROR_MESSAGE"/>
+               <arg evaluator="xml" expression="$ctx:ERROR_DETAIL"/>
+            </args>
+         </payloadFactory>
+      </then>
+      <else>
+         <payloadFactory media-type="json">
+            <format>{"error":{"code":"$1","type":"$2","message":"$3"}}</format>
+            <args>
+               <arg evaluator="xml" expression="$ctx:ERROR_CODE"/>
+               <arg evaluator="xml" expression="$ctx:ERROR_MESSAGE"/>
+               <arg evaluator="xml" expression="$ctx:ERROR_DETAIL"/>
+            </args>
+         </payloadFactory>
+      </else>
+   </filter>
+   <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT|PATCH)).*$">
+      <property name="messageType" value="application/json" scope="axis2"/>
+   </filter>
+   <property name="RESPONSE" value="true"/>
+   <header name="To" action="remove"/>
+   <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+   <property name="ContentType" scope="axis2" action="remove"/>
+   <property name="Authorization" scope="transport" action="remove"/>
+   <property name="Host" scope="transport" action="remove"/>
+   <property name="Accept" scope="transport" action="remove"/>
+   <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+   <sequence key="_cors_request_handler_"/>
+   <!-- Threat flow -->
+   <filter source="$ctx:API_ERROR_TYPE" regex="THREAT">
+      <then>
+         <send/>
+         <drop/>
+      </then>
+   </filter>
+   <!-- Resource-mismatch, key-error and guardrail flows  -->
+   <filter source="$ctx:API_ERROR_TYPE" regex="RESOURCE_MISMATCH|KEY_ERROR|GUARDRAIL">
+      <then>
+         <send/>
+      </then>
+   </filter>
+   <!-- Resource level faultSequence invocation  -->
+   <filter source="boolean(get-property('API_ERROR_TYPE'))" regex="false">
+      <then>
+         <send/>
+      </then>
+   </filter>
+</sequence>
