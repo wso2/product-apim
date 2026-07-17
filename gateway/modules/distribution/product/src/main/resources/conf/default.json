@@ -292,6 +292,7 @@
   "apim.wss.keystore.password" : "$ref{keystore.tls.password}",
   "apim.wss.keystore.key_password" : "$ref{keystore.tls.key_password}",
   "apim.wss.ssl_enabled_protocols" : "TLSv1.1,TLSv1.2",
+  "apim.webhooks.http.enable": true,
   "apim.webhooks.https.enable": true,
   "apim.webhooks.https.port" : "8021",
   "apim.webhooks.https.key_store.location": "repository/resources/security/$ref{keystore.tls.file_name}",
