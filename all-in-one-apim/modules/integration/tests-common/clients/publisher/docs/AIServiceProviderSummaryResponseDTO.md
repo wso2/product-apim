@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **apiVersion** | **String** |  |  [optional]
 **builtInSupport** | **Boolean** | Is built-in support |  [optional]
 **description** | **String** |  |  [optional]
+**deprecated** | **Boolean** | Indicates if the LLM provider is deprecated |  [optional]
 
 
 

@@ -177,8 +177,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Allow time for the new revision to replace the previous one on the gateway
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
@@ -228,8 +228,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Allow time for the new revision to replace the previous one on the gateway
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
@@ -289,8 +289,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Allow time for the new revision to replace the previous one on the gateway
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
@@ -363,8 +363,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Allow time for the new revision to replace the previous one on the gateway
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
@@ -451,8 +451,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Allow time for the new revision to replace the previous one on the gateway
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();

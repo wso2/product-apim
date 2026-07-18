@@ -1,0 +1,39 @@
+# Feature-specific TOML overlay for the IntegrationV2-ApplicationAttributes block.
+#
+# Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the extra keys this feature
+# needs live here; everything else (DB, ports, gateway wiring) is inherited.
+#
+# Ports the config of the legacy ApplicationAttributesTestCase:
+#   - [apim.jwt] enable = true : turns on backend JWT generation, so the gateway injects the
+#     X-JWT-Assertion header (carrying the application-attribute claims) towards the backend.
+#   - [[apim.devportal.application_attributes]] : declares custom application attributes. "External Reference
+#     Id" is required=true (every Developer Portal application creation in this block must supply it). "Optional
+#     attribute" is required=false, so an application may leave it EMPTY.
+#   - [apim.devportal] enable_empty_values_in_application_attributes = true : ports the config of the legacy
+#     JWTTestCase — with this flag on, an OPTIONAL application attribute left with an empty value still surfaces
+#     in the backend JWT's applicationAttributes claim (as ""). With the flag false (product default) the empty
+#     optional attribute is absent from the claim. Only the true side is covered here (see backend_jwt.feature);
+#     the false side would need a separate default-config overlay/block and is deferred (documented there).
+
+[apim.jwt]
+enable = true
+encoding = "base64"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+
+[apim.devportal]
+enable_empty_values_in_application_attributes = true
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+name = "External Reference Id"
+description = "External Reference Id"
+
+[[apim.devportal.application_attributes]]
+required = false
+hidden = false
+name = "Optional attribute"
+description = "Description of Optional attribute"

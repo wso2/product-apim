@@ -1,0 +1,41 @@
+{
+  "name": "${UNIQUE:APIMClaimValRegexMatch}",
+  "context": "${UNIQUE:apiClaimValRegexMatchContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "jwtClaimBasedAccessValidator with a MATCHING regex (^[A-Z]+$ vs aut=APPLICATION)",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "jwtClaimBasedAccessValidator",
+            "policyVersion": "v1",
+            "parameters": { "accessVerificationClaim": "aut", "accessVerificationClaimValue": "APPLICATION", "accessVerificationClaimValueRegex": "^[A-Z]+$" }
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

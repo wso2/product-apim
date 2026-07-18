@@ -19,6 +19,7 @@ package org.wso2.am.integration.tests.restapi.admin;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -60,11 +61,13 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class EnvironmentTestCase extends APIMIntegrationBaseTest {
 
@@ -93,6 +96,16 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
     String[] ROLE_LIST = { "Internal/publisher", "Internal/subscriber", "Internal/everyone"};
     private static final String TIER_UNLIMITED = "Unlimited";
     private static final String TIER_GOLD = "Gold";
+
+    private String swaggerApiId;
+    private String swaggerApiRevisionId;
+    private String swaggerSecondEnvId;
+    private boolean swaggerApiDeployedOnDefault;
+    private boolean swaggerApiDeployedOnSecondGw;
+    private static final String SWAGGER_SECOND_GATEWAY_ENVIRONMENT = "swagger-test-region";
+    private static final String DEFAULT_GATEWAY_VHOST = "localhost";
+    private static final String SWAGGER_SECOND_GATEWAY_VHOST = "swagger.mg.wso2.com";
+
     private Map<String, String> requestHeaders = new HashMap<>();
     private APIIdentifier apiIdentifier;
     private String API_NAME = "DummyApi";
@@ -724,11 +737,205 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(groups = {"wso2.am"},
+            description = "With multiple gateway environments in the tenant, an API deployed only to one of "
+                    + "them must have a valid Developer Portal Swagger server URL pointing to that gateway environment.")
+    public void testDevportalSwaggerServerUrlWhenDeployedToSingleGateway() throws Exception {
+        createSwaggerTestSecondGatewayEnvironment();
+        createAndPublishSwaggerTestApi();
+        deploySwaggerTestApiToGateway(SWAGGER_SECOND_GATEWAY_ENVIRONMENT, SWAGGER_SECOND_GATEWAY_VHOST);
+        swaggerApiDeployedOnSecondGw = true;
+        String swagger = getDevportalSwaggerWithResolvedEnvironment();
+        assertServerUrlHasValidHost(new JSONObject(swagger), SWAGGER_SECOND_GATEWAY_VHOST);
+    }
+
+    @Test(groups = {"wso2.am"},
+            description = "When the API is undeployed from the previous gateway environment and deployed to "
+                    + "another, the Developer Portal Swagger server URL must point to the new gateway environment.",
+            dependsOnMethods = "testDevportalSwaggerServerUrlWhenDeployedToSingleGateway")
+    public void testDevportalSwaggerServerUrlWhenRedeployedToAnotherGateway() throws Exception {
+        undeploySwaggerTestApiFromGateway(SWAGGER_SECOND_GATEWAY_ENVIRONMENT, SWAGGER_SECOND_GATEWAY_VHOST);
+        swaggerApiDeployedOnSecondGw = false;
+        deploySwaggerTestApiToGateway(Constants.GATEWAY_ENVIRONMENT, DEFAULT_GATEWAY_VHOST);
+        swaggerApiDeployedOnDefault = true;
+        String swagger = getDevportalSwaggerWithResolvedEnvironment();
+        assertServerUrlHasValidHost(new JSONObject(swagger), DEFAULT_GATEWAY_VHOST);
+    }
+
+    @Test(groups = {"wso2.am"},
+            description = "When the API is deployed to multiple gateway environments, the Developer Portal "
+                    + "Swagger server URL must be a valid URL of one of those gateway environments.",
+            dependsOnMethods = "testDevportalSwaggerServerUrlWhenRedeployedToAnotherGateway")
+    public void testDevportalSwaggerServerUrlWhenDeployedToMultipleGateways() throws Exception {
+        deploySwaggerTestApiToGateway(SWAGGER_SECOND_GATEWAY_ENVIRONMENT, SWAGGER_SECOND_GATEWAY_VHOST);
+        swaggerApiDeployedOnSecondGw = true;
+        String swagger = getDevportalSwaggerWithResolvedEnvironment();
+        String host = getFirstServerHost(new JSONObject(swagger));
+        assertTrue(DEFAULT_GATEWAY_VHOST.equals(host) || SWAGGER_SECOND_GATEWAY_VHOST.equals(host),
+                "Devportal Swagger server URL host [" + host + "] does not match any of the gateway environments the "
+                        + "API is deployed to (" + DEFAULT_GATEWAY_VHOST + ", " + SWAGGER_SECOND_GATEWAY_VHOST + ")");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        cleanUpSwaggerTestResources();
         userManagementClient.deleteUser(USER_TEST);
         userManagementClient.deleteRole(API_SUBSCRIBER);
         super.cleanUp();
+    }
+
+    /**
+     * Create a second gateway environment in the tenant (in addition to the configured "Default" gateway) so that the
+     * Developer Portal Swagger server URL scenarios can be tested with multiple gateway environments.
+     *
+     * @throws Exception if the environment creation fails
+     */
+    private void createSwaggerTestSecondGatewayEnvironment() throws Exception {
+        List<VHostDTO> vHostDTOList = new ArrayList<>();
+        vHostDTOList.add(DtoFactory.createVhostDTO(SWAGGER_SECOND_GATEWAY_VHOST, "", 80, 443, 9099, 8099));
+        EnvironmentDTO secondEnv = DtoFactory.createEnvironmentDTO(SWAGGER_SECOND_GATEWAY_ENVIRONMENT,
+                "Swagger Test Region", "Second gateway environment for devportal swagger server URL tests",
+                Constants.WSO2_GATEWAY_ENVIRONMENT, false, vHostDTOList, null);
+        ApiResponse<EnvironmentDTO> addedEnvironment = restAPIAdmin.addEnvironment(secondEnv);
+        assertEquals(addedEnvironment.getStatusCode(), HttpStatus.SC_CREATED,
+                "Unable to create the second gateway environment for the swagger server URL tests");
+        swaggerSecondEnvId = addedEnvironment.getData().getId();
+        Assert.assertNotNull(swaggerSecondEnvId, "The second gateway environment ID cannot be null or empty");
+    }
+
+    /**
+     * Create and publish a dedicated API (with a revision) used by the Developer Portal Swagger server URL scenarios.
+     * The API is not deployed to any gateway environment yet.
+     *
+     * @throws Exception if the API creation, publishing or revision creation fails
+     */
+    private void createAndPublishSwaggerTestApi() throws Exception {
+        APIDTO api = apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        swaggerApiId = api.getId();
+        api.setPolicies(Collections.singletonList(TIER_UNLIMITED));
+        restAPIPublisher.updateAPI(api);
+        restAPIPublisher.changeAPILifeCycleStatus(swaggerApiId, APILifeCycleAction.PUBLISH.getAction());
+        APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
+        apiRevisionRequest.setApiUUID(swaggerApiId);
+
+        HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
+        swaggerApiRevisionId = extractRevisionId(apiRevisionResponse);
+        waitForAPIDeployment();
+    }
+
+    /**
+     * Deploy the dedicated Swagger test API revision to the given gateway environment and VHost.
+     *
+     * @param environmentName gateway environment name
+     * @param vhost           VHost to deploy on
+     * @throws Exception if the deployment fails
+     */
+    private void deploySwaggerTestApiToGateway(String environmentName, String vhost) throws Exception {
+        List<APIRevisionDeployUndeployRequest> deployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest deployRequest = new APIRevisionDeployUndeployRequest();
+        deployRequest.setName(environmentName);
+        deployRequest.setVhost(vhost);
+        deployRequest.setDisplayOnDevportal(true);
+        deployRequestList.add(deployRequest);
+
+        HttpResponse deployResponse =
+                restAPIPublisher.deployAPIRevision(swaggerApiId, swaggerApiRevisionId, deployRequestList, "API");
+        assertEquals(deployResponse.getResponseCode(), HttpStatus.SC_CREATED,
+                "Unable to deploy API Revision to gateway environment [" + environmentName + "]:"
+                        + deployResponse.getData());
+        waitForAPIDeployment();
+    }
+
+    /**
+     * Undeploy the dedicated Swagger test API revision from the given gateway environment and VHost.
+     *
+     * @param environmentName gateway environment name
+     * @param vhost           VHost to undeploy from
+     * @throws Exception if the undeployment fails
+     */
+    private void undeploySwaggerTestApiFromGateway(String environmentName, String vhost) throws Exception {
+        List<APIRevisionDeployUndeployRequest> undeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest undeployRequest = new APIRevisionDeployUndeployRequest();
+        undeployRequest.setName(environmentName);
+        undeployRequest.setVhost(vhost);
+        undeployRequest.setDisplayOnDevportal(false);
+        undeployRequestList.add(undeployRequest);
+
+        restAPIPublisher.undeployAPIRevision(swaggerApiId, swaggerApiRevisionId, undeployRequestList);
+        waitForAPIDeployment();
+    }
+
+    /**
+     * Retrieve the Developer Portal Swagger definition of the dedicated Swagger test API, letting the server resolve
+     * the gateway environment internally (i.e. without passing an explicit environmentName). This is the invocation
+     * path that exhibited the malformed server URL issue.
+     *
+     * @return the Swagger definition as a String
+     * @throws Exception if the REST call fails
+     */
+    private String getDevportalSwaggerWithResolvedEnvironment() throws Exception {
+        String tenantDomain = gatewayContextMgt.getContextTenant().getDomain();
+        String swagger = restAPIStore.getSwaggerByID(swaggerApiId, null, tenantDomain);
+        Assert.assertNotNull(swagger, "Devportal Swagger definition is null");
+        return swagger;
+    }
+
+    /**
+     * Assert that the first entry of the Swagger {@code servers} section contains a valid, non-empty host. When
+     * {@code expectedHost} is not {@code null}, the host must exactly match it.
+     *
+     * @param swagger      the Swagger definition
+     * @param expectedHost the expected host, or {@code null} to only assert that the host is non-empty
+     */
+    private void assertServerUrlHasValidHost(JSONObject swagger, String expectedHost) throws JSONException {
+        String host = getFirstServerHost(swagger);
+        assertTrue(StringUtils.isNotBlank(host),
+                "Devportal Swagger server URL has an empty/invalid host. servers=" + swagger.opt("servers"));
+        if (expectedHost != null) {
+            assertEquals(host, expectedHost,
+                    "Devportal Swagger server URL host does not match the gateway environment the API is deployed to");
+        }
+    }
+
+    /**
+     * Extract the host of the first server URL from the Swagger {@code servers} section.
+     *
+     * @param swagger the Swagger definition
+     * @return the host of the first server URL (may be empty if the URL is malformed)
+     */
+    private String getFirstServerHost(JSONObject swagger) throws JSONException {
+        Assert.assertTrue(swagger.has("servers"), "Devportal Swagger definition does not contain a servers section");
+        JSONArray servers = swagger.getJSONArray("servers");
+        Assert.assertTrue(servers.length() > 0, "Devportal Swagger servers section is empty");
+        String url = servers.getJSONObject(0).getString("url");
+        Assert.assertNotNull(url, "Devportal Swagger server URL is null");
+        return URI.create(url).getHost();
+    }
+
+    /**
+     * Undeploy the dedicated Swagger test API from any gateway environment it is still deployed to and delete the
+     * dynamically created second gateway environment. Best effort - failures are ignored so that other cleanup can
+     * proceed.
+     */
+    private void cleanUpSwaggerTestResources() {
+        try {
+            if (swaggerApiId != null && swaggerApiRevisionId != null) {
+                if (swaggerApiDeployedOnSecondGw) {
+                    undeploySwaggerTestApiFromGateway(SWAGGER_SECOND_GATEWAY_ENVIRONMENT, SWAGGER_SECOND_GATEWAY_VHOST);
+                    swaggerApiDeployedOnSecondGw = false;
+                }
+                if (swaggerApiDeployedOnDefault) {
+                    undeploySwaggerTestApiFromGateway(Constants.GATEWAY_ENVIRONMENT, DEFAULT_GATEWAY_VHOST);
+                    swaggerApiDeployedOnDefault = false;
+                }
+            }
+            if (swaggerSecondEnvId != null) {
+                restAPIAdmin.deleteEnvironment(swaggerSecondEnvId);
+                swaggerSecondEnvId = null;
+            }
+        } catch (Exception ignored) {
+            // Best effort cleanup - ignore failures.
+        }
     }
 
     /**
