@@ -1669,10 +1669,28 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Retrieves all subscriptions of an application (DevPortal {@code /subscriptions?applicationId=...}) as the
+     * acting actor's devportal token, publishing the response for a following assertion. Used by APIMANAGER4373:
+     * after one subscribed API becomes inaccessible to the subscriber (its visibility role changed away), the
+     * subscription list must STILL return the other (healthy) subscription rather than breaking wholesale.
+     *
+     * @param appIdKey Context key containing the application ID
+     */
+    @When("I retrieve all subscriptions of application {string}")
+    public void iRetrieveAllSubscriptionsOfApplication(String appIdKey) throws IOException {
+
+        String appId = TestContext.resolve(appIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        HttpResponse response = Requests.get(
+                Utils.getAllSubscriptionsURL(getBaseUrl(), null, appId, null, null, null), headers);
+    }
+
+    /**
      * Verifies that a specific subscription ID exists in the list of all subscriptions.
      * This assertion step checks the most recent HTTP response (expected to contain a list of subscriptions)
      * to ensure the subscription was successfully created and is available.
-     * 
+     *
      * @param subscriptionId Context key containing the subscription ID to verify
      */
     @Then("The subscription with id {string} should be in the list of all subscriptions")
@@ -2487,6 +2505,34 @@ public class ApplicationBaseSteps {
             boolean found = response != null && response.getResponseCode() == 200
                     && response.getData() != null && response.getData().contains(resolvedExpected);
             if (found || System.currentTimeMillis() >= endTime) {
+                break;
+            }
+            Thread.sleep(2000);
+        }
+    }
+
+    /**
+     * DevPortal API search that polls until the result set NO LONGER contains the given value — the removal
+     * counterpart of the {@code until it contains} variant. Needed after mutating an API so a stale index entry
+     * clears (e.g. ChangeAPITags: after removing a tag, the API must drop out of that tag's results). Polls on the
+     * DISTINGUISHING new state (the value absent) rather than a pre-satisfied condition, then publishes the last
+     * response for assertion.
+     */
+    @When("I search DevPortal APIs with query {string} until it does not contain {string} within {int} seconds")
+    public void iSearchDevPortalAPIsUntilAbsent(String query, String unexpected, int seconds)
+            throws IOException, InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        String resolvedQuery = Utils.resolveContextPlaceholders(query);
+        String resolvedUnexpected = Utils.resolveContextPlaceholders(unexpected);
+        String url = Utils.getApiSearchURL(getBaseUrl(), resolvedQuery);
+        long endTime = System.currentTimeMillis() + seconds * 1000L;
+        HttpResponse response;
+        while (true) {
+            response = Requests.get(url, headers);
+            boolean absent = response != null && response.getResponseCode() == 200
+                    && response.getData() != null && !response.getData().contains(resolvedUnexpected);
+            if (absent || System.currentTimeMillis() >= endTime) {
                 break;
             }
             Thread.sleep(2000);

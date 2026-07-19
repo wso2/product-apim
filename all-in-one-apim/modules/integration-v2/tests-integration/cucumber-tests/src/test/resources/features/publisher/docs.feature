@@ -162,3 +162,66 @@ Feature: Publisher API Documentation
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # Ports UsersAndDocsInAPIOverviewTestCase — the two facets of an API's overview: the "Users" tab (how many
+  # applications/subscribers are subscribed) and the "Documentation" tab (how many documents). Two DIFFERENT users
+  # each subscribe an application, so the publisher subscriptions list carries BOTH subscribers (count 2); two
+  # documents are added, so the documents list carries both (count 2). Spans the provider plane (admin publishes,
+  # lists subscriptions + docs) and the consumer plane (two subscribers), so it runs as the admin actor. ×2 tenant.
+  @cap:publisher @feat:docs @type:regression @rule:api-overview @dep:devportal @legacy:UsersAndDocsInAPIOverviewTestCase
+  Scenario Outline: An API overview reflects its subscription and documentation counts as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ovApiId" and deployed it
+    When I publish the "apis" resource with id "ovApiId"
+    Then The lifecycle status of API "ovApiId" should be "Published"
+
+    # First subscriber (the admin actor): create an application and subscribe it.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "ovApp1"
+    And I create an application with payload "ovApp1"
+    Then The response status code should be 201
+    And I extract response field "applicationId" and store it as "ovApp1Id"
+    When I put the following JSON payload in context as "ovSub1"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Gold"}
+    """
+    And I subscribe to API "ovApiId" using application "ovApp1Id" with payload "ovSub1" as "ovSub1Id"
+    Then The response status code should be 201
+
+    # Second subscriber (a different consumer): switch actor, register its DCR client, mint its devportal token,
+    # subscribe its own app.
+    Given I act as "<subscriber>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "ovApp2"
+    And I create an application with payload "ovApp2"
+    Then The response status code should be 201
+    And I extract response field "applicationId" and store it as "ovApp2Id"
+    When I put the following JSON payload in context as "ovSub2"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Gold"}
+    """
+    And I subscribe to API "ovApiId" using application "ovApp2Id" with payload "ovSub2" as "ovSub2Id"
+    Then The response status code should be 201
+
+    # The publisher subscriptions list now carries BOTH subscriptions (count 2).
+    Given I act as "<actor>"
+    When I retrieve the subscriptions of API "ovApiId"
+    Then The response status code should be 200
+    And The response should contain "\"count\":2"
+
+    # Add two documents; the documents list carries both (count 2).
+    When I prepare a document named "${UNIQUE:OverviewDoc1}" of type "HOWTO" with sourceType "INLINE" and content "test doc 1"
+    And I add the document to API "ovApiId"
+    Then The response status code should be 201
+    When I prepare a document named "${UNIQUE:OverviewDoc2}" of type "HOWTO" with sourceType "INLINE" and content "test doc 2"
+    And I add the document to API "ovApiId"
+    Then The response status code should be 201
+    When I retrieve all available documents for "ovApiId"
+    Then The response status code should be 200
+    And The response should contain "\"count\":2"
+
+    Examples:
+      | actor             | subscriber         |
+      | admin             | subscriberUser     |
+      | admin@tenant1.com | subscriberUser@tenant1.com |

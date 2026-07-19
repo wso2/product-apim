@@ -1,0 +1,7 @@
+# Test-framework deployment.toml OVERLAY for the allowed-scopes config-variant block. Merged on top of the shared
+# `basic` overlay (base + basic + this). Adds ONLY the allowed-scopes whitelist: scopes matching these patterns
+# skip the gateway's per-resource scope validation. Ports AllowedScopesTestCase's config. (AllowedScopesTestWith
+# CorsDisabled uses the same allowed_scopes with CORS disabled — its assertion surface is identical, so it is
+# @legacy-tagged on the same scenario rather than given a separate block.)
+[oauth]
+allowed_scopes = ["^device_.*", "openid", "scope1", "scope2"]

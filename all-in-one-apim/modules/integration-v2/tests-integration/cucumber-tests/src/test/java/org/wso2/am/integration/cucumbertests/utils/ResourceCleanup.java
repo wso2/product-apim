@@ -80,6 +80,22 @@ public final class ResourceCleanup {
      */
     public static final String CREATED_DCR_CLIENT_IDS = "createdDcrClientIds";
 
+    /**
+     * Teardown list for endpoint certificates uploaded via the Publisher {@code /endpoint-certificates} REST API,
+     * holding each certificate's ALIAS (the delete path segment). An endpoint certificate is tenant-global config
+     * (not owned by an API) that nothing else removes, so it must be swept explicitly or it leaks across scenarios.
+     * Deleted via the generic bearer-token {@link #deleteResources} with the owner's publisher token.
+     */
+    public static final String CREATED_ENDPOINT_CERTIFICATE_ALIASES = "createdEndpointCertificateAliases";
+
+    /**
+     * Teardown list for Service Catalog entries created via {@code /api/am/service-catalog/v1/services}, holding
+     * each service's id. A catalog service is admin-plane tenant config that nothing else removes; a service still
+     * referenced by an API 409s on delete, so it is swept AFTER the APIs. Deleted via the generic bearer-token
+     * {@link #deleteResources} with the owner's admin token.
+     */
+    public static final String CREATED_SERVICE_CATALOG_IDS = "createdServiceCatalogIds";
+
     private ResourceCleanup() {
     }
 
@@ -139,7 +155,9 @@ public final class ResourceCleanup {
                 && TestContext.getList(Constants.CREATED_API_CATEGORY_IDS).isEmpty()
                 && TestContext.getList(CREATED_AI_PROVIDER_IDS).isEmpty()
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
-                && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()) {
+                && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()
+                && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
+                && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()) {
             return;
         }
         String baseUrl = baseUrlObj.toString();
@@ -215,6 +233,15 @@ public final class ResourceCleanup {
             // failure-safe backstop and idempotently 404s on the already-deleted ones.
             deleteResources(Constants.CREATED_API_CATEGORY_IDS, Identity::adminTokenKey,
                     id -> Utils.getApiCategoryByIdURL(baseUrl, id));
+            // Endpoint certificates (publisher, tenant-global) AFTER the APIs — deleting a certificate an API's
+            // endpoint still references is not FK-blocked, but sweeping after the APIs keeps ordering consistent.
+            // Deleted by alias with the owner's publisher token.
+            deleteResources(CREATED_ENDPOINT_CERTIFICATE_ALIASES, Identity::publisherTokenKey,
+                    alias -> Utils.getEndpointCertificateByAliasURL(baseUrl, alias));
+            // Service Catalog entries (admin) AFTER the APIs — a service still referenced by an API 409s on
+            // delete, so the APIs (swept above) must go first. Deleted by id with the owner's admin token.
+            deleteResources(CREATED_SERVICE_CATALOG_IDS, Identity::adminTokenKey,
+                    id -> Utils.getServiceCatalogByIdURL(baseUrl, id));
             // BYO OAuth clients registered via DCR: swept separately because they authenticate with the owner's
             // Basic credentials (not a bearer token) and are not removed by the DevPortal application's deletion.
             deleteDcrClients(baseUrl);
@@ -238,6 +265,8 @@ public final class ResourceCleanup {
             TestContext.remove(CREATED_AI_PROVIDER_IDS);
             TestContext.remove(CREATED_MCP_SERVER_IDS);
             TestContext.remove(CREATED_DCR_CLIENT_IDS);
+            TestContext.remove(CREATED_ENDPOINT_CERTIFICATE_ALIASES);
+            TestContext.remove(CREATED_SERVICE_CATALOG_IDS);
         }
     }
 

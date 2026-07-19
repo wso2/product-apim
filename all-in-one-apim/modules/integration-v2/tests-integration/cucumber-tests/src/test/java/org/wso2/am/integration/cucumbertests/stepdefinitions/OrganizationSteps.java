@@ -219,14 +219,16 @@ public class OrganizationSteps {
     @When("I provision user {string} with roles {string}")
     public void iProvisionUser(String userKey, String roles) throws Exception {
 
-        TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, userKey, userKey, userKey, roles);
+        TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, userKey, userKey, userKey,
+                Utils.resolveContextPlaceholders(roles));
     }
 
     /** Tenant variant of {@link #iProvisionUser}. */
     @When("I provision user {string} with roles {string} in tenant {string}")
     public void iProvisionUserInTenant(String userKey, String roles, String tenantDomain) throws Exception {
 
-        TenantUserProvisioner.addUser(tenantDomain, userKey, userKey, userKey, roles);
+        TenantUserProvisioner.addUser(tenantDomain, userKey, userKey, userKey,
+                Utils.resolveContextPlaceholders(roles));
     }
 
     /**
@@ -239,14 +241,27 @@ public class OrganizationSteps {
     public void iProvisionRole(String roleName) throws Exception {
 
         String tenantDomain = Identity.actingActor().getUserDomain();
-        TenantUserProvisioner.addRole(tenantDomain, roleName);
+        TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName));
     }
 
     /** Tenant variant of {@link #iProvisionRole}. */
     @When("I provision role {string} in tenant {string}")
     public void iProvisionRoleInTenant(String roleName, String tenantDomain) throws Exception {
 
-        TenantUserProvisioner.addRole(tenantDomain, roleName);
+        TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName));
+    }
+
+    /**
+     * Provisions a role carrying the store-login + subscribe permissions (SOAP addRole with permissions). A role
+     * used as an API's {@code visibleRoles} (DevPortal store visibility RESTRICTED) MUST carry
+     * {@code /permission/admin/login}, or the publisher API-create rejects it with 900610 "Invalid user roles
+     * found" — an empty role suffices for {@code accessControlRoles} but NOT for {@code visibleRoles}. Enabler for
+     * the store-visibility tests.
+     */
+    @When("I provision store-visibility role {string} in tenant {string}")
+    public void iProvisionStoreVisibilityRoleInTenant(String roleName, String tenantDomain) throws Exception {
+
+        TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName), true);
     }
 
     /**

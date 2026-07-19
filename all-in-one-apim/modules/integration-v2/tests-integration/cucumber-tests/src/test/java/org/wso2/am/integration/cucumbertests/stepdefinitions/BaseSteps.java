@@ -104,10 +104,15 @@ public class BaseSteps {
 
     private void createDcrApplication(User actor) throws IOException {
 
-        //Create json payload for DCR endpoint
+        //Create json payload for DCR endpoint. The DCR client name must adhere to ^[\sa-zA-Z0-9._-]*$ — a
+        // secondary-store actor's username carries the store-domain separator (e.g. SECONDARY.COM/secondaryAdmin1),
+        // whose '/' is outside that set, so sanitize any disallowed char to '_' when DERIVING the name. This is
+        // cosmetic only: the actual OAuth identity is the untouched `owner` (actor.getUserName()) below.
+        String clientNameSafe = ("integration_test_app_" + actor.getUserNameWithoutDomain() + "_"
+                + actor.getUserDomain()).replaceAll("[^\\sa-zA-Z0-9._-]", "_");
         JsonObject json = new JsonObject();
         json.addProperty("callbackUrl", "test.com");
-        json.addProperty("clientName", "integration_test_app_" + actor.getUserNameWithoutDomain() + "_" + actor.getUserDomain());
+        json.addProperty("clientName", clientNameSafe);
         json.addProperty("grantType", "client_credentials password refresh_token");
         json.addProperty("saasApp", true);
         json.addProperty("owner", actor.getUserName());
@@ -573,6 +578,20 @@ public class BaseSteps {
 
         org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
         payload.put(field, new org.json.JSONArray());
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
+    /**
+     * Sets a top-level field of a JSON payload in context to JSON {@code null}, writing it back under the key. Used
+     * to prove the publisher accepts an API update that nulls an optional field (e.g. {@code securityScheme} or
+     * {@code endpointConfig}) — a past NullPointerException regression (UpdateAPINullPointerTestCase). Uses
+     * {@link JSONObject#NULL} so the field is serialized as {@code null}, not the string {@code "null"}.
+     */
+    @When("I set the field {string} to null in the payload {string}")
+    public void iSetFieldToNullInPayload(String field, String contextKey) {
+
+        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, org.json.JSONObject.NULL);
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
 
@@ -1067,33 +1086,53 @@ public class BaseSteps {
 
         String apiName  = Utils.extractValueFromPayload(actualApiDetailsPayload, "name").toString();
         String apiVersion = Utils.extractValueFromPayload(actualApiDetailsPayload, "version").toString();
+        // The deployed-revisions list is the publisher-plane distinguishing state — it flips as soon as the
+        // revision is deployed, so it is available to the same actor that owns the API.
+        String apiId = Utils.extractValueFromPayload(actualApiDetailsPayload, "id").toString();
         // Use the tenant ADMIN (not the acting actor) — the gateway-artifact admin endpoint requires admin
         // credentials, which a least-privilege publisher actor does not have.
         User tenantAdmin = Identity.actingTenantAdmin();
         String tenantDomain = tenantAdmin.getUserDomain();
 
-        String url = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
+        String artifactUrl = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
 
         String encodedCredentials = DatatypeConverter.printBase64Binary(
                 (tenantAdmin.getUserName() + ':' + tenantAdmin.getPassword()).getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
+        Map<String, String> artifactHeaders = new HashMap<>();
+        artifactHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
 
-        long currentTime = System.currentTimeMillis();
-        long waitTime = currentTime + Constants.DEPLOYMENT_WAIT_TIME;
+        String revisionsUrl = Utils.getRevisionDeployments(getBaseUrl(), "apis", apiId);
+        Map<String, String> revisionsHeaders = new HashMap<>();
+        revisionsHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        // De-flake (load-induced eventual-consistency, same class as the saml2-bearer clock-skew fix):
+        // when many freshly-imported APIs pile up in one serially-loaded block, the synapse ARTIFACT
+        // materialization behind the gateway api-artifact endpoint lags well past the standard 120s window,
+        // even though the revision IS deployed. So we (1) poll the correct distinguishing signal — the
+        // deployed-revisions list, which flips on publisher-plane deployment — as the primary readiness gate,
+        // accepting the gateway-artifact 200 only as a secondary confirmation, (2) widen the catch so a
+        // transient error on either probe (not just IOException) retries rather than short-circuiting the
+        // whole wait, and (3) lengthen the window to a freshly-imported-under-load budget. Fast cases still
+        // exit early on the first positive poll.
+        long waitTime = System.currentTimeMillis() + (2 * Constants.DEPLOYMENT_WAIT_TIME);
         boolean isApiDeployed = false;
 
         while (System.currentTimeMillis() < waitTime) {
-            HttpResponse response = null;
             try {
-                response = SimpleHTTPClient.getInstance().doGet(url, headers);
-            } catch (IOException ignored) {
-                log.warn("API :" + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
-                        tenantDomain);
-            }
-            if (response != null && response.getResponseCode() == 200) {
+                HttpResponse revisionsResponse = SimpleHTTPClient.getInstance().doGet(revisionsUrl, revisionsHeaders);
+                if (revisionsResponse != null && revisionsResponse.getResponseCode() == 200
+                        && new JSONObject(revisionsResponse.getData()).getJSONArray("list").length() > 0) {
                     isApiDeployed = true;
                     break;
+                }
+                HttpResponse artifactResponse = SimpleHTTPClient.getInstance().doGet(artifactUrl, artifactHeaders);
+                if (artifactResponse != null && artifactResponse.getResponseCode() == 200) {
+                    isApiDeployed = true;
+                    break;
+                }
+            } catch (Exception e) {
+                log.warn("API: " + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
+                        tenantDomain + " – retrying");
             }
             try {
                 log.info("Wait for availability of API: " + apiName + " with version: " + apiVersion +
@@ -1102,7 +1141,8 @@ public class BaseSteps {
             } catch (InterruptedException ignored) {
             }
         }
-        Assert.assertTrue(isApiDeployed);
+        Assert.assertTrue(isApiDeployed, "API " + apiName + " v" + apiVersion +
+                " was not deployed within the timeout");
         Thread.sleep(10000);
     }
 

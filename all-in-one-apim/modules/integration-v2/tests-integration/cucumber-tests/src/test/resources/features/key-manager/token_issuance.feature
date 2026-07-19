@@ -28,7 +28,10 @@ Feature: Key Manager Token Issuance
       | admin             |
       | admin@tenant1.com |
 
-  @cap:key-manager @feat:token-issuance @type:smoke @rule:openid @legacy:OpenIDTokenTestCase
+  # Also covers OpenIDTokenAPITestCase (openid-scoped password-grant token → scope contains openid; userinfo →
+  # 200; the tenant-path userinfo variant is covered by the admin@tenant1.com row, whose @domain routes userinfo
+  # through /t/<tenant>/).
+  @cap:key-manager @feat:token-issuance @type:smoke @rule:openid @legacy:OpenIDTokenTestCase @legacy:OpenIDTokenAPITestCase
   Scenario Outline: Generate an OpenID-scoped token and call userinfo as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -43,6 +46,7 @@ Feature: Key Manager Token Issuance
     Then The response status code should be 200
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
+    And The response should contain "openid"
     When I invoke the OpenID userinfo endpoint using access token "generatedAccessToken"
     Then The response status code should be 200
 
@@ -87,7 +91,10 @@ Feature: Key Manager Token Issuance
       | admin             |
       | admin@tenant1.com |
 
-  @cap:key-manager @feat:token-issuance @type:regression @rule:sandbox @dep:gateway @legacy:SandboxTokenTestCase
+  # Also provides parity for TokenAPITestCase (sandbox-key token invokes the API → 200; the production-key
+  # password-grant and client-credential token invocations of TokenAPITestCase are covered by the smoke
+  # JWT-token scenario above + gateway/rest-invocation).
+  @cap:key-manager @feat:token-issuance @type:regression @rule:sandbox @dep:gateway @legacy:SandboxTokenTestCase @legacy:TokenAPITestCase
   Scenario Outline: Issue a sandbox-scoped token and invoke as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

@@ -1,0 +1,6 @@
+{
+  "name": "${UNIQUE:AsyncNoAdv}",
+  "context": "/${UNIQUE:asyncnoadv}",
+  "version": "1.0.0",
+  "type": "ASYNC"
+}

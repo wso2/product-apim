@@ -511,7 +511,14 @@ public class WebSocketInvocationSteps {
             if (established) {
                 result = new int[]{dataCount.get(), tMsg.get() != null ? 1 : 0};
                 throttleMsg = tMsg.get();
-                break;
+                // Only stop once a frame was ACTUALLY throttled. The bandwidth quota is per-minute and
+                // accumulates across probes, so under load — where a single probe can deliver too few frames to
+                // exceed the quota inside its window — we re-subscribe and keep sending until the gateway throttles
+                // (4003) or the deadline elapses, instead of giving up on the first established-but-not-yet-
+                // throttled probe (the cause of an intermittent full-suite flake).
+                if (throttleMsg != null) {
+                    break;
+                }
             }
             Thread.sleep(3000);
         }

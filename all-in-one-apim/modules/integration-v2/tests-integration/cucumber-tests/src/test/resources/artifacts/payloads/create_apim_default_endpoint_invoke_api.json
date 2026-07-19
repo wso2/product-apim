@@ -1,0 +1,47 @@
+{
+  "name": "${UNIQUE:DefaultEndpointInvokeAPI}",
+  "context": "${UNIQUE:defaultEndpointInvokeContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "default",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/customers/123"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/customers/123"
+    }
+  },
+  "description": "Default-endpoint API with a request-flow policy that sets the To destination \u2014 ports the invocation half of DefaultEndpointTestCase.",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "set_default_endpoint_destination",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

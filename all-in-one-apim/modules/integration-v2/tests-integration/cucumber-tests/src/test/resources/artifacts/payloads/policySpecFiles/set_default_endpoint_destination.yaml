@@ -1,0 +1,15 @@
+type: operation_policy_specification
+version: v4.5.0
+data:
+  category: Mediation
+  name: set_default_endpoint_destination
+  version: v1
+  displayName: set_default_endpoint_destination
+  description: Sets the message destination (To header) so a default-endpoint API resolves its target.
+  applicableFlows:
+   - request
+  supportedGateways:
+   - Synapse
+  supportedApiTypes:
+   - HTTP
+  policyAttributes: []

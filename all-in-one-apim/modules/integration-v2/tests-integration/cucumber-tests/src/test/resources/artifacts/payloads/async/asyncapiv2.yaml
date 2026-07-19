@@ -1,0 +1,20 @@
+asyncapi: 2.0.0
+info:
+  title: AsyncAPI
+  version: '1'
+channels:
+  test:
+    parameters: {}
+    subscribe: {}
+servers:
+  production:
+    url: 'mqtt://localhost:8080'
+    protocol: mqtt
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://localhost:9999
+          scopes: {}

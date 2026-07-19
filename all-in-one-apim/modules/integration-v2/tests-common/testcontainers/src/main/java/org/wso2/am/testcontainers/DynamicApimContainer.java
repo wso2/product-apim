@@ -20,6 +20,7 @@ package org.wso2.am.testcontainers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -209,6 +210,48 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     public String getContainerTomlPath() {
         return Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name") +
                 Constants.DEPLOYMENT_TOML_PATH;
+    }
+
+    /**
+     * Copies a host file into the server directory tree BEFORE the container starts, at
+     * {@code <server-home>/<serverRelativePath>}. For fixtures the server only picks up at BOOT — e.g. a
+     * secondary user-store definition under {@code repository/deployment/server/userstores/} (Carbon's
+     * User Store Configuration Deployer reads that directory at startup; a config written into a running
+     * container at runtime is not hot-deployed). Driven per test block via the {@code serverFilesToCopy}
+     * listener parameter. Must be called before {@link #start()}.
+     */
+    public DynamicApimContainer withServerFile(String hostPath, String serverRelativePath) {
+        String target = Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+                + "/" + serverRelativePath;
+        // Explicit 0666: files copied into the container are owned by root while the server runs as
+        // wso2carbon. A read-only file is fine for config the server only READS (a userstore XML), but a
+        // data file the server must WRITE (e.g. an embedded H2 .mv.db) silently degrades - H2 opens a
+        // non-writable file read-only, so store reads work while writes no-op with no server-side error.
+        withCopyToContainer(MountableFile.forHostPath(hostPath, 0666), target);
+        return this;
+    }
+
+    /**
+     * Creates the usermgt (UM_*) schema for a secondary JDBC user store in a fresh embedded H2 DB, at runtime,
+     * using the PRODUCT'S OWN shipped DDL ({@code dbscripts/h2.sql}) and the bundled H2 engine — the framework
+     * owns zero DDL. This replaces the copied pre-seeded {@code .mv.db} (and its 0666 hack): the DB is created
+     * live, then {@code chmod 0666} guarantees the {@code wso2carbon} server process can write it regardless of
+     * which user the exec ran as. Must run BEFORE the store is registered (addUserStore), while nothing holds the
+     * embedded-H2 file lock. {@code dbRelativePath} is the H2 url path, e.g. {@code repository/database/WSO2SEC_DB}.
+     */
+    public void createSecondaryUserStoreH2Schema(String dbRelativePath) throws IOException, InterruptedException {
+        String home = Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name");
+        String runScript = "cd " + home + " && java -cp \"$(ls repository/components/plugins/h2-engine_*.jar)\" "
+                + "org.h2.tools.RunScript -url 'jdbc:h2:./" + dbRelativePath + "' "
+                + "-user wso2carbon -password wso2carbon -script dbscripts/h2.sql";
+        Container.ExecResult r = execInContainer("bash", "-c", runScript);
+        if (r.getExitCode() != 0) {
+            throw new IOException("Secondary user-store H2 schema creation (RunScript) failed, exit "
+                    + r.getExitCode() + "\nstdout: " + r.getStdout() + "\nstderr: " + r.getStderr());
+        }
+        // execInContainer may create the file as root; the server runs as wso2carbon and must WRITE it.
+        execInContainer("bash", "-c", "chmod 0666 " + home + "/" + dbRelativePath + ".mv.db");
+        logger.info("Created secondary user-store H2 schema at {} (via product dbscripts/h2.sql)", dbRelativePath);
     }
 
     /** In-container path of the running server's {@code log4j2.properties} (for remote-logging appender checks). */
