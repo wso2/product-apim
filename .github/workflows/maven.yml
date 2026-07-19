@@ -157,7 +157,8 @@ jobs:
         with:
           name: v2-images
           path: /tmp/v2-images/images.tar.gz
-          retention-days: 1
+          # 3 days so a failed-only re-run of integration-v2 within a few days still finds the prebuilt images
+          retention-days: 3
           if-no-files-found: error
       # NOTE: coverage report rendering needs the product class files, but we do NOT ship the ~538 MB distribution
       # zip as a second artifact — the integration-v2 job extracts them from the already-shared image via docker cp

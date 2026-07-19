@@ -54,7 +54,7 @@ Feature: Publisher API Lifecycle
       | publisherUser              |
       | publisherUser@tenant1.com  |
 
-  @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIMANAGERPublisherTestCase
+  @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIMANAGERPublisherTestCase @legacy:APICreationForTenantsTestCase
   Scenario Outline: A subscriber-role user cannot create an API as <actor>
     # A subscriber-only (self-signup-equivalent) user obtains a token, but it lacks the api_create scope, so
     # the Publisher API rejects the create as unauthenticated-for-this-resource (401). Proves publisher-plane
@@ -221,3 +221,144 @@ Feature: Publisher API Lifecycle
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # API-name uniqueness is case-insensitive: a second API whose name differs from an existing one only by letter
+  # case (with its own independent unique context) is rejected. Distinct from the same-name/different-context case
+  # above — here the names are only case-folded-equal, not byte-identical. Ports APIMANAGER3226. Verified live on
+  # 4.7.0: 409 "The API name already exists" (code 900250) — a distinct path from the same-name/version 400 above.
+  @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIMANAGER3226APINameWithDifferentCaseTestCase
+  Scenario Outline: Creating an API whose name differs only by case is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I generate a unique value and store it as "dupName"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "caseV1"
+    And I set the field "name" to "{{dupName}}" in the payload "caseV1"
+    And I create an "apis" resource with payload "caseV1" as "caseV1Id"
+    Then The response status code should be 201
+    When I store the uppercase of "dupName" as "dupNameUpper"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "caseV2"
+    And I set the field "name" to "{{dupNameUpper}}" in the payload "caseV2"
+    And I attempt to create an "apis" resource with payload "caseV2"
+    Then The response status code should be 409
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Lifecycle transitions beyond publish: an API moves Created -> Published -> Blocked -> Deprecated, each state
+  # reflected in its lifecycle status, and — at each state — the set of AVAILABLE transitions and the recorded LC
+  # HISTORY/audit-trail are asserted. Ports RegistryLifeCycleInclusionTest (state transitions + available
+  # transitions per state + lifecycle history). The available-transitions sets are the exact events the 4.7.0
+  # default (registry) lifecycle offers per state — pinned and verified against a live container.
+  @cap:publisher @feat:api-lifecycle @type:regression @legacy:RegistryLifeCycleInclusionTest
+  Scenario Outline: An API transitions through Published, Blocked and Deprecated states as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "lcApiId" and deployed it
+    And The lifecycle status of API "lcApiId" should be "Created"
+
+    When I publish the "apis" resource with id "lcApiId"
+    Then The lifecycle status of API "lcApiId" should be "Published"
+    # A Published API can be prototyped, blocked, demoted back to Created, or deprecated.
+    And The available lifecycle transitions of API "lcApiId" should be exactly "Deploy as a Prototype,Block,Demote to Created,Deprecate"
+    And The lifecycle history of API "lcApiId" should record a transition from "Created" to "Published"
+
+    When I change the lifecycle of API "lcApiId" with action "Block"
+    Then The lifecycle status of API "lcApiId" should be "Blocked"
+    # A Blocked API can be re-published or deprecated.
+    And The available lifecycle transitions of API "lcApiId" should be exactly "Re-Publish,Deprecate"
+    And The lifecycle history of API "lcApiId" should record a transition from "Published" to "Blocked"
+
+    When I change the lifecycle of API "lcApiId" with action "Deprecate"
+    Then The lifecycle status of API "lcApiId" should be "Deprecated"
+    # A Deprecated API can only be retired.
+    And The available lifecycle transitions of API "lcApiId" should be exactly "Retire"
+    And The lifecycle history of API "lcApiId" should record a transition from "Blocked" to "Deprecated"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Copy-version-in-CREATED checklist (ports RegistryLifeCycleInclusionTest#testChecklistItemsVisibility):
+  # copying a PUBLISHED API to a new version yields a NEW version whose lifecycle state is CREATED (not
+  # inherited-Published) and whose available transitions offer Publish and Deploy as a Prototype — the "checklist
+  # items" a freshly-copied version exposes. Distinct from the Published->Blocked->Deprecated scenario above:
+  # here the subject is the copied version's own fresh CREATED state and its offered transitions. The CREATED
+  # transition set is pinned exactly (verified live on 4.7.0): a CREATED API offers exactly Publish +
+  # Deploy as a Prototype.
+  @cap:publisher @feat:api-lifecycle @type:regression @legacy:RegistryLifeCycleInclusionTest
+  Scenario Outline: Copying a published API to a new version yields a CREATED version offering Publish as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "copyBaseApiId" and deployed it
+    When I publish the "apis" resource with id "copyBaseApiId"
+    Then The lifecycle status of API "copyBaseApiId" should be "Published"
+
+    # Copy the published API to a new version (2.0.0), not as default.
+    When I create a new version "2.0.0" of "apis" resource "copyBaseApiId" with default version "false" as "copyNewVersionId"
+    Then The response status code should be 201
+
+    # The copied version is in CREATED (a fresh version does not inherit the source's Published state).
+    And The lifecycle status of API "copyNewVersionId" should be "Created"
+    # Its available transitions are exactly Publish + Deploy as a Prototype (the CREATED checklist items).
+    And The available lifecycle transitions of API "copyNewVersionId" should be exactly "Publish,Deploy as a Prototype"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Demoting a published API back to Created must retain existing subscriptions. Runs as admin (needs both the
+  # publisher lifecycle scope and the consumer subscribe scope). Ports APIMANAGER5337SubscriptionRetainTestCase.
+  @cap:publisher @feat:api-lifecycle @type:regression @dep:devportal @legacy:APIMANAGER5337SubscriptionRetainTestCase
+  Scenario Outline: Demoting a published API to Created retains its subscriptions as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "subRetainApiId" and deployed it
+    When I publish the "apis" resource with id "subRetainApiId"
+    Then The lifecycle status of API "subRetainApiId" should be "Published"
+
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "subRetainApp"
+    And I create an application with payload "subRetainApp"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "subRetainSub"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "subRetainApiId" using application "createdAppId" with payload "subRetainSub" as "subRetainSubId"
+
+    When I change the lifecycle of API "subRetainApiId" with action "Demote to Created"
+    Then The lifecycle status of API "subRetainApiId" should be "Created"
+    When I retrieve the subscription for Api "subRetainApiId" by Application "createdAppId"
+    Then The response status code should be 200
+    And The subscription with id "subRetainSubId" should be in the list of all subscriptions
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Custom API lifecycle: inject a custom LifeCycle (adds a Promoted state) into the tenant configuration, then an
+  # API transitions Published -> Promoted -> Published via the custom Promote / Re-Publish events. The original
+  # tenant config is restored. Admin actor (tenant-config is admin-only). Ports CustomLifeCycleTestCase.
+  @cap:publisher @feat:api-lifecycle @rule:custom-lifecycle @type:regression @dep:admin @legacy:CustomLifeCycleTestCase
+  Scenario Outline: A custom API lifecycle adds a Promoted state as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I capture the tenant configuration as "origTenantConf"
+    When I capture the tenant configuration as "customTenantConf"
+    And I set the JSON field "LifeCycle" from file "artifacts/lifecycle/custom_api_lifecycle.json" in the payload "customTenantConf"
+    And I update the tenant configuration from "customTenantConf"
+    Then The response status code should be 200
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "clcApiId" and deployed it
+    When I publish the "apis" resource with id "clcApiId"
+    Then The lifecycle status of API "clcApiId" should be "Published"
+    When I change the lifecycle of API "clcApiId" with action "Promote"
+    Then The lifecycle status of API "clcApiId" should be "Promoted"
+    When I change the lifecycle of API "clcApiId" with action "Re-Publish"
+    Then The lifecycle status of API "clcApiId" should be "Published"
+    When I update the tenant configuration from "origTenantConf"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

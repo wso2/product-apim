@@ -34,6 +34,7 @@ capabilities:
       discovery:               { name: Search & browse }
       applications:            { name: Application CRUD }
       application-attributes:  { name: Custom application attributes (store + JWT claim) }
+      sdk-generation:          { name: Client SDK generation (per-language download) }
       subscribe:               { name: Subscribe / unsubscribe }
       subscription-management: { name: Subscription update / blocking }
       comments:                { name: Comments }
@@ -55,6 +56,7 @@ capabilities:
       throttling-enforcement: { name: Runtime throttling enforcement }
       security-enforcement:   { name: Token / scope / mutual-SSL enforcement }
       custom-auth-header:     { name: Custom authorization header }
+      cors:                   { name: CORS handling }
       schema-validation:      { name: Request / response schema validation }
       mcp-invocation:         { name: MCP tool invocation (proxy / from-OpenAPI / from-API) }
 
@@ -69,6 +71,7 @@ capabilities:
       application-management: { name: Admin application search & management }
       bot-detection:       { name: Bot detection }
       role-scope-mapping:  { name: System scope role-alias mapping }
+      api-categories:      { name: API category management }
 
   # API Governance is a distinct product API (/api/am/governance/v1) with its own token scopes (apim:gov_*),
   # so it is a top-level capability — not folded under admin (whose contract is /api/am/admin/v4).

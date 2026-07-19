@@ -46,12 +46,16 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class Utils {
     
@@ -90,6 +94,13 @@ public class Utils {
     /** Publisher API endpoints sub-resource collection: {@code /apis/{apiId}/endpoints} (POST add, GET list). */
     public static String getApiEndpointsURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/endpoints";
+    }
+
+    /** Publisher endpoint-validation probe: {@code /apis/validate-endpoint?endpointUrl=&apiId=} (POST). */
+    public static String getValidateEndpointURL(String baseUrl, String endpointUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-endpoint?endpointUrl="
+                + URLEncoder.encode(endpointUrl, StandardCharsets.UTF_8) + "&apiId="
+                + URLEncoder.encode(apiId, StandardCharsets.UTF_8);
     }
 
     /** Publisher GraphQL per-field complexity config: {@code /apis/{apiId}/graphql-policies/complexity} (GET/PUT). */
@@ -292,6 +303,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-state";
     }
 
+    /** Publisher — the lifecycle audit-trail / state-transition history of an API (GET). */
+    public static String getAPILifecycleHistoryURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-history";
+    }
+
     public static String getApplicationCreateURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications";
     }
@@ -312,12 +328,38 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + resourceId + "/documents";
     }
 
+    /** Publisher WSDL-definition endpoint: {@code /apis/{apiId}/wsdl} (GET) — the WSDL of a WSDL-imported API. */
+    public static String getWsdlOfApiURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/wsdl";
+    }
+
+    /** DevPortal WSDL-download endpoint: {@code /apis/{apiId}/wsdl?environmentName=} (GET) — downloads the
+     *  deployed API's WSDL from the store for a given gateway environment. */
+    public static String getDevPortalWsdlOfApiURL(String baseUrl, String apiId, String environmentName) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/wsdl?environmentName="
+                + URLEncoder.encode(environmentName, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * DevPortal client-SDK generation endpoint: {@code /apis/{apiId}/sdks/{language}} (GET). Returns a
+     * downloadable client-SDK zip for the given supported language. Ports the legacy
+     * {@code restAPIStore.generateSDKUpdated} (SdKsApi#apisApiIdSdksLanguageGet).
+     */
+    public static String getApiSdkURL(String baseUrl, String apiId, String language) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/sdks/" + language;
+    }
+
     public static String getApplicationEndpointURL(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId;
     }
 
     public static String getGenerateApplicationKeysURL(String baseUrl, String applicationId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/generate-keys";
+    }
+
+    /** DevPortal — reset (clear) an application's throttle counters so a throttled invocation succeeds again. */
+    public static String getResetThrottlePolicyURL(String baseUrl, String applicationId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/reset-throttle-policy";
     }
 
     /** DevPortal — regenerate (rotate) the consumer secret of an application's key mapping (by key-mapping id). */
@@ -412,6 +454,21 @@ public class Utils {
         return baseUrl + "services/RemoteUserStoreManagerService";
     }
 
+    /** Carbon admin SOAP service — claim metadata management (OIDC external-claim mappings). */
+    public static String getClaimMetadataManagementServiceURL(String baseUrl) {
+        return baseUrl + "services/ClaimMetadataManagementService";
+    }
+
+    /** Carbon admin SOAP service — OAuth admin (OIDC scope-to-claim mappings). */
+    public static String getOAuthAdminServiceURL(String baseUrl) {
+        return baseUrl + "services/OAuthAdminService";
+    }
+
+    /** Carbon admin SOAP service — identity application management (service-provider get/update). */
+    public static String getIdentityApplicationManagementServiceURL(String baseUrl) {
+        return baseUrl + "services/IdentityApplicationManagementService";
+    }
+
     public static String getNewAPIVersionURL(String baseUrl, String resourceType, String newVersion, Boolean defaultVersion, String apiId) {
 
         String endpointPath;
@@ -490,6 +547,57 @@ public class Utils {
 
     public static String getCommonPolicy(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies";
+    }
+
+    /** Publisher REST — a single common operation policy by id (GET/DELETE). */
+    public static String getCommonPolicyById(String baseUrl, String policyId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies/" + policyId;
+    }
+
+    /** Publisher REST — export a common operation policy by name/version to a zip ({@code format} = yaml|json). */
+    public static String getCommonPolicyExportURL(String baseUrl, String name, String version, String format) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies/export?name="
+                + URLEncoder.encode(name, StandardCharsets.UTF_8) + "&version="
+                + URLEncoder.encode(version, StandardCharsets.UTF_8) + "&format="
+                + URLEncoder.encode(format, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher REST — import a common operation policy from a zip (POST multipart field {@code fileName}). */
+    public static String getCommonPolicyImportURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies/import";
+    }
+
+    /** Publisher REST API — export an API as an archive (GET, returns a zip). */
+    public static String getApiExportURL(String baseUrl, String apiId, String format) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/export?apiId="
+                + URLEncoder.encode(apiId, StandardCharsets.UTF_8) + "&format="
+                + URLEncoder.encode(format, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher REST API — import an API archive (POST multipart with the zip as the "file" part). */
+    public static String getApiArchiveImportURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import";
+    }
+
+    /** Publisher REST API — upload a custom Synapse sequence backend for an API (PUT multipart: sequence + type). */
+    public static String getSequenceBackendURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/sequence-backend";
+    }
+
+    /** Publisher REST API — import an API from a WSDL (POST multipart: file + additionalProperties + type). */
+    public static String getImportWsdlURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-wsdl";
+    }
+
+    /** DevPortal — the tenant tag cloud (high limit so a full tag cloud is returned in one page). */
+    public static String getTagsURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "tags?limit=200";
+    }
+
+    /** DevPortal — search APIs with an explicit page-size {@code limit} (to prove the page cap). */
+    public static String getApiSearchURLWithLimit(String baseUrl, String query, int limit) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?limit=" + limit + "&query="
+                + URLEncoder.encode(query, StandardCharsets.UTF_8);
     }
 
     public static String getAPISpecificPolicy(String baseUrl, String apiId) {
@@ -662,6 +770,16 @@ public class Utils {
     /** Admin REST API — a single deny policy by condition id (get/update-status/delete). NOTE: singular path. */
     public static String getDenyPolicyByIdURL(String baseUrl, String conditionId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/deny-policy/" + conditionId;
+    }
+
+    /** Admin REST API — API categories collection (list/create). */
+    public static String getApiCategoriesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "api-categories";
+    }
+
+    /** Admin REST API — a single API category by id (update/delete). */
+    public static String getApiCategoryByIdURL(String baseUrl, String categoryId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "api-categories/" + categoryId;
     }
 
     /** Admin REST API — key managers collection (list/create). */
@@ -1271,5 +1389,57 @@ public class Utils {
         RequestAction requestAction = (RequestAction) TestContext.get(Constants.PENDING_HTTP_REQUEST);
         Assert.assertNotNull(requestAction, "No pending request found in TestContext");
         return requestAction;
+    }
+
+    /**
+     * Extracts a zip archive into {@code destDir} (creating parent directories). Used by the export-archive
+     * content-assertion steps (operation policy / API export) to read files out of a downloaded zip. Guards
+     * against zip-slip by rejecting entries that would escape {@code destDir}.
+     */
+    public static void unzip(File zipFile, File destDir) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                File outFile = new File(destDir, entry.getName());
+                if (!outFile.getCanonicalPath().startsWith(destDir.getCanonicalPath() + File.separator)) {
+                    throw new IOException("Zip entry escapes target directory: " + entry.getName());
+                }
+                if (entry.isDirectory()) {
+                    outFile.mkdirs();
+                } else {
+                    File parent = outFile.getParentFile();
+                    if (parent != null) {
+                        parent.mkdirs();
+                    }
+                    try (OutputStream os = new BufferedOutputStream(new FileOutputStream(outFile))) {
+                        byte[] buffer = new byte[4096];
+                        int len;
+                        while ((len = zis.read(buffer)) != -1) {
+                            os.write(buffer, 0, len);
+                        }
+                    }
+                }
+                zis.closeEntry();
+            }
+        }
+    }
+
+    /**
+     * Zips the contents of {@code sourceDir} into {@code zipFile} — each file placed under a top-level directory
+     * named after {@code sourceDir} (so an extracted archive keeps the {@code <policyName_version>/...} layout the
+     * operation-policy import expects). Used by the malformed-archive import negative.
+     */
+    public static void zipDirectory(File sourceDir, File zipFile) throws IOException {
+        String rootName = sourceDir.getName();
+        try (ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)))) {
+            File[] children = sourceDir.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    zos.putNextEntry(new ZipEntry(rootName + "/" + child.getName()));
+                    zos.write(Files.readAllBytes(child.toPath()));
+                    zos.closeEntry();
+                }
+            }
+        }
     }
 }

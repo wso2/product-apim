@@ -69,6 +69,17 @@ public class SimpleHTTPClient {
     private static final Log logger = LogFactory.getLog(SimpleHTTPClient.class);
     private final CloseableHttpClient client;
 
+    /**
+     * The management REST API (publisher/admin/devportal) surfaces a transient server-side failure as this
+     * generic error — HTTP 5xx with body {@code {"code":900967,"message":"General Error","description":"Server
+     * Error Occurred",...}}. Under the concurrent-boot load of the parallel-block lane this occasionally hits an
+     * otherwise-valid mutate (e.g. an API create returning 500/900967), so every request below retries ONLY on
+     * this exact signature. See {@link #withGeneralErrorRetry}.
+     */
+    private static final int GENERAL_ERROR_CODE = 900967;
+    private static final int GENERAL_ERROR_RETRIES = 3;
+    private static final long GENERAL_ERROR_RETRY_WAIT_MS = 2000L;
+
     private SimpleHTTPClient()  {
 
         try {
@@ -122,6 +133,56 @@ public class SimpleHTTPClient {
         return InstanceHolder.INSTANCE;
     }
 
+    /** A deferred HTTP call (build request -> execute -> construct response), rebuilt fresh on each retry. */
+    @FunctionalInterface
+    private interface HttpCall {
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse invoke() throws IOException;
+    }
+
+    /**
+     * Runs {@code call} and retries it — up to {@value #GENERAL_ERROR_RETRIES} attempts,
+     * {@value #GENERAL_ERROR_RETRY_WAIT_MS} ms apart — ONLY when the response is the management API's transient
+     * "General Error" (see {@link #GENERAL_ERROR_CODE}). Retrying that removes the load-induced flake WITHOUT
+     * masking a real result: any other outcome — a 2xx, a deterministic 4xx, or even a DIFFERENT 5xx such as the
+     * descriptive {@code "already exists"} / {@code "validation failure"} 500s some tests deliberately assert —
+     * is NOT a 900967, so it returns on the first attempt. {@code call} rebuilds its request each attempt, so a
+     * request entity (POST/PUT body, multipart) is re-sent cleanly rather than being read from a consumed stream.
+     */
+    private org.wso2.carbon.automation.test.utils.http.client.HttpResponse withGeneralErrorRetry(HttpCall call)
+            throws IOException {
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse response = null;
+        for (int attempt = 1; attempt <= GENERAL_ERROR_RETRIES; attempt++) {
+            response = call.invoke();
+            if (!isTransientGeneralError(response) || attempt == GENERAL_ERROR_RETRIES) {
+                break;
+            }
+            logger.warn("Transient " + GENERAL_ERROR_CODE + " General Error on attempt " + attempt + "/"
+                    + GENERAL_ERROR_RETRIES + "; retrying in " + GENERAL_ERROR_RETRY_WAIT_MS + "ms");
+            try {
+                Thread.sleep(GENERAL_ERROR_RETRY_WAIT_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        return response;
+    }
+
+    /**
+     * True iff the response is the management API's transient {@code 5xx / code:900967 "General Error"}. Requires
+     * BOTH the code and the "General Error" message so a gateway invocation fault (which is 5xx but carries a
+     * different code — e.g. 601000 malformed request, 303001 endpoint suspended — and no such message) is never
+     * mistaken for it and needlessly retried.
+     */
+    private static boolean isTransientGeneralError(
+            org.wso2.carbon.automation.test.utils.http.client.HttpResponse response) {
+        if (response == null || response.getResponseCode() < 500 || response.getData() == null) {
+            return false;
+        }
+        String body = response.getData();
+        return body.contains(String.valueOf(GENERAL_ERROR_CODE)) && body.contains("General Error");
+    }
+
     /**
      * Send a HTTP GET request to the specified URL
      *
@@ -133,10 +194,60 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGet(String url, Map<String, String> headers)
             throws IOException {
 
+        return withGeneralErrorRetry(() -> {
+            HttpGet request = new HttpGet(url);
+            setHeaders(headers, request);
+            try (CloseableHttpResponse response = client.execute(request)) {
+                return constructResponse(response);
+            }
+        });
+    }
+
+    /**
+     * GETs a URL and writes the raw response body BYTES to a temp file, returning it. Needed for binary payloads
+     * (e.g. an API export archive zip) that {@link #doGet} would corrupt by decoding the body as a UTF-8 String.
+     * The HTTP status is returned separately so callers can assert it. On a non-2xx status the (text) error body
+     * is written to the file too, so the caller can inspect it.
+     *
+     * @param url     target endpoint URL
+     * @param headers request headers
+     * @param suffix  temp-file suffix (e.g. ".zip")
+     * @return a DownloadResult carrying the status code and the temp file
+     * @throws IOException if the request or file write fails
+     */
+    public DownloadResult doGetToFile(String url, Map<String, String> headers, String suffix) throws IOException {
         HttpGet request = new HttpGet(url);
         setHeaders(headers, request);
         try (CloseableHttpResponse response = client.execute(request)) {
-            return constructResponse(response);
+            int code = response.getStatusLine().getStatusCode();
+            File file = File.createTempFile("download", suffix);
+            file.deleteOnExit();
+            if (response.getEntity() != null) {
+                try (InputStream in = response.getEntity().getContent();
+                     FileOutputStream out = new FileOutputStream(file)) {
+                    in.transferTo(out);
+                }
+            }
+            return new DownloadResult(code, file);
+        }
+    }
+
+    /** Result of {@link #doGetToFile}: the HTTP status and the temp file holding the response body bytes. */
+    public static final class DownloadResult {
+        private final int statusCode;
+        private final File file;
+
+        public DownloadResult(int statusCode, File file) {
+            this.statusCode = statusCode;
+            this.file = file;
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public File getFile() {
+            return file;
         }
     }
 
@@ -152,11 +263,13 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doHead(String url, Map<String, String> headers)
             throws IOException {
 
-        HttpHead request = new HttpHead(url);
-        setHeaders(headers, request);
-        try (CloseableHttpResponse response = client.execute(request)) {
-            return constructResponse(response);
-        }
+        return withGeneralErrorRetry(() -> {
+            HttpHead request = new HttpHead(url);
+            setHeaders(headers, request);
+            try (CloseableHttpResponse response = client.execute(request)) {
+                return constructResponse(response);
+            }
+        });
     }
 
     /**
@@ -238,11 +351,13 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doDelete(
             String url, final Map<String, String> headers) throws IOException {
 
-        HttpDelete request = new HttpDelete(url);
-        setHeaders(headers, request);
-        try (CloseableHttpResponse response = client.execute(request)) {
-            return constructResponse(response);
-        }
+        return withGeneralErrorRetry(() -> {
+            HttpDelete request = new HttpDelete(url);
+            setHeaders(headers, request);
+            try (CloseableHttpResponse response = client.execute(request)) {
+                return constructResponse(response);
+            }
+        });
     }
 
     /**
@@ -259,18 +374,20 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
-        HttpPost request = new HttpPost(url);
-        setHeaders(headers, request);
-        boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
+        return withGeneralErrorRetry(() -> {
+            HttpPost request = new HttpPost(url);
+            setHeaders(headers, request);
+            boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
 
-        if (payload != null) {
-            EntityTemplate ent = getEntityTemplate(payload, contentType, zip);
-            request.setEntity(ent);
-        }
+            if (payload != null) {
+                EntityTemplate ent = getEntityTemplate(payload, contentType, zip);
+                request.setEntity(ent);
+            }
 
-        try (CloseableHttpResponse response = client.execute(request)) {
-            return constructResponse(response);
-        }
+            try (CloseableHttpResponse response = client.execute(request)) {
+                return constructResponse(response);
+            }
+        });
     }
 
     /**
@@ -287,46 +404,48 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> formFields) throws IOException {
 
-        HttpPost request = new HttpPost(url);
+        return withGeneralErrorRetry(() -> {
+            HttpPost request = new HttpPost(url);
 
-        setHeaders(headers, request);
+            setHeaders(headers, request);
 
-        // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
-        request.removeHeaders("Content-Type");
+            // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
+            request.removeHeaders("Content-Type");
 
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.setMode(HttpMultipartMode.STRICT);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.setMode(HttpMultipartMode.STRICT);
 
-        // Add files with specific field names - preserve original filenames
-        if (files != null) {
-            for (Map.Entry<String, File> fileEntry : files.entrySet()) {
-                File file = fileEntry.getValue();
-                if (file != null) {
-                    String fileName = file.getName();
-                    builder.addBinaryBody(
-                            fileEntry.getKey(),
-                            file,
-                            ContentType.APPLICATION_OCTET_STREAM,
-                            fileName
-                    );
+            // Add files with specific field names - preserve original filenames
+            if (files != null) {
+                for (Map.Entry<String, File> fileEntry : files.entrySet()) {
+                    File file = fileEntry.getValue();
+                    if (file != null) {
+                        String fileName = file.getName();
+                        builder.addBinaryBody(
+                                fileEntry.getKey(),
+                                file,
+                                ContentType.APPLICATION_OCTET_STREAM,
+                                fileName
+                        );
+                    }
                 }
             }
-        }
 
-        // Add form fields
-        if (formFields != null) {
-            for (Map.Entry<String, String> field : formFields.entrySet()) {
-                builder.addTextBody(field.getKey(), field.getValue(),
-                        ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
+            // Add form fields
+            if (formFields != null) {
+                for (Map.Entry<String, String> field : formFields.entrySet()) {
+                    builder.addTextBody(field.getKey(), field.getValue(),
+                            ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
+                }
             }
-        }
 
-        HttpEntity multipartEntity = builder.build();
-        request.setEntity(multipartEntity);
+            HttpEntity multipartEntity = builder.build();
+            request.setEntity(multipartEntity);
 
-        try (CloseableHttpResponse response = client.execute(request)) {
-            return constructResponse(response);
-        }
+            try (CloseableHttpResponse response = client.execute(request)) {
+                return constructResponse(response);
+            }
+        });
     }
 
     /**
@@ -343,18 +462,20 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
-        HttpPut request = new HttpPut(url);
-        setHeaders(headers, request);
-        final boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
+        return withGeneralErrorRetry(() -> {
+            HttpPut request = new HttpPut(url);
+            setHeaders(headers, request);
+            final boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
 
-        if (payload != null) {
-            EntityTemplate ent = getEntityTemplate(payload, contentType, zip);
-            request.setEntity(ent);
-        }
+            if (payload != null) {
+                EntityTemplate ent = getEntityTemplate(payload, contentType, zip);
+                request.setEntity(ent);
+            }
 
-        try (CloseableHttpResponse response = client.execute(request)) {
-            return constructResponse(response);
-        }
+            try (CloseableHttpResponse response = client.execute(request)) {
+                return constructResponse(response);
+            }
+        });
     }
 
     /**
@@ -371,46 +492,48 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> formFields) throws IOException {
 
-        HttpPut request = new HttpPut(url);
+        return withGeneralErrorRetry(() -> {
+            HttpPut request = new HttpPut(url);
 
-        setHeaders(headers, request);
+            setHeaders(headers, request);
 
-        // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
-        request.removeHeaders("Content-Type");
+            // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
+            request.removeHeaders("Content-Type");
 
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.setMode(HttpMultipartMode.STRICT);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.setMode(HttpMultipartMode.STRICT);
 
-        // Add files with specific field names - preserve original filenames
-        if (files != null) {
-            for (Map.Entry<String, File> fileEntry : files.entrySet()) {
-                File file = fileEntry.getValue();
-                if (file != null) {
-                    String fileName = file.getName();
-                    builder.addBinaryBody(
-                            fileEntry.getKey(),
-                            file,
-                            ContentType.APPLICATION_OCTET_STREAM,
-                            fileName
-                    );
+            // Add files with specific field names - preserve original filenames
+            if (files != null) {
+                for (Map.Entry<String, File> fileEntry : files.entrySet()) {
+                    File file = fileEntry.getValue();
+                    if (file != null) {
+                        String fileName = file.getName();
+                        builder.addBinaryBody(
+                                fileEntry.getKey(),
+                                file,
+                                ContentType.APPLICATION_OCTET_STREAM,
+                                fileName
+                        );
+                    }
                 }
             }
-        }
 
-        // Add form fields
-        if (formFields != null) {
-            for (Map.Entry<String, String> field : formFields.entrySet()) {
-                builder.addTextBody(field.getKey(), field.getValue(),
-                        ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
+            // Add form fields
+            if (formFields != null) {
+                for (Map.Entry<String, String> field : formFields.entrySet()) {
+                    builder.addTextBody(field.getKey(), field.getValue(),
+                            ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
+                }
             }
-        }
 
-        HttpEntity multipartEntity = builder.build();
-        request.setEntity(multipartEntity);
+            HttpEntity multipartEntity = builder.build();
+            request.setEntity(multipartEntity);
 
-        try (CloseableHttpResponse response = client.execute(request)) {
-            return constructResponse(response);
-        }
+            try (CloseableHttpResponse response = client.execute(request)) {
+                return constructResponse(response);
+            }
+        });
     }
 
     /**
@@ -426,18 +549,20 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPatch(String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
-        HttpPatch request = new HttpPatch(url);
-        setHeaders(headers, request);
-        final boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
+        return withGeneralErrorRetry(() -> {
+            HttpPatch request = new HttpPatch(url);
+            setHeaders(headers, request);
+            final boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
 
-        if (payload != null) {
-            EntityTemplate ent = getEntityTemplate(payload, contentType, zip);
-            request.setEntity(ent);
-        }
+            if (payload != null) {
+                EntityTemplate ent = getEntityTemplate(payload, contentType, zip);
+                request.setEntity(ent);
+            }
 
-        try (CloseableHttpResponse response = client.execute(request)) {
-            return constructResponse(response);
-        }
+            try (CloseableHttpResponse response = client.execute(request)) {
+                return constructResponse(response);
+            }
+        });
     }
 
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse sendSoapRequest(String url, String payload, String soapAction, String adminUsername,

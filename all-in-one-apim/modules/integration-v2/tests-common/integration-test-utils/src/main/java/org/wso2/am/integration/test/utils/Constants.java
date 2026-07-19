@@ -38,7 +38,7 @@ public class Constants {
 
     public static final String BASE_URL = "baseUrl";
 
-    public static final long DEPLOYMENT_WAIT_TIME = 60 * 1000;
+    public static final long DEPLOYMENT_WAIT_TIME = 120 * 1000;
     public static final long UNDEPLOYMENT_WAIT_TIME = 30 * 1000;
     public static final long SERVER_STARTUP_WAIT_TIME = 300 * 1000;
 
@@ -146,6 +146,7 @@ public class Constants {
     public static final String CREATED_KEY_MANAGER_IDS = "createdKeyManagerIds";
     public static final String CREATED_DENY_POLICY_IDS = "createdDenyPolicyIds";
     public static final String CREATED_ORGANIZATION_IDS = "createdOrganizationIds";
+    public static final String CREATED_API_CATEGORY_IDS = "createdApiCategoryIds";
 
     public static class REQUEST_HEADERS {
 

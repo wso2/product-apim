@@ -1,0 +1,34 @@
+{
+  "name": "${UNIQUE:CommaParamsAPI}",
+  "context": "${UNIQUE:commaParamsCtx}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/{+uri.var.courseInfo}"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/{+uri.var.courseInfo}"
+    }
+  },
+  "description": "Comma-separated path params: reserved-expansion resource /courses/{+courseInfo} matches a comma-bearing segment; {+} endpoint preserves the commas to the backend",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/courses/{+courseInfo}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}
