@@ -18,6 +18,8 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -44,6 +46,8 @@ import java.util.concurrent.TimeUnit;
  * {@code Authorization} header on the upgrade request (the primary auth mode legacy exercised).</p>
  */
 public class WebSocketInvocationSteps {
+
+    private static final Log log = LogFactory.getLog(WebSocketInvocationSteps.class);
 
     private static final String BASE_GATEWAY_WS_URL_KEY = "baseGatewayWsUrl";
     private static final String BASE_GATEWAY_WSS_URL_KEY = "baseGatewayWssUrl";
@@ -545,6 +549,16 @@ public class WebSocketInvocationSteps {
                 + "] but did not observe it; last error message: " + lastMsg);
     }
 
+    /** Best-effort close of a per-attempt WS HttpClient; a close failure must never mask the attempt's result. */
+    private static void closeQuietly(HttpClient client) {
+        try {
+            client.close();
+        } catch (Exception closeFailure) {
+            // the client is being discarded anyway; log but never let cleanup override the return/throw
+            log.warn("Ignoring failure to close WS HttpClient (possible resource leak): " + closeFailure.getMessage());
+        }
+    }
+
     /** graphql-ws: init/ack, send one start(query), return the first {@code type:error} message (or null). */
     private String subscribeExpectError(String wsUrl, String token, String query) throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
@@ -576,22 +590,38 @@ public class WebSocketInvocationSteps {
                         }
                     }).get(20, TimeUnit.SECONDS);
         } catch (Exception connectFailed) {
+            log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
+            closeQuietly(client);
             return null;
         }
         try {
-            Thread.sleep(15000);
+            // A complexity/depth rejection is produced by the gateway QueryAnalyzer at the START frame and needs no
+            // backend WS leg, so no long pre-init wait is required here — a short settle just avoids racing the
+            // handshake on a freshly-opened connection. Anything slower (cold route/warm-up) is absorbed by the
+            // caller RETRYING (this method returns null below), NOT by a bigger blind sleep.
+            Thread.sleep(2000);
             ws.sendText("{\"type\":\"connection_init\",\"payload\":{}}", true);
-            ack.get(30, TimeUnit.SECONDS);
+            ack.get(15, TimeUnit.SECONDS);
             String start = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\":\"" + query.replace("\"", "\\\"") + "\"}}";
             ws.sendText(start, true);
-            try {
-                return error.get(30, TimeUnit.SECONDS);
-            } catch (java.util.concurrent.TimeoutException noError) {
-                return null;
-            }
+            return error.get(20, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.TimeoutException | java.util.concurrent.ExecutionException e) {
+            // init/ack/start/error did not complete in time — an INCONCLUSIVE attempt, not a test failure. Return
+            // null so the caller's retry-until-deadline loop tries again; the loop asserts a clear failure if no
+            // attempt ever observes the expected code. (Previously the ack.get timeout was unguarded and escaped
+            // the retry loop as a bare TimeoutException — the recurring CI flake this fixes.)
+            log.warn("graphql-ws init/ack/error wait did not complete (inconclusive attempt, caller will retry): "
+                    + e.getMessage());
+            return null;
         } finally {
-            ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            try {
+                ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            } catch (Exception closeFailure) {
+                // best-effort close of an already-closing/failed WS — logged, never allowed to skip closeQuietly below
+                log.warn("Ignoring failure to send graphql-ws close frame: " + closeFailure.getMessage());
+            }
+            closeQuietly(client);
         }
     }
 
@@ -631,12 +661,14 @@ public class WebSocketInvocationSteps {
                         }
                     }).get(20, TimeUnit.SECONDS);
         } catch (Exception connectFailed) {
+            log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
+            closeQuietly(client);
             return false;
         }
         try {
-            Thread.sleep(15000);   // let the gateway bring up the backend WS leg
+            Thread.sleep(15000);   // let the gateway bring up the backend WS leg (frames need the backend relay)
             ws.sendText("{\"type\":\"connection_init\",\"payload\":{}}", true);
-            ack.get(30, TimeUnit.SECONDS);
+            ack.get(15, TimeUnit.SECONDS);
             String q = query.replace("\"", "\\\"");
             for (int i = 1; i <= frames; i++) {
                 String start = "{\"id\":\"" + i + "\",\"type\":\"start\",\"payload\":{\"variables\":{},"
@@ -649,8 +681,20 @@ public class WebSocketInvocationSteps {
             }
             Thread.sleep(5000);   // drain any late throttle frame
             return true;
+        } catch (java.util.concurrent.TimeoutException | java.util.concurrent.ExecutionException e) {
+            // ack/send did not complete in time — inconclusive attempt. Return false so the caller retries;
+            // never let a slow handshake escape as a bare TimeoutException that aborts the test.
+            log.warn("graphql-ws ack/send did not complete (inconclusive attempt, caller will retry): "
+                    + e.getMessage());
+            return false;
         } finally {
-            ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            try {
+                ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            } catch (Exception closeFailure) {
+                // best-effort close of an already-closing/failed WS — logged, never allowed to skip closeQuietly below
+                log.warn("Ignoring failure to send graphql-ws close frame: " + closeFailure.getMessage());
+            }
+            closeQuietly(client);
         }
     }
 
@@ -659,7 +703,9 @@ public class WebSocketInvocationSteps {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<Void> ack = new CompletableFuture<>();
         CompletableFuture<String> data = new CompletableFuture<>();
-        WebSocket ws = client.newWebSocketBuilder()
+        WebSocket ws;
+        try {
+            ws = client.newWebSocketBuilder()
                 .header("Authorization", "Bearer " + token)
                 .subprotocols("graphql-ws")
                 .connectTimeout(java.time.Duration.ofSeconds(15))
@@ -683,6 +729,11 @@ public class WebSocketInvocationSteps {
                     }
                 })
                 .get(20, TimeUnit.SECONDS);
+        } catch (Exception connectFailed) {
+            log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
+            closeQuietly(client);
+            return null;
+        }
         try {
             // The gateway establishes the backend WS leg asynchronously after the client handshake; sending
             // connection_init before it is up means the ack is never relayed back. The legacy client sleeps 20s
@@ -695,7 +746,13 @@ public class WebSocketInvocationSteps {
             ws.sendText(start, true);
             return data.get(30, TimeUnit.SECONDS);
         } finally {
-            ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            try {
+                ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            } catch (Exception closeFailure) {
+                // best-effort close of an already-closing/failed WS — logged, never allowed to skip closeQuietly below
+                log.warn("Ignoring failure to send graphql-ws close frame: " + closeFailure.getMessage());
+            }
+            closeQuietly(client);
         }
     }
 
