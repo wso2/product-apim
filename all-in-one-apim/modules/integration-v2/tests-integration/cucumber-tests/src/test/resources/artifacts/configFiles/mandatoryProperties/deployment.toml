@@ -8,3 +8,11 @@
 required = true
 name = "PropertyName"
 description = "Property Description"
+
+# Co-located orthogonal config for the AI Design Assistant pluggable-implementation test
+# (features/publisher/ai_design_assistant_bad_impl.feature, carbon-apimgt PR #13920). A deliberately
+# non-existent implementation class exercises DesignAssistantServiceFactory's reflective-instantiation
+# failure path, which must surface as a 500 at the /design-assistant endpoints. Orthogonal to the
+# mandatory-properties config above (different table); the assistant is enabled by the distribution default.
+[apim.ai]
+design_assistant_impl = "org.wso2.carbon.apimgt.integration.test.NonExistentDesignAssistant"

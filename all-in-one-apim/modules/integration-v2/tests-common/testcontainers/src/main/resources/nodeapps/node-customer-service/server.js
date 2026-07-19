@@ -20,6 +20,7 @@ const bodyParser = require('body-parser');
 const { WebSocketServer } = require('ws');
 const customerRoutes = require('./routes/customerRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const aiAssistantRoutes = require('./routes/aiAssistantRoutes');
 
 const app = express();
 const port = 3001;
@@ -30,6 +31,9 @@ app.use(bodyParser.json());
 
 app.use('/jaxrs_basic/services/customers/customerservice', customerRoutes);
 app.use('/jaxrs_basic/services/customers/customerservice', orderRoutes);
+// Canned AI-service stub for the Marketplace Assistant default-implementation happy-path test (PR #13920).
+// APIM's [apim.ai] endpoint points at http://nodebackend:3001 and the default resource paths are under /ai.
+app.use('/ai', aiAssistantRoutes);
 
 const server = app.listen(port, () => {
   console.log(`Customer Service API running at http://nodebackend:${port}`);

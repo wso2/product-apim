@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  AI-assistant-only suite (carbon-apimgt PR #13920). Runs ONLY the newly added AI-assistant scenarios, each in
+  the same-config block it lives in within testng-v2.xml, so every block keeps its exact container config
+  (default lane / mandatoryProperties overlay / customAuthHeaderAndAppSharing overlay + backend). Boots 4
+  containers total (vs. the full suite's ~16) and runs only the 9 AI scenarios.
+
+  Select with: -Dsurefire.suite.xml=testng-v2-ai.xml
+-->
+<suite name="Integration Tests v2 - AI Assistants" parallel="tests" thread-count="2">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.CoverageAggregationListener"/>
+    </listeners>
+
+    <!-- I1 + I2 : Marketplace Assistant contract in the default (AI-unconfigured) lane -->
+    <test name="IntegrationV2-DevPortal" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="devportal"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiMarketplaceAssistantRunner"/>
+        </classes>
+    </test>
+
+    <!-- I1 + I2 : Design Assistant contract in the default (AI-unconfigured) lane -->
+    <test name="IntegrationV2-Publisher" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="publisher"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAiDesignAssistantRunner"/>
+        </classes>
+    </test>
+
+    <!-- I3 : Design Assistant non-instantiable implementation class -> 500 (bogus-impl overlay) -->
+    <test name="IntegrationV2-MandatoryProperties" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="mandatory-properties"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mandatoryProperties/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAiDesignAssistantBadImplRunner"/>
+        </classes>
+    </test>
+
+    <!-- I4 : Marketplace Assistant default-impl happy path against the canned AI backend (endpoint overlay + backend) -->
+    <test name="IntegrationV2-CustomAuthHeaderAndAppSharing" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="custom-auth-sharing"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/customAuthHeaderAndAppSharing/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiMarketplaceAssistantBackendRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAiDesignAssistantBackendRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiApiChatBackendRunner"/>
+        </classes>
+    </test>
+
+    <!-- Invalid AI credential (key branch): endpoints point at the stub's 401-returning AI resources -->
+    <test name="IntegrationV2-AiInvalidKey" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="ai-invalid-key"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/aiInvalidKey/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiMarketplaceAssistantInvalidKeyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAiDesignAssistantInvalidKeyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiApiChatInvalidKeyRunner"/>
+        </classes>
+    </test>
+</suite>

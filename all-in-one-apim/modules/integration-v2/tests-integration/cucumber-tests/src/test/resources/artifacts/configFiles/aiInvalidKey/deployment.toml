@@ -1,0 +1,19 @@
+# Feature-specific TOML overlay for the IntegrationV2-AiInvalidKey block
+#
+# Configures the AI services via the KEY branch (apim.ai.key set => isKeyProvided=true): the default impls
+# exchange the key for an OAuth token at apim.ai.token_endpoint, then call the AI resource with that bearer
+# token. Both endpoints point at the node stub (http://nodebackend:3001/ai/...), and the resource paths are the
+# SAME happy-path routes the stub serves - the invalid credential alone drives the rejection, not a separate URL.
+#
+# The key below is deliberately NOT the stub's valid key, so /ai/token rejects the exchange with 401,
+# AccessTokenGenerator.getAccessToken() returns null, and the follow-up resource call arrives as
+# "Authorization: Bearer null" - which the stub's resource guard rejects with 401. This asserts the REST layer's
+# credential-error mapping:
+#   - chat / generate-payload / api-chat prepare  -> 401 (invokeAIService "Invalid credentials")
+#   - marketplace api-count                       -> 500 (generic "Received status code: 401" error)
+[apim.ai]
+enable = true
+key = "integration-v2-invalid-key"
+token_endpoint = "http://nodebackend:3001/ai/token"
+endpoint = "http://nodebackend:3001"
+
