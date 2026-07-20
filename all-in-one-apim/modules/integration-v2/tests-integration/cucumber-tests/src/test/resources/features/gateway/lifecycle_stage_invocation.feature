@@ -264,7 +264,8 @@ Feature: Gateway Lifecycle-Stage Invocation
     And I set the field "context" to "{{ctxNewContext}}" in the payload "ctxPayload"
     And I update "apis" resource of id "ctxApiId" with payload "ctxPayload"
     Then The response status code should be 200
-    And I deploy the API with id "ctxApiId"
+    When I deploy the API with id "ctxApiId"
+    Then The response status code should be 201
 
     # The original context still serves (context is immutable); the attempted new context is never routable (404).
     When I invoke the API at gateway context "{{ctxOldContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds

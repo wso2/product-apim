@@ -162,13 +162,16 @@ public class EndpointCertificateSteps {
         String url = Utils.getEndpointCertificateUsageURL(getBaseUrl(), Utils.resolveContextPlaceholders(alias),
                 limit, offset);
         long endTime = System.currentTimeMillis() + timeoutSeconds * 1000L;
-        HttpResponse response;
         int actual = -1;
         while (true) {
-            response = Requests.get(url, publisherAuthHeaders());
-            if (response != null && response.getResponseCode() == 200
-                    && response.getData() != null && !response.getData().isEmpty()) {
-                actual = new JSONObject(response.getData()).optInt("count", -1);
+            try {
+                HttpResponse response = Requests.get(url, publisherAuthHeaders());
+                if (response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty()) {
+                    actual = new JSONObject(response.getData()).optInt("count", -1);
+                }
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling
             }
             if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
                 break;

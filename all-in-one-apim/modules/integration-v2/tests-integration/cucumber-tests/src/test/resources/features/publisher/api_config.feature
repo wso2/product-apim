@@ -299,12 +299,26 @@ Feature: Publisher API Runtime & Common Configuration
     And I set the field "securityScheme" to null in the payload "nullApiFull1"
     And I update "apis" resource of id "nullApiId" with payload "nullApiFull1"
     Then The response status code should be 200
+    # Observable state (pinned live): a null securityScheme is NOT applied — the server retains/re-defaults the
+    # scheme set, so the retrieved API still carries the default schemes.
+    When I retrieve the "apis" resource with id "nullApiId"
+    And I extract response field "securityScheme" and store it as "nullApiPostSS"
+    Then the actual value of "nullApiPostSS" should match the expected value:
+    """
+    ["oauth_basic_auth_api_key_mandatory","oauth2"]
+    """
     # Null endpointConfig -> update accepted.
     When I retrieve the "apis" resource with id "nullApiId"
     And I put the response payload in context as "nullApiFull2"
     And I set the field "endpointConfig" to null in the payload "nullApiFull2"
     And I update "apis" resource of id "nullApiId" with payload "nullApiFull2"
     Then The response status code should be 200
+    # Observable state (pinned live): unlike securityScheme, a null endpointConfig IS applied — the retrieved API
+    # carries no endpoint configuration any more (the create payload's production/sandbox endpoints are gone).
+    When I retrieve the "apis" resource with id "nullApiId"
+    Then The response status code should be 200
+    And The response should not contain "production_endpoints"
+    And The response should not contain "sandbox_endpoints"
 
     Examples:
       | actor                     |

@@ -99,7 +99,7 @@ Feature: Gateway CORS
   # Access-Control-Allow-Methods "GET, POST, DELETE, PUT, OPTIONS, HEAD" and Access-Control-Allow-Headers
   # "Content-Type"; a 200 carrying those backend headers proves the OPTIONS was routed to the backend. (The legacy
   # asserted a different backend's exact header values; here we assert THIS backend's values.)
-  @cap:gateway @feat:cors @rule:backend-cors @type:regression @dep:publisher @legacy:CORSBackendTrafficRouteTestCase
+  @cap:gateway @feat:cors @rule:backend-cors @type:regression @dep:publisher @dep:devportal @legacy:CORSBackendTrafficRouteTestCase
   Scenario Outline: With gateway CORS disabled an OPTIONS request is routed to the backend and its CORS headers pass through as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

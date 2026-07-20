@@ -355,13 +355,17 @@ public class VisibilityAccessSteps {
     private void searchUntilCount(String url, Map<String, String> headers, int expectedCount, int timeoutSeconds)
             throws IOException, InterruptedException {
         long endTime = System.currentTimeMillis() + timeoutSeconds * 1000L;
-        HttpResponse response;
+        HttpResponse response = null;
         int actual = -1;
         while (true) {
-            response = Requests.get(url, headers);
-            if (response != null && response.getResponseCode() == 200
-                    && response.getData() != null && !response.getData().isEmpty()) {
-                actual = new JSONObject(response.getData()).optInt("count", -1);
+            try {
+                response = Requests.get(url, headers);
+                if (response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty()) {
+                    actual = new JSONObject(response.getData()).optInt("count", -1);
+                }
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling; the previous response (if any) is retained
             }
             if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
                 break;
@@ -386,6 +390,14 @@ public class VisibilityAccessSteps {
     public void tagCloudShouldNotContainTag(String tagValue) {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No tag cloud response captured");
+        // Guard status AND body BEFORE the absence check: an error response (whose JSON carries no "list") or an
+        // empty body would otherwise "not contain" the tag VACUOUSLY — a false pass on a visibility assertion.
+        Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300,
+                "Tag cloud retrieval failed — cannot assert tag absence against an error response; got "
+                        + response.getResponseCode() + " / body=" + response.getData());
+        Assert.assertTrue(response.getData() != null && !response.getData().isEmpty(),
+                "Tag cloud response carried no body — cannot assert tag absence against an empty response (status "
+                        + response.getResponseCode() + ")");
         String resolved = Utils.resolveContextPlaceholders(tagValue);
         JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
         boolean present = false;

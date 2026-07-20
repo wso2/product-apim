@@ -249,8 +249,17 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
             throw new IOException("Secondary user-store H2 schema creation (RunScript) failed, exit "
                     + r.getExitCode() + "\nstdout: " + r.getStdout() + "\nstderr: " + r.getStderr());
         }
-        // execInContainer may create the file as root; the server runs as wso2carbon and must WRITE it.
-        execInContainer("bash", "-c", "chmod 0666 " + home + "/" + dbRelativePath + ".mv.db");
+        // execInContainer may create the file as root; the server runs as wso2carbon and must WRITE it. A failed
+        // chmod must FAIL here: H2 silently opens a non-writable file READ-ONLY, so store writes would return 2xx
+        // while no-opping (isExistingUser false after a successful-looking addUser) — a silent degradation far
+        // harder to diagnose than a boot failure.
+        Container.ExecResult chmod = execInContainer("bash", "-c",
+                "chmod 0666 " + home + "/" + dbRelativePath + ".mv.db");
+        if (chmod.getExitCode() != 0) {
+            throw new IOException("Secondary user-store H2 DB chmod failed (the .mv.db would be read-only for "
+                    + "wso2carbon and store writes would silently no-op), exit " + chmod.getExitCode()
+                    + "\nstdout: " + chmod.getStdout() + "\nstderr: " + chmod.getStderr());
+        }
         logger.info("Created secondary user-store H2 schema at {} (via product dbscripts/h2.sql)", dbRelativePath);
     }
 

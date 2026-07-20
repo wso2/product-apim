@@ -26,7 +26,6 @@ import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
-import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -156,10 +155,8 @@ public class JwtGrantSteps {
                 + "<xsd:identityProviderName>" + issuer + "</xsd:identityProviderName>"
                 + "<xsd:primary>false</xsd:primary>"
                 + "</mgt:identityProvider></mgt:addIdP></soapenv:Body></soapenv:Envelope>";
-        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
-                Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:addIdP",
+        Requests.soap(Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:addIdP",
                 Identity.actingActor().getUserName(), Identity.actingActor().getPassword());
-        TestContext.set("httpResponse", response);
     }
 
     /** Verifies a trusted IdP exists by name via getIdPByName; publishes the response for assertion. */
@@ -170,10 +167,8 @@ public class JwtGrantSteps {
                 + "xmlns:mgt=\"" + IDP_MGT_NS + "\"><soapenv:Header/><soapenv:Body>"
                 + "<mgt:getIdPByName><mgt:idPName>" + issuer + "</mgt:idPName></mgt:getIdPByName>"
                 + "</soapenv:Body></soapenv:Envelope>";
-        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
-                Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:getIdPByName",
+        Requests.soap(Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:getIdPByName",
                 Identity.actingActor().getUserName(), Identity.actingActor().getPassword());
-        TestContext.set("httpResponse", response);
     }
 
     /**
@@ -283,9 +278,7 @@ public class JwtGrantSteps {
                 + "</xsd:permissionAndRoleConfig>"
                 + "<xsd:primary>false</xsd:primary>"
                 + "</mgt:identityProvider></mgt:updateIdP></soapenv:Body></soapenv:Envelope>";
-        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
-                Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:updateIdP",
+        Requests.soap(Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:updateIdP",
                 Identity.actingActor().getUserName(), Identity.actingActor().getPassword());
-        TestContext.set("httpResponse", response);
     }
 }

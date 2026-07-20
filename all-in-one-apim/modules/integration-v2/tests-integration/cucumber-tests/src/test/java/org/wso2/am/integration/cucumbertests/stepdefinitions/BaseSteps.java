@@ -943,8 +943,12 @@ public class BaseSteps {
      */
     @And("The {string} resource should reflect the updated {string} as:")
     public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String expectedConfigValue) throws IOException, InterruptedException {
-        // Get the API ID from the update response
+        // Get the API ID from the update response — guard before parsing (a cleared/failed update leaves no
+        // response, and an empty body would throw an opaque JSONException instead of a clear failure).
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(updateResponse != null && updateResponse.getData() != null
+                        && !updateResponse.getData().isEmpty(),
+                "No update response with a body captured to verify the '" + config + "' update against");
         JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
         String resourceId = updateResponseJson.optString("id", null);
         User actor = Identity.actingActor();
@@ -1031,6 +1035,9 @@ public class BaseSteps {
      * @param configValue The expected configuration value
      */
     private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+                "No response with a body to verify configuration '" + config + "' in; got "
+                        + (response == null ? "no response" : response.getResponseCode()));
         JSONObject json = new JSONObject(response.getData());
         Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
 

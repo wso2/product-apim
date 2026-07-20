@@ -111,7 +111,6 @@ public class GovernanceBaseSteps {
     private HttpResponse postRuleset(String name, String contentResourcePath, String description,
                                      String documentationLink) throws IOException {
 
-        TestContext.remove("httpResponse");
         Map<String, File> files = new HashMap<>();
         files.put("rulesetContent", loadResourceAsTempFile(contentResourcePath));
         HttpResponse response = Requests.postMultipart(
@@ -161,7 +160,6 @@ public class GovernanceBaseSteps {
 
         String rulesetId = TestContext.resolve(idKey).toString();
         String name = Utils.resolvePayloadPlaceholders(nameBase);
-        TestContext.remove("httpResponse");
         Map<String, File> files = new HashMap<>();
         files.put("rulesetContent", loadResourceAsTempFile(contentResourcePath));
         HttpResponse response = Requests.putMultipart(

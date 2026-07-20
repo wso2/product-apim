@@ -205,17 +205,26 @@ Feature: DevPortal Search & Discovery
     And I publish the "apis" resource with id "tvRestrictedApi"
     Then The lifecycle status of API "tvRestrictedApi" should be "Published"
 
-    # Anonymous tag cloud: the public tag is present, the restricted tag is absent. Poll until the public tag is
-    # indexed, then assert the restricted tag is absent in the same (single) response.
-    When I retrieve the DevPortal tag cloud until it contains "{{tvPublicTag}}" within 60 seconds
-    Then the DevPortal tag cloud should not contain tag "{{tvRestrictedTag}}"
-
-    # The role-bearing user's tag cloud: both tags present (poll until the restricted tag is indexed for this user).
+    # The role-bearing user's tag cloud FIRST: polling until the restricted tag appears proves the restricted
+    # API's document has landed in the (shared) index — the barrier the unauthorised check below needs. Gating the
+    # unauthorised check on the PUBLIC tag alone raced: the public API indexes first, so that gate passes while the
+    # restricted API's visibility filter is still converging, and its tag transiently leaks into every viewer's
+    # cloud (observed under CI load).
     When I act as "tvUser<suffix>"
     And I retrieve the DevPortal tag cloud until it contains "{{tvRestrictedTag}}" within 60 seconds
     Then The response status code should be 200
     And the DevPortal tag cloud should contain tag "{{tvPublicTag}}" with count 1
     And the DevPortal tag cloud should contain tag "{{tvRestrictedTag}}" with count 1
+
+    # Unauthorised tag cloud: a roleless SUBSCRIBER (not admin — the legacy test's unauthorised viewer was
+    # role-less; admin is the API's creator/administrator and DOES see the restricted tag, verified live). With
+    # the restricted doc known-indexed, poll until the tag disappears for this viewer — a persistent leak (the
+    # real regression) times out and fails with the cloud body. The public tag in the same settled response
+    # proves the check is not vacuous.
+    Given The system is ready and I have valid devportal access token as "subscriberUser<suffix>"
+    When I retrieve the DevPortal tag cloud until it does not contain "{{tvRestrictedTag}}" within 60 seconds
+    Then the DevPortal tag cloud should contain tag "{{tvPublicTag}}" with count 1
+    And the DevPortal tag cloud should not contain tag "{{tvRestrictedTag}}"
 
     Examples:
       | tenant       | suffix       |

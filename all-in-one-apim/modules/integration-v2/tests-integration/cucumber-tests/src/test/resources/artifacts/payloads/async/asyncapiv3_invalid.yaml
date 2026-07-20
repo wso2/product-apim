@@ -1,5 +1,6 @@
 asyncapi: 3.0.0
 info:
+  title: InvalidChannelRefAsyncAPI
   version: 1.0.0
 channels:
   user/signedup:
@@ -11,7 +12,7 @@ operations:
   UserSignedUp:
     action: receive
     channel:
-      $ref: '#/channels/user~1signedup'
+      $ref: '#/channels/nonexistent'
 components:
   messages:
     UserSignedUp:

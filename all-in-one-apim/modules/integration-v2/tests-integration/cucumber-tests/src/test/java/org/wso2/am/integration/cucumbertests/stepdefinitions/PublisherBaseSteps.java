@@ -452,6 +452,9 @@ public class PublisherBaseSteps {
 
         String actualApiId = TestContext.resolve(apiId).toString();
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // Guard before parsing — a cleared/failed list retrieval must fail clearly, not as an NPE/JSONException.
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+                "No API-list response with a body captured to search for API '" + actualApiId + "' in");
         JSONArray apisList = new JSONObject(response.getData()).getJSONArray("list");
 
         boolean found = IntStream.range(0, apisList.length())
@@ -1763,17 +1766,20 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         String url = Utils.getAPISearchEndpointURL(getBaseUrl(), "name:" + resolvedName, null, null);
         long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
-        HttpResponse response = null;
         Object id = null;
         while (true) {
-            response = Requests.get(url, headers);
-            if (response != null && response.getResponseCode() == 200
-                    && response.getData() != null && !response.getData().isEmpty()) {
-                JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
-                if (list != null && list.length() > 0) {
-                    id = list.getJSONObject(0).get("id");
-                    break;
+            try {
+                HttpResponse response = Requests.get(url, headers);
+                if (response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty()) {
+                    JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+                    if (list != null && list.length() > 0) {
+                        id = list.getJSONObject(0).get("id");
+                        break;
+                    }
                 }
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling
             }
             if (System.currentTimeMillis() >= endTime) {
                 break;

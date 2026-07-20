@@ -184,12 +184,15 @@ public class ServiceCatalogSteps {
         File archive = definitionFile(archiveResource);
         Map<String, File> files = new LinkedHashMap<>();
         files.put("file", archive);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPostMultipartWithFiles(
+        HttpResponse response = Requests.postMultipart(
                 Utils.getServiceCatalogImportURL(getBaseUrl(), Boolean.parseBoolean(overwrite)),
                 serviceCatalogHeaders(), files, new HashMap<>());
-        TestContext.set("httpResponse", response);
-        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        // Guard status AND body before parsing — a 200 with an empty body would otherwise surface as an opaque
+        // JSONException instead of a clear failure.
+        Assert.assertTrue(response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty(),
+                "Service catalog archive import did not return 200 with a body; got "
+                        + response.getResponseCode() + " / body=" + response.getData());
         // The response is a ServiceInfoList; register every imported service id for teardown, store the first.
         JSONArray list = new JSONObject(response.getData()).getJSONArray("list");
         for (int i = 0; i < list.length(); i++) {
@@ -219,12 +222,15 @@ public class ServiceCatalogSteps {
         File archive = definitionFile(archiveResource);
         Map<String, File> files = new LinkedHashMap<>();
         files.put("file", archive);
-        TestContext.remove("httpResponse");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPostMultipartWithFiles(
+        HttpResponse response = Requests.postMultipart(
                 Utils.getServiceCatalogImportURL(getBaseUrl(), Boolean.parseBoolean(overwrite)),
                 serviceCatalogHeaders(), files, new HashMap<>());
-        TestContext.set("httpResponse", response);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            // A 2xx import MUST carry the ServiceInfoList body — guard before parsing so a degenerate empty-body
+            // success fails clearly instead of as a JSONException. (Non-2xx negatives skip this branch untouched.)
+            Assert.assertTrue(response.getData() != null && !response.getData().isEmpty(),
+                    "Service catalog archive import returned " + response.getResponseCode()
+                            + " but carried no body to register imported service ids from");
             JSONArray list = new JSONObject(response.getData()).getJSONArray("list");
             for (int i = 0; i < list.length(); i++) {
                 ResourceCleanup.register(ResourceCleanup.CREATED_SERVICE_CATALOG_IDS, list.getJSONObject(i).get("id"));

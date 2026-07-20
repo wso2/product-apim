@@ -77,26 +77,35 @@ public class GatewayRestArtifactsSteps {
     /**
      * As above, but polls until the gateway returns 200 — the synapse artifact is not queryable immediately after a
      * deploy returns 201 (the gateway materialises it asynchronously), so a first query can 404. Retries until 200
-     * or the deadline, then publishes the last response for the following assertions.
+     * or the deadline — catching only transient {@code IOException} (a network-level failure while the gateway
+     * settles) and retaining the last real response for the failure message — then publishes the last response for
+     * the following assertions.
      */
     @When("I retrieve the gateway {string} for API {string} version {string} in tenant {string} until it is available within {int} seconds")
     public void iRetrieveGatewayArtifactUntilAvailable(String kind, String apiName, String version,
-            String tenantDomain, int timeoutSeconds) throws IOException, InterruptedException {
+            String tenantDomain, int timeoutSeconds) throws InterruptedException {
         String resolvedName = Utils.resolveContextPlaceholders(apiName);
         String resolvedVersion = Utils.resolveContextPlaceholders(version);
         String url = Utils.getGatewayArtifactURL(getBaseUrl(), kind, resolvedName, resolvedVersion, tenantDomain);
         long endTime = System.currentTimeMillis()
                 + Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        HttpResponse response;
+        HttpResponse response = null;
         do {
-            response = Requests.get(url, gatewayBasicAuthHeaders());
-            if (response != null && response.getResponseCode() == 200) {
-                return;
+            try {
+                response = Requests.get(url, gatewayBasicAuthHeaders());
+                if (response.getResponseCode() == 200) {
+                    return;
+                }
+            } catch (IOException transientFailure) {
+                // transient network failure while the gateway settles — keep polling; the previous
+                // response (if any) is retained for the failure message
             }
             Thread.sleep(2000);
         } while (System.currentTimeMillis() < endTime);
-        Assert.assertEquals(response == null ? -1 : response.getResponseCode(), 200,
+        Assert.assertNotNull(response, "Gateway artifact '" + kind + "' for " + resolvedName
+                + " returned no response within " + timeoutSeconds + "s (every poll attempt failed)");
+        Assert.assertEquals(response.getResponseCode(), 200,
                 "Gateway artifact '" + kind + "' for " + resolvedName + " did not become available within "
-                        + timeoutSeconds + "s; last: " + (response == null ? "null" : response.getData()));
+                        + timeoutSeconds + "s; last: " + response.getData());
     }
 }

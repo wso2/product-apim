@@ -22,7 +22,6 @@ import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
-import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -109,10 +108,8 @@ public class KeyManagerAdminSteps {
                 + "<xsd:updateConsumerAppState><xsd:consumerKey>" + consumerKey + "</xsd:consumerKey>"
                 + "<xsd:newState>" + newState + "</xsd:newState>"
                 + "</xsd:updateConsumerAppState></soapenv:Body></soapenv:Envelope>";
-        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
-                Utils.getOAuthAdminServiceURL(getBaseUrl()), envelope, "urn:updateConsumerAppState",
+        Requests.soap(Utils.getOAuthAdminServiceURL(getBaseUrl()), envelope, "urn:updateConsumerAppState",
                 actor.getUserName(), actor.getPassword());
-        TestContext.set("httpResponse", response);
     }
 
     /**

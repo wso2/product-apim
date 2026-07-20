@@ -1698,6 +1698,10 @@ public class ApplicationBaseSteps {
 
         String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // Guard before parsing — a cleared/failed list retrieval must fail clearly, not as an NPE/JSONException.
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+                "No subscription-list response with a body captured to search for subscription '"
+                        + actualSubscriptionId + "' in");
         JSONArray subscriptionsList= new JSONObject(response.getData()).getJSONArray("list");
 
         boolean found = IntStream.range(0, subscriptionsList.length())
@@ -1868,18 +1872,28 @@ public class ApplicationBaseSteps {
         long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
 
         // DevPortal search is backed by an asynchronous (Solr) index, so a freshly published API may
-        // not be searchable immediately. Retry while the result set is empty until it appears or times out.
-        HttpResponse response;
+        // not be searchable immediately. Retry while the result set is empty until it appears or times out,
+        // riding out transient IOExceptions (the previous response, if any, is retained).
+        HttpResponse response = null;
         while (true) {
-            response = SimpleHTTPClient.getInstance().doGet(url, headers);
-            boolean empty = response == null || response.getResponseCode() != 200
-                    || new JSONObject(response.getData()).optInt("count", 0) == 0;
-            if (!empty || System.currentTimeMillis() >= endTime) {
+            try {
+                response = SimpleHTTPClient.getInstance().doGet(url, headers);
+                boolean empty = response.getResponseCode() != 200
+                        || new JSONObject(response.getData()).optInt("count", 0) == 0;
+                if (!empty) {
+                    break;
+                }
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling
+            }
+            if (System.currentTimeMillis() >= endTime) {
                 break;
             }
             Thread.sleep(2000);
         }
 
+        Assert.assertNotNull(response, "DevPortal search '" + query + "' returned no response (every poll "
+                + "attempt failed)");
         TestContext.set("httpResponse", response);
     }
 
@@ -2488,7 +2502,7 @@ public class ApplicationBaseSteps {
      * DevPortal API search that polls until the result set actually CONTAINS the expected value (a specific API
      * name), not merely until it is non-empty — needed when asserting multiple APIs share a tag: the async index
      * can surface the first match before the others, so a plain non-empty poll would race. Publishes the last
-     * response for assertion.
+     * response and asserts the presence after the loop, so a timeout fails the step itself.
      */
     @When("I search DevPortal APIs with query {string} until it contains {string} within {int} seconds")
     public void iSearchDevPortalAPIsWithQueryUntilContains(String query, String expected, int seconds)
@@ -2499,24 +2513,35 @@ public class ApplicationBaseSteps {
         String resolvedExpected = Utils.resolveContextPlaceholders(expected);
         String url = Utils.getApiSearchURL(getBaseUrl(), resolvedQuery);
         long endTime = System.currentTimeMillis() + seconds * 1000L;
-        HttpResponse response;
+        HttpResponse response = null;
+        boolean found = false;
         while (true) {
-            response = Requests.get(url, headers);
-            boolean found = response != null && response.getResponseCode() == 200
-                    && response.getData() != null && response.getData().contains(resolvedExpected);
+            try {
+                response = Requests.get(url, headers);
+                found = response.getResponseCode() == 200
+                        && response.getData() != null && response.getData().contains(resolvedExpected);
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling; the previous response (if any) is retained
+            }
             if (found || System.currentTimeMillis() >= endTime) {
                 break;
             }
             Thread.sleep(2000);
         }
+        Assert.assertNotNull(response, "DevPortal search '" + resolvedQuery + "' returned no response (every poll "
+                + "attempt failed)");
+        Assert.assertTrue(found, "DevPortal search '" + resolvedQuery + "' did not contain '" + resolvedExpected
+                + "' within " + seconds + "s; last response: " + response.getResponseCode()
+                + " / " + response.getData());
     }
 
     /**
      * DevPortal API search that polls until the result set NO LONGER contains the given value — the removal
      * counterpart of the {@code until it contains} variant. Needed after mutating an API so a stale index entry
      * clears (e.g. ChangeAPITags: after removing a tag, the API must drop out of that tag's results). Polls on the
-     * DISTINGUISHING new state (the value absent) rather than a pre-satisfied condition, then publishes the last
-     * response for assertion.
+     * DISTINGUISHING new state (the value absent), publishes the last response, and asserts the absence after the
+     * loop — so a timeout fails the step itself rather than passing silently (no null guard on the response:
+     * {@code Requests.get} either throws or returns a real response, never null).
      */
     @When("I search DevPortal APIs with query {string} until it does not contain {string} within {int} seconds")
     public void iSearchDevPortalAPIsUntilAbsent(String query, String unexpected, int seconds)
@@ -2527,16 +2552,26 @@ public class ApplicationBaseSteps {
         String resolvedUnexpected = Utils.resolveContextPlaceholders(unexpected);
         String url = Utils.getApiSearchURL(getBaseUrl(), resolvedQuery);
         long endTime = System.currentTimeMillis() + seconds * 1000L;
-        HttpResponse response;
+        HttpResponse response = null;
+        boolean absent = false;
         while (true) {
-            response = Requests.get(url, headers);
-            boolean absent = response != null && response.getResponseCode() == 200
-                    && response.getData() != null && !response.getData().contains(resolvedUnexpected);
+            try {
+                response = Requests.get(url, headers);
+                absent = response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().contains(resolvedUnexpected);
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling; the previous response (if any) is retained
+            }
             if (absent || System.currentTimeMillis() >= endTime) {
                 break;
             }
             Thread.sleep(2000);
         }
+        Assert.assertNotNull(response, "DevPortal search '" + resolvedQuery + "' returned no response (every poll "
+                + "attempt failed)");
+        Assert.assertTrue(absent, "DevPortal search '" + resolvedQuery + "' still contained '" + resolvedUnexpected
+                + "' after " + seconds + "s; last response: " + response.getResponseCode()
+                + " / " + response.getData());
     }
 
     /**
@@ -2553,13 +2588,17 @@ public class ApplicationBaseSteps {
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String url = Utils.getApiSearchURLWithLimit(getBaseUrl(), resolvedQuery, limit);
         long endTime = System.currentTimeMillis() + seconds * 1000L;
-        HttpResponse response;
+        HttpResponse response = null;
         int actual = -1;
         while (true) {
-            response = Requests.get(url, headers);
-            if (response != null && response.getResponseCode() == 200
-                    && response.getData() != null && !response.getData().isEmpty()) {
-                actual = new JSONObject(response.getData()).optInt("count", -1);
+            try {
+                response = Requests.get(url, headers);
+                if (response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isEmpty()) {
+                    actual = new JSONObject(response.getData()).optInt("count", -1);
+                }
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling; the previous response (if any) is retained
             }
             if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
                 break;
@@ -2574,7 +2613,8 @@ public class ApplicationBaseSteps {
     /**
      * Retrieves the DevPortal tag cloud (GET /tags), polling until it contains the expected value — the tag cloud
      * is backed by the same async index as search, so a freshly published API's tags may not appear immediately.
-     * Publishes the last response for the following count assertions.
+     * Publishes the last response for the following count assertions, and asserts the presence after the loop so a
+     * timeout fails the step itself.
      */
     @When("I retrieve the DevPortal tag cloud until it contains {string} within {int} seconds")
     public void iRetrieveDevPortalTagCloudUntilContains(String expected, int seconds)
@@ -2584,16 +2624,61 @@ public class ApplicationBaseSteps {
         String resolvedExpected = Utils.resolveContextPlaceholders(expected);
         String url = Utils.getTagsURL(getBaseUrl());
         long endTime = System.currentTimeMillis() + seconds * 1000L;
-        HttpResponse response;
+        HttpResponse response = null;
+        boolean found = false;
         while (true) {
-            response = Requests.get(url, headers);
-            boolean found = response != null && response.getResponseCode() == 200
-                    && response.getData() != null && response.getData().contains(resolvedExpected);
+            try {
+                response = Requests.get(url, headers);
+                found = response.getResponseCode() == 200
+                        && response.getData() != null && response.getData().contains(resolvedExpected);
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling; the previous response (if any) is retained
+            }
             if (found || System.currentTimeMillis() >= endTime) {
                 break;
             }
             Thread.sleep(2000);
         }
+        Assert.assertNotNull(response, "DevPortal tag cloud returned no response (every poll attempt failed)");
+        Assert.assertTrue(found, "DevPortal tag cloud did not contain '" + resolvedExpected + "' within "
+                + seconds + "s; last response: " + response.getResponseCode() + " / " + response.getData());
+    }
+
+    /**
+     * Retrieves the DevPortal tag cloud, polling until it does NOT contain the given value — the absence
+     * counterpart of the {@code until it contains} variant. Needed for role-restricted tag visibility: right after
+     * a restricted API is published its visibility filter converges asynchronously in the index, so the tag can
+     * LEAK transiently into an unauthorised viewer's cloud before settling. Polls to the steady state (a
+     * persistent leak times out and fails with the cloud body); the absent flag requires a 200-with-body, so an
+     * error response can never vacuously satisfy it. Publishes the last response for the following assertions.
+     */
+    @When("I retrieve the DevPortal tag cloud until it does not contain {string} within {int} seconds")
+    public void iRetrieveDevPortalTagCloudUntilAbsent(String unexpected, int seconds)
+            throws InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        String resolved = Utils.resolveContextPlaceholders(unexpected);
+        String url = Utils.getTagsURL(getBaseUrl());
+        long endTime = System.currentTimeMillis() + seconds * 1000L;
+        HttpResponse response = null;
+        boolean absent = false;
+        while (true) {
+            try {
+                response = Requests.get(url, headers);
+                absent = response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().contains(resolved);
+            } catch (IOException transientFailure) {
+                // transient network failure — keep polling; the previous response (if any) is retained
+            }
+            if (absent || System.currentTimeMillis() >= endTime) {
+                break;
+            }
+            Thread.sleep(2000);
+        }
+        Assert.assertNotNull(response, "DevPortal tag cloud returned no response (every poll attempt failed)");
+        Assert.assertTrue(absent, "DevPortal tag cloud still contained '" + resolved + "' after " + seconds
+                + "s (a restricted tag leaking persistently, not a transient index window); last response: "
+                + response.getResponseCode() + " / " + response.getData());
     }
 
     /**
