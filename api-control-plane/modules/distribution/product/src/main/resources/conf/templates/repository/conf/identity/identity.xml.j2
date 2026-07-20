@@ -940,6 +940,15 @@
         </AllowedScopes>
         {% endif %}
 
+        {% if oauth.default_requested_scopes is defined %}
+        <!-- Configuration to pass a list of default requested scopes. -->
+        <DefaultRequestedScopes>
+            {%for scope in oauth.default_requested_scopes%}
+                <Scope>{{scope}}</Scope>
+            {% endfor %}
+        </DefaultRequestedScopes>
+        {% endif %}
+
         {% if oauth.drop_unregistered_scopes is defined %}
         <!--
         By enabling this config, any unregistered scopes(excluding internal scopes and allowed scopes)
