@@ -595,6 +595,17 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.get(Utils.getEnvironmentByIdURL(getBaseUrl(), id), headers);
     }
 
+    /** Retrieves a gateway environment by id, tolerating an id that is NOT a known context key (e.g. a
+     *  literal random UUID for a 404 negative) — unlike {@link #iRetrieveGatewayEnvironment}, which requires
+     *  a context key and throws fast on a typo'd one. */
+    @When("I retrieve the gateway environment with literal or context id {string}")
+    public void iRetrieveGatewayEnvironmentLiteralOrContext(String idKey) throws IOException {
+        String id = TestContext.contains(idKey) ? TestContext.get(idKey).toString() : idKey;
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        HttpResponse response = Requests.get(Utils.getEnvironmentByIdURL(getBaseUrl(), id), headers);
+    }
+
     /** Update a gateway environment's description (GET → set → PUT). */
     @When("I update the gateway environment {string} setting its description to {string}")
     public void iUpdateGatewayEnvironment(String idKey, String description) throws IOException {

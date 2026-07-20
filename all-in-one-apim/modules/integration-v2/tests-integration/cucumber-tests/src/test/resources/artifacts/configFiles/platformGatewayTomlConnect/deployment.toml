@@ -1,0 +1,27 @@
+# Feature-specific TOML overlay for the IntegrationV2-PlatformGatewayTomlConnect block.
+#
+# Merged ON TOP of the shared `basic` overlay (itself merged onto the product distribution deployment.toml) via
+# the block's `tomlExtraOverlayPath` parameter — only the extra keys this feature needs live here; everything
+# else is inherited. Declares two TOML-registered ("connect-with-token") platform gateways so
+# platform_gateway_toml_connect.feature can verify lazy DB bootstrap on WebSocket connect without ever calling
+# POST /gateways. One entry per organization this block provisions: carbon.super and tenant1.com (the block's
+# `initTenantUsers` tenant). Registration tokens/ids here are synthetic, test-only fixture constants — not real
+# credentials — and MUST stay in sync with the ids/tokens hardcoded in platform_gateway_toml_connect.feature.
+
+apim.platform_gateway.versions = ["1.0.0"]
+
+[[apim.platform_gateway.connect]]
+registration_token = "01900000-0000-7000-8000-000000000001.TomlConnectIntegrationPlainToken"
+name = "toml-pgw-it"
+display_name = "TOML Platform Gateway IT (carbon.super)"
+description = "Connect-with-token from deployment.toml integration test"
+url = "https://localhost:9999"
+organization = "carbon.super"
+
+[[apim.platform_gateway.connect]]
+registration_token = "01900000-0000-7000-8000-000000000002.TomlConnectTenantPlainToken"
+name = "toml-pgw-tenant1"
+display_name = "TOML Platform Gateway IT (tenant1.com)"
+description = "Tenant-scoped connect-with-token integration test gateway"
+url = "https://localhost:9998"
+organization = "tenant1.com"

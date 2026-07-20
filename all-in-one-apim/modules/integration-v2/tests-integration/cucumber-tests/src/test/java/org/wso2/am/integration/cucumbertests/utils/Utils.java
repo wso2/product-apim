@@ -716,6 +716,49 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments/" + environmentId + "/gateways";
     }
 
+    /** Admin REST API — platform (Universal/self-hosted) gateways collection (list/register). */
+    public static String getPlatformGatewaysURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways";
+    }
+
+    /** Admin REST API — a single platform gateway by id (update/delete). */
+    public static String getPlatformGatewayByIdURL(String baseUrl, String gatewayId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways/" + gatewayId;
+    }
+
+    /** Admin REST API — regenerate a platform gateway's registration token. */
+    public static String getPlatformGatewayRegenerateTokenURL(String baseUrl, String gatewayId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways/" + gatewayId + "/regenerate-token";
+    }
+
+    /** Internal control-plane REST API — synced gateway deployments (list), consumed by a platform gateway. */
+    public static String getInternalDeploymentsURL(String baseUrl) {
+        return baseUrl + "internal/data/v1/deployments";
+    }
+
+    /** Internal control-plane REST API — fetch the deployment archive for a batch of deployment ids. */
+    public static String getInternalDeploymentsFetchBatchURL(String baseUrl) {
+        return baseUrl + "internal/data/v1/deployments/fetch-batch";
+    }
+
+    /** Internal gateway discovery endpoint (unauthenticated). */
+    public static String getInternalGatewayWellKnownURL(String baseUrl) {
+        return baseUrl + "internal/gateway/.well-known";
+    }
+
+    /**
+     * The internal control-plane WebSocket a platform gateway connects to (registration/handshake), derived
+     * from the management HTTPS {@code baseUrl} by swapping the scheme to {@code wss://} — same host/port,
+     * different path, no separate WS port (unlike the gateway DATA-plane WS inbound on {@code apim.ws.port}).
+     */
+    public static String getInternalGatewayConnectWsURL(String baseUrl) {
+        if (!baseUrl.startsWith("https://")) {
+            throw new IllegalStateException("Expected an https:// baseUrl to derive the internal wss:// gateway "
+                    + "connect URL from, got: " + baseUrl);
+        }
+        return "wss://" + baseUrl.substring("https://".length()) + "internal/data/v1/ws/gateways/connect";
+    }
+
     /** Admin REST API — organizations collection (list/create). */
     public static String getOrganizationsURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "organizations";

@@ -137,6 +137,7 @@ public final class ResourceCleanup {
                 && TestContext.getList(Constants.CREATED_DENY_POLICY_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_ORGANIZATION_IDS).isEmpty()
                 && TestContext.getList(Constants.CREATED_API_CATEGORY_IDS).isEmpty()
+                && TestContext.getList(Constants.CREATED_PLATFORM_GATEWAY_IDS).isEmpty()
                 && TestContext.getList(CREATED_AI_PROVIDER_IDS).isEmpty()
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
                 && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()) {
@@ -189,6 +190,12 @@ public final class ResourceCleanup {
             // Gateway environments (admin). No revisions are deployed to test envs, so delete is unblocked.
             deleteResources(Constants.CREATED_ENVIRONMENT_IDS, Identity::adminTokenKey,
                     id -> Utils.getEnvironmentByIdURL(baseUrl, id));
+            // Platform gateways (admin) AFTER the APIs above — deleting a platform gateway while an API
+            // revision is still deployed to it is rejected with 409; deleting the API first (which cascades its
+            // revision deployments) unblocks it. A scenario that leaves a revision deployed and forgets to
+            // undeploy would otherwise leak the gateway.
+            deleteResources(Constants.CREATED_PLATFORM_GATEWAY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getPlatformGatewayByIdURL(baseUrl, id));
             // Governance policies BEFORE governance rulesets — a policy references rulesets, so a ruleset
             // delete is rejected with 409 while a policy still attaches it. Both deleted with the governance
             // token (apim:gov_*), not the admin token.
@@ -229,6 +236,7 @@ public final class ResourceCleanup {
             TestContext.remove(Constants.CREATED_ADVANCED_POLICY_IDS);
             TestContext.remove(Constants.CREATED_CUSTOM_POLICY_IDS);
             TestContext.remove(Constants.CREATED_ENVIRONMENT_IDS);
+            TestContext.remove(Constants.CREATED_PLATFORM_GATEWAY_IDS);
             TestContext.remove(Constants.CREATED_GOVERNANCE_POLICY_IDS);
             TestContext.remove(Constants.CREATED_GOVERNANCE_RULESET_IDS);
             TestContext.remove(Constants.CREATED_KEY_MANAGER_IDS);
