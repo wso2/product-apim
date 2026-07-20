@@ -319,7 +319,7 @@ public class APIInvocationSteps {
             try {
                 String actualAccessToken = TestContext.resolve(accessToken).toString();
                 String actualPayload = (payload == null || payload.isEmpty())
-                        ? "" : TestContext.resolve(payload).toString();
+                        ? null : TestContext.resolve(payload).toString();
                 String endpointUrl = getBaseGatewayUrl()
                         + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
                 Map<String, String> headers = new HashMap<>();
