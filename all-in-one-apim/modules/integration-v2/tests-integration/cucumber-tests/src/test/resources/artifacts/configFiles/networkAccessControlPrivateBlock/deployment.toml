@@ -1,0 +1,11 @@
+# Network access-control PRIVATE-BLOCK policy for the network access-control port (the network-access-control-private-block container).
+# Merged on top of (distribution + basic) via the block's tomlExtraOverlayPath parameter.
+#
+# Under mode="deny" + block_private_network_access=true, any remote reference embedded in a submitted
+# definition (OpenAPI $ref / nested WSDL xsd:import) whose host resolves to a loopback or private-network
+# address (e.g. 127.0.0.1) is rejected with HTTP 400 "URL is not trusted" BEFORE any outbound fetch.
+# Ports the old hostValidationPrivateBlock overlay (HostValidationPrivateBlockTestSuite).
+[apim.network_security.access_control]
+mode = "deny"
+hosts = ["169.254.*", "*.internal", "test.com"]
+block_private_network_access = true

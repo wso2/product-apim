@@ -253,4 +253,41 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.RemoteLoggingRunner"/>
         </classes>
     </test>
+    <!-- Network access-control: outbound remote-reference host validation. Own block —
+         the [apim.network_security.access_control] deny + block-private-network policy is non-orthogonal
+         config. No gateway backend: the blocked-host references are rejected before any fetch, so no
+         allow-listed backend is needed for these negatives (the allow-mode positives are a later block). -->
+    <test name="IntegrationV2-NetworkAccessControlPrivateBlock" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="network-access-control-private-block"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlPrivateBlock/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlRefsPrivateBlockRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlWsdlPrivateBlockRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlEntrypointsPrivateBlockRunner"/>
+        </classes>
+    </test>
+    <!-- Network access-control allow-mode positive controls. Own block: the allow-mode policy (nodebackend
+         allow-listed) is non-orthogonal config, and it needs the node fixtures backend (initBackend) to serve
+         the allow-listed schema so the positive-control reference actually resolves. -->
+    <test name="IntegrationV2-NetworkAccessControlAllow" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="network-access-control-allow"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlAllow/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlAllowRunner"/>
+        </classes>
+    </test>
+    <!-- Network access-control tenant-conf policy source. Own block with NO platform overlay (clean container):
+         the gate is driven purely by the per-tenant NetworkSecurityAccessControl policy the scenario sets at
+         runtime. Needs the node fixtures backend (initBackend) for the no-policy super-tenant positive control. -->
+    <test name="IntegrationV2-NetworkAccessControlTenantConf" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="network-access-control-tenant-conf"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlTenantConfRunner"/>
+        </classes>
+    </test>
 </suite>

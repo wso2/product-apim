@@ -1,0 +1,5 @@
+{
+  "name": "HostValidationWsdl${UNIQUE:name}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:ctx}"
+}

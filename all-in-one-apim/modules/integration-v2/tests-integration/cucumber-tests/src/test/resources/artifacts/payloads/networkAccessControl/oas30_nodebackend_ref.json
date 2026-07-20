@@ -1,0 +1,25 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Host Validation Allow Ref OAS3.0",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/items": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "http://nodebackend:3021/schema-fragment.yaml"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
