@@ -1,0 +1,112 @@
+{
+  "name": "${UNIQUE:ContentAwareEmptyBody}",
+  "context": "${UNIQUE:contentAwareEmptyBody}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API for content-aware mediation empty-body regression — all verbs on /reflect-body",
+  "tags": [
+    "mediation"
+  ],
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/reflect-body",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "contentAwarePropertyPolicy",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "verb": "POST",
+      "target": "/reflect-body",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "contentAwarePropertyPolicy",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "verb": "PUT",
+      "target": "/reflect-body",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "contentAwarePropertyPolicy",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "verb": "PATCH",
+      "target": "/reflect-body",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "contentAwarePropertyPolicy",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    },
+    {
+      "verb": "DELETE",
+      "target": "/reflect-body",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "contentAwarePropertyPolicy",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}
