@@ -22,6 +22,6 @@
     </switch>
 {% endif %}
 {% if fault_sequence %}
-    <sequence xmlns="http://ws.apache.org/ns/synapse" name="fault"/>
+    <sequence xmlns="http://ws.apache.org/ns/synapse" key="{{ fault_sequence_name | default('fault') }}"/>
 {% endif %}
 </sequence>
