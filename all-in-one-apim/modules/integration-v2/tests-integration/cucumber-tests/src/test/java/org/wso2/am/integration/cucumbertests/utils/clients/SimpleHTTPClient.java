@@ -638,7 +638,12 @@ public class SimpleHTTPClient {
         Header[] headers = response.getAllHeaders();
         Map<String, String> heads = new HashMap<>();
         for (Header header : headers) {
-            heads.put(header.getName(), header.getValue());
+            String existing = heads.get(header.getName());
+            if (existing != null) {
+                heads.put(header.getName(), existing + "; " + header.getValue());
+            } else {
+                heads.put(header.getName(), header.getValue());
+            }
         }
         return new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(
                 body, code, heads);

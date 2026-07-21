@@ -1482,6 +1482,7 @@ public class ApplicationBaseSteps {
      */
     private void performAuthCodeGrant(String scope) throws Exception {
 
+        TestContext.remove("httpResponse");
         String consumerKey = TestContext.resolve("consumerKey").toString();
         String consumerSecret = TestContext.resolve("consumerSecret").toString();
         User actor = Identity.actingActor();
