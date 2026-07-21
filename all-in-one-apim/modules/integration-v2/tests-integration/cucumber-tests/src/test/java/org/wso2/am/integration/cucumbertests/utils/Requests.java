@@ -77,6 +77,19 @@ public final class Requests {
         return SimpleHTTPClient.getInstance().doGetToFile(url, headers, suffix);
     }
 
+    /**
+     * Binary POST whose response bytes are written to a temp file (for archive payloads a String {@code doPost}
+     * would corrupt — e.g. the platform-gateway fetch-batch endpoint). Clears {@code httpResponse} BEFORE the
+     * call like every other funnel method; nothing is published to {@code httpResponse} because the status
+     * travels on the returned {@link SimpleHTTPClient.DownloadResult}.
+     */
+    public static SimpleHTTPClient.DownloadResult postToFile(String url, Map<String, String> headers,
+                                                              String payload, String contentType, String suffix)
+            throws IOException {
+        TestContext.remove(HTTP_RESPONSE_KEY);
+        return SimpleHTTPClient.getInstance().doPostToFile(url, headers, payload, contentType, suffix);
+    }
+
     public static HttpResponse delete(String url, Map<String, String> headers) throws IOException {
         return execute(() -> SimpleHTTPClient.getInstance().doDelete(url, headers));
     }

@@ -232,6 +232,41 @@ public class SimpleHTTPClient {
         }
     }
 
+    /**
+     * POSTs a URL and writes the raw response body BYTES to a temp file — the POST counterpart of
+     * {@link #doGetToFile}. Needed for binary payloads (e.g. the platform-gateway internal fetch-batch
+     * endpoint, which returns a gzip-wrapped tar archive) that {@link #doPost} would corrupt by decoding the
+     * body as a UTF-8 String. The HTTP status is returned separately so callers can assert it.
+     *
+     * @param url         target endpoint URL
+     * @param headers     request headers
+     * @param payload     request body (e.g. a JSON payload); may be {@code null}
+     * @param contentType content-type of {@code payload}
+     * @param suffix      temp-file suffix (e.g. ".tar.gz")
+     * @return a DownloadResult carrying the status code and the temp file
+     * @throws IOException if the request or file write fails
+     */
+    public DownloadResult doPostToFile(String url, Map<String, String> headers, String payload, String contentType,
+                                       String suffix) throws IOException {
+        HttpPost request = new HttpPost(url);
+        setHeaders(headers, request);
+        if (payload != null) {
+            request.setEntity(getEntityTemplate(payload, contentType, false));
+        }
+        try (CloseableHttpResponse response = client.execute(request)) {
+            int code = response.getStatusLine().getStatusCode();
+            File file = File.createTempFile("download", suffix);
+            file.deleteOnExit();
+            if (response.getEntity() != null) {
+                try (InputStream in = response.getEntity().getContent();
+                     FileOutputStream out = new FileOutputStream(file)) {
+                    in.transferTo(out);
+                }
+            }
+            return new DownloadResult(code, file);
+        }
+    }
+
     /** Result of {@link #doGetToFile}: the HTTP status and the temp file holding the response body bytes. */
     public static final class DownloadResult {
         private final int statusCode;

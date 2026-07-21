@@ -187,12 +187,25 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApplicationSearchRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlingPolicyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminGatewayEnvironmentsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminPlatformGatewayRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminKeyManagerConfigRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminDenyPolicyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminTenantConfigRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminSystemScopesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlePolicyExportImportRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApiCategoriesRunner"/>
+        </classes>
+    </test>
+    <!-- TOML-declared ("connect-with-token") platform gateways. Own block: needs
+         [[apim.platform_gateway.connect]] entries present in deployment.toml at boot (a small, orthogonal
+         overlay merged on top of basic), which no other block's config provides. initTenantUsers so the
+         tenant1.com org the overlay's second connect entry targets actually exists. -->
+    <test name="IntegrationV2-PlatformGatewayTomlConnect" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="platform-gateway-toml-connect"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/platformGatewayTomlConnect/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminPlatformGatewayTomlConnectRunner"/>
         </classes>
     </test>
     <!-- B2B organization visibility. Own block: registers the organizationId local claim (SOAP) and provisions
