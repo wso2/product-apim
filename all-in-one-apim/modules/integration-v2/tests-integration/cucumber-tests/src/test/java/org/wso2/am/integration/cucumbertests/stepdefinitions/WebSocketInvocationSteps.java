@@ -28,10 +28,14 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -300,8 +304,8 @@ public class WebSocketInvocationSteps {
         expectRejection(buildWsUrl(context), authAndOrigin(accessToken, origin), timeoutSeconds);
     }
 
-    private java.util.Map<String, String> authAndOrigin(String accessToken, String origin) {
-        java.util.Map<String, String> headers = new java.util.LinkedHashMap<>();
+    private Map<String, String> authAndOrigin(String accessToken, String origin) {
+        Map<String, String> headers = new LinkedHashMap<>();
         headers.put("Authorization", "Bearer " + TestContext.resolve(accessToken).toString());
         headers.put("Origin", Utils.resolveContextPlaceholders(origin));
         return headers;
@@ -319,8 +323,8 @@ public class WebSocketInvocationSteps {
         expectRejection(buildWsUrl(context), apiKeyAndXff(apiKey, xff), timeoutSeconds);
     }
 
-    private java.util.Map<String, String> apiKeyAndXff(String apiKey, String xff) {
-        java.util.Map<String, String> headers = new java.util.LinkedHashMap<>();
+    private Map<String, String> apiKeyAndXff(String apiKey, String xff) {
+        Map<String, String> headers = new LinkedHashMap<>();
         headers.put("apikey", TestContext.resolve(apiKey).toString());
         headers.put("X-Forwarded-For", Utils.resolveContextPlaceholders(xff));
         return headers;
@@ -346,8 +350,8 @@ public class WebSocketInvocationSteps {
         expectRejection(buildWsUrl(context), apiKeyAndReferer(apiKey, referer), timeoutSeconds);
     }
 
-    private java.util.Map<String, String> apiKeyAndReferer(String apiKey, String referer) {
-        java.util.Map<String, String> headers = new java.util.LinkedHashMap<>();
+    private Map<String, String> apiKeyAndReferer(String apiKey, String referer) {
+        Map<String, String> headers = new LinkedHashMap<>();
         headers.put("apikey", TestContext.resolve(apiKey).toString());
         headers.put("Referer", Utils.resolveContextPlaceholders(referer));
         return headers;
@@ -363,7 +367,7 @@ public class WebSocketInvocationSteps {
                                          int timeoutSeconds) throws Exception {
         String key = TestContext.resolve(apiKey).toString();
         String wsUrl = appendQuery(buildWsUrl(context), "apikey", key);
-        Assert.assertEquals(echoOverWs(wsUrl, new java.util.LinkedHashMap<>(), message, timeoutSeconds),
+        Assert.assertEquals(echoOverWs(wsUrl, new LinkedHashMap<>(), message, timeoutSeconds),
                 expectedEcho, "WS (api-key query param) echo mismatch.");
     }
 
@@ -373,7 +377,7 @@ public class WebSocketInvocationSteps {
                                         int timeoutSeconds) throws Exception {
         String token = TestContext.resolve(accessToken).toString();
         String wsUrl = appendQuery(buildWsUrl(context), "access_token", token);
-        Assert.assertEquals(echoOverWs(wsUrl, new java.util.LinkedHashMap<>(), message, timeoutSeconds),
+        Assert.assertEquals(echoOverWs(wsUrl, new LinkedHashMap<>(), message, timeoutSeconds),
                 expectedEcho, "WS (token query param) echo mismatch.");
     }
 
@@ -381,19 +385,19 @@ public class WebSocketInvocationSteps {
     private String appendQuery(String wsUrl, String name, String value) {
         String sep = wsUrl.contains("?") ? "&" : "?";
         return wsUrl + sep + name + "="
-                + java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8);
+                + URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     /** Connect+send+echo retry loop (single auth header); delegates to the multi-header form. */
     private String echoOverWs(String wsUrl, String headerName, String headerValue, String message,
                               int timeoutSeconds) throws Exception {
-        java.util.Map<String, String> headers = new java.util.LinkedHashMap<>();
+        Map<String, String> headers = new LinkedHashMap<>();
         headers.put(headerName, headerValue);
         return echoOverWs(wsUrl, headers, message, timeoutSeconds);
     }
 
     /** Connect+send+echo retry loop with arbitrary headers; returns the echo or fails after the deadline. */
-    private String echoOverWs(String wsUrl, java.util.Map<String, String> headers, String message,
+    private String echoOverWs(String wsUrl, Map<String, String> headers, String message,
                               int timeoutSeconds) throws Exception {
         long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
@@ -423,13 +427,13 @@ public class WebSocketInvocationSteps {
      */
     private void expectRejection(String wsUrl, String headerName, String headerValue, int timeoutSeconds)
             throws Exception {
-        java.util.Map<String, String> headers = new java.util.LinkedHashMap<>();
+        Map<String, String> headers = new LinkedHashMap<>();
         headers.put(headerName, headerValue);
         expectRejection(wsUrl, headers, timeoutSeconds);
     }
 
     /** Multi-header rejection check (e.g. Authorization + a disallowed Origin for CORS). */
-    private void expectRejection(String wsUrl, java.util.Map<String, String> headers, int timeoutSeconds)
+    private void expectRejection(String wsUrl, Map<String, String> headers, int timeoutSeconds)
             throws Exception {
         long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 10000L);
         boolean everEchoed = false;
@@ -790,18 +794,18 @@ public class WebSocketInvocationSteps {
      */
     private String connectSendReceive(String wsUrl, String headerName, String headerValue, String message)
             throws Exception {
-        java.util.Map<String, String> headers = new java.util.LinkedHashMap<>();
+        Map<String, String> headers = new LinkedHashMap<>();
         headers.put(headerName, headerValue);
         return connectSendReceive(wsUrl, headers, message);
     }
 
     /** Multi-header variant (e.g. Authorization + Origin for CORS). Sets each header on the WS upgrade request. */
-    private String connectSendReceive(String wsUrl, java.util.Map<String, String> headers, String message)
+    private String connectSendReceive(String wsUrl, Map<String, String> headers, String message)
             throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<String> response = new CompletableFuture<>();
         WebSocket.Builder builder = client.newWebSocketBuilder();
-        for (java.util.Map.Entry<String, String> e : headers.entrySet()) {
+        for (Map.Entry<String, String> e : headers.entrySet()) {
             builder.header(e.getKey(), e.getValue());
         }
         WebSocket ws = builder

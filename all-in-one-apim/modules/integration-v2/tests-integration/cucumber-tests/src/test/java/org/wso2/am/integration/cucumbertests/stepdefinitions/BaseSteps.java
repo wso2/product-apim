@@ -27,11 +27,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
-import org.wso2.am.integration.cucumbertests.utils.RequestAction;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.test.utils.Constants;
@@ -480,7 +480,7 @@ public class BaseSteps {
     @When("I set the field {string} to {string} in the payload {string}")
     public void iSetFieldInPayload(String field, String value, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         // Resolve any {{contextKey}} placeholders in the value (e.g. reusing an existing API's context to build a
         // duplicate-context negative). Values with no placeholders pass through unchanged; an unknown key throws.
         payload.put(field, Utils.resolveContextPlaceholders(value));
@@ -516,7 +516,7 @@ public class BaseSteps {
     @When("I remove the field {string} from the payload {string}")
     public void iRemoveFieldFromPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         payload.remove(field);
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -576,8 +576,8 @@ public class BaseSteps {
     @When("I set the field {string} to an empty array in the payload {string}")
     public void iSetFieldToEmptyArrayInPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
-        payload.put(field, new org.json.JSONArray());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, new JSONArray());
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
 
@@ -590,8 +590,8 @@ public class BaseSteps {
     @When("I set the field {string} to null in the payload {string}")
     public void iSetFieldToNullInPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
-        payload.put(field, org.json.JSONObject.NULL);
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, JSONObject.NULL);
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
 
@@ -599,7 +599,7 @@ public class BaseSteps {
     @When("I set the boolean field {string} to {string} in the payload {string}")
     public void iSetBooleanFieldInPayload(String field, String value, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         payload.put(field, Boolean.parseBoolean(value));
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -642,80 +642,6 @@ public class BaseSteps {
         Assert.assertEquals(response.getResponseCode(), expectedStatusCode, response.getData());
     }
 
-
-    /**
-     * Retrieves a previously prepared request and executes it until
-     * the desired HTTP status code is received or the maximum retry limit is reached.
-     *
-     * @param expectedCode The expected HTTP status code
-     * @throws InterruptedException ]
-     */
-    @And("I wait until the response status code is {int}")
-    public void iWaitUntilStatus(int expectedCode) throws InterruptedException {
-
-        // Retrieve prepared request logic from context
-        RequestAction requestAction = Utils.getPendingHttpRequest();
-
-        try {
-            // Execute with retry loop until expected status is met
-            HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode, res -> true);
-            TestContext.set(Constants.HTTP_RESPONSE, finalResponse);
-
-            Assert.assertEquals(finalResponse.getResponseCode(), expectedCode,
-                    "The request failed to return the expected status code after retries." +
-                            finalResponse.getData());
-
-            String httpMethod = (String) TestContext.get(Constants.HTTP_METHOD);
-
-            // Check if the HTTP method is DELETE
-            if (Constants.HTTP_METHODS.DELETE.equalsIgnoreCase(httpMethod)) {
-                Thread.sleep(2000);
-            }
-
-        } finally {
-            TestContext.remove(Constants.HTTP_METHOD);
-        }
-    }
-
-    /**
-     * Waits until the pending HTTP request returns the expected response status code
-     * and the specified JSON response field contains the expected value.
-     *
-     * @param expectedCode  the expected HTTP response status code
-     * @param fieldName     the JSON response field to validate
-     * @param expectedValue the expected value of the specified JSON field
-     * @throws InterruptedException if the retry wait is interrupted
-     * @throws IOException          if an error occurs while extracting the field value
-     *                              from the response payload
-     */
-    @Then("I wait until the response status code is {int} and the value of response field {string} is {string}")
-    public void iWaitUntilStatusAndFieldValue(int expectedCode, String fieldName, String expectedValue) throws InterruptedException, IOException {
-
-        RequestAction requestAction = Utils.getPendingHttpRequest();
-
-        HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode,
-                response -> {
-                    // Extract value from JSON
-                    Object actualValue;
-                    try {
-                        actualValue = Utils.extractValueFromPayload(response.getData(), fieldName);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    // Return true if value matches
-                    return actualValue != null && String.valueOf(actualValue).equalsIgnoreCase(expectedValue);
-                }
-        );
-
-        TestContext.set("httpResponse", finalResponse);
-
-        Assert.assertEquals(finalResponse.getResponseCode(), expectedCode, "HTTP Status Code mismatch.");
-
-        Object actualFieldVal = Utils.extractValueFromPayload(finalResponse.getData(), fieldName);
-        Assert.assertTrue(expectedValue.equalsIgnoreCase(String.valueOf(actualFieldVal)),
-                String.format("Field '%s' was [%s] but expected [%s]. Data: %s",
-                        fieldName, actualFieldVal, expectedValue, finalResponse.getData()));
-    }
 
     /**
      * Verifies that the HTTP response body contains the specified string value.
@@ -1117,9 +1043,10 @@ public class BaseSteps {
         // materialization behind the gateway api-artifact endpoint lags well past the standard 120s window,
         // even though the revision IS deployed. So we (1) poll the correct distinguishing signal — the
         // deployed-revisions list, which flips on publisher-plane deployment — as the primary readiness gate,
-        // accepting the gateway-artifact 200 only as a secondary confirmation, (2) widen the catch so a
-        // transient error on either probe (not just IOException) retries rather than short-circuiting the
-        // whole wait, and (3) lengthen the window to a freshly-imported-under-load budget. Fast cases still
+        // accepting the gateway-artifact 200 only as a secondary confirmation, (2) catch the transient set on
+        // either probe — IOException (gateway warm-up) and JSONException (a not-yet-well-formed body) — so a
+        // programming error (bad context key, NPE) still fails fast instead of being masked as a deploy
+        // timeout, and (3) lengthen the window to a freshly-imported-under-load budget. Fast cases still
         // exit early on the first positive poll.
         long waitTime = System.currentTimeMillis() + (2 * Constants.DEPLOYMENT_WAIT_TIME);
         boolean isApiDeployed = false;
@@ -1137,7 +1064,7 @@ public class BaseSteps {
                     isApiDeployed = true;
                     break;
                 }
-            } catch (Exception e) {
+            } catch (IOException | JSONException e) {
                 log.warn("API: " + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
                         tenantDomain + " – retrying");
             }

@@ -287,7 +287,7 @@ public final class ResourceCleanup {
             User owner = Identity.resolveActor(res.actorRef());
             String removeEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                     + "xmlns:xsd=\"" + ns + "\"><soapenv:Header/><soapenv:Body>"
-                    + "<xsd:removeOAuthApplicationData><xsd:consumerKey>" + res.id() + "</xsd:consumerKey>"
+                    + "<xsd:removeOAuthApplicationData><xsd:consumerKey>" + Utils.escapeXml(res.id()) + "</xsd:consumerKey>"
                     + "</xsd:removeOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
             try {
                 HttpResponse resp = SimpleHTTPClient.getInstance().sendSoapRequest(serviceUrl, removeEnvelope,

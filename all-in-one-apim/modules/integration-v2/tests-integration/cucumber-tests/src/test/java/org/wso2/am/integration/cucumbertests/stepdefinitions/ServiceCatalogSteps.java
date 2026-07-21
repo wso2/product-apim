@@ -304,7 +304,7 @@ public class ServiceCatalogSteps {
                         && response.getData() != null && !response.getData().isEmpty(),
                 "Service-catalog search did not return a 2xx body: got " + response.getResponseCode()
                         + " / " + response.getData());
-        org.json.JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+        JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
         int actual = list == null ? 0 : list.length();
         Assert.assertEquals(actual, expected, "Service-catalog search entry-count mismatch; body: " + response.getData());
     }
@@ -327,7 +327,7 @@ public class ServiceCatalogSteps {
                         && response.getData() != null && !response.getData().isEmpty(),
                 "Service-catalog import did not return a 2xx body: got " + response.getResponseCode()
                         + " / " + response.getData());
-        org.json.JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+        JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
         int actual = list == null ? 0 : list.length();
         Assert.assertEquals(actual, expected,
                 "Service-catalog import imported-count mismatch; body: " + response.getData());

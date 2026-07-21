@@ -245,6 +245,7 @@ Feature: DevPortal Search & Discovery
     And I set the description of context payload "csApiPayload" to "Unified search feature {{csDesc}}"
     And I create an "apis" resource with payload "csApiPayload" as "csApiId"
     And I deploy the API with id "csApiId"
+    Then The response status code should be 201
     When I publish the "apis" resource with id "csApiId"
     Then The lifecycle status of API "csApiId" should be "Published"
 

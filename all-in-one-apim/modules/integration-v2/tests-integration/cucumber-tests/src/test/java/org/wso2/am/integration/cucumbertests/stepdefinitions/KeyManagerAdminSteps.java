@@ -17,7 +17,10 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -105,8 +108,8 @@ public class KeyManagerAdminSteps {
         String ns = "http://org.apache.axis2/xsd";
         String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:xsd=\"" + ns + "\"><soapenv:Header/><soapenv:Body>"
-                + "<xsd:updateConsumerAppState><xsd:consumerKey>" + consumerKey + "</xsd:consumerKey>"
-                + "<xsd:newState>" + newState + "</xsd:newState>"
+                + "<xsd:updateConsumerAppState><xsd:consumerKey>" + Utils.escapeXml(consumerKey) + "</xsd:consumerKey>"
+                + "<xsd:newState>" + Utils.escapeXml(newState) + "</xsd:newState>"
                 + "</xsd:updateConsumerAppState></soapenv:Body></soapenv:Envelope>";
         Requests.soap(Utils.getOAuthAdminServiceURL(getBaseUrl()), envelope, "urn:updateConsumerAppState",
                 actor.getUserName(), actor.getPassword());
@@ -176,28 +179,28 @@ public class KeyManagerAdminSteps {
     public void iExtractJwtClaim(String claim, String tokenKey, String targetKey) {
         String token = TestContext.resolve(tokenKey).toString();
         String[] parts = token.split("\\.");
-        org.testng.Assert.assertTrue(parts.length >= 2, "Access token is not a JWT (cannot extract claim '"
+        Assert.assertTrue(parts.length >= 2, "Access token is not a JWT (cannot extract claim '"
                 + claim + "'): " + token);
         String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-        Object value = new org.json.JSONObject(payloadJson).opt(claim);
-        org.testng.Assert.assertNotNull(value, "JWT claim '" + claim + "' not present in token payload: " + payloadJson);
+        Object value = new JSONObject(payloadJson).opt(claim);
+        Assert.assertNotNull(value, "JWT claim '" + claim + "' not present in token payload: " + payloadJson);
         TestContext.set(targetKey, value.toString());
     }
 
     /** Asserts two previously-stored context values are equal (e.g. the sub claims of two tokens). */
-    @io.cucumber.java.en.Then("The stored value {string} should equal {string}")
+    @Then("The stored value {string} should equal {string}")
     public void theStoredValueShouldEqual(String keyA, String keyB) {
         String a = TestContext.resolve(keyA).toString();
         String b = TestContext.resolve(keyB).toString();
-        org.testng.Assert.assertEquals(a, b, "Stored value '" + keyA + "' (" + a + ") != '" + keyB + "' (" + b + ")");
+        Assert.assertEquals(a, b, "Stored value '" + keyA + "' (" + a + ") != '" + keyB + "' (" + b + ")");
     }
 
     /** Asserts two previously-stored context values differ (e.g. two independent application ids). */
-    @io.cucumber.java.en.Then("The stored value {string} should not equal {string}")
+    @Then("The stored value {string} should not equal {string}")
     public void theStoredValueShouldNotEqual(String keyA, String keyB) {
         String a = TestContext.resolve(keyA).toString();
         String b = TestContext.resolve(keyB).toString();
-        org.testng.Assert.assertNotEquals(a, b, "Stored value '" + keyA + "' should differ from '" + keyB
+        Assert.assertNotEquals(a, b, "Stored value '" + keyA + "' should differ from '" + keyB
                 + "' but both are (" + a + ")");
     }
 
@@ -208,17 +211,17 @@ public class KeyManagerAdminSteps {
      * The expected value is compared as a string against the field's stringified value ({@code true}/{@code false}
      * for booleans, the literal for strings/numbers).
      */
-    @io.cucumber.java.en.Then("The value of response field {string} should be {string}")
+    @Then("The value of response field {string} should be {string}")
     public void theValueOfResponseFieldShouldBe(String field, String expected) throws IOException {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        org.testng.Assert.assertTrue(response != null && response.getResponseCode() >= 200
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200
                         && response.getResponseCode() < 300 && response.getData() != null
                         && !response.getData().isEmpty(),
                 "No successful response to read field '" + field + "' from, got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         Object value = Utils.extractValueFromPayload(response.getData(), field);
-        org.testng.Assert.assertNotNull(value, "Field '" + field + "' not present in response: " + response.getData());
-        org.testng.Assert.assertEquals(String.valueOf(value), expected,
+        Assert.assertNotNull(value, "Field '" + field + "' not present in response: " + response.getData());
+        Assert.assertEquals(String.valueOf(value), expected,
                 "Field '" + field + "' value mismatch in response: " + response.getData());
     }
 }

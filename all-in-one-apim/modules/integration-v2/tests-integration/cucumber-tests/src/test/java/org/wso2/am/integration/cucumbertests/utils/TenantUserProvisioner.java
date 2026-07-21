@@ -158,15 +158,15 @@ public final class TenantUserProvisioner {
             String[] rolesList = roles.split("\\s*,\\s*");
             StringBuilder rolesXml = new StringBuilder();
             for (String role : rolesList) {
-                rolesXml.append("<xsd:roles>").append(role).append("</xsd:roles>");
+                rolesXml.append("<xsd:roles>").append(Utils.escapeXml(role)).append("</xsd:roles>");
             }
 
             String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
                     "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
                     "<soapenv:Header/><soapenv:Body>" +
                     "<xsd:addUser>" +
-                    "<xsd:userName>" + username + "</xsd:userName>" +
-                    "<xsd:password>" + password + "</xsd:password>" +
+                    "<xsd:userName>" + Utils.escapeXml(username) + "</xsd:userName>" +
+                    "<xsd:password>" + Utils.escapeXml(password) + "</xsd:password>" +
                     rolesXml +
                     "</xsd:addUser>" +
                     "</soapenv:Body></soapenv:Envelope>";
@@ -226,7 +226,7 @@ public final class TenantUserProvisioner {
                 "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">" +
                 "<soapenv:Header/><soapenv:Body>" +
                 "<ser:addRole>" +
-                "<ser:roleName>" + roleName + "</ser:roleName>" +
+                "<ser:roleName>" + Utils.escapeXml(roleName) + "</ser:roleName>" +
                 permissionsXml +
                 "</ser:addRole>" +
                 "</soapenv:Body></soapenv:Envelope>";
@@ -257,7 +257,7 @@ public final class TenantUserProvisioner {
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
                 + "<soapenv:Header/><soapenv:Body>"
-                + "<ser:getRoleListOfUser><ser:userName>" + userName + "</ser:userName></ser:getRoleListOfUser>"
+                + "<ser:getRoleListOfUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName></ser:getRoleListOfUser>"
                 + "</soapenv:Body></soapenv:Envelope>";
         String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
         HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:getRoleListOfUser",
@@ -278,7 +278,7 @@ public final class TenantUserProvisioner {
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
                 + "<soapenv:Header/><soapenv:Body>"
-                + "<ser:isExistingUser><ser:userName>" + userName + "</ser:userName></ser:isExistingUser>"
+                + "<ser:isExistingUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName></ser:isExistingUser>"
                 + "</soapenv:Body></soapenv:Envelope>";
         String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
         HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:isExistingUser",
@@ -299,7 +299,7 @@ public final class TenantUserProvisioner {
         User tenantAdmin = tenant.getTenantAdmin();
         StringBuilder rolesXml = new StringBuilder();
         for (String role : roles.split("\\s*,\\s*")) {
-            rolesXml.append("<ser:roleList>").append(role).append("</ser:roleList>");
+            rolesXml.append("<ser:roleList>").append(Utils.escapeXml(role)).append("</ser:roleList>");
         }
         // RemoteUserStoreManagerService operations live in the http://service.ws.um.carbon.wso2.org namespace —
         // using the axis2 xsd namespace here fails with "namespace mismatch require .../service.ws.um... found
@@ -307,8 +307,8 @@ public final class TenantUserProvisioner {
         // profileName, requirePasswordChange.
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\"><soapenv:Header/><soapenv:Body>"
-                + "<ser:addUser><ser:userName>" + userName + "</ser:userName>"
-                + "<ser:credential>" + password + "</ser:credential>"
+                + "<ser:addUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName>"
+                + "<ser:credential>" + Utils.escapeXml(password) + "</ser:credential>"
                 + rolesXml
                 + "<ser:profileName>default</ser:profileName>"
                 + "<ser:requirePasswordChange>false</ser:requirePasswordChange>"
@@ -350,7 +350,8 @@ public final class TenantUserProvisioner {
     }
 
     private static String storeProp(String name, String value) {
-        return "<xsd:properties><xsd:name>" + name + "</xsd:name><xsd:value>" + value + "</xsd:value></xsd:properties>";
+        return "<xsd:properties><xsd:name>" + Utils.escapeXml(name) + "</xsd:name><xsd:value>"
+                + Utils.escapeXml(value) + "</xsd:value></xsd:properties>";
     }
 
     /**
@@ -390,7 +391,7 @@ public final class TenantUserProvisioner {
                 + "<xsd:className>org.wso2.carbon.user.core.jdbc.UniqueIDJDBCUserStoreManager</xsd:className>"
                 + "<xsd:description>Framework secondary user store</xsd:description>"
                 + "<xsd:disabled>false</xsd:disabled>"
-                + "<xsd:domainId>" + domain + "</xsd:domainId>"
+                + "<xsd:domainId>" + Utils.escapeXml(domain) + "</xsd:domainId>"
                 + props
                 // FileBased DAO: addUserStore writes the userstore XML to deployment/server/userstores/, which
                 // the live UserStoreConfigurationDeployer HOT-DEPLOYS at runtime (async — poll for active before
@@ -426,7 +427,7 @@ public final class TenantUserProvisioner {
         // store is still deploying the service faults 500 "Invalid Domain Name"; once active it returns 200.
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\"><soapenv:Header/><soapenv:Body>"
-                + "<ser:isExistingUser><ser:userName>" + domain + "/storeprobe</ser:userName>"
+                + "<ser:isExistingUser><ser:userName>" + Utils.escapeXml(domain) + "/storeprobe</ser:userName>"
                 + "</ser:isExistingUser></soapenv:Body></soapenv:Envelope>";
         // ~10s observed propagation; 60s is a ~6x margin (covers a starved container under full-suite load).
         long deadline = System.currentTimeMillis() + 60000L;
@@ -453,7 +454,7 @@ public final class TenantUserProvisioner {
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
                 + "<soapenv:Header/><soapenv:Body>"
-                + "<ser:deleteRole><ser:roleName>" + roleName + "</ser:roleName></ser:deleteRole>"
+                + "<ser:deleteRole><ser:roleName>" + Utils.escapeXml(roleName) + "</ser:roleName></ser:deleteRole>"
                 + "</soapenv:Body></soapenv:Envelope>";
         SimpleHTTPClient.getInstance().sendSoapRequest(Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl()),
                 payload, "urn:deleteRole", tenantAdmin.getUserName(), tenantAdmin.getPassword());
@@ -466,7 +467,7 @@ public final class TenantUserProvisioner {
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
                 + "<soapenv:Header/><soapenv:Body>"
-                + "<ser:deleteUser><ser:userName>" + userName + "</ser:userName></ser:deleteUser>"
+                + "<ser:deleteUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName></ser:deleteUser>"
                 + "</soapenv:Body></soapenv:Envelope>";
         SimpleHTTPClient.getInstance().sendSoapRequest(Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl()),
                 payload, "urn:deleteUser", tenantAdmin.getUserName(), tenantAdmin.getPassword());

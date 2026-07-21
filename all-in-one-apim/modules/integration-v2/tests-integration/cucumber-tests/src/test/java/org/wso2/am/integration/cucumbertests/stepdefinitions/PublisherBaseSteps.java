@@ -23,6 +23,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.datatable.DataTable;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +104,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse apiCreateResponse = Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), resourceType), headers, jsonPayload,
+        Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), resourceType), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -116,7 +117,7 @@ public class PublisherBaseSteps {
 
         String jsonPayload = TestContext.resolve(payload).toString();
 
-        HttpResponse response = Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), resourceType), new HashMap<>(), jsonPayload,
+        Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), resourceType), new HashMap<>(), jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -137,7 +138,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse apiUpdateResponse = Requests.put(
+        Requests.put(
                 Utils.getResourceEndpointURL(getBaseUrl(),resourceType ,actualResourceId), headers, jsonPayload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
@@ -207,7 +208,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId), headers, jsonPayload,
+        Requests.post(Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -234,7 +235,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse deployRevisionResponse = Requests.post(Utils.getRevisionDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers, jsonPayload,
+        Requests.post(Utils.getRevisionDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -252,7 +253,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse apiDeleteResponse = Requests.delete(Utils.getResourceEndpointURL(getBaseUrl(), resourceType,
+        Requests.delete(Utils.getResourceEndpointURL(getBaseUrl(), resourceType,
                 actualResourceId), headers);
     }
 
@@ -275,7 +276,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.post(Utils.getGenerateMockScriptsURL(getBaseUrl(), actualApiId), headers, "", null);
+        Requests.post(Utils.getGenerateMockScriptsURL(getBaseUrl(), actualApiId), headers, "", null);
     }
 
     /**
@@ -290,7 +291,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getGeneratedMockScriptsURL(getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getGeneratedMockScriptsURL(getBaseUrl(), actualApiId), headers);
     }
 
     /**
@@ -305,7 +306,7 @@ public class PublisherBaseSteps {
         // Legacy validates roles with a publisher token (api_create/publish/manage) → 200; the earlier 401 was
         // a padded-base64 path bug, not a scope issue (see Utils.getValidateRoleURL).
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.head(Utils.getValidateRoleURL(getBaseUrl(), role), headers);
+        Requests.head(Utils.getValidateRoleURL(getBaseUrl(), role), headers);
     }
 
     /**
@@ -322,7 +323,7 @@ public class PublisherBaseSteps {
         String actualSubId = TestContext.resolve(subId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.post(Utils.getChangeSubscriptionBusinessPlanURL(getBaseUrl(), actualSubId, plan), headers, "", null);
+        Requests.post(Utils.getChangeSubscriptionBusinessPlanURL(getBaseUrl(), actualSubId, plan), headers, "", null);
     }
 
     @When("I publish the {string} resource with id {string}")
@@ -407,7 +408,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getResourceEndpointURL(getBaseUrl(), resourceType, actualResourceId), headers);
+        Requests.get(Utils.getResourceEndpointURL(getBaseUrl(), resourceType, actualResourceId), headers);
     }
 
     /**
@@ -672,7 +673,10 @@ public class PublisherBaseSteps {
                         if (revisionId.equals(deployedRevisionId)) {
                             deployed = true;
                             logger.info("Revision {} is deployed for API {}", revisionId, actualResourceId);
-                            Thread.sleep(10000);
+                            try {
+                                Thread.sleep(10000);
+                            } catch (InterruptedException ignored) {
+                            }
                             break;
                         }
                     }
@@ -682,7 +686,7 @@ public class PublisherBaseSteps {
                     break;
                 }
 
-            } catch (Exception e) {
+            } catch (IOException | JSONException e) {
                 logger.debug("Revision {} not deployed yet – retrying", revisionId
                 );
             }
@@ -802,7 +806,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getAPIDocuments(getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getAPIDocuments(getBaseUrl(), actualApiId), headers);
     }
 
     /**
@@ -821,7 +825,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers);
+        Requests.get(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers);
 
     }
 
@@ -841,7 +845,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.delete(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers);
+        Requests.delete(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers);
     }
 
     /**
@@ -861,7 +865,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse documentUpdateResponse = Requests.put(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers, jsonPayload,
+        Requests.put(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -913,7 +917,7 @@ public class PublisherBaseSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("inlineContent", Utils.resolveContextPlaceholders(content));
 
-        HttpResponse response = Requests.postMultipart(
+        Requests.postMultipart(
                 Utils.getAPIDocumentContent(getBaseUrl(), actualApiId, docId), headers,
                 new HashMap<>(), formFields);
     }
@@ -944,7 +948,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", temp);
 
-        HttpResponse response = Requests.postMultipart(
+        Requests.postMultipart(
                 Utils.getAPIDocumentContent(getBaseUrl(), actualApiId, docId), headers, files, new HashMap<>());
     }
 
@@ -1023,7 +1027,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse documentUpdateResponse = Requests.post(Utils.getSubscriptionBlockingURL(getBaseUrl(), subscriptionId), headers, null, null);
+        Requests.post(Utils.getSubscriptionBlockingURL(getBaseUrl(), subscriptionId), headers, null, null);
     }
 
     /**
@@ -1040,7 +1044,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse documentUpdateResponse = Requests.post(Utils.getSubscriptionUnBlockingURL(getBaseUrl(), subscriptionId), headers, null, null);
+        Requests.post(Utils.getSubscriptionUnBlockingURL(getBaseUrl(), subscriptionId), headers, null, null);
     }
 
     /**
@@ -1104,7 +1108,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getAPIScopes(getBaseUrl()), headers, jsonPayload,
+        Requests.post(Utils.getAPIScopes(getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1122,7 +1126,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.delete(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers);
+        Requests.delete(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers);
     }
 
     /**
@@ -1154,7 +1158,7 @@ public class PublisherBaseSteps {
         JSONObject scope = new JSONObject(current.getData());
         scope.put("description", newDescription);
 
-        HttpResponse response = Requests.put(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers, scope.toString(),
+        Requests.put(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers, scope.toString(),
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1301,7 +1305,7 @@ public class PublisherBaseSteps {
                         && response.getData() != null && !response.getData().isEmpty(),
                 "Failed to validate the GraphQL schema from '" + url + "': expected a 2xx response with a body, got "
                         + (response == null ? "no response" : response.getResponseCode() + " / body=" + response.getData()));
-        String sdl = new org.json.JSONObject(response.getData())
+        String sdl = new JSONObject(response.getData())
                 .getJSONObject("graphQLInfo").getJSONObject("graphQLSchema").getString("schemaDefinition");
         TestContext.set(Utils.normalizeContextKey(schemaKey), sdl);
     }
@@ -1358,7 +1362,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getGraphQLSchemaOfApiURL(getBaseUrl(), apiId), headers);
+        Requests.get(Utils.getGraphQLSchemaOfApiURL(getBaseUrl(), apiId), headers);
     }
 
     /** Updates a GraphQL API's schema definition (publisher, PUT multipart {@code schemaDefinition}). */
@@ -1372,7 +1376,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("schemaDefinition", loadResourceAsTempFile(schemaFilePath));
 
-        HttpResponse response = Requests.putMultipart(Utils.getGraphQLSchemaOfApiURL(getBaseUrl(), apiId), headers,
+        Requests.putMultipart(Utils.getGraphQLSchemaOfApiURL(getBaseUrl(), apiId), headers,
                 files, new HashMap<>());
     }
 
@@ -1386,7 +1390,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", loadResourceAsTempFile(schemaFilePath));
 
-        HttpResponse response = Requests.postMultipart(Utils.getValidateGraphQLSchemaURL(getBaseUrl()), headers,
+        Requests.postMultipart(Utils.getValidateGraphQLSchemaURL(getBaseUrl()), headers,
                 files, new HashMap<>());
     }
 
@@ -1506,7 +1510,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getCommonPolicy(getBaseUrl()), headers);
+        Requests.get(Utils.getCommonPolicy(getBaseUrl()), headers);
     }
 
     /**
@@ -2495,7 +2499,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", loadResourceAsTempFile(imagePath, ".png"));
         // Thumbnail upload is a PUT (updateAPIThumbnail), not POST — a POST returns 405.
-        HttpResponse response = Requests.putMultipart(Utils.getThumbnailURL(getBaseUrl(), actualApiId), headers,
+        Requests.putMultipart(Utils.getThumbnailURL(getBaseUrl(), actualApiId), headers,
                 files, new HashMap<>());
     }
 
@@ -2509,7 +2513,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getThumbnailURL(getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getThumbnailURL(getBaseUrl(), actualApiId), headers);
     }
 
     /**
@@ -2533,7 +2537,7 @@ public class PublisherBaseSteps {
         // The swagger PUT is multipart/form-data with the definition as the text field "apiDefinition".
         Map<String, String> formFields = new HashMap<>();
         formFields.put("apiDefinition", definition);
-        HttpResponse response = Requests.putMultipart(
+        Requests.putMultipart(
                 Utils.getSwaggerURL(getBaseUrl(), resourceType, actualId), headers, new HashMap<>(), formFields);
     }
 
@@ -2543,7 +2547,7 @@ public class PublisherBaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getLinterCustomRulesURL(getBaseUrl()), headers);
+        Requests.get(Utils.getLinterCustomRulesURL(getBaseUrl()), headers);
     }
 
     /** Retrieves the available publisher throttling policies for a policy level (subscription / api / application). */
@@ -2552,7 +2556,7 @@ public class PublisherBaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getPublisherThrottlingPoliciesURL(getBaseUrl(), policyLevel), headers);
+        Requests.get(Utils.getPublisherThrottlingPoliciesURL(getBaseUrl(), policyLevel), headers);
     }
 
     /** Retrieves an API's OpenAPI definition (GET /apis/{id}/swagger). */
@@ -2562,7 +2566,7 @@ public class PublisherBaseSteps {
         String actualId = TestContext.resolve(resourceId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getSwaggerURL(getBaseUrl(), resourceType, actualId), headers);
+        Requests.get(Utils.getSwaggerURL(getBaseUrl(), resourceType, actualId), headers);
     }
 
     /**
@@ -2577,7 +2581,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
         files.put("file", loadJsonResourceAsTempFile(filepath));
-        HttpResponse response = Requests.postMultipart(Utils.getValidateOpenAPIURL(getBaseUrl()), headers, files,
+        Requests.postMultipart(Utils.getValidateOpenAPIURL(getBaseUrl()), headers, files,
                 new HashMap<>());
     }
 
@@ -2809,7 +2813,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), "api-products"), headers, payload,
+        Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), "api-products"), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2839,7 +2843,7 @@ public class PublisherBaseSteps {
         String productId = TestContext.resolve(productIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getAPIProductSwaggerURL(getBaseUrl(), productId), headers);
+        Requests.get(Utils.getAPIProductSwaggerURL(getBaseUrl(), productId), headers);
     }
 
     /** Lists an API's revisions (no filter). Non-asserting — the feature confirms the 200. */
@@ -2850,7 +2854,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId), headers);
+        Requests.get(Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId), headers);
     }
 
     /** Lists an API's currently-deployed revisions ({@code query=deployed:true}). Non-asserting. */
@@ -2861,7 +2865,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getRevisionDeployments(getBaseUrl(), resourceType, actualResourceId), headers);
+        Requests.get(Utils.getRevisionDeployments(getBaseUrl(), resourceType, actualResourceId), headers);
     }
 
     /**
@@ -2879,7 +2883,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+        Requests.post(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
                         headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2901,7 +2905,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+        Requests.post(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
                         headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2914,7 +2918,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getRevisionRestoreURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+        Requests.post(Utils.getRevisionRestoreURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
                         headers, null, null);
     }
 
@@ -2930,7 +2934,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.delete(Utils.getRevisionByID(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers);
+        Requests.delete(Utils.getRevisionByID(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers);
     }
 
     /**

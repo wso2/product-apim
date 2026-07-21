@@ -1,5 +1,5 @@
 @cleanup
-Feature: Gateway Default Endpoint
+Feature: Publisher Default Endpoint Type Configuration
 
   An API configured with a DEFAULT endpoint type (endpointConfig.endpoint_type = "default") is created, its default
   endpoint type persists on re-fetch, and it deploys and publishes to the gateway. Ports the endpoint-config subject

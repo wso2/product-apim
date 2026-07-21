@@ -1,5 +1,5 @@
 @cleanup
-Feature: Admin API Provider Change
+Feature: Publisher API Provider Change
 
   Admin-plane transfer of an API's provider (ownership) via POST /api/am/admin/v4/apis/{apiId}/change-provider:
   the API is re-owned by the target provider while its metadata (name, description, endpoints, resources) is

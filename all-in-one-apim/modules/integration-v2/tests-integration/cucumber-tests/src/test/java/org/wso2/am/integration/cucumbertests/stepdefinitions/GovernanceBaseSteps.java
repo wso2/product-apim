@@ -20,6 +20,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -71,7 +72,7 @@ public class GovernanceBaseSteps {
     @When("I retrieve all governance rulesets")
     public void iRetrieveAllGovernanceRulesets() throws IOException {
 
-        HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(getBaseUrl()), governanceAuthHeaders());
+        Requests.get(Utils.getGovernanceRulesetsURL(getBaseUrl()), governanceAuthHeaders());
     }
 
     // ---- Ruleset CRUD ----------------------------------------------------------------------------------
@@ -131,7 +132,7 @@ public class GovernanceBaseSteps {
         String name = Utils.resolvePayloadPlaceholders(nameBase);
         HttpResponse response = postRuleset(name, contentResourcePath, "Ruleset created by integration test",
                 "https://wso2.com");
-        org.testng.Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object rulesetId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(idKey, rulesetId);
         ResourceCleanup.register(Constants.CREATED_GOVERNANCE_RULESET_IDS, rulesetId);
@@ -162,7 +163,7 @@ public class GovernanceBaseSteps {
         String name = Utils.resolvePayloadPlaceholders(nameBase);
         Map<String, File> files = new HashMap<>();
         files.put("rulesetContent", loadResourceAsTempFile(contentResourcePath));
-        HttpResponse response = Requests.putMultipart(
+        Requests.putMultipart(
                 Utils.getGovernanceRulesetByIdURL(getBaseUrl(), rulesetId), governanceAuthHeaders(), files,
                 rulesetFormFields(name, description, documentationLink));
     }
@@ -172,7 +173,7 @@ public class GovernanceBaseSteps {
     public void iRetrieveGovernanceRuleset(String idKey) throws IOException {
 
         String rulesetId = TestContext.resolve(idKey).toString();
-        HttpResponse response = Requests.get(Utils.getGovernanceRulesetByIdURL(getBaseUrl(), rulesetId), governanceAuthHeaders());
+        Requests.get(Utils.getGovernanceRulesetByIdURL(getBaseUrl(), rulesetId), governanceAuthHeaders());
     }
 
     /** Deletes the governance ruleset held under {@code idKey}. Non-asserting — the feature asserts the status. */
@@ -180,7 +181,7 @@ public class GovernanceBaseSteps {
     public void iDeleteGovernanceRuleset(String idKey) throws IOException {
 
         String rulesetId = TestContext.resolve(idKey).toString();
-        HttpResponse response = Requests.delete(Utils.getGovernanceRulesetByIdURL(getBaseUrl(), rulesetId), governanceAuthHeaders());
+        Requests.delete(Utils.getGovernanceRulesetByIdURL(getBaseUrl(), rulesetId), governanceAuthHeaders());
     }
 
     /**
@@ -191,9 +192,9 @@ public class GovernanceBaseSteps {
     public void iCaptureGovernanceRulesetId(String rulesetName, String idKey) throws IOException {
 
         HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(getBaseUrl()), governanceAuthHeaders());
-        org.testng.Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         String id = Utils.extractIdByName(response.getData(), rulesetName);
-        org.testng.Assert.assertNotNull(id, "Governance ruleset '" + rulesetName + "' not found in list: "
+        Assert.assertNotNull(id, "Governance ruleset '" + rulesetName + "' not found in list: "
                 + response.getData());
         TestContext.set(idKey, id);
     }
@@ -226,7 +227,7 @@ public class GovernanceBaseSteps {
         HttpResponse response = Requests.post(
                 Utils.getGovernancePoliciesURL(getBaseUrl()), governanceAuthHeaders(), payload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        org.testng.Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object policyId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(policyIdKey, policyId);
         ResourceCleanup.register(Constants.CREATED_GOVERNANCE_POLICY_IDS, policyId);
@@ -237,14 +238,14 @@ public class GovernanceBaseSteps {
     public void iRetrieveGovernancePolicy(String idKey) throws IOException {
 
         String policyId = TestContext.resolve(idKey).toString();
-        HttpResponse response = Requests.get(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
+        Requests.get(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
     }
 
     /** Lists all governance policies. */
     @When("I retrieve all governance policies")
     public void iRetrieveAllGovernancePolicies() throws IOException {
 
-        HttpResponse response = Requests.get(Utils.getGovernancePoliciesURL(getBaseUrl()), governanceAuthHeaders());
+        Requests.get(Utils.getGovernancePoliciesURL(getBaseUrl()), governanceAuthHeaders());
     }
 
     /**
@@ -260,7 +261,7 @@ public class GovernanceBaseSteps {
                 .doGet(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
-        org.testng.Assert.assertTrue(current != null && current.getResponseCode() >= 200
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200
                         && current.getResponseCode() < 300 && current.getData() != null
                         && !current.getData().isEmpty(),
                 "Failed to fetch governance policy '" + policyId + "' before updating its description: expected a 2xx "
@@ -276,7 +277,7 @@ public class GovernanceBaseSteps {
         policy.remove("updatedBy");
         policy.remove("updatedTime");
 
-        HttpResponse response = Requests.put(
+        Requests.put(
                 Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders(),
                 policy.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
@@ -286,7 +287,7 @@ public class GovernanceBaseSteps {
     public void iDeleteGovernancePolicy(String idKey) throws IOException {
 
         String policyId = TestContext.resolve(idKey).toString();
-        HttpResponse response = Requests.delete(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
+        Requests.delete(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
     }
 
     // ---- Compliance ------------------------------------------------------------------------------------
@@ -300,7 +301,7 @@ public class GovernanceBaseSteps {
     private JSONArray defaultRulesetIds() throws IOException {
 
         HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(getBaseUrl()), governanceAuthHeaders());
-        org.testng.Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         JSONArray ids = new JSONArray();
         for (String name : DEFAULT_RULESET_NAMES) {
             String id = Utils.extractIdByName(response.getData(), name);
@@ -308,7 +309,7 @@ public class GovernanceBaseSteps {
                 ids.put(id);
             }
         }
-        org.testng.Assert.assertTrue(ids.length() > 0, "No default rulesets found to attach: " + response.getData());
+        Assert.assertTrue(ids.length() > 0, "No default rulesets found to attach: " + response.getData());
         return ids;
     }
 
@@ -336,7 +337,7 @@ public class GovernanceBaseSteps {
         HttpResponse response = Requests.post(
                 Utils.getGovernancePoliciesURL(getBaseUrl()), governanceAuthHeaders(), policy.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        org.testng.Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object policyId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(policyIdKey, policyId);
         ResourceCleanup.register(Constants.CREATED_GOVERNANCE_POLICY_IDS, policyId);
@@ -347,7 +348,7 @@ public class GovernanceBaseSteps {
     public void iRetrieveApiCompliance(String apiIdKey) throws IOException {
 
         String apiId = TestContext.resolve(apiIdKey).toString();
-        HttpResponse response = Requests.get(Utils.getGovernanceApiComplianceURL(getBaseUrl(), apiId), governanceAuthHeaders());
+        Requests.get(Utils.getGovernanceApiComplianceURL(getBaseUrl(), apiId), governanceAuthHeaders());
     }
 
     /**
@@ -382,8 +383,8 @@ public class GovernanceBaseSteps {
             Thread.sleep(5000);
         }
         TestContext.set("httpResponse", last);
-        org.testng.Assert.assertNotNull(last, "No compliance response received for API " + apiId);
-        org.testng.Assert.assertEquals(actualStatus, expectedStatus,
+        Assert.assertNotNull(last, "No compliance response received for API " + apiId);
+        Assert.assertEquals(actualStatus, expectedStatus,
                 "Compliance status did not reach '" + expectedStatus + "' within " + timeoutSeconds
                         + "s; last: " + last.getData());
     }

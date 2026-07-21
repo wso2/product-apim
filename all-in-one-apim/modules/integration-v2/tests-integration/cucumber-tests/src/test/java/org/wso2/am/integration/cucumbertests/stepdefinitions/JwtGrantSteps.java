@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
@@ -30,6 +31,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -148,11 +150,11 @@ public class JwtGrantSteps {
         String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:mgt=\"" + IDP_MGT_NS + "\" xmlns:xsd=\"" + IDP_MODEL_NS + "\"><soapenv:Header/><soapenv:Body>"
                 + "<mgt:addIdP><mgt:identityProvider>"
-                + "<xsd:alias>" + audience + "</xsd:alias>"
+                + "<xsd:alias>" + Utils.escapeXml(audience) + "</xsd:alias>"
                 + "<xsd:certificate>" + certB64 + "</xsd:certificate>"
                 + "<xsd:displayName>jwtgrant_idp</xsd:displayName>"
                 + "<xsd:enable>true</xsd:enable>"
-                + "<xsd:identityProviderName>" + issuer + "</xsd:identityProviderName>"
+                + "<xsd:identityProviderName>" + Utils.escapeXml(issuer) + "</xsd:identityProviderName>"
                 + "<xsd:primary>false</xsd:primary>"
                 + "</mgt:identityProvider></mgt:addIdP></soapenv:Body></soapenv:Envelope>";
         Requests.soap(Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:addIdP",
@@ -165,7 +167,7 @@ public class JwtGrantSteps {
         issuer = Utils.resolveContextPlaceholders(issuer);
         String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:mgt=\"" + IDP_MGT_NS + "\"><soapenv:Header/><soapenv:Body>"
-                + "<mgt:getIdPByName><mgt:idPName>" + issuer + "</mgt:idPName></mgt:getIdPByName>"
+                + "<mgt:getIdPByName><mgt:idPName>" + Utils.escapeXml(issuer) + "</mgt:idPName></mgt:getIdPByName>"
                 + "</soapenv:Body></soapenv:Envelope>";
         Requests.soap(Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:getIdPByName",
                 Identity.actingActor().getUserName(), Identity.actingActor().getPassword());
@@ -184,12 +186,12 @@ public class JwtGrantSteps {
         scope = Utils.resolveContextPlaceholders(scope);
         String creds = Base64.getEncoder().encodeToString((ck + ":" + cs).getBytes(StandardCharsets.UTF_8));
         StringBuilder body = new StringBuilder("grant_type=")
-                .append(java.net.URLEncoder.encode(JWT_BEARER_GRANT, StandardCharsets.UTF_8))
-                .append("&assertion=").append(java.net.URLEncoder.encode(jwt, StandardCharsets.UTF_8));
+                .append(URLEncoder.encode(JWT_BEARER_GRANT, StandardCharsets.UTF_8))
+                .append("&assertion=").append(URLEncoder.encode(jwt, StandardCharsets.UTF_8));
         if (scope != null && !scope.trim().isEmpty()) {
-            body.append("&scope=").append(java.net.URLEncoder.encode(scope, StandardCharsets.UTF_8));
+            body.append("&scope=").append(URLEncoder.encode(scope, StandardCharsets.UTF_8));
         }
-        java.util.Map<String, String> headers = new java.util.HashMap<>();
+        Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
         Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers, body.toString(),
                 "application/x-www-form-urlencoded");
@@ -220,7 +222,7 @@ public class JwtGrantSteps {
                 .put("name", uniqueName)
                 .put("displayName", uniqueName)
                 .put("description", "JWT grant role-mapped scope")
-                .put("bindings", new org.json.JSONArray().put(role));
+                .put("bindings", new JSONArray().put(role));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.post(Utils.getAPIScopes(getBaseUrl()), headers, payload.toString(),
@@ -254,26 +256,26 @@ public class JwtGrantSteps {
         String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:mgt=\"" + IDP_MGT_NS + "\" xmlns:xsd=\"" + IDP_MODEL_NS + "\"><soapenv:Header/><soapenv:Body>"
                 + "<mgt:updateIdP>"
-                + "<mgt:oldIdPName>" + issuer + "</mgt:oldIdPName>"
+                + "<mgt:oldIdPName>" + Utils.escapeXml(issuer) + "</mgt:oldIdPName>"
                 + "<mgt:identityProvider>"
-                + "<xsd:alias>" + audience + "</xsd:alias>"
+                + "<xsd:alias>" + Utils.escapeXml(audience) + "</xsd:alias>"
                 + "<xsd:certificate>" + certB64 + "</xsd:certificate>"
                 + "<xsd:claimConfig>"
                 + "<xsd:claimMappings>"
-                + "<xsd:localClaim><xsd:claimUri>" + localRoleClaim + "</xsd:claimUri></xsd:localClaim>"
-                + "<xsd:remoteClaim><xsd:claimUri>" + remoteRoleClaim + "</xsd:claimUri></xsd:remoteClaim>"
+                + "<xsd:localClaim><xsd:claimUri>" + Utils.escapeXml(localRoleClaim) + "</xsd:claimUri></xsd:localClaim>"
+                + "<xsd:remoteClaim><xsd:claimUri>" + Utils.escapeXml(remoteRoleClaim) + "</xsd:claimUri></xsd:remoteClaim>"
                 + "</xsd:claimMappings>"
-                + "<xsd:idpClaims><xsd:claimUri>" + remoteRoleClaim + "</xsd:claimUri></xsd:idpClaims>"
-                + "<xsd:roleClaimURI>" + remoteRoleClaim + "</xsd:roleClaimURI>"
+                + "<xsd:idpClaims><xsd:claimUri>" + Utils.escapeXml(remoteRoleClaim) + "</xsd:claimUri></xsd:idpClaims>"
+                + "<xsd:roleClaimURI>" + Utils.escapeXml(remoteRoleClaim) + "</xsd:roleClaimURI>"
                 + "</xsd:claimConfig>"
                 + "<xsd:displayName>jwtgrant_idp</xsd:displayName>"
                 + "<xsd:enable>true</xsd:enable>"
-                + "<xsd:identityProviderName>" + issuer + "</xsd:identityProviderName>"
+                + "<xsd:identityProviderName>" + Utils.escapeXml(issuer) + "</xsd:identityProviderName>"
                 + "<xsd:permissionAndRoleConfig>"
-                + "<xsd:idpRoles>" + remoteRole + "</xsd:idpRoles>"
+                + "<xsd:idpRoles>" + Utils.escapeXml(remoteRole) + "</xsd:idpRoles>"
                 + "<xsd:roleMappings>"
-                + "<xsd:localRole><xsd:localRoleName>" + localRole + "</xsd:localRoleName></xsd:localRole>"
-                + "<xsd:remoteRole>" + remoteRole + "</xsd:remoteRole>"
+                + "<xsd:localRole><xsd:localRoleName>" + Utils.escapeXml(localRole) + "</xsd:localRoleName></xsd:localRole>"
+                + "<xsd:remoteRole>" + Utils.escapeXml(remoteRole) + "</xsd:remoteRole>"
                 + "</xsd:roleMappings>"
                 + "</xsd:permissionAndRoleConfig>"
                 + "<xsd:primary>false</xsd:primary>"

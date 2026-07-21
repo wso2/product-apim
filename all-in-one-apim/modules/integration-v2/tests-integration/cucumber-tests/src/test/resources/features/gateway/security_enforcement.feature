@@ -284,6 +284,7 @@ Feature: Gateway Security Enforcement
       """
     Then The response status code should be 200
     When I deploy the API with id "atApiId"
+    Then The response status code should be 201
 
     # Now the resource is invocable WITHOUT a token (200).
     When I invoke the API at gateway context "{{atContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 200 within 60 seconds

@@ -20,6 +20,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -94,7 +95,7 @@ public class OrganizationSteps {
                         + "</ax:localClaim></ax:addLocalClaim>"
                         + "</soapenv:Body></soapenv:Envelope>";
 
-        HttpResponse response = Requests.soap(
+        Requests.soap(
                 Utils.getClaimMetadataMgtServiceURL(getBaseUrl()), payload, "urn:addLocalClaim",
                 adminUser, adminPass);
     }
@@ -129,14 +130,14 @@ public class OrganizationSteps {
                         + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
                         + "<soapenv:Header/><soapenv:Body>"
                         + "<ser:setUserClaimValue>"
-                        + "<ser:userName>" + username + "</ser:userName>"
+                        + "<ser:userName>" + Utils.escapeXml(username) + "</ser:userName>"
                         + "<ser:claimURI>http://wso2.org/claims/organizationId</ser:claimURI>"
-                        + "<ser:claimValue>" + orgId + "</ser:claimValue>"
+                        + "<ser:claimValue>" + Utils.escapeXml(orgId) + "</ser:claimValue>"
                         + "<ser:profileName>default</ser:profileName>"
                         + "</ser:setUserClaimValue>"
                         + "</soapenv:Body></soapenv:Envelope>";
 
-        HttpResponse response = Requests.soap(
+        Requests.soap(
                 Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl()), payload, "urn:setUserClaimValue",
                 adminUser, adminPass);
     }
@@ -155,7 +156,7 @@ public class OrganizationSteps {
 
         HttpResponse response = Requests.post(Utils.getOrganizationsURL(getBaseUrl()),
                 adminAuthHeaders(), orgPayload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        org.testng.Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         // Store the internal UUID (used in an API's visibleOrganizations) under idKey, and the external id
         // (used to tag org users' organizationId claim) under <idKey>External.
         Object organizationId = Utils.extractValueFromPayload(response.getData(), "organizationId");
@@ -170,7 +171,7 @@ public class OrganizationSteps {
     @When("I retrieve all organizations")
     public void iRetrieveAllOrganizations() throws IOException {
 
-        HttpResponse response = Requests.get(Utils.getOrganizationsURL(getBaseUrl()), adminAuthHeaders());
+        Requests.get(Utils.getOrganizationsURL(getBaseUrl()), adminAuthHeaders());
     }
 
     /** Deletes the organization held under {@code idKey}. Non-asserting — the feature asserts the status. */
@@ -178,7 +179,7 @@ public class OrganizationSteps {
     public void iDeleteOrganization(String idKey) throws IOException {
 
         String orgId = TestContext.resolve(idKey).toString();
-        HttpResponse response = Requests.delete(Utils.getOrganizationByIdURL(getBaseUrl(), orgId), adminAuthHeaders());
+        Requests.delete(Utils.getOrganizationByIdURL(getBaseUrl(), orgId), adminAuthHeaders());
     }
 
     /**
@@ -314,7 +315,7 @@ public class OrganizationSteps {
                 .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
-        org.testng.Assert.assertTrue(current != null && current.getResponseCode() >= 200
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200
                         && current.getResponseCode() < 300 && current.getData() != null
                         && !current.getData().isEmpty(),
                 "Failed to fetch API '" + apiId + "' before setting its visible organizations: expected a 2xx "
@@ -323,7 +324,7 @@ public class OrganizationSteps {
         JSONObject api = new JSONObject(current.getData());
         api.put("visibleOrganizations", new JSONArray().put(resolved));
 
-        HttpResponse response = Requests.put(
+        Requests.put(
                 Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers, api.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
@@ -345,7 +346,7 @@ public class OrganizationSteps {
                 .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
-        org.testng.Assert.assertTrue(current != null && current.getResponseCode() >= 200
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200
                         && current.getResponseCode() < 300 && current.getData() != null
                         && !current.getData().isEmpty(),
                 "Failed to fetch API '" + apiId + "' before setting its organization policies: expected a 2xx "
@@ -358,7 +359,7 @@ public class OrganizationSteps {
         policy.put("policies", new JSONArray().put(tier));
         api.put("organizationPolicies", new JSONArray().put(policy));
 
-        HttpResponse response = Requests.put(
+        Requests.put(
                 Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers, api.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
@@ -382,7 +383,9 @@ public class OrganizationSteps {
             try {
                 last = SimpleHTTPClient.getInstance()
                         .doGet(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId), headers);
-                if (last.getResponseCode() == 200 && last.getData().contains(expected)) {
+                // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
+                // IOException-only catch and killing the poll.
+                if (last.getResponseCode() == 200 && last.getData() != null && last.getData().contains(expected)) {
                     found = true;
                     break;
                 }
@@ -392,8 +395,8 @@ public class OrganizationSteps {
             Thread.sleep(2000);
         }
         TestContext.set("httpResponse", last);
-        org.testng.Assert.assertNotNull(last, "No devportal response received for API " + apiId);
-        org.testng.Assert.assertTrue(found, "DevPortal API did not contain '" + expected + "' within "
+        Assert.assertNotNull(last, "No devportal response received for API " + apiId);
+        Assert.assertTrue(found, "DevPortal API did not contain '" + expected + "' within "
                 + timeoutSeconds + "s; last: " + (last == null ? "null" : last.getData()));
     }
 
@@ -404,7 +407,7 @@ public class OrganizationSteps {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        HttpResponse response = Requests.get(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId), headers);
+        Requests.get(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId), headers);
     }
 
     /** Retrieves an API from the DevPortal with NO authentication (anonymous user). */
@@ -412,7 +415,7 @@ public class OrganizationSteps {
     public void iRetrieveDevportalApiAnonymously(String apiIdKey) throws IOException {
 
         String apiId = TestContext.resolve(apiIdKey).toString();
-        HttpResponse response = Requests.get(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId), new HashMap<>());
+        Requests.get(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId), new HashMap<>());
     }
 
     /**
@@ -469,7 +472,9 @@ public class OrganizationSteps {
         while (System.currentTimeMillis() < deadline) {
             try {
                 last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalKeyManagersURL(getBaseUrl()), headers);
-                if (last.getResponseCode() == 200) {
+                // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
+                // IOException-only catch and killing the poll.
+                if (last.getResponseCode() == 200 && last.getData() != null) {
                     present = last.getData().contains(kmId);
                     if (present == shouldContain) {
                         break;
@@ -481,8 +486,8 @@ public class OrganizationSteps {
             Thread.sleep(2000);
         }
         TestContext.set("httpResponse", last);
-        org.testng.Assert.assertNotNull(last, "No devportal key-manager response received");
-        org.testng.Assert.assertEquals(present, shouldContain,
+        Assert.assertNotNull(last, "No devportal key-manager response received");
+        Assert.assertEquals(present, shouldContain,
                 "DevPortal key-manager " + kmId + (shouldContain ? " not visible" : " still visible")
                         + " within " + timeoutSeconds + "s; last: " + last.getData());
     }
@@ -505,8 +510,8 @@ public class OrganizationSteps {
             Thread.sleep(2000);
         }
         TestContext.set("httpResponse", last);
-        org.testng.Assert.assertNotNull(last, "No devportal response received for API " + apiId);
-        org.testng.Assert.assertEquals(last.getResponseCode(), expectedStatus,
+        Assert.assertNotNull(last, "No devportal response received for API " + apiId);
+        Assert.assertEquals(last.getResponseCode(), expectedStatus,
                 "DevPortal API visibility did not reach " + expectedStatus + " within " + timeoutSeconds
                         + "s; last: " + last.getData());
     }

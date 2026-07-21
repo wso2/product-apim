@@ -196,6 +196,7 @@ Feature: Gateway REST API Invocation
       """
     Then The response status code should be 200
     When I deploy the API with id "resApiId"
+    Then The response status code should be 201
     # The newly added POST resource is now invocable and routes to the backend.
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
@@ -406,6 +407,7 @@ Feature: Gateway REST API Invocation
     [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "seqApiId" with payload "seqDeploy"
+    Then The response status code should be 201
     When I publish the "apis" resource with id "seqApiId"
     Then The lifecycle status of API "seqApiId" should be "Published"
     When I retrieve the "apis" resource with id "seqApiId"

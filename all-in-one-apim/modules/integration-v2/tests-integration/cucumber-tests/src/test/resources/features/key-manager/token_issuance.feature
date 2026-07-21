@@ -160,6 +160,7 @@ Feature: Key Manager Token Issuance
     [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "encApiId" with payload "encDeployPayload"
+    Then The response status code should be 201
     When I publish the "apis" resource with id "encApiId"
     Then The lifecycle status of API "encApiId" should be "Published"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "encAppPayload"

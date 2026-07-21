@@ -85,7 +85,7 @@ public class VisibilityAccessSteps {
             throws IOException, InterruptedException {
         JSONObject json = loadPayload(payloadPath);
         json.put("visibility", "RESTRICTED");
-        json.put("visibleRoles", rolesArray(rolesCsv));
+        json.put("visibleRoles", csvToJsonArray(rolesCsv));
         createAndDeployFromJson(json, apiIdKey);
     }
 
@@ -99,7 +99,7 @@ public class VisibilityAccessSteps {
             throws IOException, InterruptedException {
         JSONObject json = new JSONObject(TestContext.resolve(payloadKey).toString());
         json.put("visibility", "RESTRICTED");
-        json.put("visibleRoles", rolesArray(rolesCsv));
+        json.put("visibleRoles", csvToJsonArray(rolesCsv));
         createAndDeployFromJson(json, apiIdKey);
     }
 
@@ -125,7 +125,7 @@ public class VisibilityAccessSteps {
             throws IOException, InterruptedException {
         JSONObject json = loadPayload(payloadPath);
         json.put("accessControl", "RESTRICTED");
-        json.put("accessControlRoles", rolesArray(rolesCsv));
+        json.put("accessControlRoles", csvToJsonArray(rolesCsv));
         createAndDeployFromJson(json, apiIdKey);
     }
 
@@ -140,7 +140,7 @@ public class VisibilityAccessSteps {
             throws IOException, InterruptedException {
         JSONObject json = loadPayload(payloadPath);
         json.put("accessControl", "RESTRICTED");
-        json.put("accessControlRoles", rolesArray(accessRolesCsv));
+        json.put("accessControlRoles", csvToJsonArray(accessRolesCsv));
         json.put("visibility", "PUBLIC");
         createAndDeployFromJson(json, apiIdKey);
     }
@@ -150,12 +150,12 @@ public class VisibilityAccessSteps {
         return new JSONObject(TestContext.resolve("<visAccessApiPayload>").toString());
     }
 
-    private JSONArray rolesArray(String rolesCsv) {
-        JSONArray roles = new JSONArray();
-        for (String r : rolesCsv.split(",")) {
-            roles.put(Utils.resolveContextPlaceholders(r.trim()));
+    private JSONArray csvToJsonArray(String csv) {
+        JSONArray values = new JSONArray();
+        for (String item : csv.split(",")) {
+            values.put(Utils.resolveContextPlaceholders(item.trim()));
         }
-        return roles;
+        return values;
     }
 
     /**
@@ -204,7 +204,7 @@ public class VisibilityAccessSteps {
     @When("I set the tags of API {string} to {string}")
     public void iSetApiTags(String apiIdKey, String tagsCsv) throws IOException {
         JSONObject api = fetchPublisherApi(apiIdKey);
-        api.put("tags", rolesArray(tagsCsv));
+        api.put("tags", csvToJsonArray(tagsCsv));
         putPublisherApi(apiIdKey, api);
     }
 
@@ -218,7 +218,7 @@ public class VisibilityAccessSteps {
     public void iSetApiVisibilityRoles(String apiIdKey, String rolesCsv) throws IOException {
         JSONObject api = fetchPublisherApi(apiIdKey);
         api.put("visibility", "RESTRICTED");
-        api.put("visibleRoles", rolesArray(rolesCsv));
+        api.put("visibleRoles", csvToJsonArray(rolesCsv));
         putPublisherApi(apiIdKey, api);
     }
 

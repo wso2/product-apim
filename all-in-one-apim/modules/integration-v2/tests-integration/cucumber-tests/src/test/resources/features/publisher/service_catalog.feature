@@ -1,5 +1,5 @@
 @cleanup
-Feature: Admin Service Catalog
+Feature: Publisher Service Catalog
 
   Service Catalog management over the /api/am/service-catalog/v1/services REST API: register a service (multipart
   metadata + OpenAPI definition), retrieve it and its definition, search by name/version/type/key with pagination,

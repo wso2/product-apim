@@ -50,7 +50,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -943,7 +942,7 @@ public class Utils {
     /** Admin REST API — export a throttling policy by name + type ({@code sub}/{@code app}/{@code api}/{@code global}). */
     public static String getThrottlePolicyExportURL(String baseUrl, String name, String type) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/export?name="
-                + java.net.URLEncoder.encode(name, java.nio.charset.StandardCharsets.UTF_8) + "&type=" + type;
+                + URLEncoder.encode(name, StandardCharsets.UTF_8) + "&type=" + type;
     }
 
     /** Admin REST API — import a throttling policy (multipart file); {@code overwrite} controls update vs conflict. */
@@ -1452,6 +1451,23 @@ public class Utils {
     }
 
     /**
+     * Escapes the XML metacharacters ({@code & < > " '}) in a value that is interpolated into a hand-built
+     * SOAP/XML envelope, so a value containing one of them (e.g. a password or role name with {@code &})
+     * cannot corrupt the envelope. {@code &} is replaced first so the other entities are not double-escaped.
+     * Safe for both element text and attribute values. A {@code null} value maps to an empty string.
+     */
+    public static String escapeXml(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+
+    /**
      * Returns the first JSON object in the given array that matches all provided key-value pairs.
      *
      * @param list     the JSON array containing objects to search
@@ -1530,59 +1546,6 @@ public class Utils {
             log.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
             throw new AssertionError("Comparison failed: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Executes the given HTTP request repeatedly until the expected response status code
-     * is received and the provided custom validation condition is satisfied, or until the
-     * maximum number of retry attempts is reached.
-     *
-     *
-     * @param requestAction       the HTTP request action to execute
-     * @param expectedStatusCode  the expected HTTP response status code
-     * @param customValidation    an additional validation condition to apply to the response
-     * @return the first response that satisfies both the expected status code and custom
-     *         validation, or the last received response if the retry limit is reached
-     * @throws InterruptedException if the thread is interrupted while waiting between retries
-     */
-    public static HttpResponse executeWithRetry(RequestAction requestAction, int expectedStatusCode,
-            Predicate<HttpResponse> customValidation) throws InterruptedException {
-
-        HttpResponse response = null;
-
-        for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
-            log.info("Attempt " + attempt + "/" + Constants.MAX_RETRIES + ": Executing request...");
-            response = requestAction.execute();
-
-            // Check if status code matches and custom validation passes
-            if (response != null) {
-                if ( response.getResponseCode() == expectedStatusCode && customValidation.test(response)) {
-                    return response;
-                } else {
-                    log.warn("Attempt " + attempt + ": Criteria not met. Received: [" + response.getResponseCode()
-                            + "]. Data: " + response.getData());
-                }
-            }
-
-            if (attempt < Constants.MAX_RETRIES) {
-                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
-            }
-        }
-        return response;
-    }
-
-
-    /**
-     * Retrieves the pending HTTP request stored in the current test context.
-     *
-     *
-     * @return the pending HTTP request action stored in the test context
-     */
-    public static RequestAction getPendingHttpRequest() {
-
-        RequestAction requestAction = (RequestAction) TestContext.get(Constants.PENDING_HTTP_REQUEST);
-        Assert.assertNotNull(requestAction, "No pending request found in TestContext");
-        return requestAction;
     }
 
     /**
