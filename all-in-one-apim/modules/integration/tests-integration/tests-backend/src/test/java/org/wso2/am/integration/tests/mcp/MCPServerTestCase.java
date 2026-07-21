@@ -187,6 +187,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
                     "}";
 
     private static final String EXPECTED_SCHEMA_ECHO =
+            "{ \"inputSchema\": " +
             "{\n" +
                     "  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n" +
                     "  \"additionalProperties\": false,\n" +
@@ -198,7 +199,22 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
                     "    }\n" +
                     "  },\n" +
                     "  \"required\": [\"message\"]\n" +
-                    "}";
+                    "}," +
+                    "  \"title\": \"Echo Tool\"," +
+                    "  \"outputSchema\": {" +
+                    "    \"type\": \"object\"," +
+                    "    \"properties\": { \"echoed\": { \"type\": \"string\" } }," +
+                    "    \"required\": [\"echoed\"]" +
+                    "  }," +
+                    "  \"annotations\": {" +
+                    "    \"title\": \"Echo\"," +
+                    "    \"readOnlyHint\": true," +
+                    "    \"destructiveHint\": false," +
+                    "    \"idempotentHint\": true," +
+                    "    \"openWorldHint\": false" +
+                    "  }," +
+                    "  \"_meta\": { \"category\": \"utility\", \"source\": \"mock-mcp\" }" +
+            "}";
 
     private static final String EXPECTED_SCHEMA_DELETE_OLD_PETS =
             "{\n" +
@@ -206,7 +222,8 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
                     "  \"properties\": {}\n" +
                     "}";
 
-    private static final String EXPECTED_SCHEMA_ORDER_PIZZA = "{\n" +
+    private static final String EXPECTED_SCHEMA_ORDER_PIZZA = "{ \"inputSchema\": " +
+            "{\n" +
             "  \"$schema\" : \"http://json-schema.org/draft-07/schema#\",\n" +
             "  \"additionalProperties\" : false,\n" +
             "  \"type\" : \"object\",\n" +
@@ -230,6 +247,7 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
             "  },\n" +
             "  \"required\" : [ \"pizzaType\", \"quantity\", \"customerName\", \"deliveryAddress\", " +
             "\"creditCardNumber\" ]\n" +
+            "}" +
             "}";
 
     private static final String EXPECTED_ENDPOINT_CONFIG =
@@ -378,7 +396,21 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
             "          }\n" +
             "        },\n" +
             "        \"required\" : [ \"message\" ]\n" +
-            "      }\n" +
+            "      },\n" +
+            "      \"title\" : \"Echo Tool\",\n" +
+            "      \"outputSchema\" : {\n" +
+            "        \"type\" : \"object\",\n" +
+            "        \"properties\" : { \"echoed\" : { \"type\" : \"string\" } },\n" +
+            "        \"required\" : [ \"echoed\" ]\n" +
+            "      },\n" +
+            "      \"annotations\" : {\n" +
+            "        \"title\" : \"Echo\",\n" +
+            "        \"readOnlyHint\" : true,\n" +
+            "        \"destructiveHint\" : false,\n" +
+            "        \"idempotentHint\" : true,\n" +
+            "        \"openWorldHint\" : false\n" +
+            "      },\n" +
+            "      \"_meta\" : { \"category\" : \"utility\", \"source\" : \"mock-mcp\" }\n" +
             "    }, {\n" +
             "      \"name\" : \"orderPizza\",\n" +
             "      \"description\" : \"Order a pizza from the menu. This tool allows you to place an order for a " +
@@ -1752,6 +1784,25 @@ public class MCPServerTestCase extends APIMIntegrationBaseTest {
                                     .put("required", new JSONArray().put("message"))
                                     .put("additionalProperties", false)
                                     .put("$schema", "http://json-schema.org/draft-07/schema#")
+                            )
+                            .put("title", "Echo Tool")
+                            .put("outputSchema", new JSONObject()
+                                    .put("type", "object")
+                                    .put("properties", new JSONObject()
+                                            .put("echoed", new JSONObject().put("type", "string"))
+                                    )
+                                    .put("required", new JSONArray().put("echoed"))
+                            )
+                            .put("annotations", new JSONObject()
+                                    .put("title", "Echo")
+                                    .put("readOnlyHint", true)
+                                    .put("destructiveHint", false)
+                                    .put("idempotentHint", true)
+                                    .put("openWorldHint", false)
+                            )
+                            .put("_meta", new JSONObject()
+                                    .put("category", "utility")
+                                    .put("source", "mock-mcp")
                             )
                     )
 
