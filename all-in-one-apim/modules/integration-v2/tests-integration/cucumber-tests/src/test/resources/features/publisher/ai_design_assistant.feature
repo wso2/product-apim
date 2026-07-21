@@ -1,8 +1,8 @@
 Feature: AI Design Assistant REST contract
-  Validates the Publisher Design Assistant endpoints after the pluggable-implementation refactor
-  (carbon-apimgt PR #13920). With no AI credentials configured (the default distribution state), the request
-  validation now runs before the backend is consulted, and the default implementation degrades gracefully to an
-  empty response instead of erroring.
+  Validates the Publisher Design Assistant request validation after the pluggable-implementation refactor
+  (carbon-apimgt PR #13920). The refactor runs request validation before the backend is consulted, so a
+  malformed payload is rejected with 400 regardless of whether an AI service is configured. The configured
+  happy path (generate 200, chat 200) is covered separately in ai_design_assistant_backend.feature.
 
   Background:
     Given The system is ready and I have valid publisher access tokens as "publisherUser"
@@ -24,14 +24,3 @@ Feature: AI Design Assistant REST contract
       """
     And I send an AI Design Assistant chat request with payload "daChatEmptySession"
     Then The response status code should be 400
-
-  # NOTE: with the AI service unconfigured the REST resource returns a null Response; JAX-RS renders that as
-  # 204 No Content. Confirm this exact code on the first live run and adjust if an interceptor maps it otherwise.
-  @cap:publisher @feat:design-assistant @type:regression
-  Scenario: Design Assistant generate-payload returns no content when the AI service is not configured
-    When I put the following JSON payload in context as "daValidSession"
-      """
-      { "sessionId": "integration-v2-session" }
-      """
-    And I send an AI Design Assistant generate-payload request with payload "daValidSession"
-    Then The response status code should be 204
