@@ -50,6 +50,7 @@ public class APICreationTestCase extends APIManagerLifecycleBaseTest {
     private String apiIdAPK;
     private String apiIdSynapse;
     private String apiIdDuplicateAPI;
+    private String API_CREATOR_USER = "user5116";
 
     @Factory(dataProvider = "userModeDataProvider")
     public APICreationTestCase(TestUserMode userMode) {
@@ -151,8 +152,8 @@ public class APICreationTestCase extends APIManagerLifecycleBaseTest {
 
         // Generate credentials for non-admin user and create the same API above
         String[] userRoles = { APIMIntegrationConstants.APIM_INTERNAL_ROLE.CREATOR };
-        String username = "user5116";
-        String password = "user5116";
+        String username = API_CREATOR_USER;
+        String password = API_CREATOR_USER;
         userManagementClient.addUser(username, password, userRoles, username);
         String basicAuthCredentials =  username + "@" + user.getUserDomain()+ ":" + password;
         String authHeader = "Basic " + Base64.encode(basicAuthCredentials.getBytes(StandardCharsets.UTF_8));
@@ -174,22 +175,37 @@ public class APICreationTestCase extends APIManagerLifecycleBaseTest {
         connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER, authHeader);
         connection.setRequestProperty("Content-Type", APIMIntegrationConstants.APPLICATION_JSON_MEDIA_TYPE);
         connection.setRequestProperty("Accept", APIMIntegrationConstants.APPLICATION_JSON_MEDIA_TYPE);
+        connection.setConnectTimeout(30000);
+        connection.setReadTimeout(30000);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = payload.getBytes(StandardCharsets.UTF_8);
             os.write(input);
         }
 
-        int status = connection.getResponseCode();
-        Assert.assertEquals(status, 409);
-
-        connection.disconnect();
+        try {
+            int status = connection.getResponseCode();
+            Assert.assertEquals(status, 409);
+        } finally {
+            connection.disconnect();
+        }
     }
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
-        restAPIPublisher.deleteAPI(apiId);
-        restAPIPublisher.deleteAPI(apiIdDuplicateAPI);
+        if (StringUtils.isNotEmpty(apiId)) {
+            restAPIPublisher.deleteAPI(apiId);
+        }
+        if (StringUtils.isNotEmpty(apiIdDuplicateAPI)) {
+            restAPIPublisher.deleteAPI(apiIdDuplicateAPI);
+        }
+        if (StringUtils.isNotEmpty(apiIdAPK)) {
+            restAPIPublisher.deleteAPI(apiIdAPK);
+        }
+        if (StringUtils.isNotEmpty(apiIdSynapse)) {
+            restAPIPublisher.deleteAPI(apiIdSynapse);
+        }
+        userManagementClient.deleteUser(API_CREATOR_USER);
     }
 }
