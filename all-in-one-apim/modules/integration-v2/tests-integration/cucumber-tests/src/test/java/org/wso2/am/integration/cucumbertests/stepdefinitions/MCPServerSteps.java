@@ -17,9 +17,11 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -363,6 +365,43 @@ public class MCPServerSteps {
 
         HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Asserts an MCP tool's PRODUCT-GENERATED input schema STRUCTURALLY — {@code JSONObject.similar}, so key
+     * order is irrelevant (ports the legacy MCPServerTestCase schema check as hardened by upstream PR #14237,
+     * whose exact-string compare flaked on unguaranteed key order). The docstring is the expected
+     * schemaDefinition JSON. The GET is an intermediate read (local, not the published httpResponse).
+     *
+     * @param idKey context key holding the MCP-server id
+     * @param tool  the tool whose operation carries the schema
+     */
+    @Then("the MCP server {string} tool {string} should have schema definition:")
+    public void mcpToolShouldHaveSchemaDefinition(String idKey, String tool, String expectedSchemaJson)
+            throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        HttpResponse resp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), publisherHeaders());
+        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                        && !resp.getData().isEmpty(),
+                "MCP server fetch failed for the schema check: got="
+                        + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
+        JSONArray ops = new JSONObject(resp.getData()).getJSONArray("operations");
+        JSONObject match = null;
+        for (int i = 0; i < ops.length(); i++) {
+            if (ops.getJSONObject(i).toString().contains(tool)) {
+                match = ops.getJSONObject(i);
+                break;
+            }
+        }
+        Assert.assertNotNull(match, "MCP server has no operation for tool '" + tool + "': " + ops);
+        String actualSchema = match.optString("schemaDefinition", null);
+        Assert.assertNotNull(actualSchema, "Operation for '" + tool + "' has no schemaDefinition: " + match);
+        JSONObject actual = new JSONObject(actualSchema);
+        JSONObject expected = new JSONObject(expectedSchemaJson);
+        Assert.assertTrue(expected.similar(actual),
+                "Tool '" + tool + "' schemaDefinition mismatch (structural): expected=" + expected
+                        + " actual=" + actual);
     }
 
     /** Deletes an MCP server (DELETE /mcp-servers/{id}) — the explicit delete scenarios use to assert removal.

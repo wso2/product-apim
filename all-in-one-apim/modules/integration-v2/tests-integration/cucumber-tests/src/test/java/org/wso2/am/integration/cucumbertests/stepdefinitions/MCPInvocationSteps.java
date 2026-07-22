@@ -18,6 +18,8 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -171,6 +173,62 @@ public class MCPInvocationSteps {
             Thread.sleep(2000);
         }
         Assert.fail("MCP multi-call session did not satisfy all calls within the deadline; last: " + lastError);
+    }
+
+    /**
+     * Asserts the gateway's {@code tools/list} — via the full handshake (initialize → notifications/initialized
+     * → tools/list) — advertises every tool in {@code expectedCsv} and NONE of the tools in {@code absentCsv}.
+     * The advertised names are PARSED from {@code result.tools[].name} and compared as a set (order-independent;
+     * mirrors upstream PR #14237's hardening of the legacy exact-JSON tool-list compare, which flaked because
+     * tool order is not guaranteed). Retries the whole flow to ride out publish/redeploy propagation.
+     */
+    @When("I list MCP tools at gateway context {string} version {string} using access token {string} expecting tools {string} and not {string} within {int} seconds")
+    public void listMcpToolsExpecting(String context, String version, String accessToken, String expectedCsv,
+                                      String absentCsv, int timeoutSeconds) throws Exception {
+        String mcpUrl = buildMcpUrl(context, version);
+        String token = TestContext.resolve(accessToken).toString();
+        java.util.List<String> expected = java.util.Arrays.asList(expectedCsv.split("\\s*,\\s*"));
+        java.util.List<String> absent = java.util.Arrays.asList(absentCsv.split("\\s*,\\s*"));
+
+        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        String lastError = null;
+        while (System.currentTimeMillis() < endTime) {
+            try {
+                HttpClient client = HttpClient.newBuilder().sslContext(trustAll())
+                        .connectTimeout(Duration.ofSeconds(15)).build();
+                HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
+                String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
+                if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
+                    lastError = "init status=" + initResp.statusCode();
+                    Thread.sleep(2000);
+                    continue;
+                }
+                post(client, mcpUrl, token, sessionId, INITIALIZED);
+                HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
+                String listBody = sseOrJson(listResp.body());
+                // Parse the advertised names from result.tools[].name — never substring-match the raw body
+                // (a tool name appearing inside another tool's description would false-positive).
+                java.util.Set<String> names = new java.util.HashSet<>();
+                JSONArray tools = new JSONObject(listBody).getJSONObject("result").getJSONArray("tools");
+                for (int i = 0; i < tools.length(); i++) {
+                    names.add(tools.getJSONObject(i).getString("name"));
+                }
+                boolean ok = names.containsAll(expected);
+                for (String a : absent) {
+                    ok = ok && !names.contains(a);
+                }
+                if (ok) {
+                    return;
+                }
+                lastError = "advertised tools " + names + " (expected all of " + expected
+                        + ", none of " + absent + ")";
+            } catch (Exception transientDuringWarmup) {
+                lastError = transientDuringWarmup.getMessage();
+            }
+            Thread.sleep(2000);
+        }
+        Assert.fail("Gateway tools/list did not converge to the expected tool set within the deadline; last: "
+                + lastError);
     }
 
     /**
