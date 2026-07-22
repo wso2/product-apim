@@ -158,15 +158,15 @@ public final class TenantUserProvisioner {
             String[] rolesList = roles.split("\\s*,\\s*");
             StringBuilder rolesXml = new StringBuilder();
             for (String role : rolesList) {
-                rolesXml.append("<xsd:roles>").append(role).append("</xsd:roles>");
+                rolesXml.append("<xsd:roles>").append(Utils.escapeXml(role)).append("</xsd:roles>");
             }
 
             String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
                     "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
                     "<soapenv:Header/><soapenv:Body>" +
                     "<xsd:addUser>" +
-                    "<xsd:userName>" + username + "</xsd:userName>" +
-                    "<xsd:password>" + password + "</xsd:password>" +
+                    "<xsd:userName>" + Utils.escapeXml(username) + "</xsd:userName>" +
+                    "<xsd:password>" + Utils.escapeXml(password) + "</xsd:password>" +
                     rolesXml +
                     "</xsd:addUser>" +
                     "</soapenv:Body></soapenv:Envelope>";
@@ -195,14 +195,39 @@ public final class TenantUserProvisioner {
      * @param roleName     the (unqualified) role name (e.g. {@code apiAccessRole})
      */
     public static void addRole(String tenantDomain, String roleName) throws IOException {
+        addRole(tenantDomain, roleName, false);
+    }
+
+    /**
+     * As {@link #addRole(String, String)} but optionally grants the role the store-login + subscribe permissions.
+     * A role used as an API's {@code visibleRoles} (DevPortal store visibility RESTRICTED) MUST carry the
+     * {@code /permission/admin/login} permission, or the publisher API-create rejects it with 900610 "Invalid user
+     * roles found" — verified live: an empty role works for {@code accessControlRoles} but NOT for
+     * {@code visibleRoles}. This mirrors the legacy visibility tests (APITagVisibilityByRole /
+     * APIVisibilityWithDirectURL / APIMANAGER4373), which all create the visibility role with exactly these two
+     * permissions. Access-control-only roles can stay permissionless.
+     *
+     * @param withStorePermissions grant {@code /permission/admin/login} + {@code .../manage/api/subscribe}
+     */
+    public static void addRole(String tenantDomain, String roleName, boolean withStorePermissions)
+            throws IOException {
 
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
         User tenantAdmin = tenant.getTenantAdmin();
+        String permissionsXml = "";
+        if (withStorePermissions) {
+            permissionsXml =
+                    "<ser:permissions><ser:action>ui.execute</ser:action>"
+                            + "<ser:resourceId>/permission/admin/login</ser:resourceId></ser:permissions>"
+                            + "<ser:permissions><ser:action>ui.execute</ser:action>"
+                            + "<ser:resourceId>/permission/admin/manage/api/subscribe</ser:resourceId></ser:permissions>";
+        }
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
                 "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">" +
                 "<soapenv:Header/><soapenv:Body>" +
                 "<ser:addRole>" +
-                "<ser:roleName>" + roleName + "</ser:roleName>" +
+                "<ser:roleName>" + Utils.escapeXml(roleName) + "</ser:roleName>" +
+                permissionsXml +
                 "</ser:addRole>" +
                 "</soapenv:Body></soapenv:Envelope>";
 
@@ -219,6 +244,233 @@ public final class TenantUserProvisioner {
             throw new IOException("addRole for '" + roleName + "' in tenant '" + tenantDomain + "' failed with "
                     + code + ": " + response.getData());
         }
+    }
+
+    /**
+     * Returns the roles of a user via RemoteUserStoreManagerService {@code getRoleListOfUser} (the raw response
+     * body). Used to verify case-insensitive-username resolution on the secondary store (an UPPERCASE username
+     * resolves the same user). Uses the given tenant's admin credentials.
+     */
+    public static String getRoleListOfUser(String tenantDomain, String userName) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
+                + "<soapenv:Header/><soapenv:Body>"
+                + "<ser:getRoleListOfUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName></ser:getRoleListOfUser>"
+                + "</soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:getRoleListOfUser",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        return response.getData();
+    }
+
+    /**
+     * Returns whether a user EXISTS via RemoteUserStoreManagerService {@code isExistingUser} (raw response body,
+     * contains {@code <ns:return>true|false</ns:return>}). This is the correct existence check for the secondary
+     * store: {@code getRoleListOfUser} returns {@code Internal/everyone} for ANY username string — existing or NOT
+     * — so a non-empty role list does NOT prove the user exists. Uses the given tenant's admin credentials.
+     */
+    public static String isExistingUser(String tenantDomain, String userName) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
+                + "<soapenv:Header/><soapenv:Body>"
+                + "<ser:isExistingUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName></ser:isExistingUser>"
+                + "</soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:isExistingUser",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        return response.getData();
+    }
+
+    /**
+     * Adds a user via RemoteUserStoreManagerService {@code addUser} (the user-store-manager service, which resolves
+     * a {@code SECONDARY/} domain prefix), rather than the multiple-credentials UserAdmin service used by
+     * {@link #addUser} (which rejects a secondary domain with "Invalid Domain Name"). Pinned live: this is the SOAP
+     * shape that works for a runtime-added secondary store. Roles are comma-separated.
+     */
+    public static void addUserInStore(String tenantDomain, String userName, String password, String roles)
+            throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        StringBuilder rolesXml = new StringBuilder();
+        for (String role : roles.split("\\s*,\\s*")) {
+            rolesXml.append("<ser:roleList>").append(Utils.escapeXml(role)).append("</ser:roleList>");
+        }
+        // RemoteUserStoreManagerService operations live in the http://service.ws.um.carbon.wso2.org namespace —
+        // using the axis2 xsd namespace here fails with "namespace mismatch require .../service.ws.um... found
+        // .../org.apache.axis2/xsd". The addUser operation is positional: userName, credential, roleList*, claims*,
+        // profileName, requirePasswordChange.
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\"><soapenv:Header/><soapenv:Body>"
+                + "<ser:addUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName>"
+                + "<ser:credential>" + Utils.escapeXml(password) + "</ser:credential>"
+                + rolesXml
+                + "<ser:profileName>default</ser:profileName>"
+                + "<ser:requirePasswordChange>false</ser:requirePasswordChange>"
+                + "</ser:addUser></soapenv:Body></soapenv:Envelope>";
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl()), payload, "urn:addUser",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        int code = response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException("addUserInStore for '" + userName + "' in tenant '" + tenantDomain
+                    + "' failed with " + code + ": " + response.getData());
+        }
+    }
+
+    /**
+     * Seeds a user into a secondary user store (via {@link #addUserInStore}) AND registers it as a resolvable
+     * ACTOR in the tenant bean, so a {@code Scenario Outline} can act as e.g. {@code "secondaryUser@tenant1.com"}.
+     * The store-local name (e.g. {@code SECONDARY.COM/secondaryUser1}) routes the credential to the secondary
+     * store; the actor's full username appends {@code @<tenant>} so token minting (DCR owner + password grant)
+     * routes it to the right tenant — the same qualification the primary-store actors use. Because the shared
+     * store DB isolates by {@code UM_TENANT_ID}, the same store-local name in two tenants is two distinct users.
+     *
+     * @param tenantDomain          tenant whose secondary store the user is seeded into (and whose actor set it joins)
+     * @param userKey               the actor key used to resolve it (e.g. {@code secondaryUser})
+     * @param storeQualifiedName    the store-domain-qualified username (e.g. {@code SECONDARY.COM/secondaryUser1})
+     * @param password              login password (must satisfy the store's PasswordJavaRegEx — no spaces)
+     * @param roles                 comma-separated Internal roles granting the planes the actor needs
+     */
+    public static void addStoreUserAsActor(String tenantDomain, String userKey, String storeQualifiedName,
+                                           String password, String roles) throws IOException {
+        addUserInStore(tenantDomain, storeQualifiedName, password, roles);
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User actor = new User();
+        actor.setUserName(storeQualifiedName + Constants.CHAR_AT + tenantDomain);
+        actor.setPassword(password);
+        actor.setKey(userKey);
+        tenant.addTenantUsers(actor);
+        TestContext.setShared(tenantDomain, tenant);
+    }
+
+    private static String storeProp(String name, String value) {
+        return "<xsd:properties><xsd:name>" + Utils.escapeXml(name) + "</xsd:name><xsd:value>"
+                + Utils.escapeXml(value) + "</xsd:value></xsd:properties>";
+    }
+
+    /**
+     * Registers a JDBC secondary user store at RUNTIME via UserStoreConfigAdminService.addUserStore (hot-deploys
+     * asynchronously — poll {@link #waitUntilStoreActive} after) for the given tenant. The addUserStore operation
+     * element lives in the {@code http://org.apache.axis2/xsd} namespace while the DTO fields are in the store-config
+     * DTO namespace; the domain MUST be dotted ({@code SECONDARY.COM}) — a bare name is rejected for a runtime-added
+     * store. The schema (UM_* tables) must already exist in {@code jdbcUrl} (created via
+     * {@code DynamicApimContainer#createSecondaryUserStoreH2Schema} before this call).
+     */
+    public static void addSecondaryUserStore(String tenantDomain, String domain, String jdbcUrl) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String props = storeProp("url", jdbcUrl)
+                + storeProp("userName", "wso2carbon")
+                + storeProp("password", "wso2carbon")
+                + storeProp("driverName", "org.h2.Driver")
+                + storeProp("Disabled", "false")
+                + storeProp("ReadOnly", "false")
+                + storeProp("ReadGroups", "true")
+                + storeProp("WriteGroups", "true")
+                + storeProp("CaseInsensitiveUsername", "true")
+                + storeProp("UsernameJavaRegEx", "^[\\S]{2,30}$")
+                + storeProp("PasswordJavaRegEx", "^[\\S]{5,30}$")
+                + storeProp("RolenameJavaRegEx", "^[\\S]{2,30}$")
+                + storeProp("SCIMEnabled", "false")
+                + storeProp("PasswordDigest", "SHA-256")
+                + storeProp("StoreSaltedPassword", "true")
+                + storeProp("MultiAttributeSeparator", ",");
+        // The operation element (addUserStore/userStoreDTO) is in the generic axis2 xsd namespace (the service
+        // reported: "namespace mismatch require http://org.apache.axis2/xsd"); the DTO FIELDS keep the dto xsd ns.
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://org.apache.axis2/xsd\" "
+                + "xmlns:xsd=\"http://dto.configuration.store.user.identity.carbon.wso2.org/xsd\">"
+                + "<soapenv:Header/><soapenv:Body>"
+                + "<ser:addUserStore><ser:userStoreDTO>"
+                + "<xsd:className>org.wso2.carbon.user.core.jdbc.UniqueIDJDBCUserStoreManager</xsd:className>"
+                + "<xsd:description>Framework secondary user store</xsd:description>"
+                + "<xsd:disabled>false</xsd:disabled>"
+                + "<xsd:domainId>" + Utils.escapeXml(domain) + "</xsd:domainId>"
+                + props
+                // FileBased DAO: addUserStore writes the userstore XML to deployment/server/userstores/, which
+                // the live UserStoreConfigurationDeployer HOT-DEPLOYS at runtime (async — poll for active before
+                // use). This is the management-console default path.
+                + "<xsd:repositoryClass>org.wso2.carbon.identity.user.store.configuration.dao.impl."
+                + "FileBasedUserStoreDAOFactory</xsd:repositoryClass>"
+                + "</ser:userStoreDTO></ser:addUserStore></soapenv:Body></soapenv:Envelope>";
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getUserStoreConfigAdminServiceURL(getBaseUrl()), payload, "urn:addUserStore",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        int code = response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException("addUserStore for domain '" + domain + "' in tenant '" + tenantDomain
+                    + "' failed with " + code + ": " + response.getData());
+        }
+    }
+
+    /**
+     * Polls until a runtime-added secondary user store's domain is ACTIVE. addUserStore deploys the store
+     * ASYNCHRONOUSLY (the WSO2 docs: "the success message does not imply the user store is added successfully —
+     * refresh after a few seconds"), so callers must wait before using the domain. Probes {@code isExistingUser}
+     * on a non-existent name in the domain: while the store is not yet deployed the service faults with "Invalid
+     * Domain Name"; once active it returns a normal {@code false}. Never sleep-without-polling; retries only the
+     * transient not-yet-deployed state.
+     */
+    public static void waitUntilStoreActive(String tenantDomain, String domain)
+            throws IOException, InterruptedException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
+        // Probe isExistingUser on a regex-valid name in the domain — but check the RAW response code directly
+        // (do NOT call isExistingUser(), which asserts 200 and throws on the not-yet-deployed 500). While the
+        // store is still deploying the service faults 500 "Invalid Domain Name"; once active it returns 200.
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\"><soapenv:Header/><soapenv:Body>"
+                + "<ser:isExistingUser><ser:userName>" + Utils.escapeXml(domain) + "/storeprobe</ser:userName>"
+                + "</ser:isExistingUser></soapenv:Body></soapenv:Envelope>";
+        // ~10s observed propagation; 60s is a ~6x margin (covers a starved container under full-suite load).
+        long deadline = System.currentTimeMillis() + 60000L;
+        HttpResponse resp = null;
+        while (true) {
+            resp = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:isExistingUser",
+                    tenantAdmin.getUserName(), tenantAdmin.getPassword());
+            if (resp.getResponseCode() == 200) {
+                return;
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                throw new IOException("Secondary user store '" + domain + "' in tenant '" + tenantDomain
+                        + "' did not become active within 60s; last: " + resp.getResponseCode() + " / "
+                        + resp.getData());
+            }
+            Thread.sleep(3000);
+        }
+    }
+
+    /** Deletes a role (RemoteUserStoreManagerService {@code deleteRole}). Best-effort cleanup. */
+    public static void deleteRole(String tenantDomain, String roleName) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
+                + "<soapenv:Header/><soapenv:Body>"
+                + "<ser:deleteRole><ser:roleName>" + Utils.escapeXml(roleName) + "</ser:roleName></ser:deleteRole>"
+                + "</soapenv:Body></soapenv:Envelope>";
+        SimpleHTTPClient.getInstance().sendSoapRequest(Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl()),
+                payload, "urn:deleteRole", tenantAdmin.getUserName(), tenantAdmin.getPassword());
+    }
+
+    /** Deletes a user (RemoteUserStoreManagerService {@code deleteUser}). Best-effort cleanup. */
+    public static void deleteUser(String tenantDomain, String userName) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
+                + "<soapenv:Header/><soapenv:Body>"
+                + "<ser:deleteUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName></ser:deleteUser>"
+                + "</soapenv:Body></soapenv:Envelope>";
+        SimpleHTTPClient.getInstance().sendSoapRequest(Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl()),
+                payload, "urn:deleteUser", tenantAdmin.getUserName(), tenantAdmin.getPassword());
     }
 
     /**

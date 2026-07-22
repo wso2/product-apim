@@ -1,0 +1,38 @@
+{
+  "name": "${UNIQUE:EndpointListingAPI}",
+  "context": "${UNIQUE:endpointListingContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "load_balance",
+    "algoCombo": "org.apache.synapse.endpoints.algorithms.RoundRobin",
+    "sessionManagement": "",
+    "sessionTimeOut": "",
+    "algoClassName": "org.apache.synapse.endpoints.algorithms.RoundRobin",
+    "production_endpoints": [
+      { "url": "http://nodebackend:3001/prod0" },
+      { "url": "http://nodebackend:3001/prod1" },
+      { "url": "http://nodebackend:3001/prod2" },
+      { "url": "http://nodebackend:3001/prod3" }
+    ],
+    "sandbox_endpoints": [
+      { "url": "http://nodebackend:3001/sand0" },
+      { "url": "http://nodebackend:3001/sand1" },
+      { "url": "http://nodebackend:3001/sand2" },
+      { "url": "http://nodebackend:3001/sand3" }
+    ]
+  },
+  "description": "API with a round-robin load-balanced endpoint (4 production + 4 sandbox) for endpoint listing/retrieval.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

@@ -15,12 +15,18 @@
  *
  */
 
-package org.wso2.am.integration.cucumbertests.utils;
+package org.wso2.am.integration.cucumbertests.runners.block;
 
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import io.cucumber.testng.CucumberOptions;
 
-@FunctionalInterface
-public interface RequestAction {
-
- HttpResponse execute();
+/**
+ * Runner for admin/application-owner-change — admin change of application ownership (valid transfer + negative),
+ * both tenants. Extends {@link BaseBlockRunner}.
+ */
+@CucumberOptions(
+        features = "src/test/resources/features/admin/application_owner_change.feature",
+        glue = {"org.wso2.am.integration.cucumbertests.stepdefinitions"},
+        plugin = {"pretty", "html:target/cucumber-report/admin-application-owner-change.html"}
+)
+public class AdminApplicationOwnerChangeRunner extends BaseBlockRunner {
 }

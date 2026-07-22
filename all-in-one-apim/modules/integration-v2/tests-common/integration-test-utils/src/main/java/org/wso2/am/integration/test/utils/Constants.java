@@ -33,8 +33,6 @@ public class Constants {
     public static final String HTTP_SCHEME = "http";
     public static final String HTTPS_SCHEME = "https";
     public static final String HTTP_RESPONSE = "httpResponse";
-    public static final String PENDING_HTTP_REQUEST = "pendingRequest";
-    public static final String HTTP_METHOD = "HTTP_METHOD";
 
     public static final String BASE_URL = "baseUrl";
 

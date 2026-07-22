@@ -255,3 +255,99 @@ Feature: Publisher API Runtime & Common Configuration
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # Edit an API's metadata (tags + description) and confirm the new values persist on re-fetch. Ports
+  # EditAPIAndCheckUpdatedInformationTestCase. Self-contained (creates its own API); torn down by the runner sweep.
+  @cap:publisher @feat:api-config @rule:metadata @type:regression @legacy:EditAPIAndCheckUpdatedInformationTestCase
+  Scenario Outline: Update a REST API's tags and description persist as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I generate a unique value and store it as "editTag"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "editApiPayload"
+    And I create an "apis" resource with payload "editApiPayload" as "editApiId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "editApiId"
+    And I put the response payload in context as "editApiFull"
+    # Append a new tag and change the description in one update.
+    And I set the field "description" to "This is test API - New Description" in the payload "editApiFull"
+    And I update the "apis" resource "editApiId" and "editApiFull" with configuration type "tags" and value:
+    """
+    ["tag18-1","tag18-2","tag18-3","{{editTag}}"]
+    """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "editApiId"
+    Then The response status code should be 200
+    And The response should contain "This is test API - New Description"
+    And The response should contain "{{editTag}}"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # An API update that nulls optional fields (securityScheme, then endpointConfig) is ACCEPTED (200), not a 400 or
+  # a server error — a regression guard against a past NullPointerException. Ports UpdateAPINullPointerTestCase
+  # (whose method names say "BadRequest" but assert 200 — the true subject is null-field ACCEPTANCE).
+  @cap:publisher @feat:api-config @rule:null-fields @type:regression @legacy:UpdateAPINullPointerTestCase
+  Scenario Outline: An API update that nulls optional fields is accepted as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "nullApiPayload"
+    And I create an "apis" resource with payload "nullApiPayload" as "nullApiId"
+    Then The response status code should be 201
+    # Null securityScheme -> update accepted.
+    When I retrieve the "apis" resource with id "nullApiId"
+    And I put the response payload in context as "nullApiFull1"
+    And I set the field "securityScheme" to null in the payload "nullApiFull1"
+    And I update "apis" resource of id "nullApiId" with payload "nullApiFull1"
+    Then The response status code should be 200
+    # Observable state (pinned live): a null securityScheme is NOT applied — the server retains/re-defaults the
+    # scheme set, so the retrieved API still carries the default schemes.
+    When I retrieve the "apis" resource with id "nullApiId"
+    And I extract response field "securityScheme" and store it as "nullApiPostSS"
+    Then the actual value of "nullApiPostSS" should match the expected value:
+    """
+    ["oauth_basic_auth_api_key_mandatory","oauth2"]
+    """
+    # Null endpointConfig -> update accepted.
+    When I retrieve the "apis" resource with id "nullApiId"
+    And I put the response payload in context as "nullApiFull2"
+    And I set the field "endpointConfig" to null in the payload "nullApiFull2"
+    And I update "apis" resource of id "nullApiId" with payload "nullApiFull2"
+    Then The response status code should be 200
+    # Observable state (pinned live): unlike securityScheme, a null endpointConfig IS applied — the retrieved API
+    # carries no endpoint configuration any more (the create payload's production/sandbox endpoints are gone).
+    When I retrieve the "apis" resource with id "nullApiId"
+    Then The response status code should be 200
+    And The response should not contain "production_endpoints"
+    And The response should not contain "sandbox_endpoints"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # A load-balanced API's endpoint configuration is retrievable in full: the Publisher API reflects the
+  # load_balance endpoint type, the RoundRobin algorithm and all four production + four sandbox endpoints, and
+  # once published+deployed the DevPortal exposes the gateway endpoint URLs. Ports APIM720GetAllEndPointsTestCase.
+  @cap:publisher @feat:api-config @rule:endpoint-listing @type:regression @dep:devportal @legacy:APIM720GetAllEndPointsTestCase
+  Scenario Outline: A load-balanced API exposes its endpoint configuration and gateway URLs as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_endpoint_listing_api.json" as "lbApiId" and deployed it
+    When I publish the "apis" resource with id "lbApiId"
+    Then The lifecycle status of API "lbApiId" should be "Published"
+    # Publisher reflects the load-balanced endpoint config: type, algorithm and all four production/sandbox endpoints.
+    When I retrieve the "apis" resource with id "lbApiId"
+    Then The response status code should be 200
+    And The response should contain "load_balance"
+    And The response should contain "org.apache.synapse.endpoints.algorithms.RoundRobin"
+    And The response should contain "prod0"
+    And The response should contain "prod3"
+    And The response should contain "sand3"
+    # The DevPortal exposes the API's gateway endpoint URLs once it is deployed.
+    When I extract response field "context" and store it as "lbApiContext"
+    Then I retrieve the devportal API "lbApiId" until it contains "{{lbApiContext}}/1.0.0" within 60 seconds
+    And The response should contain "endpointURLs"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |

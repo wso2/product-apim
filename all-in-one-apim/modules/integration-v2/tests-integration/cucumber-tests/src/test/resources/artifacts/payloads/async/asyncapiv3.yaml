@@ -1,0 +1,28 @@
+asyncapi: 3.0.0
+info:
+  title: AsyncAPI
+  version: '1'
+
+servers:
+  production:
+    host: localhost:8080
+    protocol: mqtt
+
+channels:
+  test:
+    address: test
+
+operations:
+  testReceive:
+    action: receive
+    channel:
+      $ref: '#/channels/test'
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://localhost:9999
+          availableScopes: {}

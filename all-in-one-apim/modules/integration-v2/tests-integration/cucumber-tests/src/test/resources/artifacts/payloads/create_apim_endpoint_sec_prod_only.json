@@ -1,0 +1,40 @@
+{
+  "name": "${UNIQUE:EndpointSecProdOnly}",
+  "context": "${UNIQUE:endpointSecProdOnly}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "admin1",
+        "password": "admin123"
+      }
+    }
+  },
+  "description": "Per-type endpoint security: PRODUCTION backend secured with Basic auth, SANDBOX unsecured. The /sec backend echoes the injected Authorization header.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/sec",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

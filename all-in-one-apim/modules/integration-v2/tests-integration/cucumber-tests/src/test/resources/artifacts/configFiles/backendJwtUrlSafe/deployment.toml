@@ -7,3 +7,10 @@ encoding = "base64url"
 claim_dialect = "http://wso2.org/claims"
 header = "X-JWT-Assertion"
 signing_algorithm = "SHA256withRSA"
+
+# Streaming design co-locates in this block (see testng-v2.xml). It needs the NEW AsyncAPI parser instead of the
+# v2-default legacy parser, which does NOT enforce strict AsyncAPI-v2 validation (e.g. an implicit OAuth flow
+# missing its authorization URL is silently accepted); matches AsyncAPITestWithValidationCase. Orthogonal to the
+# [apim.jwt] keys above, and streaming design is design-only (no invocation) so the backend-JWT config is inert to it.
+[apim.publisher]
+use_legacy_async_parser = false

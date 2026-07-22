@@ -125,6 +125,66 @@ Feature: Publisher API Lifecycle
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # Ports APIPublishingAndVisibilityInStoreTestCase — a created-but-unpublished API is present in the publisher
+  # but NOT visible in the devportal (store), and only becomes visible after publish. The devportal GET returns
+  # 403 for an unpublished API (even with a valid devportal token), and 200 once published. The devportal check
+  # is a cross-plane prerequisite (@dep:devportal); the subject is the publisher-driven publish transition
+  # gating store visibility. Runs as admin (needs both publisher publish scope and the devportal read). ×2 tenant.
+  @cap:publisher @feat:api-lifecycle @type:regression @dep:devportal @legacy:APIPublishingAndVisibilityInStoreTestCase
+  Scenario Outline: A created API is hidden from the store until it is published as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "storeVisApiId" and deployed it
+    And The lifecycle status of API "storeVisApiId" should be "Created"
+
+    # Present in the publisher.
+    When I retrieve the "apis" resource with id "storeVisApiId"
+    Then The response status code should be 200
+
+    # Not yet visible in the devportal — an unpublished API returns 403.
+    When I retrieve the devportal API "storeVisApiId" until the response status code becomes 403 within 30 seconds
+    Then The response status code should be 403
+
+    # Publish, then it becomes visible in the devportal (200).
+    When I publish the "apis" resource with id "storeVisApiId"
+    Then The lifecycle status of API "storeVisApiId" should be "Published"
+    When I retrieve the devportal API "storeVisApiId" until the response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports the publisher/devportal side of AccessibilityOfRetireAPITestCase — an API taken Published -> Deprecated
+  # -> Retired reaches each state, and once RETIRED it is removed from the devportal (a retired API returns 403
+  # from the store, like an unpublished one). The gateway 404-after-retire arc is covered by
+  # gateway/lifecycle_stage_invocation. Runs as admin (publisher lifecycle + devportal read). ×2 tenant.
+  @cap:publisher @feat:api-lifecycle @type:regression @dep:devportal @legacy:AccessibilityOfRetireAPITestCase
+  Scenario Outline: A retired API transitions Published -> Deprecated -> Retired and is removed from the store as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "retireApiId" and deployed it
+    When I publish the "apis" resource with id "retireApiId"
+    Then The lifecycle status of API "retireApiId" should be "Published"
+    # Visible in the devportal while published.
+    When I retrieve the devportal API "retireApiId" until the response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    When I change the lifecycle of API "retireApiId" with action "Deprecate"
+    Then The lifecycle status of API "retireApiId" should be "Deprecated"
+
+    When I change the lifecycle of API "retireApiId" with action "Retire"
+    Then The lifecycle status of API "retireApiId" should be "Retired"
+    # Removed from the devportal once retired -> 403.
+    When I retrieve the devportal API "retireApiId" until the response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # PROTOTYPED is a lifecycle state — an API can be transitioned CREATED -> PROTOTYPED via the "Deploy as a
   # Prototype" action. Ports the publisher-plane half of PrototypedAPITestcase / APIM574. (The runtime side —
   # invoke a deployed prototyped API with a subscription token -> 200, demote -> 401, inline mock, devportal
