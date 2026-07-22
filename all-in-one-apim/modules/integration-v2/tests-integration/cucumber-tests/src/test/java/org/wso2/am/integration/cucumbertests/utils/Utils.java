@@ -459,6 +459,29 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/swagger";
     }
 
+    // --- AI Marketplace Assistant (DevPortal plane) ---
+    public static String getMarketplaceAssistantChatURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "marketplace-assistant/chat";
+    }
+
+    public static String getMarketplaceAssistantApiCountURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "marketplace-assistant/api-count";
+    }
+
+    // --- AI Design Assistant (Publisher plane) ---
+    public static String getDesignAssistantGeneratePayloadURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "design-assistant/generate-api-payload";
+    }
+
+    public static String getDesignAssistantChatURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "design-assistant/chat";
+    }
+
+    // --- AI API Chat (DevPortal plane) ---
+    public static String getApiChatURL(String baseUrl, String apiId, String action) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/api-chat?apiChatAction=" + action;
+    }
+
     public static String getApiDocumentsURL(String baseUrl, String resourceId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + resourceId + "/documents";
     }

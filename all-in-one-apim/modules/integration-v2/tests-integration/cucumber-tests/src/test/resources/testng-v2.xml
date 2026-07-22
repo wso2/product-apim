@@ -40,6 +40,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDefaultEndpointRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherEndpointCertificatesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAiDesignAssistantRunner"/>
         </classes>
     </test>
     <!-- DevPortal features share their own container (separate capability, consumer-plane actors). -->
@@ -55,6 +56,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalRatingsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiMarketplaceAssistantRunner"/>
         </classes>
     </test>
     <!-- Gateway features (runtime invocation) share their own container. -->
@@ -235,6 +237,19 @@
          overlay (tomlExtraOverlayPath, merged on top of basic): a custom gateway auth header and devportal
          application sharing. Their config is orthogonal, so they co-locate; initBackend for the custom-auth
          gateway invocation. -->
+    <!-- Invalid AI credential (key branch): AI endpoints point at a node stub whose resources reject with 401. -->
+    <test name="IntegrationV2-AiInvalidKey" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="ai-invalid-key"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/aiInvalidKey/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiMarketplaceAssistantInvalidKeyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAiDesignAssistantInvalidKeyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiApiChatInvalidKeyRunner"/>
+        </classes>
+    </test>
+
     <test name="IntegrationV2-CustomAuthHeaderAndAppSharing" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="custom-auth-sharing"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -243,6 +258,9 @@
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomAuthHeaderRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationSharingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiMarketplaceAssistantBackendRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAiDesignAssistantBackendRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalAiApiChatBackendRunner"/>
         </classes>
     </test>
     <!-- Custom application attributes: needs a feature-specific overlay (backend JWT generation + a declared
@@ -318,6 +336,7 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mandatoryProperties/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMandatoryPropertiesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAiDesignAssistantBadImplRunner"/>
         </classes>
     </test>
 </suite>

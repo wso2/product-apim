@@ -16,3 +16,14 @@ auth_header = "Test-Custom-Header"
 [apim.devportal]
 enable_application_sharing = true
 application_sharing_type = "default"
+
+# AI Marketplace Assistant default-implementation happy-path test
+# point the shared AI endpoint at the canned-response stub on the node backend
+# (http://nodebackend:3001/ai/..., served by node-customer-service/routes/aiAssistantRoutes.js). Using the
+# auth-token branch (token set, key left empty) makes DefaultMarketplaceAssistantServiceImpl call the endpoint
+# directly with an api-key header and NO external token exchange. The assistant is enabled by the distribution
+# default and the resource paths default to /ai/... . Orthogonal to the two features above (different table);
+# this block already runs the node backend (initBackend=true).
+[apim.ai]
+token = "integration-v2-ai-token"
+endpoint = "http://nodebackend:3001"

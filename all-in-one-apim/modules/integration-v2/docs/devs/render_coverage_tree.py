@@ -169,7 +169,7 @@ def render(caps, placed, excluded, invalid):
     out.append(f"**{total}** product scenarios placed · **{len(excluded)}** excluded "
                f"(infra/framework/migration/setup) · **{len(invalid)}** unmapped/invalid.")
     out.append("")
-    out.append("```")
+    out.append("```text")
     out.append("integration-v2 product tests")
     cap_ids = list(caps)
     for ci, c in enumerate(cap_ids):

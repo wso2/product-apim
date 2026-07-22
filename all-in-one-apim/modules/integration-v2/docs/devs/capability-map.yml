@@ -27,6 +27,7 @@ capabilities:
       soap-design:       { name: SOAP (passthrough) API design }
       service-catalog:   { name: Service catalog }
       mcp-servers:       { name: MCP server authoring (create proxy/from-OpenAPI/from-API, CRUD, backends) }
+      design-assistant:  { name: AI Design Assistant (payload generation & chat) & pluggable implementation }
 
   devportal:
     name: DevPortal — discovery & consumption
@@ -41,6 +42,8 @@ capabilities:
       comments:                { name: Comments }
       ratings:                 { name: Ratings }
       try-out:                 { name: Try-out console }
+      marketplace-assistant:   { name: AI Marketplace Assistant (chat & API count) & pluggable implementation }
+      api-chat:                { name: AI API Chat (prepare & execute) & pluggable implementation }
 
   gateway:
     name: Gateway — runtime invocation & enforcement
