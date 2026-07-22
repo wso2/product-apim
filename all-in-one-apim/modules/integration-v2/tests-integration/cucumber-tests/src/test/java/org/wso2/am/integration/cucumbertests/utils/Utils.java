@@ -50,7 +50,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -83,8 +82,122 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_USERINFO_EP;
     }
 
+    /** OAuth2 token introspection endpoint: {@code oauth2/introspect} (POST {@code token=…} with Basic admin auth). */
+    public static String getIntrospectEndpointURL(String baseUrl) {
+        return baseUrl + "oauth2/introspect";
+    }
+
+    /**
+     * Tenant-aware OAuth2 introspection endpoint. A super-tenant token uses {@code oauth2/introspect}; a tenant
+     * token MUST be introspected at the tenant-qualified {@code t/<tenant>/oauth2/introspect} path (the super
+     * path returns 401 "Authorization failure" for a tenant-admin caller/token).
+     */
+    public static String getIntrospectEndpointURL(String baseUrl, String tenantDomain) {
+        return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? baseUrl + "oauth2/introspect"
+                : baseUrl + "t/" + tenantDomain + "/oauth2/introspect";
+    }
+
+    /** Carbon IdentityProviderMgtService SOAP endpoint (register/verify a trusted IdP for the JWT-bearer grant). */
+    public static String getIdentityProviderMgtServiceURL(String baseUrl) {
+        return baseUrl + "services/IdentityProviderMgtService";
+    }
+
+    /** Admin change-application-owner: {@code POST api/am/admin/v4/applications/{applicationId}/change-owner?owner=…}. */
+    public static String getChangeApplicationOwnerURL(String baseUrl, String applicationId, String owner) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "applications/"
+                + URLEncoder.encode(applicationId, StandardCharsets.UTF_8) + "/change-owner?owner="
+                + URLEncoder.encode(owner, StandardCharsets.UTF_8);
+    }
+
     public static String getAPICreateEndpointURL(String baseUrl, String resourceType) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType;
+    }
+
+    /** Service Catalog REST base: {@code api/am/service-catalog/v1/}. */
+    private static final String SERVICE_CATALOG_BASE = "api/am/service-catalog/v1/";
+
+    /** Service Catalog — services collection: {@code /services} (POST multipart create). */
+    public static String getServiceCatalogURL(String baseUrl) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services";
+    }
+
+    /** Service Catalog — import a services archive: {@code /services/import} (POST multipart zip + overwrite). */
+    public static String getServiceCatalogImportURL(String baseUrl, boolean overwrite) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/import?overwrite=" + overwrite;
+    }
+
+    /** Service Catalog — a single service by id: {@code /services/{id}} (GET/PUT/DELETE). */
+    public static String getServiceCatalogByIdURL(String baseUrl, String serviceId) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/" + serviceId;
+    }
+
+    /** Service Catalog — a service's definition: {@code /services/{id}/definition} (GET). */
+    public static String getServiceCatalogDefinitionURL(String baseUrl, String serviceId) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/" + serviceId + "/definition";
+    }
+
+    /** Service Catalog — a service's usage (APIs using it): {@code /services/{id}/usage} (GET). */
+    public static String getServiceCatalogUsageURL(String baseUrl, String serviceId) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/" + serviceId + "/usage";
+    }
+
+    /** Service Catalog — search services: {@code /services?name=&version=&definitionType=&key=&sortBy=&sortOrder=&limit=&offset=}. */
+    public static String getServiceCatalogSearchURL(String baseUrl, Map<String, String> params) {
+        StringBuilder url = new StringBuilder(baseUrl + SERVICE_CATALOG_BASE + "services");
+        List<String> qp = new ArrayList<>();
+        for (Map.Entry<String, String> e : params.entrySet()) {
+            if (e.getValue() != null && !e.getValue().isEmpty()) {
+                qp.add(e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8));
+            }
+        }
+        if (!qp.isEmpty()) {
+            url.append("?").append(String.join("&", qp));
+        }
+        return url.toString();
+    }
+
+    /** Gateway internal REST API artifact endpoints ({@code api/am/gateway/v2/}, Basic admin auth). {@code kind}
+     *  is one of {@code api-artifact} / {@code end-points} / {@code local-entry} / {@code sequence}. */
+    public static String getGatewayArtifactURL(String baseUrl, String kind, String apiName, String version,
+                                               String tenantDomain) {
+        return baseUrl + Constants.GATEWAY + kind
+                + "?apiName=" + URLEncoder.encode(apiName, StandardCharsets.UTF_8)
+                + "&version=" + URLEncoder.encode(version, StandardCharsets.UTF_8)
+                + "&tenantDomain=" + URLEncoder.encode(tenantDomain, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher — endpoint-certificate collection: {@code /endpoint-certificates} (POST multipart upload). */
+    public static String getEndpointCertificatesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates";
+    }
+
+    /** Publisher — endpoint-certificate search by endpoint and/or alias: {@code /endpoint-certificates?alias=&endpoint=}. */
+    public static String getEndpointCertificatesSearchURL(String baseUrl, String endpoint, String alias) {
+        StringBuilder url = new StringBuilder(baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates");
+        java.util.List<String> params = new java.util.ArrayList<>();
+        if (endpoint != null && !endpoint.isEmpty()) {
+            params.add("endpoint=" + URLEncoder.encode(endpoint, StandardCharsets.UTF_8));
+        }
+        if (alias != null && !alias.isEmpty()) {
+            params.add("alias=" + URLEncoder.encode(alias, StandardCharsets.UTF_8));
+        }
+        if (!params.isEmpty()) {
+            url.append("?").append(String.join("&", params));
+        }
+        return url.toString();
+    }
+
+    /** Publisher — a single endpoint-certificate by alias: {@code /endpoint-certificates/{alias}} (DELETE). */
+    public static String getEndpointCertificateByAliasURL(String baseUrl, String alias) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates/"
+                + URLEncoder.encode(alias, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher — endpoint-certificate usage: {@code /endpoint-certificates/{alias}/usage?limit=&offset=} (GET). */
+    public static String getEndpointCertificateUsageURL(String baseUrl, String alias, int limit, int offset) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates/"
+                + URLEncoder.encode(alias, StandardCharsets.UTF_8) + "/usage?limit=" + limit + "&offset=" + offset;
     }
 
     public static String getResourceEndpointURL(String baseUrl, String resourceType, String resourceId) {
@@ -320,8 +433,30 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
     }
 
+    /** Publisher REST — content/attribute search over APIs: {@code /apis?query=} (the publisher-plane search that
+     *  respects access-control roles). Used for the description / document-content / access-control search cases. */
+    public static String getPublisherApiSearchURL(String baseUrl, String query) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis?query="
+                + URLEncoder.encode(query, StandardCharsets.UTF_8);
+    }
+
     public static String getDevportalApiDetailURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId;
+    }
+
+    /** DevPortal — an API's document metadata: {@code /apis/{apiId}/documents/{docId}} (GET). Visibility-gated. */
+    public static String getDevportalApiDocumentURL(String baseUrl, String apiId, String documentId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/documents/" + documentId;
+    }
+
+    /** DevPortal — an API document's content: {@code /apis/{apiId}/documents/{docId}/content} (GET). */
+    public static String getDevportalApiDocumentContentURL(String baseUrl, String apiId, String documentId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/documents/" + documentId + "/content";
+    }
+
+    /** DevPortal — an API's OpenAPI definition: {@code /apis/{apiId}/swagger} (GET). Visibility-gated. */
+    public static String getDevportalApiSwaggerURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/swagger";
     }
 
     public static String getApiDocumentsURL(String baseUrl, String resourceId) {
@@ -454,6 +589,11 @@ public class Utils {
         return baseUrl + "services/RemoteUserStoreManagerService";
     }
 
+    /** Carbon UserStoreConfigAdminService SOAP endpoint (add/remove a secondary user store at runtime). */
+    public static String getUserStoreConfigAdminServiceURL(String baseUrl) {
+        return baseUrl + "services/UserStoreConfigAdminService";
+    }
+
     /** Carbon admin SOAP service — claim metadata management (OIDC external-claim mappings). */
     public static String getClaimMetadataManagementServiceURL(String baseUrl) {
         return baseUrl + "services/ClaimMetadataManagementService";
@@ -499,6 +639,54 @@ public class Utils {
 
     public static String getAPIDocumentContent(String baseUrl, String apiId, String documentId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents/" + documentId + "/content";
+    }
+
+    /**
+     * Resolves the REST-API base path for a plane: {@code "publisher"} → the publisher deployer path,
+     * {@code "devportal"} → the devportal path. Comments and (the read side of) ratings exist on BOTH planes, so
+     * the comment/rating URL builders take a plane so a scenario can exercise the same resource from either portal.
+     */
+    private static String planeBase(String plane) {
+        return "publisher".equals(plane) ? Constants.DEFAULT_APIM_API_DEPLOYER : Constants.DEFAULT_DEVPORTAL;
+    }
+
+    /** Comments collection for an API on the given plane: {@code /apis/{apiId}/comments} (GET list, POST add). */
+    public static String getAPIComments(String baseUrl, String plane, String apiId) {
+        return baseUrl + planeBase(plane) + "apis/" + apiId + "/comments";
+    }
+
+    /** Comments collection with pagination (limit/offset) for listing root comments. */
+    public static String getAPIComments(String baseUrl, String plane, String apiId, int limit, int offset) {
+        return getAPIComments(baseUrl, plane, apiId) + "?limit=" + limit + "&offset=" + offset;
+    }
+
+    /** Add-reply URL: POST {@code /apis/{apiId}/comments?replyTo={parentId}} (the reply param is named replyTo). */
+    public static String getAPIReplyToComment(String baseUrl, String plane, String apiId, String parentCommentId) {
+        return getAPIComments(baseUrl, plane, apiId) + "?replyTo="
+                + URLEncoder.encode(parentCommentId, StandardCharsets.UTF_8);
+    }
+
+    /** Single comment: {@code /apis/{apiId}/comments/{commentId}} (GET, PATCH edit, DELETE). */
+    public static String getAPIComment(String baseUrl, String plane, String apiId, String commentId) {
+        return getAPIComments(baseUrl, plane, apiId) + "/" + commentId;
+    }
+
+    /** Single comment with reply pagination: {@code ?replyLimit=&replyOffset=} (GET the comment plus its replies). */
+    public static String getAPIComment(String baseUrl, String plane, String apiId, String commentId, int replyLimit,
+                                       int replyOffset) {
+        return getAPIComment(baseUrl, plane, apiId, commentId) + "?replyLimit=" + replyLimit + "&replyOffset="
+                + replyOffset;
+    }
+
+    /** Replies collection of a comment with pagination: {@code /apis/{apiId}/comments/{commentId}/replies}. */
+    public static String getAPICommentReplies(String baseUrl, String plane, String apiId, String commentId, int limit,
+                                              int offset) {
+        return getAPIComment(baseUrl, plane, apiId, commentId) + "/replies?limit=" + limit + "&offset=" + offset;
+    }
+
+    /** DevPortal per-user rating for an API: {@code /apis/{apiId}/user-rating} (GET, PUT add/update, DELETE). */
+    public static String getAPIUserRating(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/user-rating";
     }
 
     public static String getSubscriptionBlockingURL(String baseUrl, String subscriptionID) {
@@ -754,7 +942,7 @@ public class Utils {
     /** Admin REST API — export a throttling policy by name + type ({@code sub}/{@code app}/{@code api}/{@code global}). */
     public static String getThrottlePolicyExportURL(String baseUrl, String name, String type) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/export?name="
-                + java.net.URLEncoder.encode(name, java.nio.charset.StandardCharsets.UTF_8) + "&type=" + type;
+                + URLEncoder.encode(name, StandardCharsets.UTF_8) + "&type=" + type;
     }
 
     /** Admin REST API — import a throttling policy (multipart file); {@code overwrite} controls update vs conflict. */
@@ -838,6 +1026,11 @@ public class Utils {
 
     public static String getAPIDefinitionURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-openapi";
+    }
+
+    /** Publisher REST API — AsyncAPI definition import (multipart {@code file} + {@code additionalProperties}). */
+    public static String getImportAsyncApiURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-asyncapi";
     }
 
     /** Publisher REST API — OpenAPI definition validation (multipart file / url). */
@@ -1258,6 +1451,23 @@ public class Utils {
     }
 
     /**
+     * Escapes the XML metacharacters ({@code & < > " '}) in a value that is interpolated into a hand-built
+     * SOAP/XML envelope, so a value containing one of them (e.g. a password or role name with {@code &})
+     * cannot corrupt the envelope. {@code &} is replaced first so the other entities are not double-escaped.
+     * Safe for both element text and attribute values. A {@code null} value maps to an empty string.
+     */
+    public static String escapeXml(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+
+    /**
      * Returns the first JSON object in the given array that matches all provided key-value pairs.
      *
      * @param list     the JSON array containing objects to search
@@ -1336,59 +1546,6 @@ public class Utils {
             log.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
             throw new AssertionError("Comparison failed: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Executes the given HTTP request repeatedly until the expected response status code
-     * is received and the provided custom validation condition is satisfied, or until the
-     * maximum number of retry attempts is reached.
-     *
-     *
-     * @param requestAction       the HTTP request action to execute
-     * @param expectedStatusCode  the expected HTTP response status code
-     * @param customValidation    an additional validation condition to apply to the response
-     * @return the first response that satisfies both the expected status code and custom
-     *         validation, or the last received response if the retry limit is reached
-     * @throws InterruptedException if the thread is interrupted while waiting between retries
-     */
-    public static HttpResponse executeWithRetry(RequestAction requestAction, int expectedStatusCode,
-            Predicate<HttpResponse> customValidation) throws InterruptedException {
-
-        HttpResponse response = null;
-
-        for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
-            log.info("Attempt " + attempt + "/" + Constants.MAX_RETRIES + ": Executing request...");
-            response = requestAction.execute();
-
-            // Check if status code matches and custom validation passes
-            if (response != null) {
-                if ( response.getResponseCode() == expectedStatusCode && customValidation.test(response)) {
-                    return response;
-                } else {
-                    log.warn("Attempt " + attempt + ": Criteria not met. Received: [" + response.getResponseCode()
-                            + "]. Data: " + response.getData());
-                }
-            }
-
-            if (attempt < Constants.MAX_RETRIES) {
-                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
-            }
-        }
-        return response;
-    }
-
-
-    /**
-     * Retrieves the pending HTTP request stored in the current test context.
-     *
-     *
-     * @return the pending HTTP request action stored in the test context
-     */
-    public static RequestAction getPendingHttpRequest() {
-
-        RequestAction requestAction = (RequestAction) TestContext.get(Constants.PENDING_HTTP_REQUEST);
-        Assert.assertNotNull(requestAction, "No pending request found in TestContext");
-        return requestAction;
     }
 
     /**

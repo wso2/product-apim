@@ -36,7 +36,11 @@ Feature: Key Manager OAuth Application Keys
       | admin             |
       | admin@tenant1.com |
 
-  @cap:key-manager @feat:oauth-keys @type:regression @legacy:ApplicationTestCase
+  # @legacy:APIMANAGER5327... — the PGSQL partial-key-cleanup regression (APIMANAGER-5327) is the SAME behaviour:
+  # generate keys, then clean up the registration without error. The legacy test switched to a live PostgreSQL
+  # datasource and hit a removed Jaggery endpoint (cleanUpApplicationRegistration.jag); this modern REST scenario
+  # is DB-agnostic, so when the suite is matrixed onto PostgreSQL it exercises the same cleanup path on PGSQL.
+  @cap:key-manager @feat:oauth-keys @type:regression @legacy:ApplicationTestCase @legacy:APIMANAGER5327KeyGenerationWithPGSQLTestCase
   Scenario Outline: Clean up an application's key registration as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

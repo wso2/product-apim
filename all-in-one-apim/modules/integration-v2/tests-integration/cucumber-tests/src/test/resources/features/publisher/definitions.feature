@@ -71,6 +71,35 @@ Feature: Publisher API Definition Import
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # Resource modification via a swagger update REPLACES the API's resource set: the base test API (resources on
+  # /customers/{id}) is updated with a definition whose resources are /pets, /pets/{petId} and /oldpets, and the
+  # retrieved swagger reflects the NEW resources while the old /customers resource is gone. Ports
+  # APIResourceModificationTestCase (which asserts the updated swagger differs from the original after a resource
+  # edit) — pinned here as the concrete new-resource set rather than a bare inequality check.
+  @cap:publisher @feat:definitions @rule:resource-modification @type:regression @legacy:APIResourceModificationTestCase
+  Scenario Outline: Modifying an API's resources via a swagger update replaces its resource set as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "resModApiPayload"
+    And I create an "apis" resource with payload "resModApiPayload" as "resModApiId"
+    # Baseline: the created API's swagger carries the /customers/{id} resource.
+    When I retrieve the swagger of "apis" resource "resModApiId"
+    Then The response status code should be 200
+    And The response should contain "/customers/{id}"
+    # Modify the resources via a swagger update.
+    When I update the swagger of "apis" resource "resModApiId" from file "artifacts/payloads/OAS/oas_v3_update_definition.json"
+    Then The response status code should be 200
+    When I retrieve the swagger of "apis" resource "resModApiId"
+    Then The response status code should be 200
+    # The new resources are present and the original /customers resource has been replaced.
+    And The response should contain "/pets"
+    And The response should contain "/oldpets"
+    And The response should not contain "/customers/{id}"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
   # Advance endpoint configs survive a definition update (the OAS carries x-wso2 advance endpoint config).
   @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
   Scenario Outline: Advance endpoint configs are applied via a definition update as <actor>
@@ -269,6 +298,24 @@ Feature: Publisher API Definition Import
     Then The response status code should be 201
     When I export the API "epSecApiId" to an archive as "epSecArchive"
     Then The exported API archive "epSecArchive" should have empty endpoint-security passwords
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Secret redaction on IMPORT (twin of the export case): importing an OpenAPI definition whose additional
+  # properties carry basic-auth backend endpoint security must NOT return the stored password in plaintext on a
+  # subsequent retrieve. Ports the OAS-import-redaction facet of
+  # AddEndPointSecurityPerTypeTestCase#testAPIDefinitionImportWithEndpointSecurity.
+  @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:AddEndPointSecurityPerTypeTestCase
+  Scenario Outline: Importing an OpenAPI definition with endpoint security redacts the stored password as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import open api definition from "artifacts/payloads/OAS/OAS3ApiDefinition.json" , additional properties from "artifacts/payloads/OAS/OAS3EndpointSecurityProps.json" and create api as "epImportApiId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "epImportApiId"
+    Then The response status code should be 200
+    And The response should not contain "importSecret123"
 
     Examples:
       | actor                     |

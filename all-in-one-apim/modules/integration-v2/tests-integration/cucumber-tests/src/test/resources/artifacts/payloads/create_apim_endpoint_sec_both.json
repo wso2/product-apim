@@ -1,0 +1,46 @@
+{
+  "name": "${UNIQUE:EndpointSecBoth}",
+  "context": "${UNIQUE:endpointSecBoth}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "prodUser",
+        "password": "prodPass"
+      },
+      "sandbox": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "sandUser",
+        "password": "sandPass"
+      }
+    }
+  },
+  "description": "Per-type endpoint security: PRODUCTION and SANDBOX backends secured with DISTINCT Basic credentials. The /sec backend echoes the injected Authorization header, proving per-key-type injection.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/sec",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}
