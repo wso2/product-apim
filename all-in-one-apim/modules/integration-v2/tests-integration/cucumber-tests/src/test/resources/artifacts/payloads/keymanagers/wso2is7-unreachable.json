@@ -1,0 +1,41 @@
+{
+  "name": "${UNIQUE:Wso2Is7Unreachable}",
+  "displayName": "WSO2 IS 7 (unreachable)",
+  "type": "WSO2-IS-7",
+  "description": "WSO2 Identity Server 7.1.0 registered as a third-party key manager (integration-v2 external-KM block).",
+  "issuer": "https://localhost:1/oauth2/token",
+  "tokenEndpoint": "https://localhost:1/oauth2/token",
+  "introspectionEndpoint": "https://localhost:1/oauth2/introspect",
+  "revokeEndpoint": "https://localhost:1/oauth2/revoke",
+  "authorizeEndpoint": "https://localhost:1/oauth2/authorize",
+  "userInfoEndpoint": "https://localhost:1/scim2/Me",
+  "scopeManagementEndpoint": "https://localhost:1/api/identity/oauth2/v1.0/scopes",
+  "clientRegistrationEndpoint": "https://localhost:1/api/identity/oauth2/dcr/v1.1/register",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableOAuthAppCreation": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableSelfValidationJWT": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "refresh_token",
+    "authorization_code",
+    "urn:ietf:params:oauth:grant-type:device_code"
+  ],
+  "certificates": {
+    "type": "JWKS",
+    "value": "https://localhost:1/oauth2/jwks"
+  },
+  "additionalProperties": {
+    "Authentication": "BasicAuth",
+    "api_resource_management_endpoint": "https://localhost:1/api/server/v1/api-resources",
+    "is7_roles_endpoint": "https://localhost:1/scim2/v2/Roles",
+    "Username": "admin",
+    "Password": "admin",
+    "self_validate_jwt": true,
+    "enable_roles_creation": true
+  }
+}

@@ -1,0 +1,95 @@
+# WSO2 Identity Server 7.1.0 deployment.toml OVERLAY for the integration-v2 external-key-manager block.
+#
+# This is NOT a full server config. IdentityServerContainer#buildDeploymentToml appends this file verbatim onto
+# the IS image's OWN default deployment.toml (extracted at build time by the testcontainers pre-integration-test
+# exec extract-is-default-toml to target/is7/is-default-deployment.toml). So IS keeps every distribution default
+# (DB, primary keystore, truststore, user store, account recovery, ...) and this file only ADDS the documented
+# WSO2 IS 7.x key-manager config. It is authored in TOML block style ([[...]] tables, quoted dotted keys)
+# because IS 7.1.0's org.wso2.config.mapper.TomlParser is strict - it rejects the inline array-of-tables style
+# a structured jackson/toml4j merge would emit. Every block here is ADDITIVE: none of them exist in the IS
+# 7.1.0 default (verified). The ONE key we must override that already exists in the default - [server] hostname -
+# is NOT set here (appending a second [server] table would be a duplicate); IdentityServerContainer rewrites it
+# in place to the network alias "wso2is" so the OAuth issuer/endpoints resolve to https://wso2is:9443.
+
+# TLS keystore: a fixed PKCS12 keystore with CN=wso2is + SAN dns:wso2is (alias wso2carbon), copied into
+# repository/resources/security/wso2is.p12 by IdentityServerContainer. Presenting a wso2is-valid cert lets
+# APIM's KM HTTP client (JWKS fetch, introspection) verify the hostname against a cert it trusts. (The IS
+# default leaves [keystore.tls] commented out, i.e. it falls back to the primary keystore = CN=localhost.)
+[keystore.tls]
+file_name = "wso2is.p12"
+type = "PKCS12"
+password = "wso2carbon"
+alias = "wso2carbon"
+key_password = "wso2carbon"
+
+# --- APIM <-> IS7 key-manager integration (per the official WSO2 IS 7.x connector doc) ---------------------
+
+[oauth]
+authorize_all_scopes = true
+
+# Allow creating roles with the system_ prefix, for when the KM enables role creation in IS 7.x
+# (per the doc's "Role Creation in WSO2 Identity Server 7.x" note).
+[role_mgt]
+allow_system_prefix_for_role = true
+
+[[resource.access_control]]
+context = "(.*)/scim2/Me"
+secure = true
+http_method = "GET"
+cross_tenant = true
+permissions = []
+scopes = []
+
+# Token-revocation notification back to APIM. Requires wso2is.notification.event.handlers-2.1.3.jar in
+# repository/components/dropins/ (copied in by IdentityServerContainer).
+#
+# The X-WSO2-KEY-MANAGER header is NOT a free-form label and NOT the KM instance name: APIM's notify endpoint
+# (NotifyApiServiceImpl -> NotificationEventService.processEvent) uses it verbatim to look up the event
+# handler via getEventHandlerByType(header), a plain map lookup with NO fallback. If it matches no registered
+# handler, processEvent is a silent no-op that STILL returns HTTP 200 - so IS believes delivery succeeded
+# while the gateway is never told to revoke (the token then keeps passing self-validation -> 200 not 401).
+# "WSO2-IS" is the value the official connector doc specifies: the IS7 KM connector jar (wso2is7.key.manager)
+# registers WSO2ISNotificationEventHandler under getType()="WSO2-IS". (carbon-apimgt core also registers
+# DefaultKeyManagerEventHandlerImpl under "default", which handles revocation generically - so "default" works
+# too - but we follow the doc and target the connector's own handler.) Sending the KM instance name (e.g.
+# "WSO2-IS7-KM") matches NEITHER handler and is a silent-drop bug.
+#
+# The `type` below is the SAME kind of foot-gun on the IS side - do NOT "modernise" it to
+# org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor: AbstractOAuthEventInterceptor.isEnabled() (and the
+# constructor's notification_endpoint/username/password lookup) reads the event-listener config HARDCODED under
+# AbstractIdentityHandler.class.getName(), so a listener declared with any other type renders into identity.xml
+# without errors yet SILENTLY never fires (probe-verified on IS 7.3.0, oauth bundle 7.4.99: with
+# AbstractIdentityHandler a client revoke POSTs /notify within ~100ms - carrying the JWT's jti as accessToken
+# for JWT-type tokens; with OAuthEventInterceptor nothing is ever sent). The doc's value below is correct.
+# Default persistent token mode is fine - non-persistent mode is NOT required for the notification to fire.
+[[event_listener]]
+id = "token_revocation"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+order = 1
+
+[event_listener.properties]
+notification_endpoint = "https://wso2am:9443/internal/data/v1/notify"
+username = "admin"
+password = "admin"
+'header.X-WSO2-KEY-MANAGER' = "WSO2-IS"
+
+# Mutual-TLS auth for the KM's management calls to IS (used by the WSO2-IS-7 KM when Authentication=MutualTLS).
+# IS 7.3.0 REQUIRES this to be explicitly enabled with a cert->user mapping (IS 7.1.0 authenticated any trusted
+# client cert with a WSO2-Identity-User header out of the box; 7.3.0's ClientCertificateBasedAuthenticationHandler
+# now gates on AuthConfigurationUtil.IsClientCertBasedAuthnEnabled() + a trusted-issuer/thumbprint/allowed-user
+# mapping). ServerWide mTLS makes APIM present its PRIMARY keystore cert (wso2carbon.jks, alias wso2carbon), so
+# the mapping is keyed on that cert:
+#   - trusted_issuer: the cert's issuer DN in IS's NORMALIZED form (attributes sorted: C, CN, L, O, OU, ST).
+#   - cert_thumbprint: the cert's SHA-256 fingerprint, uppercase colon-hex (as `keytool -list`/`openssl` print it).
+#   - allowed_username: the IdentityUser the mTLS calls act as (admin), matching wso2is7-mtls.json's IdentityUser.
+# These values are the fixed APIM primary cert shipped in the wso2am image (valid to 2028; regenerate if it
+# changes - see the standalone mTLS probe recipe in the is7 memory note). Harmless for the Basic-auth blocks:
+# they present no client cert, so this handler never engages.
+[client_certificate_based_authentication]
+enable = true
+
+[[client_certificate_based_authentication.user_thumbprint_mapping]]
+trusted_issuer = "C=US, CN=localhost, L=Mountain View, O=WSO2, OU=WSO2, ST=CA"
+cert_thumbprint = "CA:5C:9B:54:F9:B6:D3:9F:39:6A:1A:AA:7A:78:04:81:39:3C:1D:FB:B5:67:CF:AC:FB:96:2E:6A:88:AD:65:88"
+allowed_username = "admin"

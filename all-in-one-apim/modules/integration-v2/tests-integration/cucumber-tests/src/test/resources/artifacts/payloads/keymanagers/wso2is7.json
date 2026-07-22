@@ -1,0 +1,43 @@
+{
+  "name": "${UNIQUE:Wso2Is7Km}",
+  "displayName": "WSO2 IS 7 External Key Manager",
+  "type": "WSO2-IS-7",
+  "description": "WSO2 Identity Server 7.1.0 registered as a third-party key manager (integration-v2 external-KM block).",
+  "issuer": "https://wso2is:9443/oauth2/token",
+  "tokenEndpoint": "https://wso2is:9443/oauth2/token",
+  "introspectionEndpoint": "https://wso2is:9443/oauth2/introspect",
+  "revokeEndpoint": "https://wso2is:9443/oauth2/revoke",
+  "authorizeEndpoint": "https://wso2is:9443/oauth2/authorize",
+  "userInfoEndpoint": "https://wso2is:9443/scim2/Me",
+  "scopeManagementEndpoint": "https://wso2is:9443/api/identity/oauth2/v1.0/scopes",
+  "clientRegistrationEndpoint": "https://wso2is:9443/api/identity/oauth2/dcr/v1.1/register",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableOAuthAppCreation": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableSelfValidationJWT": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "refresh_token",
+    "authorization_code",
+    "urn:ietf:params:oauth:grant-type:device_code",
+    "urn:ietf:params:oauth:grant-type:jwt-bearer",
+    "urn:ietf:params:oauth:grant-type:saml2-bearer"
+  ],
+  "certificates": {
+    "type": "JWKS",
+    "value": "https://wso2is:9443/oauth2/jwks"
+  },
+  "additionalProperties": {
+    "Authentication": "BasicAuth",
+    "api_resource_management_endpoint": "https://wso2is:9443/api/server/v1/api-resources",
+    "is7_roles_endpoint": "https://wso2is:9443/scim2/v2/Roles",
+    "Username": "admin",
+    "Password": "admin",
+    "self_validate_jwt": true,
+    "enable_roles_creation": true
+  }
+}

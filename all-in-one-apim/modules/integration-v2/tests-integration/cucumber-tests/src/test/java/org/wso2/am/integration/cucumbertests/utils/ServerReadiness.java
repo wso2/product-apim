@@ -82,6 +82,42 @@ public final class ServerReadiness {
     }
 
     /**
+     * Polls an external WSO2 Identity Server's OIDC discovery document until it returns 200 or
+     * {@link Constants#SERVER_STARTUP_WAIT_TIME} elapses. Used by the external-KM block after starting the
+     * {@code IdentityServerContainer} to gate KM registration on IS actually serving OAuth endpoints — the same
+     * 200-gated poll shape as {@link #awaitReady} but against IS's {@code .well-known/openid-configuration}
+     * rather than the APIM gateway health-check.
+     *
+     * @param isBaseUrl the host-mapped IS management HTTPS base URL (e.g. {@code https://localhost:32771/})
+     * @return {@code true} if the discovery document returned 200 within the window, {@code false} otherwise
+     */
+    public static boolean awaitIdentityServerReady(String isBaseUrl) {
+
+        String url = isBaseUrl + "oauth2/token/.well-known/openid-configuration";
+        long deadline = System.currentTimeMillis() + Constants.SERVER_STARTUP_WAIT_TIME;
+
+        while (System.currentTimeMillis() < deadline) {
+            HttpResponse response = null;
+            try {
+                response = SimpleHTTPClient.getInstance().doGet(url, null);
+            } catch (Exception ignored) {
+                // IS not accepting connections / serving OAuth endpoints yet
+            }
+            if (response != null && response.getResponseCode() == 200) {
+                return true;
+            }
+            try {
+                logger.info("Waiting for the external Identity Server to be ready...");
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Awaits a server restart by tracking the health-check through a DOWN then UP transition. A graceful
      * restart ({@code restartGracefully}) returns BEFORE the JVM halts (it drains in-flight requests first),
      * so the server is briefly still serving 200 after the call — a naive {@link #awaitReady} would return

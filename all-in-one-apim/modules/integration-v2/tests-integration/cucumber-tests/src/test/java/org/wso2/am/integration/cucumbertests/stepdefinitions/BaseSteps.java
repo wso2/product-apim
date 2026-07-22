@@ -660,6 +660,29 @@ public class BaseSteps {
     }
 
     /**
+     * Asserts that a field in the stored JSON response equals an exact expected value (not a substring — use this
+     * where {@code The response should contain} would be ambiguous, e.g. a boolean flag whose literal could match
+     * another field). {@code fieldName} is a field name / JSONPath resolved by {@link Utils#extractValueFromPayload};
+     * {@code {{contextKey}}} placeholders in the expected value are resolved. Comparison is on string form so
+     * {@code "true"}/{@code "false"}/numbers work without type ceremony.
+     *
+     * @param fieldName     field name or JSONPath to read from the response body
+     * @param expectedValue the exact expected value (string form)
+     */
+    @Then("The value of response field {string} should be {string}")
+    public void theValueOfResponseFieldShouldBe(String fieldName, String expectedValue) throws IOException {
+
+        expectedValue = Utils.resolveContextPlaceholders(expectedValue);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+                "No HTTP response body available to read field '" + fieldName + "' from.");
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertEquals(String.valueOf(actual), expectedValue,
+                String.format("Field '%s' was [%s] but expected [%s]. Data: %s",
+                        fieldName, actual, expectedValue, response.getData()));
+    }
+
+    /**
      * Asserts both substrings are present in the response and that the first occurs BEFORE the second — an
      * order-preserving check (e.g. resource order in a returned swagger) that is robust to server reformatting,
      * unlike matching a whole pre-formatted block verbatim.

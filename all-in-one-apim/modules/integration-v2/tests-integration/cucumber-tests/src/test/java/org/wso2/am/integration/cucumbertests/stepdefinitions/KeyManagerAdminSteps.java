@@ -27,7 +27,6 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -204,24 +203,4 @@ public class KeyManagerAdminSteps {
                 + "' but both are (" + a + ")");
     }
 
-    /**
-     * Asserts the VALUE of a (possibly nested, dot-path) field in the last response equals the expected value —
-     * parsed structurally, not by substring, so it is immune to JSON formatting/whitespace (e.g. the keygen
-     * response serialises {@code "pkceMandatory":true} compact, so a spaced string-contains would falsely fail).
-     * The expected value is compared as a string against the field's stringified value ({@code true}/{@code false}
-     * for booleans, the literal for strings/numbers).
-     */
-    @Then("The value of response field {string} should be {string}")
-    public void theValueOfResponseFieldShouldBe(String field, String expected) throws IOException {
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertTrue(response != null && response.getResponseCode() >= 200
-                        && response.getResponseCode() < 300 && response.getData() != null
-                        && !response.getData().isEmpty(),
-                "No successful response to read field '" + field + "' from, got="
-                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
-        Object value = Utils.extractValueFromPayload(response.getData(), field);
-        Assert.assertNotNull(value, "Field '" + field + "' not present in response: " + response.getData());
-        Assert.assertEquals(String.valueOf(value), expected,
-                "Field '" + field + "' value mismatch in response: " + response.getData());
-    }
 }

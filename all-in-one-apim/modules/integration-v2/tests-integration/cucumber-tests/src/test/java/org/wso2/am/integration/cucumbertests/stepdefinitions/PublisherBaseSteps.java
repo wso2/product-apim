@@ -31,6 +31,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -1084,6 +1085,135 @@ public class PublisherBaseSteps {
             ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
         }
       }
+
+    /**
+     * Creates a shared scope bound to a freshly-generated, unique role name and stores the IS7 role name that
+     * the WSO2-IS-7 connector will derive from it. Used to exercise runtime role creation: when the scope is
+     * registered, APIM calls the IS7 KM's registerScope, which (with enable_roles_creation=true) creates the
+     * bound role in IS via the SCIM2 Roles API. The connector maps a plain APIM role {@code r} to the IS role
+     * {@code system_primary_r} (an {@code Internal/r} role maps to {@code r}); we bind a plain role, so the
+     * expected IS role name is {@code system_primary_<role>}, stored under {@code isRoleKey} for the verify step.
+     * Note: APIProviderImpl.addSharedScope SWALLOWS a KM registerScope failure (logs, does not throw), so the
+     * scope create still returns 201 regardless - role creation must be verified directly in IS, not via this
+     * response.
+     */
+    @When("I create a shared scope bound to a new IS7 role, storing the expected IS7 role name as {string}")
+    public void iCreateSharedScopeBoundToNewIs7Role(String isRoleKey) throws Exception {
+
+        // KM-propagation loop: the key manager these features register (a feature-level admin step, not block
+        // infra) reaches addSharedScope's registerScope fan-out ASYNCHRONOUSLY (eventhub -> in-memory KM
+        // holder). A scope created before propagation gets 201 but NO IS role - and never will (the fan-out is
+        // synchronous within the create), so waiting on the role alone cannot converge. Instead: create a
+        // scope, briefly probe IS for the derived role, and if absent DELETE the scope and recreate with fresh
+        // unique names until the fan-out lands (bounded). Mirrors the invoke-until-200 polls that absorb the
+        // same propagation at the gateway.
+        long deadline = System.currentTimeMillis() + 60_000;
+        int attempts = 0;
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        while (true) {
+            attempts++;
+            String scopeName = Names.unique("is7scope");
+            String apimRole = Names.unique("is7role");
+            // The IS7 connector derives the IS role name from the (plain) APIM role: system_primary_<role>.
+            String expectedIsRole = "system_primary_" + apimRole;
+            String jsonPayload = "{\"name\":\"" + scopeName + "\",\"displayName\":\"" + scopeName
+                    + "\",\"description\":\"IS7 runtime role-creation test scope\",\"bindings\":[\""
+                    + apimRole + "\"]}";
+            // Requests.post publishes httpResponse; the LAST (kept) create is what the feature's following
+            // status assertion reads, matching the pre-loop contract.
+            HttpResponse response = Requests.post(Utils.getAPIScopes(getBaseUrl()), headers, jsonPayload,
+                    Constants.CONTENT_TYPES.APPLICATION_JSON);
+            Assert.assertTrue(response != null && response.getResponseCode() >= 200
+                            && response.getResponseCode() < 300
+                            && response.getData() != null && !response.getData().isEmpty(),
+                    "Shared scope create failed: got=" + (response == null ? "null"
+                            : response.getResponseCode() + "/" + response.getData()));
+            Object scopeId = Utils.extractValueFromPayload(response.getData(), "id");
+            // Short per-attempt probe: if the KM was propagated, the role exists as of the 201 (registerScope
+            // is synchronous inside the create); the brief re-checks only absorb IS-side latency.
+            boolean roleCreated = false;
+            for (int probe = 0; probe < 3 && !roleCreated; probe++) {
+                if (probe > 0) {
+                    Thread.sleep(1000);
+                }
+                roleCreated = ApplicationBaseSteps.is7RoleExists(expectedIsRole);
+            }
+            if (roleCreated) {
+                TestContext.set("scopeID", scopeId);
+                if (scopeId != null) {
+                    ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
+                }
+                TestContext.set(Utils.normalizeContextKey(isRoleKey), expectedIsRole);
+                // Expose the scope name so a scope-protected API can require it (role-based authorization flow).
+                TestContext.set("is7ScopeName", scopeName);
+                return;
+            }
+            // Pre-propagation attempt: this scope will never get its role. Remove it and retry with fresh
+            // names. Intermediate delete goes through the raw client (not Requests.*) so it cannot clobber
+            // the published httpResponse; if the delete fails, register the id so teardown sweeps it.
+            if (scopeId != null) {
+                HttpResponse del = SimpleHTTPClient.getInstance()
+                        .doDelete(Utils.getAPIScopes(getBaseUrl()) + "/" + scopeId, headers);
+                if (del == null || del.getResponseCode() < 200 || del.getResponseCode() >= 300) {
+                    ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
+                }
+            }
+            if (System.currentTimeMillis() > deadline) {
+                Assert.fail("Key-manager scope fan-out never created the derived IS role within 60s ("
+                        + attempts + " create attempts) - the registered KM did not propagate to the scope-"
+                        + "registration path");
+            }
+            Thread.sleep(1000);
+        }
+    }
+
+    /**
+     * Creates, revisions and deploys an API whose GET operation requires an already-created SHARED scope (name in
+     * context under {@code is7ScopeName}), storing the new API id under {@code apiIdKey}. The payload is built in
+     * code (not from a fixture) because the API-create path resolves only {@code ${...}} payload placeholders, not
+     * {@code {{context}}} ones, so the runtime scope name must be substituted here. A shared scope is used
+     * deliberately: an API-local scope bound to a role is rejected (903250 "Role does not exist") unless the role
+     * pre-exists in APIM, whereas a shared scope referenced with {@code shared:true} carries its binding and needs
+     * no role re-validation. Drives the IS7 role-based authorization flow.
+     */
+    @Given("I create and deploy a scope-protected API requiring the shared scope as {string}")
+    public void iCreateScopeProtectedApi(String apiIdKey) throws IOException, InterruptedException {
+
+        String scopeName = TestContext.resolve("is7ScopeName").toString();
+        String name = Names.unique("APIMScopedTest");
+        String context = Names.unique("apiscopedctx");
+        String backend = "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/";
+
+        JSONObject prod = new JSONObject().put("url", backend).put("config", JSONObject.NULL)
+                .put("template_not_supported", false);
+        JSONObject api = new JSONObject()
+                .put("name", name)
+                .put("context", context)
+                .put("version", "1.0.0")
+                .put("description", "Scope-protected API for IS7 role-based authorization")
+                .put("endpointConfig", new JSONObject()
+                        .put("endpoint_type", "http")
+                        .put("production_endpoints", prod)
+                        .put("sandbox_endpoints", new JSONObject(prod.toString())))
+                .put("policies", new JSONArray().put("Unlimited"))
+                .put("scopes", new JSONArray().put(new JSONObject()
+                        .put("scope", new JSONObject().put("name", scopeName).put("displayName", scopeName))
+                        .put("shared", true)))
+                .put("operations", new JSONArray().put(new JSONObject()
+                        .put("verb", "GET").put("target", "/customers/{id}")
+                        .put("scopes", new JSONArray().put(scopeName))))
+                .put("isDefaultVersion", true);
+
+        TestContext.set(Utils.normalizeContextKey("<scopedApiPayload>"), api.toString());
+        iCreateAnAPIWithPayloadAs("apis", "<scopedApiPayload>", apiIdKey);
+        baseSteps.putJsonPayloadInContext("<scopedApiRevision>", "{\"description\":\"Initial Revision\"}");
+        iCreateResourceRevision("apis", apiIdKey, "<scopedApiRevision>");
+        baseSteps.putJsonPayloadInContext("<scopedApiDeploy>",
+                "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
+        iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiIdKey, "<scopedApiDeploy>");
+        baseSteps.theResponseStatusCodeShouldBe(201);
+    }
 
     /**
      * Attempts to create a shared scope without asserting success, storing the raw response as
