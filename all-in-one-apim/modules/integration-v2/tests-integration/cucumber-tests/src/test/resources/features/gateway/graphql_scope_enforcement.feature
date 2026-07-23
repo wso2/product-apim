@@ -48,6 +48,9 @@ Feature: Gateway GraphQL Operation-Level Security
     And I make a request to deploy revision "revisionId" of "apis" resource "gqlApiId" with payload "gqlDeployPayload"
     When I publish the "apis" resource with id "gqlApiId"
     Then The lifecycle status of API "gqlApiId" should be "Published"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "gqlApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Subscribe an application and key it.
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
@@ -114,6 +117,9 @@ Feature: Gateway GraphQL Operation-Level Security
     And I make a request to deploy revision "revisionId" of "apis" resource "gqlNoneApiId" with payload "gqlNoneDeployPayload"
     When I publish the "apis" resource with id "gqlNoneApiId"
     Then The lifecycle status of API "gqlNoneApiId" should be "Published"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "gqlNoneApiId" should be live on the gateway, redeploying if propagation is lost
 
     # No token — the None-auth operation must still be invocable (200).
     When I put the following JSON payload in context as "gqlNoneEmptyToken"

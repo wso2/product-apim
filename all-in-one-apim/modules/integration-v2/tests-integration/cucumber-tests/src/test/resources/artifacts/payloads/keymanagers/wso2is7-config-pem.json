@@ -1,0 +1,23 @@
+{
+  "name": "${UNIQUE:Wso2Is7PemKM}",
+  "displayName": "Test Key Manager WSO2 IS 7 (PEM cert)",
+  "type": "WSO2-IS-7",
+  "description": "WSO2 IS 7 KM using a PEM certificate (not a JWKS URL) for JWT signature validation",
+  "issuer": "https://is7.example.com:9444/oauth2/token",
+  "tokenEndpoint": "https://is7.example.com:9444/oauth2/token",
+  "introspectionEndpoint": "https://is7.example.com:9444/oauth2/introspect",
+  "revokeEndpoint": "https://is7.example.com:9444/oauth2/revoke",
+  "clientRegistrationEndpoint": "https://is7.example.com:9444/api/identity/oauth2/dcr/v1.1/register",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "availableGrantTypes": ["client_credentials", "password", "refresh_token"],
+  "certificates": { "type": "PEM", "value": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURnVENDQW1tZ0F3SUJBZ0lJY1RXYi9lMkFvRGt3RFFZSktvWklodmNOQVFFTUJRQXdZREVMTUFrR0ExVUUNCkJoTUNURXN4RURBT0JnTlZCQWdUQjFkbGMzUmxjbTR4RURBT0JnTlZCQWNUQjBOdmJHOXRZbTh4RFRBTEJnTlYNCkJBb1RCRmRUVHpJeERUQUxCZ05WQkFzVEJGUmxjM1F4RHpBTkJnTlZCQU1UQm5kemJ6SnBjekFlRncweU5qQTMNCk1UWXdNak15TVRSYUZ3MDBOakEzTVRFd01qTXlNVFJhTUdBeEN6QUpCZ05WQkFZVEFreExNUkF3RGdZRFZRUUkNCkV3ZFhaWE4wWlhKdU1SQXdEZ1lEVlFRSEV3ZERiMnh2YldKdk1RMHdDd1lEVlFRS0V3UlhVMDh5TVEwd0N3WUQNClZRUUxFd1JVWlhOME1ROHdEUVlEVlFRREV3WjNjMjh5YVhNd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUINCkR3QXdnZ0VLQW9JQkFRQ3dBd1hHWll5L09URzNQZXlaRi9rU09OSVhSaU03SWxGb2VVTUNaMTJKVTROZENsay8NCnBFZS9nTDhvVk1LYmw2ODA5dEpPc28wNlRpODdNQlVmdURVazBFUUZVNVFuZkQ2aS9sYmlubVFuSW1jbUJURWcNClBXakJSVlJ4RW9EWE53YzY4bzZNeWVFazV4clMzZ0U2Q3pTaklOVzF6L2RwR1ZLd1h5RzROZHlaM2tZL3phN0gNCnB3bE5mRktwMzZiK0pWck1tTzJOUGYzZmVpU2RtRENzU296ZkRwQndqeHg4RGxyMDIxOFRJUWRLYU14elVsVUYNCjVwckVjWDg3ZDJsc2RGTkNzb3YrbWprcU1iNUZXTGhQS1MxYWo2cXZQbEdmbm1GbXV0bEM0N3Byd3Z3UFg4K2YNCmhDWC9HZzBYS2gvS0N0M1h2QWJiajIyOGRocEV4S3dSMUduMUFnTUJBQUdqUHpBOU1CMEdBMVVkRGdRV0JCUjcNClJ3ZXltalZCeWpSdlhEdWFqZFc0eklJOGdUQWNCZ05WSFJFRUZUQVRnZ1ozYzI4eWFYT0NDV3h2WTJGc2FHOXoNCmREQU5CZ2txaGtpRzl3MEJBUXdGQUFPQ0FRRUFoYjdkK0NiSHVRZlgyQjdnc1BzTVpXTVFhOC9LWVloN3BjNDINCjhhSXpNS2lLaEJoREFBVWtZaTVaaCtnaUYyWE5rTDEzWUR3UFpPMjdabngvUW1GMVI4TzBKZlRFT2JjL3ZVOXgNClk5QW1nOUpsTVFBeFhUMzd6SkgzVndWTTJ0UjMvVmtxYXBqcUEzRDlsOWpMZzkybHF3Q3NwL2FJUTBjNHdnam4NClNJMmpKMUxLL2xjVW1qaVNya2VnSS91eTFlL3ovWEx3WUUvalExdjYvWVBzcXRPS2MwbWFHMUxOTllQNkNnNUwNCjNqQU1SOHBJUGE2TGI1L2h5QUpuSzFMSzY1YnJNdm1yR0J2RS9UVVJ6SWdUalp6alYvSDdIdU5pbEVXZWVTZm0NCnU5WEZwL0Z2U2VpeFNVRDdXam1tZVJnTmowY3lHOEwrbTBxS1ZCdFA5QU9Nc2Zkc3h3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=" },
+  "additionalProperties": {
+    "api_resource_management_endpoint": "https://is7.example.com:9444/api/server/v1/api-resources",
+    "is7_roles_endpoint": "https://is7.example.com:9444/scim2/v2/Roles",
+    "Username": "admin",
+    "Password": "admin",
+    "self_validate_jwt": true
+  }
+}

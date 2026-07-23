@@ -129,6 +129,11 @@ public final class ResourceCleanup {
     /** Deletes all registered applications then APIs from the context's current scope. No-op if no baseUrl. */
     public static void deleteRegisteredResources() {
 
+        // External-system resources first (independent of the APIM lists and of APIM actor/token resolution):
+        // IS-side resources are swept as the IS integration actor via IS's own management APIs — an APIM actor
+        // token cannot address them. See ISResourceCleanup / CLAUDE.md §14.
+        ISResourceCleanup.sweep();
+
         Object baseUrlObj = TestContext.get("baseUrl");
         if (baseUrlObj == null) {
             return;

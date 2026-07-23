@@ -27,7 +27,6 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,24 +44,6 @@ import java.util.Map;
 public class KeyManagerAdminSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
-
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
-    /** The tenant domain of the acting actor (parsed from its {@code user@domain} username; super if unqualified). */
-    private static String actingTenantDomain() {
-        String username = Identity.actingActor().getUserName();
-        int at = username.indexOf(Constants.CHAR_AT);
-        return at >= 0 ? username.substring(at + 1) : Constants.SUPER_TENANT_DOMAIN;
-    }
-
-    /** Basic-auth header for the acting actor's own carbon credentials (introspect/SOAP admin services). */
-    private static String actingBasicAuth() {
-        User actor = Identity.actingActor();
-        String creds = actor.getUserName() + ":" + actor.getPassword();
-        return "Basic " + Base64.getEncoder().encodeToString(creds.getBytes(StandardCharsets.UTF_8));
-    }
 
     /**
      * The username as the APIM admin/consumer APIs expect it: a super-tenant user is passed UNQUALIFIED
@@ -88,10 +69,10 @@ public class KeyManagerAdminSteps {
     @When("I introspect the access token {string}")
     public void iIntrospectTheAccessToken(String tokenKey) throws IOException {
         String token = TestContext.resolve(tokenKey).toString();
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, actingBasicAuth());
+        // Acting actor's own carbon credentials: introspection is a Basic-auth (not bearer) endpoint.
+        Map<String, String> headers = Identity.actingBasicAuthHeaders();
         // A tenant token must be introspected at the tenant-qualified path; the super path 401s a tenant caller.
-        Requests.post(Utils.getIntrospectEndpointURL(getBaseUrl(), actingTenantDomain()), headers,
+        Requests.post(Utils.getIntrospectEndpointURL(Utils.getBaseUrl(), Identity.actingTenantDomain()), headers,
                 "token=" + token, "application/x-www-form-urlencoded");
     }
 
@@ -111,7 +92,7 @@ public class KeyManagerAdminSteps {
                 + "<xsd:updateConsumerAppState><xsd:consumerKey>" + Utils.escapeXml(consumerKey) + "</xsd:consumerKey>"
                 + "<xsd:newState>" + Utils.escapeXml(newState) + "</xsd:newState>"
                 + "</xsd:updateConsumerAppState></soapenv:Body></soapenv:Envelope>";
-        Requests.soap(Utils.getOAuthAdminServiceURL(getBaseUrl()), envelope, "urn:updateConsumerAppState",
+        Requests.soap(Utils.getOAuthAdminServiceURL(Utils.getBaseUrl()), envelope, "urn:updateConsumerAppState",
                 actor.getUserName(), actor.getPassword());
     }
 
@@ -126,7 +107,7 @@ public class KeyManagerAdminSteps {
         String newOwner = apiUsername(Identity.resolveActor(newOwnerRef));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.post(Utils.getChangeApplicationOwnerURL(getBaseUrl(), appId, newOwner), headers, "", null);
+        Requests.post(Utils.getChangeApplicationOwnerURL(Utils.getBaseUrl(), appId, newOwner), headers, "", null);
     }
 
     /**
@@ -138,7 +119,7 @@ public class KeyManagerAdminSteps {
         String appId = TestContext.resolve(appIdRef).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.post(Utils.getChangeApplicationOwnerURL(getBaseUrl(), appId, rawOwner), headers, "", null);
+        Requests.post(Utils.getChangeApplicationOwnerURL(Utils.getBaseUrl(), appId, rawOwner), headers, "", null);
     }
 
     /**
@@ -150,7 +131,7 @@ public class KeyManagerAdminSteps {
         String owner = apiUsername(Identity.resolveActor(ownerRef));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.get(Utils.getAdminApplicationsByOwnerURL(getBaseUrl(), owner), headers);
+        Requests.get(Utils.getAdminApplicationsByOwnerURL(Utils.getBaseUrl(), owner), headers);
     }
 
     /**
@@ -167,7 +148,7 @@ public class KeyManagerAdminSteps {
                 (consumerKey + ":" + secret).getBytes(StandardCharsets.UTF_8));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
-        Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers, "grant_type=client_credentials",
+        Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()), headers, "grant_type=client_credentials",
                 "application/x-www-form-urlencoded");
     }
 
@@ -204,24 +185,4 @@ public class KeyManagerAdminSteps {
                 + "' but both are (" + a + ")");
     }
 
-    /**
-     * Asserts the VALUE of a (possibly nested, dot-path) field in the last response equals the expected value —
-     * parsed structurally, not by substring, so it is immune to JSON formatting/whitespace (e.g. the keygen
-     * response serialises {@code "pkceMandatory":true} compact, so a spaced string-contains would falsely fail).
-     * The expected value is compared as a string against the field's stringified value ({@code true}/{@code false}
-     * for booleans, the literal for strings/numbers).
-     */
-    @Then("The value of response field {string} should be {string}")
-    public void theValueOfResponseFieldShouldBe(String field, String expected) throws IOException {
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertTrue(response != null && response.getResponseCode() >= 200
-                        && response.getResponseCode() < 300 && response.getData() != null
-                        && !response.getData().isEmpty(),
-                "No successful response to read field '" + field + "' from, got="
-                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
-        Object value = Utils.extractValueFromPayload(response.getData(), field);
-        Assert.assertNotNull(value, "Field '" + field + "' not present in response: " + response.getData());
-        Assert.assertEquals(String.valueOf(value), expected,
-                "Field '" + field + "' value mismatch in response: " + response.getData());
-    }
 }

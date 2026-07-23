@@ -39,10 +39,6 @@ import java.util.Map;
  */
 public class ApiEndpointSteps {
 
-    private String getBaseUrl() {
-        return TestContext.get("baseUrl").toString();
-    }
-
     private Map<String, String> publisherJsonHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
@@ -58,7 +54,7 @@ public class ApiEndpointSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         String jsonPayload = TestContext.resolve(payload).toString();
 
-        HttpResponse response = Requests.post(Utils.getApiEndpointsURL(getBaseUrl(), actualApiId),
+        HttpResponse response = Requests.post(Utils.getApiEndpointsURL(Utils.getBaseUrl(), actualApiId),
                 publisherJsonHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             TestContext.set(idKey, Utils.extractValueFromPayload(response.getData(), "id"));
@@ -69,7 +65,7 @@ public class ApiEndpointSteps {
     @When("I retrieve the endpoints of API {string}")
     public void iRetrieveApiEndpoints(String apiId) throws IOException {
         String actualApiId = TestContext.resolve(apiId).toString();
-        HttpResponse response = Requests.get(Utils.getApiEndpointsURL(getBaseUrl(), actualApiId),
+        HttpResponse response = Requests.get(Utils.getApiEndpointsURL(Utils.getBaseUrl(), actualApiId),
                 publisherJsonHeaders());
     }
 
@@ -78,7 +74,7 @@ public class ApiEndpointSteps {
     public void iRetrieveApiEndpoint(String endpointId, String apiId) throws IOException {
         String actualApiId = TestContext.resolve(apiId).toString();
         String actualEndpointId = TestContext.resolve(endpointId).toString();
-        HttpResponse response = Requests.get(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId, actualEndpointId),
+        HttpResponse response = Requests.get(Utils.getApiEndpointByIdURL(Utils.getBaseUrl(), actualApiId, actualEndpointId),
                 publisherJsonHeaders());
     }
 
@@ -88,7 +84,7 @@ public class ApiEndpointSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         String actualEndpointId = TestContext.resolve(endpointId).toString();
         String jsonPayload = TestContext.resolve(payload).toString();
-        HttpResponse response = Requests.put(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId, actualEndpointId),
+        HttpResponse response = Requests.put(Utils.getApiEndpointByIdURL(Utils.getBaseUrl(), actualApiId, actualEndpointId),
                 publisherJsonHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -97,7 +93,7 @@ public class ApiEndpointSteps {
     public void iDeleteApiEndpoint(String endpointId, String apiId) throws IOException {
         String actualApiId = TestContext.resolve(apiId).toString();
         String actualEndpointId = TestContext.resolve(endpointId).toString();
-        HttpResponse response = Requests.delete(Utils.getApiEndpointByIdURL(getBaseUrl(), actualApiId,
+        HttpResponse response = Requests.delete(Utils.getApiEndpointByIdURL(Utils.getBaseUrl(), actualApiId,
                 actualEndpointId), publisherJsonHeaders());
     }
 }

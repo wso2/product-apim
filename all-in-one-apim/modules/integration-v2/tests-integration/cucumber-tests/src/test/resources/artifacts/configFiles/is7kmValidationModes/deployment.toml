@@ -1,0 +1,37 @@
+# Combined overlay for the IntegrationV2-Is7KeyManagerValidationModes block — the INTROSPECTION and PEM
+# external-KM validation modes co-hosted at thread-count=1 (see testng-v2.xml; the KM mode itself is the
+# feature-registered payload, these keys are test-convergence pins). Merged on top of the shared `basic`
+# overlay. Verified mutually inert:
+#   - token_expiry_time (introspection's pin) never touches the PEM arc: PEM is gateway self-validation with
+#     the gateway token cache disabled below, so no token cache TTL participates.
+#   - gateway_token off (PEM's pin) never touches the introspection assertion: the revoke->401 walk converges
+#     via the separate IntrospectionCache's TTL eviction (diagnosed with gateway/km token caches OFF — this
+#     layer is independent), and removing the gateway cache can only avoid stale 200s, never add them.
+#   - the wso2am.p12 keystore (SAN dns:localhost,dns:wso2am) is pure KM plumbing, valid for both.
+# MUST stay thread-count=1: both runners register KMs with the SAME issuer (https://wso2is:9443) in
+# carbon.super; concurrent runners would hold two same-issuer KMs at once, making the gateway's issuer->KM
+# resolution ambiguous between introspection-mode and PEM-pinned semantics. Sequential classes + per-scenario
+# cleanup keep at most one same-issuer KM per org live.
+
+# --- shared external-KM plumbing: APIM presents a cert valid for the wso2am network alias (see is7km). ---
+[keystore.tls]
+file_name = "wso2am.p12"
+type = "PKCS12"
+password = "wso2carbon"
+alias = "wso2carbon"
+key_password = "wso2carbon"
+
+# --- INTROSPECTION mode: short IntrospectionCache TTL so revoke->401 converges once the entry evicts.
+# In introspection mode the keymgt layer caches the introspect result in a dedicated IntrospectionCache
+# (checked only for token EXPIRY, never revocation, NOT invalidated by the IS->APIM /notify pipeline);
+# its TTL is apim.cache.token_expiry_time (default 900s). 15s keeps the revoke->401 poll within its window
+# while still exercising the real cache-eviction path. ---
+[apim.cache]
+token_expiry_time = 15
+
+# --- PEM mode: gateway token cache OFF, REQUIRED for the key-rotation walk. The scenario swaps the KM's
+# pinned certificate and polls with fresh tokens until validation flips; with the cache on, a fresh token's
+# first (pre-swap) validation verdict is served from cache for every later poll and the flip is never
+# observed (revocation has a cache override; a certificate change does not). ---
+[apim.cache.gateway_token]
+enable = false

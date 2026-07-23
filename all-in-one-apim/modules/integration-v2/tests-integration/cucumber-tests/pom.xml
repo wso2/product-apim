@@ -149,6 +149,14 @@
                     <systemPropertyVariables>
                         <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                         <org.apache.http.wire.level>OFF</org.apache.http.wire.level>
+                        <!-- External-KM (IS7) build artifacts are staged by the testcontainers module's
+                             pre-integration-test execs under tests-common/testcontainers/target/is7. Resolve them
+                             relative to THIS module's basedir so the external-KM block finds them without a -D
+                             override (the code's module.dir fallback resolves to this module, not testcontainers). -->
+                        <apim.km.truststore.path>${project.basedir}/../../tests-common/testcontainers/target/is7/client-truststore.jks</apim.km.truststore.path>
+                        <is.notification.jar.path>${project.basedir}/../../tests-common/testcontainers/target/is7/wso2is.notification.event.handlers-2.1.3.jar</is.notification.jar.path>
+                        <is.truststore.path>${project.basedir}/../../tests-common/testcontainers/target/is7/is-client-truststore.p12</is.truststore.path>
+                        <is.default.toml.path>${project.basedir}/../../tests-common/testcontainers/target/is7/is-default-deployment.toml</is.default.toml.path>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

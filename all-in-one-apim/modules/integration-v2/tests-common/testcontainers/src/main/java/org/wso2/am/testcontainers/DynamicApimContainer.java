@@ -43,6 +43,8 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicApimContainer.class);
     private static final String DEFAULT_APIM_IMAGE = "wso2am:4.7.0-SNAPSHOT-jdk21";
+    /** Fixed shared-network alias for the IS→APIM reverse channel; see {@link #withExternalIsNotificationAlias}. */
+    private static final String APIM_NETWORK_ALIAS = "wso2am";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
 
@@ -152,6 +154,67 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         addExposedPort(JacocoCoverage.TCP_PORT);
         logger.info("JaCoCo coverage enabled (server-JVM-only via JVM_MEM_OPTS): agent at {}, tcpserver port {}",
                 JacocoCoverage.CONTAINER_AGENT_PATH, JacocoCoverage.TCP_PORT);
+        return this;
+    }
+
+    /**
+     * Augments the container's client-truststore so APIM trusts the external Identity Server's TLS cert
+     * (CN=wso2is), enabling the KM HTTP client's JWKS fetch / introspection over {@code https://wso2is:9443}.
+     * Must be called before {@link #start()}: the truststore is read once when the Carbon JVM boots, so the
+     * augmented file must already be in place — the only pre-boot injection point is {@code withCopyToContainer},
+     * hence we copy a fully-augmented truststore over the default rather than importing into the running server.
+     *
+     * <p>The augmented truststore is produced at build time by the testcontainers module's
+     * {@code build-augmented-truststore} exec (base truststore extracted from the APIM image + the fixed
+     * {@code wso2is} public cert imported), staged at {@code <module.dir>/target/is7/client-truststore.jks};
+     * overridable via {@code -Dapim.km.truststore.path}. Only the external-KM block calls this, so the default
+     * lane's truststore is untouched.
+     */
+    public DynamicApimContainer withExternalKmTrust() {
+        String configured = System.getProperty("apim.km.truststore.path");
+        String path = (configured != null && !configured.isBlank())
+                ? configured
+                : System.getProperty("module.dir", ".") + "/target/is7/client-truststore.jks";
+        File truststore = new File(path);
+        if (!truststore.isFile()) {
+            throw new IllegalStateException("Augmented APIM client-truststore not found at '" + path
+                    + "'. It is built by the testcontainers pre-integration-test exec "
+                    + "(build-augmented-truststore); run the build so it is staged, or set "
+                    + "-Dapim.km.truststore.path to its location.");
+        }
+        withCopyToContainer(MountableFile.forHostPath(truststore.getAbsolutePath()),
+                Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+                        + "/repository/resources/security/client-truststore.jks");
+        // Present a TLS cert valid for the 'wso2am' network alias (fixed keystore, CN=wso2am,
+        // SAN dns:localhost,dns:wso2am) so IS's token-revocation notification POST to https://wso2am:9443
+        // passes strict hostname verification - no AllowAll workaround needed on IS. The block's toml overlay
+        // points [keystore.tls] at this file; the augmented client-truststore above also trusts it (loopback).
+        withCopyToContainer(MountableFile.forClasspathResource("is7/wso2am.p12"),
+                Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+                        + "/repository/resources/security/wso2am.p12");
+        logger.info("External-KM mode: APIM client-truststore augmented (wso2is + wso2am certs) from {}, "
+                + "TLS keystore set to wso2am.p12", truststore.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Binds the fixed {@code wso2am} shared-network alias so the external IS can reach this container on its
+     * reverse channel — IS's baked {@code notification_endpoint} POSTs to
+     * {@code https://wso2am:9443/internal/data/v1/notify} (token-revocation events in the default IS overlay,
+     * tenant-sync events in the SSO overlay). Without a live alias holder the IS EventSender fails with
+     * {@code UnknownHostException: wso2am} (harmless unless a test asserts on the delivered notification).
+     *
+     * <p>Deliberately separate from {@link #withExternalKmTrust()}: the alias is fixed (it is baked into the IS
+     * toml and the wso2am.p12 cert), so AT MOST ONE live container may hold it — duplicate holders make Docker
+     * DNS resolve {@code wso2am} arbitrarily and notifications land on the wrong APIM. Most external-KM blocks
+     * only make APIM→IS calls and never consume the reverse channel; they skip this and can therefore run
+     * concurrently. Only the block whose tests assert on IS→APIM notifications binds it (via the
+     * {@code receiveExternalIsNotifications} block param).
+     */
+    public DynamicApimContainer withExternalIsNotificationAlias() {
+        withNetworkAliases(APIM_NETWORK_ALIAS);
+        logger.info("APIM network alias set to '{}' (IS reverse-channel notification receiver)",
+                APIM_NETWORK_ALIAS);
         return this;
     }
 

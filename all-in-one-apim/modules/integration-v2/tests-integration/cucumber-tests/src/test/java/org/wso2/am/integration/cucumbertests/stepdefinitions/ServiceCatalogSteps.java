@@ -56,10 +56,6 @@ public class ServiceCatalogSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
     /**
      * Service-catalog auth headers. The Service Catalog REST API is gated by the {@code service_catalog:service_*}
      * scopes (pinned live: the admin/publisher tokens' scopes get 401), so this mints a dedicated token for the
@@ -87,7 +83,7 @@ public class ServiceCatalogSteps {
             json.put("username", actor.getUserName());
             json.put("password", actor.getPassword());
             json.put("scope", "service_catalog:service_write service_catalog:service_view");
-            HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
+            HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                     headers, json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
             Assert.assertEquals(response.getResponseCode(), 200, response.getData());
             String token = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
@@ -135,7 +131,7 @@ public class ServiceCatalogSteps {
         Map<String, String> jsonFields = new HashMap<>();
         // serviceMetadata MUST be an application/json part (a text/plain JSON part is rejected 500 — pinned live).
         jsonFields.put("serviceMetadata", metadata);
-        return Requests.postMultipartWithJsonFields(Utils.getServiceCatalogURL(getBaseUrl()),
+        return Requests.postMultipartWithJsonFields(Utils.getServiceCatalogURL(Utils.getBaseUrl()),
                 serviceCatalogHeaders(), files, new HashMap<>(), jsonFields);
     }
 
@@ -170,7 +166,7 @@ public class ServiceCatalogSteps {
     public void iAttemptToCreateServiceWithoutDefinition(String name, String version, String key) throws IOException {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("serviceMetadata", buildMetadata(name, version, key, "Catalog entry"));
-        Requests.postMultipart(Utils.getServiceCatalogURL(getBaseUrl()), serviceCatalogHeaders(), new HashMap<>(),
+        Requests.postMultipart(Utils.getServiceCatalogURL(Utils.getBaseUrl()), serviceCatalogHeaders(), new HashMap<>(),
                 formFields);
     }
 
@@ -185,7 +181,7 @@ public class ServiceCatalogSteps {
         Map<String, File> files = new LinkedHashMap<>();
         files.put("file", archive);
         HttpResponse response = Requests.postMultipart(
-                Utils.getServiceCatalogImportURL(getBaseUrl(), Boolean.parseBoolean(overwrite)),
+                Utils.getServiceCatalogImportURL(Utils.getBaseUrl(), Boolean.parseBoolean(overwrite)),
                 serviceCatalogHeaders(), files, new HashMap<>());
         // Guard status AND body before parsing — a 200 with an empty body would otherwise surface as an opaque
         // JSONException instead of a clear failure.
@@ -207,7 +203,7 @@ public class ServiceCatalogSteps {
     /** Attempts to import a services archive with NO file part — for the missing-file 400 negative. */
     @When("I attempt to import a service catalog archive with no file")
     public void iAttemptToImportWithoutFile() throws IOException {
-        Requests.postMultipart(Utils.getServiceCatalogImportURL(getBaseUrl(), true), serviceCatalogHeaders(),
+        Requests.postMultipart(Utils.getServiceCatalogImportURL(Utils.getBaseUrl(), true), serviceCatalogHeaders(),
                 new HashMap<>(), new HashMap<>());
     }
 
@@ -223,7 +219,7 @@ public class ServiceCatalogSteps {
         Map<String, File> files = new LinkedHashMap<>();
         files.put("file", archive);
         HttpResponse response = Requests.postMultipart(
-                Utils.getServiceCatalogImportURL(getBaseUrl(), Boolean.parseBoolean(overwrite)),
+                Utils.getServiceCatalogImportURL(Utils.getBaseUrl(), Boolean.parseBoolean(overwrite)),
                 serviceCatalogHeaders(), files, new HashMap<>());
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             // A 2xx import MUST carry the ServiceInfoList body — guard before parsing so a degenerate empty-body
@@ -241,34 +237,34 @@ public class ServiceCatalogSteps {
     /** Retrieves a service by the id held under {@code idKey} (publishes the response). */
     @When("I retrieve the service catalog entry {string}")
     public void iRetrieveService(String idKey) throws IOException {
-        Requests.get(Utils.getServiceCatalogByIdURL(getBaseUrl(), TestContext.resolve(idKey).toString()),
+        Requests.get(Utils.getServiceCatalogByIdURL(Utils.getBaseUrl(), TestContext.resolve(idKey).toString()),
                 serviceCatalogHeaders());
     }
 
     /** Retrieves a service by a raw (literal) id — for the invalid-id 404 negative. */
     @When("I retrieve the service catalog entry with raw id {string}")
     public void iRetrieveServiceRawId(String rawId) throws IOException {
-        Requests.get(Utils.getServiceCatalogByIdURL(getBaseUrl(), rawId), serviceCatalogHeaders());
+        Requests.get(Utils.getServiceCatalogByIdURL(Utils.getBaseUrl(), rawId), serviceCatalogHeaders());
     }
 
     /** Retrieves a service's definition (publishes the response). */
     @When("I retrieve the definition of service catalog entry {string}")
     public void iRetrieveServiceDefinition(String idKey) throws IOException {
-        Requests.get(Utils.getServiceCatalogDefinitionURL(getBaseUrl(), TestContext.resolve(idKey).toString()),
+        Requests.get(Utils.getServiceCatalogDefinitionURL(Utils.getBaseUrl(), TestContext.resolve(idKey).toString()),
                 serviceCatalogHeaders());
     }
 
     /** Retrieves a service's usage — the APIs referencing it (publishes the response). */
     @When("I retrieve the usage of service catalog entry {string}")
     public void iRetrieveServiceUsage(String idKey) throws IOException {
-        Requests.get(Utils.getServiceCatalogUsageURL(getBaseUrl(), TestContext.resolve(idKey).toString()),
+        Requests.get(Utils.getServiceCatalogUsageURL(Utils.getBaseUrl(), TestContext.resolve(idKey).toString()),
                 serviceCatalogHeaders());
     }
 
     /** Deletes a service by id (publishes the response). */
     @When("I delete the service catalog entry {string}")
     public void iDeleteService(String idKey) throws IOException {
-        Requests.delete(Utils.getServiceCatalogByIdURL(getBaseUrl(), TestContext.resolve(idKey).toString()),
+        Requests.delete(Utils.getServiceCatalogByIdURL(Utils.getBaseUrl(), TestContext.resolve(idKey).toString()),
                 serviceCatalogHeaders());
     }
 
@@ -277,7 +273,7 @@ public class ServiceCatalogSteps {
     public void iSearchServicesByField(String field, String value) throws IOException {
         Map<String, String> params = new LinkedHashMap<>();
         params.put(field, Utils.resolveContextPlaceholders(value));
-        Requests.get(Utils.getServiceCatalogSearchURL(getBaseUrl(), params), serviceCatalogHeaders());
+        Requests.get(Utils.getServiceCatalogSearchURL(Utils.getBaseUrl(), params), serviceCatalogHeaders());
     }
 
     /** Searches services by name with an explicit limit and offset (for pagination assertions). */
@@ -287,7 +283,7 @@ public class ServiceCatalogSteps {
         params.put("name", Utils.resolveContextPlaceholders(name));
         params.put("limit", String.valueOf(limit));
         params.put("offset", String.valueOf(offset));
-        Requests.get(Utils.getServiceCatalogSearchURL(getBaseUrl(), params), serviceCatalogHeaders());
+        Requests.get(Utils.getServiceCatalogSearchURL(Utils.getBaseUrl(), params), serviceCatalogHeaders());
     }
 
     /**

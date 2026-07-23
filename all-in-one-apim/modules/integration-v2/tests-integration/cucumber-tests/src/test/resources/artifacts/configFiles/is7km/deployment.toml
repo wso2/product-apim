@@ -1,0 +1,17 @@
+# APIM TLS-keystore overlay for the external-key-manager (WSO2 IS 7.x) block.
+#
+# Merged on top of base+basic by BlockLifecycleListener (tomlExtraOverlayPath). It points APIM's TLS keystore
+# at the fixed wso2am.p12 (CN=wso2am, SAN dns:localhost,dns:wso2am) that DynamicApimContainer#withExternalKmTrust
+# copies into repository/resources/security/. APIM then presents a cert valid for the 'wso2am' network alias, so
+# IS's token-revocation notification POST to https://wso2am:9443/internal/data/v1/notify passes STRICT hostname
+# verification - i.e. we no longer need -Dhttpclient.hostnameVerifier=AllowAll on IS. The SAN also lists
+# localhost so the framework's own APIM calls (via the host-mapped port) and APIM's internal loopback still
+# match; the augmented client-truststore trusts this cert (see build-augmented-truststore).
+#
+# Only the external-KM block uses this overlay, so the default lane's TLS keystore (wso2carbon.jks) is untouched.
+[keystore.tls]
+file_name = "wso2am.p12"
+type = "PKCS12"
+password = "wso2carbon"
+alias = "wso2carbon"
+key_password = "wso2carbon"

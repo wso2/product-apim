@@ -17,9 +17,11 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -41,10 +43,6 @@ import java.util.Map;
  * (the legacy used a stateless WireMock, a coverage gap this closes).
  */
 public class MCPServerSteps {
-
-    private String getBaseUrl() {
-        return TestContext.get("baseUrl").toString();
-    }
 
     /**
      * Creates an MCP server by PROXYING a third-party MCP server (POST /mcp-servers/generate-from-mcp-server),
@@ -77,7 +75,7 @@ public class MCPServerSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.post(Utils.getMCPServerProxyURL(getBaseUrl()), headers, requestJson,
+        HttpResponse response = Requests.post(Utils.getMCPServerProxyURL(Utils.getBaseUrl()), headers, requestJson,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -103,7 +101,7 @@ public class MCPServerSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         HttpResponse getResp = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers);
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers);
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         org.testng.Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200
@@ -114,7 +112,7 @@ public class MCPServerSteps {
         JSONObject dto = new JSONObject(getResp.getData());
         dto.put("operations", new org.json.JSONArray(buildToolOperations(tools)));
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -136,7 +134,7 @@ public class MCPServerSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers).getData());
 
         // Define the scope on the MCP server (inline local scope, bound to a role).
         JSONObject scopeDef = new JSONObject().put("scope", new JSONObject()
@@ -155,7 +153,7 @@ public class MCPServerSteps {
             }
         }
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -176,14 +174,14 @@ public class MCPServerSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers).getData());
         JSONArray policies = new JSONArray();
         for (String p : resolved.split(",")) {
             policies.put(p.trim());
         }
         dto.put("policies", policies);
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -248,7 +246,7 @@ public class MCPServerSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("additionalProperties", additionalProperties);
 
-        HttpResponse response = Requests.postMultipart(Utils.getMCPServerFromOpenAPIURL(getBaseUrl()), headers,
+        HttpResponse response = Requests.postMultipart(Utils.getMCPServerFromOpenAPIURL(Utils.getBaseUrl()), headers,
                 files, formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -295,7 +293,7 @@ public class MCPServerSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.post(Utils.getMCPServerFromAPIURL(getBaseUrl()), headers, requestJson,
+        HttpResponse response = Requests.post(Utils.getMCPServerFromAPIURL(Utils.getBaseUrl()), headers, requestJson,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -321,7 +319,7 @@ public class MCPServerSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers).getData());
         JSONArray ops = dto.getJSONArray("operations");
         JSONArray kept = new JSONArray();
         for (int i = 0; i < ops.length(); i++) {
@@ -338,7 +336,7 @@ public class MCPServerSteps {
         }
         dto.put("operations", kept);
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -358,11 +356,48 @@ public class MCPServerSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers).getData());
         dto.getJSONArray("operations").put(new JSONObject(removed));
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Asserts an MCP tool's PRODUCT-GENERATED input schema STRUCTURALLY — {@code JSONObject.similar}, so key
+     * order is irrelevant (ports the legacy MCPServerTestCase schema check as hardened by upstream PR #14237,
+     * whose exact-string compare flaked on unguaranteed key order). The docstring is the expected
+     * schemaDefinition JSON. The GET is an intermediate read (local, not the published httpResponse).
+     *
+     * @param idKey context key holding the MCP-server id
+     * @param tool  the tool whose operation carries the schema
+     */
+    @Then("the MCP server {string} tool {string} should have schema definition:")
+    public void mcpToolShouldHaveSchemaDefinition(String idKey, String tool, String expectedSchemaJson)
+            throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        HttpResponse resp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), publisherHeaders());
+        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                        && !resp.getData().isEmpty(),
+                "MCP server fetch failed for the schema check: got="
+                        + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
+        JSONArray ops = new JSONObject(resp.getData()).getJSONArray("operations");
+        JSONObject match = null;
+        for (int i = 0; i < ops.length(); i++) {
+            if (ops.getJSONObject(i).toString().contains(tool)) {
+                match = ops.getJSONObject(i);
+                break;
+            }
+        }
+        Assert.assertNotNull(match, "MCP server has no operation for tool '" + tool + "': " + ops);
+        String actualSchema = match.optString("schemaDefinition", null);
+        Assert.assertNotNull(actualSchema, "Operation for '" + tool + "' has no schemaDefinition: " + match);
+        JSONObject actual = new JSONObject(actualSchema);
+        JSONObject expected = new JSONObject(expectedSchemaJson);
+        Assert.assertTrue(expected.similar(actual),
+                "Tool '" + tool + "' schemaDefinition mismatch (structural): expected=" + expected
+                        + " actual=" + actual);
     }
 
     /** Deletes an MCP server (DELETE /mcp-servers/{id}) — the explicit delete scenarios use to assert removal.
@@ -375,7 +410,7 @@ public class MCPServerSteps {
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.delete(Utils.getMCPServerByIdURL(getBaseUrl(), id.toString()), headers);
+        HttpResponse response = Requests.delete(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id.toString()), headers);
     }
 
     // ---- MCP backend-endpoint management (/mcp-servers/{id}/backends) ----
@@ -397,7 +432,7 @@ public class MCPServerSteps {
     @When("I retrieve the backends of MCP server {string} and store the first backend id as {string}")
     public void iRetrieveMcpServerBackends(String mcpServerId, String idKey) throws IOException {
         String actualId = TestContext.resolve(mcpServerId).toString();
-        HttpResponse response = Requests.get(Utils.getMCPServerBackendsURL(getBaseUrl(), actualId),
+        HttpResponse response = Requests.get(Utils.getMCPServerBackendsURL(Utils.getBaseUrl(), actualId),
                 publisherHeaders());
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             // The MCP backends collection is a BARE JSON array ([{id,name,endpointConfig,...}]), not a
@@ -411,7 +446,7 @@ public class MCPServerSteps {
     public void iRetrieveMcpServerBackend(String backendId, String mcpServerId) throws IOException {
         String actualId = TestContext.resolve(mcpServerId).toString();
         String actualBackendId = TestContext.resolve(backendId).toString();
-        HttpResponse response = Requests.get(Utils.getMCPServerBackendByIdURL(getBaseUrl(), actualId, actualBackendId),
+        HttpResponse response = Requests.get(Utils.getMCPServerBackendByIdURL(Utils.getBaseUrl(), actualId, actualBackendId),
                 publisherHeaders());
     }
 
@@ -421,7 +456,7 @@ public class MCPServerSteps {
         String actualId = TestContext.resolve(mcpServerId).toString();
         String actualBackendId = TestContext.resolve(backendId).toString();
         String jsonPayload = TestContext.resolve(payload).toString();
-        HttpResponse response = Requests.put(Utils.getMCPServerBackendByIdURL(getBaseUrl(), actualId, actualBackendId),
+        HttpResponse response = Requests.put(Utils.getMCPServerBackendByIdURL(Utils.getBaseUrl(), actualId, actualBackendId),
                 publisherHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 }

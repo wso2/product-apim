@@ -18,6 +18,9 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -26,6 +29,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.net.URI;
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -52,14 +56,6 @@ public class MCPInvocationSteps {
     private static final String INITIALIZED = "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}";
     private static final String TOOLS_LIST = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}";
 
-    private String getBaseGatewayUrl() {
-        Object url = TestContext.get("baseGatewayUrl");
-        if (url == null) {
-            throw new IllegalStateException("baseGatewayUrl is not available in the test context yet");
-        }
-        return url.toString();
-    }
-
     /**
      * Full MCP round-trip through the gateway: initialize (capture Mcp-Session-Id) → tools/list (must contain
      * {@code toolName}) → tools/call {@code toolName}(args) (result must contain {@code expected}). Retries the
@@ -72,13 +68,14 @@ public class MCPInvocationSteps {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String token = TestContext.resolve(accessToken).toString();
-        String base = getBaseGatewayUrl();
+        String base = Utils.getBaseGatewayUrl();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
         String mcpUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext + "/" + version + "/mcp";
 
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
         String callResult = null;
         while (System.currentTimeMillis() < endTime) {
@@ -90,7 +87,7 @@ public class MCPInvocationSteps {
                 String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
                 if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
                     lastError = "init status=" + initResp.statusCode() + " body=" + initResp.body();
-                    Thread.sleep(2000);
+                    Utils.pollPause(endTimeStart, 2000);
                     continue;
                 }
                 // 2) notifications/initialized (best-effort, same session)
@@ -100,7 +97,7 @@ public class MCPInvocationSteps {
                 String listBody = sseOrJson(listResp.body());
                 if (!listBody.contains(toolName)) {
                     lastError = "tools/list did not contain '" + toolName + "': " + listBody;
-                    Thread.sleep(2000);
+                    Utils.pollPause(endTimeStart, 2000);
                     continue;
                 }
                 // 4) tools/call — the actual stateful round-trip to the real MCP server
@@ -112,10 +109,10 @@ public class MCPInvocationSteps {
                     return;
                 }
                 lastError = "tools/call status=" + callResp.statusCode() + " body=" + callResult;
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 lastError = transientDuringWarmup.getMessage();
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.fail("MCP tool call did not return a result containing '" + expected + "' within the deadline; "
                 + "last: " + lastError);
@@ -134,7 +131,8 @@ public class MCPInvocationSteps {
         String token = TestContext.resolve(accessToken).toString();
         String[] specs = calls.split(";");
 
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
         while (System.currentTimeMillis() < endTime) {
             try {
@@ -144,7 +142,7 @@ public class MCPInvocationSteps {
                 String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
                 if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
                     lastError = "init status=" + initResp.statusCode();
-                    Thread.sleep(2000);
+                    Utils.pollPause(endTimeStart, 2000);
                     continue;
                 }
                 post(client, mcpUrl, token, sessionId, INITIALIZED);
@@ -165,12 +163,76 @@ public class MCPInvocationSteps {
                     return;
                 }
                 lastError = detail;
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 lastError = transientDuringWarmup.getMessage();
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.fail("MCP multi-call session did not satisfy all calls within the deadline; last: " + lastError);
+    }
+
+    /**
+     * Asserts the gateway's {@code tools/list} — via the full handshake (initialize → notifications/initialized
+     * → tools/list) — advertises every tool in {@code expectedCsv} and NONE of the tools in {@code absentCsv}.
+     * The advertised names are PARSED from {@code result.tools[].name} and compared as a set (order-independent;
+     * mirrors upstream PR #14237's hardening of the legacy exact-JSON tool-list compare, which flaked because
+     * tool order is not guaranteed). Retries the whole flow to ride out publish/redeploy propagation.
+     */
+    @When("I list MCP tools at gateway context {string} version {string} using access token {string} expecting tools {string} and not {string} within {int} seconds")
+    public void listMcpToolsExpecting(String context, String version, String accessToken, String expectedCsv,
+                                      String absentCsv, int timeoutSeconds) throws Exception {
+        String mcpUrl = buildMcpUrl(context, version);
+        String token = TestContext.resolve(accessToken).toString();
+        java.util.List<String> expected = java.util.Arrays.asList(expectedCsv.split("\\s*,\\s*"));
+        java.util.List<String> absent = java.util.Arrays.asList(absentCsv.split("\\s*,\\s*"));
+
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
+        String lastError = null;
+        while (System.currentTimeMillis() < endTime) {
+            try {
+                HttpClient client = HttpClient.newBuilder().sslContext(trustAll())
+                        .connectTimeout(Duration.ofSeconds(15)).build();
+                HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
+                String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
+                if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
+                    lastError = "init status=" + initResp.statusCode();
+                    Utils.pollPause(endTimeStart, 2000);
+                    continue;
+                }
+                post(client, mcpUrl, token, sessionId, INITIALIZED);
+                HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
+                String listBody = sseOrJson(listResp.body());
+                // Guard before parsing: a non-200 / empty tools/list must surface its status+body through the
+                // retry diagnostics, not as an opaque JSONException message in lastError.
+                if (listResp.statusCode() != 200 || listBody == null || listBody.isBlank()) {
+                    lastError = "tools/list status=" + listResp.statusCode() + " body=" + listBody;
+                    Utils.pollPause(endTimeStart, 2000);
+                    continue;
+                }
+                // Parse the advertised names from result.tools[].name — never substring-match the raw body
+                // (a tool name appearing inside another tool's description would false-positive).
+                java.util.Set<String> names = new java.util.HashSet<>();
+                JSONArray tools = new JSONObject(listBody).getJSONObject("result").getJSONArray("tools");
+                for (int i = 0; i < tools.length(); i++) {
+                    names.add(tools.getJSONObject(i).getString("name"));
+                }
+                boolean ok = names.containsAll(expected);
+                for (String a : absent) {
+                    ok = ok && !names.contains(a);
+                }
+                if (ok) {
+                    return;
+                }
+                lastError = "advertised tools " + names + " (expected all of " + expected
+                        + ", none of " + absent + ")";
+            } catch (IOException | JSONException transientDuringWarmup) {
+                lastError = transientDuringWarmup.getMessage();
+            }
+            Utils.pollPause(endTimeStart, 2000);
+        }
+        Assert.fail("Gateway tools/list did not converge to the expected tool set within the deadline; last: "
+                + lastError);
     }
 
     /**
@@ -184,7 +246,8 @@ public class MCPInvocationSteps {
         String mcpUrl = buildMcpUrl(context, version);
         String token = TestContext.resolve(accessToken).toString();
 
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
         while (System.currentTimeMillis() < endTime) {
             try {
@@ -194,7 +257,7 @@ public class MCPInvocationSteps {
                 String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
                 if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
                     lastError = "init status=" + initResp.statusCode();
-                    Thread.sleep(2000);
+                    Utils.pollPause(endTimeStart, 2000);
                     continue;
                 }
                 post(client, mcpUrl, token, sessionId, INITIALIZED);
@@ -206,10 +269,10 @@ public class MCPInvocationSteps {
                     return;
                 }
                 lastError = "expected an error but got status=" + callResp.statusCode() + " body=" + body;
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 lastError = transientDuringWarmup.getMessage();
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.fail("MCP tool call did not return an error within the deadline; last: " + lastError);
     }
@@ -229,7 +292,8 @@ public class MCPInvocationSteps {
         String badToken = "invalid-mcp-token-xyz";
         String callPayload = "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{"
                 + "\"name\":\"echo\",\"arguments\":{\"message\":\"x\"}}}";
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         int last = -1;
         while (System.currentTimeMillis() < endTime) {
             try {
@@ -247,10 +311,10 @@ public class MCPInvocationSteps {
                 if (last == expectedStatus) {
                     return;
                 }
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 // retry
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.fail("MCP invalid-token tool call expected status " + expectedStatus + " but last was " + last);
     }
@@ -269,7 +333,8 @@ public class MCPInvocationSteps {
         String callPayload = "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{"
                 + "\"name\":\"" + toolName + "\",\"arguments\":" + argsJson + "}}";
 
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         int last = -1;
         while (System.currentTimeMillis() < endTime) {
             try {
@@ -288,10 +353,10 @@ public class MCPInvocationSteps {
                 if (last == expectedStatus) {
                     return;
                 }
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 // retry
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.fail("MCP tool call expected status " + expectedStatus + " but last was " + last);
     }
@@ -299,7 +364,7 @@ public class MCPInvocationSteps {
     /** Builds the gateway MCP endpoint URL: {@code <gatewayWs-less base>/<context>/<version>/mcp}. */
     private String buildMcpUrl(String context, String version) {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String base = getBaseGatewayUrl();
+        String base = Utils.getBaseGatewayUrl();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }

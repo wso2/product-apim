@@ -1,0 +1,8 @@
+# APIM overlay for the tenant-sharing-off negative block (plan item #31). Merged onto base+basic by
+# BlockLifecycleListener. skip_create_resident_key_manager suppresses the Resident KM, but WITHOUT
+# [[apim.tenant_sharing]] there is no auto_configure_key_manager, so a tenant provisioned through the notify
+# endpoint ends up with NO key manager at all - and application key generation is then refused with
+# 901403 "Key Manager not Registered". This pins the documented dependency: skipping the Resident KM REQUIRES
+# tenant-sharing to supply a WSO2-IS-7 KM, else new tenants are unusable.
+[apim.key_manager]
+skip_create_resident_key_manager = true

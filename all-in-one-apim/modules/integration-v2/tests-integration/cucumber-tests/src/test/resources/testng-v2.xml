@@ -137,6 +137,56 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminSecondaryUserStoreRunner"/>
         </classes>
     </test>
+
+    <!-- =====================================================================================
+         EXTERNAL KEY-MANAGER (WSO2 IS7) — admin-capability integration of IS 7.x as a
+         third-party key manager. bootExternalIdentityServer provisions the IS INFRASTRUCTURE
+         only (container, cert trust, isBaseUrl); registering IS as a key manager is admin
+         product behaviour done by the FEATURES themselves (inline where registration is the
+         subject, or in a _setup_ fixture where it is a prerequisite) — no KM is registered by
+         the listener. Only the CORE block lives here: its overlay is pure KM plumbing (the
+         wso2am.p12 TLS keystore for the notification channel), so it is default-behaviour
+         product coverage. The IS7 blocks that pin behaviour-changing server config
+         (the introspection+PEM validation-modes block, token-exchange enforcement, the IS-free
+         tenant-sharing variants, and token-exchange-disabled inside SandboxAndTokenExchangeDisabled) live in the CONFIG-OVERLAY section below, per the
+         section doctrine.
+         Concurrency model (applies to every IS7 block, both sections): all share ONE
+         IdentityServerContainer (lazy singleton, alias wso2is, synchronized getInstance) and run
+         concurrently under the suite's parallel="tests". Blocks whose tests assert on the
+         IS→APIM reverse channel (token-revocation notify) set receiveExternalIsNotifications=
+         true: they bind the fixed wso2am alias and SERIALIZE among themselves on a JVM-wide
+         permit (BlockLifecycleListener) — at most one live alias holder — while alias-free
+         blocks keep running freely. A multi-tenant SSO lane (parked, not in this suite) would
+         need a SECOND IS with a distinct toml overlay, colliding on the wso2is alias — it
+         stays a separate suite until IS aliases/payload endpoints are parameterized. -->
+
+    <!-- Core IS7-KM block (self-validate mode): the end-to-end token-flow outline (BasicAuth AND Mutual-TLS
+         client-auth rows — registration inline, so no separate mtls block), well-known discovery, KM CRUD
+         extras, IS-side role creation, grant types + keygen negatives + token validation, tenant-scoped
+         revocation, and role-based enforcement. receiveExternalIsNotifications: the token-flow outline's
+         revoke→401 walk and is7_tenant_revocation assert on the IS→APIM revocation notify, so this block binds
+         the wso2am alias.
+         MUST stay thread-count=1 (sequential classes, as the pre-merge per-runner lanes ran): at tc=2 the
+         first-wave runners' API/shared-scope creates 500 (900967) on the KM scope-sync path while concurrent
+         siblings mutate the tenant's KM registry (transient disabled/unreachable negatives) — validated
+         empirically, 14 failures at tc=2, green at tc=1. The block still runs concurrently with other blocks. -->
+    <test name="IntegrationV2-Is7KeyManager" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="is7-km"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <parameter name="receiveExternalIsNotifications" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7km/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerBootRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerExtraRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerRoleCreationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerGrantTypesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerTenantRevocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerRoleEnforcementRunner"/>
+        </classes>
+    </test>
+
     <!-- API Governance plane (rulesets / policies / compliance) — its own product API (/api/am/governance/v1)
          with its own apim:gov_* token scopes. Default config (compliance evaluates API definitions, not runtime,
          so no gateway backend needed). Concurrent block. -->
@@ -210,9 +260,14 @@
     </test>
 
     <!-- =====================================================================================
-         CONFIG-OVERLAY / SPECIAL blocks below. Everything ABOVE is default-config,
-         product-capability-driven. ServerRestart heads this section (it bounces the container);
-         the rest carry a feature-specific deployment.toml overlay (tomlExtraOverlayPath).
+         CONFIG-OVERLAY / SPECIAL blocks below. Everything ABOVE is product-capability-driven
+         on default config (the core IS7 block's overlay is pure KM plumbing — see its banner).
+         ServerRestart heads this section (it bounces the container); the rest carry a
+         feature-specific deployment.toml overlay (tomlExtraOverlayPath). The IS7 config
+         variants close the section: the introspection+PEM validation-modes block and
+         token-exchange (IS-booting; the IS7 banner's concurrency model applies) then the
+         IS-free default-KM / tenant-sharing-off blocks. Token-exchange-disabled rides in the
+         SandboxAndTokenExchangeDisabled block.
          ===================================================================================== -->
 
     <!-- Mutual-SSL invocation + WebSocket CORS share ONE block: their overlays are orthogonal (mTLS shrinks the
@@ -267,8 +322,11 @@
          backend (/reflect-headers). Streaming design co-locates here: the overlay additionally sets
          [apim.publisher] use_legacy_async_parser = false (orthogonal to [apim.jwt]), and streaming design is
          design-only (AsyncAPI/WebSocket import + validation, no gateway invocation), so neither feature's config
-         perturbs the other. -->
-    <test name="IntegrationV2-BackendJwtUrlSafe" parallel="classes" thread-count="1">
+         perturbs the other. thread-count=2: disjoint planes (gateway invocation vs publisher-plane import), no
+         shared resources — validated with repeated runs. Known residual: both runners create APIs/revisions, so
+         concurrent creates add exposure to the product's addAPIRevision registry race under full-suite load; if
+         this block starts flaking on create-revision 500s, drop back to tc=1. -->
+    <test name="IntegrationV2-BackendJwtUrlSafe" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="backend-jwt-urlsafe"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -281,13 +339,23 @@
         </classes>
     </test>
 
-    <test name="IntegrationV2-SandboxGateway" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="sandbox-gateway"/>
+    <!-- Sandbox gateway env + the token-exchange-disabled negative co-hosted on one container (overlay
+         banner has the inertness arguments): txdisabled never invokes the gateway NOR creates/publishes an
+         API (token-endpoint only, Resident-KM app credentials), so the sandbox env redefinition cannot touch
+         it; only txdisabled requests the (disabled) exchange grant. The ENABLED exchange state lives in
+         IntegrationV2-Is7TokenExchange — the two cannot coexist in one server. MandatoryProperties was
+         trialled as a third resident and REVERTED: its required-property config rejects lifecycle PUBLISH of
+         property-less APIs (903015), which the sandbox runner's publish tripped.
+         thread-count=2: the two runners share no resource type, KM or issuer (gateway data plane vs the
+         token endpoint), so concurrent classes are safe — validated with repeated runs. -->
+    <test name="IntegrationV2-SandboxAndTokenExchangeDisabled" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="sandbox-tx-disabled"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/sandboxGateway/deployment.toml"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/sandboxTxDisabled/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySandboxEnvRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeDisabledRunner"/>
         </classes>
     </test>
     <!-- Two orthogonal gateway-enforcement features co-hosted in one container; the combined overlay
@@ -310,14 +378,85 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAllowedScopesRunner"/>
         </classes>
     </test>
-    <!-- Mandatory custom API property enforcement: overlay declares a required custom property. Own block
-         (the required-property config is not orthogonal to other blocks). No gateway backend needed. -->
+    <!-- IS7 KM VALIDATION MODES: introspection + PEM co-hosted (each scenario registers its own variant KM
+         payload; the overlay carries only test-convergence pins — introspection cache TTL 15s, gateway token
+         cache off, wso2am keystore — verified mutually inert, see the overlay banner).
+         MUST stay thread-count=1 — STRUCTURAL, not load: both runners register KMs with the SAME ISSUER
+         (https://wso2is:9443/oauth2/token — issuer is IS-global, cannot be varied per KM), and the gateway
+         resolves a token's KM BY ISSUER. At tc=2 both same-issuer KMs are live at once and every IS-token
+         validation resolves to an arbitrary one of the two, making the core assertions nondeterministic:
+         PEM's wrong-cert 401 walk can resolve to the introspection KM (IS says active → 200 → fail), and
+         introspection's revoke→401 can resolve to the PEM KM (local JWT signature valid → 200 forever →
+         fail). tc=1 + per-scenario cleanup guarantees at most one same-issuer KM exists at a time — the only
+         thing making resolution deterministic. No validation count fixes a coin flip; do NOT bump.
+         Neither runner consumes the IS→APIM notify pipeline (introspection converges by cache eviction; PEM
+         by cert-swap re-validation), so no receiveExternalIsNotifications. -->
+    <test name="IntegrationV2-Is7KeyManagerValidationModes" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="is7-km-validation-modes"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7kmValidationModes/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerIntrospectionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerPemRunner"/>
+        </classes>
+    </test>
+    <!-- RFC 8693 token exchange: IS booted as a trusted-IdP token source only (bootExternalIdentityServer — no
+         KM registration; the scenarios register the IdP themselves via SOAP). APIM overlay enables the exchange
+         grant. -->
+    <test name="IntegrationV2-Is7TokenExchange" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="is7-tx"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7tx/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeRunner"/>
+        </classes>
+    </test>
+    <!-- IS7 tenant-sharing default-KM path: overlay suppresses the Resident KM and enables
+         [[apim.tenant_sharing]] auto_configure_key_manager, so a tenant provisioned through the notify endpoint
+         gets a WSO2-IS-7 KM by default. Config-only — no external IS is booted (the feature asserts on the
+         KM config APIM materializes, not on live IS traffic), so it is a plain overlay block. MUST stay its
+         own block: skip_create_resident_key_manager breaks API CREATION container-wide (901411, pinned
+         empirically on the sibling tenant-sharing-off block) and removes the Resident KM every keygen-using
+         fixture needs — no API-creating or key-generating runner can ever share this container. -->
+    <test name="IntegrationV2-Is7DefaultKeyManager" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="is7-default-km"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7defaultkm/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DefaultKmRunner"/>
+        </classes>
+    </test>
+    <!-- Mandatory custom API property enforcement. MUST stay its own block — two co-hosting trials both
+         REVERTED with evidence: (a) with the sandbox runner, this overlay's required property rejects the
+         lifecycle PUBLISH of ANY property-less API (903015); (b) with TenantSharingOff, that block's
+         skip_create_resident_key_manager breaks API CREATION itself (901411 Key Manager not Found), killing
+         this runner's create step. So: no API-publishing sibling may join THIS container, and this runner may
+         not join a no-resident-KM container. Creates and property-less updates pass here; only publish and
+         empty-value updates gate. No gateway backend needed. -->
     <test name="IntegrationV2-MandatoryProperties" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="mandatory-properties"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mandatoryProperties/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMandatoryPropertiesRunner"/>
+        </classes>
+    </test>
+    <!-- IS7 tenant-sharing OFF negative: Resident KM suppressed WITHOUT [[apim.tenant_sharing]], so a notify-
+         provisioned tenant has NO key manager and key generation is refused. No external IS. MUST stay its
+         own block: the no-KM state cannot coexist with the default-KM block's auto-configure, AND
+         skip_create_resident_key_manager breaks API CREATION container-wide (901411 Key Manager not Found —
+         pinned empirically when co-hosting MandatoryProperties was trialled and reverted), so NO API-creating
+         runner can ever share this container. -->
+    <test name="IntegrationV2-Is7TenantSharingOff" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="is7-no-km"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7nokm/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.TenantSharingOffRunner"/>
         </classes>
     </test>
 </suite>

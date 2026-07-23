@@ -21,22 +21,22 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.cucumber.datatable.DataTable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.*;
@@ -56,11 +56,6 @@ public class PublisherBaseSteps {
 
     BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-
-        return baseSteps.getBaseUrl();
-    }
-
     /**
      * Creates a new resource (API, API Product, etc.) using a JSON payload and stores
      * both the HTTP response and the created resource ID in the test context.
@@ -78,7 +73,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse apiCreateResponse = Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), resourceType), headers, jsonPayload,
+        HttpResponse apiCreateResponse = Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         Assert.assertEquals(apiCreateResponse.getResponseCode(), 201, apiCreateResponse.getData());
@@ -104,7 +99,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), resourceType), headers, jsonPayload,
+        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -117,7 +112,7 @@ public class PublisherBaseSteps {
 
         String jsonPayload = TestContext.resolve(payload).toString();
 
-        Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), resourceType), new HashMap<>(), jsonPayload,
+        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), new HashMap<>(), jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -139,7 +134,7 @@ public class PublisherBaseSteps {
                 "Bearer " + Identity.publisherToken());
 
         Requests.put(
-                Utils.getResourceEndpointURL(getBaseUrl(),resourceType ,actualResourceId), headers, jsonPayload,
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(),resourceType ,actualResourceId), headers, jsonPayload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -168,8 +163,9 @@ public class PublisherBaseSteps {
         // failed revision in the non-asserting _setup_config_api fixture orphaned every downstream scenario.
         // Retry the POST until it returns 201 (the artifact settles), catching only transient IOException; a
         // genuinely bad payload still fails after the deadline. The final 201 is published as httpResponse.
-        String url = Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId);
-        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        String url = Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, actualResourceId);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         HttpResponse createRevisionResponse = null;
         while (true) {
             try {
@@ -183,7 +179,7 @@ public class PublisherBaseSteps {
             if (System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(Constants.RETRY_INTERVAL_TIME);
+            Utils.pollPause(endTimeStart, Constants.RETRY_INTERVAL_TIME);
         }
 
         Assert.assertNotNull(createRevisionResponse,
@@ -208,7 +204,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId), headers, jsonPayload,
+        Requests.post(Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, actualResourceId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -235,7 +231,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getRevisionDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers, jsonPayload,
+        Requests.post(Utils.getRevisionDeploymentURL(Utils.getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -253,17 +249,10 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.delete(Utils.getResourceEndpointURL(getBaseUrl(), resourceType,
+        Requests.delete(Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType,
                 actualResourceId), headers);
     }
 
-    /**
-     * Publishes a resource, changing its lifecycle state to "PUBLISHED".
-     * A published resource becomes available in the Developer Portal for subscription.
-     *
-     * @param resourceType Type of resource to publish (e.g., "apis", "api-products")
-     * @param resourceId Context key containing the resource ID to publish
-     */
     /**
      * Generates the inline mock implementation script for an API (POST /apis/{id}/generate-mock-scripts).
      * Ports the generateMockScript call of PrototypedAPITestcase inline-mock tests. Non-asserting.
@@ -276,7 +265,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.post(Utils.getGenerateMockScriptsURL(getBaseUrl(), actualApiId), headers, "", null);
+        Requests.post(Utils.getGenerateMockScriptsURL(Utils.getBaseUrl(), actualApiId), headers, "", null);
     }
 
     /**
@@ -291,7 +280,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.get(Utils.getGeneratedMockScriptsURL(getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getGeneratedMockScriptsURL(Utils.getBaseUrl(), actualApiId), headers);
     }
 
     /**
@@ -306,7 +295,7 @@ public class PublisherBaseSteps {
         // Legacy validates roles with a publisher token (api_create/publish/manage) → 200; the earlier 401 was
         // a padded-base64 path bug, not a scope issue (see Utils.getValidateRoleURL).
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.head(Utils.getValidateRoleURL(getBaseUrl(), role), headers);
+        Requests.head(Utils.getValidateRoleURL(Utils.getBaseUrl(), role), headers);
     }
 
     /**
@@ -323,9 +312,16 @@ public class PublisherBaseSteps {
         String actualSubId = TestContext.resolve(subId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.post(Utils.getChangeSubscriptionBusinessPlanURL(getBaseUrl(), actualSubId, plan), headers, "", null);
+        Requests.post(Utils.getChangeSubscriptionBusinessPlanURL(Utils.getBaseUrl(), actualSubId, plan), headers, "", null);
     }
 
+    /**
+     * Publishes a resource, changing its lifecycle state to "PUBLISHED".
+     * A published resource becomes available in the Developer Portal for subscription.
+     *
+     * @param resourceType Type of resource to publish (e.g., "apis", "api-products")
+     * @param resourceId Context key containing the resource ID to publish
+     */
     @When("I publish the {string} resource with id {string}")
     public void iPublishTheResource(String resourceType, String resourceId) throws IOException {
 
@@ -340,8 +336,9 @@ public class PublisherBaseSteps {
         // (200) — or until the API is already Published, since a re-POST on an already-published API can fault —
         // catching only transient IOException, then assert. On success the final 200 is published as httpResponse
         // for any following "The response status code should be 200".
-        String url = Utils.getChangeLifecycleURL(getBaseUrl(), resourceType, actualResourceId, "Publish", null);
-        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        String url = Utils.getChangeLifecycleURL(Utils.getBaseUrl(), resourceType, actualResourceId, "Publish", null);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         HttpResponse publishResponse = null;
         boolean published = false;
         while (true) {
@@ -363,7 +360,7 @@ public class PublisherBaseSteps {
                 break;
             }
             try {
-                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
+                Utils.pollPause(endTimeStart, Constants.RETRY_INTERVAL_TIME);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
                 break;
@@ -383,7 +380,7 @@ public class PublisherBaseSteps {
     private String currentApiLifecycleState(String apiId, Map<String, String> headers) {
         try {
             HttpResponse response = SimpleHTTPClient.getInstance()
-                    .doGet(Utils.getAPILifecycleStateURL(getBaseUrl(), apiId), headers);
+                    .doGet(Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), apiId), headers);
             if (response != null && response.getResponseCode() == 200
                     && response.getData() != null && !response.getData().isEmpty()) {
                 return new JSONObject(response.getData()).optString("state", null);
@@ -408,7 +405,90 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.get(Utils.getResourceEndpointURL(getBaseUrl(), resourceType, actualResourceId), headers);
+        Requests.get(Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId), headers);
+    }
+
+    /**
+     * Polls the Publisher resource-GET (publisher token) until the response body contains {@code marker},
+     * publishing the LAST response for any following assertion. Asserts the marker was seen — use this instead
+     * of asserting on a mutating request's own echo when the property under test must be DURABLY saved: under
+     * load a PUT's 200 response has been observed echoing a stale (pre-update) representation, so only a fresh
+     * read proves persistence (and a genuinely-lost update fails here with the read-back body in the message).
+     */
+    @When("I retrieve the {string} resource with id {string} until it contains {string} within {int} seconds")
+    public void iRetrieveTheResourceUntilContains(String resourceType, String resourceId, String marker,
+            int timeoutSeconds) throws InterruptedException {
+
+        String actualResourceId = TestContext.resolve(resourceId).toString();
+        String expected = Utils.resolveContextPlaceholders(marker);
+        Map<String, String> headers = Identity.publisherHeaders();
+        String url = Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId);
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        HttpResponse last = null;
+        boolean found = false;
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                last = SimpleHTTPClient.getInstance().doGet(url, headers);
+                if (last.getResponseCode() == 200 && last.getData() != null && last.getData().contains(expected)) {
+                    found = true;
+                    break;
+                }
+            } catch (IOException transientFailure) {
+                // transient — keep polling; the deadline bounds a persistent failure
+            }
+            Utils.pollPause(deadlineStart, 2000);
+        }
+        TestContext.set("httpResponse", last);
+        Assert.assertNotNull(last, "No publisher response received for " + resourceType + " " + actualResourceId);
+        Assert.assertTrue(found, resourceType + " " + actualResourceId + " did not contain '" + expected
+                + "' within the window; last: " + last.getData());
+    }
+
+    /**
+     * SELF-HEALING deploy-readiness gate (fixture readiness, never an assertion target — see
+     * Utils.awaitWithRetry): polls the gateway's own artifact endpoint until the resource's synapse artifact is
+     * live, and if a full propagation window passes with nothing mounted, RE-DEPLOYS the current revision
+     * (re-emitting the at-most-once JMS deploy event the gateway is presumed to have dropped) and waits again.
+     * Requires the {@code revisionId} context key from the deploy step; re-deploys with the standard
+     * gateway-environment payload (a custom-vhost deployment would need its own gate variant). All calls go
+     * through the raw client so the step's published {@code httpResponse} is never clobbered.
+     */
+    @Then("the {string} resource {string} should be live on the gateway, redeploying if propagation is lost")
+    public void resourceShouldBeLiveOnGateway(String resourceType, String resourceId) throws Exception {
+
+        String actualResourceId = TestContext.resolve(resourceId).toString();
+        // Intermediate read: resolve the resource's name/version for the gateway artifact query.
+        HttpResponse api = SimpleHTTPClient.getInstance().doGet(
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId),
+                Identity.publisherHeaders());
+        Assert.assertTrue(api != null && api.getResponseCode() == 200 && api.getData() != null
+                        && !api.getData().isEmpty(),
+                "Could not read " + resourceType + " " + actualResourceId + " to resolve its gateway artifact: got="
+                        + (api == null ? "null" : api.getResponseCode() + "/" + api.getData()));
+        JSONObject dto = new JSONObject(api.getData());
+        String name = dto.getString("name");
+        String version = dto.getString("version");
+
+        User tenantAdmin = Identity.actingTenantAdmin();
+        String artifactUrl = Utils.getGatewayArtifactURL(Utils.getBaseUrl(), "api-artifact", name, version,
+                tenantAdmin.getUserDomain());
+        Map<String, String> gatewayAuth = Identity.basicAuthHeaders(tenantAdmin.getUserName(),
+                tenantAdmin.getPassword());
+        String revisionId = TestContext.resolve("revisionId").toString();
+        String redeployPayload = "[{\"name\":\"" + System.getenv(Constants.GATEWAY_ENVIRONMENT)
+                + "\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]";
+
+        Utils.awaitWithRetry("gateway deployment of " + resourceType + " " + name + " v" + version,
+                () -> {
+                    HttpResponse r = SimpleHTTPClient.getInstance().doGet(artifactUrl, gatewayAuth);
+                    return r != null && r.getResponseCode() == 200 && r.getData() != null && !r.getData().isEmpty();
+                },
+                () -> SimpleHTTPClient.getInstance().doPost(
+                        Utils.getRevisionDeploymentURL(Utils.getBaseUrl(), resourceType, actualResourceId,
+                                revisionId),
+                        Identity.publisherHeaders(), redeployPayload, Constants.CONTENT_TYPES.APPLICATION_JSON),
+                3);
     }
 
     /**
@@ -425,7 +505,7 @@ public class PublisherBaseSteps {
         String resolvedEndpoint = Utils.resolveContextPlaceholders(endpointUrl);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.post(Utils.getValidateEndpointURL(getBaseUrl(), resolvedEndpoint, actualApiId), headers, "",
+        Requests.post(Utils.getValidateEndpointURL(Utils.getBaseUrl(), resolvedEndpoint, actualApiId), headers, "",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -440,7 +520,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.get(Utils.getAPISearchEndpointURL(getBaseUrl(), null, null, null), headers);
+        Requests.get(Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), null, null, null), headers);
     }
 
     /**
@@ -479,14 +559,23 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        // Lifecycle changes (publish/deploy) propagate asynchronously, so the state can briefly lag a publish
-        // call — poll until it reaches the expected value rather than asserting on a single GET (the latter is
-        // a flaky race that wider parallel load on the shared container exposes).
-        String url = Utils.getAPILifecycleStateURL(getBaseUrl(), actualApiId);
+        // Lifecycle changes (publish/deploy) propagate asynchronously, so the state can lag a publish call —
+        // poll until it reaches the expected value rather than asserting on a single GET (the latter is a
+        // flaky race that wider parallel load on the shared container exposes). The window is
+        // RUNTIME_PROPAGATION_TIMEOUT: under full-suite load in CI the container's async pipelines have been
+        // observed running ~90-100s behind a change-lifecycle 200, so the poll must ride out that backlog
+        // like the publish retry above does.
+        String url = Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), actualApiId);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         HttpResponse lifecycleStatusResponse = null;
         String actualState = null;
-        for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
-            lifecycleStatusResponse = Requests.get(url, headers);
+        while (true) {
+            try {
+                lifecycleStatusResponse = Requests.get(url, headers);
+            } catch (IOException transientFailure) {
+                // transient — keep polling; the deadline bounds a persistent failure (§7 retry-loop rule)
+            }
             // Only parse a 200 that actually has a body; a non-2xx/empty response during warm-up falls through
             // and we keep polling rather than throwing an uncaught JSONException.
             if (lifecycleStatusResponse != null && lifecycleStatusResponse.getResponseCode() == 200
@@ -496,15 +585,20 @@ public class PublisherBaseSteps {
                     return;
                 }
             }
+            if (System.currentTimeMillis() >= endTime) {
+                break;
+            }
             try {
-                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
+                Utils.pollPause(endTimeStart, Constants.RETRY_INTERVAL_TIME);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
                 break;
             }
         }
         Assert.assertEquals(actualState, status,
-                "API lifecycle state did not reach '" + status + "' within the retry window");
+                "API lifecycle state did not reach '" + status + "' within the retry window; last response: "
+                        + (lifecycleStatusResponse == null ? "none (requests failed)"
+                        : lifecycleStatusResponse.getResponseCode() + " / " + lifecycleStatusResponse.getData()));
     }
 
     /**
@@ -520,7 +614,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getAPILifecycleStateURL(getBaseUrl(), actualApiId), headers);
+        HttpResponse response = Requests.get(Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
                         && response.getData() != null && !response.getData().isEmpty(),
                 "lifecycle-state fetch failed for api=" + actualApiId + " got="
@@ -552,7 +646,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getAPILifecycleHistoryURL(getBaseUrl(), actualApiId), headers);
+        HttpResponse response = Requests.get(Utils.getAPILifecycleHistoryURL(Utils.getBaseUrl(), actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
                         && response.getData() != null && !response.getData().isEmpty(),
                 "lifecycle-history fetch failed for api=" + actualApiId + " got="
@@ -647,13 +741,14 @@ public class PublisherBaseSteps {
         String actualResourceId = TestContext.resolve(resourceId).toString();
         String revisionId = TestContext.resolve("revisionId").toString();
 
-        String url = Utils.getRevisionDeployments(getBaseUrl(), resourceType, actualResourceId);
+        String url = Utils.getRevisionDeployments(Utils.getBaseUrl(), resourceType, actualResourceId);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         boolean deployed = false;
 
         while (System.currentTimeMillis() < endTime) {
@@ -676,6 +771,7 @@ public class PublisherBaseSteps {
                             try {
                                 Thread.sleep(10000);
                             } catch (InterruptedException ignored) {
+                                Thread.currentThread().interrupt();
                             }
                             break;
                         }
@@ -692,8 +788,10 @@ public class PublisherBaseSteps {
             }
 
             try {
-                Thread.sleep(1000);
+                Utils.pollPause(endTimeStart, 1000);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
         Assert.assertTrue(deployed, "Revision " + revisionId + " was not deployed within the timeout");
@@ -721,7 +819,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse apiNewVersionResponse = Requests.post(Utils.getNewAPIVersionURL(getBaseUrl(), resourceType, newVersion, defaultVersion, actualResourceID), headers, null, null);
+        HttpResponse apiNewVersionResponse = Requests.post(Utils.getNewAPIVersionURL(Utils.getBaseUrl(), resourceType, newVersion, defaultVersion, actualResourceID), headers, null, null);
         Object newVersionId = Utils.extractValueFromPayload(apiNewVersionResponse.getData(), "id");
         TestContext.set(newVersionID, newVersionId);
         // Register for scenario teardown so the version copy is cleaned up alongside the base API.
@@ -745,7 +843,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getNewAPIVersionURL(getBaseUrl(), resourceType, newVersion, defaultVersion,
+        Requests.post(Utils.getNewAPIVersionURL(Utils.getBaseUrl(), resourceType, newVersion, defaultVersion,
                 actualResourceID), headers, null, null);
     }
 
@@ -787,7 +885,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse documentCreationResponse = Requests.post(Utils.getAPIDocuments(getBaseUrl(), actualApiId), headers, jsonPayload,
+        HttpResponse documentCreationResponse = Requests.post(Utils.getAPIDocuments(Utils.getBaseUrl(), actualApiId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set("documentID", Utils.extractValueFromPayload(documentCreationResponse.getData(), "documentId"));
     }
@@ -806,7 +904,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.get(Utils.getAPIDocuments(getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getAPIDocuments(Utils.getBaseUrl(), actualApiId), headers);
     }
 
     /**
@@ -825,7 +923,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.get(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers);
+        Requests.get(Utils.getAPIDocument(Utils.getBaseUrl(), actualApiId, documentId), headers);
 
     }
 
@@ -845,7 +943,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.delete(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers);
+        Requests.delete(Utils.getAPIDocument(Utils.getBaseUrl(), actualApiId, documentId), headers);
     }
 
     /**
@@ -865,7 +963,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.put(Utils.getAPIDocument(getBaseUrl(), actualApiId, documentId), headers, jsonPayload,
+        Requests.put(Utils.getAPIDocument(Utils.getBaseUrl(), actualApiId, documentId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -918,7 +1016,7 @@ public class PublisherBaseSteps {
         formFields.put("inlineContent", Utils.resolveContextPlaceholders(content));
 
         Requests.postMultipart(
-                Utils.getAPIDocumentContent(getBaseUrl(), actualApiId, docId), headers,
+                Utils.getAPIDocumentContent(Utils.getBaseUrl(), actualApiId, docId), headers,
                 new HashMap<>(), formFields);
     }
 
@@ -949,7 +1047,7 @@ public class PublisherBaseSteps {
         files.put("file", temp);
 
         Requests.postMultipart(
-                Utils.getAPIDocumentContent(getBaseUrl(), actualApiId, docId), headers, files, new HashMap<>());
+                Utils.getAPIDocumentContent(Utils.getBaseUrl(), actualApiId, docId), headers, files, new HashMap<>());
     }
 
     // Helper to parse the values correctly for update document steps
@@ -1027,7 +1125,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getSubscriptionBlockingURL(getBaseUrl(), subscriptionId), headers, null, null);
+        Requests.post(Utils.getSubscriptionBlockingURL(Utils.getBaseUrl(), subscriptionId), headers, null, null);
     }
 
     /**
@@ -1044,7 +1142,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getSubscriptionUnBlockingURL(getBaseUrl(), subscriptionId), headers, null, null);
+        Requests.post(Utils.getSubscriptionUnBlockingURL(Utils.getBaseUrl(), subscriptionId), headers, null, null);
     }
 
     /**
@@ -1074,7 +1172,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse scopeCreationResponse = Requests.post(Utils.getAPIScopes(getBaseUrl()), headers, jsonPayload,
+        HttpResponse scopeCreationResponse = Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         Object scopeId = Utils.extractValueFromPayload(scopeCreationResponse.getData(), "id");
         TestContext.set("scopeID", scopeId);
@@ -1084,6 +1182,160 @@ public class PublisherBaseSteps {
             ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
         }
       }
+
+    /**
+     * Creates a shared scope bound to a freshly-generated, unique role name and stores the IS7 role name that
+     * the WSO2-IS-7 connector will derive from it. Used to exercise runtime role creation: when the scope is
+     * registered, APIM calls the IS7 KM's registerScope, which (with enable_roles_creation=true) creates the
+     * bound role in IS via the SCIM2 Roles API. The connector maps a plain APIM role {@code r} to the IS role
+     * {@code system_primary_r} (an {@code Internal/r} role maps to {@code r}); we bind a plain role, so the
+     * expected IS role name is {@code system_primary_<role>}, stored under {@code isRoleKey} for the verify step.
+     * Note: APIProviderImpl.addSharedScope SWALLOWS a KM registerScope failure (logs, does not throw), so the
+     * scope create still returns 201 regardless - role creation must be verified directly in IS, not via this
+     * response.
+     */
+    @When("I create a shared scope bound to a new IS7 role, storing the expected IS7 role name as {string}")
+    public void iCreateSharedScopeBoundToNewIs7Role(String isRoleKey) throws Exception {
+
+        // KM-propagation loop: the key manager these features register (a feature-level admin step, not block
+        // infra) reaches addSharedScope's registerScope fan-out ASYNCHRONOUSLY (eventhub -> in-memory KM
+        // holder). A scope created before propagation gets 201 but NO IS role - and never will (the fan-out is
+        // synchronous within the create), so waiting on the role alone cannot converge. Instead: create a
+        // scope, briefly probe IS for the derived role, and if absent DELETE the scope and recreate with fresh
+        // unique names until the fan-out lands (bounded). Mirrors the invoke-until-200 polls that absorb the
+        // same propagation at the gateway.
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + 60_000;
+        int attempts = 0;
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        while (true) {
+            attempts++;
+            String scopeName = Names.unique("is7scope");
+            String apimRole = Names.unique("is7role");
+            // The IS7 connector derives the IS role name from the (plain) APIM role: system_primary_<role>.
+            String expectedIsRole = "system_primary_" + apimRole;
+            String jsonPayload = "{\"name\":\"" + scopeName + "\",\"displayName\":\"" + scopeName
+                    + "\",\"description\":\"IS7 runtime role-creation test scope\",\"bindings\":[\""
+                    + apimRole + "\"]}";
+            // Requests.post publishes httpResponse; the LAST (kept) create is what the feature's following
+            // status assertion reads, matching the pre-loop contract.
+            HttpResponse response;
+            try {
+                response = Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException transientFailure) {
+                // Outcome UNKNOWN — the create may have committed with the response lost, and the next
+                // attempt uses FRESH names, so an orphan would never be swept. Register any survivor for
+                // teardown, then fall through to the retryable branch below (deadline-bounded).
+                String orphanId = Utils.findIdByNameInListResponse(Utils.getAPIScopes(Utils.getBaseUrl()), headers,
+                        scopeName, "id");
+                if (orphanId != null) {
+                    ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, orphanId);
+                }
+                response = null;
+            }
+            // A non-2xx create is RETRYABLE within the deadline, not fatal: the fan-out also races KM
+            // DELETION propagation - a KM another runner just REST-deleted (e.g. the keygen-negatives'
+            // unreachable KM) can linger in the in-memory holder for a moment, and registerScope fanning out
+            // to it fails the whole create with a 500 until the holder catches up.
+            if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
+                    || response.getData() == null || response.getData().isBlank()) {
+                Assert.assertFalse(System.currentTimeMillis() > deadline,
+                        "Shared scope create failed until the deadline: got=" + (response == null ? "null"
+                                : response.getResponseCode() + "/" + response.getData()));
+                Utils.pollPause(deadlineStart, 2000);   // mutating probe: each retry creates/deletes a scope
+                continue;
+            }
+            Object scopeId = Utils.extractValueFromPayload(response.getData(), "id");
+            // Register for teardown IMMEDIATELY: the role probe below and this loop's sleeps can all throw,
+            // and a created-but-unregistered scope would leak silently. A pre-propagation attempt that is
+            // successfully deleted below is deregistered again, so the sweep never chases an already-gone id.
+            if (scopeId != null) {
+                ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
+            }
+            // Short per-attempt probe: if the KM was propagated, the role exists as of the 201 (registerScope
+            // is synchronous inside the create); the brief re-checks only absorb IS-side latency.
+            boolean roleCreated = false;
+            for (int probe = 0; probe < 3 && !roleCreated; probe++) {
+                if (probe > 0) {
+                    Utils.pollPause(deadlineStart, 2000);   // mutating probe: each retry creates/deletes a scope
+                }
+                roleCreated = ApplicationBaseSteps.is7RoleExists(expectedIsRole);
+            }
+            if (roleCreated) {
+                TestContext.set("scopeID", scopeId);
+                TestContext.set(Utils.normalizeContextKey(isRoleKey), expectedIsRole);
+                // Expose the scope name so a scope-protected API can require it (role-based authorization flow).
+                TestContext.set("is7ScopeName", scopeName);
+                return;
+            }
+            // Pre-propagation attempt: this scope will never get its role. Remove it and retry with fresh
+            // names. Intermediate delete goes through the raw client (not Requests.*) so it cannot clobber
+            // the published httpResponse; only a SUCCESSFUL delete deregisters — a failed or throwing delete
+            // leaves the id registered for the teardown sweep.
+            if (scopeId != null) {
+                HttpResponse del = SimpleHTTPClient.getInstance()
+                        .doDelete(Utils.getAPIScopes(Utils.getBaseUrl()) + "/" + scopeId, headers);
+                if (del != null && del.getResponseCode() >= 200 && del.getResponseCode() < 300) {
+                    ResourceCleanup.deregister(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
+                }
+            }
+            if (System.currentTimeMillis() > deadline) {
+                Assert.fail("Key-manager scope fan-out never created the derived IS role within 60s ("
+                        + attempts + " create attempts) - the registered KM did not propagate to the scope-"
+                        + "registration path");
+            }
+            Utils.pollPause(deadlineStart, 2000);   // mutating probe: each retry creates/deletes a scope
+        }
+    }
+
+    /**
+     * Creates, revisions and deploys an API whose GET operation requires an already-created SHARED scope (name in
+     * context under {@code is7ScopeName}), storing the new API id under {@code apiIdKey}. The payload is built in
+     * code (not from a fixture) because the API-create path resolves only {@code ${...}} payload placeholders, not
+     * {@code {{context}}} ones, so the runtime scope name must be substituted here. A shared scope is used
+     * deliberately: an API-local scope bound to a role is rejected (903250 "Role does not exist") unless the role
+     * pre-exists in APIM, whereas a shared scope referenced with {@code shared:true} carries its binding and needs
+     * no role re-validation. Drives the IS7 role-based authorization flow.
+     */
+    @Given("I create and deploy a scope-protected API requiring the shared scope as {string}")
+    public void iCreateScopeProtectedApi(String apiIdKey) throws IOException, InterruptedException {
+
+        String scopeName = TestContext.resolve("is7ScopeName").toString();
+        String name = Names.unique("APIMScopedTest");
+        String context = Names.unique("apiscopedctx");
+        String backend = "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/";
+
+        JSONObject prod = new JSONObject().put("url", backend).put("config", JSONObject.NULL)
+                .put("template_not_supported", false);
+        JSONObject api = new JSONObject()
+                .put("name", name)
+                .put("context", context)
+                .put("version", "1.0.0")
+                .put("description", "Scope-protected API for IS7 role-based authorization")
+                .put("endpointConfig", new JSONObject()
+                        .put("endpoint_type", "http")
+                        .put("production_endpoints", prod)
+                        .put("sandbox_endpoints", new JSONObject(prod.toString())))
+                .put("policies", new JSONArray().put("Unlimited"))
+                .put("scopes", new JSONArray().put(new JSONObject()
+                        .put("scope", new JSONObject().put("name", scopeName).put("displayName", scopeName))
+                        .put("shared", true)))
+                .put("operations", new JSONArray().put(new JSONObject()
+                        .put("verb", "GET").put("target", "/customers/{id}")
+                        .put("scopes", new JSONArray().put(scopeName))))
+                .put("isDefaultVersion", true);
+
+        TestContext.set(Utils.normalizeContextKey("<scopedApiPayload>"), api.toString());
+        iCreateAnAPIWithPayloadAs("apis", "<scopedApiPayload>", apiIdKey);
+        baseSteps.putJsonPayloadInContext("<scopedApiRevision>", "{\"description\":\"Initial Revision\"}");
+        iCreateResourceRevision("apis", apiIdKey, "<scopedApiRevision>");
+        baseSteps.putJsonPayloadInContext("<scopedApiDeploy>",
+                "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
+        iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiIdKey, "<scopedApiDeploy>");
+        baseSteps.theResponseStatusCodeShouldBe(201);
+    }
 
     /**
      * Attempts to create a shared scope without asserting success, storing the raw response as
@@ -1108,7 +1360,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPIScopes(getBaseUrl()), headers, jsonPayload,
+        Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1126,7 +1378,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.delete(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers);
+        Requests.delete(Utils.getAPIScopesById(Utils.getBaseUrl(), scopeId), headers);
     }
 
     /**
@@ -1147,7 +1399,7 @@ public class PublisherBaseSteps {
                 "Bearer " + Identity.publisherToken());
 
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers);
+                .doGet(Utils.getAPIScopesById(Utils.getBaseUrl(), scopeId), headers);
         // Confirm the GET succeeded with a body BEFORE parsing/mutating — otherwise new JSONObject(null/"") throws
         // an opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
@@ -1158,7 +1410,7 @@ public class PublisherBaseSteps {
         JSONObject scope = new JSONObject(current.getData());
         scope.put("description", newDescription);
 
-        Requests.put(Utils.getAPIScopesById(getBaseUrl(), scopeId), headers, scope.toString(),
+        Requests.put(Utils.getAPIScopesById(Utils.getBaseUrl(), scopeId), headers, scope.toString(),
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1175,7 +1427,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(Utils.getAPIScopes(getBaseUrl()), headers);
+        HttpResponse response = Requests.get(Utils.getAPIScopes(Utils.getBaseUrl()), headers);
 
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
@@ -1240,7 +1492,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", schemaFile);
 
-        HttpResponse apiCreateResponse = Requests.postMultipart(Utils.getGraphQLSchema(getBaseUrl()), headers,
+        HttpResponse apiCreateResponse = Requests.postMultipart(Utils.getGraphQLSchema(Utils.getBaseUrl()), headers,
                 files, formFields);
         Assert.assertEquals(apiCreateResponse.getResponseCode(), 201, apiCreateResponse.getData());
         Object createdId = Utils.extractValueFromPayload(apiCreateResponse.getData(), "id");
@@ -1273,7 +1525,7 @@ public class PublisherBaseSteps {
         formFields.put("url", url);
         formFields.put("additionalProperties", additionalProperties);
 
-        HttpResponse response = Requests.postMultipart(Utils.getGraphQLSchema(getBaseUrl()), headers,
+        HttpResponse response = Requests.postMultipart(Utils.getGraphQLSchema(Utils.getBaseUrl()), headers,
                 new HashMap<>(), formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -1297,7 +1549,7 @@ public class PublisherBaseSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("url", url);
 
-        String validateUrl = Utils.getValidateGraphQLSchemaURL(getBaseUrl()) + "?useIntrospection=" + useIntrospection;
+        String validateUrl = Utils.getValidateGraphQLSchemaURL(Utils.getBaseUrl()) + "?useIntrospection=" + useIntrospection;
         HttpResponse response = Requests.postMultipart(validateUrl, headers, new HashMap<>(), formFields);
         // Confirm the validate call succeeded with a body BEFORE parsing — otherwise the graphQLInfo drill-down
         // throws an opaque JSONException/NPE instead of a clear failure.
@@ -1332,25 +1584,12 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", schemaFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getGraphQLSchema(getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getGraphQLSchema(Utils.getBaseUrl()), headers, files,
                 formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             TestContext.set(apiID, createdId);
             ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
-        }
-    }
-
-    /** Loads a .graphql (or any) resource off the classpath into a temp file for multipart upload. */
-    private File loadResourceAsTempFile(String resourcePath) throws IOException {
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                throw new FileNotFoundException("Resource not found: " + resourcePath);
-            }
-            File temp = File.createTempFile("gql-schema", ".graphql");
-            temp.deleteOnExit();
-            Files.copy(inputStream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return temp;
         }
     }
 
@@ -1362,7 +1601,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.get(Utils.getGraphQLSchemaOfApiURL(getBaseUrl(), apiId), headers);
+        Requests.get(Utils.getGraphQLSchemaOfApiURL(Utils.getBaseUrl(), apiId), headers);
     }
 
     /** Updates a GraphQL API's schema definition (publisher, PUT multipart {@code schemaDefinition}). */
@@ -1374,9 +1613,9 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         Map<String, File> files = new HashMap<>();
-        files.put("schemaDefinition", loadResourceAsTempFile(schemaFilePath));
+        files.put("schemaDefinition", Utils.classpathToTempFile(schemaFilePath, "fixture", ".graphql"));
 
-        Requests.putMultipart(Utils.getGraphQLSchemaOfApiURL(getBaseUrl(), apiId), headers,
+        Requests.putMultipart(Utils.getGraphQLSchemaOfApiURL(Utils.getBaseUrl(), apiId), headers,
                 files, new HashMap<>());
     }
 
@@ -1388,9 +1627,9 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         Map<String, File> files = new HashMap<>();
-        files.put("file", loadResourceAsTempFile(schemaFilePath));
+        files.put("file", Utils.classpathToTempFile(schemaFilePath, "fixture", ".graphql"));
 
-        Requests.postMultipart(Utils.getValidateGraphQLSchemaURL(getBaseUrl()), headers,
+        Requests.postMultipart(Utils.getValidateGraphQLSchemaURL(Utils.getBaseUrl()), headers,
                 files, new HashMap<>());
     }
 
@@ -1469,10 +1708,10 @@ public class PublisherBaseSteps {
         String endpointUrl;
         if (apiId == null || apiId.isEmpty()) {
             // Common policy
-            endpointUrl = Utils.getCommonPolicy(getBaseUrl());
+            endpointUrl = Utils.getCommonPolicy(Utils.getBaseUrl());
         } else {
             // API-specific policy
-            endpointUrl = Utils.getAPISpecificPolicy(getBaseUrl(), apiId);
+            endpointUrl = Utils.getAPISpecificPolicy(Utils.getBaseUrl(), apiId);
         }
 
         HttpResponse policyCreateResponse = Requests.postMultipart(endpointUrl, headers, files, null);
@@ -1510,7 +1749,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.get(Utils.getCommonPolicy(getBaseUrl()), headers);
+        Requests.get(Utils.getCommonPolicy(Utils.getBaseUrl()), headers);
     }
 
     /**
@@ -1524,7 +1763,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         SimpleHTTPClient.DownloadResult result = Requests.getToFile(
-                Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
+                Utils.getCommonPolicyExportURL(Utils.getBaseUrl(), name, version, format), headers, ".zip");
         Assert.assertEquals(result.getStatusCode(), 200,
                 "Common operation policy export did not return 200 (archive download failed)");
         TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
@@ -1540,7 +1779,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         SimpleHTTPClient.DownloadResult result = Requests.getToFile(
-                Utils.getCommonPolicyExportURL(getBaseUrl(), name, version, format), headers, ".zip");
+                Utils.getCommonPolicyExportURL(Utils.getBaseUrl(), name, version, format), headers, ".zip");
         Assert.assertEquals(result.getStatusCode(), expectedStatus,
                 "Non-existing common operation policy export status mismatch");
     }
@@ -1554,7 +1793,7 @@ public class PublisherBaseSteps {
         String policyId = TestContext.resolve(policyIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.delete(Utils.getCommonPolicyById(getBaseUrl(), policyId), headers);
+        HttpResponse response = Requests.delete(Utils.getCommonPolicyById(Utils.getBaseUrl(), policyId), headers);
         // Drop it from the teardown sweep ONLY when it is actually gone (2xx) or already absent (404). A failed
         // delete (401/409/500/...) leaves the still-existing policy TRACKED so the AfterClass sweep can retry it.
         int code = response == null ? -1 : response.getResponseCode();
@@ -1575,7 +1814,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
         files.put("file", archiveFile);
-        HttpResponse response = Requests.postMultipart(Utils.getCommonPolicyImportURL(getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getCommonPolicyImportURL(Utils.getBaseUrl()), headers, files,
                 null);
         // A successful import (201) returns the recreated policy JSON carrying its new id; store and register it so
         // the re-imported policy is swept by teardown.
@@ -1602,7 +1841,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         SimpleHTTPClient.DownloadResult result = Requests.getToFile(
-                Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
+                Utils.getApiExportURL(Utils.getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
         Assert.assertEquals(result.getStatusCode(), 200,
                 "API export did not return 200 (archive download failed)");
         TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
@@ -1631,7 +1870,7 @@ public class PublisherBaseSteps {
         files.put("file", archiveFile);
         files.put("additionalProperties", additionalPropertiesFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getApiArchiveImportURL(getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getApiArchiveImportURL(Utils.getBaseUrl()), headers, files,
                 null);
         TestContext.set(Utils.normalizeContextKey(resourceId), response.getData());
     }
@@ -1661,7 +1900,7 @@ public class PublisherBaseSteps {
         files.put("file", archiveFile);
         files.put("additionalProperties", additionalPropertiesFile);
 
-        String url = Utils.getApiArchiveImportURL(getBaseUrl()) + "?preserveProvider=" + preserveProvider.trim();
+        String url = Utils.getApiArchiveImportURL(Utils.getBaseUrl()) + "?preserveProvider=" + preserveProvider.trim();
         HttpResponse response = Requests.postMultipart(url, headers, files, null);
         TestContext.set(Utils.normalizeContextKey(resourceId), response.getData());
     }
@@ -1677,7 +1916,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         SimpleHTTPClient.DownloadResult result = Requests.getToFile(
-                Utils.getApiExportURL(getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
+                Utils.getApiExportURL(Utils.getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
         Assert.assertEquals(result.getStatusCode(), expectedStatus,
                 "API export status mismatch for api=" + actualApiId);
     }
@@ -1699,7 +1938,7 @@ public class PublisherBaseSteps {
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        HttpResponse response = Requests.get(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
                         && response.getData() != null && !response.getData().isEmpty(),
                 "API fetch failed for api=" + actualApiId + " got="
@@ -1768,8 +2007,9 @@ public class PublisherBaseSteps {
         String resolvedName = Utils.resolveContextPlaceholders(name);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        String url = Utils.getAPISearchEndpointURL(getBaseUrl(), "name:" + resolvedName, null, null);
-        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        String url = Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), "name:" + resolvedName, null, null);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         Object id = null;
         while (true) {
             try {
@@ -1788,7 +2028,7 @@ public class PublisherBaseSteps {
             if (System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(id, "No Publisher API named '" + resolvedName + "' was found within the deadline");
         TestContext.set(Utils.normalizeContextKey(idKey), id);
@@ -1803,14 +2043,14 @@ public class PublisherBaseSteps {
     @When("I upload the sequence backend {string} of type {string} for API {string}")
     public void iUploadSequenceBackend(String sequencePath, String type, String apiId) throws IOException {
         String actualApiId = TestContext.resolve(apiId).toString();
-        File sequenceFile = loadResourceAsTempFile(sequencePath, ".xml");
+        File sequenceFile = Utils.classpathToTempFile(sequencePath, "fixture", ".xml");
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
         files.put("sequence", sequenceFile);
         Map<String, String> formFields = new HashMap<>();
         formFields.put("type", type);
-        Requests.putMultipart(Utils.getSequenceBackendURL(getBaseUrl(), actualApiId), headers, files, formFields);
+        Requests.putMultipart(Utils.getSequenceBackendURL(Utils.getBaseUrl(), actualApiId), headers, files, formFields);
     }
 
     /**
@@ -1824,7 +2064,7 @@ public class PublisherBaseSteps {
             throws IOException {
         // Preserve the source extension so an archive import (.zip) is detected as an archive, not a raw WSDL.
         String suffix = wsdlPath.toLowerCase().endsWith(".zip") ? ".zip" : ".wsdl";
-        File wsdlFile = loadResourceAsTempFile(wsdlPath, suffix);
+        File wsdlFile = Utils.classpathToTempFile(wsdlPath, "fixture", suffix);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
@@ -1835,7 +2075,7 @@ public class PublisherBaseSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("additionalProperties", additionalPropsJson);
         formFields.put("implementationType", implType);
-        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(Utils.getBaseUrl()), headers, files,
                 formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -1862,7 +2102,7 @@ public class PublisherBaseSteps {
         formFields.put("url", wsdlUrl);
         formFields.put("additionalProperties", additionalPropsJson);
         formFields.put("implementationType", implType);
-        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(getBaseUrl()), headers,
+        HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(Utils.getBaseUrl()), headers,
                 new HashMap<>(), formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -1880,7 +2120,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.get(Utils.getWsdlOfApiURL(getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getWsdlOfApiURL(Utils.getBaseUrl(), actualApiId), headers);
     }
 
     /**
@@ -1894,7 +2134,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String environmentName = System.getenv(Constants.GATEWAY_ENVIRONMENT);
-        Requests.get(Utils.getDevPortalWsdlOfApiURL(getBaseUrl(), actualApiId, environmentName), headers);
+        Requests.get(Utils.getDevPortalWsdlOfApiURL(Utils.getBaseUrl(), actualApiId, environmentName), headers);
     }
 
     /**
@@ -1983,7 +2223,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+        HttpResponse response = Requests.get(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
                         && response.getData() != null && !response.getData().isEmpty(),
                 "API fetch failed for api=" + actualApiId + " got="
@@ -2024,14 +2264,14 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.delete(Utils.getAPISpecificPolicyById(getBaseUrl(), actualApiId, policyID), headers);
+        Requests.delete(Utils.getAPISpecificPolicyById(Utils.getBaseUrl(), actualApiId, policyID), headers);
     }
 
     /** Resolves a shipped/created COMMON operation policy (its {@code id}/{@code name}/{@code version}) by display
      *  name (GET /operation-policies). Returns the list entry so callers get the version too — the attach path
      *  validates policyName+policyVersion against the spec identified by policyId (a missing version → 400). */
     private JSONObject resolveCommonPolicyByName(String policyName, Map<String, String> headers) throws IOException {
-        HttpResponse listResp = SimpleHTTPClient.getInstance().doGet(Utils.getCommonPolicy(getBaseUrl()), headers);
+        HttpResponse listResp = SimpleHTTPClient.getInstance().doGet(Utils.getCommonPolicy(Utils.getBaseUrl()), headers);
         Assert.assertTrue(listResp != null && listResp.getResponseCode() >= 200 && listResp.getResponseCode() < 300
                         && listResp.getData() != null && !listResp.getData().isEmpty(),
                 "Failed to list common policies while resolving '" + policyName + "': got "
@@ -2072,7 +2312,7 @@ public class PublisherBaseSteps {
         String policyVersion = commonPolicy.optString("version");
 
         HttpResponse getApi = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
                         && getApi.getData() != null && !getApi.getData().isEmpty(),
                 "Failed to fetch API '" + actualApiId + "' before attaching operation policy: got "
@@ -2096,7 +2336,7 @@ public class PublisherBaseSteps {
         }
         operation.put("operationPolicies", operationPolicies);
 
-        Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers, api.toString(),
+        Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers, api.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2115,7 +2355,7 @@ public class PublisherBaseSteps {
         String commonPolicyId = resolveCommonPolicyByName(commonPolicyName, headers).optString("id");
 
         HttpResponse getApi = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() == 200
                         && getApi.getData() != null && !getApi.getData().isEmpty(),
                 "Failed to fetch API '" + actualApiId + "' for clone md5 check: got "
@@ -2128,13 +2368,13 @@ public class PublisherBaseSteps {
 
         // md5 of the common policy vs the API-specific clone must match (identical content).
         HttpResponse commonResp = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getCommonPolicyById(getBaseUrl(), commonPolicyId), headers);
+                .doGet(Utils.getCommonPolicyById(Utils.getBaseUrl(), commonPolicyId), headers);
         Assert.assertTrue(commonResp != null && commonResp.getResponseCode() == 200
                         && commonResp.getData() != null && !commonResp.getData().isEmpty(),
                 "Failed to fetch common policy '" + commonPolicyId + "': got "
                         + (commonResp == null ? "no response" : commonResp.getResponseCode() + " / " + commonResp.getData()));
         HttpResponse clonedResp = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getAPISpecificPolicyById(getBaseUrl(), actualApiId, clonedPolicyId), headers);
+                .doGet(Utils.getAPISpecificPolicyById(Utils.getBaseUrl(), actualApiId, clonedPolicyId), headers);
         Assert.assertTrue(clonedResp != null && clonedResp.getResponseCode() == 200
                         && clonedResp.getData() != null && !clonedResp.getData().isEmpty(),
                 "Failed to fetch API-specific clone '" + clonedPolicyId + "': got "
@@ -2221,7 +2461,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
         files.put("file", zipFile);
-        HttpResponse response = Requests.postMultipart(Utils.getCommonPolicyImportURL(getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getCommonPolicyImportURL(Utils.getBaseUrl()), headers, files,
                 null);
         Assert.assertEquals(response.getResponseCode(), expectedStatus,
                 "Malformed common operation policy import status mismatch (body=" + response.getData() + ")");
@@ -2255,7 +2495,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         HttpResponse getApi = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
                         && getApi.getData() != null && !getApi.getData().isEmpty(),
                 "Failed to fetch API '" + actualApiId + "' before updating operation policy parameters: got "
@@ -2267,7 +2507,7 @@ public class PublisherBaseSteps {
                 "No operation policy present in flow '" + flow + "' of operation " + opIndex + " to update");
         flowPolicies.getJSONObject(0).put("parameters", new JSONObject(paramsJson));
 
-        Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers, api.toString(),
+        Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers, api.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2292,7 +2532,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         HttpResponse getApi = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() == 200
                         && getApi.getData() != null && !getApi.getData().isEmpty(),
                 "Failed to fetch API '" + actualApiId + "' for secret-preservation check: got "
@@ -2359,7 +2599,7 @@ public class PublisherBaseSteps {
         files.put("file", openapiFile);
         files.put("additionalProperties", additionalPropertiesFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(getBaseUrl()), headers, files, null);
+        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files, null);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(resourceId, createdId);
@@ -2381,7 +2621,7 @@ public class PublisherBaseSteps {
     @When("I import api from archive {string} with additional properties {string} as {string}")
     public void iImportApiFromArchive(String archivePath, String additionalData, String resourceId) throws IOException {
 
-        File archiveFile = loadResourceAsTempFile(archivePath, ".zip");
+        File archiveFile = Utils.classpathToTempFile(archivePath, "fixture", ".zip");
 
         String additionalProperties;
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
@@ -2401,7 +2641,7 @@ public class PublisherBaseSteps {
         files.put("file", archiveFile);
         files.put("additionalProperties", additionalPropertiesFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files,
                 null);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -2439,7 +2679,7 @@ public class PublisherBaseSteps {
     private void importAsyncApiDefinition(String filepath, String additionalData, String resourceId)
             throws IOException {
 
-        File asyncApiFile = loadResourceAsTempFile(filepath, ".yaml");
+        File asyncApiFile = Utils.classpathToTempFile(filepath, "fixture", ".yaml");
         File additionalPropertiesFile;
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
             if (inputStream == null) {
@@ -2456,7 +2696,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", asyncApiFile);
         files.put("additionalProperties", additionalPropertiesFile);
-        HttpResponse response = Requests.postMultipart(Utils.getImportAsyncApiURL(getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getImportAsyncApiURL(Utils.getBaseUrl()), headers, files,
                 null);
         if (resourceId != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -2467,21 +2707,7 @@ public class PublisherBaseSteps {
 
     /** Loads a classpath resource into a temp .json file (for multipart OAS upload). */
     private File loadJsonResourceAsTempFile(String resourcePath) throws IOException {
-        return loadResourceAsTempFile(resourcePath, ".json");
-    }
-
-    /** Loads a classpath resource into a temp file PRESERVING a given suffix — needed when the server cares
-     *  about the uploaded file's extension (e.g. {@code .png} thumbnails, {@code .zip} OpenAPI archives). */
-    private File loadResourceAsTempFile(String resourcePath, String suffix) throws IOException {
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                throw new FileNotFoundException("Resource not found: " + resourcePath);
-            }
-            File temp = File.createTempFile("res", suffix);
-            temp.deleteOnExit();
-            Files.copy(inputStream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return temp;
-        }
+        return Utils.classpathToTempFile(resourcePath, "fixture", ".json");
     }
 
     /**
@@ -2497,9 +2723,9 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
-        files.put("file", loadResourceAsTempFile(imagePath, ".png"));
+        files.put("file", Utils.classpathToTempFile(imagePath, "fixture", ".png"));
         // Thumbnail upload is a PUT (updateAPIThumbnail), not POST — a POST returns 405.
-        Requests.putMultipart(Utils.getThumbnailURL(getBaseUrl(), actualApiId), headers,
+        Requests.putMultipart(Utils.getThumbnailURL(Utils.getBaseUrl(), actualApiId), headers,
                 files, new HashMap<>());
     }
 
@@ -2513,7 +2739,7 @@ public class PublisherBaseSteps {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.get(Utils.getThumbnailURL(getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getThumbnailURL(Utils.getBaseUrl(), actualApiId), headers);
     }
 
     /**
@@ -2538,7 +2764,7 @@ public class PublisherBaseSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("apiDefinition", definition);
         Requests.putMultipart(
-                Utils.getSwaggerURL(getBaseUrl(), resourceType, actualId), headers, new HashMap<>(), formFields);
+                Utils.getSwaggerURL(Utils.getBaseUrl(), resourceType, actualId), headers, new HashMap<>(), formFields);
     }
 
     /** Retrieves the publisher linter custom rules. */
@@ -2547,7 +2773,7 @@ public class PublisherBaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.get(Utils.getLinterCustomRulesURL(getBaseUrl()), headers);
+        Requests.get(Utils.getLinterCustomRulesURL(Utils.getBaseUrl()), headers);
     }
 
     /** Retrieves the available publisher throttling policies for a policy level (subscription / api / application). */
@@ -2556,7 +2782,7 @@ public class PublisherBaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.get(Utils.getPublisherThrottlingPoliciesURL(getBaseUrl(), policyLevel), headers);
+        Requests.get(Utils.getPublisherThrottlingPoliciesURL(Utils.getBaseUrl(), policyLevel), headers);
     }
 
     /** Retrieves an API's OpenAPI definition (GET /apis/{id}/swagger). */
@@ -2566,7 +2792,7 @@ public class PublisherBaseSteps {
         String actualId = TestContext.resolve(resourceId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.get(Utils.getSwaggerURL(getBaseUrl(), resourceType, actualId), headers);
+        Requests.get(Utils.getSwaggerURL(Utils.getBaseUrl(), resourceType, actualId), headers);
     }
 
     /**
@@ -2581,7 +2807,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
         files.put("file", loadJsonResourceAsTempFile(filepath));
-        Requests.postMultipart(Utils.getValidateOpenAPIURL(getBaseUrl()), headers, files,
+        Requests.postMultipart(Utils.getValidateOpenAPIURL(Utils.getBaseUrl()), headers, files,
                 new HashMap<>());
     }
 
@@ -2635,7 +2861,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", openapiFile);
         files.put("additionalProperties", additionalPropertiesFile);
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files,
                 null);
         if (resourceId != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -2689,9 +2915,10 @@ public class PublisherBaseSteps {
         // the API stayed Deprecated. Mirror the publish step: retry the POST until it succeeds (2xx) — or, for an
         // API, until it already reads the action's target state (the POST may have applied despite a lost
         // response, and re-POSTing on an already-transitioned API faults) — catching only transient IOException.
-        String url = Utils.getChangeLifecycleURL(getBaseUrl(), resourceType, actualId, action, checklist);
+        String url = Utils.getChangeLifecycleURL(Utils.getBaseUrl(), resourceType, actualId, action, checklist);
         String targetState = "apis".equals(resourceType) ? lifecycleTargetState(action) : null;
-        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         HttpResponse response = null;
         boolean changed = false;
         while (true) {
@@ -2712,7 +2939,7 @@ public class PublisherBaseSteps {
                 break;
             }
             try {
-                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
+                Utils.pollPause(endTimeStart, Constants.RETRY_INTERVAL_TIME);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
                 break;
@@ -2753,7 +2980,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse apiResp = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(apiResp != null && apiResp.getResponseCode() >= 200 && apiResp.getResponseCode() < 300
@@ -2792,7 +3019,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), "api-products"), headers, payload,
+        HttpResponse response = Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "api-products"), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object productId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -2813,7 +3040,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPICreateEndpointURL(getBaseUrl(), "api-products"), headers, payload,
+        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "api-products"), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2827,7 +3054,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getAPIProductNewVersionURL(getBaseUrl(), newVersion, defaultVersion, productId),
+        HttpResponse response = Requests.post(Utils.getAPIProductNewVersionURL(Utils.getBaseUrl(), newVersion, defaultVersion, productId),
                         headers, null, null);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object newId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -2843,7 +3070,7 @@ public class PublisherBaseSteps {
         String productId = TestContext.resolve(productIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.get(Utils.getAPIProductSwaggerURL(getBaseUrl(), productId), headers);
+        Requests.get(Utils.getAPIProductSwaggerURL(Utils.getBaseUrl(), productId), headers);
     }
 
     /** Lists an API's revisions (no filter). Non-asserting — the feature confirms the 200. */
@@ -2854,7 +3081,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.get(Utils.getRevisionURL(getBaseUrl(), resourceType, actualResourceId), headers);
+        Requests.get(Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, actualResourceId), headers);
     }
 
     /** Lists an API's currently-deployed revisions ({@code query=deployed:true}). Non-asserting. */
@@ -2865,7 +3092,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.get(Utils.getRevisionDeployments(getBaseUrl(), resourceType, actualResourceId), headers);
+        Requests.get(Utils.getRevisionDeployments(Utils.getBaseUrl(), resourceType, actualResourceId), headers);
     }
 
     /**
@@ -2883,7 +3110,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+        Requests.post(Utils.getRevisionUnDeploymentURL(Utils.getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
                         headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2905,7 +3132,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getRevisionUnDeploymentURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+        Requests.post(Utils.getRevisionUnDeploymentURL(Utils.getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
                         headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2918,7 +3145,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getRevisionRestoreURL(getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
+        Requests.post(Utils.getRevisionRestoreURL(Utils.getBaseUrl(), resourceType, actualResourceId, actualRevisionId),
                         headers, null, null);
     }
 
@@ -2934,7 +3161,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.delete(Utils.getRevisionByID(getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers);
+        Requests.delete(Utils.getRevisionByID(Utils.getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers);
     }
 
     /**
@@ -2949,7 +3176,7 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.post(Utils.getInternalAPIKey(getBaseUrl(), actualApiId), headers, null, null);
+        HttpResponse response = Requests.post(Utils.getInternalAPIKey(Utils.getBaseUrl(), actualApiId), headers, null, null);
         // Assert success before extracting: generate-key returns 200 (APIKey). Without this, a non-2xx body has no
         // "apikey" field and surfaces as a confusing "Path 'apikey' not found" IOException instead of the status.
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());

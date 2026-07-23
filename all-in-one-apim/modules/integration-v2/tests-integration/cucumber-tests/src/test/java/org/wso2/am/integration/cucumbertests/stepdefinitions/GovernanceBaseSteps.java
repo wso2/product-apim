@@ -31,11 +31,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,11 +49,6 @@ public class GovernanceBaseSteps {
 
     BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-
-        return baseSteps.getBaseUrl();
-    }
-
     private Map<String, String> governanceAuthHeaders() {
 
         Map<String, String> headers = new HashMap<>();
@@ -72,25 +63,10 @@ public class GovernanceBaseSteps {
     @When("I retrieve all governance rulesets")
     public void iRetrieveAllGovernanceRulesets() throws IOException {
 
-        Requests.get(Utils.getGovernanceRulesetsURL(getBaseUrl()), governanceAuthHeaders());
+        Requests.get(Utils.getGovernanceRulesetsURL(Utils.getBaseUrl()), governanceAuthHeaders());
     }
 
     // ---- Ruleset CRUD ----------------------------------------------------------------------------------
-
-    /** Loads a governance fixture (YAML/JSON) off the classpath into a temp file for the multipart upload. */
-    private File loadResourceAsTempFile(String resourcePath) throws IOException {
-
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                throw new FileNotFoundException("Resource not found: " + resourcePath);
-            }
-            String suffix = resourcePath.endsWith(".json") ? ".json" : ".yaml";
-            File temp = File.createTempFile("ruleset", suffix);
-            temp.deleteOnExit();
-            Files.copy(inputStream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return temp;
-        }
-    }
 
     /**
      * The multipart form fields for a ruleset create/update. Rule type / artifact type / category / provider
@@ -113,9 +89,9 @@ public class GovernanceBaseSteps {
                                      String documentationLink) throws IOException {
 
         Map<String, File> files = new HashMap<>();
-        files.put("rulesetContent", loadResourceAsTempFile(contentResourcePath));
+        files.put("rulesetContent", Utils.classpathToTempFile(contentResourcePath, "ruleset", contentResourcePath.endsWith(".json") ? ".json" : ".yaml"));
         HttpResponse response = Requests.postMultipart(
-                Utils.getGovernanceRulesetsURL(getBaseUrl()), governanceAuthHeaders(), files,
+                Utils.getGovernanceRulesetsURL(Utils.getBaseUrl()), governanceAuthHeaders(), files,
                 rulesetFormFields(name, description, documentationLink));
         return response;
     }
@@ -162,9 +138,9 @@ public class GovernanceBaseSteps {
         String rulesetId = TestContext.resolve(idKey).toString();
         String name = Utils.resolvePayloadPlaceholders(nameBase);
         Map<String, File> files = new HashMap<>();
-        files.put("rulesetContent", loadResourceAsTempFile(contentResourcePath));
+        files.put("rulesetContent", Utils.classpathToTempFile(contentResourcePath, "ruleset", contentResourcePath.endsWith(".json") ? ".json" : ".yaml"));
         Requests.putMultipart(
-                Utils.getGovernanceRulesetByIdURL(getBaseUrl(), rulesetId), governanceAuthHeaders(), files,
+                Utils.getGovernanceRulesetByIdURL(Utils.getBaseUrl(), rulesetId), governanceAuthHeaders(), files,
                 rulesetFormFields(name, description, documentationLink));
     }
 
@@ -173,7 +149,7 @@ public class GovernanceBaseSteps {
     public void iRetrieveGovernanceRuleset(String idKey) throws IOException {
 
         String rulesetId = TestContext.resolve(idKey).toString();
-        Requests.get(Utils.getGovernanceRulesetByIdURL(getBaseUrl(), rulesetId), governanceAuthHeaders());
+        Requests.get(Utils.getGovernanceRulesetByIdURL(Utils.getBaseUrl(), rulesetId), governanceAuthHeaders());
     }
 
     /** Deletes the governance ruleset held under {@code idKey}. Non-asserting — the feature asserts the status. */
@@ -181,7 +157,7 @@ public class GovernanceBaseSteps {
     public void iDeleteGovernanceRuleset(String idKey) throws IOException {
 
         String rulesetId = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getGovernanceRulesetByIdURL(getBaseUrl(), rulesetId), governanceAuthHeaders());
+        Requests.delete(Utils.getGovernanceRulesetByIdURL(Utils.getBaseUrl(), rulesetId), governanceAuthHeaders());
     }
 
     /**
@@ -191,7 +167,7 @@ public class GovernanceBaseSteps {
     @When("I capture the governance ruleset id of {string} as {string}")
     public void iCaptureGovernanceRulesetId(String rulesetName, String idKey) throws IOException {
 
-        HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(getBaseUrl()), governanceAuthHeaders());
+        HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(Utils.getBaseUrl()), governanceAuthHeaders());
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         String id = Utils.extractIdByName(response.getData(), rulesetName);
         Assert.assertNotNull(id, "Governance ruleset '" + rulesetName + "' not found in list: "
@@ -225,7 +201,7 @@ public class GovernanceBaseSteps {
         String payload = buildPolicyPayload(Utils.resolvePayloadPlaceholders(nameBase),
                 "Policy created by integration test", rulesetId);
         HttpResponse response = Requests.post(
-                Utils.getGovernancePoliciesURL(getBaseUrl()), governanceAuthHeaders(), payload,
+                Utils.getGovernancePoliciesURL(Utils.getBaseUrl()), governanceAuthHeaders(), payload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object policyId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -238,14 +214,14 @@ public class GovernanceBaseSteps {
     public void iRetrieveGovernancePolicy(String idKey) throws IOException {
 
         String policyId = TestContext.resolve(idKey).toString();
-        Requests.get(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
+        Requests.get(Utils.getGovernancePolicyByIdURL(Utils.getBaseUrl(), policyId), governanceAuthHeaders());
     }
 
     /** Lists all governance policies. */
     @When("I retrieve all governance policies")
     public void iRetrieveAllGovernancePolicies() throws IOException {
 
-        Requests.get(Utils.getGovernancePoliciesURL(getBaseUrl()), governanceAuthHeaders());
+        Requests.get(Utils.getGovernancePoliciesURL(Utils.getBaseUrl()), governanceAuthHeaders());
     }
 
     /**
@@ -258,7 +234,7 @@ public class GovernanceBaseSteps {
 
         String policyId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
+                .doGet(Utils.getGovernancePolicyByIdURL(Utils.getBaseUrl(), policyId), governanceAuthHeaders());
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200
@@ -278,7 +254,7 @@ public class GovernanceBaseSteps {
         policy.remove("updatedTime");
 
         Requests.put(
-                Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders(),
+                Utils.getGovernancePolicyByIdURL(Utils.getBaseUrl(), policyId), governanceAuthHeaders(),
                 policy.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -287,7 +263,7 @@ public class GovernanceBaseSteps {
     public void iDeleteGovernancePolicy(String idKey) throws IOException {
 
         String policyId = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getGovernancePolicyByIdURL(getBaseUrl(), policyId), governanceAuthHeaders());
+        Requests.delete(Utils.getGovernancePolicyByIdURL(Utils.getBaseUrl(), policyId), governanceAuthHeaders());
     }
 
     // ---- Compliance ------------------------------------------------------------------------------------
@@ -300,7 +276,7 @@ public class GovernanceBaseSteps {
     /** Collects the ids of the org's built-in default rulesets from the ruleset list. */
     private JSONArray defaultRulesetIds() throws IOException {
 
-        HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(getBaseUrl()), governanceAuthHeaders());
+        HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(Utils.getBaseUrl()), governanceAuthHeaders());
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         JSONArray ids = new JSONArray();
         for (String name : DEFAULT_RULESET_NAMES) {
@@ -335,7 +311,7 @@ public class GovernanceBaseSteps {
         policy.put("actions", new JSONArray().put(action));
 
         HttpResponse response = Requests.post(
-                Utils.getGovernancePoliciesURL(getBaseUrl()), governanceAuthHeaders(), policy.toString(),
+                Utils.getGovernancePoliciesURL(Utils.getBaseUrl()), governanceAuthHeaders(), policy.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object policyId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -348,7 +324,7 @@ public class GovernanceBaseSteps {
     public void iRetrieveApiCompliance(String apiIdKey) throws IOException {
 
         String apiId = TestContext.resolve(apiIdKey).toString();
-        Requests.get(Utils.getGovernanceApiComplianceURL(getBaseUrl(), apiId), governanceAuthHeaders());
+        Requests.get(Utils.getGovernanceApiComplianceURL(Utils.getBaseUrl(), apiId), governanceAuthHeaders());
     }
 
     /**
@@ -362,7 +338,8 @@ public class GovernanceBaseSteps {
             throws InterruptedException {
 
         String apiId = TestContext.resolve(apiIdKey).toString();
-        String url = Utils.getGovernanceApiComplianceURL(getBaseUrl(), apiId);
+        String url = Utils.getGovernanceApiComplianceURL(Utils.getBaseUrl(), apiId);
+        long pollStart = System.currentTimeMillis();
         long deadline = System.nanoTime() + timeoutSeconds * 1_000_000_000L;
         HttpResponse last = null;
         String actualStatus = null;
@@ -380,7 +357,7 @@ public class GovernanceBaseSteps {
             } catch (IOException transientError) {
                 // gateway/management warm-up — retry
             }
-            Thread.sleep(5000);
+            Utils.pollPause(pollStart, 5000);
         }
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No compliance response received for API " + apiId);
