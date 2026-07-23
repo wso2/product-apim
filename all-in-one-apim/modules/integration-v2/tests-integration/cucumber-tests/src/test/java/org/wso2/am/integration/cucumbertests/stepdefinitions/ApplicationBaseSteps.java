@@ -1490,8 +1490,9 @@ public class ApplicationBaseSteps {
         User actor = Identity.actingActor();
         String callbackUrl = "http://localhost:8490/callback";
         String authorizeUrl = getBaseUrl() + "oauth2/authorize";
+        String commonAuthUrl = getBaseUrl() + "commonauth";
 
-        // Step 1: Initiate — IS redirects to the login page; extract sessionDataKey and session cookie.
+        // Step 1: Initiate
         String initUrl = authorizeUrl + "?response_type=code"
                 + "&client_id=" + urlEncode(consumerKey)
                 + (scope != null ? "&scope=" + urlEncode(scope) : "")
@@ -1501,22 +1502,21 @@ public class ApplicationBaseSteps {
                 "Expected 302 from authorize on initiation, got: " + initResponse.getResponseCode());
         String locationHeader = initResponse.getHeaders().get("Location");
         Assert.assertNotNull(locationHeader, "Location header missing on authorize initiation");
-        String sessionNonceCookie = initResponse.getHeaders().get("Set-Cookie");
-        Assert.assertNotNull(sessionNonceCookie, "Set-Cookie header missing on authorize initiation");
+        String sessionCookie = initResponse.getHeaders().get("Set-Cookie");
+        Assert.assertNotNull(sessionCookie, "Set-Cookie header missing on authorize initiation");
         String sessionDataKey = extractQueryParam(locationHeader, "sessionDataKey");
         Assert.assertNotNull(sessionDataKey,
                 "sessionDataKey not found in Location header: " + locationHeader);
 
-        // Step 2: Authenticate — IS validates credentials and redirects either to the consent page
-        // (with sessionDataKeyConsent) or directly to the callback with the auth code (no-scope case).
+        // Step 2: Authenticate
         Map<String, String> loginHeaders = new HashMap<>();
-        loginHeaders.put("Cookie", sessionNonceCookie);
+        loginHeaders.put("Cookie", sessionCookie);
         String loginBody = "username=" + urlEncode(actor.getUserName())
                 + "&password=" + urlEncode(actor.getPassword())
                 + "&tocommonauth=true"
                 + "&sessionDataKey=" + urlEncode(sessionDataKey);
         HttpResponse loginResponse = SimpleHTTPClient.getInstance().doPost(
-                authorizeUrl, loginHeaders, loginBody,
+                commonAuthUrl, loginHeaders, loginBody,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         Assert.assertEquals(loginResponse.getResponseCode(), 302,
                 "Expected 302 after login, got: " + loginResponse.getResponseCode());
@@ -1527,15 +1527,31 @@ public class ApplicationBaseSteps {
                 "Authorization failed with error '" + oauthError + "': "
                         + extractQueryParam(locationHeader, "error_description")
                         + " — " + locationHeader);
+        String authenticatedCookie = loginResponse.getHeaders().get("Set-Cookie");
+        if (authenticatedCookie == null) {
+            authenticatedCookie = sessionCookie;
+        }
 
-        // Step 3 (conditional): approve consent when IS redirects to the consent page.
+        // Step 3: Resume the OAuth flow at /oauth2/authorize
+        HttpResponse resumeResponse = SimpleHTTPClient.getInstance().doGet(locationHeader,
+                Map.of("Cookie", authenticatedCookie));
+        Assert.assertEquals(resumeResponse.getResponseCode(), 302,
+                "Expected 302 resuming authorize after login, got: " + resumeResponse.getResponseCode());
+        locationHeader = resumeResponse.getHeaders().get("Location");
+        Assert.assertNotNull(locationHeader, "Location header missing resuming authorize after login");
+        String resumedCookie = resumeResponse.getHeaders().get("Set-Cookie");
+        if (resumedCookie != null) {
+            authenticatedCookie = resumedCookie;
+        }
+
+        // Step 4 (conditional): approve consent
         String authCode = extractQueryParam(locationHeader, "code");
         if (authCode == null) {
             String sessionDataKeyConsent = extractQueryParam(locationHeader, "sessionDataKeyConsent");
             Assert.assertNotNull(sessionDataKeyConsent,
                     "Expected 'code' or 'sessionDataKeyConsent' in Location after login: " + locationHeader);
             Map<String, String> consentHeaders = new HashMap<>();
-            consentHeaders.put("Cookie", sessionNonceCookie);
+            consentHeaders.put("Cookie", authenticatedCookie);
             String consentBody = "consent=approve&hasApprovedAlways=false"
                     + "&sessionDataKeyConsent=" + urlEncode(sessionDataKeyConsent);
             HttpResponse consentResponse = SimpleHTTPClient.getInstance().doPost(
@@ -1550,7 +1566,7 @@ public class ApplicationBaseSteps {
                     "Auth code not found in Location after consent approval: " + locationHeader);
         }
 
-        // Step 4: Exchange the auth code for a token and publish it to httpResponse.
+        // Step 5: Exchange the auth code for a token and publish it to httpResponse
         String tokenBody = "grant_type=authorization_code"
                 + "&code=" + urlEncode(authCode)
                 + "&redirect_uri=" + urlEncode(callbackUrl)
