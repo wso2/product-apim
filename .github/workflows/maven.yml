@@ -107,10 +107,12 @@ jobs:
         uses: malinthaprasan/action-surefire-report@v1
         with:
           report_paths: 'reports/**/TEST-*.xml'
-  # Builds the distribution + Docker images ONCE, then shares the images (docker save -> artifact) and the
-  # Maven repo (run-scoped cache) with the integration-v2 matrix. The image-build execs in the testcontainers
-  # module bind to pre-integration-test, which `mvn install` runs but `mvn test` does not - so matrix entries
-  # `docker load` these images and never rebuild them.
+  # Builds the distribution + Docker images ONCE, then shares the non-public images (docker save ->
+  # artifact), the testcontainers target/is7 staging (IS truststores + default toml + notification jar,
+  # produced by the same pre-integration-test execs), and the Maven repo (run-scoped cache) with the
+  # integration-v2 matrix. The execs bind to pre-integration-test, which `mvn install` runs but `mvn test`
+  # does not - so matrix entries `docker load` the images and unpack the staging, and never rebuild either.
+  # The public wso2/wso2is image is NOT shipped: the matrix pulls it from Docker Hub on demand.
   v2-build-images:
     runs-on: ubuntu-latest
     steps:
@@ -148,15 +150,21 @@ jobs:
         working-directory: all-in-one-apim/modules/integration-v2
         run: |
           echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
-      - name: Save Docker images
+      # Only the NON-PUBLIC images travel by tar (the APIM image is built here, not published anywhere);
+      # the public wso2/wso2is image is pulled from Docker Hub on demand by the matrix's testcontainers.
+      - name: Save Docker images and IS staging
         run: |
           mkdir -p /tmp/v2-images
           docker save "$APIM_IMAGE" node-app-server:latest | gzip > /tmp/v2-images/images.tar.gz
+          # The external-KM blocks read these staged files at runtime (see BlockLifecycleListener /
+          # DynamicApimContainer#withExternalKmTrust); they exist only where pre-integration-test ran.
+          tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -czf \
+            /tmp/v2-images/is7-staging.tar.gz is7
       - name: Upload Docker images
         uses: actions/upload-artifact@v4
         with:
           name: v2-images
-          path: /tmp/v2-images/images.tar.gz
+          path: /tmp/v2-images/
           # 3 days so a failed-only re-run of integration-v2 within a few days still finds the prebuilt images
           retention-days: 3
           if-no-files-found: error
@@ -197,6 +205,13 @@ jobs:
           path: /tmp/v2-images
       - name: Load Docker images
         run: docker load < /tmp/v2-images/images.tar.gz
+      # The IS-booting blocks fail fast without the pre-integration-test staging (truststores, IS default
+      # toml, notification jar), and `mvn test` deliberately never runs those execs - restore the builder's.
+      - name: Restore IS staging (target/is7)
+        run: |
+          mkdir -p all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target
+          tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -xzf \
+            /tmp/v2-images/is7-staging.tar.gz
       # Pull the product class files out of the already-loaded image instead of shipping the ~538 MB distribution
       # zip (docker cp is a LOCAL copy — zero extra artifact transfer). The image is what ran, so its classes are
       # byte-identical to the executed ones → exact JaCoCo class-id match. The suite reads them via
@@ -214,9 +229,9 @@ jobs:
           docker cp "$cid:$BASE/components/plugins"        "$SRC/plugins"
           docker cp "$cid:$BASE/deployment/server/webapps" "$SRC/webapps"
           echo "APIM_COVERAGE_CLASSFILES=$SRC" >> "$GITHUB_ENV"
-      # `mvn test` (not install) keeps the testcontainers pre-integration-test image-build execs from firing,
-      # so the loaded images are reused. `-am` builds only the integration-v2 reactor deps up to the test
-      # phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored Maven repo.
+      # `mvn test` (not install) keeps the testcontainers pre-integration-test execs from firing, so the
+      # loaded images and the restored target/is7 staging are reused. `-am` builds only the integration-v2
+      # reactor deps up to the test phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored repo.
       - name: Run integration-v2 suite (reuses prebuilt images)
         working-directory: all-in-one-apim/modules/integration-v2
         run: >
