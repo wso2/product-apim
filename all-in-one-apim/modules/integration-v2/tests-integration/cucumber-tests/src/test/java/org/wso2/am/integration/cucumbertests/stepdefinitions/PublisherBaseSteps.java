@@ -480,13 +480,17 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        // Lifecycle changes (publish/deploy) propagate asynchronously, so the state can briefly lag a publish
-        // call — poll until it reaches the expected value rather than asserting on a single GET (the latter is
-        // a flaky race that wider parallel load on the shared container exposes).
+        // Lifecycle changes (publish/deploy) propagate asynchronously, so the state can lag a publish call —
+        // poll until it reaches the expected value rather than asserting on a single GET (the latter is a
+        // flaky race that wider parallel load on the shared container exposes). The window is
+        // DEPLOYMENT_WAIT_TIME (not the generic MAX_RETRIES × RETRY_INTERVAL_TIME = 60s): under full-suite
+        // load in CI the container's async pipelines have been observed running ~90-100s behind a
+        // change-lifecycle 200, so the poll must ride out that backlog like the publish retry above does.
         String url = Utils.getAPILifecycleStateURL(getBaseUrl(), actualApiId);
+        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
         HttpResponse lifecycleStatusResponse = null;
         String actualState = null;
-        for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
+        while (true) {
             lifecycleStatusResponse = Requests.get(url, headers);
             // Only parse a 200 that actually has a body; a non-2xx/empty response during warm-up falls through
             // and we keep polling rather than throwing an uncaught JSONException.
@@ -496,6 +500,9 @@ public class PublisherBaseSteps {
                 if (status.equals(actualState)) {
                     return;
                 }
+            }
+            if (System.currentTimeMillis() >= endTime) {
+                break;
             }
             try {
                 Thread.sleep(Constants.RETRY_INTERVAL_TIME);
@@ -677,6 +684,7 @@ public class PublisherBaseSteps {
                             try {
                                 Thread.sleep(10000);
                             } catch (InterruptedException ignored) {
+                                Thread.currentThread().interrupt();
                             }
                             break;
                         }
@@ -695,6 +703,8 @@ public class PublisherBaseSteps {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
         Assert.assertTrue(deployed, "Revision " + revisionId + " was not deployed within the timeout");

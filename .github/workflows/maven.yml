@@ -115,6 +115,10 @@ jobs:
   # The public wso2/wso2is image is NOT shipped: the matrix pulls it from Docker Hub on demand.
   v2-build-images:
     runs-on: ubuntu-latest
+    # Least privilege for GITHUB_TOKEN: this job only checks out sources (cache and artifact upload use the
+    # Actions runtime token, not GITHUB_TOKEN).
+    permissions:
+      contents: read
     steps:
       - name: Run hostname
         run: hostname
@@ -174,6 +178,12 @@ jobs:
   integration-v2:
     needs: v2-build-images
     runs-on: ubuntu-latest
+    # Least privilege for GITHUB_TOKEN, scoped per-job: checkout is read-only; 
+    # checks: write is the single write the surefire-report action needs to publish its check run
+    # (cache/artifacts use the runtime token; the Codecov upload does not use GITHUB_TOKEN).
+    permissions:
+      contents: read
+      checks: write
     strategy:
       fail-fast: false
       matrix:

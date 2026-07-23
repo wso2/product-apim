@@ -2111,10 +2111,17 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = IntegrationActors.authHeaders(IntegrationActors.IS);
         HttpResponse resp = Requests.post(introspectEndpoint, headers, "token=" + token,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        String body = (resp == null) ? "no response" : resp.getData();
-        boolean active = body != null && !body.isBlank() && new JSONObject(body).optBoolean("active", true);
+        // A failed/empty introspection must FAIL the step, never read as "inactive": RFC 7662 introspection
+        // answers 200 with {"active":false} for a revoked token, so anything but a 2xx-with-body is a broken
+        // call, and treating it as inactive would false-pass the revocation check.
+        Assert.assertTrue(resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300
+                        && resp.getData() != null && !resp.getData().isBlank(),
+                "IS introspection request failed (" + (parts == 3 ? "JWT" : "opaque/" + parts + "-part")
+                        + " token): got=" + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
+        boolean active = new JSONObject(resp.getData()).optBoolean("active", true);
         Assert.assertFalse(active, "Revoked token should be reported inactive by IS introspection ("
-                + (parts == 3 ? "JWT" : "opaque/" + parts + "-part") + " token); IS /introspect returned: " + body);
+                + (parts == 3 ? "JWT" : "opaque/" + parts + "-part") + " token); IS /introspect returned: "
+                + resp.getData());
     }
 
     /**

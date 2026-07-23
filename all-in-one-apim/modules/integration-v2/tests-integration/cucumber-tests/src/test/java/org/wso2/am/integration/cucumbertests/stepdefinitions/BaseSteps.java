@@ -1096,6 +1096,8 @@ public class BaseSteps {
                         " in tenant " + tenantDomain);
                 Thread.sleep(500);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
         Assert.assertTrue(isApiDeployed, "API " + apiName + " v" + apiVersion +
@@ -1144,6 +1146,8 @@ public class BaseSteps {
                         " in tenant " + tenantDomain);
                 Thread.sleep(500);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
     }

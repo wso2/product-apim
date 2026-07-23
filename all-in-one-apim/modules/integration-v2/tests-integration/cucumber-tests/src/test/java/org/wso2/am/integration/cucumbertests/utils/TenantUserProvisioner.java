@@ -160,7 +160,9 @@ public final class TenantUserProvisioner {
             } catch (IOException e) {
                 last = e.getMessage();
             }
-            sleepBeforeRetry();
+            if (!sleepBeforeRetry()) {
+                break;
+            }
         }
         Assert.assertNotNull(tokenBasic, "Runtime tenant admin '" + admin.getUserName() + "' DCR never succeeded "
                 + "within 120s (tenant not activated); last: " + last);
@@ -181,18 +183,26 @@ public final class TenantUserProvisioner {
             } catch (IOException e) {
                 last = e.getMessage();
             }
-            sleepBeforeRetry();
+            if (!sleepBeforeRetry()) {
+                break;
+            }
         }
         Assert.fail("Runtime tenant admin '" + admin.getUserName() + "' obtained DCR credentials but no token was "
                 + "issued within 120s; last: " + last);
     }
 
-    /** Fixed inter-attempt pause for the runtime-tenant activation polls. */
-    private static void sleepBeforeRetry() {
+    /**
+     * Fixed inter-attempt pause for the runtime-tenant activation polls. Returns {@code false} (with the
+     * interrupt flag restored) when interrupted, so the polling loops stop promptly instead of busy-retrying
+     * until the deadline — once the flag is set, every later {@code Thread.sleep} would throw immediately.
+     */
+    private static boolean sleepBeforeRetry() {
         try {
             Thread.sleep(3000L);
+            return true;
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
+            return false;
         }
     }
 

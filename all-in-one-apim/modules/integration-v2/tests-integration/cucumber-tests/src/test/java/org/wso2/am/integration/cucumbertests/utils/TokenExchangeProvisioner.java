@@ -254,7 +254,15 @@ public final class TokenExchangeProvisioner {
                 + "<soapenv:Body><ns:getIdPByName xmlns:ns=\"http://mgt.idp.carbon.wso2.org\">"
                 + "<ns:idPName>" + idpName + "</ns:idPName></ns:getIdPByName></soapenv:Body>" + SOAP_ENV_CLOSE;
         HttpResponse r = soap(scope, "urn:getIdPByName", body);
-        return r != null && r.getData() != null && r.getData().contains("identityProviderName>" + idpName);
+        // A transport-level failure must FAIL the existence check, never read as "absent": the caller's
+        // negative assertion (malformed-cert registration refused -> IdP should not exist) would false-pass
+        // on a broken SOAP channel. A real body lacking the name (incl. an empty getIdPByNameResponse for a
+        // missing IdP) genuinely means absent.
+        if (r == null || r.getData() == null || r.getData().isBlank()) {
+            throw new IllegalStateException("IdP existence check failed for '" + idpName + "': got "
+                    + (r == null ? "no response" : r.getResponseCode() + " / blank body"));
+        }
+        return r.getData().contains("identityProviderName>" + idpName);
     }
 
     /** Deletes the named IdP (used by teardown). */
