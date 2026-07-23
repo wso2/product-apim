@@ -182,9 +182,9 @@ public final class TokenExchangeProvisioner {
                 + "<soapenv:Body><ns:addIdP xmlns:ns=\"http://mgt.idp.carbon.wso2.org\" "
                 + "xmlns:m=\"http://model.common.application.identity.carbon.wso2.org/xsd\">"
                 + "<ns:identityProvider>"
-                + "<m:alias>" + isAppClientId + "</m:alias>"
+                + "<m:alias>" + Utils.escapeXml(isAppClientId) + "</m:alias>"
                 + "<m:enable>true</m:enable>"
-                + "<m:identityProviderName>" + idpName + "</m:identityProviderName>"
+                + "<m:identityProviderName>" + Utils.escapeXml(idpName) + "</m:identityProviderName>"
                 + body
                 + "</ns:identityProvider></ns:addIdP></soapenv:Body>" + SOAP_ENV_CLOSE);
     }
@@ -230,9 +230,9 @@ public final class TokenExchangeProvisioner {
                 + "<soapenv:Body><ns:addIdP xmlns:ns=\"http://mgt.idp.carbon.wso2.org\" "
                 + "xmlns:m=\"http://model.common.application.identity.carbon.wso2.org/xsd\">"
                 + "<ns:identityProvider>"
-                + "<m:alias>" + alias + "</m:alias>"
+                + "<m:alias>" + Utils.escapeXml(alias) + "</m:alias>"
                 + "<m:enable>true</m:enable>"
-                + "<m:identityProviderName>" + idpName + "</m:identityProviderName>"
+                + "<m:identityProviderName>" + Utils.escapeXml(idpName) + "</m:identityProviderName>"
                 + extraBody
                 + "</ns:identityProvider></ns:addIdP></soapenv:Body>" + SOAP_ENV_CLOSE;
         soap(scope, "urn:addIdP", body);
@@ -245,14 +245,14 @@ public final class TokenExchangeProvisioner {
         }
         String body = SOAP_ENV_OPEN
                 + "<soapenv:Body><ns:deleteIdP xmlns:ns=\"http://mgt.idp.carbon.wso2.org\">"
-                + "<ns:idPName>" + idpName + "</ns:idPName></ns:deleteIdP></soapenv:Body>" + SOAP_ENV_CLOSE;
+                + "<ns:idPName>" + Utils.escapeXml(idpName) + "</ns:idPName></ns:deleteIdP></soapenv:Body>" + SOAP_ENV_CLOSE;
         soap(scope, "urn:deleteIdP", body);
     }
 
     private static boolean idpExists(IdpScope scope, String idpName) throws IOException {
         String body = SOAP_ENV_OPEN
                 + "<soapenv:Body><ns:getIdPByName xmlns:ns=\"http://mgt.idp.carbon.wso2.org\">"
-                + "<ns:idPName>" + idpName + "</ns:idPName></ns:getIdPByName></soapenv:Body>" + SOAP_ENV_CLOSE;
+                + "<ns:idPName>" + Utils.escapeXml(idpName) + "</ns:idPName></ns:getIdPByName></soapenv:Body>" + SOAP_ENV_CLOSE;
         HttpResponse r = soap(scope, "urn:getIdPByName", body);
         // A transport-level failure must FAIL the existence check, never read as "absent": the caller's
         // negative assertion (malformed-cert registration refused -> IdP should not exist) would false-pass
@@ -291,7 +291,7 @@ public final class TokenExchangeProvisioner {
     }
 
     private static String idpProperty(String name, String value) {
-        return "<m:idpProperties><m:name>" + name + "</m:name><m:value>" + value + "</m:value></m:idpProperties>";
+        return "<m:idpProperties><m:name>" + name + "</m:name><m:value>" + Utils.escapeXml(value) + "</m:value></m:idpProperties>";
     }
 
     /**

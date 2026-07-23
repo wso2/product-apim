@@ -33,6 +33,7 @@ import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -128,7 +129,8 @@ public class RemoteLoggingSteps {
     @Then("the {string} log appender should become {string} within {int} seconds")
     public void appenderShouldBecome(String appenderName, String expectedType, int timeoutSeconds) throws Exception {
         Pattern p = Pattern.compile("(?m)^appender\\." + Pattern.quote(appenderName) + "\\.type\\s*=\\s*(\\S+)");
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 10000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
         String actual = null;
         while (System.currentTimeMillis() < end) {
             Matcher m = p.matcher(container().readContainerFile(container().getContainerLog4j2Path()));
@@ -136,7 +138,7 @@ public class RemoteLoggingSteps {
             if (expectedType.equals(actual)) {
                 return;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endStart, 2000);
         }
         Assert.assertEquals(actual, expectedType,
                 appenderName + " appender type did not become " + expectedType + " within the deadline");
@@ -174,13 +176,18 @@ public class RemoteLoggingSteps {
     /** Asserts the mock sink receives at least one payload within the deadline, re-triggering audit actions. */
     @Then("the mock log sink should receive a log payload within {int} seconds")
     public void sinkShouldReceivePayload(int timeoutSeconds) throws Exception {
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 10000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
         while (System.currentTimeMillis() < end) {
             if (!sinkPayloads.isEmpty()) {
                 return;
             }
-            triggerAuditLogEntry();
-            Thread.sleep(2000);
+            try {
+                triggerAuditLogEntry();
+            } catch (IOException transientFailure) {
+                // transient — the sink check above is the assertion; keep polling within the deadline
+            }
+            Utils.pollPause(endStart, 2000);
         }
         Assert.assertFalse(sinkPayloads.isEmpty(), "Mock log sink received no log payload within the deadline");
     }
@@ -193,7 +200,8 @@ public class RemoteLoggingSteps {
      */
     @Then("the mock log sink should stop receiving payloads within {int} seconds")
     public void sinkShouldStopReceiving(int timeoutSeconds) throws Exception {
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 20000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 20000L);
         int last = -1;
         int stableRounds = 0;
         while (System.currentTimeMillis() < end) {
@@ -206,7 +214,7 @@ public class RemoteLoggingSteps {
                 stableRounds = 0;
                 last = now;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endStart, 2000);
         }
         // The stream has quiesced — a fresh audit action must now NOT reach the sink (appender is local again).
         int before = sinkPayloads.size();

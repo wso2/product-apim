@@ -54,10 +54,6 @@ public class EndpointCertificateSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
     private Map<String, String> publisherAuthHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
@@ -88,7 +84,7 @@ public class EndpointCertificateSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("alias", alias);
         formFields.put("endpoint", endpoint);
-        return Requests.postMultipart(Utils.getEndpointCertificatesURL(getBaseUrl()), publisherAuthHeaders(),
+        return Requests.postMultipart(Utils.getEndpointCertificatesURL(Utils.getBaseUrl()), publisherAuthHeaders(),
                 files, formFields);
     }
 
@@ -122,21 +118,21 @@ public class EndpointCertificateSteps {
     /** Searches endpoint certificates by endpoint URL (publishes the response for assertion). */
     @When("I search endpoint certificates by endpoint {string}")
     public void iSearchEndpointCertificatesByEndpoint(String endpoint) throws IOException {
-        Requests.get(Utils.getEndpointCertificatesSearchURL(getBaseUrl(),
+        Requests.get(Utils.getEndpointCertificatesSearchURL(Utils.getBaseUrl(),
                 Utils.resolveContextPlaceholders(endpoint), null), publisherAuthHeaders());
     }
 
     /** Searches endpoint certificates by alias (publishes the response for assertion). */
     @When("I search endpoint certificates by alias {string}")
     public void iSearchEndpointCertificatesByAlias(String alias) throws IOException {
-        Requests.get(Utils.getEndpointCertificatesSearchURL(getBaseUrl(), null,
+        Requests.get(Utils.getEndpointCertificatesSearchURL(Utils.getBaseUrl(), null,
                 Utils.resolveContextPlaceholders(alias)), publisherAuthHeaders());
     }
 
     /** Deletes an endpoint certificate by alias (publishes the response for assertion). */
     @When("I delete the endpoint certificate with alias {string}")
     public void iDeleteEndpointCertificate(String alias) throws IOException {
-        Requests.delete(Utils.getEndpointCertificateByAliasURL(getBaseUrl(),
+        Requests.delete(Utils.getEndpointCertificateByAliasURL(Utils.getBaseUrl(),
                 Utils.resolveContextPlaceholders(alias)), publisherAuthHeaders());
     }
 
@@ -146,7 +142,7 @@ public class EndpointCertificateSteps {
      */
     @When("I retrieve the usage of endpoint certificate {string} with limit {int} and offset {int}")
     public void iRetrieveEndpointCertificateUsage(String alias, int limit, int offset) throws IOException {
-        Requests.get(Utils.getEndpointCertificateUsageURL(getBaseUrl(),
+        Requests.get(Utils.getEndpointCertificateUsageURL(Utils.getBaseUrl(),
                 Utils.resolveContextPlaceholders(alias), limit, offset), publisherAuthHeaders());
     }
 
@@ -159,9 +155,10 @@ public class EndpointCertificateSteps {
     @When("I retrieve the usage of endpoint certificate {string} with limit {int} and offset {int} until it lists {int} APIs within {int} seconds")
     public void iRetrieveUsageUntilCount(String alias, int limit, int offset, int expectedCount, int timeoutSeconds)
             throws IOException, InterruptedException {
-        String url = Utils.getEndpointCertificateUsageURL(getBaseUrl(), Utils.resolveContextPlaceholders(alias),
+        String url = Utils.getEndpointCertificateUsageURL(Utils.getBaseUrl(), Utils.resolveContextPlaceholders(alias),
                 limit, offset);
-        long endTime = System.currentTimeMillis() + timeoutSeconds * 1000L;
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + timeoutSeconds * 1000L;
         int actual = -1;
         while (true) {
             try {
@@ -176,7 +173,7 @@ public class EndpointCertificateSteps {
             if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertEquals(actual, expectedCount,
                 "Endpoint-certificate usage did not list " + expectedCount + " APIs within " + timeoutSeconds

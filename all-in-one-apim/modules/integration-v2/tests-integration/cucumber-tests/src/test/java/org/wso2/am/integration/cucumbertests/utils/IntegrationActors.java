@@ -95,6 +95,11 @@ public final class IntegrationActors {
         return resolve(systemId).baseUrl();
     }
 
+    /** The system's OAuth2 token endpoint ({@code <baseUrl>oauth2/token}). */
+    public static String tokenEndpoint(String systemId) {
+        return baseUrl(systemId) + "oauth2/token";
+    }
+
     /** A headers map carrying the system principal's {@code Authorization: Basic …} header. */
     public static Map<String, String> authHeaders(String systemId) {
         Map<String, String> headers = new HashMap<>();

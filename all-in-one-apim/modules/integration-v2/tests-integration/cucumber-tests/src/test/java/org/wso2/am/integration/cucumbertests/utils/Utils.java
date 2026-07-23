@@ -32,8 +32,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.json.JSONTokener;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -61,6 +63,169 @@ public class Utils {
     private static final Log log = LogFactory.getLog(Utils.class);
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Pattern UNIQUE_PLACEHOLDER = Pattern.compile("\\$\\{UNIQUE:([^}]+)\\}");
+
+    /** The block's APIM management base URL from the shared context; throws if the block has not booted yet. */
+    public static String getBaseUrl() {
+        return requiredContextUrl("baseUrl");
+    }
+
+    /** The block's gateway HTTPS base URL from the shared context; throws if the block has not booted yet. */
+    public static String getBaseGatewayUrl() {
+        return requiredContextUrl("baseGatewayUrl");
+    }
+
+    /** The block's gateway {@code ws://} base URL from the shared context; throws if not booted yet. */
+    public static String getBaseGatewayWsUrl() {
+        return requiredContextUrl("baseGatewayWsUrl");
+    }
+
+    /** The block's gateway {@code wss://} base URL from the shared context; throws if not booted yet. */
+    public static String getBaseGatewayWssUrl() {
+        return requiredContextUrl("baseGatewayWssUrl");
+    }
+
+    private static String requiredContextUrl(String key) {
+        Object url = TestContext.get(key);
+        if (url == null) {
+            throw new IllegalStateException(key + " is not available in the test context yet");
+        }
+        return url.toString();
+    }
+
+    /** URL-encodes a value as UTF-8 — the one-liner formerly copied as {@code enc()}/{@code urlEncode()}. */
+    public static String urlEncode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Tiered inter-poll pause for deadline-bounded retry loops: the loop's own base cadence for the first
+     * minute (fast pass-detection, where nearly all polls succeed), then {@code max(base, 5s)} in the second
+     * minute and {@code max(base, 10s)} beyond — easing off the server exactly when a long tail says it is
+     * struggling (see {@code Constants.RUNTIME_PROPAGATION_TIMEOUT}: 180s window = one tier per minute). For a
+     * loop whose whole window is under a minute this is identical to {@code Thread.sleep(base)}. Propagates
+     * {@link InterruptedException} so cancellation stops at the loop's own interrupt handling. Pass the
+     * instant the POLL began (typically the value the loop's deadline was computed from).
+     */
+    public static void pollPause(long pollStartMillis, long baseIntervalMillis) throws InterruptedException {
+        long elapsed = System.currentTimeMillis() - pollStartMillis;
+        long interval = elapsed < 60_000L ? baseIntervalMillis
+                : elapsed < 120_000L ? Math.max(baseIntervalMillis, 5_000L)
+                : Math.max(baseIntervalMillis, 10_000L);
+        Thread.sleep(interval);
+    }
+
+    /** A readiness probe for {@link #awaitWithRetry}: true once the awaited state is observable. */
+    @FunctionalInterface
+    public interface ReadinessProbe {
+        boolean isReady() throws Exception;
+    }
+
+    /** The re-trigger for {@link #awaitWithRetry}: re-fires the action whose propagation event was lost. */
+    @FunctionalInterface
+    public interface ReadinessAction {
+        void trigger() throws Exception;
+    }
+
+    /**
+     * SELF-HEALING readiness gate for PREREQUISITE state (never for a scenario's assertion target): polls
+     * {@code probe} with the {@link #pollPause} tiers for a full {@code RUNTIME_PROPAGATION_TIMEOUT} window,
+     * and on exhaustion fires {@code reTrigger} and waits again (shorter 60s windows — a re-emitted event
+     * lands fast or not at all), up to {@code maxAttempts} total attempts. Exists because the product's
+     * runtime-propagation events are delivered at-most-once: a gateway that consumes a deploy event and then
+     * fails its artifact fetch NEVER retries ("Storage returned null"), so no amount of waiting can succeed —
+     * only re-firing the action re-emits the event. Every heal logs a grep-able WARN ("self-heal: ...") so
+     * occurrences stay countable across runs — this compensates for a product robustness gap and must not
+     * silently hide its frequency. A probe exception counts as not-ready (indistinguishable during warm-up).
+     */
+    public static void awaitWithRetry(String what, ReadinessProbe probe, ReadinessAction reTrigger, int maxAttempts)
+            throws InterruptedException {
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            long start = System.currentTimeMillis();
+            long deadline = start + (attempt == 1 ? Constants.RUNTIME_PROPAGATION_TIMEOUT : 60_000L);
+            while (System.currentTimeMillis() < deadline) {
+                try {
+                    if (probe.isReady()) {
+                        long waitedSeconds = (System.currentTimeMillis() - start) / 1000;
+                        if (attempt > 1) {
+                            log.warn("self-heal: " + what + " became ready after re-trigger (attempt "
+                                    + attempt + "/" + maxAttempts + ", " + waitedSeconds + "s into the window)");
+                        } else if (waitedSeconds >= 60) {
+                            // Slow-pass watch: the delayed-but-not-dropped population creeping toward the window
+                            // edge — the early-warning signal a silent pass would hide.
+                            log.warn("self-heal-watch: " + what + " became ready only after " + waitedSeconds
+                                    + "s (no re-trigger needed — delayed, not dropped)");
+                        }
+                        return;
+                    }
+                } catch (Exception transientProbeFailure) {
+                    // not-ready and probe-failed look identical during warm-up — keep polling within the window
+                }
+                pollPause(start, Constants.RETRY_INTERVAL_TIME);
+            }
+            if (attempt < maxAttempts) {
+                log.warn("self-heal: re-triggering " + what + " (attempt " + (attempt + 1) + "/" + maxAttempts
+                        + ") — runtime-propagation event presumed dropped after an exhausted wait window");
+                try {
+                    reTrigger.trigger();
+                } catch (Exception reTriggerFailure) {
+                    Assert.fail("self-heal re-trigger for " + what + " failed: " + reTriggerFailure);
+                }
+            }
+        }
+        Assert.fail(what + " did not become ready within " + maxAttempts
+                + " attempt(s) including self-heal re-triggers (runtime-propagation event presumed dropped)");
+    }
+
+    /**
+     * Extracts a query parameter's decoded value from a URL, or {@code null} when absent. Splits on
+     * {@code &}/{@code =} rather than regex-matching the name, so a parameter whose name suffixes another's
+     * (e.g. {@code code} vs {@code session_code}) is never mismatched.
+     */
+    public static String queryParam(String url, String name) {
+        if (url == null) {
+            return null;
+        }
+        int q = url.indexOf('?');
+        if (q < 0) {
+            return null;
+        }
+        for (String pair : url.substring(q + 1).split("&")) {
+            int eq = pair.indexOf('=');
+            String k = eq < 0 ? pair : pair.substring(0, eq);
+            if (k.equals(name)) {
+                String v = eq < 0 ? "" : pair.substring(eq + 1);
+                return java.net.URLDecoder.decode(v, StandardCharsets.UTF_8);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Copies a classpath resource into a delete-on-exit temp file (for multipart uploads that need a
+     * {@link File}), failing clearly when the resource is missing.
+     */
+    public static File classpathToTempFile(String resourcePath, String tempPrefix, String tempSuffix)
+            throws IOException {
+        try (InputStream in = Utils.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new FileNotFoundException("Classpath resource not found: " + resourcePath);
+            }
+            File temp = File.createTempFile(tempPrefix, tempSuffix);
+            temp.deleteOnExit();
+            Files.copy(in, temp.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return temp;
+        }
+    }
+
+    /** Reads a classpath resource as a UTF-8 string, failing clearly when it is missing. */
+    public static String readClasspathResource(String resourcePath) throws IOException {
+        try (InputStream in = Utils.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new FileNotFoundException("Classpath resource not found: " + resourcePath);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
 
     public static String getDCREndpointURL(String baseUrl) {
 
@@ -709,6 +874,36 @@ public class Utils {
 
     public static String getAPIScopesById(String baseUrl, String scopeId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "scopes/" + scopeId;
+    }
+
+    /**
+     * Fetches a list resource ({@code {"list":[...]}}) via the RAW client and returns the {@code idField} of
+     * the first entry whose {@code name} equals {@code name} — the shared primitive for resolving a create
+     * whose response was lost mid-flight, so the caller registers/adopts the survivor instead of blindly
+     * re-POSTing a non-idempotent create (or silently orphaning it when the retry uses fresh names). Raw
+     * client on purpose: this is an intermediate read that must not clobber the step's published
+     * {@code httpResponse}. Returns {@code null} when no entry matches, the response is not a 2xx-with-body,
+     * or the call/parse fails — callers treat every null as "not created" and retry or fail loudly on their
+     * own POST path.
+     */
+    public static String findIdByNameInListResponse(String listUrl, Map<String, String> headers,
+                                                    String name, String idField) {
+        try {
+            HttpResponse resp = SimpleHTTPClient.getInstance().doGet(listUrl, headers);
+            if (resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                    && !resp.getData().isEmpty()) {
+                JSONArray list = new JSONObject(resp.getData()).optJSONArray("list");
+                for (int i = 0; list != null && i < list.length(); i++) {
+                    JSONObject entry = list.getJSONObject(i);
+                    if (name.equals(entry.optString("name"))) {
+                        return entry.getString(idField);
+                    }
+                }
+            }
+        } catch (IOException | JSONException lookupFailure) {
+            // treated as not-found — the caller retries the create or fails loudly on its POST path
+        }
+        return null;
     }
 
     /** Publisher — retrieve (GET) or update (PUT multipart {@code schemaDefinition}) a GraphQL API's schema. */

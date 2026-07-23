@@ -61,16 +61,6 @@ public class VisibilityAccessSteps {
     private final BaseSteps baseSteps = new BaseSteps();
     private final PublisherBaseSteps publisherBaseSteps = new PublisherBaseSteps();
 
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
-    private Map<String, String> devportalAuthHeaders() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        return headers;
-    }
-
     // ---- Role-restricted API authoring ------------------------------------------------------------------
 
     /**
@@ -170,21 +160,50 @@ public class VisibilityAccessSteps {
     private void createAndDeployFromJson(JSONObject json, String apiIdKey) throws IOException, InterruptedException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        String url = Utils.getAPICreateEndpointURL(getBaseUrl(), "apis");
+        String url = Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "apis");
 
-        long deadline = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
-        HttpResponse response;
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
+        HttpResponse response = null;
+        Object createdId = null;
+        boolean outcomeUncertain = false;
         while (true) {
-            response = Requests.post(url, headers, json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-            boolean roleNotYetVisible = response != null && response.getResponseCode() == 400
-                    && response.getData() != null && response.getData().contains("900610");
-            if (!roleNotYetVisible || System.currentTimeMillis() >= deadline) {
+            try {
+                response = Requests.post(url, headers, json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException transientFailure) {
+                // The create POST is NOT idempotent and its outcome is now UNKNOWN — the server may have
+                // committed before the connection died, and a blind re-POST would 409 against our own API and
+                // leak it. Resolve by the unique name: found -> adopt that id; absent -> re-POST (the 900610
+                // rejection branch below stays a plain retry: the server provably created nothing there).
+                response = null;
+                outcomeUncertain = true;
+                createdId = Utils.findIdByNameInListResponse(
+                        Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), "name:" + json.getString("name"), null, null),
+                        headers, json.getString("name"), "id");
+                if (createdId != null) {
+                    break;
+                }
+            }
+            boolean retryable = response == null || (response.getResponseCode() == 400
+                    && response.getData() != null && response.getData().contains("900610"));
+            if (!retryable || System.currentTimeMillis() >= deadline) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(deadlineStart, 2000);
         }
-        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
-        Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+        if (createdId == null && outcomeUncertain && response != null && response.getResponseCode() == 409) {
+            // The uncertainty lookup raced the eventually-consistent search index: the lost-response create
+            // surfaced as a conflict on the re-POST. Adopt the API it collided with (ours — the name is unique
+            // to this call), so the scenario proceeds and teardown sweeps it.
+            createdId = Utils.findIdByNameInListResponse(
+                    Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), "name:" + json.getString("name"), null, null),
+                    headers, json.getString("name"), "id");
+        }
+        if (createdId == null) {
+            Assert.assertNotNull(response, "API create got no response within the deadline (requests failed)");
+            Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+            createdId = Utils.extractValueFromPayload(response.getData(), "id");
+        }
         TestContext.set(apiIdKey, createdId);
         ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
 
@@ -227,7 +246,7 @@ public class VisibilityAccessSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
@@ -241,7 +260,7 @@ public class VisibilityAccessSteps {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers, api.toString(),
+        Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers, api.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -263,7 +282,7 @@ public class VisibilityAccessSteps {
     @Then("I retrieve the devportal {string} of API {string} until the response status code becomes {int} within {int} seconds")
     public void iRetrieveDevportalSubResourceUntil(String kind, String apiIdKey, int expectedStatus, int timeoutSeconds)
             throws InterruptedException {
-        pollUntilStatus(subResourceUrl(kind, apiIdKey), devportalAuthHeaders(), expectedStatus, timeoutSeconds);
+        pollUntilStatus(subResourceUrl(kind, apiIdKey), Identity.devportalHeaders(), expectedStatus, timeoutSeconds);
     }
 
     /**
@@ -284,14 +303,14 @@ public class VisibilityAccessSteps {
         String apiId = TestContext.resolve(apiIdKey).toString();
         switch (kind) {
             case "api":
-                return Utils.getDevportalApiDetailURL(getBaseUrl(), apiId);
+                return Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId);
             case "swagger":
-                return Utils.getDevportalApiSwaggerURL(getBaseUrl(), apiId);
+                return Utils.getDevportalApiSwaggerURL(Utils.getBaseUrl(), apiId);
             case "document":
-                return Utils.getDevportalApiDocumentURL(getBaseUrl(), apiId,
+                return Utils.getDevportalApiDocumentURL(Utils.getBaseUrl(), apiId,
                         TestContext.resolve("documentID").toString());
             case "document content":
-                return Utils.getDevportalApiDocumentContentURL(getBaseUrl(), apiId,
+                return Utils.getDevportalApiDocumentContentURL(Utils.getBaseUrl(), apiId,
                         TestContext.resolve("documentID").toString());
             default:
                 throw new IllegalArgumentException("Unknown devportal sub-resource kind: '" + kind
@@ -302,7 +321,7 @@ public class VisibilityAccessSteps {
     private void pollUntilStatus(String url, Map<String, String> headers, int expectedStatus, int timeoutSeconds)
             throws InterruptedException {
         long deadline = System.currentTimeMillis()
-                + Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+                + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
         HttpResponse last = null;
         while (System.currentTimeMillis() < deadline) {
             try {
@@ -335,7 +354,7 @@ public class VisibilityAccessSteps {
             throws IOException, InterruptedException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        searchUntilCount(Utils.getPublisherApiSearchURL(getBaseUrl(), Utils.resolveContextPlaceholders(query)),
+        searchUntilCount(Utils.getPublisherApiSearchURL(Utils.getBaseUrl(), Utils.resolveContextPlaceholders(query)),
                 headers, expectedCount, timeoutSeconds);
     }
 
@@ -348,13 +367,14 @@ public class VisibilityAccessSteps {
     @When("I search DevPortal APIs with content query {string} until the result count is {int} within {int} seconds")
     public void iSearchDevportalContentUntilCount(String query, int expectedCount, int timeoutSeconds)
             throws IOException, InterruptedException {
-        searchUntilCount(Utils.getApiSearchURL(getBaseUrl(), Utils.resolveContextPlaceholders(query)),
-                devportalAuthHeaders(), expectedCount, timeoutSeconds);
+        searchUntilCount(Utils.getApiSearchURL(Utils.getBaseUrl(), Utils.resolveContextPlaceholders(query)),
+                Identity.devportalHeaders(), expectedCount, timeoutSeconds);
     }
 
     private void searchUntilCount(String url, Map<String, String> headers, int expectedCount, int timeoutSeconds)
             throws IOException, InterruptedException {
-        long endTime = System.currentTimeMillis() + timeoutSeconds * 1000L;
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + timeoutSeconds * 1000L;
         HttpResponse response = null;
         int actual = -1;
         while (true) {
@@ -370,7 +390,7 @@ public class VisibilityAccessSteps {
             if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(response, "No content-search response for " + url);
         Assert.assertEquals(actual, expectedCount,

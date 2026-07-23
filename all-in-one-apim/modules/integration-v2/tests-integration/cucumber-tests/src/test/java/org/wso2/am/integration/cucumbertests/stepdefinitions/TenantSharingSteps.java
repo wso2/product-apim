@@ -54,14 +54,6 @@ public class TenantSharingSteps {
     private static final String KM_HEADER = "X-WSO2-KEY-MANAGER";
     private static final String KM_HEADER_VALUE = "TENANT_MANAGEMENT";
 
-    private String getBaseUrl() {
-        Object v = TestContext.get("baseUrl");
-        if (v == null) {
-            throw new IllegalStateException("baseUrl not in context; the block must be booted first");
-        }
-        return v.toString();
-    }
-
     /**
      * POSTs a {@code tenantCreated} tenant-management event to APIM's {@code /internal/data/v1/notify} as the
      * ACTING actor (basic auth — the endpoint authenticates the event sender's carbon credentials, exactly as
@@ -97,7 +89,7 @@ public class TenantSharingSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(
                 (actor.getUserName() + ":" + actor.getPassword()).getBytes(StandardCharsets.UTF_8)));
         headers.put(KM_HEADER, KM_HEADER_VALUE);
-        Requests.post(getBaseUrl() + "internal/data/v1/notify", headers, event.toString(),
+        Requests.post(Utils.getBaseUrl() + "internal/data/v1/notify", headers, event.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -124,7 +116,7 @@ public class TenantSharingSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = Requests.get(Utils.getKeyManagersURL(getBaseUrl()), headers);
+        HttpResponse response = Requests.get(Utils.getKeyManagersURL(Utils.getBaseUrl()), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
                         && !response.getData().isBlank(),
                 "Key manager list failed for " + Identity.actingActor().getUserName() + ": got="
