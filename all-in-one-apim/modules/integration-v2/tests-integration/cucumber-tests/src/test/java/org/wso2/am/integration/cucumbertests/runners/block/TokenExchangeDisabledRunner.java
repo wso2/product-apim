@@ -20,7 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the token-exchange DISABLED negative block (testng-is7txdisabled.xml). Boots APIM with the grant
+ * Runner for the token-exchange DISABLED negative, co-hosted in the IntegrationV2-SandboxAndTokenExchangeDisabled
+ * block (testng-v2.xml). Boots APIM with the grant
  * disabled ([oauth.grant_type.token_exchange] enable=false) and asserts the token endpoint refuses a
  * token-exchange request with unsupported_grant_type. No external IS and no key manager are needed - the grant
  * is rejected at dispatch, before any subject token is processed.

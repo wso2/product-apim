@@ -259,13 +259,6 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Publishes a resource, changing its lifecycle state to "PUBLISHED".
-     * A published resource becomes available in the Developer Portal for subscription.
-     *
-     * @param resourceType Type of resource to publish (e.g., "apis", "api-products")
-     * @param resourceId Context key containing the resource ID to publish
-     */
-    /**
      * Generates the inline mock implementation script for an API (POST /apis/{id}/generate-mock-scripts).
      * Ports the generateMockScript call of PrototypedAPITestcase inline-mock tests. Non-asserting.
      *
@@ -327,6 +320,13 @@ public class PublisherBaseSteps {
         Requests.post(Utils.getChangeSubscriptionBusinessPlanURL(getBaseUrl(), actualSubId, plan), headers, "", null);
     }
 
+    /**
+     * Publishes a resource, changing its lifecycle state to "PUBLISHED".
+     * A published resource becomes available in the Developer Portal for subscription.
+     *
+     * @param resourceType Type of resource to publish (e.g., "apis", "api-products")
+     * @param resourceId Context key containing the resource ID to publish
+     */
     @When("I publish the {string} resource with id {string}")
     public void iPublishTheResource(String resourceType, String resourceId) throws IOException {
 
@@ -1124,11 +1124,18 @@ public class PublisherBaseSteps {
             // status assertion reads, matching the pre-loop contract.
             HttpResponse response = Requests.post(Utils.getAPIScopes(getBaseUrl()), headers, jsonPayload,
                     Constants.CONTENT_TYPES.APPLICATION_JSON);
-            Assert.assertTrue(response != null && response.getResponseCode() >= 200
-                            && response.getResponseCode() < 300
-                            && response.getData() != null && !response.getData().isEmpty(),
-                    "Shared scope create failed: got=" + (response == null ? "null"
-                            : response.getResponseCode() + "/" + response.getData()));
+            // A non-2xx create is RETRYABLE within the deadline, not fatal: the fan-out also races KM
+            // DELETION propagation - a KM another runner just REST-deleted (e.g. the keygen-negatives'
+            // unreachable KM) can linger in the in-memory holder for a moment, and registerScope fanning out
+            // to it fails the whole create with a 500 until the holder catches up.
+            if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
+                    || response.getData() == null || response.getData().isBlank()) {
+                Assert.assertFalse(System.currentTimeMillis() > deadline,
+                        "Shared scope create failed until the deadline: got=" + (response == null ? "null"
+                                : response.getResponseCode() + "/" + response.getData()));
+                Thread.sleep(1000);
+                continue;
+            }
             Object scopeId = Utils.extractValueFromPayload(response.getData(), "id");
             // Short per-attempt probe: if the KM was propagated, the role exists as of the 201 (registerScope
             // is synchronous inside the create); the brief re-checks only absorb IS-side latency.

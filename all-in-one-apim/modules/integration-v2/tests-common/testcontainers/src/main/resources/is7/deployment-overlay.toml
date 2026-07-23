@@ -1,13 +1,15 @@
-# WSO2 Identity Server 7.1.0 deployment.toml OVERLAY for the integration-v2 external-key-manager block.
+# WSO2 Identity Server 7.x deployment.toml OVERLAY for the integration-v2 external-key-manager block
+# (the image version is parameterized via is.server.version; currently 7.3.0).
 #
 # This is NOT a full server config. IdentityServerContainer#buildDeploymentToml appends this file verbatim onto
 # the IS image's OWN default deployment.toml (extracted at build time by the testcontainers pre-integration-test
 # exec extract-is-default-toml to target/is7/is-default-deployment.toml). So IS keeps every distribution default
 # (DB, primary keystore, truststore, user store, account recovery, ...) and this file only ADDS the documented
 # WSO2 IS 7.x key-manager config. It is authored in TOML block style ([[...]] tables, quoted dotted keys)
-# because IS 7.1.0's org.wso2.config.mapper.TomlParser is strict - it rejects the inline array-of-tables style
+# because IS 7.x's org.wso2.config.mapper.TomlParser is strict - it rejects the inline array-of-tables style
 # a structured jackson/toml4j merge would emit. Every block here is ADDITIVE: none of them exist in the IS
-# 7.1.0 default (verified). The ONE key we must override that already exists in the default - [server] hostname -
+# 7.3.0 default (re-verified against the image's extracted deployment.toml; [keystore.tls] appears there only
+# commented out). The ONE key we must override that already exists in the default - [server] hostname -
 # is NOT set here (appending a second [server] table would be a duplicate); IdentityServerContainer rewrites it
 # in place to the network alias "wso2is" so the OAuth issuer/endpoints resolve to https://wso2is:9443.
 

@@ -2,7 +2,7 @@
   "name": "${UNIQUE:Wso2Is7Perm}",
   "displayName": "WSO2 IS 7 (permissions test)",
   "type": "WSO2-IS-7",
-  "description": "WSO2 Identity Server 7.1.0 registered as a third-party key manager (integration-v2 external-KM block).",
+  "description": "WSO2 Identity Server 7.x registered as a third-party key manager (integration-v2 external-KM block).",
   "issuer": "https://wso2is:9443/oauth2/token",
   "tokenEndpoint": "https://wso2is:9443/oauth2/token",
   "introspectionEndpoint": "https://wso2is:9443/oauth2/introspect",

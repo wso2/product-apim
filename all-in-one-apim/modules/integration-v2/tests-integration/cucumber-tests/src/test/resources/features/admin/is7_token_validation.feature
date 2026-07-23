@@ -18,8 +18,8 @@ Feature: External Key Manager Token Validation and UserInfo
 
   @rule:token-validation @type:regression
   Scenario: The IS7 UserInfo endpoint (SCIM2 Me) returns the token owner profile
-    # A password-grant token (openid scope) resolves the token owner's SCIM2 profile at the KM's UserInfo endpoint.
-    When I request an OAuth access token from the external key manager using password grant as "admin" with password "admin"
+    # A password-grant token with the openid scope resolves the token owner's SCIM2 profile at UserInfo.
+    When I request an OAuth access token from the external key manager using password grant as "admin" with password "admin" requesting scope "openid"
     Then The response status code should be 200
     When I retrieve the current user profile from the external key manager userinfo endpoint
     Then The response status code should be 200

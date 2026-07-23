@@ -20,10 +20,11 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for IS7 role-based authorization enforcement. Runs in its own external-KM block
- * (testng-is7km-roleenf.xml) so the scope-protected-API setup registers scopes against a clean tenant (scope
- * registration fans registerScope out to every KM in the tenant, so an unrelated broken KM would fail it). Uses
- * the {@code _setup_} fixture pattern - {@code _setup_is7_role_enforcement}
+ * Runner for IS7 role-based authorization enforcement. Runs in the core external-KM block
+ * (IntegrationV2-Is7KeyManager in testng-v2.xml). Scope registration fans registerScope out to every KM in the
+ * tenant, so the shared-scope-create step polls-and-recreates until the KM propagates and the IS role appears
+ * (absorbing the transient broken KMs the negatives register). Uses the {@code _setup_} fixture pattern -
+ * {@code _setup_is7_role_enforcement}
  * (listed first, provisions the scope-protected API / application / IS users once) then
  * {@code is7_role_enforcement} (the with-role -> 200 and without-role -> 403 scenarios, reusing that fixture). The
  * fixture is torn down once by {@link BaseBlockRunner}'s AfterClass sweep.

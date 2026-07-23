@@ -20,9 +20,10 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the introspection-mode external-key-manager feature. Runs in the introspection block
- * (testng-is7km-introspect.xml), which registers the IS7 KM with enableSelfValidationJWT=false
- * (externalKmPayload=wso2is7-introspect.json) so the gateway validates tokens via IS /oauth2/introspect. Proves
+ * Runner for the introspection-mode external-key-manager feature. Runs in the validation-modes block
+ * (testng-v2.xml, bootExternalIdentityServer=true); the scenario registers the IS7 KM with
+ * enableSelfValidationJWT=false (wso2is7-introspect.json) so the gateway validates tokens via IS
+ * /oauth2/introspect. Proves
  * the KM works in introspection mode and that a revoke propagates to IS's introspection endpoint. Extends
  * {@link BaseBlockRunner} for the block boot-failure guard and the runner-scoped cleanup safety net.
  */

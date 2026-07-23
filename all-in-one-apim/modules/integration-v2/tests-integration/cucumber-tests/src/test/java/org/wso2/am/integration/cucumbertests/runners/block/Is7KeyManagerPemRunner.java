@@ -20,7 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the PEM-certificate self-validation block (testng-is7km-pem.xml). The block registers the WSO2-IS-7
+ * Runner for the PEM-certificate self-validation feature, co-hosted in the validation-modes block
+ * (IntegrationV2-Is7KeyManagerValidationModes in testng-v2.xml). The scenario registers the WSO2-IS-7
  * key manager with {@code certificates.type=PEM} (the IS token-signing cert, wso2is7-pem.json) instead of the
  * JWKS endpoint the other IS7 blocks use, and the feature proves gateway self-validation follows the pinned
  * cert: live-signer PEM passes, a stale different-key-pair PEM rejects fresh tokens, re-uploading recovers.

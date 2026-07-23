@@ -60,13 +60,9 @@ public final class TokenExchangeProvisioner {
     private TokenExchangeProvisioner() {
     }
 
+    /** The external IS management base URL, via the IS integration actor (fails fast if IS was not booted). */
     private static String isBase() {
-        Object v = TestContext.get("isBaseUrl");
-        if (v == null) {
-            throw new IllegalStateException("isBaseUrl not in context; the block must set "
-                    + "bootExternalIdentityServer=true so the external Identity Server is started");
-        }
-        return v.toString();
+        return IntegrationActors.baseUrl(IntegrationActors.IS);
     }
 
     private static String apimBase() {
@@ -77,12 +73,9 @@ public final class TokenExchangeProvisioner {
         return v.toString();
     }
 
+    /** The IS integration actor's auth headers (CLAUDE.md §14 — IS's own principal, not an APIM actor). */
     private static Map<String, String> superAdminBasicAuth() {
-        Map<String, String> h = new HashMap<>();
-        h.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(
-                (Constants.SUPER_TENANT_ADMIN_USERNAME + ":" + Constants.SUPER_TENANT_ADMIN_PASSWORD)
-                        .getBytes(StandardCharsets.UTF_8)));
-        return h;
+        return IntegrationActors.authHeaders(IntegrationActors.IS);
     }
 
     /**
@@ -114,10 +107,14 @@ public final class TokenExchangeProvisioner {
                         : create.getResponseCode() + "/" + create.getData()));
         String appId = locationId(create);
         Assert.assertNotNull(appId, "Could not read created IS app id from Location header");
+        // Register for the IS-side teardown sweep BEFORE the follow-up OIDC config calls, so an aborted
+        // configuration still leaves the app swept (as the IS integration actor — see ISResourceCleanup).
+        ISResourceCleanup.registerApplication(appId);
 
         HttpResponse oidcResp = SimpleHTTPClient.getInstance().doGet(
                 base + "api/server/v1/applications/" + appId + "/inbound-protocols/oidc", superAdminBasicAuth());
-        Assert.assertTrue(oidcResp != null && oidcResp.getResponseCode() == 200 && oidcResp.getData() != null,
+        Assert.assertTrue(oidcResp != null && oidcResp.getResponseCode() == 200 && oidcResp.getData() != null
+                        && !oidcResp.getData().isBlank(),
                 "IS OIDC inbound fetch failed: got=" + (oidcResp == null ? "null"
                         : oidcResp.getResponseCode() + "/" + oidcResp.getData()));
         JSONObject oidc = new JSONObject(oidcResp.getData());
@@ -272,7 +269,8 @@ public final class TokenExchangeProvisioner {
      */
     private static String fetchIsSigningCertBase64Der() throws IOException {
         HttpResponse r = SimpleHTTPClient.getInstance().doGet(isBase() + "oauth2/jwks", new HashMap<>());
-        Assert.assertTrue(r != null && r.getResponseCode() == 200 && r.getData() != null,
+        Assert.assertTrue(r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && !r.getData().isBlank(),
                 "Fetching IS JWKS failed: got=" + (r == null ? "null" : r.getResponseCode() + "/" + r.getData()));
         JSONArray keys = new JSONObject(r.getData()).getJSONArray("keys");
         for (int i = 0; i < keys.length(); i++) {

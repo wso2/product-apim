@@ -20,9 +20,9 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the tenant-org token-revocation feature in the is7-km block (testng-is7km.xml). The tenant admin
- * registers its own org-scoped WSO2-IS-7 key manager (the block-registered one exists only in the super
- * tenant), runs the self-validate token arc against a tenant API, and proves the gateway enforces a revocation
+ * Runner for the tenant-org token-revocation feature in the core external-KM block (IntegrationV2-Is7KeyManager
+ * in testng-v2.xml). The tenant admin registers its own org-scoped WSO2-IS-7 key manager (the super-tenant KM
+ * the other scenarios register exists only in the super tenant), runs the self-validate token arc against a tenant API, and proves the gateway enforces a revocation
  * performed at IS - even though the IS-side notification carries IS's tenancy (carbon.super), not the APIM org.
  */
 @CucumberOptions(

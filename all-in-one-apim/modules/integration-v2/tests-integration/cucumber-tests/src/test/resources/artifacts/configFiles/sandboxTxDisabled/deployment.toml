@@ -1,5 +1,6 @@
 # Combined overlay for the IntegrationV2-SandboxAndTokenExchangeDisabled block — the sandbox-only gateway
-# environment co-hosted with the token-exchange-disabled negative at thread-count=1 (see testng-v2.xml).
+# environment co-hosted with the token-exchange-disabled negative at thread-count=2 (see testng-v2.xml; the
+# two runners touch disjoint planes — gateway data plane vs the token endpoint — validated 3x concurrent).
 # Merged on top of the shared `basic` overlay. Verified mutually inert: the sandbox env redefinition bites
 # only GATEWAY invocations with production tokens, and TokenExchangeDisabled never invokes the gateway (nor
 # creates/publishes an API — token-endpoint only); the disabled exchange grant bites only a token-exchange

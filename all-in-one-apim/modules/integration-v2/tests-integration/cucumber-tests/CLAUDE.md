@@ -195,7 +195,12 @@ arranging the array — verified by Phase 7.4.
 - **Prerequisites a feature needs but doesn't test go in a `_setup_*.feature`.** Example: an invocation
   test (`@cap:gateway`) needs a published API, but publishing isn't its subject — so a
   `_setup_published_apis.feature` (`@setup`) is listed **first** in the runner and builds it.
-- A setup feature **asserts nothing** and creates **uniquely-named** resources (see §4) into the runner's
+- A setup feature **tests nothing** — it contributes no coverage (excluded from the tree) and never asserts
+  product behaviour. Sparse FAIL-FAST checks on its own fixture creates (a `Then The response status code
+  should be 201` after a non-asserting create step, a lifecycle gate before handoff) are fine and
+  encouraged: several creating steps set context only on success, so a silent fixture failure otherwise
+  surfaces as a confusing "No value found in context" cascade in the scenarios instead of one clear
+  root-cause failure. It creates **uniquely-named** resources (see §4) into the runner's
   **local** `TestContext` scope. **Hand off both the id and any payload later scenarios need** — e.g. store
   `configApiId` *and* the retrieved `configApiPayload`, since a config-update step reads the payload, mutates
   one field, and PUTs it back. Local scope is keyed by runner instance, and all of a runner's scenarios
@@ -310,9 +315,55 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   `thread-count=1` so no sibling class shares the container mid-restart — but it can still run as one of the
   parallel *blocks*).
 
+## 14. Infra vs product operations (the provisioner boundary)
+**Provisioning is for INFRASTRUCTURE only. Every product operation is performed by a feature, as an actor.**
+
+- **Infra** = what exists before any scenario runs: the containers (APIM, Identity Server, node backend),
+  their config/trust material, readiness gates, and seeding the ACTOR REGISTRY (tenants/users/secondary
+  store). That is the full legitimate scope of `BlockLifecycleListener` params and `*Provisioner` classes.
+- **Product operations** = any call to a product API — publisher/devportal/admin REST, token endpoints,
+  gateway invocations, `/internal/data/v1/notify`, admin SOAP services *when the call is the subject or a
+  scenario-level prerequisite*. These live in `.feature` files as steps, run **as an `Identity` actor**,
+  through the `Requests`/`execute` funnels. If a block "needs" a product resource before its scenarios (a
+  registered key manager, a synced tenant), that is a `_setup_*` feature (§10) — not a listener hook.
+- **Why this is load-bearing, not taste:**
+  1. **Coverage** — product behaviour buried in a listener/util is invisible to the coverage tree and to
+     reviewers; as a step it is tagged, counted and reviewed.
+  2. **Cleanup** — `ResourceCleanup` deletes each resource *as its creating actor* (§5). A resource created
+     with a side-channel token (a util that mints its own via DCR) is un-sweepable: teardown resolves the
+     wrong principal, 404s cross-tenant, and the resource leaks anyway.
+  3. **One HTTP discipline** — side-channel utils grow private mini-frameworks (own auth headers, own
+     polling, raw client calls) that dodge the `httpResponse` contract and duplicate `Identity`/`Requests`.
+- **Needing a principal that doesn't exist at block boot is NOT a licence for a side channel.** If a
+  scenario creates its principal at runtime (a notify-synced tenant's admin, a secondary-store user),
+  REGISTER it as a runtime actor so the standard steps, tokens and cleanup all apply — the secondary
+  user-store actors (§12) are the precedent.
+- **External systems get INTEGRATION ACTORS, not hand-built credentials.** A system APIM integrates with
+  (the external Identity Server today; any third-party/SaaS integration tomorrow) has its own principal —
+  registered in `IntegrationActors` (seeding it is provisioner-legitimate: the listener seeds `is` after
+  booting IS; a SaaS would seed from env/config) and kept SEPARATE from `Identity`'s APIM actors (no tenant,
+  no acting-actor semantics — fold them together and the APIM sweeps break). Steps operating on that system
+  authenticate via `IntegrationActors.authHeaders(...)`/`baseUrl(...)`, and every resource they create is
+  registered with the system's cleanup (`ISResourceCleanup` for IS) so teardown deletes it AS that principal
+  through the system's own management API — an APIM actor token cannot address external resources. Today the
+  IS container is Ryuk-reaped so this is belt-and-braces; the moment an integration is a SaaS, per-resource
+  cleanup as the registered principal is the only defence against unbounded residue in a persistent account
+  (and §4 unique naming doubles as the crash-safe sweep-by-convention key there).
+- **Narrow exception:** when the ONLY interface for a scenario-level prerequisite is a SOAP admin service
+  with no REST equivalent (e.g. trusted-IdP registration for token exchange), a helper util is acceptable —
+  but it must authenticate as the ACTING actor's credentials, be called from a step, and say why in its
+  javadoc. It must never be a block/listener hook.
+- **Cautionary precedents:** `KeyManagerRegistration` (REMOVED — the listener registered the key manager,
+  admin product behaviour hidden as block infra; replaced by feature-level registration) and
+  `DefaultKmProvisioner` (REMOVED — a util that minted its own tokens for notify-synced tenants; its
+  resources could not be swept by `ResourceCleanup`. Replaced by
+  `TenantUserProvisioner.registerRuntimeTenantAdmin` + standard steps in `TenantSharingSteps`).
+
 ## Anti-patterns (don't)
 Fixed ports · hardcoded resource names · `Thread.sleep` · depending on another scenario's order or
 artifacts · shared mutable static state · cleanup in inline scenarios instead of hooks · duplicate
 steps or duplicate tests · full-file `tomlOverlayPath` for product tests (use `tomlExtraOverlayPath`) ·
 leaving a **stale `httpResponse`** when a request step throws (clear it first / funnel through
-`execute`) · retry loops that catch bare `Exception` or don't assert the expected status after the loop.
+`execute`) · retry loops that catch bare `Exception` or don't assert the expected status after the loop ·
+product operations in listeners/provisioners or token-minting side-channel utils (provision infra, act
+through actors — §14).

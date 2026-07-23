@@ -24,6 +24,7 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
+import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
@@ -376,14 +377,6 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
-     * Starts the WSO2 IS 7.1.0 container on the shared network (alias {@code wso2is}), waits for its OIDC
-     * discovery to serve 200, publishes its host-mapped base URL to the block's shared scope, and registers it
-     * as the {@code WSO2-IS7-KM} key manager in APIM. Called inside onStart's try, so any failure here becomes
-     * {@code bootError} and the block fails cleanly rather than NPE-ing mid-scenario. The IS singleton is not
-     * stopped in onFinish: like {@code NodeAppServer}, it is a shared, reuse-enabled singleton reaped by Ryuk at
-     * JVM exit — stopping it per block would break other external-KM blocks sharing it.
-     */
-    /**
      * Starts (or reuses) the external WSO2 IS container for this block's IS toml overlay, waits for its OIDC
      * discovery to serve 200, and publishes its host-mapped base URL under {@link #IS_BASE_URL_KEY}. Does NOT
      * register a key manager. The IS singleton(s) are reaped by Ryuk at JVM exit (not per block), like
@@ -408,6 +401,11 @@ public class BlockLifecycleListener implements ITestListener {
                     + "' did not become ready within " + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
         }
         TestContext.setShared(IS_BASE_URL_KEY, isBaseUrl);
+        // Seed the IS integration actor (CLAUDE.md §14: actor-registry seeding is provisioner-legitimate) so
+        // steps operating on IS's management plane authenticate through IntegrationActors instead of
+        // hand-building credentials, and ISResourceCleanup can sweep their resources as this principal.
+        IntegrationActors.register(new IntegrationActors.IntegrationActor(IntegrationActors.IS,
+                Constants.SUPER_TENANT_ADMIN_USERNAME, Constants.SUPER_TENANT_ADMIN_PASSWORD, isBaseUrl));
         logger.info("Block '" + label + "' booted external Identity Server (extra overlay='"
                 + (isTomlExtraOverlayPath == null || isTomlExtraOverlayPath.isBlank() ? "none"
                         : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl);

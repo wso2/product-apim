@@ -385,12 +385,6 @@ public class BaseSteps {
     }
 
     /**
-     * Stores a generic string value or a value from a different context key into the test context.
-     *
-     * @param value The raw string value or a context key to resolve
-     * @param contextKey The key under which the value should be stored in TestContext
-     */
-    /**
      * Replaces a literal substring in a stored context value and writes it back. Used to resolve a server-side
      * template placeholder that the publisher API returns verbatim — e.g. a version-first API's context is
      * stored as {@code /{version}/ctx}, and the gateway invocation needs {@code /1.0.0/ctx}.
@@ -405,6 +399,12 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(key), resolved);
     }
 
+    /**
+     * Stores a generic string value or a value from a different context key into the test context.
+     *
+     * @param value The raw string value or a context key to resolve
+     * @param contextKey The key under which the value should be stored in TestContext
+     */
     @When("I put value {string} in context as {string}")
     public void iPutValueInContextAs(String value, String contextKey) {
         // Resolve value if it's a reference to another context key
@@ -762,13 +762,6 @@ public class BaseSteps {
     }
 
     /**
-     * Extracts a field value from a JSONObject stored in TestContext and stores it under another key.
-     *
-     * @param sourceKey TestContext key containing the JSONObject
-     * @param fieldName JSON field name to extract
-     * @param targetKey TestContext key to store the extracted value
-     */
-    /**
      * Copies a context value from one key to another. Useful when a later composite step overwrites a shared key
      * (e.g. {@code generatedAccessToken}) but an earlier value must be preserved — e.g. keeping a REST, GraphQL and
      * WebSocket token side-by-side to invoke all three across a single server restart.
@@ -779,6 +772,13 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(toKey), value);
     }
 
+    /**
+     * Extracts a field value from a JSONObject stored in TestContext and stores it under another key.
+     *
+     * @param fieldName JSON field name to extract
+     * @param sourceKey TestContext key containing the JSONObject
+     * @param targetKey TestContext key to store the extracted value
+     */
     @And("I extract field {string} from {string} and store it as {string}")
     public void iExtractFieldFromAndStoreItAs(String fieldName, String sourceKey, String targetKey) {
 

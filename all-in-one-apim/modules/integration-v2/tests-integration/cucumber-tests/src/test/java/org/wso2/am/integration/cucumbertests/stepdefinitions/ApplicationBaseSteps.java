@@ -24,7 +24,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.ISResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -1457,12 +1459,7 @@ public class ApplicationBaseSteps {
     @When("I request an OAuth access token from the external key manager using client credentials grant")
     public void iRequestTokenFromExternalKeyManager() throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
-        String tokenEndpoint = isBaseUrl.toString() + "oauth2/token";
+        String tokenEndpoint = IntegrationActors.baseUrl(IntegrationActors.IS) + "oauth2/token";
 
         HttpResponse response = Requests.post(tokenEndpoint, clientCredentialsHeader(),
                 "grant_type=client_credentials", Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
@@ -1474,28 +1471,7 @@ public class ApplicationBaseSteps {
      * Throws with a clear message if the block did not start the external KM.
      */
     private String externalKmTokenEndpoint() {
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
-        return isBaseUrl.toString() + "oauth2/token";
-    }
-
-    /**
-     * Requests an access token directly from the EXTERNAL key manager (IS) using the resource-owner password
-     * grant, authenticated with the application's IS-issued client credentials. Issues an {@code openid} scope so
-     * IS returns a refresh token too. Captures both tokens (generatedAccessToken / refreshToken) and the raw
-     * response, so the refresh-grant and gateway-invoke steps can follow.
-     */
-    @When("I request an OAuth access token from the external key manager using password grant as {string} with password {string}")
-    public void iRequestPasswordTokenFromExternalKm(String username, String password) throws Exception {
-
-        String body = "grant_type=password&username=" + urlEncode(username) + "&password=" + urlEncode(password)
-                + "&scope=" + urlEncode("openid");
-        HttpResponse response = Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(), body,
-                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        captureTokens(response);
+        return IntegrationActors.baseUrl(IntegrationActors.IS) + "oauth2/token";
     }
 
     /**
@@ -1509,9 +1485,12 @@ public class ApplicationBaseSteps {
     public void iRequestPasswordTokenWithScopeFromExternalKm(String username, String password, String scope)
             throws Exception {
 
+        String resolvedUser = Utils.resolveContextPlaceholders(username);
         String resolvedScope = Utils.resolveContextPlaceholders(scope);
-        String body = "grant_type=password&username=" + urlEncode(username) + "&password=" + urlEncode(password)
-                + "&scope=" + urlEncode("openid " + resolvedScope);
+        // The scope is sent VERBATIM — features state the full scope they need (e.g. "openid", or
+        // "openid <customScope>"); nothing is implicitly prefixed here.
+        String body = "grant_type=password&username=" + urlEncode(resolvedUser) + "&password=" + urlEncode(password)
+                + "&scope=" + urlEncode(resolvedScope);
         HttpResponse response = Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
@@ -1528,19 +1507,16 @@ public class ApplicationBaseSteps {
      * @param isRoleKey context key holding the IS role to assign, or a literal empty string for no role
      */
     @When("I create an IS user {string} with password {string} assigned the IS role stored as {string}")
-    public void iCreateIsUserWithRole(String username, String password, String isRoleKey) throws Exception {
+    public void iCreateIsUserWithRole(String usernameBase, String password, String isRoleKey) throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
-        String base = isBaseUrl.toString();
-        String creds = Base64.getEncoder().encodeToString(
-                (Constants.SUPER_TENANT_ADMIN_USERNAME + ":" + Constants.SUPER_TENANT_ADMIN_PASSWORD)
-                        .getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
+        // The external IS is a shared, JVM-lifetime singleton, so IS usernames must be unique BY CONSTRUCTION
+        // (SCIM2 create 409s on a duplicate). Derive a unique name from the base and store it under the base
+        // key so later scenarios reference it as {{<base>}} (e.g. {{is7roleuser}}).
+        String username = Names.unique(usernameBase);
+        TestContext.set(usernameBase, username);
+
+        String base = IntegrationActors.baseUrl(IntegrationActors.IS);
+        Map<String, String> headers = IntegrationActors.authHeaders(IntegrationActors.IS);
 
         // Create the user (SCIM2 Users).
         String userPayload = new JSONObject()
@@ -1551,11 +1527,14 @@ public class ApplicationBaseSteps {
                 .toString();
         HttpResponse userResp = Requests.post(base + "scim2/Users", headers, userPayload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        Assert.assertTrue(userResp != null && userResp.getResponseCode() == 201 && userResp.getData() != null,
+        Assert.assertTrue(userResp != null && userResp.getResponseCode() == 201 && userResp.getData() != null
+                        && !userResp.getData().isBlank(),
                 "SCIM2 user create failed for '" + username + "': got="
                         + (userResp == null ? "null" : userResp.getResponseCode() + "/" + userResp.getData()));
         String userId = new JSONObject(userResp.getData()).getString("id");
         TestContext.set(username + "UserId", userId);
+        // Register for the IS-side teardown sweep (deleted as the IS integration actor — see ISResourceCleanup).
+        ISResourceCleanup.registerUser(userId);
 
         // Empty key => create the user with NO role (the "without the mapped role" actor).
         if (isRoleKey == null || isRoleKey.trim().isEmpty()) {
@@ -1568,7 +1547,8 @@ public class ApplicationBaseSteps {
         // Find the role id (SCIM2 v2 Roles), then add the user as a member.
         String rolesUrl = base + "scim2/v2/Roles?filter=" + urlEncode("displayName eq " + isRole);
         HttpResponse rolesResp = SimpleHTTPClient.getInstance().doGet(rolesUrl, headers);
-        Assert.assertTrue(rolesResp != null && rolesResp.getResponseCode() == 200 && rolesResp.getData() != null,
+        Assert.assertTrue(rolesResp != null && rolesResp.getResponseCode() == 200 && rolesResp.getData() != null
+                        && !rolesResp.getData().isBlank(),
                 "SCIM2 Roles lookup failed for '" + isRole + "': got="
                         + (rolesResp == null ? "null" : rolesResp.getResponseCode() + "/" + rolesResp.getData()));
         JSONObject rolesBody = new JSONObject(rolesResp.getData());
@@ -1623,12 +1603,7 @@ public class ApplicationBaseSteps {
     private void authorizationCodeTokenFromExternalKm(String username, String password, String codeVerifier)
             throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
-        String base = isBaseUrl.toString();
+        String base = IntegrationActors.baseUrl(IntegrationActors.IS);
         String key = TestContext.resolve("consumerKey").toString();
         java.net.http.HttpClient http = trustAllHttpClientWithCookies();
 
@@ -1754,19 +1729,14 @@ public class ApplicationBaseSteps {
     @When("I request an OAuth access token from the external key manager using device code grant as {string} with password {string}")
     public void iRequestDeviceCodeTokenFromExternalKm(String username, String password) throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
-        String base = isBaseUrl.toString();
+        String base = IntegrationActors.baseUrl(IntegrationActors.IS);
         java.net.http.HttpClient http = trustAllHttpClientWithCookies();
 
         // 1. device_authorize -> device_code + user_code.
         HttpResponse da = Requests.post(base + "oauth2/device_authorize", clientCredentialsHeader(),
                 "response_type=device&scope=" + urlEncode("openid"),
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        Assert.assertTrue(da != null && da.getResponseCode() == 200 && da.getData() != null,
+        Assert.assertTrue(da != null && da.getResponseCode() == 200 && da.getData() != null && !da.getData().isBlank(),
                 "device_authorize failed: got=" + (da == null ? "null" : da.getResponseCode() + "/" + da.getData()));
         JSONObject daj = new JSONObject(da.getData());
         String deviceCode = daj.getString("device_code");
@@ -1831,11 +1801,6 @@ public class ApplicationBaseSteps {
     @When("I register a JWT bearer identity provider in the external key manager storing its name as {string}")
     public void iRegisterJwtBearerIdpAtExternalKm(String idpNameKey) throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
         String idpName = Names.unique("jwtIdp");
         // The IdP REST API expects each certificate as a base64-encoded PEM blob.
         String certPem = readClasspathResource(IS7_TRUSTED_IDP_CERT_RESOURCE);
@@ -1846,12 +1811,8 @@ public class ApplicationBaseSteps {
                 .put("certificate", new JSONObject()
                         .put("certificates", new JSONArray().put(certB64)))
                 .toString();
-        String creds = Base64.getEncoder().encodeToString(
-                (Constants.SUPER_TENANT_ADMIN_USERNAME + ":" + Constants.SUPER_TENANT_ADMIN_PASSWORD)
-                        .getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
-        HttpResponse resp = Requests.post(isBaseUrl.toString() + "api/server/v1/identity-providers", headers,
+        Map<String, String> headers = IntegrationActors.authHeaders(IntegrationActors.IS);
+        HttpResponse resp = Requests.post(IntegrationActors.baseUrl(IntegrationActors.IS) + "api/server/v1/identity-providers", headers,
                 payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertTrue(resp != null && resp.getResponseCode() == 201,
                 "IS IdP create failed for jwt-bearer trusted issuer '" + idpName + "': got="
@@ -1913,11 +1874,6 @@ public class ApplicationBaseSteps {
     @When("I register a SAML bearer identity provider in the external key manager storing its name as {string}")
     public void iRegisterSamlBearerIdpAtExternalKm(String idpNameKey) throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
         String idpName = Names.unique("samlIdp");
         String certPem = readClasspathResource(IS7_TRUSTED_IDP_CERT_RESOURCE);
         String certB64 = Base64.getEncoder().encodeToString(certPem.getBytes(StandardCharsets.UTF_8));
@@ -1938,12 +1894,8 @@ public class ApplicationBaseSteps {
                                         .put(new JSONObject().put("key", "SSOUrl")
                                                 .put("value", "https://" + idpName + ".invalid/sso"))))))
                 .toString();
-        String creds = Base64.getEncoder().encodeToString(
-                (Constants.SUPER_TENANT_ADMIN_USERNAME + ":" + Constants.SUPER_TENANT_ADMIN_PASSWORD)
-                        .getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
-        HttpResponse resp = Requests.post(isBaseUrl.toString() + "api/server/v1/identity-providers", headers,
+        Map<String, String> headers = IntegrationActors.authHeaders(IntegrationActors.IS);
+        HttpResponse resp = Requests.post(IntegrationActors.baseUrl(IntegrationActors.IS) + "api/server/v1/identity-providers", headers,
                 payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertTrue(resp != null && resp.getResponseCode() == 201,
                 "IS IdP create failed for saml2-bearer trusted issuer '" + idpName + "': got="
@@ -2100,15 +2052,10 @@ public class ApplicationBaseSteps {
     @When("I retrieve the current user profile from the external key manager userinfo endpoint")
     public void iRetrieveUserinfoFromExternalKm() throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
         String token = TestContext.resolve("generatedAccessToken").toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + token);
-        Requests.get(isBaseUrl.toString() + "scim2/Me", headers);
+        Requests.get(IntegrationActors.baseUrl(IntegrationActors.IS) + "scim2/Me", headers);
     }
 
     /**
@@ -2141,13 +2088,8 @@ public class ApplicationBaseSteps {
     @When("I revoke the access token at the external key manager")
     public void iRevokeTokenAtExternalKeyManager() throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
         String token = TestContext.resolve("generatedAccessToken").toString();
-        String revokeEndpoint = isBaseUrl.toString() + "oauth2/revoke";
+        String revokeEndpoint = IntegrationActors.baseUrl(IntegrationActors.IS) + "oauth2/revoke";
 
         Requests.post(revokeEndpoint, clientCredentialsHeader(), "token=" + token,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
@@ -2163,23 +2105,14 @@ public class ApplicationBaseSteps {
     @Then("the access token should be inactive at the external key manager introspection endpoint")
     public void theAccessTokenShouldBeInactiveAtExternalKmIntrospection() throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "initExternalKeyManager=true so the external Identity Server is started and published");
-        }
         String token = TestContext.resolve("generatedAccessToken").toString();
         int parts = token.split("\\.").length;
-        String introspectEndpoint = isBaseUrl.toString() + "oauth2/introspect";
-        String creds = Base64.getEncoder().encodeToString(
-                (Constants.SUPER_TENANT_ADMIN_USERNAME + ":" + Constants.SUPER_TENANT_ADMIN_PASSWORD)
-                        .getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
+        String introspectEndpoint = IntegrationActors.baseUrl(IntegrationActors.IS) + "oauth2/introspect";
+        Map<String, String> headers = IntegrationActors.authHeaders(IntegrationActors.IS);
         HttpResponse resp = Requests.post(introspectEndpoint, headers, "token=" + token,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         String body = (resp == null) ? "no response" : resp.getData();
-        boolean active = body != null && !body.isEmpty() && new JSONObject(body).optBoolean("active", true);
+        boolean active = body != null && !body.isBlank() && new JSONObject(body).optBoolean("active", true);
         Assert.assertFalse(active, "Revoked token should be reported inactive by IS introspection ("
                 + (parts == 3 ? "JWT" : "opaque/" + parts + "-part") + " token); IS /introspect returned: " + body);
     }
@@ -2209,20 +2142,11 @@ public class ApplicationBaseSteps {
      */
     static HttpResponse queryIs7Role(String roleName) throws Exception {
 
-        Object isBaseUrl = TestContext.get("isBaseUrl");
-        if (isBaseUrl == null) {
-            throw new IllegalStateException("isBaseUrl is not available in the test context; the block must set "
-                    + "bootExternalIdentityServer=true so the external Identity Server is started and published");
-        }
-        String url = isBaseUrl.toString() + "scim2/v2/Roles?filter=" + urlEncode("displayName eq " + roleName);
-        String creds = Base64.getEncoder().encodeToString(
-                (Constants.SUPER_TENANT_ADMIN_USERNAME + ":" + Constants.SUPER_TENANT_ADMIN_PASSWORD)
-                        .getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
+        String url = IntegrationActors.baseUrl(IntegrationActors.IS) + "scim2/v2/Roles?filter=" + urlEncode("displayName eq " + roleName);
+        Map<String, String> headers = IntegrationActors.authHeaders(IntegrationActors.IS);
         HttpResponse resp = SimpleHTTPClient.getInstance().doGet(url, headers);
         Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
-                        && !resp.getData().isEmpty(),
+                        && !resp.getData().isBlank(),
                 "IS SCIM2 Roles query failed for role '" + roleName + "': got="
                         + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
         return resp;
@@ -3001,7 +2925,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch key manager '" + kmId + "' before updating its enabled state: expected a 2xx response "
                         + "with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));
@@ -3028,7 +2952,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch key manager '" + kmId + "' before updating its type: expected a 2xx response "
                         + "with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));
@@ -3047,36 +2971,6 @@ public class ApplicationBaseSteps {
 
         String kmId = TestContext.resolve(idKey).toString();
         Requests.delete(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
-    }
-
-    /**
-     * Looks up a key manager by its exact name in the admin key-manager list and stores its id under
-     * {@code idKey}. Needed for the block-registered external KM ({@code externalKmPayload}), whose id is not
-     * placed in the test context by the boot listener. Asserts the KM exists.
-     */
-    @When("I look up the key manager named {string} storing its id as {string}")
-    public void iLookUpKeyManagerByName(String name, String idKey) throws IOException {
-
-        HttpResponse list = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getKeyManagersURL(getBaseUrl()), adminAuthHeaders());
-        // Intermediate GET: confirm a 2xx response WITH a body before parsing, so a failed/empty fetch fails
-        // clearly instead of throwing an opaque JSONException/NPE.
-        Assert.assertTrue(list != null && list.getResponseCode() >= 200 && list.getResponseCode() < 300
-                        && list.getData() != null && !list.getData().isEmpty(),
-                "Failed to list key managers looking for '" + name + "': expected a 2xx response with a body, "
-                        + "got " + (list == null ? "no response" : list.getResponseCode()
-                        + " / body=" + list.getData()));
-
-        JSONArray managers = new JSONObject(list.getData()).getJSONArray("list");
-        String kmId = null;
-        for (int i = 0; i < managers.length(); i++) {
-            if (name.equals(managers.getJSONObject(i).optString("name"))) {
-                kmId = managers.getJSONObject(i).getString("id");
-                break;
-            }
-        }
-        Assert.assertNotNull(kmId, "No key manager named '" + name + "' in the admin list: " + list.getData());
-        TestContext.set(idKey, kmId);
     }
 
     /**
@@ -3103,7 +2997,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch key manager '" + kmId + "' before updating its certificate: expected a 2xx "
                         + "response with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));

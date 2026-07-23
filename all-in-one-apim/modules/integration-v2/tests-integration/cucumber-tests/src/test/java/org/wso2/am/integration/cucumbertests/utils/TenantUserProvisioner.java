@@ -20,6 +20,7 @@ package org.wso2.am.integration.cucumbertests.utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
@@ -28,7 +29,12 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provisioning helper extracted from {@code TenantUserInitialisationSteps} so the same SOAP-build +
@@ -90,6 +96,104 @@ public final class TenantUserProvisioner {
         admin.setPassword(Constants.ADPSAMPLE_TENANT_ADMIN_PASSWORD);
         adpTenant.setTenantAdmin(admin);
         TestContext.setShared(Constants.ADPSAMPLE_TENANT_DOMAIN, adpTenant);
+    }
+
+    /**
+     * Registers a RUNTIME-created tenant's admin as an ACTOR (CLAUDE.md §14) — for tenants a scenario itself
+     * creates through product APIs (e.g. the tenant-sharing notify event), which therefore cannot be seeded at
+     * block boot. Publishes the tenant bean to shared scope so {@code Identity} resolves
+     * {@code "admin@<domain>"} exactly like a seeded actor: the standard auth composites mint its tokens and
+     * {@code ResourceCleanup} deletes its resources as this owner. Then AWAITS the tenant's ACTIVATION (notify-
+     * driven creation completes through an async SOAP self-call) by polling DCR + a password token with the
+     * admin's credentials — the probe DCR client is container-ephemeral. Registry seeding is provisioner-
+     * legitimate; the tenant CREATION itself remains a feature step.
+     */
+    public static void registerRuntimeTenantAdmin(String tenantDomain, String adminPassword) {
+
+        User admin = new User();
+        admin.setKey(Constants.ADMIN_USER_KEY);
+        admin.setUserName("admin" + Constants.CHAR_AT + tenantDomain);
+        admin.setPassword(adminPassword);
+        Tenant tenant = new Tenant();
+        tenant.setDomain(tenantDomain);
+        tenant.setTenantAdmin(admin);
+        TestContext.setShared(tenantDomain, tenant);
+        awaitRuntimeTenantActive(admin);
+    }
+
+    /**
+     * Bounded poll proving the runtime tenant is active and its admin can authenticate. Two phases sharing one
+     * deadline: (1) obtain DCR credentials ONCE — retried only while the async-created tenant is not yet active
+     * (DCR fails without creating a client), and the credentials are RETAINED once obtained; (2) with those
+     * credentials, retry ONLY the password token, whose issuance can lag DCR by a user-store propagation moment.
+     * DCR is never re-POSTed after it succeeds. (APIM's DCR is idempotent by clientName — a repeat POST returns
+     * the existing client with 200 — so a retry during phase 1 can't orphan or duplicate a client.)
+     */
+    private static void awaitRuntimeTenantActive(User admin) {
+
+        long deadline = System.currentTimeMillis() + 120_000L;
+        Map<String, String> adminBasic = new HashMap<>();
+        adminBasic.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(
+                (admin.getUserName() + ":" + admin.getPassword()).getBytes(StandardCharsets.UTF_8)));
+        String dcrBody = new JSONObject()
+                .put("callbackUrl", "www.google.lk")
+                .put("clientName", "runtimeActorProbe_" + admin.getUserName().replaceAll("[^a-zA-Z0-9]", "_"))
+                .put("grantType", "password")
+                .put("saasApp", true)
+                .put("owner", admin.getUserName())
+                .toString();
+
+        // Phase 1: acquire DCR credentials, retrying only until the tenant is active. Stop on the first success.
+        String tokenBasic = null;
+        String last = "no attempt";
+        while (tokenBasic == null && System.currentTimeMillis() < deadline) {
+            try {
+                HttpResponse dcr = SimpleHTTPClient.getInstance().doPost(Utils.getDCREndpointURL(getBaseUrl()),
+                        adminBasic, dcrBody, Constants.CONTENT_TYPES.APPLICATION_JSON);
+                if (dcr != null && dcr.getResponseCode() == 200 && dcr.getData() != null && !dcr.getData().isBlank()) {
+                    JSONObject creds = new JSONObject(dcr.getData());
+                    tokenBasic = Base64.getEncoder().encodeToString((creds.getString("clientId") + ":"
+                            + creds.getString("clientSecret")).getBytes(StandardCharsets.UTF_8));
+                    break;
+                }
+                last = "DCR not ready: " + (dcr == null ? "null" : dcr.getResponseCode());
+            } catch (IOException e) {
+                last = e.getMessage();
+            }
+            sleepBeforeRetry();
+        }
+        Assert.assertNotNull(tokenBasic, "Runtime tenant admin '" + admin.getUserName() + "' DCR never succeeded "
+                + "within 120s (tenant not activated); last: " + last);
+
+        // Phase 2: with the RETAINED credentials, retry only the password token until issued.
+        Map<String, String> tokenHeaders = new HashMap<>();
+        tokenHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + tokenBasic);
+        String form = "grant_type=password&username=" + URLEncoder.encode(admin.getUserName(), StandardCharsets.UTF_8)
+                + "&password=" + URLEncoder.encode(admin.getPassword(), StandardCharsets.UTF_8) + "&scope=openid";
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                HttpResponse tok = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
+                        tokenHeaders, form, "application/x-www-form-urlencoded");
+                if (tok != null && tok.getResponseCode() == 200) {
+                    return;
+                }
+                last = "token not issued yet: " + (tok == null ? "null" : tok.getResponseCode());
+            } catch (IOException e) {
+                last = e.getMessage();
+            }
+            sleepBeforeRetry();
+        }
+        Assert.fail("Runtime tenant admin '" + admin.getUserName() + "' obtained DCR credentials but no token was "
+                + "issued within 120s; last: " + last);
+    }
+
+    /** Fixed inter-attempt pause for the runtime-tenant activation polls. */
+    private static void sleepBeforeRetry() {
+        try {
+            Thread.sleep(3000L);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**

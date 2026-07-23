@@ -20,7 +20,7 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the tenant-sharing-off negative block (testng-is7nokm.xml, plan item #31). Boots APIM with
+ * Runner for the tenant-sharing-off negative block (IntegrationV2-Is7TenantSharingOff in testng-v2.xml). Boots APIM with
  * skip_create_resident_key_manager but NO tenant-sharing, and asserts a tenant provisioned through the notify
  * endpoint has no key manager, so application key generation is refused (901403 "Key Manager not Registered").
  */

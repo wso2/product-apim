@@ -20,10 +20,11 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the framework-verification feature that boots WSO2 IS 7.1.0 as an external key manager and proves
- * an end-to-end token-issue-from-IS + gateway-invoke flow, plus the admin well-known discovery pin. Runs in the external-KM block (testng-is7km.xml),
- * which sets initExternalKeyManager=true so BlockLifecycleListener augments APIM's truststore, starts IS, and
- * registers the WSO2-IS7-KM key manager before this runner's scenario executes. Extends {@link BaseBlockRunner}
+ * Runner for the framework-verification feature that boots WSO2 IS 7.x as an external key manager and proves
+ * an end-to-end token-issue-from-IS + gateway-invoke flow, plus the admin well-known discovery pin. Runs in the
+ * core external-KM block (testng-v2.xml, bootExternalIdentityServer=true): BlockLifecycleListener augments
+ * APIM's truststore and starts IS, and the scenario itself registers the key manager (admin product behaviour).
+ * Extends {@link BaseBlockRunner}
  * for the block boot-failure guard and the runner-scoped cleanup safety net.
  */
 @CucumberOptions(

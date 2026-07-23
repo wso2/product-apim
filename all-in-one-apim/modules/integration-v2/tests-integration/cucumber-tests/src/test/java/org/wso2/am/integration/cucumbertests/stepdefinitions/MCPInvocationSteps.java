@@ -19,6 +19,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -28,6 +29,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.net.URI;
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -114,7 +116,7 @@ public class MCPInvocationSteps {
                     return;
                 }
                 lastError = "tools/call status=" + callResp.statusCode() + " body=" + callResult;
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 lastError = transientDuringWarmup.getMessage();
             }
             Thread.sleep(2000);
@@ -167,7 +169,7 @@ public class MCPInvocationSteps {
                     return;
                 }
                 lastError = detail;
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 lastError = transientDuringWarmup.getMessage();
             }
             Thread.sleep(2000);
@@ -206,6 +208,13 @@ public class MCPInvocationSteps {
                 post(client, mcpUrl, token, sessionId, INITIALIZED);
                 HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
                 String listBody = sseOrJson(listResp.body());
+                // Guard before parsing: a non-200 / empty tools/list must surface its status+body through the
+                // retry diagnostics, not as an opaque JSONException message in lastError.
+                if (listResp.statusCode() != 200 || listBody == null || listBody.isBlank()) {
+                    lastError = "tools/list status=" + listResp.statusCode() + " body=" + listBody;
+                    Thread.sleep(2000);
+                    continue;
+                }
                 // Parse the advertised names from result.tools[].name — never substring-match the raw body
                 // (a tool name appearing inside another tool's description would false-positive).
                 java.util.Set<String> names = new java.util.HashSet<>();
@@ -222,7 +231,7 @@ public class MCPInvocationSteps {
                 }
                 lastError = "advertised tools " + names + " (expected all of " + expected
                         + ", none of " + absent + ")";
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException | JSONException transientDuringWarmup) {
                 lastError = transientDuringWarmup.getMessage();
             }
             Thread.sleep(2000);
@@ -264,7 +273,7 @@ public class MCPInvocationSteps {
                     return;
                 }
                 lastError = "expected an error but got status=" + callResp.statusCode() + " body=" + body;
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 lastError = transientDuringWarmup.getMessage();
             }
             Thread.sleep(2000);
@@ -305,7 +314,7 @@ public class MCPInvocationSteps {
                 if (last == expectedStatus) {
                     return;
                 }
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 // retry
             }
             Thread.sleep(2000);
@@ -346,7 +355,7 @@ public class MCPInvocationSteps {
                 if (last == expectedStatus) {
                     return;
                 }
-            } catch (Exception transientDuringWarmup) {
+            } catch (IOException transientDuringWarmup) {
                 // retry
             }
             Thread.sleep(2000);

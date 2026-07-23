@@ -2,7 +2,7 @@
   "name": "${UNIQUE:Wso2Is7KmIntrospect}",
   "displayName": "WSO2 IS 7 External Key Manager (introspection mode)",
   "type": "WSO2-IS-7",
-  "description": "WSO2 IS 7.1.0 third-party key manager in INTROSPECTION mode (enableSelfValidationJWT=false): gateway validates each token via IS /oauth2/introspect, so a revoked token is rejected immediately.",
+  "description": "WSO2 IS 7.x third-party key manager in INTROSPECTION mode (enableSelfValidationJWT=false): gateway validates each token via IS /oauth2/introspect, so a revoked token is rejected immediately.",
   "issuer": "https://wso2is:9443/oauth2/token",
   "tokenEndpoint": "https://wso2is:9443/oauth2/token",
   "introspectionEndpoint": "https://wso2is:9443/oauth2/introspect",

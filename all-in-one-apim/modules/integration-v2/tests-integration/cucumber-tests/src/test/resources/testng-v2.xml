@@ -418,9 +418,13 @@
     <!-- IS7 tenant-sharing default-KM path: overlay suppresses the Resident KM and enables
          [[apim.tenant_sharing]] auto_configure_key_manager, so a tenant provisioned through the notify endpoint
          gets a WSO2-IS-7 KM by default. Config-only — no external IS is booted (the feature asserts on the
-         KM config APIM materializes, not on live IS traffic), so it is a plain overlay block. -->
+         KM config APIM materializes, not on live IS traffic), so it is a plain overlay block. MUST stay its
+         own block: skip_create_resident_key_manager breaks API CREATION container-wide (901411, pinned
+         empirically on the sibling tenant-sharing-off block) and removes the Resident KM every keygen-using
+         fixture needs — no API-creating or key-generating runner can ever share this container. -->
     <test name="IntegrationV2-Is7DefaultKeyManager" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="is7-default-km"/>
+        <parameter name="initTenantUsers" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7defaultkm/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DefaultKmRunner"/>
@@ -449,6 +453,7 @@
          runner can ever share this container. -->
     <test name="IntegrationV2-Is7TenantSharingOff" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="is7-no-km"/>
+        <parameter name="initTenantUsers" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7nokm/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.TenantSharingOffRunner"/>

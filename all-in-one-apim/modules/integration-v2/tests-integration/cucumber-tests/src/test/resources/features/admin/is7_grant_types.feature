@@ -12,7 +12,7 @@ Feature: External Key Manager OAuth Grant Types
   Scenario: The refresh_token grant issues a working access token
     # Obtain an initial token (with a refresh token) from IS via the password grant, then exchange the refresh
     # token for a fresh access token and prove that new token is accepted at the gateway.
-    When I request an OAuth access token from the external key manager using password grant as "admin" with password "admin"
+    When I request an OAuth access token from the external key manager using password grant as "admin" with password "admin" requesting scope "openid"
     Then The response status code should be 200
     When I request a new OAuth access token from the external key manager using the stored refresh token
     Then The response status code should be 200

@@ -17,6 +17,8 @@
 
 package org.wso2.am.integration.cucumbertests.utils;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -64,7 +66,7 @@ public final class ServerReadiness {
             HttpResponse response = null;
             try {
                 response = SimpleHTTPClient.getInstance().doGet(url, null);
-            } catch (Exception ignored) {
+            } catch (IOException ignored) {
                 // server not accepting connections yet
             }
             if (response != null && response.getResponseCode() == 200) {
@@ -100,7 +102,7 @@ public final class ServerReadiness {
             HttpResponse response = null;
             try {
                 response = SimpleHTTPClient.getInstance().doGet(url, null);
-            } catch (Exception ignored) {
+            } catch (IOException ignored) {
                 // IS not accepting connections / serving OAuth endpoints yet
             }
             if (response != null && response.getResponseCode() == 200) {

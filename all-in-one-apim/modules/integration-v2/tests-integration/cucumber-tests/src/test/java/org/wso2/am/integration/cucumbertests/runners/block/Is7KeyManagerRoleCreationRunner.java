@@ -20,9 +20,10 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the runtime role-creation feature. Runs in the external-KM block (testng-is7km.xml) alongside the
- * boot runner: the block's WSO2-IS-7 KM has enable_roles_creation=true, so registering a shared scope bound to a
- * new role creates the role in IS. Proves the created role exists via IS's SCIM2 Roles API. Extends
+ * Runner for the runtime role-creation feature. Runs in the core external-KM block (IntegrationV2-Is7KeyManager
+ * in testng-v2.xml); the {@code _setup_is7_key_manager} fixture registers the WSO2-IS-7 KM with
+ * enable_roles_creation=true, so registering a shared scope bound to a new role creates the role in IS. Proves
+ * the created role exists via IS's SCIM2 Roles API. Extends
  * {@link BaseBlockRunner} for the block boot-failure guard and the runner-scoped cleanup safety net.
  */
 @CucumberOptions(

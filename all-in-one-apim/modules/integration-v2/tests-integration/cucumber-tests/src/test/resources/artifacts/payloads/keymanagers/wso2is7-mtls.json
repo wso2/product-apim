@@ -2,7 +2,7 @@
   "name": "${UNIQUE:Wso2Is7KmMtls}",
   "displayName": "WSO2 IS 7 External Key Manager (Mutual TLS)",
   "type": "WSO2-IS-7",
-  "description": "WSO2 IS 7.1.0 third-party key manager authenticating to IS via Mutual TLS (ServerWide): APIM presents its primary cert + WSO2-Identity-User header instead of Basic auth for DCR/introspection/roles.",
+  "description": "WSO2 IS 7.x third-party key manager authenticating to IS via Mutual TLS (ServerWide): APIM presents its primary cert + WSO2-Identity-User header instead of Basic auth for DCR/introspection/roles.",
   "issuer": "https://wso2is:9443/oauth2/token",
   "tokenEndpoint": "https://wso2is:9443/oauth2/token",
   "introspectionEndpoint": "https://wso2is:9443/oauth2/introspect",

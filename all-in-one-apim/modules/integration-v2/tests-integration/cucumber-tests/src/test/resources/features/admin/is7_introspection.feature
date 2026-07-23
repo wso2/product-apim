@@ -14,7 +14,7 @@ Feature: External Key Manager Introspection Mode
   dedicated IntrospectionCache (DefaultKeyValidationHandler.getAccessTokenInfo) that is consulted only for token
   expiry, is never invalidated by the IS->APIM /notify pipeline, and defaults to a 900s (15 min) TTL. So a
   revoked-but-unexpired token keeps passing the gateway until that entry evicts. The introspection block sets a
-  short apim.cache.token_expiry_time (see testng-is7km-introspect.xml overlay) to bound that window; the revoke->401
+  short apim.cache.token_expiry_time (see the is7kmValidationModes overlay) to bound that window; the revoke->401
   poll below therefore succeeds once the cache entry evicts and the gateway re-introspects. (Self-validate mode, in
   is7_key_manager_boot.feature, reflects revocation immediately via the /notify pipeline instead.)
 

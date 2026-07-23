@@ -20,10 +20,10 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the IS7 OAuth grant-type and token-validation coverage. Runs in the external-KM block
- * (testng-is7km.xml) alongside the boot and role-creation runners: the block's WSO2-IS-7 KM is registered before
- * this runner executes. Uses the {@code _setup_} fixture pattern - {@code _setup_is7_grant_app} (listed first,
- * provisions the API / application / IS client credentials once), then {@code is7_grant_types} (one scenario per
+ * Runner for the IS7 OAuth grant-type and token-validation coverage. Runs in the core external-KM block
+ * (IntegrationV2-Is7KeyManager in testng-v2.xml). Uses the {@code _setup_} fixture pattern -
+ * {@code _setup_is7_grant_app} (listed first, registers the WSO2-IS-7 KM and provisions the API / application /
+ * IS client credentials once), then {@code is7_grant_types} (one scenario per
  * grant) and {@code is7_token_validation} (tampered-JWT rejection + UserInfo), all reusing that fixture. The
  * fixture is torn down once by {@link BaseBlockRunner}'s AfterClass sweep, not per-scenario.
  */

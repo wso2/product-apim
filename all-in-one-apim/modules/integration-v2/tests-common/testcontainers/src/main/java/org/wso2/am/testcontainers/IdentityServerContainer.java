@@ -130,22 +130,6 @@ public class IdentityServerContainer {
     }
 
     /**
-     * Builds the IS {@code deployment.toml} from the IS image's OWN default deployment.toml plus the small
-     * additive {@code is7/deployment-overlay.toml}, so IS tracks its distribution defaults across versions and
-     * this container only applies the documented key-manager config - rather than shipping a full-file copy.
-     *
-     * <p>The default is extracted from the image at build time by the testcontainers {@code extract-is-default-toml}
-     * exec (staged at {@code <module.dir>/target/is7/is-default-deployment.toml}, overridable via
-     * {@code -Dis.default.toml.path}). The build is deliberately a TEXT merge, not a structured (jackson/toml4j)
-     * one: IS 7.x's {@code org.wso2.config.mapper.TomlParser} rejects the inline array-of-tables style jackson
-     * emits (e.g. {@code event_listener = [{...}]}), and toml4j 0.7.2 cannot parse the quoted dotted key
-     * {@code 'header.X-WSO2-KEY-MANAGER'}. The overlay is authored in the block style IS accepts (the same style
-     * the previous full-file used) and appended verbatim; every block in it is ADDITIVE (absent from the IS
-     * default). The one key we override that already exists in the default - {@code [server] hostname} - is
-     * changed in place to the container's network alias so appending never produces a duplicate {@code [server]}
-     * table. Fails fast if the extracted default or the overlay resource is missing.
-     */
-    /**
      * Builds the IS {@code deployment.toml} = IS image default (with {@code [server] hostname} rewritten to the
      * network alias) + the built-in {@link #DEPLOYMENT_OVERLAY_RESOURCE} + optionally a block-specific EXTRA
      * overlay appended after it ({@code isTomlExtraOverlayPath}) - additive layering mirroring the APIM

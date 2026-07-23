@@ -22,6 +22,8 @@ import io.cucumber.java.en.When;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
+import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.TokenExchangeProvisioner;
@@ -78,7 +80,7 @@ public class TokenExchangeSteps {
     /** Creates the IS OIDC app (client_credentials, JWT access tokens) whose token is exchanged; stores its creds. */
     @When("I provision the token-exchange subject application on the identity server")
     public void iProvisionSubjectApp() throws Exception {
-        String[] creds = TokenExchangeProvisioner.createIsJwtClientCredentialsApp("TokenExchangeSubjectApp");
+        String[] creds = TokenExchangeProvisioner.createIsJwtClientCredentialsApp(Names.unique("TokenExchangeSubjectApp"));
         TestContext.set("txIsClientId", creds[0]);
         TestContext.set("txIsClientSecret", creds[1]);
     }
@@ -204,7 +206,8 @@ public class TokenExchangeSteps {
         HttpResponse resp = SimpleHTTPClient.getInstance().doPost(isTokenEndpoint(), basicAuth(cid, csec),
                 "grant_type=client_credentials&scope=openid",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null,
+        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                        && !resp.getData().isBlank(),
                 "IS subject-token request failed: got=" + (resp == null ? "null"
                         : resp.getResponseCode() + "/" + resp.getData()));
         TestContext.set("subjectToken", new JSONObject(resp.getData()).getString("access_token"));
@@ -258,7 +261,8 @@ public class TokenExchangeSteps {
         HttpResponse resp = Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
                 basicAuth(consumerKey, consumerSecret), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        if (resp != null && resp.getResponseCode() == 200 && resp.getData() != null) {
+        if (resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                && !resp.getData().isBlank()) {
             JSONObject json = new JSONObject(resp.getData());
             if (json.has("access_token")) {
                 TestContext.set("generatedAccessToken", json.getString("access_token"));
@@ -282,7 +286,8 @@ public class TokenExchangeSteps {
         HttpResponse resp = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
                 basicAuth(consumerKey, consumerSecret), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null,
+        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                        && !resp.getData().isBlank(),
                 "Password-grant id_token request failed: got=" + (resp == null ? "null"
                         : resp.getResponseCode() + "/" + resp.getData()));
         JSONObject json = new JSONObject(resp.getData());
@@ -300,11 +305,12 @@ public class TokenExchangeSteps {
     public void iObtainExpiredSubjectJwt() throws Exception {
         // Name it per acting tenant: the external IS is shared, so the super and tenant1 rows must not collide.
         String[] creds = TokenExchangeProvisioner.createIsJwtClientCredentialsApp(
-                "TokenExchangeExpiredApp-" + actingTenantDomain(), 5);
+                Names.unique("TokenExchangeExpiredApp-" + actingTenantDomain()), 5);
         HttpResponse resp = SimpleHTTPClient.getInstance().doPost(isTokenEndpoint(), basicAuth(creds[0], creds[1]),
                 "grant_type=client_credentials&scope=openid",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null,
+        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                        && !resp.getData().isBlank(),
                 "IS short-lived subject-token request failed: got=" + (resp == null ? "null"
                         : resp.getResponseCode() + "/" + resp.getData()));
         String token = new JSONObject(resp.getData()).getString("access_token");
@@ -342,11 +348,7 @@ public class TokenExchangeSteps {
     // ---------------------------------------------------------------------------------------------------------
 
     private static String isTokenEndpoint() {
-        Object v = TestContext.get("isBaseUrl");
-        if (v == null) {
-            throw new IllegalStateException("isBaseUrl not in context; set bootExternalIdentityServer=true");
-        }
-        return v.toString() + "oauth2/token";
+        return IntegrationActors.baseUrl(IntegrationActors.IS) + "oauth2/token";
     }
 
     private String getBaseUrl() {

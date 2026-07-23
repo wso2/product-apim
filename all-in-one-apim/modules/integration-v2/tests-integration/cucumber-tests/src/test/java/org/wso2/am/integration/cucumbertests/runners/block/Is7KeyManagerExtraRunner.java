@@ -21,8 +21,8 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for additional IS7 KM behaviors (multiple key managers coexisting, KM role-permission denial, and
- * unsupported-grant key generation). Runs in its own external-KM block (testng-is7km-extra.xml) with the
- * reachable WSO2-IS-7 KM registered. Scenarios are self-contained with per-scenario cleanup. Extends
+ * unsupported-grant key generation). Runs in the core external-KM block (IntegrationV2-Is7KeyManager in
+ * testng-v2.xml); each scenario registers its own reachable WSO2-IS-7 KM inline with per-scenario cleanup. Extends
  * {@link BaseBlockRunner} for the block boot-failure guard and the runner-scoped cleanup safety net.
  */
 @CucumberOptions(

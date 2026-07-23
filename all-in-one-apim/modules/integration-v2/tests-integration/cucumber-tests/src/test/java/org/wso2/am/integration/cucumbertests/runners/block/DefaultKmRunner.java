@@ -20,7 +20,7 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the WSO2-IS-7 default-key-manager block (testng-is7defaultkm.xml, plan item #24). Boots APIM with
+ * Runner for the WSO2-IS-7 default-key-manager block (IntegrationV2-Is7DefaultKeyManager in testng-v2.xml). Boots APIM with
  * skip_create_resident_key_manager + [[apim.tenant_sharing]] type=WSO2-IS-7 and asserts a tenant provisioned
  * through the notify endpoint is auto-configured with a WSO2-IS-7 key manager. No external IS is needed - the KM
  * is created from the tenant-created event, not fetched from IS.

@@ -1,4 +1,4 @@
-# APIM TLS-keystore overlay for the external-key-manager (WSO2 IS 7.1.0) block.
+# APIM TLS-keystore overlay for the external-key-manager (WSO2 IS 7.x) block.
 #
 # Merged on top of base+basic by BlockLifecycleListener (tomlExtraOverlayPath). It points APIM's TLS keystore
 # at the fixed wso2am.p12 (CN=wso2am, SAN dns:localhost,dns:wso2am) that DynamicApimContainer#withExternalKmTrust

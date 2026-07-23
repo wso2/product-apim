@@ -20,7 +20,7 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the RFC 8693 token-exchange block (testng-is7tx.xml). Boots APIM (with
+ * Runner for the RFC 8693 token-exchange block (IntegrationV2-Is7TokenExchange in testng-v2.xml). Boots APIM (with
  * enforce_type_header_validation on) + an external WSO2 IS 7.x used only as the subject-token issuer
  * (bootExternalIdentityServer, no key-manager registration - the subject token is validated by an APIM-side
  * trusted IdP, not a KM). Runs the {@code _setup_} fixture pattern: {@code _setup_token_exchange} (API, app with
