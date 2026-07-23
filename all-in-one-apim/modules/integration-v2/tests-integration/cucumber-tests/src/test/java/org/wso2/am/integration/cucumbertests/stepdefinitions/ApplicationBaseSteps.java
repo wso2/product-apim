@@ -30,6 +30,7 @@ import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
+import org.wso2.am.integration.cucumbertests.utils.JwtTestUtils;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -40,12 +41,8 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,11 +51,6 @@ import java.util.stream.IntStream;
 public class ApplicationBaseSteps {
 
     BaseSteps baseSteps = new BaseSteps();
-
-    private String getBaseUrl() {
-
-        return baseSteps.getBaseUrl();
-    }
 
     /**
      * Creates a new application in the Developer Portal using a JSON payload.
@@ -76,7 +68,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse applicationCreateResponse = Requests.post(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
+        HttpResponse applicationCreateResponse = Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(applicationCreateResponse.getResponseCode(), 201, applicationCreateResponse.getData());
         Object createdAppId = Utils.extractValueFromPayload(applicationCreateResponse.getData(), "applicationId");
@@ -101,7 +93,7 @@ public class ApplicationBaseSteps {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.get(Utils.getApiSdkURL(getBaseUrl(), apiId, lang), headers);
+        Requests.get(Utils.getApiSdkURL(Utils.getBaseUrl(), apiId, lang), headers);
     }
 
     /**
@@ -120,7 +112,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String body = "{\"userName\": \"" + ownerName + "\"}";
-        Requests.post(Utils.getResetThrottlePolicyURL(getBaseUrl(), actualAppId), headers, body,
+        Requests.post(Utils.getResetThrottlePolicyURL(Utils.getBaseUrl(), actualAppId), headers, body,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -147,7 +139,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = Requests.post(Utils.getApplicationThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getApplicationThrottlingPoliciesURL(Utils.getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set("appThrottlePolicyName", policyName);
 
@@ -216,7 +208,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = Requests.post(Utils.getSubscriptionThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getSubscriptionThrottlingPoliciesURL(Utils.getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set("subThrottlePolicyName", policyName);
 
@@ -249,7 +241,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = Requests.post(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getAdvancedThrottlingPoliciesURL(Utils.getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set("advThrottlePolicyName", policyName);
 
@@ -291,7 +283,7 @@ public class ApplicationBaseSteps {
                         + "\"billingPlan\":\"FREE\",\"customAttributes\":[],"
                         + "\"permissions\":{\"permissionType\":\"ALLOW\",\"roles\":[\"Internal/everyone\"]}}",
                 policyName, policyName, kbPerMinute, kbPerMinute);
-        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(getBaseUrl()), payload, "subThrottlePolicyName",
+        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "subThrottlePolicyName",
                 policyName, "subThrottlePolicyId", Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
     }
 
@@ -316,7 +308,7 @@ public class ApplicationBaseSteps {
                         + "\"billingPlan\":\"FREE\",\"customAttributes\":[],"
                         + "\"permissions\":{\"permissionType\":\"ALLOW\",\"roles\":[\"Internal/everyone\"]}}",
                 policyName, policyName, totalTokensPerMinute, totalTokensPerMinute);
-        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(getBaseUrl()), payload, "subThrottlePolicyName",
+        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "subThrottlePolicyName",
                 policyName, "subThrottlePolicyId", Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
     }
 
@@ -338,7 +330,7 @@ public class ApplicationBaseSteps {
                         + "\"billingPlan\":\"FREE\",\"customAttributes\":[],"
                         + "\"permissions\":{\"permissionType\":\"ALLOW\",\"roles\":[\"Internal/everyone\"]}}",
                 policyName, policyName, eventsPerMinute, eventsPerMinute);
-        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(getBaseUrl()), payload, "subThrottlePolicyName",
+        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "subThrottlePolicyName",
                 policyName, "subThrottlePolicyId", Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
     }
 
@@ -360,7 +352,7 @@ public class ApplicationBaseSteps {
                         + "\"billingPlan\":\"FREE\",\"customAttributes\":[],"
                         + "\"permissions\":{\"permissionType\":\"ALLOW\",\"roles\":[\"Internal/everyone\"]}}",
                 policyName, policyName, maxComplexity, maxDepth, maxComplexity, maxDepth);
-        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(getBaseUrl()), payload, "subThrottlePolicyName",
+        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "subThrottlePolicyName",
                 policyName, "subThrottlePolicyId", Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
     }
 
@@ -374,7 +366,7 @@ public class ApplicationBaseSteps {
         String payload = TestContext.resolve(payloadKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.put(Utils.getGraphQLComplexityURL(getBaseUrl(), actualApiId), headers, payload,
+        Requests.put(Utils.getGraphQLComplexityURL(Utils.getBaseUrl(), actualApiId), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -388,7 +380,7 @@ public class ApplicationBaseSteps {
                         + "\"bandwidth\":{\"timeUnit\":\"min\",\"unitTime\":1,\"dataAmount\":%d,\"dataUnit\":\"KB\"}},"
                         + "\"conditionalGroups\":[]}",
                 policyName, policyName, kbPerMinute, kbPerMinute);
-        postAdminPolicy(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), payload, "advThrottlePolicyName",
+        postAdminPolicy(Utils.getAdvancedThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "advThrottlePolicyName",
                 policyName, "advThrottlePolicyId", Constants.CREATED_ADVANCED_POLICY_IDS);
     }
 
@@ -405,7 +397,7 @@ public class ApplicationBaseSteps {
                         + "\"X-Tier\",\"headerValue\":\"gold\"}}],\"limit\":{\"type\":\"REQUESTCOUNTLIMIT\","
                         + "\"requestCount\":{\"timeUnit\":\"min\",\"unitTime\":1,\"requestCount\":%d}}}]}",
                 policyName, policyName, requestsPerMinute, requestsPerMinute);
-        postAdminPolicy(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), payload, "advThrottlePolicyName",
+        postAdminPolicy(Utils.getAdvancedThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "advThrottlePolicyName",
                 policyName, "advThrottlePolicyId", Constants.CREATED_ADVANCED_POLICY_IDS);
     }
 
@@ -430,7 +422,7 @@ public class ApplicationBaseSteps {
                         + "\"limit\":{\"type\":\"REQUESTCOUNTLIMIT\",\"requestCount\":{\"timeUnit\":\"min\","
                         + "\"unitTime\":1,\"requestCount\":%d}}}]}",
                 policyName, policyName, defaultLimit, conditionJson, groupLimit);
-        postAdminPolicy(Utils.getAdvancedThrottlingPoliciesURL(getBaseUrl()), payload, "advThrottlePolicyName",
+        postAdminPolicy(Utils.getAdvancedThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "advThrottlePolicyName",
                 policyName, "advThrottlePolicyId", Constants.CREATED_ADVANCED_POLICY_IDS);
     }
 
@@ -473,7 +465,7 @@ public class ApplicationBaseSteps {
         String policyId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.get(Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId), headers);
+        Requests.get(Utils.getThrottlingPolicyByTypeURL(Utils.getBaseUrl(), policyType, policyId), headers);
     }
 
     /** Generic delete of a throttling policy by type + id (admin API). Non-asserting (also used for 404 checks). */
@@ -482,7 +474,7 @@ public class ApplicationBaseSteps {
         String policyId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.delete(Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId), headers);
+        Requests.delete(Utils.getThrottlingPolicyByTypeURL(Utils.getBaseUrl(), policyType, policyId), headers);
     }
 
     /** Generic update: retrieve the policy, set a new description, and PUT it back. */
@@ -492,7 +484,7 @@ public class ApplicationBaseSteps {
         String policyId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        String url = Utils.getThrottlingPolicyByTypeURL(getBaseUrl(), policyType, policyId);
+        String url = Utils.getThrottlingPolicyByTypeURL(Utils.getBaseUrl(), policyType, policyId);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
@@ -511,7 +503,7 @@ public class ApplicationBaseSteps {
     public void iRetrieveAllThrottlingPolicies(String policyType) throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.get(Utils.getThrottlingPoliciesByTypeURL(getBaseUrl(), policyType), headers);
+        Requests.get(Utils.getThrottlingPoliciesByTypeURL(Utils.getBaseUrl(), policyType), headers);
     }
 
     // ---- Admin gateway environment CRUD ----
@@ -552,7 +544,7 @@ public class ApplicationBaseSteps {
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = Requests.post(Utils.getEnvironmentsURL(getBaseUrl()), headers, env.toString(),
+        HttpResponse response = Requests.post(Utils.getEnvironmentsURL(Utils.getBaseUrl()), headers, env.toString(),
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object id = Utils.extractValueFromPayload(response.getData(), "id");
@@ -591,7 +583,7 @@ public class ApplicationBaseSteps {
     public void iRetrieveAllGatewayEnvironments() throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.get(Utils.getEnvironmentsURL(getBaseUrl()), headers);
+        Requests.get(Utils.getEnvironmentsURL(Utils.getBaseUrl()), headers);
     }
 
     /** Retrieve a gateway environment by id (admin API). */
@@ -600,7 +592,7 @@ public class ApplicationBaseSteps {
         String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.get(Utils.getEnvironmentByIdURL(getBaseUrl(), id), headers);
+        Requests.get(Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), id), headers);
     }
 
     /** Update a gateway environment's description (GET → set → PUT). */
@@ -609,7 +601,7 @@ public class ApplicationBaseSteps {
         String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        String url = Utils.getEnvironmentByIdURL(getBaseUrl(), id);
+        String url = Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), id);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
@@ -630,7 +622,7 @@ public class ApplicationBaseSteps {
         String id = TestContext.contains(idKey) ? TestContext.get(idKey).toString() : idKey;
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.delete(Utils.getEnvironmentByIdURL(getBaseUrl(), id), headers);
+        Requests.delete(Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), id), headers);
     }
 
     /** Retrieve the gateway instances of an environment (admin API). The id may be a context key
@@ -640,7 +632,7 @@ public class ApplicationBaseSteps {
         String id = TestContext.contains(idKey) ? TestContext.get(idKey).toString() : idKey;
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.get(Utils.getEnvironmentGatewaysURL(getBaseUrl(), id), headers);
+        Requests.get(Utils.getEnvironmentGatewaysURL(Utils.getBaseUrl(), id), headers);
     }
 
     /** A vhost JSON object for a Regular (Synapse) gateway — http/https/ws/wss ports. */
@@ -653,7 +645,7 @@ public class ApplicationBaseSteps {
     private void postEnvironment(JSONObject env) throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = Requests.post(Utils.getEnvironmentsURL(getBaseUrl()), headers, env.toString(),
+        HttpResponse response = Requests.post(Utils.getEnvironmentsURL(Utils.getBaseUrl()), headers, env.toString(),
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object id = Utils.extractValueFromPayload(response.getData(), "id");
@@ -697,7 +689,7 @@ public class ApplicationBaseSteps {
         String owner = Identity.resolveActor(actorRef).getUserName();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.get(Utils.getAdminApplicationsByOwnerURL(getBaseUrl(), owner), headers);
+        Requests.get(Utils.getAdminApplicationsByOwnerURL(Utils.getBaseUrl(), owner), headers);
     }
 
     /**
@@ -711,7 +703,7 @@ public class ApplicationBaseSteps {
         String actualName = Utils.resolveContextPlaceholders(name);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.get(Utils.getAdminApplicationsByNameURL(getBaseUrl(), actualName), headers);
+        Requests.get(Utils.getAdminApplicationsByNameURL(Utils.getBaseUrl(), actualName), headers);
     }
 
     /** Update a gateway environment to a single vhost host (removing any others). Non-asserting. */
@@ -720,7 +712,7 @@ public class ApplicationBaseSteps {
         String id = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        String url = Utils.getEnvironmentByIdURL(getBaseUrl(), id);
+        String url = Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), id);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
@@ -753,7 +745,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = Requests.post(Utils.getApplicationThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getApplicationThrottlingPoliciesURL(Utils.getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set("appThrottlePolicyName", policyName);
 
@@ -801,7 +793,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        HttpResponse response = Requests.post(Utils.getCustomThrottlingPoliciesURL(getBaseUrl()), headers, payload,
+        HttpResponse response = Requests.post(Utils.getCustomThrottlingPoliciesURL(Utils.getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set("customThrottlePolicyName", policyName);
 
@@ -822,7 +814,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        Requests.get(Utils.getApplicationThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
+        Requests.get(Utils.getApplicationThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers);
     }
 
     /** Deletes an application throttling policy by id (admin API), storing the raw response for assertions. */
@@ -833,7 +825,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        Requests.delete(Utils.getApplicationThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
+        Requests.delete(Utils.getApplicationThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers);
     }
 
     /** Retrieves a custom (Siddhi) throttling rule by id (admin API), storing the raw response for assertions. */
@@ -844,7 +836,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        Requests.get(Utils.getCustomThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
+        Requests.get(Utils.getCustomThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers);
     }
 
     /** Deletes a custom (Siddhi) throttling rule by id (admin API), storing the raw response for assertions. */
@@ -855,7 +847,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        Requests.delete(Utils.getCustomThrottlingPolicyByIdURL(getBaseUrl(), policyId), headers);
+        Requests.delete(Utils.getCustomThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers);
     }
 
     /**
@@ -879,7 +871,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.post(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object createdAppId = Utils.extractValueFromPayload(response.getData(), "applicationId");
@@ -901,7 +893,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.post(Utils.getApplicationCreateURL(getBaseUrl()), headers, jsonPayload,
+        Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -918,7 +910,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.delete(Utils.getApplicationEndpointURL(getBaseUrl(), actualAppId), headers);
+        Requests.delete(Utils.getApplicationEndpointURL(Utils.getBaseUrl(), actualAppId), headers);
     }
 
     /**
@@ -934,7 +926,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.get(Utils.getApplicationEndpointURL(getBaseUrl(), actualAppId), headers);
+        Requests.get(Utils.getApplicationEndpointURL(Utils.getBaseUrl(), actualAppId), headers);
     }
 
     /**
@@ -950,7 +942,7 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.get(Utils.getApplicationSearchURL(getBaseUrl(), applicationName), headers);
+        HttpResponse response = Requests.get(Utils.getApplicationSearchURL(Utils.getBaseUrl(), applicationName), headers);
 
         JSONObject responseJson = new JSONObject(response.getData());
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
@@ -983,7 +975,7 @@ public class ApplicationBaseSteps {
                 "Bearer " + Identity.devportalToken());
 
         Requests.put(
-                Utils.getApplicationEndpointURL(getBaseUrl(), actualAppId), headers, jsonPayload,
+                Utils.getApplicationEndpointURL(Utils.getBaseUrl(), actualAppId), headers, jsonPayload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1015,7 +1007,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.post(Utils.getCreateSubscriptionURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         TestContext.set(subscriptionID,Utils.extractValueFromPayload(response.getData(), "subscriptionId"));
@@ -1045,7 +1037,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.post(Utils.getCreateSubscriptionURL(getBaseUrl()),
+        Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1064,7 +1056,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.get(Utils.getAllSubscriptionsURL(getBaseUrl(), actualApiId, actualAppId, null, null,
+        HttpResponse response = Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), actualApiId, actualAppId, null, null,
                         null), headers);
 
         JSONObject responseJson = new JSONObject(response.getData());
@@ -1093,7 +1085,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.get(Utils.getApplicationAllKeys(getBaseUrl(), actualAppId), headers);
+        HttpResponse response = Requests.get(Utils.getApplicationAllKeys(Utils.getBaseUrl(), actualAppId), headers);
 
         JSONObject responseJson = new JSONObject(response.getData());
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
@@ -1133,7 +1125,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.put(Utils.getUpdateKey(getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
+        Requests.put(Utils.getUpdateKey(Utils.getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1151,7 +1143,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.delete(Utils.getUpdateKey(getBaseUrl(), actualAppId, keyMappingId), headers);
+        Requests.delete(Utils.getUpdateKey(Utils.getBaseUrl(), actualAppId, keyMappingId), headers);
     }
 
     /**
@@ -1171,7 +1163,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.post(Utils.getGenerateApplicationKeysURL(getBaseUrl(), actualAppId), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), actualAppId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         // Only extract key fields on success — a non-2xx (e.g. a KM that denies the user's role → 403) has no
         // consumerKey, and extracting it would throw before the feature can assert the rejection status.
@@ -1213,7 +1205,7 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
 
         HttpResponse response = Requests.post(
-                Utils.getDCREndpointURL(getBaseUrl()), headers, json.toString(),
+                Utils.getDCREndpointURL(Utils.getBaseUrl()), headers, json.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 200,
                 "BYO OAuth client registration (DCR) failed: " + response.getData());
@@ -1254,7 +1246,7 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
         Requests.post(
-                Utils.getMapKeysURL(getBaseUrl(), actualAppId), headers, json.toString(),
+                Utils.getMapKeysURL(Utils.getBaseUrl(), actualAppId), headers, json.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1276,7 +1268,7 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
         Requests.post(
-                Utils.getCleanupRegistrationURL(getBaseUrl(), actualAppId, keyMappingId), headers, "",
+                Utils.getCleanupRegistrationURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers, "",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1389,7 +1381,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         Requests.post(
-                Utils.getRegenerateConsumerSecretURL(getBaseUrl(), actualAppId, keyMappingId), headers, "",
+                Utils.getRegenerateConsumerSecretURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers, "",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1415,7 +1407,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.post(Utils.getGenerateApplicationTokenURL(getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getGenerateApplicationTokenURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         String accessToken = Utils.extractValueFromPayload(response.getData(), "accessToken").toString();
         TestContext.set("generatedAccessToken", accessToken);
@@ -1435,13 +1427,13 @@ public class ApplicationBaseSteps {
         User currentUser = Identity.actingActor();
 
         StringBuilder body = new StringBuilder("grant_type=password")
-                .append("&username=").append(urlEncode(currentUser.getUserName()))
-                .append("&password=").append(urlEncode(currentUser.getPassword()));
+                .append("&username=").append(Utils.urlEncode(currentUser.getUserName()))
+                .append("&password=").append(Utils.urlEncode(currentUser.getPassword()));
         if (scope != null && !scope.isEmpty()) {
-            body.append("&scope=").append(urlEncode(scope));
+            body.append("&scope=").append(Utils.urlEncode(scope));
         }
 
-        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 clientCredentialsHeader(), body.toString(), Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
     }
@@ -1459,19 +1451,9 @@ public class ApplicationBaseSteps {
     @When("I request an OAuth access token from the external key manager using client credentials grant")
     public void iRequestTokenFromExternalKeyManager() throws Exception {
 
-        String tokenEndpoint = IntegrationActors.baseUrl(IntegrationActors.IS) + "oauth2/token";
-
-        HttpResponse response = Requests.post(tokenEndpoint, clientCredentialsHeader(),
+        HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(),
                 "grant_type=client_credentials", Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
-    }
-
-    /**
-     * Resolves the external key manager (IS) OAuth token endpoint from the block-published {@code isBaseUrl}.
-     * Throws with a clear message if the block did not start the external KM.
-     */
-    private String externalKmTokenEndpoint() {
-        return IntegrationActors.baseUrl(IntegrationActors.IS) + "oauth2/token";
     }
 
     /**
@@ -1489,9 +1471,9 @@ public class ApplicationBaseSteps {
         String resolvedScope = Utils.resolveContextPlaceholders(scope);
         // The scope is sent VERBATIM — features state the full scope they need (e.g. "openid", or
         // "openid <customScope>"); nothing is implicitly prefixed here.
-        String body = "grant_type=password&username=" + urlEncode(resolvedUser) + "&password=" + urlEncode(password)
-                + "&scope=" + urlEncode(resolvedScope);
-        HttpResponse response = Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(), body,
+        String body = "grant_type=password&username=" + Utils.urlEncode(resolvedUser) + "&password=" + Utils.urlEncode(password)
+                + "&scope=" + Utils.urlEncode(resolvedScope);
+        HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
     }
@@ -1544,13 +1526,8 @@ public class ApplicationBaseSteps {
         if (isRole.isEmpty()) {
             return;
         }
-        // Find the role id (SCIM2 v2 Roles), then add the user as a member.
-        String rolesUrl = base + "scim2/v2/Roles?filter=" + urlEncode("displayName eq " + isRole);
-        HttpResponse rolesResp = SimpleHTTPClient.getInstance().doGet(rolesUrl, headers);
-        Assert.assertTrue(rolesResp != null && rolesResp.getResponseCode() == 200 && rolesResp.getData() != null
-                        && !rolesResp.getData().isBlank(),
-                "SCIM2 Roles lookup failed for '" + isRole + "': got="
-                        + (rolesResp == null ? "null" : rolesResp.getResponseCode() + "/" + rolesResp.getData()));
+        // Find the role id (SCIM2 v2 Roles, via the shared asserted-query primitive), then add the user as a member.
+        HttpResponse rolesResp = queryIs7Role(isRole);
         JSONObject rolesBody = new JSONObject(rolesResp.getData());
         Assert.assertTrue(rolesBody.optInt("totalResults", 0) >= 1,
                 "IS role '" + isRole + "' not found to assign to user '" + username + "': " + rolesResp.getData());
@@ -1579,8 +1556,8 @@ public class ApplicationBaseSteps {
     public void iRefreshTokenAtExternalKm() throws Exception {
 
         String refreshToken = TestContext.resolve("refreshToken").toString();
-        String body = "grant_type=refresh_token&refresh_token=" + urlEncode(refreshToken);
-        HttpResponse response = Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(), body,
+        String body = "grant_type=refresh_token&refresh_token=" + Utils.urlEncode(refreshToken);
+        HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
     }
@@ -1609,34 +1586,34 @@ public class ApplicationBaseSteps {
 
         // Step 1: /oauth2/authorize -> 302 to login; carry sessionDataKey.
         StringBuilder authz = new StringBuilder(base).append("oauth2/authorize?response_type=code&client_id=")
-                .append(urlEncode(key)).append("&redirect_uri=").append(urlEncode(IS7_AUTHZ_REDIRECT_URI))
-                .append("&scope=").append(urlEncode("openid"));
+                .append(Utils.urlEncode(key)).append("&redirect_uri=").append(Utils.urlEncode(IS7_AUTHZ_REDIRECT_URI))
+                .append("&scope=").append(Utils.urlEncode("openid"));
         if (codeVerifier != null) {
-            authz.append("&code_challenge=").append(urlEncode(pkceS256Challenge(codeVerifier)))
+            authz.append("&code_challenge=").append(Utils.urlEncode(pkceS256Challenge(codeVerifier)))
                     .append("&code_challenge_method=S256");
         }
-        String sdk = queryParam(redirectLocation(http, "GET", authz.toString(), null), "sessionDataKey");
+        String sdk = Utils.queryParam(redirectLocation(http, "GET", authz.toString(), null), "sessionDataKey");
         Assert.assertNotNull(sdk, "No sessionDataKey in the authorize redirect for the authorization_code flow");
 
         // Step 2: authenticate at /commonauth -> 302 back to /oauth2/authorize with a fresh sessionDataKey.
-        String loginForm = "username=" + urlEncode(username) + "&password=" + urlEncode(password)
-                + "&sessionDataKey=" + urlEncode(sdk);
-        String sdk2 = queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm), "sessionDataKey");
+        String loginForm = "username=" + Utils.urlEncode(username) + "&password=" + Utils.urlEncode(password)
+                + "&sessionDataKey=" + Utils.urlEncode(sdk);
+        String sdk2 = Utils.queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm), "sessionDataKey");
         Assert.assertNotNull(sdk2, "Login did not redirect back to /oauth2/authorize (bad credentials?)");
 
         // Step 3: resume /oauth2/authorize -> 302 to redirect_uri?code=...
-        String code = queryParam(
-                redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + urlEncode(sdk2), null),
+        String code = Utils.queryParam(
+                redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null),
                 "code");
         Assert.assertNotNull(code, "No authorization code in the final redirect of the authorization_code flow");
 
         // Step 4: exchange the code at the IS token endpoint (client-authed) for an access token.
-        String tokenForm = "grant_type=authorization_code&code=" + urlEncode(code)
-                + "&redirect_uri=" + urlEncode(IS7_AUTHZ_REDIRECT_URI);
+        String tokenForm = "grant_type=authorization_code&code=" + Utils.urlEncode(code)
+                + "&redirect_uri=" + Utils.urlEncode(IS7_AUTHZ_REDIRECT_URI);
         if (codeVerifier != null) {
-            tokenForm += "&code_verifier=" + urlEncode(codeVerifier);
+            tokenForm += "&code_verifier=" + Utils.urlEncode(codeVerifier);
         }
-        HttpResponse response = Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(), tokenForm,
+        HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(), tokenForm,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
     }
@@ -1679,28 +1656,11 @@ public class ApplicationBaseSteps {
                 .build();
     }
 
-    /** Extracts a single query-parameter value from a URL (URL-decoded), or null if absent. */
-    private static String queryParam(String url, String name) {
-        int q = url.indexOf('?');
-        if (q < 0) {
-            return null;
-        }
-        for (String pair : url.substring(q + 1).split("&")) {
-            int eq = pair.indexOf('=');
-            String k = eq < 0 ? pair : pair.substring(0, eq);
-            if (k.equals(name)) {
-                String v = eq < 0 ? "" : pair.substring(eq + 1);
-                return java.net.URLDecoder.decode(v, java.nio.charset.StandardCharsets.UTF_8);
-            }
-        }
-        return null;
-    }
-
     /** Computes the PKCE S256 code_challenge (base64url, no padding) for a verifier. */
     private static String pkceS256Challenge(String verifier) throws Exception {
         byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
                 .digest(verifier.getBytes(java.nio.charset.StandardCharsets.US_ASCII));
-        return java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        return JwtTestUtils.base64Url(digest);
     }
 
     /**
@@ -1734,7 +1694,7 @@ public class ApplicationBaseSteps {
 
         // 1. device_authorize -> device_code + user_code.
         HttpResponse da = Requests.post(base + "oauth2/device_authorize", clientCredentialsHeader(),
-                "response_type=device&scope=" + urlEncode("openid"),
+                "response_type=device&scope=" + Utils.urlEncode("openid"),
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         Assert.assertTrue(da != null && da.getResponseCode() == 200 && da.getData() != null && !da.getData().isBlank(),
                 "device_authorize failed: got=" + (da == null ? "null" : da.getResponseCode() + "/" + da.getData()));
@@ -1743,24 +1703,24 @@ public class ApplicationBaseSteps {
         String userCode = daj.getString("user_code");
 
         // 2. submit the user_code -> 302 to login (carries sessionDataKey).
-        String sdk = queryParam(
-                redirectLocation(http, "POST", base + "oauth2/device", "user_code=" + urlEncode(userCode)),
+        String sdk = Utils.queryParam(
+                redirectLocation(http, "POST", base + "oauth2/device", "user_code=" + Utils.urlEncode(userCode)),
                 "sessionDataKey");
         Assert.assertNotNull(sdk, "No sessionDataKey after submitting the device user_code");
 
         // 3. authenticate -> 302 back to /oauth2/authorize with a fresh sessionDataKey.
-        String loginForm = "username=" + urlEncode(username) + "&password=" + urlEncode(password)
-                + "&sessionDataKey=" + urlEncode(sdk);
-        String sdk2 = queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm), "sessionDataKey");
+        String loginForm = "username=" + Utils.urlEncode(username) + "&password=" + Utils.urlEncode(password)
+                + "&sessionDataKey=" + Utils.urlEncode(sdk);
+        String sdk2 = Utils.queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm), "sessionDataKey");
         Assert.assertNotNull(sdk2, "Device login did not redirect back to /oauth2/authorize (bad credentials?)");
 
         // 4. resume /oauth2/authorize to commit the device approval.
-        redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + urlEncode(sdk2), null);
+        redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null);
 
         // 5. exchange the device_code for a token (approval already committed -> no polling wait needed).
-        HttpResponse response = Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(),
-                "grant_type=" + urlEncode("urn:ietf:params:oauth:grant-type:device_code")
-                        + "&device_code=" + urlEncode(deviceCode),
+        HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(),
+                "grant_type=" + Utils.urlEncode("urn:ietf:params:oauth:grant-type:device_code")
+                        + "&device_code=" + Utils.urlEncode(deviceCode),
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
     }
@@ -1773,7 +1733,7 @@ public class ApplicationBaseSteps {
     @When("I attempt an OAuth token from the external key manager using the unsupported grant {string}")
     public void iAttemptUnsupportedGrantAtExternalKm(String grant) throws Exception {
 
-        Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(), "grant_type=" + urlEncode(grant),
+        Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(), "grant_type=" + Utils.urlEncode(grant),
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
     }
 
@@ -1803,7 +1763,7 @@ public class ApplicationBaseSteps {
 
         String idpName = Names.unique("jwtIdp");
         // The IdP REST API expects each certificate as a base64-encoded PEM blob.
-        String certPem = readClasspathResource(IS7_TRUSTED_IDP_CERT_RESOURCE);
+        String certPem = Utils.readClasspathResource(IS7_TRUSTED_IDP_CERT_RESOURCE);
         String certB64 = Base64.getEncoder().encodeToString(certPem.getBytes(StandardCharsets.UTF_8));
         String payload = new JSONObject()
                 .put("name", idpName)
@@ -1833,8 +1793,8 @@ public class ApplicationBaseSteps {
 
         String issuer = TestContext.resolve(idpNameKey).toString();
         long now = System.currentTimeMillis() / 1000;
-        String header = base64Url(new JSONObject().put("alg", "RS256").put("typ", "JWT").toString());
-        String claims = base64Url(new JSONObject()
+        String header = JwtTestUtils.base64Url(new JSONObject().put("alg", "RS256").put("typ", "JWT").toString());
+        String claims = JwtTestUtils.base64Url(new JSONObject()
                 .put("iss", issuer)
                 .put("sub", Constants.SUPER_TENANT_ADMIN_USERNAME)
                 .put("aud", IS7_ADVERTISED_TOKEN_ENDPOINT)
@@ -1844,20 +1804,13 @@ public class ApplicationBaseSteps {
                 .toString());
         String signingInput = header + "." + claims;
 
-        String keyPem = readClasspathResource(IS7_TRUSTED_IDP_KEY_RESOURCE);
-        byte[] keyDer = Base64.getMimeDecoder().decode(keyPem
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", ""));
-        PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(keyDer));
-        Signature signer = Signature.getInstance("SHA256withRSA");
-        signer.initSign(privateKey);
-        signer.update(signingInput.getBytes(StandardCharsets.US_ASCII));
-        String assertion = signingInput + "."
-                + Base64.getUrlEncoder().withoutPadding().encodeToString(signer.sign());
+        PrivateKey privateKey = JwtTestUtils.rsaPrivateKeyFromPem(
+                Utils.readClasspathResource(IS7_TRUSTED_IDP_KEY_RESOURCE));
+        String assertion = signingInput + "." + JwtTestUtils.signRs256(signingInput, privateKey);
 
-        String body = "grant_type=" + urlEncode("urn:ietf:params:oauth:grant-type:jwt-bearer")
-                + "&assertion=" + urlEncode(assertion);
-        HttpResponse response = Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(), body,
+        String body = "grant_type=" + Utils.urlEncode("urn:ietf:params:oauth:grant-type:jwt-bearer")
+                + "&assertion=" + Utils.urlEncode(assertion);
+        HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
     }
@@ -1875,7 +1828,7 @@ public class ApplicationBaseSteps {
     public void iRegisterSamlBearerIdpAtExternalKm(String idpNameKey) throws Exception {
 
         String idpName = Names.unique("samlIdp");
-        String certPem = readClasspathResource(IS7_TRUSTED_IDP_CERT_RESOURCE);
+        String certPem = Utils.readClasspathResource(IS7_TRUSTED_IDP_CERT_RESOURCE);
         String certB64 = Base64.getEncoder().encodeToString(certPem.getBytes(StandardCharsets.UTF_8));
         // "U0FNTFNTT0F1dGhlbnRpY2F0b3I" = base64("SAMLSSOAuthenticator"), the fixed authenticator id.
         String payload = new JSONObject()
@@ -1916,11 +1869,10 @@ public class ApplicationBaseSteps {
         String issuer = TestContext.resolve(idpNameKey).toString();
         String assertionXml = buildSignedSamlAssertion(issuer, Constants.SUPER_TENANT_ADMIN_USERNAME,
                 IS7_ADVERTISED_TOKEN_ENDPOINT);
-        String assertion = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(assertionXml.getBytes(StandardCharsets.UTF_8));
-        String body = "grant_type=" + urlEncode("urn:ietf:params:oauth:grant-type:saml2-bearer")
-                + "&assertion=" + urlEncode(assertion);
-        HttpResponse response = Requests.post(externalKmTokenEndpoint(), clientCredentialsHeader(), body,
+        String assertion = JwtTestUtils.base64Url(assertionXml.getBytes(StandardCharsets.UTF_8));
+        String body = "grant_type=" + Utils.urlEncode("urn:ietf:params:oauth:grant-type:saml2-bearer")
+                + "&assertion=" + Utils.urlEncode(assertion);
+        HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
     }
@@ -1968,12 +1920,9 @@ public class ApplicationBaseSteps {
         // Mark ID as an XML ID so the signature's same-document reference "#<id>" resolves.
         root.setIdAttribute("ID", true);
 
-        String keyPem = readClasspathResource(IS7_TRUSTED_IDP_KEY_RESOURCE);
-        byte[] keyDer = Base64.getMimeDecoder().decode(keyPem
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", ""));
-        PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(keyDer));
-        String certPem = readClasspathResource(IS7_TRUSTED_IDP_CERT_RESOURCE);
+        PrivateKey privateKey = JwtTestUtils.rsaPrivateKeyFromPem(
+                Utils.readClasspathResource(IS7_TRUSTED_IDP_KEY_RESOURCE));
+        String certPem = Utils.readClasspathResource(IS7_TRUSTED_IDP_CERT_RESOURCE);
         java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate)
                 java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(
                         new java.io.ByteArrayInputStream(certPem.getBytes(StandardCharsets.UTF_8)));
@@ -2024,23 +1973,8 @@ public class ApplicationBaseSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("url", IS7_ADVERTISED_TOKEN_ENDPOINT + "/.well-known/openid-configuration");
         formFields.put("type", "WSO2-IS-7");
-        Requests.postMultipart(Utils.getKeyManagersURL(getBaseUrl()) + "/discover", adminAuthHeaders(),
+        Requests.postMultipart(Utils.getKeyManagersURL(Utils.getBaseUrl()) + "/discover", Identity.adminHeaders(),
                 new HashMap<>(), formFields);
-    }
-
-    /** Base64url-encodes (unpadded) a JSON segment for JWT assembly. */
-    private static String base64Url(String json) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes(StandardCharsets.UTF_8));
-    }
-
-    /** Reads a test-resources file from the classpath as a UTF-8 string, failing clearly if it is missing. */
-    private String readClasspathResource(String path) throws IOException {
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(path)) {
-            if (in == null) {
-                throw new FileNotFoundException("Classpath resource not found: " + path);
-            }
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
     }
 
     /**
@@ -2068,16 +2002,8 @@ public class ApplicationBaseSteps {
     public void iTamperGeneratedAccessToken() {
 
         String token = TestContext.resolve("generatedAccessToken").toString();
-        String[] parts = token.split("\\.");
-        Assert.assertEquals(parts.length, 3,
-                "Cannot tamper a non-JWT access token (expected 3 segments): " + token);
-        String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-        JSONObject payload = new JSONObject(payloadJson);
-        // Flip the subject so the payload no longer matches the signature (any claim change suffices).
-        payload.put("sub", "tampered-" + payload.optString("sub", "subject"));
-        String newPayload = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(payload.toString().getBytes(StandardCharsets.UTF_8));
-        TestContext.set("generatedAccessToken", parts[0] + "." + newPayload + "." + parts[2]);
+        // Flip the subject so the payload no longer matches the (kept) signature — any claim change suffices.
+        TestContext.set("generatedAccessToken", JwtTestUtils.tamperClaim(token, "sub"));
     }
 
     /**
@@ -2149,7 +2075,7 @@ public class ApplicationBaseSteps {
      */
     static HttpResponse queryIs7Role(String roleName) throws Exception {
 
-        String url = IntegrationActors.baseUrl(IntegrationActors.IS) + "scim2/v2/Roles?filter=" + urlEncode("displayName eq " + roleName);
+        String url = IntegrationActors.baseUrl(IntegrationActors.IS) + "scim2/v2/Roles?filter=" + Utils.urlEncode("displayName eq " + roleName);
         Map<String, String> headers = IntegrationActors.authHeaders(IntegrationActors.IS);
         HttpResponse resp = SimpleHTTPClient.getInstance().doGet(url, headers);
         Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
@@ -2175,15 +2101,11 @@ public class ApplicationBaseSteps {
 
         String refreshToken = TestContext.resolve(refreshTokenKey).toString();
 
-        String body = "grant_type=refresh_token&refresh_token=" + urlEncode(refreshToken);
+        String body = "grant_type=refresh_token&refresh_token=" + Utils.urlEncode(refreshToken);
 
-        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 clientCredentialsHeader(), body, Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
-    }
-
-    private static String urlEncode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     /**
@@ -2197,7 +2119,7 @@ public class ApplicationBaseSteps {
 
         String token = TestContext.resolve(tokenKey).toString();
 
-        Requests.post(Utils.getRevokeEndpointURL(getBaseUrl()),
+        Requests.post(Utils.getRevokeEndpointURL(Utils.getBaseUrl()),
                 clientCredentialsHeader(), "token=" + token,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
     }
@@ -2207,15 +2129,8 @@ public class ApplicationBaseSteps {
      * (consumerKey/consumerSecret) held in context.
      */
     private Map<String, String> clientCredentialsHeader() {
-
-        String consumerKey = TestContext.resolve("consumerKey").toString();
-        String consumerSecret = TestContext.resolve("consumerSecret").toString();
-        String credentials = Base64.getEncoder().encodeToString(
-                (consumerKey + ":" + consumerSecret).getBytes(StandardCharsets.UTF_8));
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + credentials);
-        return headers;
+        return Identity.basicAuthHeaders(TestContext.resolve("consumerKey").toString(),
+                TestContext.resolve("consumerSecret").toString());
     }
 
     /**
@@ -2250,7 +2165,7 @@ public class ApplicationBaseSteps {
         Assert.assertEquals(parts.length, 3,
                 "Access token is not in JWT format (expected 3 dot-separated segments): " + token);
 
-        String headerJson = new String(Base64.getUrlDecoder().decode(parts[0]), StandardCharsets.UTF_8);
+        String headerJson = JwtTestUtils.decodeHeader(token);
         JSONObject header = new JSONObject(headerJson);
         Assert.assertTrue(header.has("alg"),
                 "JWT header does not contain an 'alg' claim: " + headerJson);
@@ -2271,7 +2186,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.post(Utils.getGenerateAPIKeyURL(getBaseUrl(), actualAppId), headers, jsonPayload,
+        HttpResponse response = Requests.post(Utils.getGenerateAPIKeyURL(Utils.getBaseUrl(), actualAppId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         String apikey = Utils.extractValueFromPayload(response.getData(), "apikey").toString();
         TestContext.set("apiKey", apikey);
@@ -2292,7 +2207,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.get(Utils.getListAPIKeysURL(getBaseUrl(), actualAppId), headers);
+        HttpResponse response = Requests.get(Utils.getListAPIKeysURL(Utils.getBaseUrl(), actualAppId), headers);
         // The endpoint returns either a bare array [{...}] or a {"count":n,"list":[...]} wrapper depending on
         // the pack — handle both. Each scenario's app has a single key, so the first entry is the one to revoke.
         String data = response.getData().trim();
@@ -2321,7 +2236,7 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String payload = "{\"keyUUID\":\"" + uuid + "\"}";
 
-        Requests.post(Utils.getRevokeAPIKeyURL(getBaseUrl(), actualAppId), headers, payload,
+        Requests.post(Utils.getRevokeAPIKeyURL(Utils.getBaseUrl(), actualAppId), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2337,7 +2252,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.delete(Utils.getSubscriptionURL(getBaseUrl(),
+        Requests.delete(Utils.getSubscriptionURL(Utils.getBaseUrl(),
                 actualSubscriptionId), headers);
     }
 
@@ -2373,7 +2288,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.put(Utils.getSubscriptionURL(getBaseUrl(), actualSubscriptionId),
+        Requests.put(Utils.getSubscriptionURL(Utils.getBaseUrl(), actualSubscriptionId),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2390,7 +2305,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.get(Utils.getSubscriptionURL(getBaseUrl(),
+        Requests.get(Utils.getSubscriptionURL(Utils.getBaseUrl(),
                 actualSubscriptionId), headers);
     }
 
@@ -2409,7 +2324,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         Requests.get(
-                Utils.getAllSubscriptionsURL(getBaseUrl(), null, appId, null, null, null), headers);
+                Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), null, appId, null, null, null), headers);
     }
 
     /**
@@ -2594,8 +2509,9 @@ public class ApplicationBaseSteps {
         // Resolve any {{contextKey}} placeholders so a query can target a uniquely-generated value, e.g.
         // "name:{{createdApiName}}" — necessary now that resource names are randomized by ${UNIQUE:...}.
         query = Utils.resolveContextPlaceholders(query);
-        String url = Utils.getApiSearchURL(getBaseUrl(), query);
-        long endTime = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+        String url = Utils.getApiSearchURL(Utils.getBaseUrl(), query);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
 
         // DevPortal search is backed by an asynchronous (Solr) index, so a freshly published API may
         // not be searchable immediately. Retry while the result set is pending (non-200, absent/empty body, or
@@ -2619,7 +2535,7 @@ public class ApplicationBaseSteps {
             if (System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
 
         Assert.assertNotNull(response, "DevPortal search '" + query + "' returned no response (every poll "
@@ -2639,17 +2555,10 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.get(Utils.getApiDocumentsURL(getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getApiDocumentsURL(Utils.getBaseUrl(), actualApiId), headers);
     }
 
     // ---- Key manager configuration (admin) -------------------------------------------------------------
-
-    private Map<String, String> adminAuthHeaders() {
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        return headers;
-    }
 
     /**
      * Adds a system-scope role-alias mapping (admin REST {@code PUT /role-aliases}): maps {@code role} to include
@@ -2660,7 +2569,7 @@ public class ApplicationBaseSteps {
 
         JSONObject entry = new JSONObject().put("role", role).put("aliases", new JSONArray().put(alias));
         JSONObject payload = new JSONObject().put("count", 1).put("list", new JSONArray().put(entry));
-        Requests.put(Utils.getRoleAliasesURL(getBaseUrl()), adminAuthHeaders(), payload.toString(),
+        Requests.put(Utils.getRoleAliasesURL(Utils.getBaseUrl()), Identity.adminHeaders(), payload.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2668,8 +2577,8 @@ public class ApplicationBaseSteps {
     @When("I retrieve the role aliases")
     public void iRetrieveRoleAliases() throws IOException {
 
-        Requests.get(Utils.getRoleAliasesURL(getBaseUrl()),
-                adminAuthHeaders());
+        Requests.get(Utils.getRoleAliasesURL(Utils.getBaseUrl()),
+                Identity.adminHeaders());
     }
 
     /**
@@ -2680,8 +2589,8 @@ public class ApplicationBaseSteps {
     public void iClearRoleAliases() throws IOException {
 
         JSONObject payload = new JSONObject().put("count", 0).put("list", new JSONArray());
-        Requests.put(Utils.getRoleAliasesURL(getBaseUrl()),
-                adminAuthHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Requests.put(Utils.getRoleAliasesURL(Utils.getBaseUrl()),
+                Identity.adminHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Maps a friendly throttling-policy kind to the export/import {@code type} token. */
@@ -2706,7 +2615,7 @@ public class ApplicationBaseSteps {
 
         String name = TestContext.resolve(nameKey).toString();
         HttpResponse response = Requests.get(
-                Utils.getThrottlePolicyExportURL(getBaseUrl(), name, throttleExportType(kind)), adminAuthHeaders());
+                Utils.getThrottlePolicyExportURL(Utils.getBaseUrl(), name, throttleExportType(kind)), Identity.adminHeaders());
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             TestContext.set(Utils.normalizeContextKey(exportKey), response.getData());
         }
@@ -2729,7 +2638,7 @@ public class ApplicationBaseSteps {
         Map<String, java.io.File> files = new HashMap<>();
         files.put("file", temp);
         Requests.postMultipart(
-                Utils.getThrottlePolicyImportURL(getBaseUrl(), overwrite), adminAuthHeaders(), files, new HashMap<>());
+                Utils.getThrottlePolicyImportURL(Utils.getBaseUrl(), overwrite), Identity.adminHeaders(), files, new HashMap<>());
     }
 
     /** Loads a key-manager JSON payload off the classpath, resolving {@code ${UNIQUE:...}} name placeholders. */
@@ -2746,8 +2655,8 @@ public class ApplicationBaseSteps {
 
     private HttpResponse postKeyManager(JSONObject payload) throws IOException {
 
-        HttpResponse response = Requests.post(Utils.getKeyManagersURL(getBaseUrl()),
-                adminAuthHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse response = Requests.post(Utils.getKeyManagersURL(Utils.getBaseUrl()),
+                Identity.adminHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
         return response;
     }
 
@@ -2786,35 +2695,63 @@ public class ApplicationBaseSteps {
         String kmId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        long deadline = System.currentTimeMillis() + 60_000;
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + 60_000;
         int attempts = 0;
         while (true) {
             attempts++;
             // Probe via the raw client so the step's published httpResponse stays the KM-create 201.
-            String appPayload = "{\"name\":\"" + Names.unique("kmProbeApp")
+            String probeAppName = Names.unique("kmProbeApp");
+            String appPayload = "{\"name\":\"" + probeAppName
                     + "\",\"throttlingPolicy\":\"Unlimited\",\"description\":\"KM propagation probe\"}";
-            HttpResponse appResp = SimpleHTTPClient.getInstance().doPost(
-                    Utils.getApplicationCreateURL(getBaseUrl()), headers, appPayload,
-                    Constants.CONTENT_TYPES.APPLICATION_JSON);
+            HttpResponse appResp;
+            try {
+                appResp = SimpleHTTPClient.getInstance().doPost(
+                        Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, appPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+            } catch (IOException transientFailure) {
+                // Outcome UNKNOWN — the create may have committed with the response lost, and the next probe
+                // uses a FRESH name, so an orphan would never be swept. Register any survivor for teardown,
+                // then retry within the deadline.
+                String orphanId = Utils.findIdByNameInListResponse(
+                        Utils.getApplicationSearchURL(Utils.getBaseUrl(), probeAppName), headers, probeAppName,
+                        "applicationId");
+                if (orphanId != null) {
+                    ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, orphanId);
+                }
+                if (System.currentTimeMillis() > deadline) {
+                    throw transientFailure;
+                }
+                Utils.pollPause(deadlineStart, 2000);   // mutating probe: each retry creates an app + keygen
+                continue;
+            }
             Assert.assertTrue(appResp != null && appResp.getResponseCode() == 201,
                     "KM-propagation probe app create failed: got=" + (appResp == null ? "null"
                             : appResp.getResponseCode() + "/" + appResp.getData()));
             String probeAppId = String.valueOf(Utils.extractValueFromPayload(appResp.getData(), "applicationId"));
+            // Register the throwaway app for teardown IMMEDIATELY — the keygen probe or the delete below can
+            // throw, and a created-but-unregistered app would leak. The successful per-attempt delete
+            // deregisters it again so the sweep never chases an already-gone id.
+            ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, probeAppId);
             boolean operational = false;
             try {
                 String keygenPayload = "{\"keyType\":\"PRODUCTION\",\"keyManager\":\"" + kmId
                         + "\",\"grantTypesToBeSupported\":[\"client_credentials\"]}";
                 HttpResponse keyResp = SimpleHTTPClient.getInstance().doPost(
-                        Utils.getGenerateApplicationKeysURL(getBaseUrl(), probeAppId), headers, keygenPayload,
+                        Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), probeAppId), headers, keygenPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
                 operational = keyResp != null && keyResp.getResponseCode() >= 200 && keyResp.getResponseCode() < 300;
+            } catch (IOException transientKeygenFailure) {
+                // transient — the probe simply counts as not operational this round; the finally still
+                // deletes the throwaway app and the deadline bounds the overall wait
             } finally {
                 // Delete the probe app regardless: it removes the probe keys AND any mapping row a
-                // pre-propagation keygen attempt leaked. A failed delete is registered so teardown sweeps it.
+                // pre-propagation keygen attempt leaked. Only a successful delete deregisters — a failed or
+                // throwing delete leaves the id registered for the teardown sweep.
                 HttpResponse del = SimpleHTTPClient.getInstance().doDelete(
-                        Utils.getApplicationCreateURL(getBaseUrl()) + "/" + probeAppId, headers);
-                if (del == null || del.getResponseCode() < 200 || del.getResponseCode() >= 300) {
-                    ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, probeAppId);
+                        Utils.getApplicationCreateURL(Utils.getBaseUrl()) + "/" + probeAppId, headers);
+                if (del != null && del.getResponseCode() >= 200 && del.getResponseCode() < 300) {
+                    ResourceCleanup.deregister(Constants.CREATED_APPLICATION_IDS, probeAppId);
                 }
             }
             if (operational) {
@@ -2824,7 +2761,7 @@ public class ApplicationBaseSteps {
                 Assert.fail("Key manager '" + kmId + "' did not become operational (holder propagation) within "
                         + "60s (" + attempts + " keygen probes)");
             }
-            Thread.sleep(1000);
+            Utils.pollPause(deadlineStart, 2000);   // mutating probe: each retry creates an app + keygen
         }
     }
 
@@ -2873,7 +2810,7 @@ public class ApplicationBaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.post(Utils.getKeyManagersURL(getBaseUrl()), headers,
+        Requests.post(Utils.getKeyManagersURL(Utils.getBaseUrl()), headers,
                 loadKeyManagerPayload(resourcePath).toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2882,14 +2819,14 @@ public class ApplicationBaseSteps {
     public void iRetrieveKeyManager(String idKey) throws IOException {
 
         String kmId = TestContext.resolve(idKey).toString();
-        Requests.get(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
+        Requests.get(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
     }
 
     /** Lists all key managers. */
     @When("I retrieve all key managers")
     public void iRetrieveAllKeyManagers() throws IOException {
 
-        Requests.get(Utils.getKeyManagersURL(getBaseUrl()), adminAuthHeaders());
+        Requests.get(Utils.getKeyManagersURL(Utils.getBaseUrl()), Identity.adminHeaders());
     }
 
     /**
@@ -2901,7 +2838,7 @@ public class ApplicationBaseSteps {
 
         String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
+                .doGet(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
@@ -2914,7 +2851,7 @@ public class ApplicationBaseSteps {
         km.put("description", newDescription);
 
         Requests.put(
-                Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders(), km.toString(),
+                Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), km.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2928,7 +2865,7 @@ public class ApplicationBaseSteps {
 
         String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
+                .doGet(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
@@ -2941,7 +2878,7 @@ public class ApplicationBaseSteps {
         km.put("enabled", Boolean.parseBoolean(enabled));
 
         HttpResponse response = Requests.put(
-                Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders(), km.toString(),
+                Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), km.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2955,7 +2892,7 @@ public class ApplicationBaseSteps {
 
         String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
+                .doGet(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
@@ -2968,7 +2905,7 @@ public class ApplicationBaseSteps {
         km.put("type", newType);
 
         HttpResponse response = Requests.put(
-                Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders(), km.toString(),
+                Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), km.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -2977,7 +2914,7 @@ public class ApplicationBaseSteps {
     public void iDeleteKeyManager(String idKey) throws IOException {
 
         String kmId = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
+        Requests.delete(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
     }
 
     /**
@@ -3000,7 +2937,7 @@ public class ApplicationBaseSteps {
 
         String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
+                .doGet(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
@@ -3015,7 +2952,7 @@ public class ApplicationBaseSteps {
                 .put("value", Base64.getEncoder().encodeToString(pem.getBytes(StandardCharsets.UTF_8))));
 
         HttpResponse response = Requests.put(
-                Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders(), km.toString(),
+                Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), km.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -3066,7 +3003,7 @@ public class ApplicationBaseSteps {
 
         String kmId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders());
+                .doGet(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
@@ -3081,7 +3018,7 @@ public class ApplicationBaseSteps {
         }
         km.put("allowedOrganizations", orgs);
         Requests.put(
-                Utils.getKeyManagerByIdURL(getBaseUrl(), kmId), adminAuthHeaders(), km.toString(),
+                Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), km.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -3093,8 +3030,8 @@ public class ApplicationBaseSteps {
         dto.put("conditionType", conditionType);
         dto.put("conditionValue", conditionValue);
         dto.put("conditionStatus", true);
-        HttpResponse response = Requests.post(Utils.getDenyPoliciesURL(getBaseUrl()),
-                adminAuthHeaders(), dto.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse response = Requests.post(Utils.getDenyPoliciesURL(Utils.getBaseUrl()),
+                Identity.adminHeaders(), dto.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
         return response;
     }
 
@@ -3166,7 +3103,7 @@ public class ApplicationBaseSteps {
     public void iRetrieveDenyPolicy(String idKey) throws IOException {
 
         String id = TestContext.resolve(idKey).toString();
-        Requests.get(Utils.getDenyPolicyByIdURL(getBaseUrl(), id), adminAuthHeaders());
+        Requests.get(Utils.getDenyPolicyByIdURL(Utils.getBaseUrl(), id), Identity.adminHeaders());
     }
 
     /** Updates a deny policy's enabled status (PATCH conditionStatus). Non-asserting — the feature asserts. */
@@ -3177,7 +3114,7 @@ public class ApplicationBaseSteps {
         JSONObject dto = new JSONObject();
         dto.put("conditionStatus", Boolean.parseBoolean(status));
         Requests.patch(
-                Utils.getDenyPolicyByIdURL(getBaseUrl(), id), adminAuthHeaders(), dto.toString(),
+                Utils.getDenyPolicyByIdURL(Utils.getBaseUrl(), id), Identity.adminHeaders(), dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -3186,15 +3123,15 @@ public class ApplicationBaseSteps {
     public void iDeleteDenyPolicy(String idKey) throws IOException {
 
         String id = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getDenyPolicyByIdURL(getBaseUrl(), id), adminAuthHeaders());
+        Requests.delete(Utils.getDenyPolicyByIdURL(Utils.getBaseUrl(), id), Identity.adminHeaders());
     }
 
     /** Searches deny policies by condition type and value (query grammar: conditionType:X&conditionValue:Y). */
     @When("I search deny policies of type {string} with value {string}")
     public void iSearchDenyPolicies(String conditionType, String conditionValue) throws IOException {
 
-        String query = urlEncode("conditionType:" + conditionType + "&conditionValue:" + conditionValue);
-        Requests.get(Utils.getDenyPoliciesURL(getBaseUrl()) + "?query=" + query, adminAuthHeaders());
+        String query = Utils.urlEncode("conditionType:" + conditionType + "&conditionValue:" + conditionValue);
+        Requests.get(Utils.getDenyPoliciesURL(Utils.getBaseUrl()) + "?query=" + query, Identity.adminHeaders());
     }
 
     // ---- Tenant configuration (admin) ------------------------------------------------------------------
@@ -3203,21 +3140,21 @@ public class ApplicationBaseSteps {
     @When("I retrieve the tenant configuration")
     public void iRetrieveTenantConfiguration() throws IOException {
 
-        Requests.get(Utils.getTenantConfigURL(getBaseUrl()), adminAuthHeaders());
+        Requests.get(Utils.getTenantConfigURL(Utils.getBaseUrl()), Identity.adminHeaders());
     }
 
     /** Retrieves the tenant configuration JSON schema. */
     @When("I retrieve the tenant configuration schema")
     public void iRetrieveTenantConfigurationSchema() throws IOException {
 
-        Requests.get(Utils.getTenantConfigSchemaURL(getBaseUrl()), adminAuthHeaders());
+        Requests.get(Utils.getTenantConfigSchemaURL(Utils.getBaseUrl()), Identity.adminHeaders());
     }
 
     /** Captures the current tenant configuration body under {@code contextKey} (for a round-trip update/restore). */
     @When("I capture the tenant configuration as {string}")
     public void iCaptureTenantConfiguration(String contextKey) throws IOException {
 
-        HttpResponse response = Requests.get(Utils.getTenantConfigURL(getBaseUrl()), adminAuthHeaders());
+        HttpResponse response = Requests.get(Utils.getTenantConfigURL(Utils.getBaseUrl()), Identity.adminHeaders());
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         TestContext.set(Utils.normalizeContextKey(contextKey), response.getData());
     }
@@ -3227,7 +3164,7 @@ public class ApplicationBaseSteps {
     public void iUpdateTenantConfiguration(String contextKey) throws IOException {
 
         String payload = TestContext.resolve(contextKey).toString();
-        Requests.put(Utils.getTenantConfigURL(getBaseUrl()), adminAuthHeaders(), payload,
+        Requests.put(Utils.getTenantConfigURL(Utils.getBaseUrl()), Identity.adminHeaders(), payload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -3241,7 +3178,7 @@ public class ApplicationBaseSteps {
                 + "eyJzdWIiOiJhZG1pbiIsInNjb3BlIjoib3BlbmlkIGFwaW06YWRtaW4ifQ.aW52YWxpZF9zaWduYXR1cmU";
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + invalidJwt);
-        Requests.put(Utils.getTenantConfigURL(getBaseUrl()),
+        Requests.put(Utils.getTenantConfigURL(Utils.getBaseUrl()),
                 headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -3255,7 +3192,7 @@ public class ApplicationBaseSteps {
         String payload = TestContext.resolve(contextKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.put(Utils.getTenantConfigURL(getBaseUrl()),
+        Requests.put(Utils.getTenantConfigURL(Utils.getBaseUrl()),
                 headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -3278,7 +3215,7 @@ public class ApplicationBaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        HttpResponse response = Requests.post(Utils.getApplicationCreateURL(getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()),
                 headers, app.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object appId = Utils.extractValueFromPayload(response.getData(), "applicationId");
@@ -3293,7 +3230,7 @@ public class ApplicationBaseSteps {
         String appId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.get(Utils.getApplicationEndpointURL(getBaseUrl(), appId), headers);
+        Requests.get(Utils.getApplicationEndpointURL(Utils.getBaseUrl(), appId), headers);
     }
 
     /** Updates a devportal application's visibility in place (GET→modify→PUT). Non-asserting. */
@@ -3304,7 +3241,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getApplicationEndpointURL(getBaseUrl(), appId), headers);
+                .doGet(Utils.getApplicationEndpointURL(Utils.getBaseUrl(), appId), headers);
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
@@ -3315,18 +3252,11 @@ public class ApplicationBaseSteps {
         JSONObject app = new JSONObject(current.getData());
         app.put("visibility", visibility);
         Requests.put(
-                Utils.getApplicationEndpointURL(getBaseUrl(), appId), headers, app.toString(),
+                Utils.getApplicationEndpointURL(Utils.getBaseUrl(), appId), headers, app.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     // ---- Consumer secret management (multiple client secrets, devportal) -------------------------------
-
-    private Map<String, String> devportalAuthHeaders() {
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        return headers;
-    }
 
     /**
      * Generates an additional consumer secret for an application's key mapping (requires multiple-client-secrets
@@ -3352,7 +3282,7 @@ public class ApplicationBaseSteps {
         request.put("additionalProperties", additionalProperties);
 
         HttpResponse response = Requests.post(
-                Utils.getGenerateApplicationSecretURL(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders(),
+                Utils.getGenerateApplicationSecretURL(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders(),
                 request.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() < 300) {
             TestContext.set(secretIdKey, Utils.extractValueFromPayload(response.getData(), "secretId"));
@@ -3365,7 +3295,7 @@ public class ApplicationBaseSteps {
 
         String appId = TestContext.resolve(appIdKey).toString();
         String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
-        Requests.get(Utils.getAllApplicationSecretsURL(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders());
+        Requests.get(Utils.getAllApplicationSecretsURL(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders());
     }
 
     /** Revokes a consumer secret (by the id held under {@code secretIdKey}). Non-asserting. */
@@ -3380,7 +3310,7 @@ public class ApplicationBaseSteps {
         JSONObject request = new JSONObject();
         request.put("secretId", secretId);
         Requests.post(
-                Utils.getRevokeApplicationSecretURL(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders(),
+                Utils.getRevokeApplicationSecretURL(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders(),
                 request.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -3390,7 +3320,7 @@ public class ApplicationBaseSteps {
 
         String appId = TestContext.resolve(appIdKey).toString();
         String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
-        Requests.get(Utils.getUpdateKey(getBaseUrl(), appId, keyMappingId), devportalAuthHeaders());
+        Requests.get(Utils.getUpdateKey(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders());
     }
 
     /**
@@ -3404,7 +3334,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
-        Requests.get(Utils.getApiSearchURL(getBaseUrl(), resolvedQuery), headers);
+        Requests.get(Utils.getApiSearchURL(Utils.getBaseUrl(), resolvedQuery), headers);
     }
 
     /**
@@ -3420,8 +3350,9 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String resolvedExpected = Utils.resolveContextPlaceholders(expected);
-        String url = Utils.getApiSearchURL(getBaseUrl(), resolvedQuery);
-        long endTime = System.currentTimeMillis() + seconds * 1000L;
+        String url = Utils.getApiSearchURL(Utils.getBaseUrl(), resolvedQuery);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + seconds * 1000L;
         HttpResponse response = null;
         boolean found = false;
         while (true) {
@@ -3435,7 +3366,7 @@ public class ApplicationBaseSteps {
             if (found || System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(response, "DevPortal search '" + resolvedQuery + "' returned no response (every poll "
                 + "attempt failed)");
@@ -3459,8 +3390,9 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String resolvedUnexpected = Utils.resolveContextPlaceholders(unexpected);
-        String url = Utils.getApiSearchURL(getBaseUrl(), resolvedQuery);
-        long endTime = System.currentTimeMillis() + seconds * 1000L;
+        String url = Utils.getApiSearchURL(Utils.getBaseUrl(), resolvedQuery);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + seconds * 1000L;
         HttpResponse response = null;
         boolean absent = false;
         while (true) {
@@ -3474,7 +3406,7 @@ public class ApplicationBaseSteps {
             if (absent || System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(response, "DevPortal search '" + resolvedQuery + "' returned no response (every poll "
                 + "attempt failed)");
@@ -3495,8 +3427,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
-        String url = Utils.getApiSearchURLWithLimit(getBaseUrl(), resolvedQuery, limit);
-        long endTime = System.currentTimeMillis() + seconds * 1000L;
+        String url = Utils.getApiSearchURLWithLimit(Utils.getBaseUrl(), resolvedQuery, limit);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + seconds * 1000L;
         HttpResponse response = null;
         int actual = -1;
         while (true) {
@@ -3512,7 +3445,7 @@ public class ApplicationBaseSteps {
             if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(response, "No paginated search response");
         Assert.assertEquals(actual, expectedCount,
@@ -3531,8 +3464,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedExpected = Utils.resolveContextPlaceholders(expected);
-        String url = Utils.getTagsURL(getBaseUrl());
-        long endTime = System.currentTimeMillis() + seconds * 1000L;
+        String url = Utils.getTagsURL(Utils.getBaseUrl());
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + seconds * 1000L;
         HttpResponse response = null;
         boolean found = false;
         while (true) {
@@ -3546,7 +3480,7 @@ public class ApplicationBaseSteps {
             if (found || System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(response, "DevPortal tag cloud returned no response (every poll attempt failed)");
         Assert.assertTrue(found, "DevPortal tag cloud did not contain '" + resolvedExpected + "' within "
@@ -3567,8 +3501,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolved = Utils.resolveContextPlaceholders(unexpected);
-        String url = Utils.getTagsURL(getBaseUrl());
-        long endTime = System.currentTimeMillis() + seconds * 1000L;
+        String url = Utils.getTagsURL(Utils.getBaseUrl());
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + seconds * 1000L;
         HttpResponse response = null;
         boolean absent = false;
         while (true) {
@@ -3582,7 +3517,7 @@ public class ApplicationBaseSteps {
             if (absent || System.currentTimeMillis() >= endTime) {
                 break;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(response, "DevPortal tag cloud returned no response (every poll attempt failed)");
         Assert.assertTrue(absent, "DevPortal tag cloud still contained '" + resolved + "' after " + seconds

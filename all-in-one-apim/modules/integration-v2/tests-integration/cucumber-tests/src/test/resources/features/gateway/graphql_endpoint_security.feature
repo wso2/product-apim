@@ -31,6 +31,9 @@ Feature: Gateway GraphQL Endpoint Security
     And I deploy the API with id "gqlSecApiId"
     When I publish the "apis" resource with id "gqlSecApiId"
     Then The lifecycle status of API "gqlSecApiId" should be "Published"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "gqlSecApiId" should be live on the gateway, redeploying if propagation is lost
     When I have set up application with keys, subscribed to API "gqlSecApiId", and obtained access token for "gqlSecSubId"
     Then The response status code should be 200
     When I put the following JSON payload in context as "gqlSecQuery"

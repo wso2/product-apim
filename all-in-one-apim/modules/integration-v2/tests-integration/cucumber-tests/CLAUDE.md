@@ -324,8 +324,10 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
 - **Product operations** = any call to a product API — publisher/devportal/admin REST, token endpoints,
   gateway invocations, `/internal/data/v1/notify`, admin SOAP services *when the call is the subject or a
   scenario-level prerequisite*. These live in `.feature` files as steps, run **as an `Identity` actor**,
-  through the `Requests`/`execute` funnels. If a block "needs" a product resource before its scenarios (a
-  registered key manager, a synced tenant), that is a `_setup_*` feature (§10) — not a listener hook.
+  through the `Requests`/`execute` funnels for the response under test (per §7 — an intermediate read
+  consumed locally within the step may still use `SimpleHTTPClient` directly). If a block "needs" a product
+  resource before its scenarios (a registered key manager, a synced tenant), that is a `_setup_*` feature
+  (§10) — not a listener hook.
 - **Why this is load-bearing, not taste:**
   1. **Coverage** — product behaviour buried in a listener/util is invisible to the coverage tree and to
      reviewers; as a step it is tagged, counted and reviewed.
@@ -359,6 +361,65 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   resources could not be swept by `ResourceCleanup`. Replaced by
   `TenantUserProvisioner.registerRuntimeTenantAdmin` + standard steps in `TenantSharingSteps`).
 
+## 15. Shared glue utilities (reuse these — never re-write one privately in a Steps class)
+Every helper below exists because it was once copy-pasted across step classes and consolidated. Before
+writing ANY private helper in a Steps file, check this list; if a near-fit exists, extend it here instead
+of forking it locally. (The §7 context/funnel primitives — `TestContext.resolve/get/contains`,
+`Requests.*`, `APIInvocationSteps.execute`, `SimpleHTTPClient` — are documented in §7 and not repeated.)
+
+**`utils/Utils`** (URL building, context URLs, small IO):
+- `getBaseUrl()` / `getBaseGatewayUrl()` / `getBaseGatewayWsUrl()` / `getBaseGatewayWssUrl()` — the block's
+  published base URLs from shared context, throwing a clear "not booted yet" when absent. Never re-read
+  `TestContext.get("baseUrl")` by hand.
+- `urlEncode(value)` — UTF-8 URL-encoding one-liner (was `enc()`/`urlEncode()` in four classes).
+- `pollPause(pollStartMillis, baseIntervalMillis)` — THE inter-poll pause for deadline-bounded retry loops:
+  the loop's base cadence for the first minute, then max(base, 5s), then max(base, 10s) — fast pass-detection
+  where polls almost always succeed, easing off the struggling server in the long tail. Never hand-write a
+  loop-tail `Thread.sleep`; capture the poll start (the instant the deadline was computed from) and use this.
+- `awaitWithRetry(what, probe, reTrigger, maxAttempts)` — SELF-HEALING readiness gate for PREREQUISITE
+  state only (never a scenario's assertion target): full propagation-window wait, then re-fire the action
+  (60s retry windows, max attempts) because runtime-propagation events are at-most-once — a dropped deploy
+  event can only be fixed by re-emitting it. Logs a grep-able "self-heal:" WARN per heal so occurrences stay
+  countable. First consumer: the gateway deploy-readiness gate step ("should be live on the gateway,
+  redeploying if propagation is lost") used by the GraphQL features.
+- `queryParam(url, name)` — decoded query-parameter value or null; splits on `&`/`=` so a name that
+  suffixes another (`code` vs `session_code`) never mismatches.
+- `classpathToTempFile(resourcePath, tempPrefix, tempSuffix)` — classpath resource → delete-on-exit temp
+  file for multipart uploads that need a `File`.
+- `readClasspathResource(resourcePath)` — classpath resource → UTF-8 string, failing clearly when missing.
+- `findIdByNameInListResponse(listUrl, headers, name, idField)` — raw-client fetch of a `{"list":[...]}`
+  resource returning the exact-name match's id; the primitive for resolving a lost-response create
+  (register/adopt the survivor instead of blindly re-POSTing a non-idempotent create).
+- plus the existing endpoint-URL builders (`get*URL`), `resolveContextPlaceholders`,
+  `extractValueFromPayload`, `normalizeContextKey`, `mergeTomls`.
+
+**`utils/Identity`** (actors, tokens, auth headers):
+- `actingTenantDomain()` — the acting actor's tenant domain via the bean's user domain (the same
+  resolution `tenantOf` uses); never parse it out of the username.
+- `bearerHeaders(token)` and the plane shorthands `publisherHeaders()` / `devportalHeaders()` /
+  `adminHeaders()` — the `Authorization: Bearer` headers-map for the acting actor's cached tokens.
+- `basicAuthHeaders(username, password)` / `actingBasicAuthHeaders()` — `Authorization: Basic` headers-map
+  (acting-actor variant for introspection/SOAP admin services).
+- plus the existing actor/token resolution (`resolveActor`, `actingActor`, `*Token()`, `tenantOf`).
+
+**`utils/IntegrationActors`** (external-system principals, §14):
+- `tokenEndpoint(systemId)` — the system's OAuth2 token endpoint (was duplicated one-liners building
+  `baseUrl + "oauth2/token"`), alongside the existing `baseUrl`/`authHeaders`/`register`/`isRegistered`.
+
+**`utils/JwtTestUtils`** (test-JWT assembly & mutation — never validation):
+- `base64Url(String | byte[])` — unpadded base64url for JWT segments / digests / thumbprints.
+- `decodeHeader(jwt)` / `decodePayload(jwt)` — segment → JSON text with a clear not-a-JWT failure.
+- `rsaPrivateKeyFromPem(pkcs8Pem)` — PKCS#8 PEM text → `PrivateKey`.
+- `signRs256(signingInput, key)` / `buildRs256Jwt(headerJson, claimsJson, key)` — RS256 assertion signing.
+- `tamperClaim(jwt, claim)` — prefixes one claim with `tampered-` keeping the signature (the
+  invalid-signature negative); `replaceInPayloadKeepingSignature(jwt, target, replacement)` — the
+  free-form literal-swap variant.
+
+**Other existing single-owners** (already shared, listed for discoverability): `Names.unique` (§4 naming),
+`ResourceCleanup.register/deregister` (§5), `ISResourceCleanup.register*` (§14), `ServerReadiness.await*`,
+`TenantUserProvisioner` (block provisioning + runtime actors), `ApplicationBaseSteps.queryIs7Role`
+(asserted IS SCIM2 role query).
+
 ## Anti-patterns (don't)
 Fixed ports · hardcoded resource names · `Thread.sleep` · depending on another scenario's order or
 artifacts · shared mutable static state · cleanup in inline scenarios instead of hooks · duplicate
@@ -366,4 +427,5 @@ steps or duplicate tests · full-file `tomlOverlayPath` for product tests (use `
 leaving a **stale `httpResponse`** when a request step throws (clear it first / funnel through
 `execute`) · retry loops that catch bare `Exception` or don't assert the expected status after the loop ·
 product operations in listeners/provisioners or token-minting side-channel utils (provision infra, act
-through actors — §14).
+through actors — §14) · private re-implementations of the shared glue utilities (§15 — reuse or extend
+the shared one).

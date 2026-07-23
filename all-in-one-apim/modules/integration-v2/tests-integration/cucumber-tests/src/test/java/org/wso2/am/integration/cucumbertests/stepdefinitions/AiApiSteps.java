@@ -35,8 +35,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,16 +45,12 @@ import java.util.Map;
  */
 public class AiApiSteps {
 
-    private String getBaseUrl() {
-        return TestContext.get("baseUrl").toString();
-    }
-
     /** Admin — GET /ai-service-providers (lists predefined + custom providers). Stores the response. */
     @When("I retrieve the AI service providers")
     public void iRetrieveAiServiceProviders() throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = Requests.get(Utils.getAIServiceProvidersURL(getBaseUrl()), headers);
+        HttpResponse response = Requests.get(Utils.getAIServiceProvidersURL(Utils.getBaseUrl()), headers);
     }
 
     /**
@@ -75,7 +69,7 @@ public class AiApiSteps {
     public void iCreateAiServiceProvider(String name, String apiVersion, String configPath, String defPath,
                                          String idKey) throws Exception {
         String configurations = readClasspath(configPath);
-        File defFile = classpathToTempFile(defPath, ".json");
+        File defFile = Utils.classpathToTempFile(defPath, "aidef", ".json");
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
@@ -87,7 +81,7 @@ public class AiApiSteps {
         Map<String, File> files = new HashMap<>();
         files.put("apiDefinition", defFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getAIServiceProvidersURL(getBaseUrl()), headers,
+        HttpResponse response = Requests.postMultipart(Utils.getAIServiceProvidersURL(Utils.getBaseUrl()), headers,
                 files, formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -109,7 +103,7 @@ public class AiApiSteps {
     public void iCreateAiServiceProviderWithModels(String name, String apiVersion, String configPath, String defPath,
                                                    String models, String idKey) throws Exception {
         String configurations = readClasspath(configPath);
-        File defFile = classpathToTempFile(defPath, ".json");
+        File defFile = Utils.classpathToTempFile(defPath, "aidef", ".json");
 
         JSONArray modelArray = new JSONArray();
         for (String m : models.split(",")) {
@@ -129,7 +123,7 @@ public class AiApiSteps {
         Map<String, File> files = new HashMap<>();
         files.put("apiDefinition", defFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getAIServiceProvidersURL(getBaseUrl()), headers,
+        HttpResponse response = Requests.postMultipart(Utils.getAIServiceProvidersURL(Utils.getBaseUrl()), headers,
                 files, formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -147,7 +141,7 @@ public class AiApiSteps {
                                          String defPath, String description) throws Exception {
         Object id = TestContext.resolve(idKey);
         String configurations = readClasspath(configPath);
-        File defFile = classpathToTempFile(defPath, ".json");
+        File defFile = Utils.classpathToTempFile(defPath, "aidef", ".json");
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
@@ -160,7 +154,7 @@ public class AiApiSteps {
         files.put("apiDefinition", defFile);
 
         HttpResponse response = Requests.putMultipart(
-                Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()), headers, files, formFields);
+                Utils.getAIServiceProviderByIdURL(Utils.getBaseUrl(), id.toString()), headers, files, formFields);
     }
 
     /** Admin — GET /ai-service-providers/{id}. Retrieves a single provider (e.g. to assert an update persisted). */
@@ -169,7 +163,7 @@ public class AiApiSteps {
         Object id = TestContext.resolve(idKey);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = Requests.get(Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()), headers);
+        HttpResponse response = Requests.get(Utils.getAIServiceProviderByIdURL(Utils.getBaseUrl(), id.toString()), headers);
     }
 
     /**
@@ -183,7 +177,7 @@ public class AiApiSteps {
         // The publisher models endpoint requires apim:llm_provider_read — carried by the admin token (llm provider
         // scopes are admin-oriented; the publisher token's role does not grant them).
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = Requests.get(Utils.getAIServiceProviderModelsURL(getBaseUrl(), id.toString()),
+        HttpResponse response = Requests.get(Utils.getAIServiceProviderModelsURL(Utils.getBaseUrl(), id.toString()),
                 headers);
     }
 
@@ -194,7 +188,7 @@ public class AiApiSteps {
         Object id = TestContext.resolve(idKey);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        HttpResponse response = Requests.delete(Utils.getAIServiceProviderByIdURL(getBaseUrl(), id.toString()),
+        HttpResponse response = Requests.delete(Utils.getAIServiceProviderByIdURL(Utils.getBaseUrl(), id.toString()),
                 headers);
     }
 
@@ -224,7 +218,7 @@ public class AiApiSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         // 1. Resolve the shipped common policy's id by name.
-        HttpResponse listResp = SimpleHTTPClient.getInstance().doGet(Utils.getCommonPolicy(getBaseUrl()), headers);
+        HttpResponse listResp = SimpleHTTPClient.getInstance().doGet(Utils.getCommonPolicy(Utils.getBaseUrl()), headers);
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(listResp != null && listResp.getResponseCode() >= 200 && listResp.getResponseCode() < 300
@@ -247,7 +241,7 @@ public class AiApiSteps {
 
         // 2. GET the API, 3. inject apiPolicies.request, 4. PUT it back.
         HttpResponse getApi = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
@@ -267,7 +261,7 @@ public class AiApiSteps {
                 .put("fault", new JSONArray());
         api.put("apiPolicies", apiPolicies);
 
-        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers,
+        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers,
                 api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -283,7 +277,7 @@ public class AiApiSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse getApi = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
@@ -293,7 +287,7 @@ public class AiApiSteps {
                         + " / body=" + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
         api.put("primaryProductionEndpointId", actualEndpointId);
-        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(getBaseUrl(), "apis", actualApiId), headers,
+        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers,
                 api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -303,18 +297,6 @@ public class AiApiSteps {
                 throw new FileNotFoundException("Resource not found: " + path);
             }
             return IOUtils.toString(in, StandardCharsets.UTF_8);
-        }
-    }
-
-    private File classpathToTempFile(String path, String suffix) throws Exception {
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(path)) {
-            if (in == null) {
-                throw new FileNotFoundException("Resource not found: " + path);
-            }
-            File temp = File.createTempFile("aidef", suffix);
-            temp.deleteOnExit();
-            Files.copy(in, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return temp;
         }
     }
 }

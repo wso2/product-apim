@@ -60,7 +60,8 @@ public final class ServerReadiness {
     public static boolean awaitReady(String baseUrl, long timeoutMillis) {
 
         String url = Utils.getGatewayHealthCheckURL(baseUrl);
-        long deadline = System.currentTimeMillis() + timeoutMillis;
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + timeoutMillis;
 
         while (System.currentTimeMillis() < deadline) {
             HttpResponse response = null;
@@ -74,7 +75,7 @@ public final class ServerReadiness {
             }
             try {
                 logger.info("Waiting for APIM server to be ready...");
-                Thread.sleep(1000);
+                Utils.pollPause(deadlineStart, 1000);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
                 return false;
@@ -96,7 +97,8 @@ public final class ServerReadiness {
     public static boolean awaitIdentityServerReady(String isBaseUrl) {
 
         String url = isBaseUrl + "oauth2/token/.well-known/openid-configuration";
-        long deadline = System.currentTimeMillis() + Constants.SERVER_STARTUP_WAIT_TIME;
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Constants.SERVER_STARTUP_WAIT_TIME;
 
         while (System.currentTimeMillis() < deadline) {
             HttpResponse response = null;
@@ -110,7 +112,7 @@ public final class ServerReadiness {
             }
             try {
                 logger.info("Waiting for the external Identity Server to be ready...");
-                Thread.sleep(1000);
+                Utils.pollPause(deadlineStart, 1000);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
                 return false;
@@ -142,7 +144,8 @@ public final class ServerReadiness {
     /** Polls the health-check until it is NOT 200 (or the port is closed), i.e. the server has gone down. */
     private static boolean awaitUnready(String baseUrl, long timeoutMillis) {
         String url = Utils.getGatewayHealthCheckURL(baseUrl);
-        long deadline = System.currentTimeMillis() + timeoutMillis;
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + timeoutMillis;
         while (System.currentTimeMillis() < deadline) {
             try {
                 HttpResponse response = SimpleHTTPClient.getInstance().doGet(url, null);
@@ -154,7 +157,7 @@ public final class ServerReadiness {
                 return true;
             }
             try {
-                Thread.sleep(1000);
+                Utils.pollPause(deadlineStart, 1000);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
                 return false;

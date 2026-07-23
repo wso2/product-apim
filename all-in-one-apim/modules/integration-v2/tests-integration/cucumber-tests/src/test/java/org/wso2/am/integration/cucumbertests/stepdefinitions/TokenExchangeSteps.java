@@ -25,6 +25,7 @@ import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
+import org.wso2.am.integration.cucumbertests.utils.JwtTestUtils;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.TokenExchangeProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TokenExchangeProvisioner.IdpScope;
@@ -35,10 +36,6 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Steps for the RFC 8693 token-exchange block: provisions the IS subject-token app and the APIM trusted IdP
@@ -60,17 +57,10 @@ public class TokenExchangeSteps {
     private static final String[] FIXTURE_KEYS =
             {"apiContext", "consumerKey", "consumerSecret", "txNoGrantKey", "txNoGrantSecret"};
 
-    /** The acting actor's tenant domain, derived from its username ({@code admin} -> super, {@code x@t} -> t). */
-    private static String actingTenantDomain() {
-        String username = Identity.actingActor().getUserName();
-        int at = username.indexOf('@');
-        return at >= 0 ? username.substring(at + 1) : Constants.SUPER_TENANT_DOMAIN;
-    }
-
     /** IdP scope (tenant SOAP path + admin creds) for the currently-acting actor's tenant. */
     private static IdpScope actingIdpScope() {
         User actor = Identity.actingActor();
-        return IdpScope.of(actingTenantDomain(), actor.getUserName(), actor.getPassword());
+        return IdpScope.of(Identity.actingTenantDomain(), actor.getUserName(), actor.getPassword());
     }
 
     // ---------------------------------------------------------------------------------------------------------
@@ -138,7 +128,7 @@ public class TokenExchangeSteps {
      */
     @When("I stash the token-exchange fixture for the acting tenant")
     public void iStashFixtureForActingTenant() {
-        String tenant = actingTenantDomain();
+        String tenant = Identity.actingTenantDomain();
         for (String key : FIXTURE_KEYS) {
             Object v = TestContext.get(key);
             if (v != null) {
@@ -154,7 +144,7 @@ public class TokenExchangeSteps {
      */
     @When("I use the token-exchange fixture for the acting tenant")
     public void iUseFixtureForActingTenant() {
-        String tenant = actingTenantDomain();
+        String tenant = Identity.actingTenantDomain();
         for (String key : FIXTURE_KEYS) {
             Object v = TestContext.get(key + "::" + tenant);
             if (v != null) {
@@ -183,15 +173,9 @@ public class TokenExchangeSteps {
     /** Attempts the exchange authenticated as the application WITHOUT the token-exchange grant. */
     @When("I attempt a token exchange using the grantless application credentials")
     public void iExchangeAsGrantlessApp() throws Exception {
-        String subjectToken = TestContext.resolve("subjectToken").toString();
-        String body = "grant_type=" + enc(TOKEN_EXCHANGE_GRANT)
-                + "&requested_token_type=" + enc(JWT_TOKEN_TYPE)
-                + "&subject_token_type=" + enc(JWT_TOKEN_TYPE)
-                + "&subject_token=" + enc(subjectToken);
-        Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
-                basicAuth(TestContext.resolve("txNoGrantKey").toString(),
-                        TestContext.resolve("txNoGrantSecret").toString()),
-                body, Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        exchange(TestContext.resolve("subjectToken").toString(), JWT_TOKEN_TYPE,
+                TestContext.resolve("txNoGrantKey").toString(),
+                TestContext.resolve("txNoGrantSecret").toString());
     }
 
     // ---------------------------------------------------------------------------------------------------------
@@ -203,7 +187,7 @@ public class TokenExchangeSteps {
     public void iObtainSubjectJwt() throws Exception {
         String cid = TestContext.resolve("txIsClientId").toString();
         String csec = TestContext.resolve("txIsClientSecret").toString();
-        HttpResponse resp = SimpleHTTPClient.getInstance().doPost(isTokenEndpoint(), basicAuth(cid, csec),
+        HttpResponse resp = SimpleHTTPClient.getInstance().doPost(IntegrationActors.tokenEndpoint(IntegrationActors.IS), Identity.basicAuthHeaders(cid, csec),
                 "grant_type=client_credentials&scope=openid",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
@@ -227,15 +211,15 @@ public class TokenExchangeSteps {
     /** As the exchange step but tampering the subject token first (flips a payload byte, keeping the signature). */
     @When("I exchange a tampered subject token at the API Manager token endpoint")
     public void iExchangeTamperedSubjectToken() throws Exception {
-        exchange(tamper(TestContext.resolve("subjectToken").toString()), JWT_TOKEN_TYPE);
+        exchange(JwtTestUtils.tamperClaim(TestContext.resolve("subjectToken").toString(), "sub"), JWT_TOKEN_TYPE);
     }
 
     /** Attempts the exchange with a missing/blank subject token (malformed-request negative). */
     @When("I attempt a token exchange with no subject token")
     public void iExchangeNoSubjectToken() throws Exception {
-        exchangeForm("grant_type=" + enc(TOKEN_EXCHANGE_GRANT)
-                + "&requested_token_type=" + enc(JWT_TOKEN_TYPE)
-                + "&subject_token_type=" + enc(JWT_TOKEN_TYPE));
+        exchangeForm("grant_type=" + Utils.urlEncode(TOKEN_EXCHANGE_GRANT)
+                + "&requested_token_type=" + Utils.urlEncode(JWT_TOKEN_TYPE)
+                + "&subject_token_type=" + Utils.urlEncode(JWT_TOKEN_TYPE));
     }
 
     /**
@@ -249,17 +233,27 @@ public class TokenExchangeSteps {
     }
 
     private void exchange(String subjectToken, String subjectTokenType) throws IOException {
-        exchangeForm("grant_type=" + enc(TOKEN_EXCHANGE_GRANT)
-                + "&requested_token_type=" + enc(JWT_TOKEN_TYPE)
-                + "&subject_token_type=" + enc(subjectTokenType)
-                + "&subject_token=" + enc(subjectToken));
+        exchange(subjectToken, subjectTokenType, TestContext.resolve("consumerKey").toString(),
+                TestContext.resolve("consumerSecret").toString());
+    }
+
+    /** As {@link #exchange(String, String)} but authenticated with explicit client credentials. */
+    private void exchange(String subjectToken, String subjectTokenType, String clientKey, String clientSecret)
+            throws IOException {
+        exchangeForm("grant_type=" + Utils.urlEncode(TOKEN_EXCHANGE_GRANT)
+                + "&requested_token_type=" + Utils.urlEncode(JWT_TOKEN_TYPE)
+                + "&subject_token_type=" + Utils.urlEncode(subjectTokenType)
+                + "&subject_token=" + Utils.urlEncode(subjectToken), clientKey, clientSecret);
     }
 
     private void exchangeForm(String body) throws IOException {
-        String consumerKey = TestContext.resolve("consumerKey").toString();
-        String consumerSecret = TestContext.resolve("consumerSecret").toString();
-        HttpResponse resp = Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
-                basicAuth(consumerKey, consumerSecret), body,
+        exchangeForm(body, TestContext.resolve("consumerKey").toString(),
+                TestContext.resolve("consumerSecret").toString());
+    }
+
+    private void exchangeForm(String body, String clientKey, String clientSecret) throws IOException {
+        HttpResponse resp = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
+                Identity.basicAuthHeaders(clientKey, clientSecret), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         if (resp != null && resp.getResponseCode() == 200 && resp.getData() != null
                 && !resp.getData().isBlank()) {
@@ -281,10 +275,10 @@ public class TokenExchangeSteps {
         User actor = Identity.actingActor();
         String consumerKey = TestContext.resolve("consumerKey").toString();
         String consumerSecret = TestContext.resolve("consumerSecret").toString();
-        String body = "grant_type=password&username=" + enc(actor.getUserName())
-                + "&password=" + enc(actor.getPassword()) + "&scope=" + enc("openid");
-        HttpResponse resp = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
-                basicAuth(consumerKey, consumerSecret), body,
+        String body = "grant_type=password&username=" + Utils.urlEncode(actor.getUserName())
+                + "&password=" + Utils.urlEncode(actor.getPassword()) + "&scope=" + Utils.urlEncode("openid");
+        HttpResponse resp = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
+                Identity.basicAuthHeaders(consumerKey, consumerSecret), body,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
                         && !resp.getData().isBlank(),
@@ -305,8 +299,8 @@ public class TokenExchangeSteps {
     public void iObtainExpiredSubjectJwt() throws Exception {
         // Name it per acting tenant: the external IS is shared, so the super and tenant1 rows must not collide.
         String[] creds = TokenExchangeProvisioner.createIsJwtClientCredentialsApp(
-                Names.unique("TokenExchangeExpiredApp-" + actingTenantDomain()), 5);
-        HttpResponse resp = SimpleHTTPClient.getInstance().doPost(isTokenEndpoint(), basicAuth(creds[0], creds[1]),
+                Names.unique("TokenExchangeExpiredApp-" + Identity.actingTenantDomain()), 5);
+        HttpResponse resp = SimpleHTTPClient.getInstance().doPost(IntegrationActors.tokenEndpoint(IntegrationActors.IS), Identity.basicAuthHeaders(creds[0], creds[1]),
                 "grant_type=client_credentials&scope=openid",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
@@ -315,9 +309,10 @@ public class TokenExchangeSteps {
                         : resp.getResponseCode() + "/" + resp.getData()));
         String token = new JSONObject(resp.getData()).getString("access_token");
         long expEpochMs = jwtExpEpochMillis(token);
-        long deadline = System.currentTimeMillis() + 30_000;
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + 30_000;
         while (System.currentTimeMillis() <= expEpochMs + 1000 && System.currentTimeMillis() < deadline) {
-            Thread.sleep(500);
+            Utils.pollPause(deadlineStart, 500);
         }
         TestContext.set("subjectToken", token);
     }
@@ -326,8 +321,7 @@ public class TokenExchangeSteps {
     @Then("the exchanged access token subject should match the identity server subject application")
     public void theExchangedSubjectMatchesIsApp() {
         String token = TestContext.resolve("generatedAccessToken").toString();
-        String payloadJson = new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]),
-                StandardCharsets.UTF_8);
+        String payloadJson = JwtTestUtils.decodePayload(token);
         String sub = new JSONObject(payloadJson).optString("sub");
         Assert.assertEquals(sub, TestContext.resolve("txIsClientId").toString(),
                 "Exchanged token subject should carry the IS subject app's identity. Payload: " + payloadJson);
@@ -337,8 +331,7 @@ public class TokenExchangeSteps {
     @Then("the generated access token should have the {string} type header")
     public void theTokenShouldHaveTypeHeader(String expectedType) {
         String token = TestContext.resolve("generatedAccessToken").toString();
-        String headerJson = new String(Base64.getUrlDecoder().decode(token.split("\\.")[0]),
-                StandardCharsets.UTF_8);
+        String headerJson = JwtTestUtils.decodeHeader(token);
         Assert.assertEquals(new JSONObject(headerJson).optString("typ"), expectedType,
                 "Unexpected JWT type header. Header: " + headerJson);
     }
@@ -347,45 +340,8 @@ public class TokenExchangeSteps {
     // Helpers
     // ---------------------------------------------------------------------------------------------------------
 
-    private static String isTokenEndpoint() {
-        return IntegrationActors.baseUrl(IntegrationActors.IS) + "oauth2/token";
-    }
-
-    private String getBaseUrl() {
-        Object v = TestContext.get("baseUrl");
-        if (v == null) {
-            throw new IllegalStateException("baseUrl not in context");
-        }
-        return v.toString();
-    }
-
-    private static Map<String, String> basicAuth(String user, String pass) {
-        Map<String, String> h = new HashMap<>();
-        h.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + Base64.getEncoder()
-                .encodeToString((user + ":" + pass).getBytes(StandardCharsets.UTF_8)));
-        return h;
-    }
-
     /** Reads the {@code exp} claim (epoch seconds) of a JWT and returns it in epoch millis. */
     private static long jwtExpEpochMillis(String jwt) {
-        String payloadJson = new String(Base64.getUrlDecoder().decode(jwt.split("\\.")[1]),
-                StandardCharsets.UTF_8);
-        return new JSONObject(payloadJson).getLong("exp") * 1000L;
-    }
-
-    /** Flips a character in the JWT payload segment so the signature no longer matches. */
-    private static String tamper(String jwt) {
-        String[] parts = jwt.split("\\.");
-        Assert.assertEquals(parts.length, 3, "Subject token is not a 3-part JWT: " + jwt);
-        String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-        JSONObject payload = new JSONObject(payloadJson);
-        payload.put("sub", "tampered-" + payload.optString("sub", "x"));
-        String newPayload = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(payload.toString().getBytes(StandardCharsets.UTF_8));
-        return parts[0] + "." + newPayload + "." + parts[2];
-    }
-
-    private static String enc(String v) {
-        return java.net.URLEncoder.encode(v, StandardCharsets.UTF_8);
+        return new JSONObject(JwtTestUtils.decodePayload(jwt)).getLong("exp") * 1000L;
     }
 }

@@ -27,11 +27,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,14 +47,6 @@ public class MutualSslSteps {
 
     private static final String KEYSTORE_PASSWORD = "password";
 
-    private String getBaseUrl() {
-        return TestContext.get("baseUrl").toString();
-    }
-
-    private String getBaseGatewayUrl() {
-        return TestContext.get("baseGatewayUrl").toString();
-    }
-
     /**
      * Uploads a client certificate to an API (multipart {@code POST /apis/{apiId}/client-certificates}): the
      * public certificate file + an {@code alias} + a {@code tier}. Publisher-plane. Non-asserting; stores the
@@ -67,7 +55,7 @@ public class MutualSslSteps {
     @When("I upload client certificate {string} with alias {string} to API {string} for tier {string}")
     public void iUploadClientCertificate(String certPath, String alias, String apiId, String tier) throws Exception {
         String actualApiId = TestContext.resolve(apiId).toString();
-        File certFile = classpathToTempFile(certPath, ".cer");
+        File certFile = Utils.classpathToTempFile(certPath, "mtls", ".cer");
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
@@ -77,7 +65,7 @@ public class MutualSslSteps {
         formFields.put("alias", alias);
         formFields.put("tier", tier);
 
-        HttpResponse response = Requests.postMultipart(Utils.getClientCertificatesURL(getBaseUrl(), actualApiId),
+        HttpResponse response = Requests.postMultipart(Utils.getClientCertificatesURL(Utils.getBaseUrl(), actualApiId),
                 headers, files, formFields);
     }
 
@@ -99,7 +87,8 @@ public class MutualSslSteps {
     @When("I invoke the API at gateway context {string} with no client certificate until response status code becomes {int} within {int} seconds")
     public void iInvokeWithoutClientCert(String context, int expectedStatus, int timeoutSeconds) throws Exception {
         String endpointUrl = buildUrl(context);
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 1000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 1000L);
         HttpResponse last = null;
         do {
             try {
@@ -111,7 +100,7 @@ public class MutualSslSteps {
             } catch (IOException transientDuringWarmup) {
                 // retry
             }
-            Thread.sleep(3000);
+            Utils.pollPause(endTimeStart, 3000);
         } while (System.currentTimeMillis() < endTime);
         finish(last, expectedStatus);
     }
@@ -119,8 +108,9 @@ public class MutualSslSteps {
     private void invokeMtls(String context, String keystorePath, int expectedStatus, int timeoutSeconds)
             throws Exception {
         String endpointUrl = buildUrl(context);
-        File keystore = classpathToTempFile(keystorePath, ".jks");
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 1000L);
+        File keystore = Utils.classpathToTempFile(keystorePath, "mtls", ".jks");
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 1000L);
         HttpResponse last = null;
         do {
             try {
@@ -133,14 +123,14 @@ public class MutualSslSteps {
             } catch (IOException transientDuringWarmup) {
                 // TLS handshake / gateway warm-up — retry
             }
-            Thread.sleep(3000);
+            Utils.pollPause(endTimeStart, 3000);
         } while (System.currentTimeMillis() < endTime);
         finish(last, expectedStatus);
     }
 
     private String buildUrl(String context) {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        return getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        return Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
     }
 
     private Map<String, String> acceptXml() {
@@ -154,17 +144,5 @@ public class MutualSslSteps {
         TestContext.set("httpResponse", last);
         assertEquals(last.getResponseCode(), expectedStatus,
                 "Mutual-SSL invocation did not reach the expected status. Body: " + last.getData());
-    }
-
-    private File classpathToTempFile(String path, String suffix) throws Exception {
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(path)) {
-            if (in == null) {
-                throw new FileNotFoundException("Resource not found: " + path);
-            }
-            File temp = File.createTempFile("mtls", suffix);
-            temp.deleteOnExit();
-            Files.copy(in, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return temp;
-        }
     }
 }

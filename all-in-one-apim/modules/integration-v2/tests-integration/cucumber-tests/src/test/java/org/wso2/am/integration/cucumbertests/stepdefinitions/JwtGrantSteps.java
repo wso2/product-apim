@@ -25,6 +25,7 @@ import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
+import org.wso2.am.integration.cucumbertests.utils.JwtTestUtils;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
@@ -36,7 +37,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
-import java.security.Signature;
 import java.security.cert.Certificate;
 import java.util.Base64;
 import java.util.HashMap;
@@ -57,14 +57,6 @@ public class JwtGrantSteps {
     private static final String IDP_MODEL_NS = "http://model.common.application.identity.carbon.wso2.org/xsd";
 
     private final BaseSteps baseSteps = new BaseSteps();
-
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
-    private static String b64url(byte[] bytes) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
 
     private KeyStore loadKeyStore(String classpathResource, String storePass) throws Exception {
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -97,7 +89,7 @@ public class JwtGrantSteps {
         byte[] thumb = MessageDigest.getInstance("SHA-1").digest(cert.getEncoded());
 
         JSONObject header = new JSONObject().put("alg", "RS256").put("typ", "JWT")
-                .put("kid", UUID.randomUUID().toString()).put("x5t", b64url(thumb));
+                .put("kid", UUID.randomUUID().toString()).put("x5t", JwtTestUtils.base64Url(thumb));
         long now = System.currentTimeMillis();
         long nbf = now + notBeforeOffsetMillis;
         JSONObject body = new JSONObject()
@@ -110,12 +102,9 @@ public class JwtGrantSteps {
                 body.put(k, extra.get(k));
             }
         }
-        String signingInput = b64url(header.toString().getBytes(StandardCharsets.UTF_8)) + "."
-                + b64url(body.toString().getBytes(StandardCharsets.UTF_8));
-        Signature sig = Signature.getInstance("SHA256withRSA");
-        sig.initSign(privateKey);
-        sig.update(signingInput.getBytes(StandardCharsets.UTF_8));
-        String jwt = signingInput + "." + b64url(sig.sign());
+        String signingInput = JwtTestUtils.base64Url(header.toString().getBytes(StandardCharsets.UTF_8)) + "."
+                + JwtTestUtils.base64Url(body.toString().getBytes(StandardCharsets.UTF_8));
+        String jwt = signingInput + "." + JwtTestUtils.signRs256(signingInput, privateKey);
         TestContext.set(targetKey, jwt);
     }
 
@@ -126,12 +115,7 @@ public class JwtGrantSteps {
     @When("I tamper the JWT {string} replacing subject {string} with {string} as {string}")
     public void iTamperJwt(String jwtKey, String oldSub, String newSub, String targetKey) {
         String jwt = TestContext.resolve(jwtKey).toString();
-        String[] parts = jwt.split("\\.");
-        Assert.assertEquals(parts.length, 3, "Not a signed JWT: " + jwt);
-        String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-        payload = payload.replace(oldSub, newSub);
-        String tampered = parts[0] + "." + b64url(payload.getBytes(StandardCharsets.UTF_8)) + "." + parts[2];
-        TestContext.set(targetKey, tampered);
+        TestContext.set(targetKey, JwtTestUtils.replaceInPayloadKeepingSignature(jwt, oldSub, newSub));
     }
 
     /**
@@ -157,7 +141,7 @@ public class JwtGrantSteps {
                 + "<xsd:identityProviderName>" + Utils.escapeXml(issuer) + "</xsd:identityProviderName>"
                 + "<xsd:primary>false</xsd:primary>"
                 + "</mgt:identityProvider></mgt:addIdP></soapenv:Body></soapenv:Envelope>";
-        Requests.soap(Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:addIdP",
+        Requests.soap(Utils.getIdentityProviderMgtServiceURL(Utils.getBaseUrl()), envelope, "urn:addIdP",
                 Identity.actingActor().getUserName(), Identity.actingActor().getPassword());
     }
 
@@ -169,7 +153,7 @@ public class JwtGrantSteps {
                 + "xmlns:mgt=\"" + IDP_MGT_NS + "\"><soapenv:Header/><soapenv:Body>"
                 + "<mgt:getIdPByName><mgt:idPName>" + Utils.escapeXml(issuer) + "</mgt:idPName></mgt:getIdPByName>"
                 + "</soapenv:Body></soapenv:Envelope>";
-        Requests.soap(Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:getIdPByName",
+        Requests.soap(Utils.getIdentityProviderMgtServiceURL(Utils.getBaseUrl()), envelope, "urn:getIdPByName",
                 Identity.actingActor().getUserName(), Identity.actingActor().getPassword());
     }
 
@@ -193,7 +177,7 @@ public class JwtGrantSteps {
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
-        Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers, body.toString(),
+        Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()), headers, body.toString(),
                 "application/x-www-form-urlencoded");
     }
 
@@ -225,7 +209,7 @@ public class JwtGrantSteps {
                 .put("bindings", new JSONArray().put(role));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.post(Utils.getAPIScopes(getBaseUrl()), headers, payload.toString(),
+        HttpResponse response = Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, payload.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object scopeId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -280,7 +264,7 @@ public class JwtGrantSteps {
                 + "</xsd:permissionAndRoleConfig>"
                 + "<xsd:primary>false</xsd:primary>"
                 + "</mgt:identityProvider></mgt:updateIdP></soapenv:Body></soapenv:Envelope>";
-        Requests.soap(Utils.getIdentityProviderMgtServiceURL(getBaseUrl()), envelope, "urn:updateIdP",
+        Requests.soap(Utils.getIdentityProviderMgtServiceURL(Utils.getBaseUrl()), envelope, "urn:updateIdP",
                 Identity.actingActor().getUserName(), Identity.actingActor().getPassword());
     }
 }

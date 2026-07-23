@@ -36,12 +36,18 @@ public class Constants {
 
     public static final String BASE_URL = "baseUrl";
 
-    public static final long DEPLOYMENT_WAIT_TIME = 120 * 1000;
-    public static final long UNDEPLOYMENT_WAIT_TIME = 30 * 1000;
+    // THE single ceiling for async runtime-propagation polls (lifecycle state, gateway routability/artifact
+    // undeploy, org visibility, search indexing, saved-state reads — one pipeline, one ceiling). Sized from
+    // observed worst cases, not taste: starved CI runners have shown pipelines ~90-100s behind a 2xx write, and
+    // one loaded local full-suite run saw a fresh route take >120s to become routable — 180s buys real margin
+    // over the measured tail. Passing polls return on first success, so green runs don't slow; only genuine
+    // failures wait the full window. Don't widen further without a new measured tail — each bump makes the
+    // suite a worse canary for product-side propagation-latency regressions. Pair with Utils.pollPause for
+    // the tiered inter-poll cadence.
+    public static final long RUNTIME_PROPAGATION_TIMEOUT = 180 * 1000;
     public static final long SERVER_STARTUP_WAIT_TIME = 300 * 1000;
 
     public static final long INITIAL_INDEXING_TIME = 120 * 1000;
-    public static final int MAX_RETRIES = 30;
     public static final long RETRY_INTERVAL_TIME = 2000;
     public static final long WAIT_TIME = 2000;
 

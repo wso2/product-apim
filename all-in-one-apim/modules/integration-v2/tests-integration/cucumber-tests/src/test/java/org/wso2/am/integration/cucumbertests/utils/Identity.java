@@ -21,6 +21,11 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Resolves test actors and their identity-scoped credential cache keys with no mutable "current user"
  * state. Replaces the retired {@code currentTenant}/{@code currentuser} pointer model: instead of one
@@ -176,6 +181,50 @@ public final class Identity {
 
     public static String governanceToken(User actor) {
         return require(governanceTokenKey(actor), "Governance access token", actor);
+    }
+
+    /**
+     * The acting actor's tenant domain — the actor bean's user domain, the same resolution {@link #tenantOf}
+     * uses (NOT parsed from the username, which breaks for store-qualified or unqualified names).
+     */
+    public static String actingTenantDomain() {
+        return actingActor().getUserDomain();
+    }
+
+    /** A headers map carrying {@code Authorization: Bearer <token>}. */
+    public static Map<String, String> bearerHeaders(String token) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + token);
+        return headers;
+    }
+
+    /** Bearer headers for the acting actor's Publisher token. */
+    public static Map<String, String> publisherHeaders() {
+        return bearerHeaders(publisherToken());
+    }
+
+    /** Bearer headers for the acting actor's DevPortal token. */
+    public static Map<String, String> devportalHeaders() {
+        return bearerHeaders(devportalToken());
+    }
+
+    /** Bearer headers for the acting actor's Admin token. */
+    public static Map<String, String> adminHeaders() {
+        return bearerHeaders(adminToken());
+    }
+
+    /** A headers map carrying {@code Authorization: Basic base64(username:password)}. */
+    public static Map<String, String> basicAuthHeaders(String username, String password) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + Base64.getEncoder()
+                .encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8)));
+        return headers;
+    }
+
+    /** Basic-auth headers for the acting actor's own carbon credentials (introspect / SOAP admin services). */
+    public static Map<String, String> actingBasicAuthHeaders() {
+        User actor = actingActor();
+        return basicAuthHeaders(actor.getUserName(), actor.getPassword());
     }
 
     private static String qualify(String base, User actor) {

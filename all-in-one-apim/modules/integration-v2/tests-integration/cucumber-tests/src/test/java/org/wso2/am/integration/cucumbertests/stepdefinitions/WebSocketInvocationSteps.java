@@ -53,24 +53,6 @@ public class WebSocketInvocationSteps {
 
     private static final Log log = LogFactory.getLog(WebSocketInvocationSteps.class);
 
-    private static final String BASE_GATEWAY_WS_URL_KEY = "baseGatewayWsUrl";
-    private static final String BASE_GATEWAY_WSS_URL_KEY = "baseGatewayWssUrl";
-
-    private String getBaseGatewayWsUrl() {
-        Object url = TestContext.get(BASE_GATEWAY_WS_URL_KEY);
-        if (url == null) {
-            throw new IllegalStateException("baseGatewayWsUrl is not available in the test context yet");
-        }
-        return url.toString();
-    }
-
-    private String getBaseGatewayWssUrl() {
-        Object url = TestContext.get(BASE_GATEWAY_WSS_URL_KEY);
-        if (url == null) {
-            throw new IllegalStateException("baseGatewayWssUrl is not available in the test context yet");
-        }
-        return url.toString();
-    }
 
     /**
      * Connects to a deployed WebSocket API at its full gateway WS context (the context already carries the
@@ -84,13 +66,14 @@ public class WebSocketInvocationSteps {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String token = TestContext.resolve(accessToken).toString();
-        String base = getBaseGatewayWsUrl();
+        String base = Utils.getBaseGatewayWsUrl();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
         String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
         String received = null;
         while (System.currentTimeMillis() < endTime) {
@@ -99,12 +82,16 @@ public class WebSocketInvocationSteps {
                 if (received != null) {
                     break;
                 }
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                Thread.currentThread().interrupt();
+                throw interrupted;
             } catch (Exception connectingWhileWarmup) {
                 // The WS route may not be reachable immediately after publish (handshake 404/403 during
                 // warm-up). Retry until the deadline.
                 lastError = connectingWhileWarmup.getMessage();
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(received, "WebSocket API did not echo a response within the deadline; last error: "
                 + lastError);
@@ -121,7 +108,8 @@ public class WebSocketInvocationSteps {
                                           int timeoutSeconds) throws Exception {
         String wsUrl = buildWsUrl(context);
         String key = TestContext.resolve(apiKey).toString();
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
         String received = null;
         while (System.currentTimeMillis() < endTime) {
@@ -130,10 +118,14 @@ public class WebSocketInvocationSteps {
                 if (received != null) {
                     break;
                 }
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                Thread.currentThread().interrupt();
+                throw interrupted;
             } catch (Exception connectingWhileWarmup) {
                 lastError = connectingWhileWarmup.getMessage();
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(received, "WebSocket API (api-key auth) did not echo within the deadline; last error: "
                 + lastError);
@@ -174,7 +166,8 @@ public class WebSocketInvocationSteps {
 
         // Establish the connection, retrying only the CONNECT (data frames, not the handshake, count toward the
         // limit) until the freshly-deployed API is routable.
-        long connectDeadline = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long connectDeadlineStart = System.currentTimeMillis();
+        long connectDeadline = connectDeadlineStart + Math.max(timeoutSeconds * 1000L, 30000L);
         WebSocket ws = null;
         while (ws == null && System.currentTimeMillis() < connectDeadline) {
             try {
@@ -207,8 +200,12 @@ public class WebSocketInvocationSteps {
                                 closed.set(true);
                             }
                         }).get(20, TimeUnit.SECONDS);
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                Thread.currentThread().interrupt();
+                throw interrupted;
             } catch (Exception warmup) {
-                Thread.sleep(2000);
+                Utils.pollPause(connectDeadlineStart, 2000);
             }
         }
         Assert.assertNotNull(ws, "Could not establish the WebSocket connection for the throttling test");
@@ -221,6 +218,10 @@ public class WebSocketInvocationSteps {
                 }
                 try {
                     ws.sendText("throttle-msg-" + i, true).get(5, TimeUnit.SECONDS);
+                } catch (InterruptedException interrupted) {
+                    // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                    Thread.currentThread().interrupt();
+                    throw interrupted;
                 } catch (Exception sendFailed) {
                     break;   // connection dropped by the throttle handler
                 }
@@ -247,12 +248,12 @@ public class WebSocketInvocationSteps {
 
     /** Builds the full gateway WS URL from an API context (context already carries {@code /t/<tenant>}). */
     private String buildWsUrl(String context) {
-        return joinBase(getBaseGatewayWsUrl(), context);
+        return joinBase(Utils.getBaseGatewayWsUrl(), context);
     }
 
     /** Builds the full gateway SECURE (wss://) URL from an API context. */
     private String buildWssUrl(String context) {
-        return joinBase(getBaseGatewayWssUrl(), context);
+        return joinBase(Utils.getBaseGatewayWssUrl(), context);
     }
 
     private String joinBase(String base, String context) {
@@ -399,7 +400,8 @@ public class WebSocketInvocationSteps {
     /** Connect+send+echo retry loop with arbitrary headers; returns the echo or fails after the deadline. */
     private String echoOverWs(String wsUrl, Map<String, String> headers, String message,
                               int timeoutSeconds) throws Exception {
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
         String received = null;
         while (System.currentTimeMillis() < endTime) {
@@ -408,10 +410,14 @@ public class WebSocketInvocationSteps {
                 if (received != null) {
                     break;
                 }
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                Thread.currentThread().interrupt();
+                throw interrupted;
             } catch (Exception connectingWhileWarmup) {
                 lastError = connectingWhileWarmup.getMessage();
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(received, "WebSocket did not echo within the deadline; last error: " + lastError);
         return received;
@@ -435,7 +441,8 @@ public class WebSocketInvocationSteps {
     /** Multi-header rejection check (e.g. Authorization + a disallowed Origin for CORS). */
     private void expectRejection(String wsUrl, Map<String, String> headers, int timeoutSeconds)
             throws Exception {
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 10000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 10000L);
         boolean everEchoed = false;
         while (System.currentTimeMillis() < endTime) {
             try {
@@ -444,10 +451,14 @@ public class WebSocketInvocationSteps {
                     return;   // no echo → rejected
                 }
                 everEchoed = true;   // accepted this round — enforcement may still be propagating; retry
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                Thread.currentThread().interrupt();
+                throw interrupted;
             } catch (Exception rejected) {
                 return;   // handshake/upgrade refused → rejection confirmed
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertFalse(everEchoed, "Expected the WS invocation to be rejected within " + timeoutSeconds
                 + "s, but it kept echoing — the enforcement control never applied.");
@@ -466,13 +477,14 @@ public class WebSocketInvocationSteps {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String token = TestContext.resolve(accessToken).toString();
-        String base = getBaseGatewayWsUrl();
+        String base = Utils.getBaseGatewayWsUrl();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
         String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
         String lastError = null;
         String data = null;
         while (System.currentTimeMillis() < endTime) {
@@ -481,10 +493,14 @@ public class WebSocketInvocationSteps {
                 if (data != null && data.contains(expectedData)) {
                     break;
                 }
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                Thread.currentThread().interrupt();
+                throw interrupted;
             } catch (Exception connectingWhileWarmup) {
                 lastError = connectingWhileWarmup.getMessage();
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         }
         Assert.assertNotNull(data, "GraphQL subscription returned no data message within the deadline; last error: "
                 + lastError);
@@ -503,15 +519,27 @@ public class WebSocketInvocationSteps {
     @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token {string} sending {int} frames expecting frame throttling")
     public void invokeGraphqlSubscriptionExpectThrottling(String context, String query, String accessToken,
                                                           int frames) throws Exception {
-        String wsUrl = joinBase(getBaseGatewayWsUrl(), context);
+        String wsUrl = joinBase(Utils.getBaseGatewayWsUrl(), context);
         String token = TestContext.resolve(accessToken).toString();
-        long deadline = System.currentTimeMillis() + 150000L;
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + 150000L;
         int[] result = null;
         String throttleMsg = null;
         while (System.currentTimeMillis() < deadline) {
             java.util.concurrent.atomic.AtomicInteger dataCount = new java.util.concurrent.atomic.AtomicInteger();
             java.util.concurrent.atomic.AtomicReference<String> tMsg = new java.util.concurrent.atomic.AtomicReference<>();
-            boolean established = subscribeAndProbe(wsUrl, token, query, frames, dataCount, tMsg);
+            boolean established;
+            try {
+                established = subscribeAndProbe(wsUrl, token, query, frames, dataCount, tMsg);
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient failure — restore the flag and stop the poll.
+                Thread.currentThread().interrupt();
+                throw interrupted;
+            } catch (Exception transientFailure) {
+                // transient ws failure — counts as not-established; re-probe within the deadline
+                // (same tolerance as this file's other invocation loops)
+                established = false;
+            }
             if (established) {
                 result = new int[]{dataCount.get(), tMsg.get() != null ? 1 : 0};
                 throttleMsg = tMsg.get();
@@ -524,7 +552,7 @@ public class WebSocketInvocationSteps {
                     break;
                 }
             }
-            Thread.sleep(3000);
+            Utils.pollPause(deadlineStart, 3000);
         }
         Assert.assertNotNull(result, "Could not establish the graphql-ws subscription for the throttling test");
         System.out.println("[GQL-SUB-THROTTLE] framesSent=" + frames + " dataMessages=" + result[0]
@@ -541,12 +569,23 @@ public class WebSocketInvocationSteps {
     @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token {string} expecting error code {int} within {int} seconds")
     public void invokeGraphqlSubscriptionExpectErrorCode(String context, String query, String accessToken,
                                                          int expectedCode, int timeoutSeconds) throws Exception {
-        String wsUrl = joinBase(getBaseGatewayWsUrl(), context);
+        String wsUrl = joinBase(Utils.getBaseGatewayWsUrl(), context);
         String token = TestContext.resolve(accessToken).toString();
-        long deadline = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 60000L);
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, 60000L);
         String lastMsg = null;
         while (System.currentTimeMillis() < deadline) {
-            String errorMsg = subscribeExpectError(wsUrl, token, query);
+            String errorMsg;
+            try {
+                errorMsg = subscribeExpectError(wsUrl, token, query);
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient failure — restore the flag and stop the poll.
+                Thread.currentThread().interrupt();
+                throw interrupted;
+            } catch (Exception transientFailure) {
+                // transient ws failure — retry within the deadline (same tolerance as the other loops here)
+                errorMsg = null;
+            }
             if (errorMsg != null) {
                 lastMsg = errorMsg;
                 if (errorMsg.contains("\"code\":" + expectedCode) || errorMsg.contains("\"code\": " + expectedCode)) {
@@ -554,7 +593,7 @@ public class WebSocketInvocationSteps {
                     return;
                 }
             }
-            Thread.sleep(3000);
+            Utils.pollPause(deadlineStart, 3000);
         }
         Assert.fail("Expected graphql-ws error code " + expectedCode + " for query [" + query
                 + "] but did not observe it; last error message: " + lastMsg);
@@ -600,6 +639,11 @@ public class WebSocketInvocationSteps {
                             return null;
                         }
                     }).get(20, TimeUnit.SECONDS);
+        } catch (InterruptedException interrupted) {
+            // Cancellation must reach the caller's poll, not read as an inconclusive attempt.
+            Thread.currentThread().interrupt();
+            closeQuietly(client);
+            throw interrupted;
         } catch (Exception connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
             closeQuietly(client);
@@ -671,6 +715,11 @@ public class WebSocketInvocationSteps {
                             return null;
                         }
                     }).get(20, TimeUnit.SECONDS);
+        } catch (InterruptedException interrupted) {
+            // Cancellation must reach the caller's poll, not read as an inconclusive attempt.
+            Thread.currentThread().interrupt();
+            closeQuietly(client);
+            throw interrupted;
         } catch (Exception connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
             closeQuietly(client);
@@ -740,6 +789,11 @@ public class WebSocketInvocationSteps {
                     }
                 })
                 .get(20, TimeUnit.SECONDS);
+        } catch (InterruptedException interrupted) {
+            // Cancellation must reach the caller's poll, not read as an inconclusive attempt.
+            Thread.currentThread().interrupt();
+            closeQuietly(client);
+            throw interrupted;
         } catch (Exception connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
             closeQuietly(client);

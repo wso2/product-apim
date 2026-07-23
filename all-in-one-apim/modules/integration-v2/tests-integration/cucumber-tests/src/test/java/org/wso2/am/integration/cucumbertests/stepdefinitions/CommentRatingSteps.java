@@ -45,10 +45,6 @@ public class CommentRatingSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
     /**
      * The acting actor's token for the given plane. For {@code devportal}, the standard devportal token
      * ({@code apim:subscribe}) covers comment add/list. For {@code publisher}, comment management needs the
@@ -87,7 +83,7 @@ public class CommentRatingSteps {
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
         json.addProperty("scope", "apim:api_view apim:comment_view apim:comment_manage");
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 headers, json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         String token = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
@@ -116,7 +112,7 @@ public class CommentRatingSteps {
     public void iAddAComment(String plane, String content, String category, String apiKey, String commentKey)
             throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
-        HttpResponse response = Requests.post(Utils.getAPIComments(getBaseUrl(), plane, apiId),
+        HttpResponse response = Requests.post(Utils.getAPIComments(Utils.getBaseUrl(), plane, apiId),
                 planeAuthHeaders(plane), commentBody(content, category), Constants.CONTENT_TYPES.APPLICATION_JSON);
         storeCommentId(response, commentKey);
     }
@@ -126,7 +122,7 @@ public class CommentRatingSteps {
     public void iAttemptToAddAComment(String plane, String content, String category, String apiKey)
             throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
-        Requests.post(Utils.getAPIComments(getBaseUrl(), plane, apiId), planeAuthHeaders(plane),
+        Requests.post(Utils.getAPIComments(Utils.getBaseUrl(), plane, apiId), planeAuthHeaders(plane),
                 commentBody(content, category), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -136,7 +132,7 @@ public class CommentRatingSteps {
             throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
         String parentId = TestContext.resolve(parentKey).toString();
-        HttpResponse response = Requests.post(Utils.getAPIReplyToComment(getBaseUrl(), plane, apiId, parentId),
+        HttpResponse response = Requests.post(Utils.getAPIReplyToComment(Utils.getBaseUrl(), plane, apiId, parentId),
                 planeAuthHeaders(plane), commentBody(content, "general"), Constants.CONTENT_TYPES.APPLICATION_JSON);
         storeCommentId(response, replyKey);
     }
@@ -145,7 +141,7 @@ public class CommentRatingSteps {
     @When("I retrieve all {string} comments of API {string} with limit {int} offset {int}")
     public void iRetrieveAllComments(String plane, String apiKey, int limit, int offset) throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
-        Requests.get(Utils.getAPIComments(getBaseUrl(), plane, apiId, limit, offset), planeAuthHeaders(plane));
+        Requests.get(Utils.getAPIComments(Utils.getBaseUrl(), plane, apiId, limit, offset), planeAuthHeaders(plane));
     }
 
     /** Retrieves a single comment together with a paginated slice of its replies; publishes it for assertion. */
@@ -154,7 +150,7 @@ public class CommentRatingSteps {
             throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
         String commentId = TestContext.resolve(commentKey).toString();
-        Requests.get(Utils.getAPIComment(getBaseUrl(), plane, apiId, commentId, replyLimit, replyOffset),
+        Requests.get(Utils.getAPIComment(Utils.getBaseUrl(), plane, apiId, commentId, replyLimit, replyOffset),
                 planeAuthHeaders(plane));
     }
 
@@ -164,7 +160,7 @@ public class CommentRatingSteps {
             throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
         String commentId = TestContext.resolve(commentKey).toString();
-        Requests.get(Utils.getAPICommentReplies(getBaseUrl(), plane, apiId, commentId, limit, offset),
+        Requests.get(Utils.getAPICommentReplies(Utils.getBaseUrl(), plane, apiId, commentId, limit, offset),
                 planeAuthHeaders(plane));
     }
 
@@ -174,7 +170,7 @@ public class CommentRatingSteps {
             throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
         String commentId = TestContext.resolve(commentKey).toString();
-        Requests.patch(Utils.getAPIComment(getBaseUrl(), plane, apiId, commentId), planeAuthHeaders(plane),
+        Requests.patch(Utils.getAPIComment(Utils.getBaseUrl(), plane, apiId, commentId), planeAuthHeaders(plane),
                 commentBody(content, category), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -183,7 +179,7 @@ public class CommentRatingSteps {
     public void iDeleteComment(String plane, String commentKey, String apiKey) throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
         String commentId = TestContext.resolve(commentKey).toString();
-        Requests.delete(Utils.getAPIComment(getBaseUrl(), plane, apiId, commentId), planeAuthHeaders(plane));
+        Requests.delete(Utils.getAPIComment(Utils.getBaseUrl(), plane, apiId, commentId), planeAuthHeaders(plane));
     }
 
     // ------------------------------ Ratings (devportal only) ------------------------------
@@ -194,7 +190,7 @@ public class CommentRatingSteps {
         String apiId = TestContext.resolve(apiKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.put(Utils.getAPIUserRating(getBaseUrl(), apiId), headers,
+        Requests.put(Utils.getAPIUserRating(Utils.getBaseUrl(), apiId), headers,
                 new JSONObject().put("rating", rating).toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -204,7 +200,7 @@ public class CommentRatingSteps {
         String apiId = TestContext.resolve(apiKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.delete(Utils.getAPIUserRating(getBaseUrl(), apiId), headers);
+        Requests.delete(Utils.getAPIUserRating(Utils.getBaseUrl(), apiId), headers);
     }
 
     // ------------------------------ API overview: subscriptions ------------------------------
@@ -219,6 +215,6 @@ public class CommentRatingSteps {
         String apiId = TestContext.resolve(apiKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.get(Utils.getSubscriptions(getBaseUrl(), apiId), headers);
+        Requests.get(Utils.getSubscriptions(Utils.getBaseUrl(), apiId), headers);
     }
 }
