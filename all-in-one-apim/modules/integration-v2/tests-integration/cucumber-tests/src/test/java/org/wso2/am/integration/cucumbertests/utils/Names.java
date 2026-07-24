@@ -64,6 +64,9 @@ public final class Names {
      * both hit an exact length and stay collision-free on repeated test runs.
      */
     public static String ofLength(int length) {
+        if (length < 0) {
+            throw new IllegalArgumentException("length must be non-negative");
+        }
 
         StringBuilder value = new StringBuilder(unique("l").replace("_", ""));
         while (value.length() < length) {
