@@ -97,6 +97,9 @@ public class APIInvocationSteps {
                 case HEAD:
                     response = client.doHead(endpointUrl, headers);
                     break;
+                case OPTIONS:
+                    response = client.doOptions(endpointUrl, headers);
+                    break;
                 default:
                     throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
             }
@@ -159,6 +162,38 @@ public class APIInvocationSteps {
                 + " within the deadline — every attempt threw (gateway unreachable, or a bad token/key context key).");
         Assert.assertEquals(last.getResponseCode(), expectedStatus,
                 "API did not return " + expectedStatus + " within the deadline; last response: " + last.getData());
+    }
+
+    /**
+     * Invokes a deployed API a FIXED number of times back-to-back and asserts every response is 200 — used to
+     * prove a throttle limit is at least {@code times} per minute (i.e. a burst of {@code times} calls does NOT
+     * trip 429). Distinguishes one application-throttle tier from another: pick {@code times} above the LOW
+     * tier's limit but at/below the HIGH tier's, so the burst succeeds only when the higher tier is in effect.
+     * Each individual call is retried briefly on a transient warmup IOException (the same connectivity guard as
+     * the until-status variants), so a still-warming gateway route does not falsely fail the burst.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} {int} times expecting status 200")
+    public void invokeApiByContextNTimesExpecting200(String context, String httpMethod, String accessToken,
+                                                     String payload, int times) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        for (int i = 1; i <= times; i++) {
+            long warmupDeadline = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
+            HttpResponse response = null;
+            while (System.currentTimeMillis() < warmupDeadline) {
+                try {
+                    response = invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
+                    break;
+                } catch (IOException transientDuringWarmup) {
+                    Thread.sleep(2000);
+                }
+            }
+            Assert.assertNotNull(response, "Invocation " + i + " of " + times + " never completed (gateway "
+                    + "unreachable within the warmup window).");
+            Assert.assertEquals(response.getResponseCode(), 200, "Invocation " + i + " of " + times
+                    + " was not 200 (throttle tier change did not raise the limit as expected); last response: "
+                    + response.getData());
+        }
     }
 
     /**
@@ -259,6 +294,40 @@ public class APIInvocationSteps {
             try {
                 last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl,
                         new HashMap<>(), "");
+                if (last.getResponseCode() == expectedStatus) {
+                    return;
+                }
+            } catch (IOException transientDuringWarmup) {
+                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
+            }
+            Thread.sleep(2000);
+        } while (System.currentTimeMillis() < endTime);
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
+     * Sends a CORS pre-flight: an OPTIONS request carrying the {@code Origin} and {@code Access-Control-Request-Method}
+     * headers (the two headers a browser sends before a cross-origin call), with NO Authorization header, retrying
+     * until the expected status. The gateway's CORS handler matches the resource by the requested method and either
+     * answers the pre-flight itself (CORS enabled → 200 with the Access-Control-Allow-* headers) or, if the resource
+     * declares an explicit OPTIONS method, routes it to the backend. Without the Access-Control-Request-Method header
+     * the handler finds no acceptable resource and returns 405, so a real pre-flight MUST send it.
+     */
+    @When("I send a CORS preflight to gateway context {string} with origin {string} and request method {string} until response status code becomes {int} within {int} seconds")
+    public void sendCorsPreflightUntilStatus(String context, String origin, String requestMethod, int expectedStatus,
+                                             int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Origin", origin);
+        headers.put("Access-Control-Request-Method", requestMethod);
+        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long endTime = System.currentTimeMillis() + deadlineMillis;
+        HttpResponse last = null;
+        do {
+            try {
+                last = execute(CurlOption.HttpMethod.OPTIONS, endpointUrl, new HashMap<>(headers), "");
                 if (last.getResponseCode() == expectedStatus) {
                     return;
                 }

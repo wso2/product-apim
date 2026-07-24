@@ -1,0 +1,36 @@
+{
+  "name": "${UNIQUE:LoadBalancedAPI}",
+  "context": "${UNIQUE:loadBalancedContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "load_balance",
+    "algoCombo": "org.apache.synapse.endpoints.algorithms.RoundRobin",
+    "sessionManagement": "",
+    "sessionTimeOut": "",
+    "algoClassName": "org.apache.synapse.endpoints.algorithms.RoundRobin",
+    "production_endpoints": [
+      { "url": "http://nodebackend:3014/" },
+      { "url": "http://nodebackend:3015/" },
+      { "url": "http://nodebackend:3016/" }
+    ],
+    "sandbox_endpoints": [
+      { "url": "http://nodebackend:3014/" },
+      { "url": "http://nodebackend:3015/" },
+      { "url": "http://nodebackend:3016/" }
+    ]
+  },
+  "description": "API with a round-robin load-balanced production endpoint across three distinguishable backends (File 1/2/3).",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/name",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

@@ -142,6 +142,32 @@ Feature: Gateway REST API Invocation
       | admin             |
       | admin@tenant1.com |
 
+  # Ports the invocation half of DynamicAPIContextTestCase — an API whose context carries {version} in the MIDDLE
+  # of the path (api/developer/{version}) deploys with the version resolved into that position and is invocable at
+  # api/developer/1.0.0/... . Distinct from the version-FIRST case above (where {version} leads); here the template
+  # variable sits mid-path. The publisher returns the template verbatim; the gateway resolves {version} at deploy,
+  # so it is substituted for the invocation URL. (The legacy search-by-templated-context assertion is a thin
+  # publisher-search facet not ported here — the routing of the templated context is the regression subject.)
+  @cap:gateway @feat:rest-invocation @rule:dynamic-context @type:regression @dep:publisher @legacy:DynamicAPIContextTestCase
+  Scenario Outline: An API with a mid-path {version} context template is invocable at the resolved context as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_dynamic_context_api.json" as "dcApiId" and deployed it
+    When I publish the "apis" resource with id "dcApiId"
+    Then The lifecycle status of API "dcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "dcApiId"
+    And I extract response field "context" and store it as "dcContext"
+    And I replace "{version}" with "1.0.0" in context "dcContext"
+    When I have set up application with keys, subscribed to API "dcApiId", and obtained access token for "dcSub"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{dcContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Wave B-1: a REST resource ADDED to a deployed API becomes invocable at the gateway after redeploy; an
   # undefined path is refused. Ports AddEditRemoveRESTResourceTestCase.
   @cap:gateway @feat:rest-invocation @rule:dynamic-resource @type:regression @dep:publisher @legacy:AddEditRemoveRESTResourceTestCase
@@ -170,6 +196,7 @@ Feature: Gateway REST API Invocation
       """
     Then The response status code should be 200
     When I deploy the API with id "resApiId"
+    Then The response status code should be 201
     # The newly added POST resource is now invocable and routes to the backend.
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
@@ -380,6 +407,7 @@ Feature: Gateway REST API Invocation
     [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "seqApiId" with payload "seqDeploy"
+    Then The response status code should be 201
     When I publish the "apis" resource with id "seqApiId"
     Then The lifecycle status of API "seqApiId" should be "Published"
     When I retrieve the "apis" resource with id "seqApiId"
@@ -535,3 +563,88 @@ Feature: Gateway REST API Invocation
       | default | percent-encoded | artifacts/payloads/create_apim_query_default_api.json     | sub?queryParam=APIM%3AWSO2  | admin@tenant1.com |
       | escape  | preserved       | artifacts/payloads/create_apim_query_escape_api.json      | sub?queryParam=APIM:WSO2    | admin             |
       | escape  | preserved       | artifacts/payloads/create_apim_query_escape_api.json      | sub?queryParam=APIM:WSO2    | admin@tenant1.com |
+
+  # Ports APIInvocationWithSimilarResourcesAndDifferentVerbsTestCase — an API with TWO overlapping resource paths
+  # distinguished only by HTTP verb (GET /comp/cartes/* and POST /comp/cartes/op/*) routes each verb to the correct
+  # operation. A path that matches BOTH templates (/comp/cartes/op/123) resolves by verb: GET → the GET operation,
+  # POST → the POST operation, each returning 200 from the wildcard backend. (Legacy asserted verb-specific echo
+  # bodies against a mock backend; the v2 wildcard backend does not echo the verb/path, so the subject — correct
+  # verb-based routing of overlapping paths — is asserted via the 200 on each verb.)
+  @cap:gateway @feat:rest-invocation @rule:verb-routing @type:regression @dep:publisher @legacy:APIInvocationWithSimilarResourcesAndDifferentVerbsTestCase
+  Scenario Outline: Overlapping resource paths are routed by HTTP verb as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_similar_resources_api.json" as "svApiId" and deployed it
+    When I publish the "apis" resource with id "svApiId"
+    Then The lifecycle status of API "svApiId" should be "Published"
+    When I retrieve the "apis" resource with id "svApiId"
+    And I extract response field "context" and store it as "svContext"
+    When I have set up application with keys, subscribed to API "svApiId", and obtained access token for "svSub"
+    Then The response status code should be 200
+
+    # GET on the shared path resolves to the GET operation.
+    When I invoke the API at gateway context "{{svContext}}/1.0.0/comp/cartes/op/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # POST on the same path resolves to the POST operation.
+    When I invoke the API at gateway context "{{svContext}}/1.0.0/comp/cartes/op/123" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports APIResourceWithSpecialCharactersInvocation — a resource whose path NAME contains non-reserved special
+  # characters (comma, hyphen, period, underscore, tilde per RFC 3986 §2.2: /special,-._~resource) is routed to the
+  # backend and invoked successfully (200). The comma is the crux: it must NOT be treated as a delimiter (GraphQL
+  # operations use a comma delimiter, but a plain REST resource name containing a comma must be used verbatim).
+  @cap:gateway @feat:rest-invocation @rule:special-char-resource @type:regression @dep:publisher @legacy:APIResourceWithSpecialCharactersInvocation
+  Scenario Outline: A resource path with non-reserved special characters is invocable as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_special_char_resource_api.json" as "scApiId" and deployed it
+    When I publish the "apis" resource with id "scApiId"
+    Then The lifecycle status of API "scApiId" should be "Published"
+    When I retrieve the "apis" resource with id "scApiId"
+    And I extract response field "context" and store it as "scContext"
+    When I have set up application with keys, subscribed to API "scApiId", and obtained access token for "scSub"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{scContext}}/1.0.0/special,-._~resource" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports LoadBalancedEndPointTestCase (commented-out in the legacy suite) — an API with a load-balanced production
+  # endpoint (endpoint_type "load_balance", RoundRobin) distributes requests across THREE distinguishable backends
+  # (File 1 / File 2 / File 3). Rather than assert a brittle exact round-robin ORDER (the gateway's RR cursor start
+  # and concurrent warm-up requests are non-deterministic), we assert that repeated invocations reach ALL THREE
+  # backends — each "until response body contains File N" poll drives the round-robin until that backend answers,
+  # proving the load is distributed across every endpoint. Uses name-checkOne/Two/Three (ports 3014/3015/3016).
+  @cap:gateway @feat:rest-invocation @rule:load-balance @type:regression @dep:publisher @legacy:LoadBalancedEndPointTestCase
+  Scenario Outline: A load-balanced endpoint distributes requests across all backends as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_loadbalanced_api.json" as "lbApiId" and deployed it
+    When I publish the "apis" resource with id "lbApiId"
+    Then The lifecycle status of API "lbApiId" should be "Published"
+    When I retrieve the "apis" resource with id "lbApiId"
+    And I extract response field "context" and store it as "lbContext"
+    When I have set up application with keys, subscribed to API "lbApiId", and obtained access token for "lbSub"
+    Then The response status code should be 200
+
+    # Repeated invocations round-robin across the three backends — each distinct body is reached within a few calls.
+    When I invoke the API at gateway context "{{lbContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 1" within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lbContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 2" within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lbContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 3" within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

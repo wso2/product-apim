@@ -32,6 +32,7 @@ capabilities:
     name: DevPortal — discovery & consumption
     features:
       discovery:               { name: Search & browse }
+      visibility:              { name: Store-side role-based API visibility }
       applications:            { name: Application CRUD }
       application-attributes:  { name: Custom application attributes (store + JWT claim) }
       sdk-generation:          { name: Client SDK generation (per-language download) }

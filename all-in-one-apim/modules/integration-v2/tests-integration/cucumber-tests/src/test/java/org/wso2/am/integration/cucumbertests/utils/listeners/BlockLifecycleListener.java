@@ -26,6 +26,7 @@ import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
+import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -85,6 +86,23 @@ public class BlockLifecycleListener implements ITestListener {
      * is running before APIM boots, so gateway-invocation tests have a reachable backend for deployed APIs.
      */
     static final String PARAM_INIT_BACKEND = "initBackend";
+    /**
+     * Optional comma-separated list of {@code <hostPath>::<serverRelativePath>} pairs copied into the block's
+     * server directory tree BEFORE boot (host paths relative to the module working dir). For fixtures the
+     * server only reads at startup — e.g. a secondary user-store XML under
+     * {@code repository/deployment/server/userstores/}: Carbon's User Store Configuration Deployer processes
+     * that directory at boot. (NOTE: a JDBC secondary user store CAN be added at runtime via
+     * UserStoreConfigAdminService — it hot-deploys asynchronously — which is what {@link #PARAM_INIT_SECONDARY_USER_STORE}
+     * uses; serverFilesToCopy remains for genuinely boot-only fixtures.)
+     */
+    static final String PARAM_SERVER_FILES_TO_COPY = "serverFilesToCopy";
+
+    /**
+     * When {@code true}, onStart stands up a JDBC {@code SECONDARY.COM} user store at runtime (schema via the
+     * product's own dbscripts + addUserStore SOAP + poll-until-active) after tenant provisioning — the framework
+     * facility that replaces the seeded {@code .mv.db} fixture. See {@link SecondaryUserStoreProvisioner}.
+     */
+    static final String PARAM_INIT_SECONDARY_USER_STORE = "initSecondaryUserStore";
 
     @Override
     public void onStart(ITestContext context) {
@@ -114,6 +132,21 @@ public class BlockLifecycleListener implements ITestListener {
 
             container = new DynamicApimContainer(label, resolveTomlContent(context));
             container.withLabel("block", label);
+            // Boot-time server files (see PARAM_SERVER_FILES_TO_COPY): copied before start so boot-only
+            // deployers (e.g. the user-store config deployer) pick them up.
+            String filesToCopy = param(context, PARAM_SERVER_FILES_TO_COPY);
+            if (filesToCopy != null && !filesToCopy.isBlank()) {
+                for (String pair : filesToCopy.split(",")) {
+                    String[] parts = pair.trim().split("::", 2);
+                    if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
+                        throw new IllegalArgumentException("Malformed " + PARAM_SERVER_FILES_TO_COPY
+                                + " entry '" + pair + "' — expected <hostPath>::<serverRelativePath>");
+                    }
+                    container.withServerFile(parts[0].trim(), parts[1].trim());
+                    logger.info("Block '" + label + "' will copy server file " + parts[0].trim()
+                            + " -> <server-home>/" + parts[1].trim());
+                }
+            }
             // Opt-in integration coverage: attach the JaCoCo agent before boot (see CoverageSupport).
             if (CoverageSupport.enabled()) {
                 container.withCoverage();
@@ -138,6 +171,12 @@ public class BlockLifecycleListener implements ITestListener {
 
             if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
                 provisionTenantUsers(label, param(context, PARAM_TENANT_SET));
+            }
+            // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
+            // tenant admin SOAP credentials exist. Registered + seeded for BOTH tenants — one shared H2 DB,
+            // isolated by UM_TENANT_ID — so scenarios exercise the ×4 matrix (2 tenants × 2 store-user actors).
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_SECONDARY_USER_STORE))) {
+                SecondaryUserStoreProvisioner.provision(container, Constants.SUPER_TENANT_DOMAIN, "tenant1.com");
             }
         } catch (Throwable t) {
             context.setAttribute(BOOT_ERROR_ATTRIBUTE, t);

@@ -1,0 +1,33 @@
+{
+  "name": "${UNIQUE:OAS3EpSecRestAPI}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:oas3epsec}",
+  "gatewayType": "wso2/synapse",
+  "policies": [
+    "Unlimited",
+    "Bronze"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "importUser",
+        "password": "importSecret123"
+      },
+      "sandbox": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "importUser",
+        "password": "importSecret123"
+      }
+    }
+  }
+}

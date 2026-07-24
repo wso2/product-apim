@@ -27,11 +27,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
-import org.wso2.am.integration.cucumbertests.utils.RequestAction;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.test.utils.Constants;
@@ -104,10 +104,15 @@ public class BaseSteps {
 
     private void createDcrApplication(User actor) throws IOException {
 
-        //Create json payload for DCR endpoint
+        //Create json payload for DCR endpoint. The DCR client name must adhere to ^[\sa-zA-Z0-9._-]*$ — a
+        // secondary-store actor's username carries the store-domain separator (e.g. SECONDARY.COM/secondaryAdmin1),
+        // whose '/' is outside that set, so sanitize any disallowed char to '_' when DERIVING the name. This is
+        // cosmetic only: the actual OAuth identity is the untouched `owner` (actor.getUserName()) below.
+        String clientNameSafe = ("integration_test_app_" + actor.getUserNameWithoutDomain() + "_"
+                + actor.getUserDomain()).replaceAll("[^\\sa-zA-Z0-9._-]", "_");
         JsonObject json = new JsonObject();
         json.addProperty("callbackUrl", "test.com");
-        json.addProperty("clientName", "integration_test_app_" + actor.getUserNameWithoutDomain() + "_" + actor.getUserDomain());
+        json.addProperty("clientName", clientNameSafe);
         json.addProperty("grantType", "client_credentials password refresh_token");
         json.addProperty("saasApp", true);
         json.addProperty("owner", actor.getUserName());
@@ -475,7 +480,7 @@ public class BaseSteps {
     @When("I set the field {string} to {string} in the payload {string}")
     public void iSetFieldInPayload(String field, String value, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         // Resolve any {{contextKey}} placeholders in the value (e.g. reusing an existing API's context to build a
         // duplicate-context negative). Values with no placeholders pass through unchanged; an unknown key throws.
         payload.put(field, Utils.resolveContextPlaceholders(value));
@@ -511,7 +516,7 @@ public class BaseSteps {
     @When("I remove the field {string} from the payload {string}")
     public void iRemoveFieldFromPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         payload.remove(field);
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -571,8 +576,22 @@ public class BaseSteps {
     @When("I set the field {string} to an empty array in the payload {string}")
     public void iSetFieldToEmptyArrayInPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
-        payload.put(field, new org.json.JSONArray());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, new JSONArray());
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
+    /**
+     * Sets a top-level field of a JSON payload in context to JSON {@code null}, writing it back under the key. Used
+     * to prove the publisher accepts an API update that nulls an optional field (e.g. {@code securityScheme} or
+     * {@code endpointConfig}) — a past NullPointerException regression (UpdateAPINullPointerTestCase). Uses
+     * {@link JSONObject#NULL} so the field is serialized as {@code null}, not the string {@code "null"}.
+     */
+    @When("I set the field {string} to null in the payload {string}")
+    public void iSetFieldToNullInPayload(String field, String contextKey) {
+
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, JSONObject.NULL);
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
 
@@ -580,7 +599,7 @@ public class BaseSteps {
     @When("I set the boolean field {string} to {string} in the payload {string}")
     public void iSetBooleanFieldInPayload(String field, String value, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         payload.put(field, Boolean.parseBoolean(value));
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -623,80 +642,6 @@ public class BaseSteps {
         Assert.assertEquals(response.getResponseCode(), expectedStatusCode, response.getData());
     }
 
-
-    /**
-     * Retrieves a previously prepared request and executes it until
-     * the desired HTTP status code is received or the maximum retry limit is reached.
-     *
-     * @param expectedCode The expected HTTP status code
-     * @throws InterruptedException ]
-     */
-    @And("I wait until the response status code is {int}")
-    public void iWaitUntilStatus(int expectedCode) throws InterruptedException {
-
-        // Retrieve prepared request logic from context
-        RequestAction requestAction = Utils.getPendingHttpRequest();
-
-        try {
-            // Execute with retry loop until expected status is met
-            HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode, res -> true);
-            TestContext.set(Constants.HTTP_RESPONSE, finalResponse);
-
-            Assert.assertEquals(finalResponse.getResponseCode(), expectedCode,
-                    "The request failed to return the expected status code after retries." +
-                            finalResponse.getData());
-
-            String httpMethod = (String) TestContext.get(Constants.HTTP_METHOD);
-
-            // Check if the HTTP method is DELETE
-            if (Constants.HTTP_METHODS.DELETE.equalsIgnoreCase(httpMethod)) {
-                Thread.sleep(2000);
-            }
-
-        } finally {
-            TestContext.remove(Constants.HTTP_METHOD);
-        }
-    }
-
-    /**
-     * Waits until the pending HTTP request returns the expected response status code
-     * and the specified JSON response field contains the expected value.
-     *
-     * @param expectedCode  the expected HTTP response status code
-     * @param fieldName     the JSON response field to validate
-     * @param expectedValue the expected value of the specified JSON field
-     * @throws InterruptedException if the retry wait is interrupted
-     * @throws IOException          if an error occurs while extracting the field value
-     *                              from the response payload
-     */
-    @Then("I wait until the response status code is {int} and the value of response field {string} is {string}")
-    public void iWaitUntilStatusAndFieldValue(int expectedCode, String fieldName, String expectedValue) throws InterruptedException, IOException {
-
-        RequestAction requestAction = Utils.getPendingHttpRequest();
-
-        HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode,
-                response -> {
-                    // Extract value from JSON
-                    Object actualValue;
-                    try {
-                        actualValue = Utils.extractValueFromPayload(response.getData(), fieldName);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    // Return true if value matches
-                    return actualValue != null && String.valueOf(actualValue).equalsIgnoreCase(expectedValue);
-                }
-        );
-
-        TestContext.set("httpResponse", finalResponse);
-
-        Assert.assertEquals(finalResponse.getResponseCode(), expectedCode, "HTTP Status Code mismatch.");
-
-        Object actualFieldVal = Utils.extractValueFromPayload(finalResponse.getData(), fieldName);
-        Assert.assertTrue(expectedValue.equalsIgnoreCase(String.valueOf(actualFieldVal)),
-                String.format("Field '%s' was [%s] but expected [%s]. Data: %s",
-                        fieldName, actualFieldVal, expectedValue, finalResponse.getData()));
-    }
 
     /**
      * Verifies that the HTTP response body contains the specified string value.
@@ -924,8 +869,12 @@ public class BaseSteps {
      */
     @And("The {string} resource should reflect the updated {string} as:")
     public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String expectedConfigValue) throws IOException, InterruptedException {
-        // Get the API ID from the update response
+        // Get the API ID from the update response — guard before parsing (a cleared/failed update leaves no
+        // response, and an empty body would throw an opaque JSONException instead of a clear failure).
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(updateResponse != null && updateResponse.getData() != null
+                        && !updateResponse.getData().isEmpty(),
+                "No update response with a body captured to verify the '" + config + "' update against");
         JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
         String resourceId = updateResponseJson.optString("id", null);
         User actor = Identity.actingActor();
@@ -1012,6 +961,9 @@ public class BaseSteps {
      * @param configValue The expected configuration value
      */
     private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+                "No response with a body to verify configuration '" + config + "' in; got "
+                        + (response == null ? "no response" : response.getResponseCode()));
         JSONObject json = new JSONObject(response.getData());
         Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
 
@@ -1067,33 +1019,54 @@ public class BaseSteps {
 
         String apiName  = Utils.extractValueFromPayload(actualApiDetailsPayload, "name").toString();
         String apiVersion = Utils.extractValueFromPayload(actualApiDetailsPayload, "version").toString();
+        // The deployed-revisions list is the publisher-plane distinguishing state — it flips as soon as the
+        // revision is deployed, so it is available to the same actor that owns the API.
+        String apiId = Utils.extractValueFromPayload(actualApiDetailsPayload, "id").toString();
         // Use the tenant ADMIN (not the acting actor) — the gateway-artifact admin endpoint requires admin
         // credentials, which a least-privilege publisher actor does not have.
         User tenantAdmin = Identity.actingTenantAdmin();
         String tenantDomain = tenantAdmin.getUserDomain();
 
-        String url = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
+        String artifactUrl = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
 
         String encodedCredentials = DatatypeConverter.printBase64Binary(
                 (tenantAdmin.getUserName() + ':' + tenantAdmin.getPassword()).getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
+        Map<String, String> artifactHeaders = new HashMap<>();
+        artifactHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
 
-        long currentTime = System.currentTimeMillis();
-        long waitTime = currentTime + Constants.DEPLOYMENT_WAIT_TIME;
+        String revisionsUrl = Utils.getRevisionDeployments(getBaseUrl(), "apis", apiId);
+        Map<String, String> revisionsHeaders = new HashMap<>();
+        revisionsHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        // De-flake (load-induced eventual-consistency, same class as the saml2-bearer clock-skew fix):
+        // when many freshly-imported APIs pile up in one serially-loaded block, the synapse ARTIFACT
+        // materialization behind the gateway api-artifact endpoint lags well past the standard 120s window,
+        // even though the revision IS deployed. So we (1) poll the correct distinguishing signal — the
+        // deployed-revisions list, which flips on publisher-plane deployment — as the primary readiness gate,
+        // accepting the gateway-artifact 200 only as a secondary confirmation, (2) catch the transient set on
+        // either probe — IOException (gateway warm-up) and JSONException (a not-yet-well-formed body) — so a
+        // programming error (bad context key, NPE) still fails fast instead of being masked as a deploy
+        // timeout, and (3) lengthen the window to a freshly-imported-under-load budget. Fast cases still
+        // exit early on the first positive poll.
+        long waitTime = System.currentTimeMillis() + (2 * Constants.DEPLOYMENT_WAIT_TIME);
         boolean isApiDeployed = false;
 
         while (System.currentTimeMillis() < waitTime) {
-            HttpResponse response = null;
             try {
-                response = SimpleHTTPClient.getInstance().doGet(url, headers);
-            } catch (IOException ignored) {
-                log.warn("API :" + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
-                        tenantDomain);
-            }
-            if (response != null && response.getResponseCode() == 200) {
+                HttpResponse revisionsResponse = SimpleHTTPClient.getInstance().doGet(revisionsUrl, revisionsHeaders);
+                if (revisionsResponse != null && revisionsResponse.getResponseCode() == 200
+                        && new JSONObject(revisionsResponse.getData()).getJSONArray("list").length() > 0) {
                     isApiDeployed = true;
                     break;
+                }
+                HttpResponse artifactResponse = SimpleHTTPClient.getInstance().doGet(artifactUrl, artifactHeaders);
+                if (artifactResponse != null && artifactResponse.getResponseCode() == 200) {
+                    isApiDeployed = true;
+                    break;
+                }
+            } catch (IOException | JSONException e) {
+                log.warn("API: " + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
+                        tenantDomain + " – retrying");
             }
             try {
                 log.info("Wait for availability of API: " + apiName + " with version: " + apiVersion +
@@ -1102,7 +1075,8 @@ public class BaseSteps {
             } catch (InterruptedException ignored) {
             }
         }
-        Assert.assertTrue(isApiDeployed);
+        Assert.assertTrue(isApiDeployed, "API " + apiName + " v" + apiVersion +
+                " was not deployed within the timeout");
         Thread.sleep(10000);
     }
 
