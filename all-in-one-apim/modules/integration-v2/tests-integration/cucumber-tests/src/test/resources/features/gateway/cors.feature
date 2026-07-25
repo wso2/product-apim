@@ -34,7 +34,11 @@ Feature: Gateway CORS
   # answered by the gateway (200) with the configured Access-Control-Allow-Origin / -Allow-Methods / -Allow-Headers
   # response headers. The API enables a specific origin (http://localhost) with the method and header allow-lists
   # from its CORS config. Runs in the gateway block, both tenants.
-  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @legacy:CORSHeadersTestCase
+  # Also ports the REST facet of CORSHeadersForAllAPITypesTestCase: the pre-flight echoes a custom configured
+  # allow-header (X-BrowserSessionID), and a NORMAL (non pre-flight) request does NOT carry the pre-flight-only
+  # Access-Control-Allow-Methods / -Allow-Headers response headers. That negative is asserted once here (it is a
+  # property of the CORS handler, independent of API type) rather than repeated per type.
+  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @legacy:CORSHeadersTestCase @legacy:CORSHeadersForAllAPITypesTestCase
   Scenario Outline: A CORS pre-flight OPTIONS request returns the configured allow-origin, allow-methods and allow-headers as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -55,6 +59,15 @@ Feature: Gateway CORS
     And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
     And The response header "Access-Control-Allow-Methods" should contain "GET"
     And The response header "Access-Control-Allow-Headers" should contain "authorization"
+    # The custom configured allow-header is echoed in the pre-flight allow-headers.
+    And The response header "Access-Control-Allow-Headers" should contain "X-BrowserSessionID"
+
+    # Negative: a NORMAL (non pre-flight) request carrying an Origin gets a 200 but MUST NOT carry the
+    # pre-flight-only Access-Control-Allow-Methods / -Allow-Headers response headers.
+    When I invoke the API at gateway context "{{corsPfContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain the header "Access-Control-Allow-Methods"
+    And The response should not contain the header "Access-Control-Allow-Headers"
 
     Examples:
       | actor             |
@@ -116,6 +129,119 @@ Feature: Gateway CORS
     Then The response status code should be 200
     And The response header "Access-Control-Allow-Methods" should contain "OPTIONS"
     And The response header "Access-Control-Allow-Headers" should contain "Content-Type"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports the non-REST API-type facets of CORSHeadersForAllAPITypesTestCase: with CORS enabled (a specific origin
+  # plus the custom X-BrowserSessionID allow-header), a pre-flight OPTIONS to a SOAP / GraphQL / SSE API is answered
+  # by the gateway (200) with the configured allow-origin / -methods / -headers, and the allow-headers echoes
+  # X-BrowserSessionID. The SSE case guards the Async-type pre-flight header regression (the reason the legacy class
+  # exists). The legacy "Async API imported from a file" case was itself an SSE-typed API exposed over HTTP; the v2
+  # asyncapi import path produces advertise-only, non-gateway-routed APIs, so that case collapses into this SSE
+  # scenario. WebSub/WebHook APIs are intentionally not covered — their gateway resource only accepts the
+  # subscription method and rejects the pre-flight OPTIONS before it reaches the CORS handler. Runs in both tenants.
+  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @legacy:CORSHeadersForAllAPITypesTestCase
+  Scenario Outline: A CORS pre-flight OPTIONS to a SOAP API returns the configured allow-headers incl. X-BrowserSessionID as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_cors_soap_api.json" as "corsSoapApiId" and deployed it
+    When I publish the "apis" resource with id "corsSoapApiId"
+    Then The lifecycle status of API "corsSoapApiId" should be "Published"
+    When I retrieve the "apis" resource with id "corsSoapApiId"
+    And I extract response field "context" and store it as "corsSoapContext"
+    When I have set up application with keys, subscribed to API "corsSoapApiId", and obtained access token for "corsSoapSubId"
+    Then The response status code should be 200
+
+    # SOAP resource verb is POST, so the pre-flight declares POST as the requested method.
+    When I send a CORS preflight to gateway context "{{corsSoapContext}}/1.0.0" with origin "http://localhost" and request method "POST" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
+    And The response header "Access-Control-Allow-Methods" should contain "POST"
+    And The response header "Access-Control-Allow-Headers" should contain "X-BrowserSessionID"
+
+    # Negative: a NORMAL (non pre-flight) POST carrying an Origin must NOT carry the pre-flight-only headers.
+    When I invoke the API at gateway context "{{corsSoapContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain the header "Access-Control-Allow-Methods"
+    And The response should not contain the header "Access-Control-Allow-Headers"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @legacy:CORSHeadersForAllAPITypesTestCase
+  Scenario Outline: A CORS pre-flight OPTIONS to a GraphQL API returns the configured allow-headers incl. X-BrowserSessionID as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_cors_graphql_api.json" in context as "corsGraphQLPayload"
+    And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "corsGraphQLPayload" as "corsGraphQLApiId"
+    Then The response status code should be 201
+
+    When I retrieve the "apis" resource with id "corsGraphQLApiId"
+    And I put the response payload in context as "corsGraphQLRetrievedPayload"
+    And I extract response field "context" and store it as "corsGraphQLContext"
+
+    When I put the following JSON payload in context as "corsGraphQLRevisionPayload"
+    """
+    {
+      "description":"Initial Revision"
+    }
+    """
+    And I make a request to create a revision for "apis" resource "corsGraphQLApiId" with payload "corsGraphQLRevisionPayload"
+    And I deploy revision "revisionId" of "apis" resource "corsGraphQLApiId"
+    Then The response status code should be 201
+    And I wait for deployment of the resource in "corsGraphQLRetrievedPayload"
+    And I publish the "apis" resource with id "corsGraphQLApiId"
+    Then The lifecycle status of API "corsGraphQLApiId" should be "Published"
+
+    When I have set up application with keys, subscribed to API "corsGraphQLApiId", and obtained access token for "corsGraphQLSubId"
+    Then The response status code should be 200
+
+    # GraphQL is invoked over POST, so the pre-flight declares POST as the requested method.
+    When I send a CORS preflight to gateway context "{{corsGraphQLContext}}/1.0.0" with origin "http://localhost" and request method "POST" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
+    And The response header "Access-Control-Allow-Methods" should contain "POST"
+    And The response header "Access-Control-Allow-Headers" should contain "X-BrowserSessionID"
+
+    # Negative: a NORMAL (non pre-flight) POST query carrying an Origin must NOT carry the pre-flight-only headers.
+    When I put the following JSON payload in context as "corsGraphQLNormalQuery"
+    """
+    {"query": "{languages{code name}}"}
+    """
+    And I invoke the API at gateway context "{{corsGraphQLContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "corsGraphQLNormalQuery" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain the header "Access-Control-Allow-Methods"
+    And The response should not contain the header "Access-Control-Allow-Headers"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @legacy:CORSHeadersForAllAPITypesTestCase
+  Scenario Outline: A CORS pre-flight OPTIONS to a Server Sent Events (SSE) API returns the configured allow-headers incl. X-BrowserSessionID as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_cors_sse_api.json" as "corsSseApiId" and deployed it
+    When I publish the "apis" resource with id "corsSseApiId"
+    Then The lifecycle status of API "corsSseApiId" should be "Published"
+    When I retrieve the "apis" resource with id "corsSseApiId"
+    And I extract response field "context" and store it as "corsSseContext"
+    When I have set up application with keys, subscribed to API "corsSseApiId" with plan "AsyncUnlimited", and obtained access token for "corsSseSubId"
+    Then The response status code should be 200
+
+    # SSE is consumed over GET, so the pre-flight declares GET as the requested method. This is the Async-type
+    # pre-flight the legacy fix targeted — the gateway must still answer with the CORS allow headers.
+    When I send a CORS preflight to gateway context "{{corsSseContext}}/1.0.0" with origin "http://localhost" and request method "GET" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
+    And The response header "Access-Control-Allow-Methods" should contain "GET"
+    And The response header "Access-Control-Allow-Headers" should contain "X-BrowserSessionID"
 
     Examples:
       | actor             |

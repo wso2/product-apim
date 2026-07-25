@@ -1,0 +1,71 @@
+{
+  "name": "${UNIQUE:APIMCorsGraphQL}",
+  "description": "GraphQL API with CORS enabled (incl. the X-BrowserSessionID allow-header) for the all-API-types CORS pre-flight test",
+  "context": "${UNIQUE:apiCorsGraphQLContext}",
+  "version": "1.0.0",
+  "lifeCycleStatus": "CREATED",
+  "responseCachingEnabled": false,
+  "cacheTimeout": 300,
+  "hasThumbnail": false,
+  "isDefaultVersion": true,
+  "enableSchemaValidation": false,
+  "type": "GRAPHQL",
+  "audiences": ["all"],
+  "transport": ["http", "https"],
+  "tags": [],
+  "policies": ["Unlimited", "Bronze"],
+  "authorizationHeader": "Authorization",
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": ["oauth_basic_auth_api_key_mandatory", "oauth2"],
+  "visibility": "PUBLIC",
+  "visibleRoles": [""],
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "accessControl": "NONE",
+  "corsConfiguration": {
+    "corsConfigurationEnabled": true,
+    "accessControlAllowOrigins": ["http://localhost"],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": ["authorization", "Access-Control-Allow-Origin", "Content-Type", "X-BrowserSessionID", "apikey"],
+    "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH"]
+  },
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3003/graphql"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3003/graphql"
+    }
+  },
+  "endpointImplementationType": "ENDPOINT",
+  "scopes": [],
+  "operations": [
+    {
+      "id": "",
+      "target": "languages",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    },
+    {
+      "id": "",
+      "target": "language",
+      "verb": "QUERY",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "categories": [],
+  "keyManagers": ["all"],
+  "advertiseInfo": {
+    "advertised": false,
+    "apiOwner": "admin",
+    "vendor": "WSO2"
+  },
+  "gatewayVendor": "wso2",
+  "gatewayType": "wso2/synapse"
+}

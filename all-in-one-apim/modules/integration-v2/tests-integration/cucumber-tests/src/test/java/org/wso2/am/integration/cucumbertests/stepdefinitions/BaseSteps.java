@@ -887,6 +887,19 @@ public class BaseSteps {
                 "Response header '" + headerName + "' (" + actual + ") unexpectedly contains '" + resolved + "'");
     }
 
+    /**
+     * Asserts a response header is entirely ABSENT (case-insensitive lookup) — distinct from
+     * {@code should not contain the header X with value Y} (which pins a specific value). Needed for the CORS
+     * negative case: a pre-flight-only header (e.g. {@code Access-Control-Allow-Methods}) must not appear on a
+     * normal, non-pre-flight response.
+     */
+    @Then("The response should not contain the header {string}")
+    public void responseShouldNotContainHeader(String headerName) {
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNull(actual,
+                "Response header '" + headerName + "' unexpectedly present with value '" + actual + "'");
+    }
+
     /** Case-insensitive lookup of a response header value from the stored httpResponse (null if absent). */
     private String responseHeaderValue(String headerName) {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");

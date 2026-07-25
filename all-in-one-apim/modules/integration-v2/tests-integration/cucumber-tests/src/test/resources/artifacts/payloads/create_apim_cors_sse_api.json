@@ -1,0 +1,47 @@
+{
+  "name": "${UNIQUE:APIMCorsSse}",
+  "context": "${UNIQUE:apiCorsSseContext}",
+  "version": "1.0.0",
+  "type": "SSE",
+  "enableSchemaValidation": false,
+  "transport": [],
+  "tags": ["sse"],
+  "policies": ["AsyncUnlimited"],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": "Authorization",
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": ["oauth2"],
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "accessControl": "NONE",
+  "description": "Server Sent Events (SSE) API with CORS enabled (incl. the X-BrowserSessionID allow-header) for the all-API-types CORS pre-flight test (guards the Async-type pre-flight header regression)",
+  "corsConfiguration": {
+    "corsConfigurationEnabled": true,
+    "accessControlAllowOrigins": ["http://localhost"],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": ["authorization", "Access-Control-Allow-Origin", "Content-Type", "X-BrowserSessionID", "apikey"],
+    "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH"]
+  },
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3001"
+    }
+  },
+  "endpointImplementationType": "ENDPOINT",
+  "operations": [
+    {
+      "target": "/*",
+      "verb": "SUBSCRIBE",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ]
+}
