@@ -23,13 +23,19 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.*;
@@ -86,6 +92,8 @@ public class CORSHeadersForAllAPITypesTestCase extends APIMIntegrationBaseTest {
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_VALUE = "*";
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
+
+    private static final int HTTP_TIMEOUT_MILLIS = 30000;
 
     private final List<String> createdApiIds = new ArrayList<>();
 
@@ -326,17 +334,30 @@ public class CORSHeadersForAllAPITypesTestCase extends APIMIntegrationBaseTest {
      */
     private void verifyCorsPreflightAndNormalRequest(String invocationUrl, String apiLabel, String requestMethod)
             throws Exception {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(HTTP_TIMEOUT_MILLIS)
+                .setConnectionRequestTimeout(HTTP_TIMEOUT_MILLIS)
+                .setSocketTimeout(HTTP_TIMEOUT_MILLIS)
+                .build();
+
         // --- Pre-flight (OPTIONS) request: MUST contain the CORS headers ---
-        HttpClient preflightClient = HttpClientBuilder.create().build();
         HttpOptions preflightRequest = new HttpOptions(invocationUrl);
         preflightRequest.addHeader("Origin", ORIGIN);
         preflightRequest.addHeader("Access-Control-Request-Method", requestMethod);
         preflightRequest.addHeader("Access-Control-Request-Headers", "authorization, " + BROWSER_SESSION_ID_HEADER);
-        HttpResponse preflightResponse = preflightClient.execute(preflightRequest);
-        Header[] preflightHeaders = preflightResponse.getAllHeaders();
+
+        Header[] preflightHeaders;
+        int preflightStatusCode;
+        try (CloseableHttpClient preflightClient =
+                     HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
+             CloseableHttpResponse preflightResponse = preflightClient.execute(preflightRequest)) {
+            preflightHeaders = preflightResponse.getAllHeaders();
+            preflightStatusCode = preflightResponse.getStatusLine().getStatusCode();
+            EntityUtils.consume(preflightResponse.getEntity());
+        }
         logHeaders(apiLabel + " [pre-flight OPTIONS]", preflightHeaders);
 
-        assertEquals(preflightResponse.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
+        assertEquals(preflightStatusCode, HttpStatus.SC_OK,
                 apiLabel + ": Pre-flight response code mismatch.");
 
         Header allowOrigin = pickHeader(preflightHeaders, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER);
@@ -357,12 +378,19 @@ public class CORSHeadersForAllAPITypesTestCase extends APIMIntegrationBaseTest {
                         + BROWSER_SESSION_ID_HEADER + ". Actual value: " + allowHeaders.getValue());
 
         // --- Normal (non pre-flight) request: MUST NOT contain the pre-flight only CORS headers ---
-        HttpClient normalClient = HttpClientBuilder.create().build();
-        HttpUriRequest normalRequest = new HttpGet(invocationUrl);
+        // The normal request uses the same HTTP method the browser intends to use so the negative
+        // assertion exercises the actual resource rather than always falling back to GET.
+        HttpUriRequest normalRequest = buildRequest(requestMethod, invocationUrl);
         normalRequest.addHeader("Origin", ORIGIN);
-        HttpResponse normalResponse = normalClient.execute(normalRequest);
-        Header[] normalHeaders = normalResponse.getAllHeaders();
-        logHeaders(apiLabel + " [normal GET]", normalHeaders);
+
+        Header[] normalHeaders;
+        try (CloseableHttpClient normalClient =
+                     HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
+             CloseableHttpResponse normalResponse = normalClient.execute(normalRequest)) {
+            normalHeaders = normalResponse.getAllHeaders();
+            EntityUtils.consume(normalResponse.getEntity());
+        }
+        logHeaders(apiLabel + " [normal " + requestMethod + "]", normalHeaders);
 
         assertNull(pickHeader(normalHeaders, ACCESS_CONTROL_ALLOW_METHODS_HEADER),
                 apiLabel + ": " + ACCESS_CONTROL_ALLOW_METHODS_HEADER
@@ -370,6 +398,25 @@ public class CORSHeadersForAllAPITypesTestCase extends APIMIntegrationBaseTest {
         assertNull(pickHeader(normalHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER),
                 apiLabel + ": " + ACCESS_CONTROL_ALLOW_HEADERS_HEADER
                         + " header should NOT be present in a normal (non pre-flight) response.");
+    }
+
+    /**
+     * Builds an {@link HttpUriRequest} for the given HTTP method against the given URL.
+     */
+    private HttpUriRequest buildRequest(String method, String url) {
+        switch (method.toUpperCase()) {
+            case "POST":
+                return new HttpPost(url);
+            case "PUT":
+                return new HttpPut(url);
+            case "DELETE":
+                return new HttpDelete(url);
+            case "PATCH":
+                return new HttpPatch(url);
+            case "GET":
+            default:
+                return new HttpGet(url);
+        }
     }
 
     private void logHeaders(String label, Header[] headers) {
