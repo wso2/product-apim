@@ -173,6 +173,7 @@
             <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderSetup"/>
             <class name="org.wso2.am.integration.tests.jwt.FederatedUserJWTTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
+            <class name="org.wso2.am.integration.tests.header.CORSHeadersForAllAPITypesTestCase"/>
         </classes>
     </test>
 
