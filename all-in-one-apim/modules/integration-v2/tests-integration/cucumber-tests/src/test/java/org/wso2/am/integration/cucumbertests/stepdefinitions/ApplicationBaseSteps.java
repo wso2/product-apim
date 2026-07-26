@@ -1462,6 +1462,142 @@ public class ApplicationBaseSteps {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
+    @When("I request an OAuth access token via authorization code grant with scope {string}")
+    public void iRequestOAuthAccessTokenViaAuthCodeGrantWithScope(String scope) throws Exception {
+        performAuthCodeGrant(scope);
+    }
+
+    @When("I request an OAuth access token via authorization code grant without requesting any scopes")
+    public void iRequestOAuthAccessTokenViaAuthCodeGrantWithoutScope() throws Exception {
+        performAuthCodeGrant(null);
+    }
+
+    /**
+     * Runs the authorization-code grant flow and publishes the token response to {@code httpResponse}.
+     * Handles both the with-consent path (scope requested → IS shows consent page) and the
+     * no-consent path (no scope → IS skips consent and returns the code directly after login).
+     *
+     * @param scope scope to include in the authorize URL, or {@code null} to omit it entirely
+     */
+    private void performAuthCodeGrant(String scope) throws Exception {
+
+        // Clear any stale response left by the previous step so a throw before the token exchange
+        // never leaves a false-passing httpResponse for a following Then assertion.
+        TestContext.remove("httpResponse");
+
+        String consumerKey = TestContext.resolve("consumerKey").toString();
+        String consumerSecret = TestContext.resolve("consumerSecret").toString();
+        User actor = Identity.actingActor();
+        String callbackUrl = "http://localhost:8490/callback";
+        String authorizeUrl = getBaseUrl() + "oauth2/authorize";
+        String commonAuthUrl = getBaseUrl() + "commonauth";
+
+        // Step 1: Initiate
+        String initUrl = authorizeUrl + "?response_type=code"
+                + "&client_id=" + urlEncode(consumerKey)
+                + (scope != null ? "&scope=" + urlEncode(scope) : "")
+                + "&redirect_uri=" + urlEncode(callbackUrl);
+        HttpResponse initResponse = SimpleHTTPClient.getInstance().doGet(initUrl, new HashMap<>());
+        Assert.assertEquals(initResponse.getResponseCode(), 302,
+                "Expected 302 from authorize on initiation, got: " + initResponse.getResponseCode());
+        String locationHeader = initResponse.getHeaders().get("Location");
+        Assert.assertNotNull(locationHeader, "Location header missing on authorize initiation");
+        String sessionCookie = initResponse.getHeaders().get("Set-Cookie");
+        Assert.assertNotNull(sessionCookie, "Set-Cookie header missing on authorize initiation");
+        String sessionDataKey = extractQueryParam(locationHeader, "sessionDataKey");
+        Assert.assertNotNull(sessionDataKey,
+                "sessionDataKey not found in Location header: " + locationHeader);
+
+        // Step 2: Authenticate
+        Map<String, String> loginHeaders = new HashMap<>();
+        loginHeaders.put("Cookie", sessionCookie);
+        String loginBody = "username=" + urlEncode(actor.getUserName())
+                + "&password=" + urlEncode(actor.getPassword())
+                + "&tocommonauth=true"
+                + "&sessionDataKey=" + urlEncode(sessionDataKey);
+        HttpResponse loginResponse = SimpleHTTPClient.getInstance().doPost(
+                commonAuthUrl, loginHeaders, loginBody,
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        Assert.assertEquals(loginResponse.getResponseCode(), 302,
+                "Expected 302 after login, got: " + loginResponse.getResponseCode());
+        locationHeader = loginResponse.getHeaders().get("Location");
+        Assert.assertNotNull(locationHeader, "Location header missing after login");
+        String oauthError = extractQueryParam(locationHeader, "error");
+        Assert.assertNull(oauthError,
+                "Authorization failed with error '" + oauthError + "': "
+                        + extractQueryParam(locationHeader, "error_description")
+                        + " — " + locationHeader);
+        String authenticatedCookie = loginResponse.getHeaders().get("Set-Cookie");
+        if (authenticatedCookie == null) {
+            authenticatedCookie = sessionCookie;
+        }
+
+        // Step 3: Resume the OAuth flow at /oauth2/authorize
+        HttpResponse resumeResponse = SimpleHTTPClient.getInstance().doGet(locationHeader,
+                Map.of("Cookie", authenticatedCookie));
+        Assert.assertEquals(resumeResponse.getResponseCode(), 302,
+                "Expected 302 resuming authorize after login, got: " + resumeResponse.getResponseCode());
+        locationHeader = resumeResponse.getHeaders().get("Location");
+        Assert.assertNotNull(locationHeader, "Location header missing resuming authorize after login");
+        String resumedCookie = resumeResponse.getHeaders().get("Set-Cookie");
+        if (resumedCookie != null) {
+            authenticatedCookie = resumedCookie;
+        }
+
+        // Step 4 (conditional): approve consent
+        String authCode = extractQueryParam(locationHeader, "code");
+        if (authCode == null) {
+            String sessionDataKeyConsent = extractQueryParam(locationHeader, "sessionDataKeyConsent");
+            Assert.assertNotNull(sessionDataKeyConsent,
+                    "Expected 'code' or 'sessionDataKeyConsent' in Location after login: " + locationHeader);
+            Map<String, String> consentHeaders = new HashMap<>();
+            consentHeaders.put("Cookie", authenticatedCookie);
+            String consentBody = "consent=approve&hasApprovedAlways=false"
+                    + "&sessionDataKeyConsent=" + urlEncode(sessionDataKeyConsent);
+            HttpResponse consentResponse = SimpleHTTPClient.getInstance().doPost(
+                    authorizeUrl, consentHeaders, consentBody,
+                    Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+            Assert.assertEquals(consentResponse.getResponseCode(), 302,
+                    "Expected 302 after consent approval, got: " + consentResponse.getResponseCode());
+            locationHeader = consentResponse.getHeaders().get("Location");
+            Assert.assertNotNull(locationHeader, "Location header missing after consent approval");
+            authCode = extractQueryParam(locationHeader, "code");
+            Assert.assertNotNull(authCode,
+                    "Auth code not found in Location after consent approval: " + locationHeader);
+        }
+
+        // Step 5: Exchange the auth code for a token and publish it to httpResponse
+        String tokenBody = "grant_type=authorization_code"
+                + "&code=" + urlEncode(authCode)
+                + "&redirect_uri=" + urlEncode(callbackUrl)
+                + "&client_id=" + urlEncode(consumerKey)
+                + "&client_secret=" + urlEncode(consumerSecret);
+        HttpResponse tokenResponse = Requests.post(Utils.getAPIMTokenEndpointURL(getBaseUrl()),
+                new HashMap<>(), tokenBody, Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        captureTokens(tokenResponse);
+    }
+
+    /** Extracts a named query parameter from a URL string; returns {@code null} when absent or unparseable. */
+    private static String extractQueryParam(String url, String paramName) {
+        try {
+            String query = new java.net.URI(url).getQuery();
+            if (query == null) {
+                return null;
+            }
+            for (String param : query.split("&")) {
+                int eq = param.indexOf('=');
+                if (eq >= 0) {
+                    String key = java.net.URLDecoder.decode(param.substring(0, eq), StandardCharsets.UTF_8);
+                    if (paramName.equals(key)) {
+                        return java.net.URLDecoder.decode(param.substring(eq + 1), StandardCharsets.UTF_8);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
     /**
      * Revokes the given OAuth access token via the revocation endpoint, authenticated with the
      * application's client credentials. Stores the response in context.

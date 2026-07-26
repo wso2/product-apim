@@ -128,6 +128,54 @@ Feature: Key Manager Token Issuance
       | admin             |
       | admin@tenant1.com |
 
+  @cap:key-manager @feat:token-issuance @rule:authcode @type:regression @legacy:GrantTypeTokenGenerateTestCase
+  Scenario Outline: Generate an access token via authorization code grant as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "authCodeKeysPayload"
+      """
+      {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password", "authorization_code"], "callbackUrl": "http://localhost:8490/callback", "scopes": ["openid", "am_application_scope", "default"]}
+      """
+    And I generate client credentials for application id "createdAppId" with payload "authCodeKeysPayload"
+    Then The response status code should be 200
+    When I request an OAuth access token via authorization code grant with scope "PRODUCTION"
+    Then The response status code should be 200
+    And The generated access token should be in JWT format
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  @cap:key-manager @feat:token-issuance @rule:authcode-default-scope @type:regression @legacy:JWTTestCase
+  Scenario Outline: Auth code grant without scope issues token with 'default' scope as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "authCodeKeysPayload"
+      """
+      {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password", "authorization_code"], "callbackUrl": "http://localhost:8490/callback", "scopes": ["default"]}
+      """
+    And I generate client credentials for application id "createdAppId" with payload "authCodeKeysPayload"
+    Then The response status code should be 200
+    When I request an OAuth access token via authorization code grant without requesting any scopes
+    Then The response status code should be 200
+    And I extract response field "scope" and store it as "tokenScope"
+    And the actual value of "tokenScope" should match the expected value:
+      """
+      default
+      """
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   @cap:key-manager @feat:token-issuance @rule:scope-in-token @type:regression @legacy:TokenEncryptionScopeTestCase
   Scenario Outline: A requested shared scope is granted in the issued token as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
