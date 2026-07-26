@@ -734,8 +734,35 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 "Unable to get error for invoking API in RETIRED stage using application subscription token");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test traces of the deleted API wont appear in admin console",
+    @Test(groups = {"wso2.am"}, description = "Test creating API Revision in RETIRED lifecycle stage is not allowed",
             dependsOnMethods = "testInvokeAPIInRetiredLifecycleStage")
+    public void testCreateAPIRevisionInRetiredLifecycleStage() throws Exception {
+        APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
+        apiRevisionRequest.setApiUUID(apiId);
+        apiRevisionRequest.setDescription("Test Revision in RETIRED stage");
+        HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
+        assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Unable to get error for creating API Revision in RETIRED stage: " + apiRevisionResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision in RETIRED lifecycle stage is not allowed",
+            dependsOnMethods = "testCreateAPIRevisionInRetiredLifecycleStage")
+    public void testDeployAPIRevisionInRetiredLifecycleStage() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList, "API");
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Unable to get error for deploying API Revision in RETIRED stage: "
+                        + apiRevisionsDeployResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test traces of the deleted API wont appear in admin console",
+            dependsOnMethods = "testDeployAPIRevisionInRetiredLifecycleStage")
     public void testIfTracesOfDeletedApisVisible() throws Exception {
         API_TRACES_LOCATION = API_TRACES_LOCATION.concat(apiId);
         resourceAdminServiceClient =
