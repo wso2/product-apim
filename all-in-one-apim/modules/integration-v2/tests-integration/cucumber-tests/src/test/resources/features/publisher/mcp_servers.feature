@@ -90,6 +90,9 @@ Feature: MCP Server authoring (publisher plane)
     Then The response status code should be 201
     And The response should contain "get_pets"
     And The response should contain "get_pets_by_petId"
+    # The generated tools come back in the order their operations were submitted (/pets then /pets/{petId}),
+    # and ONLY those — the OAS also defines DELETE /oldpets, which was not selected.
+    And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     And The response should contain "get_pets"
@@ -157,6 +160,8 @@ Feature: MCP Server authoring (publisher plane)
     Then The response status code should be 201
     And The response should contain "get_pets"
     And The response should contain "get_pets_by_petId"
+    # Same submission-order guarantee as the OpenAPI flow, over the API's resources this time.
+    And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     And The response should contain "get_pets"
@@ -176,6 +181,63 @@ Feature: MCP Server authoring (publisher plane)
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 404
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The order operations are SUBMITTED in is the order the publisher stores and returns them — the URL mappings are
+  # (re)inserted in submission order and read back by mapping id. So an update that submits [new delete_oldpets,
+  # kept get_pets] must come back in exactly that order, NOT in the order the tools were originally created in.
+  @cap:publisher @feat:mcp-servers @rule:openapi @type:regression @dep:publisher @legacy:MCPServerTestCase
+  Scenario Outline: Submitted tool order is preserved for an OpenAPI-generated MCP server as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an MCP server from openapi "artifacts/payloads/OAS/mcp_petstore_oas3.json" with backend "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice" as "mcpId"
+    Then The response status code should be 201
+    And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
+    # Replace the tool set with [new DELETE /oldpets, kept get_pets] — get_pets_by_petId is dropped by the update.
+    When I update the MCP server "mcpId" replacing its tools with "DELETE /oldpets" then "get_pets" re-described as "Return a list of pets"
+    Then The response status code should be 200
+    And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
+    # The new tool's description is derived from the backend definition; the kept tool carries the one just sent.
+    And The response should contain "Delete all old pets"
+    And The response should contain "Return a list of pets"
+    # The order is persisted, not merely echoed by the update response.
+    When I retrieve the "mcp-servers" resource with id "mcpId"
+    Then The response status code should be 200
+    And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The same ordering guarantee for the ExistingApi subtype, where each tool maps to a resource of the backing API
+  # (so the new tool references the API's DELETE /oldpets resource rather than a backend path).
+  @cap:publisher @feat:mcp-servers @rule:api @type:regression @dep:publisher @legacy:MCPServerTestCase
+  Scenario Outline: Submitted tool order is preserved for an API-generated MCP server as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I import openapi definition from "artifacts/payloads/OAS/mcp_petstore_oas3.json" with additional properties "artifacts/payloads/mcp_petstore_api_props.json" as "backingApiId"
+    Then The response status code should be 201
+    When I deploy the "apis" resource with id "backingApiId"
+    When I create an MCP server from api "backingApiId" exposing paths "/pets,/pets/{petId}" as "mcpId"
+    Then The response status code should be 201
+    And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
+    When I update the MCP server "mcpId" replacing its tools with "DELETE /oldpets" then "get_pets" re-described as "Return a list of pets"
+    Then The response status code should be 200
+    And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
+    And The response should contain "Delete all old pets"
+    And The response should contain "Return a list of pets"
+    When I retrieve the "mcp-servers" resource with id "mcpId"
+    Then The response status code should be 200
+    And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |

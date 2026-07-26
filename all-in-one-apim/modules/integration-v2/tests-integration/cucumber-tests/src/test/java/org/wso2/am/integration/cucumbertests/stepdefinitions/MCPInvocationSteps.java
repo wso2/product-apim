@@ -17,7 +17,10 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -32,6 +35,10 @@ import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Gateway MCP-server invocation glue (ports the invoke half of MCPServerTestCase). Drives the MCP JSON-RPC
@@ -294,6 +301,65 @@ public class MCPInvocationSteps {
             Thread.sleep(2000);
         }
         Assert.fail("MCP tool call expected status " + expectedStatus + " but last was " + last);
+    }
+
+    /**
+     * Asserts the gateway advertises EXACTLY these tools, in EXACTLY this order, at {@code tools/list} — the v2
+     * equivalent of the legacy's exact-JSON comparison of the tool-list response (which pins tool order, not just
+     * presence). The gateway serves the DEPLOYED revision's URL mappings ordered by their mapping id, so the order
+     * a scenario submitted its operations in is the order clients discover the tools in.
+     *
+     * <p>Retries the whole handshake until the advertised order matches or the deadline elapses: a revision
+     * deployed moments ago takes time to become the one the gateway serves, so until then {@code tools/list}
+     * legitimately still answers with the PREVIOUS revision's tools.</p>
+     */
+    @Then("the MCP server should advertise tools in order {string} at gateway context {string} version {string} using access token {string} within {int} seconds")
+    public void mcpShouldAdvertiseToolsInOrder(String csvTools, String context, String version, String accessToken,
+                                               int timeoutSeconds) throws Exception {
+        String mcpUrl = buildMcpUrl(context, version);
+        String token = TestContext.resolve(accessToken).toString();
+        List<String> expected = Arrays.stream(csvTools.split(",")).map(String::trim).collect(Collectors.toList());
+
+        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+        String lastError = null;
+        List<String> actual = null;
+        while (System.currentTimeMillis() < endTime) {
+            try {
+                HttpClient client = HttpClient.newBuilder().sslContext(trustAll())
+                        .connectTimeout(Duration.ofSeconds(15)).build();
+                HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
+                String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
+                if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
+                    lastError = "init status=" + initResp.statusCode() + " body=" + initResp.body();
+                    Thread.sleep(2000);
+                    continue;
+                }
+                post(client, mcpUrl, token, sessionId, INITIALIZED);
+                HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
+                String listBody = sseOrJson(listResp.body());
+                actual = toolNames(listBody);
+                if (expected.equals(actual)) {
+                    return;
+                }
+                lastError = "tools/list status=" + listResp.statusCode() + " advertised " + actual
+                        + " body=" + listBody;
+            } catch (Exception transientDuringWarmup) {
+                lastError = transientDuringWarmup.getMessage();
+            }
+            Thread.sleep(2000);
+        }
+        Assert.fail("The gateway did not advertise tools in the order " + expected + " within the deadline "
+                + "(last advertised order: " + actual + "); last: " + lastError);
+    }
+
+    /** Tool names from a {@code tools/list} JSON-RPC result, in the order the gateway advertised them. */
+    private List<String> toolNames(String listBody) {
+        List<String> names = new ArrayList<>();
+        JSONArray tools = new JSONObject(listBody).getJSONObject("result").getJSONArray("tools");
+        for (int i = 0; i < tools.length(); i++) {
+            names.add(tools.getJSONObject(i).optString("name"));
+        }
+        return names;
     }
 
     /** Builds the gateway MCP endpoint URL: {@code <gatewayWs-less base>/<context>/<version>/mcp}. */
