@@ -337,6 +337,11 @@ public class MCPInvocationSteps {
                 post(client, mcpUrl, token, sessionId, INITIALIZED);
                 HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
                 String listBody = sseOrJson(listResp.body());
+                if (listResp.statusCode() != 200 || listBody.isBlank()) {
+                    lastError = "tools/list status=" + listResp.statusCode() + " body=" + listResp.body();
+                    Thread.sleep(2000);
+                    continue;
+                }
                 actual = toolNames(listBody);
                 if (expected.equals(actual)) {
                     return;

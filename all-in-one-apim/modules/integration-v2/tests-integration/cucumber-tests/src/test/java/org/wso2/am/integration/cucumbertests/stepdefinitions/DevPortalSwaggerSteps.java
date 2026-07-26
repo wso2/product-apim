@@ -105,7 +105,7 @@ public class DevPortalSwaggerSteps {
             try {
                 last = SimpleHTTPClient.getInstance()
                         .doGet(Utils.getDevportalApiSwaggerURL(getBaseUrl(), apiId), headers);
-                if (last.getResponseCode() == 200 && last.getData() != null && !last.getData().isEmpty()) {
+                if (last.getResponseCode() == 200 && last.getData() != null && !last.getData().isBlank()) {
                     JSONObject swagger = new JSONObject(last.getData());
                     // A definition with no servers section (or an empty one) counts as not-yet-propagated rather
                     // than a hard failure, so the poll rides out the window before the deployment is reflected.

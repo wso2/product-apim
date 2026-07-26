@@ -86,9 +86,22 @@ public class RemoteLoggingSteps {
        step is skipped if a scenario fails after enabling. */
     private static final List<String> enabledLogTypes = new CopyOnWriteArrayList<>();
 
-    /* The block container's untouched log4j2.properties, captured before the first scenario and written back
-       after every one, so a scenario that seeds a stripped fixture cannot leak that config into the next. */
-    private static String pristineLog4j2;
+    /* Runner-local context key under which the block container's untouched log4j2.properties is captured before
+       the first scenario, then written back after every one, so a scenario that seeds a stripped fixture cannot
+       leak that config into the next. Held in TestContext rather than a static field: local scope is keyed by
+       runner instance, so the baseline belongs to the runner whose container it was read from. */
+    private static final String PRISTINE_LOG4J2_KEY = "pristineLog4j2";
+
+    /* Context key, cleared per scenario: set when a reset could not be confirmed as landed (inline or in
+       teardown). Teardown then SKIPS the restore — writing the pristine file while the server still has a rewrite
+       pending would just be clobbered, leaving a config that looks restored but is not. */
+    private static final String UNCONFIRMED_RESET_KEY = "remoteLoggingUnconfirmedReset";
+
+    /* The remote appender type the config service writes when a log type is enabled. */
+    private static final String REMOTE_APPENDER_TYPE = "SecuredHttp";
+
+    /* Bound on how long teardown waits for a reset to land before restoring anyway (never blocks cleanup). */
+    private static final long RESET_LANDING_TIMEOUT_MILLIS = 15000L;
 
     private String baseUrl() {
         return TestContext.get("baseUrl").toString();
@@ -111,10 +124,18 @@ public class RemoteLoggingSteps {
         }
     }
 
-    /** Resets (disables) remote logging for a log type — its appender reverts to the local RollingFile. */
+    /**
+     * Resets (disables) remote logging for a log type — its appender reverts to the local RollingFile.
+     *
+     * <p>Drains the reset before dropping the type from {@code enabledLogTypes}: once it is dropped, teardown no
+     * longer knows to wait for it, so an unconfirmed rewrite would still be in flight when the pristine file is
+     * written back and could land on top of it. Waiting here keeps that guarantee with the step, wherever a
+     * scenario chooses to disable.</p>
+     */
     @When("I disable remote logging for log type {string}")
     public void disableRemoteLogging(String logType) throws Exception {
         sendConfigOp("resetRemoteServerConfig", logType, "");
+        recordResetOutcome(waitForResetToLand(appenderNameOf(logType)));
         enabledLogTypes.remove(logType);
     }
 
@@ -371,9 +392,11 @@ public class RemoteLoggingSteps {
      */
     @Before("@remote-logging")
     public void snapshotLog4j2Configuration() {
-        if (pristineLog4j2 == null) {
-            pristineLog4j2 = log4j2Content();
+        if (!TestContext.contains(PRISTINE_LOG4J2_KEY)) {
+            TestContext.set(PRISTINE_LOG4J2_KEY, log4j2Content());
         }
+        // Per-scenario: a previous scenario's unconfirmed reset must not suppress this one's restore.
+        TestContext.set(UNCONFIRMED_RESET_KEY, false);
     }
 
     /** Stops the host mock sink and undoes the scenario's server-config mutations (idempotent). */
@@ -381,11 +404,14 @@ public class RemoteLoggingSteps {
     public void stopMockSink() {
         // Failure-safe teardown: if a scenario failed before its inline "disable remote logging" step, the server
         // is still redirecting logs — reset every type we enabled (idempotent) so this block's container isn't
-        // left mutated. On the happy path the disable step already cleared enabledLogTypes, so this no-ops.
+        // left mutated. On the happy path the disable step already drained and cleared enabledLogTypes, so this
+        // no-ops. A reset that throws counts as unconfirmed, exactly like one that never lands.
         for (String logType : enabledLogTypes) {
             try {
                 sendConfigOp("resetRemoteServerConfig", logType, "");
+                recordResetOutcome(waitForResetToLand(appenderNameOf(logType)));
             } catch (Exception e) {
+                recordResetOutcome(false);
                 log.warn("Teardown: failed to reset remote logging for type '" + logType + "': " + e.getMessage());
             }
         }
@@ -400,36 +426,64 @@ public class RemoteLoggingSteps {
 
     /**
      * Writes the pristine {@code log4j2.properties} back, so the next scenario in this block starts from the
-     * distribution config instead of the stripped fixture this one seeded.
+     * distribution config instead of the stripped fixture this one seeded. Every reset — inline or in teardown —
+     * has been drained by {@link #waitForResetToLand} first, so no server rewrite is in flight that could land on
+     * top of this write.
      *
-     * <p>The resets above are asynchronous, so this first waits for the file to stop changing — restoring while
-     * the server still has a rewrite in flight would let that rewrite land on top and silently defeat the
-     * restore.</p>
+     * <p>Skipped when any reset went unconfirmed: restoring into a pending rewrite would be clobbered, and a file
+     * that LOOKS restored but is not is worse than an obviously untouched one — the warning is the signal.</p>
      */
     private void restoreLog4j2Configuration() {
-        if (pristineLog4j2 == null) {
+        Object pristine = TestContext.get(PRISTINE_LOG4J2_KEY);
+        if (pristine == null) {
+            return;
+        }
+        if (Boolean.TRUE.equals(TestContext.get(UNCONFIRMED_RESET_KEY))) {
+            log.warn("Teardown: a remote-logging reset was not confirmed as landed, so log4j2.properties is left "
+                    + "as-is rather than restored into a pending rewrite. The next scenario seeds its own fixture.");
             return;
         }
         try {
-            waitForLog4j2ToSettle();
-            container().writeContainerFile(container().getContainerLog4j2Path(), pristineLog4j2);
+            container().writeContainerFile(container().getContainerLog4j2Path(), pristine.toString());
         } catch (Exception e) {
             log.warn("Teardown: failed to restore log4j2.properties: " + e.getMessage());
         }
     }
 
-    /** Waits (bounded) until two consecutive reads of log4j2.properties agree — i.e. no rewrite is in flight. */
-    private void waitForLog4j2ToSettle() throws InterruptedException {
-        long end = System.currentTimeMillis() + 15000L;
-        String previous = null;
+    /** Records whether a reset was confirmed as landed; one unconfirmed reset suppresses the scenario's restore. */
+    private void recordResetOutcome(boolean landed) {
+        if (!landed) {
+            TestContext.set(UNCONFIRMED_RESET_KEY, true);
+        }
+    }
+
+    /** The appender the config service rewrites for a log type (AUDIT → AUDIT_LOGFILE, CARBON, API alike). */
+    private static String appenderNameOf(String logType) {
+        return logType + "_LOGFILE";
+    }
+
+    /**
+     * Waits (bounded) for a reset to actually LAND: the appender must no longer carry the remote
+     * {@code SecuredHttp} type — it reverts to RollingFile, or stays absent when the seeded fixture had no such
+     * block. That is the reset's observable terminal state, and unlike "the file stopped changing" it cannot be
+     * satisfied by a rewrite that has not begun yet: two identical reads taken before the server started writing
+     * would let the restore be overwritten moments later.
+     *
+     * <p>Best-effort by design — a timeout warns and never throws, so neither a step nor teardown is blocked by a
+     * slow server; the caller decides what an unconfirmed reset means (teardown skips the restore).</p>
+     *
+     * @return {@code true} once the reset is observable, {@code false} if the deadline passed with the appender
+     *         still remote
+     */
+    private boolean waitForResetToLand(String appenderName) throws InterruptedException {
+        long end = System.currentTimeMillis() + RESET_LANDING_TIMEOUT_MILLIS;
         while (System.currentTimeMillis() < end) {
-            String current = log4j2Content();
-            if (current.equals(previous)) {
-                return;
+            if (!REMOTE_APPENDER_TYPE.equals(appenderType(log4j2Content(), appenderName))) {
+                return true;
             }
-            previous = current;
             Thread.sleep(POLL_INTERVAL_MILLIS);
         }
-        log.warn("log4j2.properties was still changing after the settle deadline; restoring anyway");
+        log.warn(appenderName + " was still a " + REMOTE_APPENDER_TYPE + " appender after the reset deadline");
+        return false;
     }
 }
