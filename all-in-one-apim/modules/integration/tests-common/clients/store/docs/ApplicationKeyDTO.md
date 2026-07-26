@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **keyManager** | **String** | Key Manager Name |  [optional]
 **consumerKey** | **String** | Consumer key of the application |  [optional] [readonly]
 **consumerSecret** | **String** | Consumer secret of the application |  [optional] [readonly]
+**consumerSecrets** | [**List&lt;ConsumerSecretDTO&gt;**](ConsumerSecretDTO.md) | A list of all consumer secrets of the application When multiple consumer secrets are enabled |  [optional]
 **supportedGrantTypes** | **List&lt;String&gt;** | The grant types that are supported by the application |  [optional]
 **callbackUrl** | **String** | Callback URL |  [optional]
 **keyState** | **String** | Describes the state of the key generation. |  [optional]

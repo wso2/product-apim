@@ -558,7 +558,7 @@
         <div class="form-actions">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "no.confirmation.mail")%>
             <a id="registerLink"
-                href="login.do?resend_username=<%=Encode.forHtml(URLEncoder.encode(request.getParameter("failedUsername"), UTF_8))%>&<%=AuthenticationEndpointUtil.cleanErrorMessages(Encode.forJava(request.getQueryString()))%>"
+                href="login.do?resend_username=<%=Encode.forHtml(URLEncoder.encode(request.getParameter("failedUsername"), UTF_8))%>&<%=Encode.forHtmlAttribute(AuthenticationEndpointUtil.cleanErrorMessages(request.getQueryString()))%>"
                 data-testid="login-page-resend-confirmation-email-link"
             >
                 <%=StringEscapeUtils.escapeHtml4(AuthenticationEndpointUtil.i18n(resourceBundle, "resend.mail"))%>
@@ -587,7 +587,11 @@
 
         private String getRegistrationUrl(String accountRegistrationEndpointURL, String urlEncodedURL,
                 String urlParameters) {
-            return accountRegistrationEndpointURL + "?" + urlParameters + "&callback=" + Encode.forHtmlAttribute(urlEncodedURL);
+            // 1. Construct the full raw URL
+            String rawUrl = accountRegistrationEndpointURL + "?" + urlParameters + "&callback=" + urlEncodedURL;
+
+            // 2. Encode the entire URL for safe usage inside a JavaScript string literal
+            return Encode.forJavaScriptAttribute(rawUrl);
         }
     %>
 

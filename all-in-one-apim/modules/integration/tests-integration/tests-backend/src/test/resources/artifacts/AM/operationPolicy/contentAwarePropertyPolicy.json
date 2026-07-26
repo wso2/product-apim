@@ -1,0 +1,16 @@
+{
+  "category": "Mediation",
+  "name": "contentAwarePropertyPolicy",
+  "version": "v1",
+  "displayName": "Content Aware Property Policy",
+  "description": "Adds a content-aware property using json-eval. Used to verify empty JSON body handling for content-aware mediators.",
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

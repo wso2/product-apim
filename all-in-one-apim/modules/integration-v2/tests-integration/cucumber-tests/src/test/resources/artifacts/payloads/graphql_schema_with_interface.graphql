@@ -1,0 +1,14 @@
+interface Node {
+  id: ID!
+}
+
+type Language implements Node {
+  id: ID!
+  code: String
+  name: String
+}
+
+type Query {
+  languages: [Language]
+  language(code: String): Language
+}

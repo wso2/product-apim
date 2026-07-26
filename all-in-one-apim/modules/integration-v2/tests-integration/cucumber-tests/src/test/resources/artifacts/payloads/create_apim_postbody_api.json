@@ -1,0 +1,31 @@
+{
+  "name": "${UNIQUE:APIMPostBody}",
+  "context": "${UNIQUE:apiPostBodyContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/"
+    }
+  },
+  "description": "API exposing a POST resource (/reflect-body), used by the large-payload invalid-token rejection test",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "POST",
+      "target": "/reflect-body",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

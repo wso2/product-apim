@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 7.1): test-authoring context features added during feature porting —
+  ${UNIQUE:...} naming, {{...}} placeholder resolution, and local(runner)-vs-shared(block) TestContext scope
+  semantics. Type-A (in-JVM, no Docker); the test sets scopes directly, so no listener wiring is required.
+-->
+<suite name="Framework Verification 7.1" parallel="false">
+    <test name="Phase7.1-ContextScoping">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.verification.TestContextScopingVerificationTest"/>
+        </classes>
+    </test>
+</suite>

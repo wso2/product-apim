@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 5.5): a provisioning failure in onStart must FAIL the block (build red).
+  The block (block=fv-5.5) sets initTenantUsers=true and tenantSet=adpsample. The adpsample set is the
+  pre-migrated profile: addAdpsampleTenant only builds a context bean (no SOAP create) because in the
+  migration profile the tenant already ships in the DB. Here the container is FRESH (no migration), so
+  adpsample.com does NOT exist server-side; the subsequent addUser SOAP - authenticating as the adpsample
+  tenant admin - returns non-200 and TenantUserProvisioner throws. Because provisioning runs inside
+  BlockLifecycleListener.onStart's try, the throw is recorded as the bootError attribute (the container is
+  left for onFinish to stop), and BaseBlockRunner's @BeforeClass rethrows it as a hard IllegalStateException
+  - so the probe class FAILS (a @BeforeClass config FAILURE) with the provisioning failure as root cause,
+  never surfacing mid-scenario as an NPE on missing tenants. parallel="false": a single block.
+-->
+<suite name="Framework Verification 5.5" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase5.5-ProvisioningFailure">
+        <parameter name="blockLabel" value="fv-5.5"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tenantSet" value="adpsample"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+        </classes>
+    </test>
+</suite>

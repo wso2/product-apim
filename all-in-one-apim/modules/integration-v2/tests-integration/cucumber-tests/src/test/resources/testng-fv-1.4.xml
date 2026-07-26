@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 1.4): misuse + abnormal-termination behavior of
+  DynamicApimContainer. Wired to NONE of the legacy listeners, so running it cannot affect the
+  legacy testng.xml run.
+-->
+<suite name="Framework Verification 1.4" parallel="false">
+    <test name="Phase1.4-MisuseAndAbnormalTermination">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.verification.DynamicApimContainerMisuseVerificationTest"/>
+        </classes>
+    </test>
+</suite>

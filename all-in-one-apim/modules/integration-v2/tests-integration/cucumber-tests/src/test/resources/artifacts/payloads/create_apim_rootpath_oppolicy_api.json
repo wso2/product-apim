@@ -1,0 +1,41 @@
+{
+  "name": "${UNIQUE:APIMRootPathOpPolicy}",
+  "context": "${UNIQUE:apiRootPathOpPolicyContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/reflect-headers"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/reflect-headers",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "Fresh API with a SINGLE root-path / GET operation carrying the custom_add_common_header operation policy; the root operation routes to the header-reflecting backend so the injected header is observed",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "custom_add_common_header",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": []
+      }
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

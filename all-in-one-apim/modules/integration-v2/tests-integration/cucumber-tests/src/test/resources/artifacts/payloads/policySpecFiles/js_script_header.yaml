@@ -1,0 +1,15 @@
+type: operation_policy_specification
+version: v4.5.0
+data:
+  category: Mediation
+  name: js_script_header
+  version: v1
+  displayName: js_script_header
+  description: Runs a JS <script> mediator (Rhino) that handles a null object field and sets a transport header.
+  applicableFlows:
+   - request
+  supportedGateways:
+   - Synapse
+  supportedApiTypes:
+   - HTTP
+  policyAttributes: []

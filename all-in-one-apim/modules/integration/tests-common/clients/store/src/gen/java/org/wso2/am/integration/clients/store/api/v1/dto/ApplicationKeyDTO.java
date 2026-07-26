@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationTokenDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ConsumerSecretDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * ApplicationKeyDTO
@@ -47,6 +48,10 @@ public class ApplicationKeyDTO {
         public static final String SERIALIZED_NAME_CONSUMER_SECRET = "consumerSecret";
         @SerializedName(SERIALIZED_NAME_CONSUMER_SECRET)
             private String consumerSecret;
+
+        public static final String SERIALIZED_NAME_CONSUMER_SECRETS = "consumerSecrets";
+        @SerializedName(SERIALIZED_NAME_CONSUMER_SECRETS)
+            private List<ConsumerSecretDTO> consumerSecrets = null;
 
         public static final String SERIALIZED_NAME_SUPPORTED_GRANT_TYPES = "supportedGrantTypes";
         @SerializedName(SERIALIZED_NAME_SUPPORTED_GRANT_TYPES)
@@ -267,6 +272,29 @@ public static ModeEnum fromValue(String value) {
     }
 
 
+        public ApplicationKeyDTO consumerSecrets(List<ConsumerSecretDTO> consumerSecrets) {
+        
+        this.consumerSecrets = consumerSecrets;
+        return this;
+        }
+
+    /**
+        * A list of all consumer secrets of the application When multiple consumer secrets are enabled
+    * @return consumerSecrets
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "A list of all consumer secrets of the application When multiple consumer secrets are enabled")
+    
+    public List<ConsumerSecretDTO> getConsumerSecrets() {
+        return consumerSecrets;
+    }
+
+
+    public void setConsumerSecrets(List<ConsumerSecretDTO> consumerSecrets) {
+        this.consumerSecrets = consumerSecrets;
+    }
+
+
         public ApplicationKeyDTO supportedGrantTypes(List<String> supportedGrantTypes) {
         
         this.supportedGrantTypes = supportedGrantTypes;
@@ -464,6 +492,7 @@ public static ModeEnum fromValue(String value) {
             Objects.equals(this.keyManager, applicationKey.keyManager) &&
             Objects.equals(this.consumerKey, applicationKey.consumerKey) &&
             Objects.equals(this.consumerSecret, applicationKey.consumerSecret) &&
+            Objects.equals(this.consumerSecrets, applicationKey.consumerSecrets) &&
             Objects.equals(this.supportedGrantTypes, applicationKey.supportedGrantTypes) &&
             Objects.equals(this.callbackUrl, applicationKey.callbackUrl) &&
             Objects.equals(this.keyState, applicationKey.keyState) &&
@@ -476,7 +505,7 @@ public static ModeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(keyMappingId, keyManager, consumerKey, consumerSecret, supportedGrantTypes, callbackUrl, keyState, keyType, mode, groupId, token, additionalProperties);
+        return Objects.hash(keyMappingId, keyManager, consumerKey, consumerSecret, consumerSecrets, supportedGrantTypes, callbackUrl, keyState, keyType, mode, groupId, token, additionalProperties);
     }
 
 
@@ -488,6 +517,7 @@ sb.append("class ApplicationKeyDTO {\n");
     sb.append("    keyManager: ").append(toIndentedString(keyManager)).append("\n");
     sb.append("    consumerKey: ").append(toIndentedString(consumerKey)).append("\n");
     sb.append("    consumerSecret: ").append(toIndentedString(consumerSecret)).append("\n");
+    sb.append("    consumerSecrets: ").append(toIndentedString(consumerSecrets)).append("\n");
     sb.append("    supportedGrantTypes: ").append(toIndentedString(supportedGrantTypes)).append("\n");
     sb.append("    callbackUrl: ").append(toIndentedString(callbackUrl)).append("\n");
     sb.append("    keyState: ").append(toIndentedString(keyState)).append("\n");

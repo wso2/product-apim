@@ -537,6 +537,11 @@ http_method = "all"
 name = "JWT"
 issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer"
 
+[oauth.grant_type.token_exchange]
+enable = true
+allow_refresh_tokens = true
+iat_validity_period = "1h"
+
 [[resource.access_control]]
 context = "(.*)/APIStatusMonitor(.*)"
 secure = false

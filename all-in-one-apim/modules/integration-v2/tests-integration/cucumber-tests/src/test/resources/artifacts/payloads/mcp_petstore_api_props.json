@@ -1,0 +1,19 @@
+{
+  "name": "${UNIQUE:MCPPetstoreBackingAPI}",
+  "context": "${UNIQUE:mcpPetstoreApiContext}",
+  "version": "1.0.0",
+  "type": "HTTP",
+  "transport": ["http", "https"],
+  "policies": ["Unlimited"],
+  "apiThrottlingPolicy": "Unlimited",
+  "securityScheme": ["oauth2", "oauth_basic_auth_mandatory"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "${UNIQUE:QryThrottle}",
+  "context": "${UNIQUE:qryThrottleCtx}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/sub?name={uri.var.value}"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/sub?name={uri.var.value}"
+    }
+  },
+  "description": "declared-query resource so a ?name= query routes to the gateway for query-param throttling",
+  "policies": [
+    "Unlimited",
+    "Bronze"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/qthrottle?name={+value}",
+      "scopes": []
+    }
+  ],
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

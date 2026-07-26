@@ -1,0 +1,22 @@
+{
+  "name": "${UNIQUE:APIMGraphqlSub}",
+  "context": "${UNIQUE:apimGraphqlSubContext}",
+  "version": "1.0.0",
+  "policies": ["Unlimited", "Bronze"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3003"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3003"
+    }
+  },
+  "operations": [
+    {"target": "allLifts", "verb": "QUERY", "authType": "Application & Application User", "throttlingPolicy": "Unlimited", "scopes": []},
+    {"target": "Lift", "verb": "QUERY", "authType": "Application & Application User", "throttlingPolicy": "Unlimited", "scopes": []},
+    {"target": "setLiftStatus", "verb": "MUTATION", "authType": "Application & Application User", "throttlingPolicy": "Unlimited", "scopes": []},
+    {"target": "liftStatusChange", "verb": "SUBSCRIPTION", "authType": "Application & Application User", "throttlingPolicy": "Unlimited", "scopes": []},
+    {"target": "trailStatusChange", "verb": "SUBSCRIPTION", "authType": "Application & Application User", "throttlingPolicy": "Unlimited", "scopes": []}
+  ]
+}

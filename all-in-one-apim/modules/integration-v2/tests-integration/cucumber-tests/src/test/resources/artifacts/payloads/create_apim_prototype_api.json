@@ -1,0 +1,36 @@
+{
+  "name": "${UNIQUE:APIMPrototype}",
+  "context": "${UNIQUE:apiPrototypeContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "implementation_status": "prototyped",
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "description": "Prototyped API for prototype-invocation tests",
+  "tags": [
+    "prototype"
+  ],
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

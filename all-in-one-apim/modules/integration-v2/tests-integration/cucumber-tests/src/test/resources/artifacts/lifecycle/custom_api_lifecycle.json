@@ -1,0 +1,109 @@
+{
+  "States": [
+    {
+      "State": "Created",
+      "CheckItems": [
+        "Deprecate old versions after publishing the API",
+        "Requires re-subscription when publishing the API"
+      ],
+      "Transitions": [
+        {
+          "Event": "Publish",
+          "Target": "Published"
+        },
+        {
+          "Event": "Deploy as a Prototype",
+          "Target": "Prototyped"
+        }
+      ]
+    },
+    {
+      "State": "Prototyped",
+      "CheckItems": [
+        "Deprecate old versions after publishing the API",
+        "Requires re-subscription when publishing the API"
+      ],
+      "Transitions": [
+        {
+          "Event": "Publish",
+          "Target": "Published"
+        },
+        {
+          "Event": "Demote to Created",
+          "Target": "Created"
+        },
+        {
+          "Event": "Deploy as a Prototype",
+          "Target": "Prototyped"
+        }
+      ]
+    },
+    {
+      "State": "Published",
+      "Transitions": [
+        {
+          "Event": "Block",
+          "Target": "Blocked"
+        },
+        {
+          "Event": "Deploy as a Prototype",
+          "Target": "Prototyped"
+        },
+        {
+          "Event": "Demote to Created",
+          "Target": "Created"
+        },
+        {
+          "Event": "Deprecate",
+          "Target": "Deprecated"
+        },
+        {
+          "Event": "Publish",
+          "Target": "Published"
+        },
+        {
+          "Event": "Promote",
+          "Target": "Promoted"
+        }
+      ]
+    },
+    {
+      "State": "Blocked",
+      "Transitions": [
+        {
+          "Event": "Deprecate",
+          "Target": "Deprecated"
+        },
+        {
+          "Event": "Re-Publish",
+          "Target": "Published"
+        }
+      ]
+    },
+    {
+      "State": "Deprecated",
+      "Transitions": [
+        {
+          "Event": "Retire",
+          "Target": "Retired"
+        }
+      ]
+    },
+    {
+      "State": "Retired"
+    },
+    {
+      "State": "Promoted",
+      "Transitions": [
+        {
+          "Event": "Demote to Created",
+          "Target": "Created"
+        },
+        {
+          "Event": "Re-Publish",
+          "Target": "Published"
+        }
+      ]
+    }
+  ]
+}

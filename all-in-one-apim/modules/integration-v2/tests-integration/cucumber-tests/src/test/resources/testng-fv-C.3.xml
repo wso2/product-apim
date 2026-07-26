@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Suite-abort cleanup verification (Phase C.3).
+
+  This suite exists only to be KILLED mid-flight. verify-C.3.sh launches it, waits until its block
+  containers are actually running, then hard-kills the test JVM (SIGKILL) to simulate an abrupt abort
+  (Ctrl-C escalated to kill, an OOM-kill, or a crashed CI agent) that bypasses BlockLifecycleListener's
+  graceful onFinish (container stop + scope clear) and any JVM shutdown hook.
+
+  Two uniquely-named blocks, both docker label block=fv-c.3 so the gate can find them with one filter:
+    * PhaseC.3-BlockA - BlockProbeRunnerOne on its own shared container.
+    * PhaseC.3-BlockB - BlockProbeRunnerTwo on its own shared container.
+
+  suite parallel="tests" thread-count="2" => both blocks (K=2 containers) come up at once, so the abort
+  hits a genuinely parallel, multi-container run. Each <test> parallel="classes" thread-count="1": one
+  probe per block is enough to keep the container alive at kill time. No tenant provisioning - boot speed
+  is what matters here, not provisioning.
+
+  Wired to no legacy runners, so running (or killing) it cannot affect the legacy testng.xml run.
+-->
+<suite name="Framework Verification C.3" parallel="tests" thread-count="2">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="PhaseC.3-BlockA" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="fv-c.3"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+        </classes>
+    </test>
+    <test name="PhaseC.3-BlockB" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="fv-c.3"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+        </classes>
+    </test>
+</suite>

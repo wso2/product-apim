@@ -256,7 +256,7 @@
                     Password Set Sucessfully
                 </h3>
                 <p style="padding-right: 90px; padding-left: 90px">
-                    You have successfully set a password for your account <b><%=username%></b>.
+                    You have successfully set a password for your account <b><%=Encode.forHtml(username)%></b>.
                 </p>
             </div>
         <% } %>

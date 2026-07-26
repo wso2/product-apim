@@ -1,0 +1,10 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="js_script_header">
+   <script language="js"><![CDATA[
+      // Build an object with a NULL field and read it back — the ScriptMediatorTestCase concern is that the JS
+      // engine handles a null object in the JSON without breaking. Emit the result in a transport header.
+      var obj = { name: "testName", checkNull: null };
+      var nullStr = (obj.checkNull === null) ? "null" : "notnull";
+      mc.setProperty('SCRIPT_HDR_VAL', obj.name + '-' + nullStr);
+   ]]></script>
+   <property name="x-script-ran" expression="$ctx:SCRIPT_HDR_VAL" scope="transport"/>
+</sequence>

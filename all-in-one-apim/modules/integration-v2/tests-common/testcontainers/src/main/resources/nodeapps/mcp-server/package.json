@@ -1,0 +1,11 @@
+{
+  "name": "mcp-server",
+  "version": "1.0.0",
+  "description": "Mock MCP server (official @modelcontextprotocol/sdk) for gateway MCP proxy tests",
+  "main": "server.js",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "express": "^4.19.2",
+    "zod": "^3.23.8"
+  }
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.5): fail-on-failure. The block's tomlOverlayPath <parameter> points
+  at a nonexistent file, so BlockLifecycleListener.onStart fails while reading the overlay, records the
+  cause as the bootError attribute (without throwing), and BaseBlockRunner's guard rethrows that as a
+  per-class IllegalStateException - a @BeforeClass config FAILURE. Both probe classes must therefore FAIL
+  (turning the build RED, never a silent skip-to-green) with the boot exception as the single root cause and
+  no NPE cascade; onFinish no-ops (no container was created).
+  Wired to no legacy runners, so running it cannot affect the legacy testng.xml run.
+-->
+<suite name="Framework Verification 4.5" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase4.5-Block">
+        <parameter name="blockLabel" value="fv-4.5"/>
+        <parameter name="tomlOverlayPath" value="/nonexistent/fv-4.5/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+        </classes>
+    </test>
+</suite>

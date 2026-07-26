@@ -1,0 +1,6 @@
+{
+  "name": "${UNIQUE:APIMTestApp}",
+  "throttlingPolicy": "Unlimited",
+  "description": "Test application for scenarios",
+  "tokenType": "OAUTH"
+}

@@ -1,0 +1,37 @@
+{
+  "name": "${UNIQUE:APIMCors}",
+  "context": "${UNIQUE:apiCorsContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API with CORS enabled (specific origin + allow-credentials) for the ACAC-header test",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "corsConfiguration": {
+    "corsConfigurationEnabled": true,
+    "accessControlAllowOrigins": ["http://localhost"],
+    "accessControlAllowCredentials": true,
+    "accessControlAllowHeaders": ["authorization", "Access-Control-Allow-Origin", "Content-Type", "apikey"],
+    "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
+  },
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

@@ -240,6 +240,9 @@
                 #end
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 #if( $apiType == 'MCP' )
+#if( $mcpPathAppended != true )
+<property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
+#end
 <class name="org.wso2.carbon.apimgt.gateway.mediators.McpMediator">
    <property name="mcpDirection" value="IN"/>
 </class>

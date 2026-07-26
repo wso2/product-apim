@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 3.1): suite/test-name uniqueness lint. Registers only the NEW
+  BlockUniquenessLintListener (an IAlterSuiteListener), so running it cannot affect the legacy
+  testng.xml run. The single test class builds in-memory XmlSuites and drives the lint directly plus a
+  real nested TestNG run — no Docker required. This suite is itself uniquely named, so the lint passes
+  it through unchanged at load.
+-->
+<suite name="Framework Verification 3.1" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockUniquenessLintListener"/>
+    </listeners>
+    <test name="Phase3.1-UniquenessLint">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.verification.BlockUniquenessLintVerificationTest"/>
+        </classes>
+    </test>
+</suite>

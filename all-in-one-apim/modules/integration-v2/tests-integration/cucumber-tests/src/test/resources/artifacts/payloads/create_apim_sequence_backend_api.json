@@ -1,0 +1,20 @@
+{
+  "name": "${UNIQUE:APIMSeqBackend}",
+  "context": "${UNIQUE:apiSeqBackendCtx}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "sequence_backend"
+  },
+  "description": "API whose backend is a custom Synapse sequence",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/*",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

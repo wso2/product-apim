@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.6): teardown + release. A single successful block boots one
+  DynamicApimContainer (BlockLifecycleListener.onStart) and, once the probe passes, onFinish stops the
+  container so Docker releases its dynamic host ports. The gate asserts the mapped servlet-https host
+  port becomes refused and no container leaks. Wired to no legacy runners, so running it cannot affect
+  the legacy testng.xml run.
+-->
+<suite name="Framework Verification 4.6" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase4.6-Block">
+        <parameter name="blockLabel" value="fv-4.6"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+        </classes>
+    </test>
+</suite>

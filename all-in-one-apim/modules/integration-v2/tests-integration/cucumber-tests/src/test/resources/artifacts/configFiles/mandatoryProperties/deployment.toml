@@ -1,0 +1,10 @@
+# Feature-specific TOML overlay for the IntegrationV2-MandatoryProperties block.
+#
+# Merged ON TOP of the shared `basic` overlay (base + basic + this) via tomlExtraOverlayPath — only the extra
+# key this feature needs lives here. Declares a mandatory custom API property, so updating an API with the
+# property present-but-empty is rejected (400). Ports the config of MandatoryPropertiesTestWithRestart.
+
+[[apim.publisher.custom_properties]]
+required = true
+name = "PropertyName"
+description = "Property Description"

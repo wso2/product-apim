@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.1): BaseBlockRunner boot-failure guard (fail, not skip). Drives the
+  guard directly with a stub ITestContext (no TestNG block lifecycle, no Docker), asserting it rethrows the
+  recorded bootError as a hard IllegalStateException ("APIM block boot failed") - a @BeforeClass config
+  FAILURE that turns the build RED when boot failed - and is a no-op otherwise.
+-->
+<suite name="Framework Verification 4.1" parallel="false">
+    <test name="Phase4.1-BootFailureSkipGuard">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BaseBlockRunnerVerificationTest"/>
+        </classes>
+    </test>
+</suite>

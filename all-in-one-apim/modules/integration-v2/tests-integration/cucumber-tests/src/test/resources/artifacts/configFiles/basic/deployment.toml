@@ -1,0 +1,52 @@
+# Test-framework deployment.toml OVERLAY.
+#
+# This is NOT a full server config. It is merged (Utils.mergeToml -> deepMerge) onto the
+# product distribution deployment.toml
+#   modules/distribution/product/src/main/conf/deployment.toml
+# which is the base shipped inside the container image. Only the keys the test framework
+# needs to add or override live here; everything else is inherited from the distribution.
+#
+# deepMerge can add/override but CANNOT delete keys, so two distribution-only blocks are
+# intentionally tolerated (see docs/devs/parallel-framework-implementation-plan.md
+# "Out of scope" note):
+#   - [[oauth.extensions.token_types]] (JWT issuer)
+#   - [apim.analytics] type = "moesif"
+
+# Parameterize the APIM/shared DBs so the same image can point at H2 or an external DB.
+# $env{...} placeholders are resolved by the server at startup from DynamicApimContainer env.
+[database.apim_db]
+type = "$env{API_MANAGER_DATABASE_TYPE}"
+driver = "$env{API_MANAGER_DATABASE_DRIVER}"
+url = "$env{API_MANAGER_DATABASE_URL}"
+username = "$env{API_MANAGER_DATABASE_USERNAME}"
+password = "$env{API_MANAGER_DATABASE_PASSWORD}"
+validationQuery = "$env{API_MANAGER_DATABASE_VALIDATION_QUERY}"
+pool_options.maxActive = "100"
+pool_options.maxWait = "60000"
+
+[database.shared_db]
+type = "$env{SHARED_DATABASE_TYPE}"
+driver = "$env{SHARED_DATABASE_DRIVER}"
+url = "$env{SHARED_DATABASE_URL}"
+username = "$env{SHARED_DATABASE_USERNAME}"
+password = "$env{SHARED_DATABASE_PASSWORD}"
+validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
+pool_options.maxActive = "100"
+pool_options.maxWait = "60000"
+
+# Narrow the shipped gateway_type list to the set the tests exercise.
+[apim]
+gateway_type = "Regular,APK,AWS,Azure,Kong"
+
+[apim.analytics]
+enable = false
+auth_token = ""
+
+# Drop DB_CLOSE_DELAY=-1 from the carbon DB url used by the distribution.
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+
+[oauth.token_validation]
+app_access_token_validity = 86400
+user_access_token_validity = 86400
+refresh_token_validity = 604800

@@ -1,0 +1,3 @@
+# Python bytecode cache produced by running render_coverage_tree.py — never commit.
+__pycache__/
+*.pyc

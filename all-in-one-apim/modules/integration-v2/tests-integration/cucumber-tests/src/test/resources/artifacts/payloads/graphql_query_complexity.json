@@ -1,0 +1,8 @@
+{
+  "list": [
+    {"type": "Query", "field": "languages", "complexityValue": 1},
+    {"type": "Query", "field": "language", "complexityValue": 1},
+    {"type": "Language", "field": "code", "complexityValue": 1},
+    {"type": "Language", "field": "name", "complexityValue": 1}
+  ]
+}

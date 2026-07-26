@@ -1,0 +1,24 @@
+{
+  "name": "${UNIQUE:PingFederateKM}",
+  "displayName": "Test Key Manager PingFederate",
+  "type": "PingFederate",
+  "issuer": "https://localhost:9031",
+  "introspectionEndpoint": "https://localhost:9031/as/introspect.oauth2",
+  "clientRegistrationEndpoint": "https://localhost:9031/pf-ws/rest/oauth/clients",
+  "tokenEndpoint": "https://localhost:9031/as/token.oauth2",
+  "revokeEndpoint": "https://localhost:9031/as/revoke.oauth2",
+  "consumerKeyClaim": "client_id_name",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableOAuthAppCreation": true,
+  "availableGrantTypes": [],
+  "additionalProperties": {
+    "username": "admin",
+    "password": "admin",
+    "client_id": "clientIdValue",
+    "client_secret": "clientSecretValue",
+    "self_validate_jwt": true
+  }
+}

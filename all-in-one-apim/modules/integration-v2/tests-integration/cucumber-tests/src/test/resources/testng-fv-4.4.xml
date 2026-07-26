@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.4): boot-once + readiness gate for the parallel-on-shared-container
+  model. One <test> block holds TWO probe classes; BlockLifecycleListener.onStart boots a SINGLE
+  DynamicApimContainer for the block and publishes its baseUrl/gateway into the block's shared scope,
+  BlockScopeListener sets that shared scope on each worker invocation so both probe classes read the same
+  ready server. Wired to no legacy runners, so running it cannot affect the legacy testng.xml run.
+-->
+<suite name="Framework Verification 4.4" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase4.4-Block">
+        <parameter name="blockLabel" value="fv-4.4"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerTwo"/>
+        </classes>
+    </test>
+</suite>

@@ -1,0 +1,70 @@
+{
+  "name": "${UNIQUE:mistralAuthAPI}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:mistralAuthContext}",
+  "gatewayType": "wso2/synapse",
+  "policies": ["Unlimited"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/with-auth"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/with-auth"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "apikey",
+        "apiKeyIdentifier": "Authorization",
+        "apiKeyValue": "Bearer 123",
+        "apiKeyIdentifierType": "HEADER",
+        "username": "",
+        "password": "",
+        "grantType": "",
+        "tokenUrl": "",
+        "clientId": null,
+        "clientSecret": null,
+        "customParameters": "{}"
+      },
+      "sandbox": {
+        "enabled": true,
+        "type": "apikey",
+        "apiKeyIdentifier": "Authorization",
+        "apiKeyValue": "Bearer 123",
+        "apiKeyIdentifierType": "HEADER",
+        "username": "",
+        "password": "",
+        "grantType": "",
+        "tokenUrl": "",
+        "clientId": null,
+        "clientSecret": null,
+        "customParameters": "{}"
+      }
+    }
+  },
+  "subtypeConfiguration": {
+    "subtype": "AIAPI",
+    "configuration": {
+      "llmProviderName": "TestAIService",
+      "llmProviderApiVersion": "1.0.0"
+    }
+  },
+  "maxTps": {
+    "production": 1000,
+    "sandbox": 1000,
+    "productionTimeUnit": "MINUTE",
+    "sandboxTimeUnit": "MINUTE",
+    "tokenBasedThrottlingConfiguration": {
+      "productionMaxPromptTokenCount": 1234,
+      "productionMaxCompletionTokenCount": 2345,
+      "productionMaxTotalTokenCount": 3456,
+      "sandboxMaxPromptTokenCount": 4567,
+      "sandboxMaxCompletionTokenCount": 5678,
+      "sandboxMaxTotalTokenCount": 6789,
+      "isTokenBasedThrottlingEnabled": true
+    }
+  },
+  "securityScheme": ["oauth2"],
+  "egress": true
+}

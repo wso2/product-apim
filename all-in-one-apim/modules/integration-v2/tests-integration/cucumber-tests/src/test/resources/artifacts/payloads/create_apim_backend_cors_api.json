@@ -1,0 +1,39 @@
+{
+  "name": "${UNIQUE:BackendCorsAPI}",
+  "context": "${UNIQUE:backendCorsContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3018/api/people/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3018/api/people/"
+    }
+  },
+  "description": "API with gateway CORS disabled and an OPTIONS resource, so the backend's own CORS headers pass through.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "corsConfiguration": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": ["*"],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [],
+    "accessControlAllowMethods": []
+  },
+  "operations": [
+    {
+      "verb": "OPTIONS",
+      "target": "/options",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

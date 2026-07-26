@@ -1,0 +1,41 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "OAS2RestAPI"
+  },
+  "host": "nodebackend:3001",
+  "basePath": "/jaxrs_basic/services/customers/customerservice",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "securityDefinitions": {
+    "default": {
+      "type": "oauth2",
+      "authorizationUrl": "https://test.com",
+      "flow": "implicit"
+    }
+  },
+  "security": [
+    {
+      "default": []
+    }
+  ],
+  "paths": {
+    "/hello": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ]
+      }
+    }
+  }
+}

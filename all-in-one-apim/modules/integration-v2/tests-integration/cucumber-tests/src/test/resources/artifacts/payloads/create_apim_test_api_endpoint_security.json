@@ -1,0 +1,42 @@
+{
+  "name": "${UNIQUE:APIMEpSecTest}",
+  "context": "${UNIQUE:apiEpSecTestContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "test_ep_user",
+        "password": "test_ep_password"
+      },
+      "sandbox": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "test_ep_user",
+        "password": "test_ep_password"
+      }
+    }
+  },
+  "description": "API with basic-auth endpoint security for the export secret-stripping test",
+  "policies": [
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

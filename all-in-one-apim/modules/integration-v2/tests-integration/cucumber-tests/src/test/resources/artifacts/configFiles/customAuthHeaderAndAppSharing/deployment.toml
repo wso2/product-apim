@@ -1,0 +1,18 @@
+# Feature-specific TOML overlay for the IntegrationV2-CustomAuthHeaderAndAppSharing block.
+#
+# Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the extra keys two parked
+# features need live here; everything else is inherited.
+#
+# The two features' config is orthogonal:
+#   - custom-auth-header : the gateway reads the OAuth token from a custom header instead of Authorization.
+#     This is a gateway data-plane setting; it does not change management-API (publisher/devportal/admin) auth.
+#   - org/group sharing  : devportal application sharing so an application's `groups` field is honoured
+#     instead of silently dropped by the default container.
+
+[apim.oauth_config]
+auth_header = "Test-Custom-Header"
+
+[apim.devportal]
+enable_application_sharing = true
+application_sharing_type = "default"

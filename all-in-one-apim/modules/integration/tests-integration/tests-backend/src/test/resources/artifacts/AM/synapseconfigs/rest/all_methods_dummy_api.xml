@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://ws.apache.org/ns/synapse">
+    <api xmlns="http://ws.apache.org/ns/synapse"
+         name="AllMethods_Dummy_API"
+         context="/allMethodsBackend/1.0.0">
+        <resource methods="GET POST PUT PATCH DELETE" url-mapping="/resource">
+            <inSequence>
+                <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
+                <payloadFactory media-type="json">
+                    <format>
+                        { "status": "OK", "message": "Received Request" }
+                    </format>
+                </payloadFactory>
+                <property name="RESPONSE" value="true" scope="default" type="STRING"/>
+                <property name="HTTP_SC" value="200" scope="axis2"/>
+                <property name="messageType" value="application/json" scope="axis2"/>
+                <header name="To" action="remove"/>
+                <send/>
+            </inSequence>
+        </resource>
+    </api>
+</definitions>

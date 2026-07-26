@@ -1,0 +1,8 @@
+# Feature-specific TOML overlay for the IntegrationV2-FrameworkFeatures verification block (Phase 7.8).
+# Merged on top of the shared `basic` overlay via tomlExtraOverlayPath. Carries a distinctive marker VALUE
+# (not a comment — comments are dropped by the TomlMapper merge) under a key that is harmless to the rest of
+# the probe (devportal app-sharing does not affect tenancy, the actor model, or gateway invocation), so the
+# overlay probe can assert the merged key reached the in-container deployment.toml.
+[apim.devportal]
+enable_application_sharing = true
+application_sharing_type = "fv-7-8-marker"

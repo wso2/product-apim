@@ -19,6 +19,7 @@
 
 <%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.AuthenticationEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementServiceUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApiException" %>
@@ -207,6 +208,17 @@
                         </div>
                         <%
                             String callback = request.getParameter("callback");
+
+                            // Validate the callback URL
+                            if (StringUtils.isBlank(callback) || StringUtils.equalsIgnoreCase(callback, "null")) {
+                                callback = null;
+                            } else {
+                                String encodedCallback = IdentityManagementEndpointUtil.getURLEncodedCallback(callback);
+                                if (!AuthenticationEndpointUtil.isValidMultiOptionURI(encodedCallback)) {
+                                    callback = null;
+                                }
+                            }
+
                             if (callback != null) {
                         %>
                         <div>

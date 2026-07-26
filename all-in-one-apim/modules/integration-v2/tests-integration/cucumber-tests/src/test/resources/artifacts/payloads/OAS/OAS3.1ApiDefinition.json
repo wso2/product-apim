@@ -1,0 +1,49 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "OAS31RestAPI"
+  },
+  "servers": [
+    {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice"
+    },
+    {
+      "url": "https://nodebackend:3001/jaxrs_basic/services/customers/customerservice"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "default": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://test.com",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "default": []
+    }
+  ],
+  "paths": {
+    "/hello": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ]
+      }
+    }
+  }
+}

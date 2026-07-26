@@ -1,0 +1,21 @@
+# Extra overlay shared by the mutual-SSL and WebSocket-CORS blocks, merged on top of the shared `basic` overlay.
+# These two features co-locate in one container because their config is orthogonal (different TOML tables, no
+# behavioural collision): the SSL-profile read interval only speeds up client-cert pickup (client auth stays
+# "optional", so it doesn't affect the CORS flows), and the WS-CORS toggle/allow-list only applies to a WS
+# handshake carrying an Origin header (the mTLS REST invocation sends none). The block runs the two runners as
+# parallel classes (thread-count=2): they use different data planes — mTLS on the 8243 HTTPS passthrough,
+# WS-CORS on the ws:// inbound — so their dynamic config doesn't interfere.
+
+# --- mutual-SSL: when a client cert is uploaded to an API, APIM adds it to the gateway trust store and the
+# passthrough HTTPS listener picks it up on its next dynamic-SSL-profile read (default 600000 ms = 10 min, far
+# too long for a test). Shrink it to 10s so an uploaded client cert is honoured within seconds.
+# (SSLVerifyClient already defaults to "optional" on the 8243 listener, so no other change is needed.)
+[transport.http.listener.ssl_profile]
+read_interval = "10000"
+
+# --- WebSocket CORS: WS CORS validation is OFF by default (unlike REST). It requires the gateway-wide toggle
+# `enable_validation_for_ws = true`, plus an explicit `allow_origins` allow-list so a disallowed Origin can be
+# rejected (the default "*" allows everything and can't demonstrate a rejection).
+[apim.cors]
+allow_origins = ["http://allowed.example.com"]
+enable_validation_for_ws = true

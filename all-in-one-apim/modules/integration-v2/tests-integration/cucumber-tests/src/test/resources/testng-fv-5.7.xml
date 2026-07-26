@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 5.7): provisioning idempotency. One block (block=fv-5.7) sets
+  initTenantUsers=true, so BlockLifecycleListener provisions the default tenant set once during onStart.
+  BlockIdempotencyProbeRunner then provisions the SAME default set a SECOND time against the same container:
+  every create must hit TenantUserProvisioner's "skip if exists" branch and no-op. A broken skip-if-exists
+  would attempt a re-create and the server would answer non-200, making the re-provision step throw. The
+  probe then SOAP-retrieves and asserts the tenant exists and the user exists EXACTLY ONCE - no duplicates.
+  parallel="false": a single block.
+-->
+<suite name="Framework Verification 5.7" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase5.7-Idempotency">
+        <parameter name="blockLabel" value="fv-5.7"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockIdempotencyProbeRunner"/>
+        </classes>
+    </test>
+</suite>

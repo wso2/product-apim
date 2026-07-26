@@ -1,0 +1,27 @@
+{
+  "name": "${UNIQUE:ForgerockKM}",
+  "displayName": "Test Key Manager Forgerock",
+  "type": "Forgerock",
+  "description": "Forgerock key manager with optional parameters",
+  "issuer": "http://localhost:8080/openam/oauth2",
+  "introspectionEndpoint": "http://localhost:8080/openam/oauth2/introspect",
+  "clientRegistrationEndpoint": "http://localhost:8080/openam/oauth2/register",
+  "tokenEndpoint": "http://localhost:8080/openam/oauth2/access_token",
+  "revokeEndpoint": "http://localhost:8080/openam/oauth2/revoke_token",
+  "consumerKeyClaim": "aud",
+  "scopesClaim": "scp",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableOAuthAppCreation": true,
+  "availableGrantTypes": [],
+  "certificates": {
+    "type": "JWKS",
+    "value": "http://localhost:8080/openam/oauth2/connect/jwk_uri"
+  },
+  "additionalProperties": {
+    "client_id": "clientIdValue",
+    "client_secret": "clientSecretValue",
+    "self_validate_jwt": true
+  }
+}

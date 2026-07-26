@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Isolated verification lane (Phase 4.11): the FAILURE reason must be diagnosable. The block's
+  tomlOverlayPath <parameter> points at a nonexistent file carrying a distinctive path marker
+  (fv-4.11-diagnostic-marker), so BlockLifecycleListener.onStart fails reading the overlay and records
+  the cause; BaseBlockRunner's guard rethrows it as IllegalStateException("APIM block boot failed", cause)
+  - a @BeforeClass config FAILURE that turns the build RED. The resulting FAILURE must therefore carry, in
+  the TestNG report, the IllegalStateException with its message AND the chained root cause (Caused by:
+  java.nio.file.NoSuchFileException ...) naming the exact failing file - never a blank failure. One block,
+  one class is enough. Wired to no legacy runners.
+-->
+<suite name="Framework Verification 4.11" parallel="false">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="Phase4.11-Block">
+        <parameter name="blockLabel" value="fv-4.11"/>
+        <parameter name="tomlOverlayPath" value="/nonexistent/fv-4.11-diagnostic-marker/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerOne"/>
+        </classes>
+    </test>
+</suite>
