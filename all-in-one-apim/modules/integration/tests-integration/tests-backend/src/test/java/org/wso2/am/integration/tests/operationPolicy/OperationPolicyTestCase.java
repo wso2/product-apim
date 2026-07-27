@@ -29,9 +29,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.Assert;
@@ -83,6 +87,10 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
+
+    private static final String BODYLESS_SOAP_PAYLOAD =
+            "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"/>";
+    private static final int BODYLESS_SOAP_TIMEOUT = 30000;
 
     private final Log log = LogFactory.getLog(OperationPolicyTestCase.class);
 
@@ -930,6 +938,53 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
                 "apiKey header still exists after policy deletion");
         assertEquals(invokeAPIResponse.getHeaders("token").length, 0,
                 "token header still exists after policy deletion");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke the API with a body-less SOAP payload after adding a "
+            + "content aware operation policy", dependsOnMethods = "testDeleteAPISpecificOperationPolicyWithSecrets")
+    public void testBodylessSOAPInvocationWithContentAwarePolicy() throws Exception {
+
+        String logPolicyId = restAPIPublisher.getAllCommonOperationPolicies().get("customCommonLogPolicy");
+        if (logPolicyId == null) {
+            HttpResponse addPolicyResponse = addPolicy(null, "customCommonLogPolicy.json", "customCommonLogPolicy.j2");
+            assertEquals(addPolicyResponse.getResponseCode(), 201, "Response code mismatched");
+            logPolicyId = new Gson().fromJson(addPolicyResponse.getData(), OperationPolicyDataDTO.class).getId();
+        }
+        assertNotNull(logPolicyId, "Unable to find a common policy with name customCommonLogPolicy");
+
+        OperationPolicyDTO logPolicy = new OperationPolicyDTO();
+        logPolicy.setPolicyName("customCommonLogPolicy");
+        logPolicy.setPolicyId(logPolicyId);
+        logPolicy.setPolicyVersion("v1");
+        logPolicy.setPolicyType(POLICY_TYPE_COMMON);
+
+        List<OperationPolicyDTO> requestFlowPolicies = new ArrayList<>();
+        requestFlowPolicies.add(logPolicy);
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(requestFlowPolicies);
+
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+        // The payload is sent with POST, so the content aware policy is attached to every operation.
+        for (APIOperationsDTO operation : apidto.getOperations()) {
+            operation.setOperationPolicies(apiOperationPoliciesDTO);
+        }
+        restAPIPublisher.updateAPI(apidto);
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(BODYLESS_SOAP_TIMEOUT)
+                .setSocketTimeout(BODYLESS_SOAP_TIMEOUT).setConnectionRequestTimeout(BODYLESS_SOAP_TIMEOUT).build();
+        HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier())
+                .setDefaultRequestConfig(requestConfig).build();
+        HttpPost request = new HttpPost(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
+        request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setHeader("SOAPAction", "\"getOperation\"");
+        request.setEntity(new StringEntity(BODYLESS_SOAP_PAYLOAD, ContentType.create("text/xml", "UTF-8")));
+        org.apache.http.HttpResponse invokeAPIResponse = client.execute(request);
+
+        assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Body-less SOAP request did not return a response");
     }
 
     @AfterClass(alwaysRun = true)
