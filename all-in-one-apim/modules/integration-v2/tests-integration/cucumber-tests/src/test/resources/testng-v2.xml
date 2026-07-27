@@ -79,9 +79,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayPrototypeApiRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySchemaValidationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketInvocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
             <!-- MCP servers (publisher-plane create/CRUD + gateway-plane invocation): both need the node
@@ -92,6 +89,26 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAudienceValidationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestArtifactsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultEndpointInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- GraphQL subscription (WebSocket) runners, split out of IntegrationV2-Gateway. Their graphql-ws frame
+         authentication runs on the gateway's shared netty event-loop threads; keeping them out of the block that
+         runs GatewayWebSocketInvocationRunner (which performs multi-tenant WS handshakes) and running them
+         serially (thread-count=1) ensures no concurrent tenant handshake can leave a tenant domain on a thread
+         that a carbon.super subscription frame then inherits — which would fail a valid token with
+         "Invalid JWT token". The graphql_subscription_invocation feature itself mixes carbon.super and
+         admin@tenant1.com rows, so serial execution within this block matters too. (The underlying gateway
+         tenant-flow leak is fixed in carbon-apimgt; this isolation is defense-in-depth and keeps the block stable
+         on an unfixed gateway.) Needs the node backend (subscription events) and tenant users, like the gateway
+         block. -->
+    <test name="IntegrationV2-GatewayGraphqlSubscription" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="gateway-graphql-subscription"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
         </classes>
     </test>
     <!-- Key-manager features (token/key issuance). initBackend for the refresh/sandbox gateway invocations. -->
