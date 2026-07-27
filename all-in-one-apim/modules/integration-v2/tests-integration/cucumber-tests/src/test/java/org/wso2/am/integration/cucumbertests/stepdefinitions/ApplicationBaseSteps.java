@@ -1568,26 +1568,38 @@ public class ApplicationBaseSteps {
     private static final String IS7_PKCE_CODE_VERIFIER = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 
     /**
-     * Obtains an access token from the EXTERNAL key manager (IS) via the authorization_code grant, headlessly.
-     * IS skips consent for DCR-registered clients, so the flow is: GET /oauth2/authorize -> 302 to login (carries
-     * sessionDataKey) -> POST /commonauth with credentials -> 302 back to /oauth2/authorize (new sessionDataKey)
-     * -> 302 to redirect_uri?code=... -> exchange the code at /oauth2/token. Every request targets the host-mapped
-     * isBaseUrl and only query params are read from the 302 Location headers, so IS's internal hostname in those
-     * Locations is never navigated. A shared cookie jar carries the session; auto-redirect is disabled so each
-     * Location is captured. When {@code codeVerifier} is non-null, PKCE (S256) is used. Captures generatedAccessToken
-     * and publishes the token response as httpResponse.
+     * Obtains an access token from the EXTERNAL key manager (IS) via the authorization_code grant. IS skips
+     * consent for DCR-registered clients, so the shared flow reaches the code directly after login. Scope is
+     * {@code openid}; a non-null {@code codeVerifier} enables PKCE (S256).
      */
     private void authorizationCodeTokenFromExternalKm(String username, String password, String codeVerifier)
             throws Exception {
+        authorizationCodeToken(IntegrationActors.baseUrl(IntegrationActors.IS),
+                IntegrationActors.tokenEndpoint(IntegrationActors.IS), IS7_AUTHZ_REDIRECT_URI,
+                username, password, "openid", codeVerifier);
+    }
 
-        String base = IntegrationActors.baseUrl(IntegrationActors.IS);
+    /**
+     * Shared authorization_code grant flow for BOTH the resident and external key managers (the grant logic is
+     * identical; only endpoints, redirect URI, scope and consent differ). Headless: a cookie-jar HttpClient with
+     * auto-redirect disabled captures each 302 Location, and only query params are read from those Locations, so
+     * an internal hostname in a Location is never navigated. Steps: authorize -> 302 login -> POST /commonauth ->
+     * 302 back to authorize -> resume -> (CONDITIONAL) approve consent if the KM presents it -> code -> exchange
+     * at {@code tokenEndpoint} with Basic client auth. A null {@code scope} omits it; a non-null
+     * {@code codeVerifier} adds PKCE (S256). Captures generatedAccessToken and publishes the token response.
+     */
+    private void authorizationCodeToken(String base, String tokenEndpoint, String redirectUri, String username,
+            String password, String scope, String codeVerifier) throws Exception {
+
         String key = TestContext.resolve("consumerKey").toString();
         java.net.http.HttpClient http = trustAllHttpClientWithCookies();
 
         // Step 1: /oauth2/authorize -> 302 to login; carry sessionDataKey.
         StringBuilder authz = new StringBuilder(base).append("oauth2/authorize?response_type=code&client_id=")
-                .append(Utils.urlEncode(key)).append("&redirect_uri=").append(Utils.urlEncode(IS7_AUTHZ_REDIRECT_URI))
-                .append("&scope=").append(Utils.urlEncode("openid"));
+                .append(Utils.urlEncode(key)).append("&redirect_uri=").append(Utils.urlEncode(redirectUri));
+        if (scope != null) {
+            authz.append("&scope=").append(Utils.urlEncode(scope));
+        }
         if (codeVerifier != null) {
             authz.append("&code_challenge=").append(Utils.urlEncode(pkceS256Challenge(codeVerifier)))
                     .append("&code_challenge_method=S256");
@@ -1597,23 +1609,37 @@ public class ApplicationBaseSteps {
 
         // Step 2: authenticate at /commonauth -> 302 back to /oauth2/authorize with a fresh sessionDataKey.
         String loginForm = "username=" + Utils.urlEncode(username) + "&password=" + Utils.urlEncode(password)
-                + "&sessionDataKey=" + Utils.urlEncode(sdk);
-        String sdk2 = Utils.queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm), "sessionDataKey");
+                + "&tocommonauth=true&sessionDataKey=" + Utils.urlEncode(sdk);
+        String afterLogin = redirectLocation(http, "POST", base + "commonauth", loginForm);
+        String loginError = Utils.queryParam(afterLogin, "error");
+        Assert.assertNull(loginError, "Authorization failed with error '" + loginError + "': "
+                + Utils.queryParam(afterLogin, "error_description"));
+        String sdk2 = Utils.queryParam(afterLogin, "sessionDataKey");
         Assert.assertNotNull(sdk2, "Login did not redirect back to /oauth2/authorize (bad credentials?)");
 
-        // Step 3: resume /oauth2/authorize -> 302 to redirect_uri?code=...
-        String code = Utils.queryParam(
-                redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null),
-                "code");
-        Assert.assertNotNull(code, "No authorization code in the final redirect of the authorization_code flow");
+        // Step 3: resume /oauth2/authorize -> either code=... directly, or a consent challenge.
+        String afterResume = redirectLocation(http, "GET",
+                base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null);
+        String code = Utils.queryParam(afterResume, "code");
 
-        // Step 4: exchange the code at the IS token endpoint (client-authed) for an access token.
+        // Step 4 (conditional): approve consent when the KM presents it (resident does; external DCR skips).
+        if (code == null) {
+            String consentKey = Utils.queryParam(afterResume, "sessionDataKeyConsent");
+            Assert.assertNotNull(consentKey,
+                    "Expected 'code' or 'sessionDataKeyConsent' resuming authorize: " + afterResume);
+            String consentForm = "consent=approve&hasApprovedAlways=false&sessionDataKeyConsent="
+                    + Utils.urlEncode(consentKey);
+            code = Utils.queryParam(redirectLocation(http, "POST", base + "oauth2/authorize", consentForm), "code");
+            Assert.assertNotNull(code, "No authorization code after consent approval");
+        }
+
+        // Step 5: exchange the code (Basic client auth) for a token and publish it.
         String tokenForm = "grant_type=authorization_code&code=" + Utils.urlEncode(code)
-                + "&redirect_uri=" + Utils.urlEncode(IS7_AUTHZ_REDIRECT_URI);
+                + "&redirect_uri=" + Utils.urlEncode(redirectUri);
         if (codeVerifier != null) {
             tokenForm += "&code_verifier=" + Utils.urlEncode(codeVerifier);
         }
-        HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(), tokenForm,
+        HttpResponse response = Requests.post(tokenEndpoint, clientCredentialsHeader(), tokenForm,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
     }
@@ -2108,6 +2134,29 @@ public class ApplicationBaseSteps {
         captureTokens(response);
     }
 
+    @When("I request an OAuth access token via authorization code grant with scope {string}")
+    public void iRequestOAuthAccessTokenViaAuthCodeGrantWithScope(String scope) throws Exception {
+        performResidentAuthCodeGrant(scope);
+    }
+
+    @When("I request an OAuth access token via authorization code grant without requesting any scopes")
+    public void iRequestOAuthAccessTokenViaAuthCodeGrantWithoutScope() throws Exception {
+        performResidentAuthCodeGrant(null);
+    }
+
+    /** Resident-KM redirect URI — matches the keygen callbackUrl registered in the token-issuance feature. */
+    private static final String RESIDENT_AUTHZ_REDIRECT_URI = "http://localhost:8490/callback";
+
+    /**
+     * Authorization_code grant against the RESIDENT key manager (APIM's own OAuth endpoints) as the acting
+     * actor. Delegates to the shared {@link #authorizationCodeToken} flow, which approves the resident KM's
+     * consent page conditionally (the external-KM DCR client skips consent). Publishes the token response.
+     */
+    private void performResidentAuthCodeGrant(String scope) throws Exception {
+        User actor = Identity.actingActor();
+        authorizationCodeToken(Utils.getBaseUrl(), Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
+                RESIDENT_AUTHZ_REDIRECT_URI, actor.getUserName(), actor.getPassword(), scope, null);
+    }
     /**
      * Revokes the given OAuth access token via the revocation endpoint, authenticated with the
      * application's client credentials. Stores the response in context.
