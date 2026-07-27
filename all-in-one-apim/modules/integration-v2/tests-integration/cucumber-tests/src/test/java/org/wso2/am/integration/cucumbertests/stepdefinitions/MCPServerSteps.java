@@ -100,16 +100,7 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse getResp = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers);
-        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
-        // opaque JSONException/NPE instead of a clear failure.
-        org.testng.Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200
-                        && getResp.getResponseCode() < 300 && getResp.getData() != null && !getResp.getData().isEmpty(),
-                "Failed to fetch MCP server '" + id + "' before updating its tools: expected a 2xx response with a "
-                        + "body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
-                        + " / body=" + getResp.getData()));
-        JSONObject dto = new JSONObject(getResp.getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before updating its tools");
         dto.put("operations", new org.json.JSONArray(buildToolOperations(tools)));
 
         HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
@@ -133,8 +124,7 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers).getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before gating a tool with a scope");
 
         // Define the scope on the MCP server (inline local scope, bound to a role).
         JSONObject scopeDef = new JSONObject().put("scope", new JSONObject()
@@ -173,8 +163,7 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers).getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before updating its business plans");
         JSONArray policies = new JSONArray();
         for (String p : resolved.split(",")) {
             policies.put(p.trim());
@@ -318,8 +307,7 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers).getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before removing a tool");
         JSONArray ops = dto.getJSONArray("operations");
         JSONArray kept = new JSONArray();
         for (int i = 0; i < ops.length(); i++) {
@@ -356,8 +344,7 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers).getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before re-adding the removed tool");
         dto.getJSONArray("operations").put(new JSONObject(removed));
 
         HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
@@ -380,7 +367,7 @@ public class MCPServerSteps {
         HttpResponse resp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), publisherHeaders());
         Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
-                        && !resp.getData().isEmpty(),
+                        && !resp.getData().isBlank(),
                 "MCP server fetch failed for the schema check: got="
                         + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
         JSONArray ops = new JSONObject(resp.getData()).getJSONArray("operations");
@@ -393,7 +380,10 @@ public class MCPServerSteps {
         }
         Assert.assertNotNull(match, "MCP server has no operation for tool '" + tool + "': " + ops);
         String actualSchema = match.optString("schemaDefinition", null);
-        Assert.assertNotNull(actualSchema, "Operation for '" + tool + "' has no schemaDefinition: " + match);
+        // Reject a BLANK schemaDefinition too, not just an absent one: optString returns "" for a present-but-
+        // empty value, which would slip past a null check into an opaque JSONException at the parse below.
+        Assert.assertTrue(actualSchema != null && !actualSchema.isBlank(),
+                "Operation for '" + tool + "' has no (or a blank) schemaDefinition: " + match);
         JSONObject actual = new JSONObject(actualSchema);
         JSONObject expected = new JSONObject(expectedSchemaJson);
         Assert.assertTrue(expected.similar(actual),
@@ -419,6 +409,21 @@ public class MCPServerSteps {
     // from-OpenAPI → the OpenAPI backend). The backends resource exposes list/get/update (there is no separate
     // add/delete — the backend's lifecycle is bound to the server). from-API MCP servers have NO own backend
     // (they proxy an existing API), so this resource applies only to the proxy and from-OpenAPI subtypes.
+
+    /**
+     * Guarded GET of an MCP server's DTO: asserts a 2xx response carrying a non-blank body BEFORE parsing, so an
+     * error body is never silently parsed as the DTO and PUT back (which would corrupt the update), and a null
+     * response fails with a clear message rather than an NPE. {@code purpose} is folded into that message.
+     */
+    private JSONObject fetchMcpServerDto(String id, Map<String, String> headers, String purpose) throws IOException {
+        HttpResponse resp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers);
+        Assert.assertTrue(resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300
+                        && resp.getData() != null && !resp.getData().isBlank(),
+                "Failed to fetch MCP server '" + id + "' " + purpose + ": expected a 2xx response with a body, got "
+                        + (resp == null ? "no response" : resp.getResponseCode() + " / body=" + resp.getData()));
+        return new JSONObject(resp.getData());
+    }
 
     private Map<String, String> publisherHeaders() {
         Map<String, String> headers = new HashMap<>();

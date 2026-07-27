@@ -1045,8 +1045,10 @@ public class BaseSteps {
     public void waitForAPIMServerToBeReady() {
 
         boolean isServerReady = ServerReadiness.awaitReady(getBaseUrl());
-        Assert.assertTrue(isServerReady, "APIM server is not ready even after waiting for " +
-                Constants.RUNTIME_PROPAGATION_TIMEOUT /60000 + " minutes");
+        // Report the window awaitReady ACTUALLY used (its no-arg overload passes SERVER_STARTUP_WAIT_TIME);
+        // quoting the propagation timeout here understated the real wait and misled triage.
+        Assert.assertTrue(isServerReady, "APIM server is not ready even after waiting for "
+                + Constants.SERVER_STARTUP_WAIT_TIME / 60000 + " minutes");
     }
 
     /**

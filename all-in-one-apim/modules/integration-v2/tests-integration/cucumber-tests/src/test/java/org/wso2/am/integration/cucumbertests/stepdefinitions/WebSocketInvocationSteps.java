@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.integration.test.utils.Constants;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -31,6 +32,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.net.http.WebSocketHandshakeException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -39,6 +41,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Gateway WebSocket-API invocation glue (ports WebSocketAPITestCase). Connects a WebSocket client through the
@@ -72,29 +77,28 @@ public class WebSocketInvocationSteps {
         }
         String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
-        String lastError = null;
-        String received = null;
-        while (System.currentTimeMillis() < endTime) {
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String received = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
-                received = connectSendReceive(wsUrl, token, message);
-                if (received != null) {
-                    break;
-                }
+                return connectSendReceive(wsUrl, token, message);
             } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                // Cancellation is not a transient/expected outcome — restore the flag so the envelope's next
+                // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
-                throw interrupted;
+                return null;
             } catch (Exception connectingWhileWarmup) {
                 // The WS route may not be reachable immediately after publish (handshake 404/403 during
                 // warm-up). Retry until the deadline.
-                lastError = connectingWhileWarmup.getMessage();
+                lastFailure.set(connectingWhileWarmup);
+                return null;
             }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        }, echo -> echo != null);
+        // Computed on the failure path ONLY: the marker must never fire for a step that passed.
+        String authDetail = received != null ? ""
+                : authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis);
         Assert.assertNotNull(received, "WebSocket API did not echo a response within the deadline; last error: "
-                + lastError);
+                + lastErrorOf(lastFailure) + authDetail);
         Assert.assertEquals(received, expectedEcho,
                 "WebSocket echo mismatch — expected the backend to return the message uppercased.");
     }
@@ -108,27 +112,25 @@ public class WebSocketInvocationSteps {
                                           int timeoutSeconds) throws Exception {
         String wsUrl = buildWsUrl(context);
         String key = TestContext.resolve(apiKey).toString();
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
-        String lastError = null;
-        String received = null;
-        while (System.currentTimeMillis() < endTime) {
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String received = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
-                received = connectSendReceive(wsUrl, "apikey", key, message);
-                if (received != null) {
-                    break;
-                }
+                return connectSendReceive(wsUrl, "apikey", key, message);
             } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                // Cancellation is not a transient/expected outcome — restore the flag so the envelope's next
+                // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
-                throw interrupted;
+                return null;
             } catch (Exception connectingWhileWarmup) {
-                lastError = connectingWhileWarmup.getMessage();
+                lastFailure.set(connectingWhileWarmup);
+                return null;
             }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        }, echo -> echo != null);
+        String authDetail = received != null ? ""
+                : authRejectionDetail(wsUrl, apiKey, key, lastFailure, startedMillis);
         Assert.assertNotNull(received, "WebSocket API (api-key auth) did not echo within the deadline; last error: "
-                + lastError);
+                + lastErrorOf(lastFailure) + authDetail);
         Assert.assertEquals(received, expectedEcho, "WebSocket echo mismatch (api-key auth).");
     }
 
@@ -273,8 +275,8 @@ public class WebSocketInvocationSteps {
                                       int timeoutSeconds) throws Exception {
         String wsUrl = buildWssUrl(context);
         String token = TestContext.resolve(accessToken).toString();
-        Assert.assertEquals(echoOverWs(wsUrl, "Authorization", "Bearer " + token, message, timeoutSeconds),
-                expectedEcho, "Secure WebSocket (wss) echo mismatch.");
+        Assert.assertEquals(echoOverWs(wsUrl, "Authorization", "Bearer " + token, message, timeoutSeconds,
+                accessToken, token), expectedEcho, "Secure WebSocket (wss) echo mismatch.");
     }
 
     /** SECURE (wss://) WS invocation authenticated with an API key. */
@@ -283,7 +285,7 @@ public class WebSocketInvocationSteps {
                                                 int timeoutSeconds) throws Exception {
         String wsUrl = buildWssUrl(context);
         String key = TestContext.resolve(apiKey).toString();
-        Assert.assertEquals(echoOverWs(wsUrl, "apikey", key, message, timeoutSeconds), expectedEcho,
+        Assert.assertEquals(echoOverWs(wsUrl, "apikey", key, message, timeoutSeconds, apiKey, key), expectedEcho,
                 "Secure WebSocket (wss, api-key) echo mismatch.");
     }
 
@@ -295,7 +297,8 @@ public class WebSocketInvocationSteps {
     public void invokeWsWithOrigin(String context, String message, String accessToken, String origin,
                                    String expectedEcho, int timeoutSeconds) throws Exception {
         Assert.assertEquals(echoOverWs(buildWsUrl(context), authAndOrigin(accessToken, origin), message,
-                timeoutSeconds), expectedEcho, "WS (with Origin) echo mismatch.");
+                timeoutSeconds, accessToken, TestContext.resolve(accessToken).toString()), expectedEcho,
+                "WS (with Origin) echo mismatch.");
     }
 
     /** CORS negative: a DISALLOWED {@code Origin} is rejected at the WS handshake. */
@@ -341,7 +344,8 @@ public class WebSocketInvocationSteps {
     public void invokeWsApiKeyWithReferer(String context, String message, String apiKey, String referer,
                                           String expectedEcho, int timeoutSeconds) throws Exception {
         Assert.assertEquals(echoOverWs(buildWsUrl(context), apiKeyAndReferer(apiKey, referer), message,
-                timeoutSeconds), expectedEcho, "WS (api-key + matching Referer) echo mismatch.");
+                timeoutSeconds, apiKey, TestContext.resolve(apiKey).toString()), expectedEcho,
+                "WS (api-key + matching Referer) echo mismatch.");
     }
 
     /** API-key Referer restriction (WS negative): a NON-matching {@code Referer} is rejected at the handshake. */
@@ -368,7 +372,7 @@ public class WebSocketInvocationSteps {
                                          int timeoutSeconds) throws Exception {
         String key = TestContext.resolve(apiKey).toString();
         String wsUrl = appendQuery(buildWsUrl(context), "apikey", key);
-        Assert.assertEquals(echoOverWs(wsUrl, new LinkedHashMap<>(), message, timeoutSeconds),
+        Assert.assertEquals(echoOverWs(wsUrl, new LinkedHashMap<>(), message, timeoutSeconds, apiKey, key),
                 expectedEcho, "WS (api-key query param) echo mismatch.");
     }
 
@@ -378,7 +382,7 @@ public class WebSocketInvocationSteps {
                                         int timeoutSeconds) throws Exception {
         String token = TestContext.resolve(accessToken).toString();
         String wsUrl = appendQuery(buildWsUrl(context), "access_token", token);
-        Assert.assertEquals(echoOverWs(wsUrl, new LinkedHashMap<>(), message, timeoutSeconds),
+        Assert.assertEquals(echoOverWs(wsUrl, new LinkedHashMap<>(), message, timeoutSeconds, accessToken, token),
                 expectedEcho, "WS (token query param) echo mismatch.");
     }
 
@@ -391,35 +395,38 @@ public class WebSocketInvocationSteps {
 
     /** Connect+send+echo retry loop (single auth header); delegates to the multi-header form. */
     private String echoOverWs(String wsUrl, String headerName, String headerValue, String message,
-                              int timeoutSeconds) throws Exception {
+                              int timeoutSeconds, String credentialContextKey, String credential) throws Exception {
         Map<String, String> headers = new LinkedHashMap<>();
         headers.put(headerName, headerValue);
-        return echoOverWs(wsUrl, headers, message, timeoutSeconds);
+        return echoOverWs(wsUrl, headers, message, timeoutSeconds, credentialContextKey, credential);
     }
 
-    /** Connect+send+echo retry loop with arbitrary headers; returns the echo or fails after the deadline. */
-    private String echoOverWs(String wsUrl, Map<String, String> headers, String message,
-                              int timeoutSeconds) throws Exception {
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
-        String lastError = null;
-        String received = null;
-        while (System.currentTimeMillis() < endTime) {
+    /**
+     * Connect+send+echo retry loop with arbitrary headers; returns the echo or fails after the deadline. The
+     * credential is carried in only so a FAILING invocation can NAME it (its context key and jti) when the
+     * gateway refused the handshake — the headers map alone cannot say which context key it came from.
+     */
+    private String echoOverWs(String wsUrl, Map<String, String> headers, String message, int timeoutSeconds,
+                              String credentialContextKey, String credential) throws Exception {
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String received = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
-                received = connectSendReceive(wsUrl, headers, message);
-                if (received != null) {
-                    break;
-                }
+                return connectSendReceive(wsUrl, headers, message);
             } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                // Cancellation is not a transient/expected outcome — restore the flag so the envelope's next
+                // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
-                throw interrupted;
+                return null;
             } catch (Exception connectingWhileWarmup) {
-                lastError = connectingWhileWarmup.getMessage();
+                lastFailure.set(connectingWhileWarmup);
+                return null;
             }
-            Utils.pollPause(endTimeStart, 2000);
-        }
-        Assert.assertNotNull(received, "WebSocket did not echo within the deadline; last error: " + lastError);
+        }, echo -> echo != null);
+        String authDetail = received != null ? ""
+                : authRejectionDetail(wsUrl, credentialContextKey, credential, lastFailure, startedMillis);
+        Assert.assertNotNull(received, "WebSocket did not echo within the deadline; last error: "
+                + lastErrorOf(lastFailure) + authDetail);
         return received;
     }
 
@@ -438,29 +445,35 @@ public class WebSocketInvocationSteps {
         expectRejection(wsUrl, headers, timeoutSeconds);
     }
 
-    /** Multi-header rejection check (e.g. Authorization + a disallowed Origin for CORS). */
+    /**
+     * Multi-header rejection check (e.g. Authorization + a disallowed Origin for CORS). Deliberately emits NO
+     * auth-rejection diagnostic: a refused handshake is this step's EXPECTED outcome, and a marker that fires on
+     * expected behaviour is noise.
+     */
     private void expectRejection(String wsUrl, Map<String, String> headers, int timeoutSeconds)
             throws Exception {
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 10000L);
-        boolean everEchoed = false;
-        while (System.currentTimeMillis() < endTime) {
+        AtomicBoolean everEchoed = new AtomicBoolean(false);
+        Boolean rejectionObserved = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
                 String echo = connectSendReceive(wsUrl, headers, "probe");
                 if (echo == null) {
-                    return;   // no echo → rejected
+                    return Boolean.TRUE;   // no echo → rejected
                 }
-                everEchoed = true;   // accepted this round — enforcement may still be propagating; retry
+                everEchoed.set(true);   // accepted this round — enforcement may still be propagating; retry
+                return null;
             } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                // Cancellation is not a transient/expected outcome — restore the flag so the envelope's next
+                // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
-                throw interrupted;
+                return null;
             } catch (Exception rejected) {
-                return;   // handshake/upgrade refused → rejection confirmed
+                return Boolean.TRUE;   // handshake/upgrade refused → rejection confirmed
             }
-            Utils.pollPause(endTimeStart, 2000);
+        }, outcome -> outcome != null);
+        if (Boolean.TRUE.equals(rejectionObserved)) {
+            return;   // a rejection was observed — an earlier echo was only enforcement still propagating
         }
-        Assert.assertFalse(everEchoed, "Expected the WS invocation to be rejected within " + timeoutSeconds
+        Assert.assertFalse(everEchoed.get(), "Expected the WS invocation to be rejected within " + timeoutSeconds
                 + "s, but it kept echoing — the enforcement control never applied.");
     }
 
@@ -483,27 +496,25 @@ public class WebSocketInvocationSteps {
         }
         String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 30000L);
-        String lastError = null;
-        String data = null;
-        while (System.currentTimeMillis() < endTime) {
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String data = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
-                data = subscribeAndReceive(wsUrl, token, query);
-                if (data != null && data.contains(expectedData)) {
-                    break;
-                }
+                return subscribeAndReceive(wsUrl, token, query, lastFailure);
             } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                // Cancellation is not a transient/expected outcome — restore the flag so the envelope's next
+                // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
-                throw interrupted;
+                return null;
             } catch (Exception connectingWhileWarmup) {
-                lastError = connectingWhileWarmup.getMessage();
+                lastFailure.set(connectingWhileWarmup);
+                return null;
             }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        }, message -> message != null && message.contains(expectedData));
+        String authDetail = data != null ? ""
+                : authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis);
         Assert.assertNotNull(data, "GraphQL subscription returned no data message within the deadline; last error: "
-                + lastError);
+                + lastErrorOf(lastFailure) + authDetail);
         Assert.assertTrue(data.contains(expectedData),
                 "GraphQL subscription data did not contain '" + expectedData + "'; last message: " + data);
     }
@@ -521,40 +532,46 @@ public class WebSocketInvocationSteps {
                                                           int frames) throws Exception {
         String wsUrl = joinBase(Utils.getBaseGatewayWsUrl(), context);
         String token = TestContext.resolve(accessToken).toString();
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + 150000L;
-        int[] result = null;
-        String throttleMsg = null;
-        while (System.currentTimeMillis() < deadline) {
-            java.util.concurrent.atomic.AtomicInteger dataCount = new java.util.concurrent.atomic.AtomicInteger();
-            java.util.concurrent.atomic.AtomicReference<String> tMsg = new java.util.concurrent.atomic.AtomicReference<>();
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        // The verdict below reports the LAST ESTABLISHED probe, so the counts are carried here rather than taken
+        // from the envelope's return — a closing attempt that could not connect returns null.
+        AtomicReference<int[]> lastProbe = new AtomicReference<>();
+        AtomicReference<String> lastThrottleMsg = new AtomicReference<>();
+        // Only accept once a frame was ACTUALLY throttled. The bandwidth quota is per-minute and accumulates
+        // across probes, so under load — where a single probe can deliver too few frames to exceed the quota
+        // inside its window — we re-subscribe and keep sending until the gateway throttles (4003) or the deadline
+        // elapses, instead of giving up on the first established-but-not-yet-throttled probe (the cause of an
+        // intermittent full-suite flake).
+        Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT, () -> {
+            AtomicInteger dataCount = new AtomicInteger();
+            AtomicReference<String> tMsg = new AtomicReference<>();
             boolean established;
             try {
-                established = subscribeAndProbe(wsUrl, token, query, frames, dataCount, tMsg);
+                established = subscribeAndProbe(wsUrl, token, query, frames, dataCount, tMsg, lastFailure);
             } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient failure — restore the flag and stop the poll.
+                // Cancellation is not a transient failure — restore the flag so the envelope's next pause
+                // rethrows it instead of reading this as a retryable probe.
                 Thread.currentThread().interrupt();
-                throw interrupted;
+                return null;
             } catch (Exception transientFailure) {
                 // transient ws failure — counts as not-established; re-probe within the deadline
                 // (same tolerance as this file's other invocation loops)
                 established = false;
             }
-            if (established) {
-                result = new int[]{dataCount.get(), tMsg.get() != null ? 1 : 0};
-                throttleMsg = tMsg.get();
-                // Only stop once a frame was ACTUALLY throttled. The bandwidth quota is per-minute and
-                // accumulates across probes, so under load — where a single probe can deliver too few frames to
-                // exceed the quota inside its window — we re-subscribe and keep sending until the gateway throttles
-                // (4003) or the deadline elapses, instead of giving up on the first established-but-not-yet-
-                // throttled probe (the cause of an intermittent full-suite flake).
-                if (throttleMsg != null) {
-                    break;
-                }
+            if (!established) {
+                return null;
             }
-            Utils.pollPause(deadlineStart, 3000);
-        }
-        Assert.assertNotNull(result, "Could not establish the graphql-ws subscription for the throttling test");
+            lastProbe.set(new int[]{dataCount.get(), tMsg.get() != null ? 1 : 0});
+            lastThrottleMsg.set(tMsg.get());
+            return lastProbe.get();
+        }, probe -> probe != null && probe[1] == 1);
+        int[] result = lastProbe.get();
+        String throttleMsg = lastThrottleMsg.get();
+        String authDetail = result != null ? ""
+                : authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis);
+        Assert.assertNotNull(result, "Could not establish the graphql-ws subscription for the throttling test"
+                + authDetail);
         System.out.println("[GQL-SUB-THROTTLE] framesSent=" + frames + " dataMessages=" + result[0]
                 + " throttled=" + (result[1] == 1) + " throttleMsg=" + throttleMsg);
         Assert.assertEquals(result[1], 1, "Expected GraphQL subscription frame throttling (4003 'Websocket frame "
@@ -571,32 +588,89 @@ public class WebSocketInvocationSteps {
                                                          int expectedCode, int timeoutSeconds) throws Exception {
         String wsUrl = joinBase(Utils.getBaseGatewayWsUrl(), context);
         String token = TestContext.resolve(accessToken).toString();
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, 60000L);
-        String lastMsg = null;
-        while (System.currentTimeMillis() < deadline) {
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        AtomicReference<String> lastMsg = new AtomicReference<>();
+        String matched = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             String errorMsg;
             try {
-                errorMsg = subscribeExpectError(wsUrl, token, query);
+                errorMsg = subscribeExpectError(wsUrl, token, query, lastFailure);
             } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient failure — restore the flag and stop the poll.
+                // Cancellation is not a transient failure — restore the flag so the envelope's next pause
+                // rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
-                throw interrupted;
+                return null;
             } catch (Exception transientFailure) {
                 // transient ws failure — retry within the deadline (same tolerance as the other loops here)
                 errorMsg = null;
             }
-            if (errorMsg != null) {
-                lastMsg = errorMsg;
-                if (errorMsg.contains("\"code\":" + expectedCode) || errorMsg.contains("\"code\": " + expectedCode)) {
-                    System.out.println("[GQL-SUB-ERR] expected=" + expectedCode + " msg=" + errorMsg);
-                    return;
-                }
+            if (errorMsg == null) {
+                return null;
             }
-            Utils.pollPause(deadlineStart, 3000);
+            lastMsg.set(errorMsg);
+            return errorMsg;
+        }, errorMsg -> carriesErrorCode(errorMsg, expectedCode));
+        if (carriesErrorCode(matched, expectedCode)) {
+            System.out.println("[GQL-SUB-ERR] expected=" + expectedCode + " msg=" + matched);
+            return;
         }
+        // A refused handshake is NOT the expected outcome here: the expected error arrives as a graphql-ws frame
+        // over an ESTABLISHED connection, so a 401 upgrade rejection is a genuine credential problem to report.
         Assert.fail("Expected graphql-ws error code " + expectedCode + " for query [" + query
-                + "] but did not observe it; last error message: " + lastMsg);
+                + "] but did not observe it; last error message: " + lastMsg.get()
+                + authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis));
+    }
+
+    /** True when a graphql-ws message carries the given error code (the gateway emits it with and without a space). */
+    private static boolean carriesErrorCode(String message, int expectedCode) {
+        return message != null && (message.contains("\"code\":" + expectedCode)
+                || message.contains("\"code\": " + expectedCode));
+    }
+
+    /** The last failed attempt's message — the {@code lastError} string the hand-rolled loops used to carry. */
+    private static String lastErrorOf(AtomicReference<Throwable> lastFailure) {
+        Throwable failure = lastFailure.get();
+        return failure == null ? null : failure.getMessage();
+    }
+
+    /**
+     * The HTTP status of a REFUSED WS upgrade, or 0 when the failure was not a handshake rejection. The whole cause
+     * chain is walked: the authoritative status lives on the handshake exception's response, but that exception
+     * carries no message of its own and the wording naming the status ("Unexpected HTTP response status code 401")
+     * sits on a nested cause — so the text is a fallback for a JDK that shapes the chain differently. The fallback
+     * matches the status WORDING rather than a bare "401", so an unrelated message never fakes a rejection.
+     */
+    private static int handshakeStatus(Throwable failure) {
+        for (Throwable cause = failure; cause != null && cause != cause.getCause(); cause = cause.getCause()) {
+            if (cause instanceof WebSocketHandshakeException handshake && handshake.getResponse() != null) {
+                return handshake.getResponse().statusCode();
+            }
+            String message = cause.getMessage();
+            if (message != null && (message.contains("status code 401") || message.contains("401 Unauthorized"))) {
+                return 401;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * The auth-rejection diagnostic to append to a FAILING invocation step's message, or "" when nothing observed
+     * pointed at a refused credential. Call ONLY from a failure path of a step that expects the handshake to
+     * SUCCEED: a 401 on a step that passed, or on the rejection negatives that exist to provoke one, is not a
+     * finding, and the one grep-able marker loses its meaning if it fires on expected behaviour.
+     *
+     * <p>The LAST failure is the one inspected, because a credential still refused when the window closed is
+     * exactly the persistent rejection {@link Utils#logAuthRejection} describes (a warm-up 404/403 that later
+     * cleared is not).
+     */
+    private static String authRejectionDetail(String what, String credentialContextKey, String credential,
+                                              AtomicReference<Throwable> lastFailure, long startedMillis) {
+        Throwable failure = lastFailure.get();
+        if (failure == null || handshakeStatus(failure) != 401) {
+            return "";
+        }
+        return " " + Utils.logAuthRejection(what, credentialContextKey, credential, 401, failure.getMessage(),
+                System.currentTimeMillis() - startedMillis);
     }
 
     /** Best-effort close of a per-attempt WS HttpClient; a close failure must never mask the attempt's result. */
@@ -609,8 +683,13 @@ public class WebSocketInvocationSteps {
         }
     }
 
-    /** graphql-ws: init/ack, send one start(query), return the first {@code type:error} message (or null). */
-    private String subscribeExpectError(String wsUrl, String token, String query) throws Exception {
+    /**
+     * graphql-ws: init/ack, send one start(query), return the first {@code type:error} message (or null). A
+     * refused upgrade is reported into {@code lastFailure} as well as logged: it is absorbed here as an
+     * inconclusive attempt, so the caller could otherwise never say WHY its window closed empty.
+     */
+    private String subscribeExpectError(String wsUrl, String token, String query,
+                                        AtomicReference<Throwable> lastFailure) throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<Void> ack = new CompletableFuture<>();
         CompletableFuture<String> error = new CompletableFuture<>();
@@ -646,6 +725,7 @@ public class WebSocketInvocationSteps {
             throw interrupted;
         } catch (Exception connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
+            lastFailure.set(connectFailed);
             closeQuietly(client);
             return null;
         }
@@ -680,10 +760,13 @@ public class WebSocketInvocationSteps {
         }
     }
 
-    /** graphql-ws multi-frame probe: init/ack, send N start-frames, capture data-count + any throttle message. */
+    /**
+     * graphql-ws multi-frame probe: init/ack, send N start-frames, capture data-count + any throttle message. A
+     * refused upgrade is reported into {@code lastFailure} (see {@link #subscribeExpectError}).
+     */
     private boolean subscribeAndProbe(String wsUrl, String token, String query, int frames,
-                                      java.util.concurrent.atomic.AtomicInteger dataCount,
-                                      java.util.concurrent.atomic.AtomicReference<String> throttleMsg)
+                                      AtomicInteger dataCount, AtomicReference<String> throttleMsg,
+                                      AtomicReference<Throwable> lastFailure)
             throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<Void> ack = new CompletableFuture<>();
@@ -722,6 +805,7 @@ public class WebSocketInvocationSteps {
             throw interrupted;
         } catch (Exception connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
+            lastFailure.set(connectFailed);
             closeQuietly(client);
             return false;
         }
@@ -758,8 +842,12 @@ public class WebSocketInvocationSteps {
         }
     }
 
-    /** graphql-ws flow: connection_init → connection_ack → start(query) → first data message. */
-    private String subscribeAndReceive(String wsUrl, String token, String query) throws Exception {
+    /**
+     * graphql-ws flow: connection_init → connection_ack → start(query) → first data message. A refused upgrade is
+     * reported into {@code lastFailure} (see {@link #subscribeExpectError}).
+     */
+    private String subscribeAndReceive(String wsUrl, String token, String query,
+                                       AtomicReference<Throwable> lastFailure) throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<Void> ack = new CompletableFuture<>();
         CompletableFuture<String> data = new CompletableFuture<>();
@@ -796,6 +884,7 @@ public class WebSocketInvocationSteps {
             throw interrupted;
         } catch (Exception connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
+            lastFailure.set(connectFailed);
             closeQuietly(client);
             return null;
         }

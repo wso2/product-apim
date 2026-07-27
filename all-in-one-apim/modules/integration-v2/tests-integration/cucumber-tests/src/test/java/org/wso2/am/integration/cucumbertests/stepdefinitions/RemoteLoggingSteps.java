@@ -219,7 +219,14 @@ public class RemoteLoggingSteps {
         // The stream has quiesced — a fresh audit action must now NOT reach the sink (appender is local again).
         int before = sinkPayloads.size();
         triggerAuditLogEntry();
-        Thread.sleep(5000);
+        // Bounded NEGATIVE-observation window: absence of a payload cannot be polled for, so we watch for a
+        // fixed span and assert nothing arrived — but exit as soon as one does, so a genuine failure surfaces
+        // immediately instead of after the whole window. The passing path still observes the full span.
+        long watchStart = System.currentTimeMillis();
+        long watchEnd = watchStart + 5000L;
+        while (System.currentTimeMillis() < watchEnd && sinkPayloads.size() == before) {
+            Utils.pollPause(watchStart, 500L);
+        }
         Assert.assertEquals(sinkPayloads.size(), before,
                 "Mock sink still received a payload after remote logging was disabled and the stream quiesced");
     }

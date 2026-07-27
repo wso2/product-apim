@@ -193,11 +193,20 @@ public class VisibilityAccessSteps {
         }
         if (createdId == null && outcomeUncertain && response != null && response.getResponseCode() == 409) {
             // The uncertainty lookup raced the eventually-consistent search index: the lost-response create
-            // surfaced as a conflict on the re-POST. Adopt the API it collided with (ours — the name is unique
-            // to this call), so the scenario proceeds and teardown sweeps it.
-            createdId = Utils.findIdByNameInListResponse(
-                    Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), "name:" + json.getString("name"), null, null),
-                    headers, json.getString("name"), "id");
+            // surfaced as a conflict on the re-POST. The 409 PROVES the API exists server-side (the name is
+            // unique to this call, so the conflict is with our own committed create), so POLL the index until it
+            // appears rather than giving up after one read — a single miss would fail the 201 assert below AND
+            // leak the API, which is not registered for teardown yet. Always makes at least one attempt (the
+            // deadline may already be spent by the time we get here).
+            String searchUrl = Utils.getAPISearchEndpointURL(Utils.getBaseUrl(),
+                    "name:" + json.getString("name"), null, null);
+            while (true) {
+                createdId = Utils.findIdByNameInListResponse(searchUrl, headers, json.getString("name"), "id");
+                if (createdId != null || System.currentTimeMillis() >= deadline) {
+                    break;
+                }
+                Utils.pollPause(deadlineStart, 2000);
+            }
         }
         if (createdId == null) {
             Assert.assertNotNull(response, "API create got no response within the deadline (requests failed)");
@@ -250,7 +259,7 @@ public class VisibilityAccessSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch API '" + apiId + "' before updating it: expected a 2xx response with a body, got "
                         + (current == null ? "no response" : current.getResponseCode() + " / body=" + current.getData()));
         return new JSONObject(current.getData());
@@ -320,8 +329,8 @@ public class VisibilityAccessSteps {
 
     private void pollUntilStatus(String url, Map<String, String> headers, int expectedStatus, int timeoutSeconds)
             throws InterruptedException {
-        long deadline = System.currentTimeMillis()
-                + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
         HttpResponse last = null;
         while (System.currentTimeMillis() < deadline) {
             try {
@@ -332,7 +341,7 @@ public class VisibilityAccessSteps {
             } catch (IOException transientDuringWarmup) {
                 // retry transient connectivity only
             }
-            Thread.sleep(2000);
+            Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
         }
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for " + url);
@@ -381,7 +390,7 @@ public class VisibilityAccessSteps {
             try {
                 response = Requests.get(url, headers);
                 if (response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty()) {
+                        && response.getData() != null && !response.getData().isBlank()) {
                     actual = new JSONObject(response.getData()).optInt("count", -1);
                 }
             } catch (IOException transientFailure) {
@@ -415,7 +424,7 @@ public class VisibilityAccessSteps {
         Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300,
                 "Tag cloud retrieval failed — cannot assert tag absence against an error response; got "
                         + response.getResponseCode() + " / body=" + response.getData());
-        Assert.assertTrue(response.getData() != null && !response.getData().isEmpty(),
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
                 "Tag cloud response carried no body — cannot assert tag absence against an empty response (status "
                         + response.getResponseCode() + ")");
         String resolved = Utils.resolveContextPlaceholders(tagValue);

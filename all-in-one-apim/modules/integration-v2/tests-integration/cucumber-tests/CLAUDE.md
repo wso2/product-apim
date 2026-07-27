@@ -135,7 +135,7 @@ mutable.**
   fields), assert the call **succeeded with a body** — otherwise a failed/empty response throws an opaque
   `JSONException`/NPE instead of a clear failure. Use
   `Assert.assertTrue(resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300 &&
-  resp.getData() != null && !resp.getData().isEmpty(), "<what failed, incl. the id and got=<code>/<body>>")`.
+  resp.getData() != null && !resp.getData().isBlank(), "<what failed, incl. the id and got=<code>/<body>>")`.
   This applies to **intermediate reads too** — the GET half of a GET-then-mutate-then-PUT (e.g.
   `buildApiProductPayload`, `fetchSharedScopeByName`), where the response isn't published to `httpResponse`
   but is still parsed locally.
@@ -157,12 +157,22 @@ mutable.**
   call — there is nothing to centralize. The layering is deliberate: `SimpleHTTPClient` = raw HTTP (all calls
   go through it; the home for cross-cutting HTTP concerns); `Requests` = the thin layer that additionally
   publishes the response as the step's assertion target.
-- **Retry-until-status loops:** catch only `IOException` (transient gateway warm-up — retry), so a bad
-  token/payload context key (`IllegalArgumentException` from `TestContext.resolve`) fails **fast**
-  instead of being masked as a timeout. Keep the last *returned* response in a **local** variable and
-  **assert after the loop** (`assertNotNull` then `assertEquals` on the expected status) — the step must
-  fail on its own, never rely on a following `Then` to notice a persistent failure. See
-  `assertReachedExpectedStatus`.
+- **Retry-until-status loops funnel through `Utils.retryUntil` — never hand-roll the loop.** It owns the
+  deadline (floored at `Constants.RUNTIME_PROPAGATION_TIMEOUT`), the tiered `pollPause` pacing and the
+  exception policy: only `IOException` is retried (transient gateway warm-up), so a bad token/payload context
+  key (`IllegalArgumentException` from `TestContext.resolve`) fails **fast** instead of being masked as a
+  timeout. It returns the **last** result, and the step **asserts after the loop** (`assertNotNull` then
+  `assertEquals` on the expected status) — the step must fail on its own, never rely on a following `Then` to
+  notice a persistent failure. Each invocation family adds ONE thin envelope over it that also emits the
+  auth-rejection diagnostic (see `APIInvocationSteps.invokeUntilStatus` / `assertReachedExpectedStatus`); add
+  a new variant by calling that envelope, not by writing another `while (System.currentTimeMillis() < ...)`.
+  31 hand-rolled copies of this loop existed before it was funnelled, and one had already drifted onto a
+  hardcoded 150s window that silently ignored the shared ceiling — which is exactly how a CI failure went
+  undiagnosed. **An unexpected 401 inside a retry loop must be reported, not just retried:** call
+  `Utils.logAuthRejection` (§15) so the credential's `jti` reaches the log; a credential rejected on every
+  attempt is revoked/invalidated and can NEVER recover by being replayed. Do **not** "fix" that by re-minting
+  the token on rejection — a freshly issued token must not be rejected intermittently, so masking it would
+  hide a product defect.
 
 ## 8. Run & verify locally
 Run the suite reusing prebuilt images (use `mvn test`, not `install`, so the testcontainers image-build
@@ -376,12 +386,30 @@ of forking it locally. (The §7 context/funnel primitives — `TestContext.resol
   the loop's base cadence for the first minute, then max(base, 5s), then max(base, 10s) — fast pass-detection
   where polls almost always succeed, easing off the struggling server in the long tail. Never hand-write a
   loop-tail `Thread.sleep`; capture the poll start (the instant the deadline was computed from) and use this.
-- `awaitWithRetry(what, probe, reTrigger, maxAttempts)` — SELF-HEALING readiness gate for PREREQUISITE
-  state only (never a scenario's assertion target): full propagation-window wait, then re-fire the action
-  (60s retry windows, max attempts) because runtime-propagation events are at-most-once — a dropped deploy
-  event can only be fixed by re-emitting it. Logs a grep-able "self-heal:" WARN per heal so occurrences stay
-  countable. First consumer: the gateway deploy-readiness gate step ("should be live on the gateway,
-  redeploying if propagation is lost") used by the GraphQL features.
+- **Two retry contracts, one shared loop — picking one IS the statement of intent** (like
+  `TestContext.resolve/get/contains`). Both sit on the same private `pollWithin` mechanics, so never fork the
+  loop; extend here instead.
+  - `awaitWithRetry(what, probe, reTrigger, maxAttempts)` — SELF-HEALING readiness gate for PREREQUISITE
+    state only (never a scenario's assertion target): full propagation-window wait, then re-fire the action
+    (60s retry windows, max attempts) because runtime-propagation events are at-most-once — a dropped deploy
+    event can only be fixed by re-emitting it. Treats EVERY exception as not-ready (during warm-up "not ready"
+    and "probe threw" are indistinguishable), and fails the test itself on exhaustion. Logs a grep-able
+    "self-heal:" WARN per heal so occurrences stay countable. First consumer: the gateway deploy-readiness gate
+    step ("should be live on the gateway, redeploying if propagation is lost") used by the GraphQL features.
+  - `retryUntil(timeoutMillis, attempt, accept)` — THE envelope when the result IS the assertion target (an
+    invocation retried while a freshly published API becomes routable). Returns the LAST result so the caller
+    publishes it as `httpResponse` and asserts the exact value itself; retries only `IOException`; is
+    SIDE-EFFECT-FREE (no re-trigger). Deadline is `max(timeoutMillis, RUNTIME_PROPAGATION_TIMEOUT)`, so a call
+    site cannot drift below the shared ceiling. Consumers: the API/WebSocket/MCP invocation families (§7).
+  - Using the gate for an assertion target swallows fail-fast errors and robs the step of its exact-value
+    assertion; using `retryUntil` for prerequisite state never self-heals a dropped event.
+- `logAuthRejection(what, tokenContextKey, token, statusCode, responseBody, elapsedMillis)` — THE grep-able
+  `"auth-reject:"` diagnostic for an unexpected auth rejection inside a retry loop, returned as text for the
+  caller's assertion message too. Logs the credential's `jti` on purpose: the gateway's revoked-JWT map and
+  invalid-token cache are both keyed by it, so the line can be matched straight against a gateway
+  `RevokedJWTDataHolder` / invalid-token-cache hit. Without it this failure mode is near-undiagnosable from CI —
+  the gateway logs only a masked `Invalid JWT token` while the step reports a bare status mismatch a whole
+  window later.
 - `queryParam(url, name)` — decoded query-parameter value or null; splits on `&`/`=` so a name that
   suffixes another (`code` vs `session_code`) never mismatches.
 - `classpathToTempFile(resourcePath, tempPrefix, tempSuffix)` — classpath resource → delete-on-exit temp
@@ -425,7 +453,9 @@ Fixed ports · hardcoded resource names · `Thread.sleep` · depending on anothe
 artifacts · shared mutable static state · cleanup in inline scenarios instead of hooks · duplicate
 steps or duplicate tests · full-file `tomlOverlayPath` for product tests (use `tomlExtraOverlayPath`) ·
 leaving a **stale `httpResponse`** when a request step throws (clear it first / funnel through
-`execute`) · retry loops that catch bare `Exception` or don't assert the expected status after the loop ·
+`execute`) · hand-rolling a deadline/retry loop instead of funnelling through `Utils.retryUntil` (§7/§15) · retry loops
+that catch bare `Exception`, silently retry an unexpected 401, or don't assert the expected status after the
+loop ·
 product operations in listeners/provisioners or token-minting side-channel utils (provision infra, act
 through actors — §14) · private re-implementations of the shared glue utilities (§15 — reuse or extend
 the shared one).

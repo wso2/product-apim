@@ -174,7 +174,15 @@ public class PublisherBaseSteps {
                     break;
                 }
             } catch (IOException transientDuringIndexing) {
-                // transient connectivity during warm-up — retry
+                // Transient connectivity during warm-up — retry. Revision-create is NOT idempotent, so a lost
+                // response could leave a phantom revision and this re-POST would produce a second one. That is
+                // accepted deliberately rather than reconciled: the API is scenario-owned, and a revision is a
+                // child resource that dies with it (§5), so nothing leaks; and no scenario creates more than 2
+                // revisions against APIM's cap of 5, so a phantom cannot exhaust the quota. Reconciling would
+                // mean adopting "the newest revision" heuristically (the payload description is a fixed string,
+                // not a unique key), and DELETING a discovered revision would be worse still — a deployed
+                // revision must be undeployed first. The documented failure mode here is a 500 (API artifact not
+                // yet indexed), which creates no revision and is safe to re-POST.
             }
             if (System.currentTimeMillis() >= endTime) {
                 break;
@@ -249,8 +257,18 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.delete(Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType,
+        HttpResponse response = Requests.delete(Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType,
                 actualResourceId), headers);
+        // A resource the scenario deletes ITSELF must be dropped from the teardown sweep: otherwise
+        // ResourceCleanup later chases the already-gone id and logs a spurious "resource NOT deleted; may leak"
+        // that misdirects triage (e.g. an export/delete/import scenario whose import then fails). Deregister only
+        // on a confirmed 2xx delete — a failed delete (negative test) means the resource still exists and must
+        // stay registered.
+        if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            String listKey = "mcp-servers".equals(resourceType)
+                    ? ResourceCleanup.CREATED_MCP_SERVER_IDS : Constants.CREATED_API_IDS;
+            ResourceCleanup.deregister(listKey, actualResourceId);
+        }
     }
 
     /**
@@ -414,6 +432,12 @@ public class PublisherBaseSteps {
      * of asserting on a mutating request's own echo when the property under test must be DURABLY saved: under
      * load a PUT's 200 response has been observed echoing a stale (pre-update) representation, so only a fresh
      * read proves persistence (and a genuinely-lost update fails here with the read-back body in the message).
+     *
+     * <p>NOTE on the window: {@code timeoutSeconds} is a FLOOR-ed hint, not the effective deadline — it is raised
+     * to {@link Constants#RUNTIME_PROPAGATION_TIMEOUT} when smaller (the same convention as the invoke-until
+     * steps). Feature-file values were authored before the propagation tails were measured (~90-100s in CI, once
+     * &gt;120s locally under full-suite load), so a literal 60s would sit below the observed tail and re-flake.
+     * The constant stays the single tuning point; a passing poll returns on its first read regardless.
      */
     @When("I retrieve the {string} resource with id {string} until it contains {string} within {int} seconds")
     public void iRetrieveTheResourceUntilContains(String resourceType, String resourceId, String marker,
@@ -484,10 +508,23 @@ public class PublisherBaseSteps {
                     HttpResponse r = SimpleHTTPClient.getInstance().doGet(artifactUrl, gatewayAuth);
                     return r != null && r.getResponseCode() == 200 && r.getData() != null && !r.getData().isEmpty();
                 },
-                () -> SimpleHTTPClient.getInstance().doPost(
-                        Utils.getRevisionDeploymentURL(Utils.getBaseUrl(), resourceType, actualResourceId,
-                                revisionId),
-                        Identity.publisherHeaders(), redeployPayload, Constants.CONTENT_TYPES.APPLICATION_JSON),
+                () -> {
+                    HttpResponse redeploy = SimpleHTTPClient.getInstance().doPost(
+                            Utils.getRevisionDeploymentURL(Utils.getBaseUrl(), resourceType, actualResourceId,
+                                    revisionId),
+                            Identity.publisherHeaders(), redeployPayload,
+                            Constants.CONTENT_TYPES.APPLICATION_JSON);
+                    // Logged, deliberately NOT asserted: the re-POST's status for an already-deployed revision
+                    // is not a pinned contract, and this heal path cannot be exercised on a healthy run — a
+                    // wrong expectation would turn a working heal into a hard failure. The probe stays the
+                    // arbiter of readiness, and awaitWithRetry fails loudly if it never converges.
+                    if (redeploy == null || redeploy.getResponseCode() < 200
+                            || redeploy.getResponseCode() >= 300) {
+                        logger.warn("self-heal re-deploy of {} {} returned {} — readiness still decided by the "
+                                        + "gateway-artifact probe", resourceType, actualResourceId,
+                                redeploy == null ? "no response" : redeploy.getResponseCode());
+                    }
+                },
                 3);
     }
 
@@ -579,7 +616,7 @@ public class PublisherBaseSteps {
             // Only parse a 200 that actually has a body; a non-2xx/empty response during warm-up falls through
             // and we keep polling rather than throwing an uncaught JSONException.
             if (lifecycleStatusResponse != null && lifecycleStatusResponse.getResponseCode() == 200
-                    && lifecycleStatusResponse.getData() != null && !lifecycleStatusResponse.getData().isEmpty()) {
+                    && lifecycleStatusResponse.getData() != null && !lifecycleStatusResponse.getData().isBlank()) {
                 actualState = new JSONObject(lifecycleStatusResponse.getData()).optString("state", null);
                 if (status.equals(actualState)) {
                     return;
@@ -1836,14 +1873,39 @@ public class PublisherBaseSteps {
      * (APIImportExportTestCase). Binary download so the zip is not corrupted.
      */
     @When("I export the API {string} to an archive as {string}")
-    public void iExportApiToArchive(String apiId, String archivePathKey) throws IOException {
+    public void iExportApiToArchive(String apiId, String archivePathKey) throws IOException, InterruptedException {
         String actualApiId = TestContext.resolve(apiId).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
-                Utils.getApiExportURL(Utils.getBaseUrl(), actualApiId, "JSON"), headers, ".zip");
-        Assert.assertEquals(result.getStatusCode(), 200,
-                "API export did not return 200 (archive download failed)");
+        String url = Utils.getApiExportURL(Utils.getBaseUrl(), actualApiId, "JSON");
+
+        // The export can transiently return a 200 zip that is MISSING its project definition (api.yaml/api.json):
+        // a just-created API is concurrently materialised by the Governance compliance evaluator through the same
+        // server-side ExportUtils temp directory (keyed only on <user>-<apiName>-<version>, NOT per-export), so
+        // one export empties the dir while the other is still zipping (carbon-apimgt race — see upstream report).
+        // Re-export until the archive is COMPLETE rather than letting a definition-less zip fail later as the
+        // confusing 900909 "cannot find the project definition" at import.
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
+        SimpleHTTPClient.DownloadResult result = null;
+        boolean complete = false;
+        while (true) {
+            result = Requests.getToFile(url, headers, ".zip");
+            if (result.getStatusCode() == 200
+                    && Utils.zipContainsEntryNamed(result.getFile(), "api.yaml", "api.json")) {
+                complete = true;
+                break;
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                break;
+            }
+            logger.warn("API export archive for {} was incomplete (status {}, no api.yaml/api.json — "
+                    + "export/compliance temp-dir race); re-exporting", actualApiId, result.getStatusCode());
+            Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
+        }
+        Assert.assertTrue(complete, "API export for " + actualApiId + " never produced a complete archive (200 "
+                + "with a project definition) within the window; last status="
+                + (result == null ? "none" : result.getStatusCode()));
         TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
     }
 
@@ -2015,7 +2077,7 @@ public class PublisherBaseSteps {
             try {
                 HttpResponse response = Requests.get(url, headers);
                 if (response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty()) {
+                        && response.getData() != null && !response.getData().isBlank()) {
                     JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
                     if (list != null && list.length() > 0) {
                         id = list.getJSONObject(0).get("id");

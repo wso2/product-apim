@@ -348,7 +348,7 @@ public class GovernanceBaseSteps {
                 last = SimpleHTTPClient.getInstance().doGet(url, governanceAuthHeaders());
                 // Only parse a 200 that actually has a body; an empty 200 during warm-up falls through and we
                 // keep polling rather than throwing an uncaught JSONException (the catch below is IOException-only).
-                if (last.getResponseCode() == 200 && last.getData() != null && !last.getData().isEmpty()) {
+                if (last.getResponseCode() == 200 && last.getData() != null && !last.getData().isBlank()) {
                     actualStatus = new JSONObject(last.getData()).optString("status", null);
                     if (expectedStatus.equals(actualStatus)) {
                         break;

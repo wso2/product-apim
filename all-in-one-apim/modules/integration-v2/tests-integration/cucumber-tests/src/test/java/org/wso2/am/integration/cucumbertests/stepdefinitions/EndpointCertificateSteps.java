@@ -164,7 +164,7 @@ public class EndpointCertificateSteps {
             try {
                 HttpResponse response = Requests.get(url, publisherAuthHeaders());
                 if (response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty()) {
+                        && response.getData() != null && !response.getData().isBlank()) {
                     actual = new JSONObject(response.getData()).optInt("count", -1);
                 }
             } catch (IOException transientFailure) {
