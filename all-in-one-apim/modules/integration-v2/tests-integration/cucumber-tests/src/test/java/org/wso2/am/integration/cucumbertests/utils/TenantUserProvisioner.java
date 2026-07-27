@@ -247,6 +247,45 @@ public final class TenantUserProvisioner {
     }
 
     /**
+     * As {@link #addRole(String, String, boolean)} but grants an ARBITRARY set of permission resource ids (each
+     * with the {@code ui.execute} action) instead of the hardcoded login+subscribe pair. Enabler for a role that
+     * needs a specific, narrow permission set — e.g. console-login plus a single admin/manage sub-resource, but
+     * NOT the parent {@code /permission/admin/manage} node itself.
+     *
+     * @param permissionResourceIds the exact permission tree nodes to grant (e.g.
+     *                              {@code /permission/admin/manage/identity/idpmgt/view})
+     */
+    public static void addRole(String tenantDomain, String roleName, List<String> permissionResourceIds)
+            throws IOException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        StringBuilder permissionsXml = new StringBuilder();
+        for (String resourceId : permissionResourceIds) {
+            permissionsXml.append("<ser:permissions><ser:action>ui.execute</ser:action>")
+                    .append("<ser:resourceId>").append(Utils.escapeXml(resourceId)).append("</ser:resourceId>")
+                    .append("</ser:permissions>");
+        }
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">" +
+                "<soapenv:Header/><soapenv:Body>" +
+                "<ser:addRole>" +
+                "<ser:roleName>" + Utils.escapeXml(roleName) + "</ser:roleName>" +
+                permissionsXml +
+                "</ser:addRole>" +
+                "</soapenv:Body></soapenv:Envelope>";
+
+        String url = Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:addRole",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        int code = response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException("addRole for '" + roleName + "' in tenant '" + tenantDomain + "' failed with "
+                    + code + ": " + response.getData());
+        }
+    }
+
+    /**
      * Returns the roles of a user via RemoteUserStoreManagerService {@code getRoleListOfUser} (the raw response
      * body). Used to verify case-insensitive-username resolution on the secondary store (an UPPERCASE username
      * resolves the same user). Uses the given tenant's admin credentials.

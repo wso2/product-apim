@@ -155,3 +155,42 @@ Feature: Admin Secondary User Store (case-insensitive)
       | tenantSuffix |
       |              |
       | @tenant1.com |
+
+  # PROBE (legacy console-page regression): a SECONDARY.COM store user with a NARROW permission set — Login +
+  # idpmgt/view but explicitly NOT the parent /permission/admin/manage node — opens the legacy Carbon management
+  # console's Resident IdP edit page (Identity > Identity Providers > Resident). That page calls
+  # IdentityGovernanceAdminService#getConnectorList, which the server denies for a caller lacking
+  # /permission/admin/manage — an expected, server-logged "Access Denied" AxisFault, NOT the bug under test.
+  # Before the fix that exception was uncaught in idp-mgt-edit-local.jsp and broke the WHOLE page (Tiles
+  # "IOException while including page"); after the fix it is caught the same way the adjacent
+  # ClassNotFoundException case already is, so the page still renders. This is the only console-page
+  # (session-cookie, non-REST) scenario in the suite — see ResidentIdpConsoleSteps, which funnels the login/fetch
+  # through Requests.* like any other HTTP-making step so the generic status-code/body-contains assertions apply
+  # unmodified. Reuses this block's SECONDARY.COM fixture rather than standing up new primary-store role plumbing.
+  # Runs in BOTH tenants (×2); a single <tenant>/<userSuffix> pair drives both the acting admin (provisioning) and
+  # the console-login username.
+  @cap:admin @feat:tenants-orgs @rule:secondary-userstore @type:regression @legacy:ResidentIdPGovernanceConnectorAccessDeniedTestCase
+  Scenario Outline: A secondary-store user with view-only IdP access can open the Resident IdP page without a server error (<tenant>)
+    Given The system is ready
+    And I have valid access tokens as "admin@<tenant>"
+    # Deliberately grants Login + idpmgt/view, but NOT /permission/admin/manage - reproduces a user who can see
+    # Identity Providers in the console but can't manage governance connectors, the exact condition that
+    # triggers the AxisFault this scenario guards against.
+    When I provision store role "SECONDARY.COM/idpViewOnlyRole" with permissions "/permission/admin/login,/permission/admin/manage/identity/idpmgt/view" in tenant "<tenant>"
+    And I provision store user "SECONDARY.COM/idpViewOnlyUser1" with password "Console@123" and roles "SECONDARY.COM/idpViewOnlyRole" in tenant "<tenant>"
+
+    When I log into the management console as "SECONDARY.COM/idpViewOnlyUser1<userSuffix>" with password "Console@123"
+    # First hop populates the ResidentIdentityProvider session attribute idp-mgt-edit-local.jsp depends on -
+    # mirrors the real console navigation (Identity -> Identity Providers -> Resident).
+    And I fetch the management console page "idpmgt/idp-mgt-edit-load-local.jsp"
+    Then The response status code should be 200
+    When I fetch the management console page "idpmgt/idp-mgt-edit-local.jsp"
+    Then The response status code should be 200
+    And The response should contain "Resident Identity Provider"
+
+    When I remove the secondary user store user "SECONDARY.COM/idpViewOnlyUser1" and role "SECONDARY.COM/idpViewOnlyRole" in tenant "<tenant>"
+
+    Examples:
+      | tenant       | userSuffix   |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |

@@ -589,6 +589,16 @@ public class Utils {
         return baseUrl + "services/RemoteUserStoreManagerService";
     }
 
+    /** Carbon management console's form-login endpoint (session-cookie auth, not a bearer token). */
+    public static String getConsoleLoginActionURL(String baseUrl) {
+        return baseUrl + "carbon/admin/login_action.jsp";
+    }
+
+    /** A Carbon management console page, addressed relative to the {@code /carbon/} webapp root. */
+    public static String getConsolePageURL(String baseUrl, String relativePath) {
+        return baseUrl + "carbon/" + relativePath;
+    }
+
     /** Carbon UserStoreConfigAdminService SOAP endpoint (add/remove a secondary user store at runtime). */
     public static String getUserStoreConfigAdminServiceURL(String baseUrl) {
         return baseUrl + "services/UserStoreConfigAdminService";

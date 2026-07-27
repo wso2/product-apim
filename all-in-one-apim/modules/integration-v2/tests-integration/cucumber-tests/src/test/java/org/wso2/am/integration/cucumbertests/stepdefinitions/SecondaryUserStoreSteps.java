@@ -43,6 +43,21 @@ public class SecondaryUserStoreSteps {
     }
 
     /**
+     * As {@link #iProvisionStoreRole} but grants an ARBITRARY comma-separated set of permission resource ids
+     * instead of an empty role. Enabler for a store role that needs a specific, narrow permission set — e.g.
+     * console-login plus a single admin/manage sub-resource, but NOT the parent {@code /permission/admin/manage}
+     * node itself.
+     */
+    @When("I provision store role {string} with permissions {string} in tenant {string}")
+    public void iProvisionStoreRoleWithPermissions(String roleName, String permissions, String tenantDomain)
+            throws Exception {
+        java.util.List<String> permissionResourceIds = java.util.Arrays.asList(
+                Utils.resolveContextPlaceholders(permissions).split("\\s*,\\s*"));
+        TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName),
+                permissionResourceIds);
+    }
+
+    /**
      * Adds a user directly in a user store domain (e.g. {@code SECONDARY/testUser1}) with roles, in a tenant. Uses
      * the user-store-manager SOAP service (which resolves the {@code SECONDARY/} domain); retries on the transient
      * "Invalid Domain Name" a freshly-added store can throw while it is still warming up.
