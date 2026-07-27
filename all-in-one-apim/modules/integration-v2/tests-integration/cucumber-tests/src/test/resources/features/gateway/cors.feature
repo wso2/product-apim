@@ -247,3 +247,90 @@ Feature: Gateway CORS
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Ports the AI-API facet of CORS handling: an AIAPI-subtype API (Mistral connector fronting a no-auth mock LLM)
+  # with CORS enabled answers the pre-flight OPTIONS for its chat-completions resource with the configured allow
+  # headers incl. X-BrowserSessionID, and a NORMAL POST (proxied to the mock LLM) carries none of the pre-flight-only
+  # headers. Needs the admin to register the AI service provider first (@dep:admin). Runs in both tenants.
+  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @dep:admin @legacy:CORSHeadersForAllAPITypesTestCase
+  Scenario Outline: A CORS pre-flight OPTIONS to an AI API returns the configured allow-headers incl. X-BrowserSessionID as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    # Register a no-auth AI service provider (prerequisite for the AIAPI-subtype create); isolated per tenant org.
+    When I create an AI service provider "CorsAIService" version "1.0.0" with config "artifacts/payloads/ai/ai-service-provider-config-no-auth.json" and definition "artifacts/payloads/ai/mistral-def.json" as "corsAiProviderId"
+    Then The response status code should be 201
+    # Import the AIAPI-subtype API from the Mistral OpenAPI with CORS enabled (incl. the X-BrowserSessionID header).
+    When I import openapi definition from "artifacts/payloads/ai/mistral-def.json" with additional properties "artifacts/payloads/ai/mistral_cors_add_props.json" as "corsAiApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "corsAiApiId"
+    When I publish the "apis" resource with id "corsAiApiId"
+    Then The lifecycle status of API "corsAiApiId" should be "Published"
+    When I retrieve the "apis" resource with id "corsAiApiId"
+    And I extract response field "context" and store it as "corsAiContext"
+    When I have set up application with keys, subscribed to API "corsAiApiId" with plan "Unlimited", and obtained access token for "corsAiSubId"
+    Then The response status code should be 200
+
+    # AI chat-completions is invoked over POST, so the pre-flight declares POST as the requested method.
+    When I send a CORS preflight to gateway context "{{corsAiContext}}/1.0.0/v1/chat/completions" with origin "http://localhost" and request method "POST" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
+    And The response header "Access-Control-Allow-Methods" should contain "POST"
+    And The response header "Access-Control-Allow-Headers" should contain "X-BrowserSessionID"
+
+    # Negative: a NORMAL (non pre-flight) POST to the mock LLM must NOT carry the pre-flight-only headers.
+    When I put JSON payload from file "artifacts/payloads/ai/mistral-payload.json" in context as "corsMistralPayload"
+    And I invoke the API at gateway context "{{corsAiContext}}/1.0.0/v1/chat/completions" with method "POST" using access token "generatedAccessToken" and payload "corsMistralPayload" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain the header "Access-Control-Allow-Methods"
+    And The response should not contain the header "Access-Control-Allow-Headers"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports the "Expose a SOAP Service as a REST API" (Generate REST APIs / SOAPTOREST) facet: a REST API generated
+  # from hello.wsdl (APIM generates POST /sayHello) with CORS enabled answers the pre-flight OPTIONS for the
+  # generated resource with the configured allow headers incl. X-BrowserSessionID; the normal POST (converted
+  # REST->SOAP to the soap-stub backend and back) carries none of the pre-flight-only headers. Runs in both tenants.
+  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @legacy:CORSHeadersForAllAPITypesTestCase
+  Scenario Outline: A CORS pre-flight OPTIONS to a SOAP-to-REST API returns the configured allow-headers incl. X-BrowserSessionID as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I generate a unique value and store it as "corsS2RName"
+    And I generate a unique value and store it as "corsS2RCtx"
+    When I put the following JSON payload in context as "corsS2RAddProps"
+    """
+    {"name":"{{corsS2RName}}","context":"{{corsS2RCtx}}","version":"1.0.0","policies":["Unlimited"],"endpointConfig":{"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3019/service"},"sandbox_endpoints":{"url":"http://nodebackend:3019/service"}},"corsConfiguration":{"corsConfigurationEnabled":true,"accessControlAllowOrigins":["http://localhost"],"accessControlAllowCredentials":false,"accessControlAllowHeaders":["authorization","Access-Control-Allow-Origin","Content-Type","X-BrowserSessionID","apikey"],"accessControlAllowMethods":["GET","PUT","POST","DELETE","PATCH"]}}
+    """
+    And I import a WSDL API from file "artifacts/wsdl/hello.wsdl" with additional properties "corsS2RAddProps" and implementation type "SOAPTOREST" as "corsS2RApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "corsS2RApiId"
+    When I publish the "apis" resource with id "corsS2RApiId"
+    Then The lifecycle status of API "corsS2RApiId" should be "Published"
+    When I retrieve the "apis" resource with id "corsS2RApiId"
+    And I extract response field "context" and store it as "corsS2RContext"
+    When I have set up application with keys, subscribed to API "corsS2RApiId" with plan "Unlimited", and obtained access token for "corsS2RSubId"
+    Then The response status code should be 200
+
+    # The generated REST resource for the sayHello operation is POST /sayHello.
+    When I send a CORS preflight to gateway context "{{corsS2RContext}}/1.0.0/sayHello" with origin "http://localhost" and request method "POST" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
+    And The response header "Access-Control-Allow-Methods" should contain "POST"
+    And The response header "Access-Control-Allow-Headers" should contain "X-BrowserSessionID"
+
+    # Negative: a NORMAL (non pre-flight) POST (JSON body converted to SOAP) must NOT carry the pre-flight-only headers.
+    When I put the following JSON payload in context as "corsS2RBody"
+    """
+    {"name":"WSO2"}
+    """
+    And I invoke the API at gateway context "{{corsS2RContext}}/1.0.0/sayHello" with method "POST" using access token "generatedAccessToken" and payload "corsS2RBody" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain the header "Access-Control-Allow-Methods"
+    And The response should not contain the header "Access-Control-Allow-Headers"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
