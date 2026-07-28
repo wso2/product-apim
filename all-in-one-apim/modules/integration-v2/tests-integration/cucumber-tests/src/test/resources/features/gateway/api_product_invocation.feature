@@ -240,6 +240,45 @@ Feature: Gateway API Product Invocation
       | admin             |
       | admin@tenant1.com |
 
+  # D5: a product aggregating an API whose endpoint type is INLINE (mock implementation) is invocable
+  # through the product — the mediation script must be synced into the product's synapse config so the
+  # gateway can serve the mock response instead of failing with a suspended endpoint error.
+  @cap:gateway @feat:rest-invocation @rule:product @type:regression @dep:publisher
+  Scenario Outline: A mock (INLINE) endpoint API product is invocable at the gateway as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I import open api definition from "artifacts/payloads/OAS/OAS2ApiDefinition.json" , additional properties from "artifacts/payloads/OAS/OAS2AdditionalProperties.json" and create api as "mockApiId"
+    When I generate the mock implementation script for API "mockApiId"
+    Then The response status code should be 200
+    When I deploy the API with id "mockApiId"
+    Then The response status code should be 201
+    When I create an API product "${UNIQUE:MockProduct}" with context "${UNIQUE:mockProductCtx}" from API "mockApiId" as "mockProductId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "mockProdRev"
+    """
+    {"description":"mock product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "mockProductId" with payload "mockProdRev"
+    When I put the following JSON payload in context as "mockProdDeploy"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
+    """
+    And I make a request to deploy revision "revisionId" of "api-products" resource "mockProductId" with payload "mockProdDeploy"
+    Then The response status code should be 201
+    When I publish the "api-products" resource with id "mockProductId"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "mockProductId"
+    And I extract response field "context" and store it as "mockProductContext"
+    When I have set up application with keys, subscribed to API "mockProductId", and obtained access token for "mockProductSubId"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{mockProductContext}}/1.0.0/hello" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # D3: a request-flow operation policy (jsonToXML) on the source API's operation is applied when the operation
   # is invoked through a product — a JSON request body is transformed to XML before reaching the backend (which
   # echoes the body it received). Ports
