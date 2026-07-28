@@ -281,4 +281,18 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
             throw new IllegalStateException("Failed to read container file: " + containerPath, e);
         }
     }
+
+    /**
+     * Overwrites a file inside the RUNNING container with {@code content} (UTF-8). Used by the remote-logging
+     * tests to seed a {@code log4j2.properties} fixture the server then rewrites (e.g. one whose AUDIT_LOGFILE
+     * block is missing, to assert the config service creates it).
+     *
+     * <p>The mode is an explicit 0666 for the same reason as {@link #withServerFile}: a file copied in is
+     * root-owned while the server runs as {@code wso2carbon}, so anything the server must WRITE — and the
+     * logging service rewrites this file in place — has to be world-writable or the rewrite fails.</p>
+     */
+    public void writeContainerFile(String containerPath, String content) {
+        copyFileToContainer(Transferable.of(content.getBytes(java.nio.charset.StandardCharsets.UTF_8), 0666),
+                containerPath);
+    }
 }
