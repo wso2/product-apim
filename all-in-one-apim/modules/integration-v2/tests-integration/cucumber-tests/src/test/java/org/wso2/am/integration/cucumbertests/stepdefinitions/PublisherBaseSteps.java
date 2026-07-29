@@ -1879,12 +1879,19 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         String url = Utils.getApiExportURL(Utils.getBaseUrl(), actualApiId, "JSON");
 
-        // The export can transiently return a 200 zip that is MISSING its project definition (api.yaml/api.json):
-        // a just-created API is concurrently materialised by the Governance compliance evaluator through the same
-        // server-side ExportUtils temp directory (keyed only on <user>-<apiName>-<version>, NOT per-export), so
-        // one export empties the dir while the other is still zipping (carbon-apimgt race — see upstream report).
-        // Re-export until the archive is COMPLETE rather than letting a definition-less zip fail later as the
-        // confusing 900909 "cannot find the project definition" at import.
+        // TEMPORARY MITIGATION for a known PRODUCT defect — remove this retry once the product is fixed.
+        // Root cause (carbon-apimgt, NOT the test): concurrent exports of the same API by the same user collide
+        // in a shared, non-unique temp directory. ExportUtils/CommonUtil.archiveDirectory keys the working dir
+        // only on <user>-<apiName>-<version> (not per-export) and deletes it after zipping, so when the Governance
+        // compliance evaluator materialises a just-created API at the same time as this export, one empties the dir
+        // while the other is still zipping. The export then returns a 200 zip MISSING its project definition
+        // (api.yaml/api.json), which later fails at import with the confusing 900909 "cannot find the project
+        // definition". Same family as the WS tenant-flow leak and the RemoteServerLoggerData.getUsername() NPE —
+        // real product bugs the v2 suite surfaced; the durable fix is a unique-per-export temp dir in the product.
+        // Until that lands, re-export until the archive is COMPLETE so the intermittency self-heals and a genuine
+        // never-completes failure surfaces here (clear message) instead of downstream as the misleading 900909.
+        // TODO(remove-on-product-fix): delete this loop and go back to a single export once carbon-apimgt makes the
+        // export temp directory unique per export. Tracked in the export-race root-cause backlog item.
         long pollStart = System.currentTimeMillis();
         long deadline = pollStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         SimpleHTTPClient.DownloadResult result = null;

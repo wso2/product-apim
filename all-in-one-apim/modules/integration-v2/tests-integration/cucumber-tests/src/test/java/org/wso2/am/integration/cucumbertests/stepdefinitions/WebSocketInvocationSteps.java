@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,6 +58,14 @@ import java.util.concurrent.atomic.AtomicReference;
 public class WebSocketInvocationSteps {
 
     private static final Log log = LogFactory.getLog(WebSocketInvocationSteps.class);
+
+    // Handle to a background, continuous tenant-handshake flood (see the sustained-flood steps). A sustained flood
+    // keeps every event-loop thread poisoned for the WHOLE subscription arc (handshake -> connection_init -> the
+    // subscribe frame's scope check -> data), so wrapping an existing subscription assertion (data delivery,
+    // throttling) with it turns that assertion into a tenant-isolation guard for every tenant-scoped frame path.
+    private volatile java.util.List<Thread> sustainedFloodThreads;
+    private volatile java.util.concurrent.atomic.AtomicBoolean sustainedFloodRunning;
+    private volatile java.util.concurrent.atomic.AtomicInteger sustainedFloodReached;
 
 
     /**
@@ -517,6 +526,244 @@ public class WebSocketInvocationSteps {
                 + lastErrorOf(lastFailure) + authDetail);
         Assert.assertTrue(data.contains(expectedData),
                 "GraphQL subscription data did not contain '" + expectedData + "'; last message: " + data);
+    }
+
+    /**
+     * Regression assertion for the gateway WS tenant-flow leak (carbon-apimgt
+     * {@code InboundWebSocketProcessor.handleHandshake} calls {@code startTenantFlow()}/{@code setTenantDomain()}
+     * and never {@code endTenantFlow()}, leaking the handshake's tenant onto the shared netty event-loop thread).
+     *
+     * <p>Forces the interleave deterministically: opens the carbon.super victim graphql-ws connection, then during
+     * the pre-{@code connection_init} idle window floods {@code floodCount} concurrent handshakes to the tenant WS
+     * context — each reaches the gateway's {@code startTenantFlow} (poisoning the event-loop thread) before failing
+     * auth — and only THEN sends {@code connection_init}. On an unfixed gateway the victim's frame-auth inherits the
+     * leaked tenant, resolves the wrong key manager, and the gateway closes the connection with WS close 4001
+     * "Invalid JWT token". This step ASSERTS THE FIXED behaviour: the subscription authenticates (receives
+     * {@code connection_ack}, is NOT closed with 4001) despite the flood. It therefore FAILS on the current
+     * (unfixed) image with an {@link AssertionError} carrying the 4001 detail — that failure is the reproduction —
+     * and PASSES once the {@code endTenantFlow} fix ships in the gateway jar.
+     */
+    @When("I open a GraphQL subscription at gateway ws context {string} with query {string} using access token {string}, the subscription authenticates despite {int} concurrent handshakes to tenant ws context {string}")
+    public void graphqlSubscriptionSurvivesTenantHandshakeFlood(String context, String query, String accessToken,
+                                                                int floodCount, String tenantContext)
+            throws Exception {
+        String victimUrl = joinBase(Utils.getBaseGatewayWsUrl(), context);
+        String tenantUrl = joinBase(Utils.getBaseGatewayWsUrl(), tenantContext);
+        String token = TestContext.resolve(accessToken).toString();
+
+        HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
+        CompletableFuture<Void> ack = new CompletableFuture<>();
+        CompletableFuture<String> closed = new CompletableFuture<>();
+        WebSocket ws;
+        try {
+            ws = client.newWebSocketBuilder()
+                    .header("Authorization", "Bearer " + token)
+                    .subprotocols("graphql-ws")
+                    .connectTimeout(java.time.Duration.ofSeconds(15))
+                    .buildAsync(URI.create(victimUrl), new WebSocket.Listener() {
+                        private final StringBuilder parts = new StringBuilder();
+
+                        @Override
+                        public CompletionStage<?> onText(WebSocket webSocket, CharSequence part, boolean last) {
+                            parts.append(part);
+                            if (last) {
+                                String msg = parts.toString();
+                                parts.setLength(0);
+                                if (msg.contains("connection_ack")) {
+                                    ack.complete(null);
+                                } else if (msg.contains("Invalid JWT") || msg.contains("\"type\":\"error\"")) {
+                                    closed.complete("error-frame: " + msg);
+                                }
+                            }
+                            webSocket.request(1);
+                            return null;
+                        }
+
+                        @Override
+                        public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+                            closed.complete(statusCode + ":" + reason);
+                            return null;
+                        }
+
+                        @Override
+                        public void onError(WebSocket webSocket, Throwable error) {
+                            closed.complete("onError:" + error);
+                        }
+                    }).get(20, TimeUnit.SECONDS);
+        } catch (Exception connectFailed) {
+            closeQuietly(client);
+            Assert.fail("Victim graphql-ws handshake to " + victimUrl + " was refused before the flood could run "
+                    + "(the victim carbon.super token must upgrade cleanly): " + connectFailed);
+            return;   // unreachable; keeps ws definitely-assigned
+        }
+        try {
+            // The gateway brings up the backend WS leg asynchronously after the client handshake (the plain
+            // subscription flow sleeps here for the same reason). Use that idle window to flood the tenant
+            // handshakes so every event-loop thread is poisoned BEFORE connection_init drives the victim's
+            // frame-auth. No extra sleep beyond this backend-warmup wait.
+            int reached = floodTenantHandshakes(tenantUrl, token, floodCount);
+            log.info("[WS-LEAK] flooded " + reached + "/" + floodCount + " tenant handshakes during the idle window");
+
+            ws.sendText("{\"type\":\"connection_init\",\"payload\":{}}", true);
+
+            // Wait for connection_ack OR a close/error (the 4001 rejection). Whichever completes first.
+            CompletableFuture.anyOf(ack, closed).get(30, TimeUnit.SECONDS);
+            if (ack.isDone()) {
+                return;   // authenticated despite the flood — the FIXED behaviour
+            }
+            String detail = closed.isDone() ? closed.get() : "no connection_ack and no close within the deadline";
+            Assert.fail("GraphQL subscription was REJECTED while " + floodCount + " tenant handshakes flooded "
+                    + tenantUrl + " — the gateway refused a VALID carbon.super token (close/error: " + detail
+                    + "). This is the WS tenant-flow leak (InboundWebSocketProcessor.handleHandshake never calls "
+                    + "endTenantFlow); a 4001 'Invalid JWT token' here reproduces the bug and is EXPECTED to fail on "
+                    + "the current image, passing once the endTenantFlow fix is in the gateway jar.");
+        } catch (java.util.concurrent.TimeoutException noVerdict) {
+            // Neither ack nor a rejection arrived. Treat as inconclusive-but-failing: on the fixed gateway the ack
+            // is prompt, so a timeout here means the victim never authenticated under the flood.
+            Assert.fail("GraphQL subscription neither acked nor was rejected within the deadline while "
+                    + floodCount + " tenant handshakes flooded " + tenantUrl + " (no connection_ack observed).");
+        } finally {
+            try {
+                ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            } catch (Exception closeFailure) {
+                log.warn("Ignoring failure to send graphql-ws close frame: " + closeFailure.getMessage());
+            }
+            closeQuietly(client);
+        }
+    }
+
+    /**
+     * Fires {@code count} concurrent WS handshakes at {@code tenantUrl} carrying the victim's (carbon.super) token —
+     * valid for the super tenant but INVALID for tenant1.com, so each fails auth AFTER the gateway has already run
+     * {@code startTenantFlow()}/{@code setTenantDomain(tenant1.com)} on its event-loop thread (the leak). A
+     * handshake that upgrades and one that is rejected both reach that leak, so both count as "reached". Returns how
+     * many handshakes reached the server path. Ports {@code WsLeakRepro.floodTenant}.
+     */
+    private int floodTenantHandshakes(String tenantUrl, String token, int count) {
+        java.util.List<CompletableFuture<Integer>> flood = new java.util.ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            flood.add(CompletableFuture.supplyAsync(() -> {
+                HttpClient c = null;
+                try {
+                    c = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
+                    WebSocket w = c.newWebSocketBuilder()
+                            .header("Authorization", "Bearer " + token)
+                            .connectTimeout(java.time.Duration.ofSeconds(4))
+                            .buildAsync(URI.create(tenantUrl), new WebSocket.Listener() { })
+                            .get(4, TimeUnit.SECONDS);
+                    try {
+                        w.sendClose(WebSocket.NORMAL_CLOSURE, "x");
+                    } catch (Exception ignore) {
+                        // already closing
+                    }
+                    return 1;   // upgraded (also leaked)
+                } catch (Exception rejectedOrTimedOut) {
+                    // A 401/handshake failure STILL means the gateway reached startTenantFlow before auth → leaked.
+                    return 1;
+                } finally {
+                    if (c != null) {
+                        closeQuietly(c);
+                    }
+                }
+            }));
+        }
+        int reached = 0;
+        for (CompletableFuture<Integer> f : flood) {
+            try {
+                reached += f.get(8, TimeUnit.SECONDS);
+            } catch (Exception ignore) {
+                // a handshake that never returned is not counted; the poisoning still happened server-side
+            }
+        }
+        return reached;
+    }
+
+    /**
+     * Starts a background, CONTINUOUS tenant-handshake flood: {@code concurrency} daemon threads each open→close WS
+     * handshakes at {@code tenantContext} back-to-back (carrying the victim's carbon.super token, which is INVALID
+     * for the tenant, so each reaches {@code startTenantFlow()}/{@code setTenantDomain(tenant)} before failing auth —
+     * poisoning event-loop threads). Unlike the one-shot {@code floodTenantHandshakes} used by the auth canary, this
+     * keeps threads poisoned for the WHOLE subscription arc that follows, so the subscribe frame's tenant-scoped
+     * scope check (and throttle lookup) runs on a poisoned thread. Pair with {@code I stop the sustained flood}.
+     * Each flood thread runs handshakes sequentially (its own thread) rather than via the common ForkJoinPool, so it
+     * never starves the victim subscription's own async WS client.
+     */
+    @When("I start a sustained flood of {int} concurrent tenant handshakes to tenant ws context {string} using access token {string}")
+    public void startSustainedTenantFlood(int concurrency, String tenantContext, String accessToken) {
+        String tenantUrl = joinBase(Utils.getBaseGatewayWsUrl(), tenantContext);
+        String token = TestContext.resolve(accessToken).toString();
+        java.util.concurrent.atomic.AtomicBoolean running = new java.util.concurrent.atomic.AtomicBoolean(true);
+        java.util.concurrent.atomic.AtomicInteger reached = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.List<Thread> threads = new java.util.ArrayList<>();
+        for (int i = 0; i < concurrency; i++) {
+            Thread t = new Thread(floodLoop(tenantUrl, token, running, reached), "sustained-tenant-flood-" + i);
+            t.setDaemon(true);
+            t.start();
+            threads.add(t);
+        }
+        this.sustainedFloodRunning = running;
+        this.sustainedFloodReached = reached;
+        this.sustainedFloodThreads = threads;
+        log.info("[WS-LEAK] sustained tenant-handshake flood started: " + concurrency + " threads -> " + tenantUrl);
+    }
+
+    /**
+     * Stops the sustained flood started above, joins its threads, and asserts it actually reached the gateway at
+     * least once — a zero-reach flood is a no-op that could not have exercised the tenant-leak interleave, so it must
+     * fail loudly rather than give false confidence.
+     */
+    @Then("I stop the sustained flood")
+    public void stopSustainedTenantFlood() throws InterruptedException {
+        if (sustainedFloodRunning != null) {
+            sustainedFloodRunning.set(false);
+        }
+        if (sustainedFloodThreads != null) {
+            for (Thread t : sustainedFloodThreads) {
+                t.join(8000);
+            }
+        }
+        int total = sustainedFloodReached != null ? sustainedFloodReached.get() : 0;
+        sustainedFloodThreads = null;
+        sustainedFloodRunning = null;
+        sustainedFloodReached = null;
+        log.info("[WS-LEAK] sustained tenant-handshake flood stopped: " + total + " handshakes reached the gateway");
+        Assert.assertTrue(total > 0, "The sustained tenant-handshake flood reached the gateway 0 times — it was a "
+                + "no-op and could not have exercised the tenant-leak interleave (check the tenant WS context/token).");
+    }
+
+    /**
+     * One flood thread's loop: open→close a tenant WS handshake back-to-back until stopped. Both an upgrade and a
+     * rejection count as "reached" — either way the gateway ran startTenantFlow before auth (the poisoning point).
+     */
+    private Runnable floodLoop(String tenantUrl, String token,
+                               java.util.concurrent.atomic.AtomicBoolean running,
+                               java.util.concurrent.atomic.AtomicInteger reached) {
+        return () -> {
+            while (running.get()) {
+                HttpClient c = null;
+                try {
+                    c = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
+                    WebSocket w = c.newWebSocketBuilder()
+                            .header("Authorization", "Bearer " + token)
+                            .connectTimeout(java.time.Duration.ofSeconds(4))
+                            .buildAsync(URI.create(tenantUrl), new WebSocket.Listener() { })
+                            .get(4, TimeUnit.SECONDS);
+                    reached.incrementAndGet();
+                    try {
+                        w.sendClose(WebSocket.NORMAL_CLOSURE, "x");
+                    } catch (Exception ignore) {
+                        // already closing
+                    }
+                } catch (Exception rejectedOrTimedOut) {
+                    // A 401/handshake failure STILL means the gateway reached startTenantFlow before auth → poisoned.
+                    reached.incrementAndGet();
+                } finally {
+                    if (c != null) {
+                        closeQuietly(c);
+                    }
+                }
+            }
+        };
     }
 
     /**

@@ -157,6 +157,19 @@ mutable.**
   call — there is nothing to centralize. The layering is deliberate: `SimpleHTTPClient` = raw HTTP (all calls
   go through it; the home for cross-cutting HTTP concerns); `Requests` = the thin layer that additionally
   publishes the response as the step's assertion target.
+- **Transient `900967` "General Error" is absorbed at the client — steps never retry on `5xx`.** Under
+  parallel-lane load the management API intermittently answers a `5xx` with body `{"code":900967,...,"General
+  Error",...}` (e.g. a just-created API racing the Governance compliance evaluator). `SimpleHTTPClient` retries
+  this transparently on **every** call — `withGeneralErrorRetry` for `HttpResponse` methods and the same gate
+  inside `doGetToFile` for binary downloads — matching ONLY that code+message, so a real `4xx` or a different
+  `5xx` still returns first-try. Load flakiness is a given and handled here, once; a step issues a SINGLE
+  call and asserts, and must **not** hand-roll a retry-on-`5xx` loop around an export/download:
+  ```java
+  // right — the client already rode out any transient 900967; the step just asserts the outcome
+  DownloadResult r = Requests.getToFile(exportUrl, headers, ".zip");
+  Assert.assertEquals(r.getStatusCode(), 200, "export failed: status=" + r.getStatusCode());
+  Assert.assertTrue(Utils.zipContainsEntryNamed(r.getFile(), "api.json"), "exported archive is incomplete");
+  ```
 - **Retry-until-status loops funnel through `Utils.retryUntil` — never hand-roll the loop.** It owns the
   deadline (floored at `Constants.RUNTIME_PROPAGATION_TIMEOUT`), the tiered `pollPause` pacing and the
   exception policy: only `IOException` is retried (transient gateway warm-up), so a bad token/payload context
@@ -189,6 +202,32 @@ source, so it compiles against the stale jar and fails with "cannot find symbol"
 mvn install -pl tests-common/integration-test-utils -DskipTests
 ```
 (A `test-compile … -am` masks this because `-am` rebuilds the upstream module in-reactor; the bare run does not.)
+
+**Rebuilding the APIM container image after a PRODUCT change (carbon-apimgt or distribution).** A product-code
+change does NOT reach a test run by installing the jar to `.m2` — the container runs the product from a
+**distribution zip baked into the image**, not from `.m2`. `mvn test` deliberately **reuses** the existing
+`wso2am:${apim.server.version}-jdk21` image, so it will keep running the OLD product until the image is rebuilt.
+The chain, and how to refresh it:
+1. **Rebuild the product zip with your change.** Install carbon-apimgt (`mvn install` there) so the fixed jar
+   is in `.m2`, then rebuild the distribution so `all-in-one-apim/modules/distribution/product/target/wso2am-${apim.server.version}.zip`
+   bundles it (verify: the zip's `repository/components/plugins/org.wso2.carbon.apimgt.gateway_<ver>.jar` is the
+   fixed one — OSGi bundles use an **underscore** before the version, not a hyphen).
+2. **Rebuild the image** from the integration-v2 root:
+   ```
+   mvn clean install -Dmaven.test.skip=true -Ddocker.extra.hosts="--no-cache"
+   ```
+   The image-build execs (`start-server`, `wait-for-server`, `build-node-app-docker-image`,
+   `build-apim-docker-image`, `pull-is-docker-image`) live in `tests-common/testcontainers/pom.xml` bound to the
+   **`pre-integration-test`** phase. Plain `install` **does** run them — `install` sits after `pre-integration-test`
+   in the lifecycle, so you do NOT need `verify`. `-Dmaven.test.skip=true` skips the suite but NOT the exec-plugin
+   image builds. `start-server` serves the sibling `distribution/product/target` dir over `:8000`, and
+   `build-apim-docker-image` does `docker build ${docker.extra.hosts} …/docker-apim.git… --build-arg
+   WSO2_SERVER_DIST_URL=http://host.docker.internal:8000/${apim.server.name}.zip` — so setting
+   `docker.extra.hosts=--no-cache` forces a cache-free rebuild that re-pulls the fresh zip (essential — a cached
+   layer would silently reuse the old zip). `mvn clean` at integration-v2 does not touch the sibling
+   `distribution/product/target`, so the zip you built in step 1 survives and is what gets served.
+3. Now `mvn test` runs against the refreshed image. (Sanity check: `docker images | grep wso2am` — the
+   `CreatedSince` should be "seconds/minutes ago", not hours; a stale timestamp means the image did not rebuild.)
 
 ## 9. Copyright header
 New `.java` files require the standard WSO2 license header. Use the **current year** — do not copy a
