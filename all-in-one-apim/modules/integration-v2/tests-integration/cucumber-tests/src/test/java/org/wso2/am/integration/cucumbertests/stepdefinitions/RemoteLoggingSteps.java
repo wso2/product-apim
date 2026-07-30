@@ -34,6 +34,7 @@ import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -198,14 +199,15 @@ public class RemoteLoggingSteps {
      */
     @Then("the {string} log appender should become {string} within {int} seconds")
     public void appenderShouldBecome(String appenderName, String expectedType, int timeoutSeconds) throws Exception {
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 10000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
         String actual = null;
         while (System.currentTimeMillis() < end) {
             actual = appenderType(log4j2Content(), appenderName);
             if (expectedType.equals(actual)) {
                 return;
             }
-            Thread.sleep(POLL_INTERVAL_MILLIS);
+            Utils.pollPause(endStart, 2000);
         }
         Assert.assertEquals(actual, expectedType,
                 appenderName + " appender type did not become " + expectedType + " within the deadline");
@@ -342,13 +344,18 @@ public class RemoteLoggingSteps {
     /** Asserts the mock sink receives at least one payload within the deadline, re-triggering audit actions. */
     @Then("the mock log sink should receive a log payload within {int} seconds")
     public void sinkShouldReceivePayload(int timeoutSeconds) throws Exception {
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 10000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
         while (System.currentTimeMillis() < end) {
             if (!sinkPayloads.isEmpty()) {
                 return;
             }
-            triggerAuditLogEntry();
-            Thread.sleep(2000);
+            try {
+                triggerAuditLogEntry();
+            } catch (IOException transientFailure) {
+                // transient — the sink check above is the assertion; keep polling within the deadline
+            }
+            Utils.pollPause(endStart, 2000);
         }
         Assert.assertFalse(sinkPayloads.isEmpty(), "Mock log sink received no log payload within the deadline");
     }
@@ -361,7 +368,8 @@ public class RemoteLoggingSteps {
      */
     @Then("the mock log sink should stop receiving payloads within {int} seconds")
     public void sinkShouldStopReceiving(int timeoutSeconds) throws Exception {
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 20000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 20000L);
         int last = -1;
         int stableRounds = 0;
         while (System.currentTimeMillis() < end) {
@@ -374,12 +382,19 @@ public class RemoteLoggingSteps {
                 stableRounds = 0;
                 last = now;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endStart, 2000);
         }
         // The stream has quiesced — a fresh audit action must now NOT reach the sink (appender is local again).
         int before = sinkPayloads.size();
         triggerAuditLogEntry();
-        Thread.sleep(5000);
+        // Bounded NEGATIVE-observation window: absence of a payload cannot be polled for, so we watch for a
+        // fixed span and assert nothing arrived — but exit as soon as one does, so a genuine failure surfaces
+        // immediately instead of after the whole window. The passing path still observes the full span.
+        long watchStart = System.currentTimeMillis();
+        long watchEnd = watchStart + 5000L;
+        while (System.currentTimeMillis() < watchEnd && sinkPayloads.size() == before) {
+            Utils.pollPause(watchStart, 500L);
+        }
         Assert.assertEquals(sinkPayloads.size(), before,
                 "Mock sink still received a payload after remote logging was disabled and the stream quiesced");
     }

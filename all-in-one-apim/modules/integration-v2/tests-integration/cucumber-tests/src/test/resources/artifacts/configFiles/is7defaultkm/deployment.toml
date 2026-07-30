@@ -1,0 +1,15 @@
+# APIM overlay for the WSO2-IS-7 default-key-manager block (plan item #24). Merged onto base+basic by
+# BlockLifecycleListener (tomlExtraOverlayPath). Enables the documented tenant-sharing-with-WSO2-IS-7 default-KM
+# path (administer/multitenancy/tenant-sharing-with-wso2is7): a tenant provisioned through the tenant-sharing
+# notify endpoint (/internal/data/v1/notify) is auto-configured with a WSO2-IS-7 key manager instead of the
+# Resident Key Manager. skip_create_resident_key_manager suppresses the Resident KM for ALL tenants (including
+# super); auto_configure_key_manager creates the WSO2-IS-7 KM record on tenant-created events (no IS round-trip
+# at creation time - probed). identity_server_base_url is stamped into the KM but not fetched at creation.
+[apim.key_manager]
+skip_create_resident_key_manager = true
+
+[[apim.tenant_sharing]]
+type = "WSO2-IS-7"
+[apim.tenant_sharing.properties]
+auto_configure_key_manager = true
+identity_server_base_url = "https://wso2is:9443"

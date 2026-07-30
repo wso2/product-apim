@@ -97,7 +97,8 @@ public class DevPortalSwaggerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        long deadline = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long deadline = System.currentTimeMillis()
+                + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
         HttpResponse last = null;
         String lastServers = null;
         String host = null;

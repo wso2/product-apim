@@ -52,7 +52,8 @@ public class SecondaryUserStoreSteps {
             throws Exception {
         String user = Utils.resolveContextPlaceholders(userName);
         String resolvedRoles = Utils.resolveContextPlaceholders(roles);
-        long deadline = System.currentTimeMillis() + 60000L;
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + 60000L;
         while (true) {
             try {
                 TenantUserProvisioner.addUserInStore(tenantDomain, user, password, resolvedRoles);
@@ -61,7 +62,7 @@ public class SecondaryUserStoreSteps {
                 if (System.currentTimeMillis() >= deadline || !String.valueOf(e.getMessage()).contains("Invalid Domain")) {
                     throw e;
                 }
-                Thread.sleep(3000);
+                Utils.pollPause(deadlineStart, 3000);
             }
         }
     }

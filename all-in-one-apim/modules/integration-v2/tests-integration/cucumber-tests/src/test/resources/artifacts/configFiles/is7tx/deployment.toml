@@ -1,0 +1,11 @@
+# APIM overlay for the RFC 8693 token-exchange block. Merged (deep-merge) on top of base+basic, so the shipped
+# distribution config - which already enables the token-exchange grant ([oauth.grant_type.token_exchange]
+# enable=true, allow_refresh_tokens=true, iat_validity_period="1h") - is inherited.
+#
+# The one behaviour this block adds: enforce JWT type-header validation at the gateway. With this on, the
+# Resident Key Manager's TypeEnforcedJWTValidatorImpl only accepts self-contained JWTs whose header typ is
+# "at+jwt" (RFC 9068 access tokens) - so the at+jwt token the exchange issues is accepted, while an OIDC id_token
+# (no at+jwt type header) is refused (900905). This is what lets the block pin "ID tokens cannot invoke gateway
+# APIs" alongside the token-exchange happy paths.
+[apim.token.validation]
+enforce_type_header_validation = true

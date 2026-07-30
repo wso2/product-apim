@@ -67,6 +67,11 @@ capabilities:
       throttling-policies: { name: Throttling policy CRUD }
       workflows:           { name: Approval workflows }
       key-manager-config:  { name: Key manager registration & config }
+      # Runtime integration of a third-party key manager (WSO2 IS 7.x connector): end-to-end token flows,
+      # grant types, introspection/PEM validation modes, IS-side role creation & enforcement, revocation,
+      # RFC 8693 token exchange, and tenant-sharing KM auto-configuration. Distinct from key-manager-config
+      # (the admin REST CRUD of KM entries) — this is whether a registered external KM actually works.
+      external-key-manager: { name: External key manager integration (WSO2 IS 7.x) }
       environments:        { name: Gateway environments }
       tenants-orgs:        { name: Tenants & organizations }
       application-management: { name: Admin application search & management }

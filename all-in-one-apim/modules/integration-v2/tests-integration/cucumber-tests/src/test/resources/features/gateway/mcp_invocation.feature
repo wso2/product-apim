@@ -157,13 +157,15 @@ Feature: MCP tool invocation through the gateway
     # The DirectBackend (OpenAPI) subtype rejects an invalid token at tools/call with 403 (the proxy subtype
     # returns 401 — a verified per-subtype difference); asserted strictly so a future code change is caught.
     When I invoke the MCP server at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 403 within 60 seconds
-    # Replace the tool set with [new delete_oldpets, kept get_pets], redeploy, and require tools/list to advertise
-    # exactly that order.
-    When I update the MCP server "mcpId" replacing its tools with "DELETE /oldpets" then "get_pets" re-described as "Return a list of pets"
+    # Tool-update → redeploy → GATEWAY propagation (ports the legacy tool-operations arc; assertions hardened
+    # per upstream PR #14237: tools/list names parsed and compared as a SET, order-independent): removing a
+    # tool and deploying a new revision drops it from the gateway's advertised list (the rest stay), and
+    # calling the removed tool now errors.
+    When I update the MCP server "mcpId" removing tool "get_pets_by_petId"
     Then The response status code should be 200
-    And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
     When I deploy the "mcp-servers" resource with id "mcpId"
-    Then the MCP server should advertise tools in order "delete_oldpets,get_pets" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" within 90 seconds
+    When I list MCP tools at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting tools "get_pets" and not "get_pets_by_petId" within 90 seconds
+    When I invoke the MCP tool "get_pets_by_petId" with arguments "{\"petId\":\"123\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting an error within 90 seconds
     When I delete the MCP server "mcpId"
 
     Examples:

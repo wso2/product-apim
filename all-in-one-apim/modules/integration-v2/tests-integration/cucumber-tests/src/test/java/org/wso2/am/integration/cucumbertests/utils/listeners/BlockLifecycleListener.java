@@ -24,6 +24,7 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
+import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
@@ -32,12 +33,14 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.IdentityServerContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.NodeAppServer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.Semaphore;
 
 /**
  * Per-block lifecycle for the parallel-on-shared-container lane. Fires once per TestNG {@code <test>}
@@ -103,6 +106,52 @@ public class BlockLifecycleListener implements ITestListener {
      * facility that replaces the seeded {@code .mv.db} fixture. See {@link SecondaryUserStoreProvisioner}.
      */
     static final String PARAM_INIT_SECONDARY_USER_STORE = "initSecondaryUserStore";
+    /**
+     * When {@code true}, provisions the external-Identity-Server INFRASTRUCTURE for this block: APIM's
+     * client-truststore is augmented with the IS TLS cert BEFORE APIM boots (via
+     * {@link DynamicApimContainer#withExternalKmTrust}), so APIM trusts {@code https://wso2is:9443}; and after
+     * APIM is ready and tenants/users are provisioned, the {@code IdentityServerContainer} is started, its OIDC
+     * discovery is awaited, and the host-mapped IS base URL is published to the block's shared scope under
+     * {@link #IS_BASE_URL_KEY}. This is deliberately infrastructure ONLY — registering IS as a key manager is
+     * ADMIN PRODUCT BEHAVIOUR and is done by the features themselves ({@code I create a key manager from
+     * payload …}, typically in a {@code _setup_*} fixture or inline where registration is the subject). The IS
+     * toml can be extended per block via {@link #PARAM_IS_TOML_EXTRA_OVERLAY}.
+     */
+    static final String PARAM_BOOT_EXTERNAL_IS = "bootExternalIdentityServer";
+    /**
+     * When {@code true}, this block's APIM binds the fixed {@code wso2am} shared-network alias and becomes the
+     * receiver of the external IS's reverse-channel notifications (token-revocation / tenant-sync POSTs to
+     * {@code https://wso2am:9443/internal/data/v1/notify}). The alias is fixed — baked into the IS toml and the
+     * wso2am.p12 cert — so at most one LIVE container may hold it (duplicate holders make Docker DNS route
+     * notifications to an arbitrary APIM). The listener enforces this with a JVM-wide permit
+     * ({@link #IS_NOTIFY_ALIAS_PERMIT}): holder blocks queue for the permit before booting and release it after
+     * their container stops, serializing ONLY among themselves — alias-free external-KM blocks (which make
+     * APIM→IS calls only) keep running fully concurrently under {@code parallel="tests"}. Set this on every
+     * block whose tests assert on a delivered notification (e.g. the self-validate revoke→401 walk); leave it
+     * off everywhere else. See {@link DynamicApimContainer#withExternalIsNotificationAlias}.
+     */
+    static final String PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS = "receiveExternalIsNotifications";
+    /**
+     * JVM-wide permit backing {@link #PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS}: at most one live container may
+     * hold the {@code wso2am} alias, so holder blocks serialize on this while all other blocks run free. A
+     * {@link Semaphore} (not a lock) because acquire happens on the block's onStart thread and release on its
+     * onFinish thread. Release is guarded by {@link #ALIAS_PERMIT_HELD_ATTRIBUTE} so the boot-failure path and
+     * onFinish can't double-release.
+     */
+    private static final Semaphore IS_NOTIFY_ALIAS_PERMIT = new Semaphore(1);
+    /** Test-context attribute marking that this block holds {@link #IS_NOTIFY_ALIAS_PERMIT} (single-release guard). */
+    private static final String ALIAS_PERMIT_HELD_ATTRIBUTE = "isNotifyAliasPermitHeld";
+    /**
+     * Optional block param: module-relative path of an IS deployment.toml EXTRA overlay, appended AFTER the
+     * built-in external-key-manager overlay (additive, mirroring the APIM {@code tomlExtraOverlayPath}
+     * semantics) so a block can boot IS with block-specific config (e.g. the tenant-sync listener). Distinct
+     * extra overlays map to distinct IS containers ({@link IdentityServerContainer#getInstance(String, String)});
+     * note distinct overlays cannot run in parallel within one JVM (see that method) - they belong in separate
+     * suites.
+     */
+    static final String PARAM_IS_TOML_EXTRA_OVERLAY = "isTomlExtraOverlayPath";
+    /** Shared-scope key holding the host-mapped external IS base URL (for scenarios requesting a token from IS). */
+    static final String IS_BASE_URL_KEY = "isBaseUrl";
 
     @Override
     public void onStart(ITestContext context) {
@@ -130,6 +179,10 @@ public class BlockLifecycleListener implements ITestListener {
                 logger.info("Block '" + label + "' ensured NodeAppServer backend is running");
             }
 
+            // IS infrastructure only. Registering IS as a key manager is admin product behaviour and lives in
+            // the features (see PARAM_BOOT_EXTERNAL_IS javadoc).
+            boolean bootExternalIs = Boolean.parseBoolean(param(context, PARAM_BOOT_EXTERNAL_IS));
+
             container = new DynamicApimContainer(label, resolveTomlContent(context));
             container.withLabel("block", label);
             // Boot-time server files (see PARAM_SERVER_FILES_TO_COPY): copied before start so boot-only
@@ -150,6 +203,22 @@ public class BlockLifecycleListener implements ITestListener {
             // Opt-in integration coverage: attach the JaCoCo agent before boot (see CoverageSupport).
             if (CoverageSupport.enabled()) {
                 container.withCoverage();
+            }
+            // External IS: augment APIM's truststore with the IS TLS cert BEFORE boot (the JVM reads the
+            // truststore once at start), so APIM trusts https://wso2is:9443 for the federated OIDC/JWKS/
+            // introspection calls. Needed whenever IS is booted, independent of KM registration.
+            if (bootExternalIs) {
+                container.withExternalKmTrust();
+            }
+            // Reverse-channel receiver (opt-in): queue for the JVM-wide alias permit, then bind the fixed
+            // wso2am alias so IS's notification POSTs reach THIS container. Holder blocks serialize among
+            // themselves here; alias-free external-KM blocks never touch the permit and stay concurrent.
+            if (Boolean.parseBoolean(param(context, PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS))) {
+                logger.info("Block '" + label + "' waiting for the wso2am notification-alias permit"
+                        + (IS_NOTIFY_ALIAS_PERMIT.availablePermits() == 0 ? " (held by another block)" : ""));
+                IS_NOTIFY_ALIAS_PERMIT.acquireUninterruptibly();
+                context.setAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
+                container.withExternalIsNotificationAlias();
             }
             container.start();
 
@@ -178,6 +247,13 @@ public class BlockLifecycleListener implements ITestListener {
             if (Boolean.parseBoolean(param(context, PARAM_INIT_SECONDARY_USER_STORE))) {
                 SecondaryUserStoreProvisioner.provision(container, Constants.SUPER_TENANT_DOMAIN, "tenant1.com");
             }
+
+            // External IS: start IS on the shared network and publish its host-mapped base URL. Done AFTER
+            // provisioning so a super-admin token exists for any subsequent admin REST call. APIM's truststore
+            // was already augmented above (before boot), so federated OIDC / JWKS / introspection calls trust IS.
+            if (bootExternalIs) {
+                bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY));
+            }
         } catch (Throwable t) {
             context.setAttribute(BOOT_ERROR_ATTRIBUTE, t);
             // Not "skipped": BaseBlockRunner's @BeforeClass rethrows this bootError, so the block's classes
@@ -193,6 +269,9 @@ public class BlockLifecycleListener implements ITestListener {
                     logger.warn("Block '" + label + "' failed-container stop() also failed", stopErr);
                 }
             }
+            // A boot failure after the alias permit was acquired must free it here — onFinish also releases,
+            // but only-if-held, so the two paths can't double-release (see releaseAliasPermitIfHeld).
+            releaseAliasPermitIfHeld(context);
         } finally {
             // Defensive hygiene: never leave this block's scope bound to the (pooled) thread that ran
             // onStart. Per-invocation scoping in BlockScopeListener already resets scope before any body
@@ -232,8 +311,24 @@ public class BlockLifecycleListener implements ITestListener {
                         + "' container stopped; dynamic host ports released by Docker");
             }
         } finally {
+            // AFTER the container is stopped (its wso2am alias is gone from the network only then), hand the
+            // notification-alias permit to the next queued holder block. No-op if this block never held it or
+            // the boot-failure path already released it.
+            releaseAliasPermitIfHeld(context);
             TestContext.clear();
             TestContext.clearScope();
+        }
+    }
+
+    /**
+     * Releases {@link #IS_NOTIFY_ALIAS_PERMIT} exactly once per holding block: the held-marker attribute is
+     * flipped before releasing, so whichever of the two callers (boot-failure catch, onFinish) runs second
+     * finds it cleared and no-ops — a double release would let two alias holders run live simultaneously.
+     */
+    private static void releaseAliasPermitIfHeld(ITestContext context) {
+        if (Boolean.TRUE.equals(context.getAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE))) {
+            context.setAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.FALSE);
+            IS_NOTIFY_ALIAS_PERMIT.release();
         }
     }
 
@@ -279,6 +374,41 @@ public class BlockLifecycleListener implements ITestListener {
         }
         logger.info("Block '" + label + "' provisioned tenant set '"
                 + (tenantSet == null || tenantSet.isBlank() ? "default" : tenantSet) + "'");
+    }
+
+    /**
+     * Starts (or reuses) the external WSO2 IS container for this block's IS toml overlay, waits for its OIDC
+     * discovery to serve 200, and publishes its host-mapped base URL under {@link #IS_BASE_URL_KEY}. Does NOT
+     * register a key manager. The IS singleton(s) are reaped by Ryuk at JVM exit (not per block), like
+     * {@code NodeAppServer} - stopping one per block would break sibling blocks sharing it.
+     *
+     * @param isTomlExtraOverlayPath module-relative path of an IS EXTRA overlay toml appended after the built-in
+     *                               overlay, or {@code null}/blank for none
+     */
+    private void bootExternalIdentityServer(String label, String isTomlExtraOverlayPath) throws java.io.IOException {
+
+        IdentityServerContainer is;
+        if (isTomlExtraOverlayPath != null && !isTomlExtraOverlayPath.isBlank()) {
+            String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
+            String extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
+            is = IdentityServerContainer.getInstance(isTomlExtraOverlayPath, extraContent);
+        } else {
+            is = IdentityServerContainer.getInstance();
+        }
+        String isBaseUrl = is.getBaseHttpsUrl();
+        if (!ServerReadiness.awaitIdentityServerReady(isBaseUrl)) {
+            throw new IllegalStateException("External Identity Server for block '" + label
+                    + "' did not become ready within " + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
+        }
+        TestContext.setShared(IS_BASE_URL_KEY, isBaseUrl);
+        // Seed the IS integration actor (CLAUDE.md §14: actor-registry seeding is provisioner-legitimate) so
+        // steps operating on IS's management plane authenticate through IntegrationActors instead of
+        // hand-building credentials, and ISResourceCleanup can sweep their resources as this principal.
+        IntegrationActors.register(new IntegrationActors.IntegrationActor(IntegrationActors.IS,
+                Constants.SUPER_TENANT_ADMIN_USERNAME, Constants.SUPER_TENANT_ADMIN_PASSWORD, isBaseUrl));
+        logger.info("Block '" + label + "' booted external Identity Server (extra overlay='"
+                + (isTomlExtraOverlayPath == null || isTomlExtraOverlayPath.isBlank() ? "none"
+                        : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl);
     }
 
     private String resolveTomlContent(ITestContext context) throws java.io.IOException {

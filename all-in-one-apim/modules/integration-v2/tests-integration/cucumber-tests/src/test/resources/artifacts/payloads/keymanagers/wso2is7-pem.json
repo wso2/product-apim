@@ -1,0 +1,43 @@
+{
+  "name": "${UNIQUE:Wso2Is7KmPem}",
+  "displayName": "WSO2 IS 7 External Key Manager",
+  "type": "WSO2-IS-7",
+  "description": "WSO2 IS 7.x third-party key manager with PEM-certificate self-validation: certificates.value = base64 of the IS image TOKEN-SIGNING cert (artifacts/certs/is7signing/is7-signing.pem; pinned to wso2/wso2is:7.3.0 - regenerate if the image cert changes).",
+  "issuer": "https://wso2is:9443/oauth2/token",
+  "tokenEndpoint": "https://wso2is:9443/oauth2/token",
+  "introspectionEndpoint": "https://wso2is:9443/oauth2/introspect",
+  "revokeEndpoint": "https://wso2is:9443/oauth2/revoke",
+  "authorizeEndpoint": "https://wso2is:9443/oauth2/authorize",
+  "userInfoEndpoint": "https://wso2is:9443/scim2/Me",
+  "scopeManagementEndpoint": "https://wso2is:9443/api/identity/oauth2/v1.0/scopes",
+  "clientRegistrationEndpoint": "https://wso2is:9443/api/identity/oauth2/dcr/v1.1/register",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableOAuthAppCreation": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableSelfValidationJWT": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "refresh_token",
+    "authorization_code",
+    "urn:ietf:params:oauth:grant-type:device_code",
+    "urn:ietf:params:oauth:grant-type:jwt-bearer",
+    "urn:ietf:params:oauth:grant-type:saml2-bearer"
+  ],
+  "certificates": {
+    "type": "PEM",
+    "value": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQ2VENDQXRHZ0F3SUJBZ0lVWmxQVThnaXdRK1BSeHBkNFRmTG91eEVwMHlJd0RRWUpLb1pJaHZjTkFRRUwNCkJRQXdZakVMTUFrR0ExVUVCaE1DVlZNeEN6QUpCZ05WQkFnTUFrTkJNUlF3RWdZRFZRUUhEQXRUWVc1MFlTQkQNCmJHRnlZVEVOTUFzR0ExVUVDZ3dFVjFOUE1qRU5NQXNHQTFVRUN3d0VWMU5QTWpFU01CQUdBMVVFQXd3SmJHOWoNCllXeG9iM04wTUI0WERUSTJNRFF3TmpBeU16SXhPVm9YRFRJNE1EY3dPVEF5TXpJeE9Wb3dZakVMTUFrR0ExVUUNCkJoTUNWVk14Q3pBSkJnTlZCQWdNQWtOQk1SUXdFZ1lEVlFRSERBdFRZVzUwWVNCRGJHRnlZVEVOTUFzR0ExVUUNCkNnd0VWMU5QTWpFTk1Bc0dBMVVFQ3d3RVYxTlBNakVTTUJBR0ExVUVBd3dKYkc5allXeG9iM04wTUlJQklqQU4NCkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXBLcmNYbm9BVTgydGY3bGZySzduWGx5ME5YR3UNCm9vSzU5NzZjQXBvczllS0ZkM0kybG43UEVaRWtlVzVVK2JzeC9mU1lCblNsZjRyQ0QzeEdJNzlIODZkZkptNngNCmV3TWVZa0dXK2dxL3F5QkpXUitxQjRNU2JoMExSY2kzc3dwVk1mVjRDKzRqT0owUW1TanByMDR0b1h6K3lSTzENCllRSWZabk84RVNsU2J5Mmd4bmFpbUFrZ2pkdjRwWkp2NFNLMllFUWlPc1VrWWtsUmNrTXhWTzNnL2w0UklQODMNCnlCUkxKYVU1SWlZLzBZeUtlUjNYSU0xUUR2KzBaekkxM01TUGhiMlRZekhldndnWjljUG5BRE1CVC9SdFJnOXkNCjVqc2NBK0EvRmREY1ovUUxzcldNWU5xcDlBbE5Cdktzc3JxWlE2UHJmQStZbmdZdTlyWElHM0J1VXdJREFRQUINCm80R1dNSUdUTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3Q3dZRFZSMFBCQVFEQWdMME1CMEdBMVVkSlFRV01CUUcNCkNDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQVVCZ05WSFJFRURUQUxnZ2xzYjJOaGJHaHZjM1F3SFFZRFZSME8NCkJCWUVGQnUwbnlhRVlxelEveDZwMW5McVJ4N1pJQ0FHTUI4R0ExVWRJd1FZTUJhQUZCdTBueWFFWXF6US94NnANCjFuTHFSeDdaSUNBR01BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQUVPYm9QcWx2SHdyeWlZc3VQbXRUd1ByNDcNCm5VeGlJZ29DY3BrcWFockpyQmd4QWlrLzdWbzR5UUNPL214dUtGdjVMdzEyb3FvRXFjQURKTjVDU1ZnN0QzeGcNCkM5OFhycTBWaWxYdVNWS25PQlVCYkdQeVNYeTBUdmxhTkM3N3p2VGRVM2JJUXVaK25sV21DNjZrRzY0R3d6ZVkNCm9TUXZXM2dVSksxQW90ZmZRM3R3aStwQ3h5T3lZY0R4OTlVMjY4UEVkNTNQbXBVSTYrbjRYTk02dStZaTVWY3gNCkQ5ZENlN2tlRHZTaFFNTjVUYXRldEd2Snd6WEY1UmRYZ2FlTkt3VnNQcjZrZ3Z2MzJaR0txSnZVQXNvMlpPZWcNCkdNSFc4cXpaN3VFaGRHU1l2NUpNOFBzSUt0WmsvbE4rWVRZZkxIRHQxUXpPc2QxQ2lJQ2pucW1leTJPcQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+  },
+  "additionalProperties": {
+    "Authentication": "BasicAuth",
+    "api_resource_management_endpoint": "https://wso2is:9443/api/server/v1/api-resources",
+    "is7_roles_endpoint": "https://wso2is:9443/scim2/v2/Roles",
+    "Username": "admin",
+    "Password": "admin",
+    "self_validate_jwt": true,
+    "enable_roles_creation": true
+  }
+}

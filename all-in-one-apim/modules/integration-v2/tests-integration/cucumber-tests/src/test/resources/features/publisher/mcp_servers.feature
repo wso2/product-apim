@@ -105,6 +105,15 @@ Feature: MCP Server authoring (publisher plane)
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response should contain "get_pets_by_petId"
+    # STRUCTURAL schema check (order-independent, ports the legacy schema assertion as hardened by upstream
+    # PR #14237 — exact-string JSON compare flaked on unguaranteed key order): the path-param tool's
+    # PRODUCT-GENERATED input schema pins the OAS→MCP schema derivation. Pinned actual behaviour: the
+    # generator prefixes each parameter with its OAS location ("path_petId" for the in:path param) and emits
+    # a bare draft-agnostic object schema (no $schema / additionalProperties envelope).
+    Then the MCP server "mcpId" tool "get_pets_by_petId" should have schema definition:
+      """
+      {"type":"object","properties":{"path_petId":{"type":"string","description":"The id of the pet to retrieve"}},"required":["path_petId"]}
+      """
     When I delete the MCP server "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
