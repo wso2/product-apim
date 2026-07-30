@@ -22,10 +22,14 @@ import io.cucumber.testng.CucumberOptions;
 /**
  * Runner for the gateway GraphQL-subscription tenant-isolation regression. Publishes a carbon.super GraphQL
  * subscription victim and a tenant1.com WS leak-source, then asserts the victim subscription authenticates while
- * a flood of concurrent tenant handshakes poisons the shared netty event-loop thread. The scenario self-floods,
- * so it needs no block concurrency (the block runs thread-count=1). Reproduces the WS tenant-flow leak
- * (InboundWebSocketProcessor.handleHandshake never calls endTenantFlow) — EXPECTED to FAIL with WS close 4001
- * "Invalid JWT token" on an unfixed gateway; passes once the fix is in the gateway jar.
+ * a flood of concurrent tenant handshakes exercises the shared netty event-loop threads. It runs in the parallel
+ * gateway block (thread-count=2): with the end-tenant-flow fix in place the flood's handshakes end their tenant
+ * flow, so they leave NO leaked tenant on the shared event-loop threads for a concurrent neighbour to inherit —
+ * the only cross-runner effect is transient event-loop contention, which every gateway runner's
+ * retry-until-deadline invocation absorbs (and the scenario itself self-retries and stops its sustained flood in
+ * teardown). Guards against the WS tenant-flow leak
+ * (InboundWebSocketProcessor.handleHandshake not ending its tenant flow): with the end-tenant-flow fix in the
+ * gateway jar it PASSES, and would FAIL with WS close 4001 "Invalid JWT token" if that leak regressed.
  */
 @CucumberOptions(
         features = {

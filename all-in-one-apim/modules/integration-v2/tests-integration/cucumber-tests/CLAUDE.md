@@ -213,7 +213,7 @@ The chain, and how to refresh it:
    bundles it (verify: the zip's `repository/components/plugins/org.wso2.carbon.apimgt.gateway_<ver>.jar` is the
    fixed one — OSGi bundles use an **underscore** before the version, not a hyphen).
 2. **Rebuild the image** from the integration-v2 root:
-   ```
+   ```bash
    mvn clean install -Dmaven.test.skip=true -Ddocker.extra.hosts="--no-cache"
    ```
    The image-build execs (`start-server`, `wait-for-server`, `build-node-app-docker-image`,

@@ -13,9 +13,10 @@ Feature: Gateway GraphQL Subscription Tenant Isolation Under Concurrent Handshak
   and a tenant1.com WS API (the leak source), then open the victim subscription and, during the pre-init idle
   window, flood many concurrent tenant1.com handshakes (each reaches the gateway's tenant-flow start before
   failing auth, poisoning every event-loop thread) before sending connection_init. The assertion is the CORRECT
-  invariant: the subscription must authenticate (connection_ack, no 4001) despite the flood. On the current
-  (unfixed) gateway this assertion FAILS with the 4001 — that failure is the proof the bug reproduces; once the
-  end-tenant-flow fix ships in the gateway jar it PASSES. Teardown via the per-scenario cleanup hook.
+  invariant: the subscription must authenticate (connection_ack, no 4001) despite the flood. With the
+  end-tenant-flow fix now in the gateway jar this assertion PASSES; it stands as a regression guard — it would
+  FAIL with the 4001 (the leak reproducing) on a gateway that lost that fix. Teardown via the per-scenario
+  cleanup hook.
 
   A second scenario extends the guard past handshake auth to the subscribe-frame scope path. It wraps an ordinary
   subscription assertion in a SUSTAINED flood (background threads that keep every event-loop thread poisoned for the

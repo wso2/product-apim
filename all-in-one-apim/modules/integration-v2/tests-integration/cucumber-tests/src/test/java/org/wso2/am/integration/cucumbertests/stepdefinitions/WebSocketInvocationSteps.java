@@ -640,9 +640,13 @@ public class WebSocketInvocationSteps {
      * many handshakes reached the server path. Ports {@code WsLeakRepro.floodTenant}.
      */
     private int floodTenantHandshakes(String tenantUrl, String token, int count) {
-        java.util.List<CompletableFuture<Integer>> flood = new java.util.ArrayList<>();
+        AtomicInteger reached = new AtomicInteger(0);
+        java.util.List<Thread> threads = new java.util.ArrayList<>();
         for (int i = 0; i < count; i++) {
-            flood.add(CompletableFuture.supplyAsync(() -> {
+            // Dedicated thread per handshake (not CompletableFuture's common ForkJoinPool): these tasks BLOCK on the
+            // WS upgrade, and the pool's bounded parallelism (cores-1) would serialise them and defeat the concurrent
+            // flood. Matches floodLoop's dedicated-thread approach.
+            Thread t = new Thread(() -> {
                 HttpClient c = null;
                 try {
                     c = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
@@ -656,26 +660,28 @@ public class WebSocketInvocationSteps {
                     } catch (Exception ignore) {
                         // already closing
                     }
-                    return 1;   // upgraded (also leaked)
+                    reached.incrementAndGet();   // upgraded (also leaked)
                 } catch (Exception rejectedOrTimedOut) {
                     // A 401/handshake failure STILL means the gateway reached startTenantFlow before auth → leaked.
-                    return 1;
+                    reached.incrementAndGet();
                 } finally {
                     if (c != null) {
                         closeQuietly(c);
                     }
                 }
-            }));
+            }, "tenant-flood-" + i);
+            t.setDaemon(true);
+            t.start();
+            threads.add(t);
         }
-        int reached = 0;
-        for (CompletableFuture<Integer> f : flood) {
+        for (Thread t : threads) {
             try {
-                reached += f.get(8, TimeUnit.SECONDS);
-            } catch (Exception ignore) {
-                // a handshake that never returned is not counted; the poisoning still happened server-side
+                t.join(8000);   // a handshake that never returned within the budget is not counted
+            } catch (InterruptedException ignore) {
+                Thread.currentThread().interrupt();
             }
         }
-        return reached;
+        return reached.get();
     }
 
     /**
