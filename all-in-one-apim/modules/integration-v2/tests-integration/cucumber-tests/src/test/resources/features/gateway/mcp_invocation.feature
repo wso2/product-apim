@@ -280,6 +280,13 @@ Feature: MCP tool invocation through the gateway
     # Value-add — error passthrough + negative auth.
     When I invoke the MCP tool "nosuchtool" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting an error within 90 seconds
     When I invoke the MCP server at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 403 within 60 seconds
+    # Tool ORDER as clients discover it, for the ExistingApi subtype (see the OpenAPI scenario above): the new tool
+    # references the backing API's DELETE /oldpets resource, and tools/list must advertise the submitted order.
+    When I update the MCP server "mcpId" replacing its tools with "DELETE /oldpets" then "get_pets" re-described as "Return a list of pets"
+    Then The response status code should be 200
+    And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
+    When I deploy the "mcp-servers" resource with id "mcpId"
+    Then the MCP server should advertise tools in order "delete_oldpets,get_pets" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" within 90 seconds
     When I delete the MCP server "mcpId"
 
     Examples:

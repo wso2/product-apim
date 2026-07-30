@@ -49,6 +49,7 @@
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalEnvironmentUrlsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSubscriptionManagementRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSubscribeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSdkGenerationRunner"/>

@@ -33,8 +33,12 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Publisher-plane MCP-server glue (ports the create/proxy half of MCPServerTestCase). Focuses on the PROXY
@@ -389,6 +393,102 @@ public class MCPServerSteps {
         Assert.assertTrue(expected.similar(actual),
                 "Tool '" + tool + "' schemaDefinition mismatch (structural): expected=" + expected
                         + " actual=" + actual);
+    }
+
+    /**
+     * Replaces an MCP server's whole tool set (PUT /mcp-servers/{id}) with exactly two operations, submitted in
+     * this order: (1) a BRAND-NEW tool for {@code newToolSpec}, and (2) the server's existing {@code keptTool}
+     * with its description rewritten. Every other operation is dropped. Ports the update half of
+     * testMCPServerToolOperationsForDirectBackendSubtype / testToolsForExistingApiSubtype, which submit exactly
+     * {@code [addOp, updateOp]}.
+     *
+     * @param idKey       context key holding the MCP-server id
+     * @param newToolSpec the new tool's backend operation as {@code "<VERB> <path>"} (e.g. {@code DELETE /oldpets})
+     * @param keptTool    tool name of the existing operation to keep (submitted second)
+     * @param description the description to set on {@code keptTool}
+     */
+    @When("I update the MCP server {string} replacing its tools with {string} then {string} re-described as {string}")
+    public void iReplaceMcpToolsInOrder(String idKey, String newToolSpec, String keptTool, String description)
+            throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        Map<String, String> headers = publisherHeaders();
+
+        HttpResponse dtoResp = SimpleHTTPClient.getInstance().doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id),
+                headers);
+        Assert.assertTrue(dtoResp != null && dtoResp.getResponseCode() >= 200 && dtoResp.getResponseCode() < 300
+                        && dtoResp.getData() != null && !dtoResp.getData().isEmpty(),
+                "Could not read MCP server " + id + " before replacing its tools; got="
+                        + (dtoResp == null ? "null" : dtoResp.getResponseCode() + "/" + dtoResp.getData()));
+        JSONObject dto = new JSONObject(dtoResp.getData());
+
+        String[] spec = newToolSpec.trim().split("\\s+", 2);
+        Assert.assertEquals(spec.length, 2, "New tool spec must be \"<VERB> <path>\", got: " + newToolSpec);
+        String verb = spec[0].trim();
+        String path = spec[1].trim();
+
+        JSONArray existing = dto.getJSONArray("operations");
+        JSONObject keptOp = null;
+        JSONObject shapeSource = existing.length() > 0 ? existing.getJSONObject(0) : null;
+        for (int i = 0; i < existing.length(); i++) {
+            JSONObject op = existing.getJSONObject(i);
+            if (keptTool.equals(op.optString("target"))) {
+                keptOp = op;
+            }
+        }
+        Assert.assertNotNull(keptOp, "MCP server " + id + " has no operation with target '" + keptTool
+                + "'; operations=" + existing);
+        keptOp.put("description", description);
+
+        // Mirror the existing operations' mapping shape so one step works for both subtypes (see javadoc). Both
+        // keys are always PRESENT — the one that does not apply to the subtype is serialized as JSON null — so
+        // the shape has to be picked by which one holds an object, not by which key exists.
+        JSONObject apiMapping = shapeSource == null ? null : shapeSource.optJSONObject("apiOperationMapping");
+        JSONObject backendMapping = shapeSource == null ? null
+                : shapeSource.optJSONObject("backendOperationMapping");
+        JSONObject backendOperation = new JSONObject().put("target", path).put("verb", verb);
+        JSONObject newOp = new JSONObject().put("feature", "TOOL");
+        if (apiMapping != null) {
+            newOp.put("apiOperationMapping", new JSONObject()
+                    .put("apiId", apiMapping.getString("apiId"))
+                    .put("backendOperation", backendOperation));
+        } else if (backendMapping != null) {
+            newOp.put("backendOperationMapping", new JSONObject()
+                    .put("backendId", backendMapping.getString("backendId"))
+                    .put("backendOperation", backendOperation));
+        } else {
+            Assert.fail("MCP server " + id + " operations carry neither apiOperationMapping nor "
+                    + "backendOperationMapping, so a new tool cannot be shaped for this subtype: " + existing);
+        }
+
+        dto.put("operations", new JSONArray().put(newOp).put(keptOp));
+        Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Asserts the MCP server in the last response exposes EXACTLY these tools, in EXACTLY this order.
+     * The publisher returns the operations in the order their URL mappings were inserted, which is the order they
+     * were submitted, so a scenario that submitted a known order can pin it here.
+     *
+     * @param csvTargets comma-separated tool names (operation targets) in the exact expected order
+     */
+    @Then("the MCP server operations should be exactly {string} in that order")
+    public void mcpOperationsShouldBeExactlyInOrder(String csvTargets) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isEmpty(),
+                "No successful MCP server response to read operations from; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+
+        JSONArray operations = new JSONObject(response.getData()).getJSONArray("operations");
+        List<String> actual = new ArrayList<>();
+        for (int i = 0; i < operations.length(); i++) {
+            actual.add(operations.getJSONObject(i).optString("target"));
+        }
+        List<String> expected = Arrays.stream(csvTargets.split(",")).map(String::trim)
+                .collect(Collectors.toList());
+        Assert.assertEquals(actual, expected, "MCP server tool order mismatch — expected " + expected
+                + " but the publisher returned " + actual);
     }
 
     /** Deletes an MCP server (DELETE /mcp-servers/{id}) — the explicit delete scenarios use to assert removal.
