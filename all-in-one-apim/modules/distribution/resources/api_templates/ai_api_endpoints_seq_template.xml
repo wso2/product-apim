@@ -52,6 +52,20 @@
     #end
 </class>
         #end
+        #if($endpoint.authenticationType == "gcp" || $endpoint.authenticationType == "GCP")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2TokenInjector">
+#if($isSecureVaultEnabled)
+    <property name="serviceAccountKey" expression="wso2:vault-lookup('$endpoint.serviceAccountKey')" type="STRING"/>
+#else
+    <property name="serviceAccountKey" value="$util.escapeXml($endpoint.serviceAccountKey)" type="STRING"/>
+#end
+</class>
+#if($endpoint.endpoint)
+#if($endpoint.endpoint.contains("publishers/anthropic"))
+<class name="org.wso2.carbon.apimgt.gateway.mediators.VertexAIAnthropicPayloadMediator"/>
+#end
+#end
+        #end
         #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
 <property name="apiKeyIdentifier" value="$endpoint.apiKeyIdentifier" type="STRING"/>
