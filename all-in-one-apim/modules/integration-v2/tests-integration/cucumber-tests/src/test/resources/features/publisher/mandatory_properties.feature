@@ -28,7 +28,10 @@ Feature: Publisher Mandatory Custom API Properties
       {"PropertyName":{"name":"PropertyName","value":"PropertyValue","display":false}}
       """
     Then The response status code should be 200
-    And The response should contain "PropertyValue"
+    # Assert the SAVED state via a fresh read, not the PUT's own echo: under load a 200 PUT response has
+    # been observed echoing a stale pre-update representation (CI 2026-07-23), so only a re-GET proves the
+    # required property was durably persisted.
+    And I retrieve the "apis" resource with id "mpApiId" until it contains "PropertyValue" within 60 seconds
 
     Examples:
       | actor                     |

@@ -146,6 +146,169 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <!-- External Key Manager (WSO2 IS 7.x) support. -->
+                    <!-- Pull the IS image up front (idempotent) so the container start doesn't stall on a first-use pull. -->
+                    <execution>
+                        <id>pull-is-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${is.docker.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Extract the IS image's OWN default deployment.toml to target/is7 so IdentityServerContainer
+                         can deep-merge the small is7/deployment-overlay.toml onto it (base+overlay pattern) instead
+                         of shipping a full-file config. Runs after pull-is-docker-image (declaration order). -->
+                    <execution>
+                        <id>extract-is-default-toml</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>
+                                    set -e
+                                    mkdir -p ${project.build.directory}/is7
+                                    CID=$(docker create ${is.docker.image.name})
+                                    # Remove the temp container even if a later command fails (set -e skips the rm below).
+                                    trap 'docker rm "$CID" &gt; /dev/null 2&gt;&amp;1 || true' EXIT
+                                    docker cp "$CID":/home/wso2carbon/wso2is-${is.server.version}/repository/conf/deployment.toml \
+                                      ${project.build.directory}/is7/is-default-deployment.toml
+                                    docker rm "$CID" &gt; /dev/null
+                                </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Download the IS->APIM revocation-notification handler jar to target/is7/ (referenced by the
+                         event_listener in is7/deployment-overlay.toml and copied into IS dropins by
+                         IdentityServerContainer). -->
+                    <execution>
+                        <id>download-is-notification-jar</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>
+                                    set -e
+                                    mkdir -p ${project.build.directory}/is7
+                                    JAR=${project.build.directory}/is7/wso2is.notification.event.handlers-2.1.3.jar
+                                    if [ ! -f "$JAR" ]; then
+                                      # Download to a temp name and move into place atomically: an interrupted download
+                                      # must never leave a partial file at $JAR, or the existence guard above would skip
+                                      # the re-download forever and ship a corrupt jar into IS dropins.
+                                      curl -fSL -o "$JAR.tmp" https://maven.wso2.org/nexus/content/repositories/releases/org/wso2/km/ext/wso2is/wso2is.notification.event.handlers/2.1.3/wso2is.notification.event.handlers-2.1.3.jar
+                                      mv "$JAR.tmp" "$JAR"
+                                    fi
+                                </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Build the augmented APIM client-truststore = APIM base truststore + the fixed wso2is TLS cert,
+                         so APIM trusts IS's cert. Runs after build-apim-docker-image (declaration order within the
+                         phase) since it extracts the base truststore from that freshly built image. Copied over the
+                         default by DynamicApimContainer#withExternalKmTrust only for the external-KM block. -->
+                    <execution>
+                        <id>build-augmented-truststore</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>
+                                    set -e
+                                    OUT=${project.build.directory}/is7/client-truststore.jks
+                                    mkdir -p ${project.build.directory}/is7
+                                    CID=$(docker create ${apim.docker.image.name})
+                                    # Remove the temp container even if a later command fails (set -e skips the rm below).
+                                    trap 'docker rm "$CID" &gt; /dev/null 2&gt;&amp;1 || true' EXIT
+                                    docker cp "$CID":/home/wso2carbon/${apim.server.name}/repository/resources/security/client-truststore.jks "$OUT"
+                                    docker rm "$CID" &gt; /dev/null
+                                    keytool -importcert -noprompt -trustcacerts -alias wso2is-tls \
+                                      -file ${project.basedir}/src/main/resources/is7/wso2is.pem \
+                                      -keystore "$OUT" -storepass wso2carbon
+                                    # APIM's own client-truststore must trust the fixed wso2am TLS cert too: with
+                                    # [keystore.tls]=wso2am.p12 the all-in-one node presents that cert on 9443, so
+                                    # any internal loopback HTTPS call it makes to itself must validate against it.
+                                    keytool -importcert -noprompt -trustcacerts -alias wso2am-tls \
+                                      -file ${project.basedir}/src/main/resources/is7/wso2am.pem \
+                                      -keystore "$OUT" -storepass wso2carbon
+                                </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Build the augmented IS client-truststore = IS base truststore + APIM's server cert, so IS
+                         trusts APIM for the reverse channel: the token-revocation notification is an HTTPS POST
+                         from IS to https://wso2am:9443/internal/data/v1/notify, validated against IS's own
+                         truststore (the IS EventSender uses useSystemProperties + AllowAllHostnameVerifier).
+                         Copied over the default by IdentityServerContainer only when the external-KM block runs. -->
+                    <execution>
+                        <id>build-augmented-is-truststore</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>
+                                    set -e
+                                    D=${project.build.directory}/is7
+                                    mkdir -p "$D"
+                                    # Take IS's base client-truststore and import the fixed wso2am TLS cert into it, so
+                                    # IS trusts APIM for the reverse channel: the token-revocation notification is an
+                                    # HTTPS POST from IS to https://wso2am:9443/internal/data/v1/notify. APIM presents
+                                    # the wso2am cert (SAN dns:localhost,dns:wso2am) via [keystore.tls]=wso2am.p12, so
+                                    # IS's strict hostname verification passes without the AllowAll workaround.
+                                    CID_IS=$(docker create ${is.docker.image.name})
+                                    # Remove BOTH temp containers even if a later command fails (set -e skips the rms
+                                    # below); single-quoted so the vars bind at exit time (CID_AM is set further down).
+                                    trap 'docker rm "$CID_IS" &gt; /dev/null 2&gt;&amp;1 || true; docker rm "${CID_AM:-}" &gt; /dev/null 2&gt;&amp;1 || true' EXIT
+                                    docker cp "$CID_IS":/home/wso2carbon/wso2is-${is.server.version}/repository/resources/security/client-truststore.p12 "$D"/is-client-truststore.p12
+                                    docker rm "$CID_IS" &gt; /dev/null
+                                    keytool -importcert -noprompt -trustcacerts -alias wso2apim \
+                                      -file ${project.basedir}/src/main/resources/is7/wso2am.pem -keystore "$D"/is-client-truststore.p12 \
+                                      -storepass wso2carbon -storetype PKCS12
+                                    # Also trust APIM's PRIMARY server cert (wso2carbon.jks alias wso2carbon). The
+                                    # Mutual-TLS KM block authenticates to IS by presenting APIM's primary keystore cert
+                                    # (MutualTLSOptions=ServerWide reads Security.KeyStore.Location); IS must trust that
+                                    # client cert for DCR/introspection/roles over mTLS. Harmless for the Basic-auth blocks.
+                                    CID_AM=$(docker create ${apim.docker.image.name})
+                                    docker cp "$CID_AM":/home/wso2carbon/${apim.server.name}/repository/resources/security/wso2carbon.jks "$D"/apim-primary.jks
+                                    docker rm "$CID_AM" &gt; /dev/null
+                                    keytool -exportcert -rfc -alias wso2carbon -keystore "$D"/apim-primary.jks -storepass wso2carbon -file "$D"/apim-primary.pem
+                                    keytool -importcert -noprompt -trustcacerts -alias wso2apim-primary \
+                                      -file "$D"/apim-primary.pem -keystore "$D"/is-client-truststore.p12 \
+                                      -storepass wso2carbon -storetype PKCS12
+                                    # Trust IS's OWN wso2is TLS cert. The container replaces the default TLS keystore
+                                    # with wso2is.p12 (CN=wso2is, SAN dns:wso2is,dns:localhost) but that cert is NOT in
+                                    # the base client-truststore, so IS's internal HTTPS self-calls fail PKIX — e.g. the
+                                    # authentication endpoint fetching AuthRequestKey data from https://localhost:9443
+                                    # during a federated login, which otherwise breaks the multi-tenant SSO flow with a
+                                    # spurious login_required. Import it so self-calls validate.
+                                    keytool -importcert -noprompt -trustcacerts -alias wso2is \
+                                      -file ${project.basedir}/src/main/resources/is7/wso2is.pem -keystore "$D"/is-client-truststore.p12 \
+                                      -storepass wso2carbon -storetype PKCS12
+                                </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

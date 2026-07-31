@@ -1,0 +1,29 @@
+{
+  "name": "${UNIQUE:Wso2Is7GrantTypesKM}",
+  "displayName": "Test Key Manager WSO2 IS 7 (full grant types)",
+  "type": "WSO2-IS-7",
+  "description": "WSO2 IS 7 KM carrying the full IS7 grant-type set to verify they persist intact",
+  "issuer": "https://is7.example.com:9444/oauth2/token",
+  "tokenEndpoint": "https://is7.example.com:9444/oauth2/token",
+  "introspectionEndpoint": "https://is7.example.com:9444/oauth2/introspect",
+  "revokeEndpoint": "https://is7.example.com:9444/oauth2/revoke",
+  "clientRegistrationEndpoint": "https://is7.example.com:9444/api/identity/oauth2/dcr/v1.1/register",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "availableGrantTypes": [
+    "client_credentials", "password", "refresh_token", "authorization_code",
+    "urn:ietf:params:oauth:grant-type:saml2-bearer", "iwa:ntlm",
+    "urn:ietf:params:oauth:grant-type:device_code",
+    "urn:ietf:params:oauth:grant-type:jwt-bearer",
+    "urn:ietf:params:oauth:grant-type:token-exchange"
+  ],
+  "certificates": { "type": "JWKS", "value": "https://is7.example.com:9444/oauth2/jwks" },
+  "additionalProperties": {
+    "api_resource_management_endpoint": "https://is7.example.com:9444/api/server/v1/api-resources",
+    "is7_roles_endpoint": "https://is7.example.com:9444/scim2/v2/Roles",
+    "Username": "admin",
+    "Password": "admin",
+    "self_validate_jwt": true
+  }
+}
