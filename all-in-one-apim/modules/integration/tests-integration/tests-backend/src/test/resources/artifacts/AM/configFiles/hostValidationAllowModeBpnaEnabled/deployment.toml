@@ -352,7 +352,7 @@ context = "(.*)/APIStatusMonitor(.*)"
 secure = false
 http_method = "all"
 
-[apim.network_security.access_control]
+[server.network_security.access_control]
 mode = "allow"
 hosts = ["169.254.*", "*.internal", "test.com"]
 block_private_network_access = true

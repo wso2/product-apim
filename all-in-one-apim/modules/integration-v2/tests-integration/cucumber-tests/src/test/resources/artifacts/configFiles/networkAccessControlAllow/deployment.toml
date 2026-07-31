@@ -5,6 +5,6 @@
 # http://nodebackend:3021/... is permitted and actually fetched (the positive control), while any other
 # host - including a nested reference from that allow-listed document to a loopback address - stays blocked.
 # Ports the old safeRefResolutionAllow overlay (SafeRefResolutionAllowTestSuite; there hosts=["127.0.0.1"]).
-[apim.network_security.access_control]
+[server.network_security.access_control]
 mode = "allow"
 hosts = ["nodebackend"]

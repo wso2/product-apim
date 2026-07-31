@@ -833,7 +833,7 @@
         </classes>
     </test>
     <!-- Network access-control: outbound remote-reference host validation. Own block —
-         the [apim.network_security.access_control] deny + block-private-network policy is non-orthogonal
+         the [server.network_security.access_control] deny + block-private-network policy is non-orthogonal
          config. No gateway backend: the blocked-host references are rejected before any fetch, so no
          allow-listed backend is needed for these negatives (the allow-mode positives are a later block). -->
     <test name="IntegrationV2-NetworkAccessControlPrivateBlock" parallel="classes" thread-count="2">

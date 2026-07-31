@@ -352,5 +352,5 @@ context = "(.*)/APIStatusMonitor(.*)"
 secure = false
 http_method = "all"
 
-[apim.network_security.access_control]
+[server.network_security.access_control]
 block_private_network_access = false
