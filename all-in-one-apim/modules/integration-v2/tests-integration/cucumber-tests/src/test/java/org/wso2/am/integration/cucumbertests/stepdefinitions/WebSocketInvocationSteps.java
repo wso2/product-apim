@@ -35,12 +35,16 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.net.http.WebSocketHandshakeException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,7 +100,8 @@ public class WebSocketInvocationSteps {
                 // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
                 return null;
-            } catch (Exception connectingWhileWarmup) {
+            } catch (NoSuchAlgorithmException | KeyManagementException | ExecutionException | TimeoutException
+                    | RuntimeException connectingWhileWarmup) {
                 // The WS route may not be reachable immediately after publish (handshake 404/403 during
                 // warm-up). Retry until the deadline.
                 lastFailure.set(connectingWhileWarmup);
@@ -131,7 +136,8 @@ public class WebSocketInvocationSteps {
                 // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
                 return null;
-            } catch (Exception connectingWhileWarmup) {
+            } catch (NoSuchAlgorithmException | KeyManagementException | ExecutionException | TimeoutException
+                    | RuntimeException connectingWhileWarmup) {
                 lastFailure.set(connectingWhileWarmup);
                 return null;
             }
@@ -176,13 +182,12 @@ public class WebSocketInvocationSteps {
         java.util.concurrent.atomic.AtomicBoolean closed = new java.util.concurrent.atomic.AtomicBoolean(false);
 
         // Establish the connection, retrying only the CONNECT (data frames, not the handshake, count toward the
-        // limit) until the freshly-deployed API is routable.
-        long connectDeadlineStart = System.currentTimeMillis();
-        long connectDeadline = connectDeadlineStart + Math.max(timeoutSeconds * 1000L, 30000L);
-        WebSocket ws = null;
-        while (ws == null && System.currentTimeMillis() < connectDeadline) {
+        // limit) until the freshly-deployed API is routable. Funnel through Utils.retryUntil (it owns the
+        // deadline + pacing); the last established WebSocket is returned and asserted below exactly as the
+        // hand-rolled loop did.
+        WebSocket ws = Utils.retryUntil(Math.max(timeoutSeconds * 1000L, 30000L), () -> {
             try {
-                ws = HttpClient.newBuilder().sslContext(trustAllSslContext()).build()
+                return HttpClient.newBuilder().sslContext(trustAllSslContext()).build()
                         .newWebSocketBuilder()
                         .header("Authorization", "Bearer " + token)
                         .connectTimeout(java.time.Duration.ofSeconds(15))
@@ -214,11 +219,12 @@ public class WebSocketInvocationSteps {
             } catch (InterruptedException interrupted) {
                 // Cancellation is not a transient/expected outcome — restore the flag and stop.
                 Thread.currentThread().interrupt();
-                throw interrupted;
-            } catch (Exception warmup) {
-                Utils.pollPause(connectDeadlineStart, 2000);
+                return null;
+            } catch (NoSuchAlgorithmException | KeyManagementException | ExecutionException | TimeoutException
+                    | RuntimeException warmup) {
+                return null;   // not routable yet → retry until the deadline
             }
-        }
+        }, established -> established != null);
         Assert.assertNotNull(ws, "Could not establish the WebSocket connection for the throttling test");
 
         int received = 0;
@@ -233,7 +239,7 @@ public class WebSocketInvocationSteps {
                     // Cancellation is not a transient/expected outcome — restore the flag and stop.
                     Thread.currentThread().interrupt();
                     throw interrupted;
-                } catch (Exception sendFailed) {
+                } catch (ExecutionException | TimeoutException | RuntimeException sendFailed) {
                     break;   // connection dropped by the throttle handler
                 }
                 String echo = echoes.poll(3, TimeUnit.SECONDS);
@@ -243,12 +249,14 @@ public class WebSocketInvocationSteps {
                 received++;
                 // Space the frames so the traffic manager's async throttle decision (per-minute event count) has
                 // time to be computed and pushed back to the gateway — a rapid burst outruns it and never trips.
+                // CHECKSTYLE:OFF threadSleep - fixed inter-frame pacing delay, not a poll on any readiness condition
                 Thread.sleep(1500);
+                // CHECKSTYLE:ON
             }
         } finally {
             try {
                 ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
-            } catch (Exception ignore) {
+            } catch (RuntimeException ignore) {
                 // already closed
             }
         }
@@ -427,7 +435,8 @@ public class WebSocketInvocationSteps {
                 // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
                 return null;
-            } catch (Exception connectingWhileWarmup) {
+            } catch (NoSuchAlgorithmException | KeyManagementException | ExecutionException | TimeoutException
+                    | RuntimeException connectingWhileWarmup) {
                 lastFailure.set(connectingWhileWarmup);
                 return null;
             }
@@ -475,7 +484,8 @@ public class WebSocketInvocationSteps {
                 // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
                 return null;
-            } catch (Exception rejected) {
+            } catch (NoSuchAlgorithmException | KeyManagementException | ExecutionException | TimeoutException
+                    | RuntimeException rejected) {
                 return Boolean.TRUE;   // handshake/upgrade refused → rejection confirmed
             }
         }, outcome -> outcome != null);
@@ -515,7 +525,8 @@ public class WebSocketInvocationSteps {
                 // pause rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
                 return null;
-            } catch (Exception connectingWhileWarmup) {
+            } catch (NoSuchAlgorithmException | KeyManagementException | ExecutionException | TimeoutException
+                    | RuntimeException connectingWhileWarmup) {
                 lastFailure.set(connectingWhileWarmup);
                 return null;
             }
@@ -590,7 +601,12 @@ public class WebSocketInvocationSteps {
                             closed.complete("onError:" + error);
                         }
                     }).get(20, TimeUnit.SECONDS);
-        } catch (Exception connectFailed) {
+        } catch (InterruptedException interrupted) {
+            // Cancellation is not a handshake refusal — restore the flag and let it propagate to the caller.
+            Thread.currentThread().interrupt();
+            closeQuietly(client);
+            throw interrupted;
+        } catch (ExecutionException | TimeoutException | RuntimeException connectFailed) {
             closeQuietly(client);
             Assert.fail("Victim graphql-ws handshake to " + victimUrl + " was refused before the flood could run "
                     + "(the victim carbon.super token must upgrade cleanly): " + connectFailed);
@@ -625,7 +641,7 @@ public class WebSocketInvocationSteps {
         } finally {
             try {
                 ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
-            } catch (Exception closeFailure) {
+            } catch (RuntimeException closeFailure) {
                 log.warn("Ignoring failure to send graphql-ws close frame: " + closeFailure.getMessage());
             }
             closeQuietly(client);
@@ -657,11 +673,16 @@ public class WebSocketInvocationSteps {
                             .get(4, TimeUnit.SECONDS);
                     try {
                         w.sendClose(WebSocket.NORMAL_CLOSURE, "x");
-                    } catch (Exception ignore) {
+                    } catch (RuntimeException ignore) {
                         // already closing
                     }
                     reached.incrementAndGet();   // upgraded (also leaked)
-                } catch (Exception rejectedOrTimedOut) {
+                } catch (InterruptedException interrupted) {
+                    // Interrupted mid-handshake still reached startTenantFlow → counts as reached; restore the flag.
+                    Thread.currentThread().interrupt();
+                    reached.incrementAndGet();
+                } catch (NoSuchAlgorithmException | KeyManagementException | ExecutionException | TimeoutException
+                        | RuntimeException rejectedOrTimedOut) {
                     // A 401/handshake failure STILL means the gateway reached startTenantFlow before auth → leaked.
                     reached.incrementAndGet();
                 } finally {
@@ -757,10 +778,15 @@ public class WebSocketInvocationSteps {
                     reached.incrementAndGet();
                     try {
                         w.sendClose(WebSocket.NORMAL_CLOSURE, "x");
-                    } catch (Exception ignore) {
+                    } catch (RuntimeException ignore) {
                         // already closing
                     }
-                } catch (Exception rejectedOrTimedOut) {
+                } catch (InterruptedException interrupted) {
+                    // Interrupted mid-handshake still reached startTenantFlow → counts as reached; restore the flag.
+                    Thread.currentThread().interrupt();
+                    reached.incrementAndGet();
+                } catch (NoSuchAlgorithmException | KeyManagementException | ExecutionException | TimeoutException
+                        | RuntimeException rejectedOrTimedOut) {
                     // A 401/handshake failure STILL means the gateway reached startTenantFlow before auth → poisoned.
                     reached.incrementAndGet();
                 } finally {
@@ -807,7 +833,7 @@ public class WebSocketInvocationSteps {
                 // rethrows it instead of reading this as a retryable probe.
                 Thread.currentThread().interrupt();
                 return null;
-            } catch (Exception transientFailure) {
+            } catch (NoSuchAlgorithmException | KeyManagementException | RuntimeException transientFailure) {
                 // transient ws failure — counts as not-established; re-probe within the deadline
                 // (same tolerance as this file's other invocation loops)
                 established = false;
@@ -825,7 +851,7 @@ public class WebSocketInvocationSteps {
                 : authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis);
         Assert.assertNotNull(result, "Could not establish the graphql-ws subscription for the throttling test"
                 + authDetail);
-        System.out.println("[GQL-SUB-THROTTLE] framesSent=" + frames + " dataMessages=" + result[0]
+        log.info("[GQL-SUB-THROTTLE] framesSent=" + frames + " dataMessages=" + result[0]
                 + " throttled=" + (result[1] == 1) + " throttleMsg=" + throttleMsg);
         Assert.assertEquals(result[1], 1, "Expected GraphQL subscription frame throttling (4003 'Websocket frame "
                 + "throttled out') within " + frames + " frames, but none occurred (data messages=" + result[0] + ").");
@@ -853,7 +879,7 @@ public class WebSocketInvocationSteps {
                 // rethrows it instead of reading this as a retryable attempt.
                 Thread.currentThread().interrupt();
                 return null;
-            } catch (Exception transientFailure) {
+            } catch (NoSuchAlgorithmException | KeyManagementException | RuntimeException transientFailure) {
                 // transient ws failure — retry within the deadline (same tolerance as the other loops here)
                 errorMsg = null;
             }
@@ -864,7 +890,7 @@ public class WebSocketInvocationSteps {
             return errorMsg;
         }, errorMsg -> carriesErrorCode(errorMsg, expectedCode));
         if (carriesErrorCode(matched, expectedCode)) {
-            System.out.println("[GQL-SUB-ERR] expected=" + expectedCode + " msg=" + matched);
+            log.info("[GQL-SUB-ERR] expected=" + expectedCode + " msg=" + matched);
             return;
         }
         // A refused handshake is NOT the expected outcome here: the expected error arrives as a graphql-ws frame
@@ -930,7 +956,7 @@ public class WebSocketInvocationSteps {
     private static void closeQuietly(HttpClient client) {
         try {
             client.close();
-        } catch (Exception closeFailure) {
+        } catch (RuntimeException closeFailure) {
             // the client is being discarded anyway; log but never let cleanup override the return/throw
             log.warn("Ignoring failure to close WS HttpClient (possible resource leak): " + closeFailure.getMessage());
         }
@@ -942,7 +968,8 @@ public class WebSocketInvocationSteps {
      * inconclusive attempt, so the caller could otherwise never say WHY its window closed empty.
      */
     private String subscribeExpectError(String wsUrl, String token, String query,
-                                        AtomicReference<Throwable> lastFailure) throws Exception {
+                                        AtomicReference<Throwable> lastFailure)
+            throws NoSuchAlgorithmException, KeyManagementException, InterruptedException {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<Void> ack = new CompletableFuture<>();
         CompletableFuture<String> error = new CompletableFuture<>();
@@ -976,7 +1003,7 @@ public class WebSocketInvocationSteps {
             Thread.currentThread().interrupt();
             closeQuietly(client);
             throw interrupted;
-        } catch (Exception connectFailed) {
+        } catch (ExecutionException | TimeoutException | RuntimeException connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
             lastFailure.set(connectFailed);
             closeQuietly(client);
@@ -987,7 +1014,9 @@ public class WebSocketInvocationSteps {
             // backend WS leg, so no long pre-init wait is required here — a short settle just avoids racing the
             // handshake on a freshly-opened connection. Anything slower (cold route/warm-up) is absorbed by the
             // caller RETRYING (this method returns null below), NOT by a bigger blind sleep.
+            // CHECKSTYLE:OFF threadSleep - fixed short settle to avoid racing the fresh handshake; no condition to poll
             Thread.sleep(2000);
+            // CHECKSTYLE:ON
             ws.sendText("{\"type\":\"connection_init\",\"payload\":{}}", true);
             ack.get(15, TimeUnit.SECONDS);
             String start = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
@@ -1005,7 +1034,7 @@ public class WebSocketInvocationSteps {
         } finally {
             try {
                 ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
-            } catch (Exception closeFailure) {
+            } catch (RuntimeException closeFailure) {
                 // best-effort close of an already-closing/failed WS — logged, never allowed to skip closeQuietly below
                 log.warn("Ignoring failure to send graphql-ws close frame: " + closeFailure.getMessage());
             }
@@ -1020,7 +1049,7 @@ public class WebSocketInvocationSteps {
     private boolean subscribeAndProbe(String wsUrl, String token, String query, int frames,
                                       AtomicInteger dataCount, AtomicReference<String> throttleMsg,
                                       AtomicReference<Throwable> lastFailure)
-            throws Exception {
+            throws NoSuchAlgorithmException, KeyManagementException, InterruptedException {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<Void> ack = new CompletableFuture<>();
         WebSocket ws;
@@ -1056,14 +1085,16 @@ public class WebSocketInvocationSteps {
             Thread.currentThread().interrupt();
             closeQuietly(client);
             throw interrupted;
-        } catch (Exception connectFailed) {
+        } catch (ExecutionException | TimeoutException | RuntimeException connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
             lastFailure.set(connectFailed);
             closeQuietly(client);
             return false;
         }
         try {
+            // CHECKSTYLE:OFF threadSleep - fixed wait for the gateway to bring up the backend WS leg; no condition to poll
             Thread.sleep(15000);   // let the gateway bring up the backend WS leg (frames need the backend relay)
+            // CHECKSTYLE:ON
             ws.sendText("{\"type\":\"connection_init\",\"payload\":{}}", true);
             ack.get(15, TimeUnit.SECONDS);
             String q = query.replace("\"", "\\\"");
@@ -1071,12 +1102,16 @@ public class WebSocketInvocationSteps {
                 String start = "{\"id\":\"" + i + "\",\"type\":\"start\",\"payload\":{\"variables\":{},"
                         + "\"extensions\":{},\"operationName\":null,\"query\":\"" + q + "\"}}";
                 ws.sendText(start, true);
+                // CHECKSTYLE:OFF threadSleep - fixed inter-frame pacing delay, not a poll on any readiness condition
                 Thread.sleep(500);
+                // CHECKSTYLE:ON
                 if (throttleMsg.get() != null) {
                     break;
                 }
             }
+            // CHECKSTYLE:OFF threadSleep - fixed drain wait for a late throttle frame; nothing to poll
             Thread.sleep(5000);   // drain any late throttle frame
+            // CHECKSTYLE:ON
             return true;
         } catch (java.util.concurrent.TimeoutException | java.util.concurrent.ExecutionException e) {
             // ack/send did not complete in time — inconclusive attempt. Return false so the caller retries;
@@ -1087,7 +1122,7 @@ public class WebSocketInvocationSteps {
         } finally {
             try {
                 ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
-            } catch (Exception closeFailure) {
+            } catch (RuntimeException closeFailure) {
                 // best-effort close of an already-closing/failed WS — logged, never allowed to skip closeQuietly below
                 log.warn("Ignoring failure to send graphql-ws close frame: " + closeFailure.getMessage());
             }
@@ -1100,7 +1135,9 @@ public class WebSocketInvocationSteps {
      * reported into {@code lastFailure} (see {@link #subscribeExpectError}).
      */
     private String subscribeAndReceive(String wsUrl, String token, String query,
-                                       AtomicReference<Throwable> lastFailure) throws Exception {
+                                       AtomicReference<Throwable> lastFailure)
+            throws NoSuchAlgorithmException, KeyManagementException, InterruptedException, ExecutionException,
+            TimeoutException {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<Void> ack = new CompletableFuture<>();
         CompletableFuture<String> data = new CompletableFuture<>();
@@ -1135,7 +1172,7 @@ public class WebSocketInvocationSteps {
             Thread.currentThread().interrupt();
             closeQuietly(client);
             throw interrupted;
-        } catch (Exception connectFailed) {
+        } catch (ExecutionException | TimeoutException | RuntimeException connectFailed) {
             log.warn("graphql-ws connect failed (inconclusive attempt, caller will retry): " + connectFailed.getMessage());
             lastFailure.set(connectFailed);
             closeQuietly(client);
@@ -1145,7 +1182,9 @@ public class WebSocketInvocationSteps {
             // The gateway establishes the backend WS leg asynchronously after the client handshake; sending
             // connection_init before it is up means the ack is never relayed back. The legacy client sleeps 20s
             // here for the same reason — give the backend leg time to come up before the graphql-ws handshake.
+            // CHECKSTYLE:OFF threadSleep - fixed wait for the gateway to bring up the backend WS leg; no condition to poll
             Thread.sleep(15000);
+            // CHECKSTYLE:ON
             ws.sendText("{\"type\":\"connection_init\",\"payload\":{}}", true);
             ack.get(30, TimeUnit.SECONDS);
             String start = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
@@ -1155,7 +1194,7 @@ public class WebSocketInvocationSteps {
         } finally {
             try {
                 ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
-            } catch (Exception closeFailure) {
+            } catch (RuntimeException closeFailure) {
                 // best-effort close of an already-closing/failed WS — logged, never allowed to skip closeQuietly below
                 log.warn("Ignoring failure to send graphql-ws close frame: " + closeFailure.getMessage());
             }
@@ -1168,7 +1207,7 @@ public class WebSocketInvocationSteps {
      * which fails to construct in this test JVM ("DefaultSSLContext") even though ws:// needs no TLS; supplying
      * an explicit context sidesteps that (the suite already trusts APIM's self-signed cert for https).
      */
-    private SSLContext trustAllSslContext() throws Exception {
+    private SSLContext trustAllSslContext() throws NoSuchAlgorithmException, KeyManagementException {
         SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, new TrustManager[]{new X509TrustManager() {
             public void checkClientTrusted(X509Certificate[] chain, String authType) { }
@@ -1179,7 +1218,9 @@ public class WebSocketInvocationSteps {
     }
 
     /** Token (Authorization: Bearer) convenience overload. */
-    private String connectSendReceive(String wsUrl, String token, String message) throws Exception {
+    private String connectSendReceive(String wsUrl, String token, String message)
+            throws NoSuchAlgorithmException, KeyManagementException, InterruptedException, ExecutionException,
+            TimeoutException {
         return connectSendReceive(wsUrl, "Authorization", "Bearer " + token, message);
     }
 
@@ -1189,7 +1230,8 @@ public class WebSocketInvocationSteps {
      * handshake/upgrade is refused (e.g. an invalid credential → the gateway rejects the WS upgrade).
      */
     private String connectSendReceive(String wsUrl, String headerName, String headerValue, String message)
-            throws Exception {
+            throws NoSuchAlgorithmException, KeyManagementException, InterruptedException, ExecutionException,
+            TimeoutException {
         Map<String, String> headers = new LinkedHashMap<>();
         headers.put(headerName, headerValue);
         return connectSendReceive(wsUrl, headers, message);
@@ -1197,7 +1239,8 @@ public class WebSocketInvocationSteps {
 
     /** Multi-header variant (e.g. Authorization + Origin for CORS). Sets each header on the WS upgrade request. */
     private String connectSendReceive(String wsUrl, Map<String, String> headers, String message)
-            throws Exception {
+            throws NoSuchAlgorithmException, KeyManagementException, InterruptedException, ExecutionException,
+            TimeoutException {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<String> response = new CompletableFuture<>();
         WebSocket.Builder builder = client.newWebSocketBuilder();

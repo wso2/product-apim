@@ -153,6 +153,11 @@ public class BlockLifecycleListener implements ITestListener {
     /** Shared-scope key holding the host-mapped external IS base URL (for scenarios requesting a token from IS). */
     static final String IS_BASE_URL_KEY = "isBaseUrl";
 
+    // Broad catch REQUIRED: the boot-error handler must record ANY boot failure (including Error, e.g. a
+    // linkage/OOM during container start) as bootError so the block's classes are reported FAILED rather than
+    // NPE-cascading on the absent container, and the nested failed-container stop() must swallow anything so a
+    // stop failure never masks the original boot cause. Narrowing would let an Error escape and abort teardown.
+    @SuppressWarnings("checkstyle:IllegalCatch")
     @Override
     public void onStart(ITestContext context) {
 
@@ -281,6 +286,10 @@ public class BlockLifecycleListener implements ITestListener {
         }
     }
 
+    // Broad catch REQUIRED: the best-effort JaCoCo coverage dump must never break teardown or fail the block —
+    // any dump failure (incl. an Error from the coverage agent) is logged and swallowed so the container is
+    // still stopped and the alias permit still released. Narrowing could let an Error abort teardown.
+    @SuppressWarnings("checkstyle:IllegalCatch")
     @Override
     public void onFinish(ITestContext context) {
 

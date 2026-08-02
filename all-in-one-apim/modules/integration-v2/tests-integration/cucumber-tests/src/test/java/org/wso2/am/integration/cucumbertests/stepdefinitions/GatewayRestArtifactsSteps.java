@@ -21,7 +21,6 @@ import io.cucumber.java.en.When;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
-import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
@@ -83,21 +82,12 @@ public class GatewayRestArtifactsSteps {
         String resolvedName = Utils.resolveContextPlaceholders(apiName);
         String resolvedVersion = Utils.resolveContextPlaceholders(version);
         String url = Utils.getGatewayArtifactURL(Utils.getBaseUrl(), kind, resolvedName, resolvedVersion, tenantDomain);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse response = null;
-        do {
-            try {
-                response = Requests.get(url, gatewayBasicAuthHeaders());
-                if (response.getResponseCode() == 200) {
-                    return;
-                }
-            } catch (IOException transientFailure) {
-                // transient network failure while the gateway settles — keep polling; the previous
-                // response (if any) is retained for the failure message
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        } while (System.currentTimeMillis() < endTime);
+        // retryUntil owns the deadline (floored at RUNTIME_PROPAGATION_TIMEOUT), the tiered pacing and the
+        // IOException-only retry (a transient network failure while the gateway settles); it returns the last
+        // response and republishes it as httpResponse so we assert the expected 200 after the loop.
+        HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(url, gatewayBasicAuthHeaders()),
+                resp -> resp.getResponseCode() == 200);
         Assert.assertNotNull(response, "Gateway artifact '" + kind + "' for " + resolvedName
                 + " returned no response within " + timeoutSeconds + "s (every poll attempt failed)");
         Assert.assertEquals(response.getResponseCode(), 200,

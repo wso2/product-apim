@@ -86,6 +86,9 @@ public final class ISResourceCleanup {
         deleteAll(CREATED_IS_USER_IDS, base + "scim2/Users/", "IS user");
     }
 
+    @SuppressWarnings("checkstyle:IllegalCatch") // best-effort teardown: a connectivity/runtime failure deleting
+    // one IS resource must be swallowed (logged as a leak WARN) so the remaining registered ids are still swept —
+    // a narrower catch could let an unexpected runtime failure abort the loop and leak everything after it.
     private static void deleteAll(String listKey, String urlPrefix, String what) {
         List<Object> ids = TestContext.getList(listKey);
         if (!ids.isEmpty()) {

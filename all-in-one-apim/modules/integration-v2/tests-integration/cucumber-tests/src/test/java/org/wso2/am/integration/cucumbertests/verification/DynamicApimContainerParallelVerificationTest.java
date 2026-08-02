@@ -28,11 +28,11 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -121,7 +121,7 @@ public class DynamicApimContainerParallelVerificationTest {
             for (DynamicApimContainer c : containers) {
                 try {
                     c.stop();
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     logger.warn("Error stopping a verify-1.2 container", e);
                 }
             }
@@ -139,48 +139,29 @@ public class DynamicApimContainerParallelVerificationTest {
                 + " parallel containers (servlet-https " + servletHttpsHostPorts + ")");
     }
 
-    private boolean pollUntilHealthy(String url) {
-        long deadline = System.currentTimeMillis() + Constants.SERVER_STARTUP_WAIT_TIME;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                HttpResponse response = SimpleHTTPClient.getInstance().doGet(url, null);
-                if (response != null && response.getResponseCode() == 200) {
-                    return true;
-                }
-            } catch (Exception ignored) {
-                // not ready yet
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-        }
-        return false;
+    private boolean pollUntilHealthy(String url) throws InterruptedException {
+        // Deadline + pacing owned by Utils.retryUntil; the GET's IOException (connection refused while the
+        // server warms up) is the only retried failure, matching the old broad catch that only ever saw one.
+        HttpResponse response = Utils.retryUntil(Constants.SERVER_STARTUP_WAIT_TIME,
+                () -> SimpleHTTPClient.getInstance().doGet(url, null),
+                r -> r != null && r.getResponseCode() == 200);
+        return response != null && response.getResponseCode() == 200;
     }
 
-    private boolean pollUntilPortReleased(String host, int port) {
-        long deadline = System.currentTimeMillis() + 30_000L;
-        while (System.currentTimeMillis() < deadline) {
-            if (!isPortOpen(host, port)) {
-                return true;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-        }
-        return false;
+    private boolean pollUntilPortReleased(String host, int port) throws InterruptedException {
+        // Poll the boolean "still open" condition through the shared deadline/pacing loop; isPortOpen never
+        // throws, so no attempt exception is possible. Deadline is floored at RUNTIME_PROPAGATION_TIMEOUT.
+        Boolean released = Utils.retryUntil(30_000L,
+                () -> !isPortOpen(host, port),
+                Boolean::booleanValue);
+        return Boolean.TRUE.equals(released);
     }
 
     private boolean isPortOpen(String host, int port) {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), 2000);
             return true;
-        } catch (Exception e) {
+        } catch (IOException e) {
             return false;
         }
     }

@@ -157,6 +157,100 @@
             <version>${json-smart.version}</version>
         </dependency>
     </dependencies>
+
+    <!--
+        Static-analysis gates for the whole V2 module (inherited by every child module; the parent itself has
+        no sources). ERROR mode: the whole ruleset FAILS the build on any violation (the sweep fixed or
+        suppressed-with-reason the existing tree). Config lives at build-config/ under the module root;
+        ${maven.multiModuleProjectDirectory} resolves to this module dir for every child when built from here
+        (per CLAUDE.md §8). Both main AND test sources are analysed because the cucumber-tests code lives under
+        src/test/java. See docs/devs/static-analysis-plan.md.
+    -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <configLocation>${maven.multiModuleProjectDirectory}/build-config/checkstyle.xml</configLocation>
+                    <suppressionsLocation>${maven.multiModuleProjectDirectory}/build-config/checkstyle-suppressions.xml</suppressionsLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>warning</violationSeverity>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.21.2</version>
+                <configuration>
+                    <rulesets>
+                        <ruleset>${maven.multiModuleProjectDirectory}/build-config/pmd-ruleset.xml</ruleset>
+                    </rulesets>
+                    <includeTests>true</includeTests>
+                    <printFailingErrors>true</printFailingErrors>
+                    <failOnViolation>true</failOnViolation>
+                    <targetJdk>17</targetJdk>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>pmd-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                SpotBugs + FindSecBugs for the security / resource-leak rules (T1-9/12/13/14): Zip-Slip, trust-all
+                / weak-TLS / noop hostname verifier, insecure temp files, unclosed resources. Unlike Checkstyle/PMD
+                (source analysers) SpotBugs analyses BYTECODE, so it runs after compile and needs includeTests=true.
+                Scope is narrowed to the security + resource-leak patterns via build-config/spotbugs-include.xml.
+                ERROR mode: the `check` goal fails the build on any matched finding.
+            -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.6.4</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <includeTests>true</includeTests>
+                    <includeFilterFile>${maven.multiModuleProjectDirectory}/build-config/spotbugs-include.xml</includeFilterFile>
+                    <excludeFilterFile>${maven.multiModuleProjectDirectory}/build-config/spotbugs-exclude.xml</excludeFilterFile>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>1.13.0</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotbugs-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>migration</id>

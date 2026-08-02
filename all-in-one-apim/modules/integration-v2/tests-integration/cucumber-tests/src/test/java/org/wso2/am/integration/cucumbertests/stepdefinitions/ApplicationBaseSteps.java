@@ -55,7 +55,7 @@ public class ApplicationBaseSteps {
     /**
      * Creates a new application in the Developer Portal using a JSON payload.
      * The created application ID is stored as "createdAppId" in the test context for use in subsequent steps.
-     * 
+     *
      * @param payload Context key containing the application creation JSON payload
      */
     @When("I create an application with payload {string}")
@@ -983,7 +983,7 @@ public class ApplicationBaseSteps {
      * Creates a subscription between an application and an API.
      * The payload is updated with the actual application ID and API ID before sending the request.
      * The created subscription ID is stored in the test context.
-     * 
+     *
      * @param apiId Context key containing the API ID to subscribe to
      * @param appId Context key containing the application ID to use for subscription
      * @param payload Context key containing the subscription creation JSON payload
@@ -1074,7 +1074,7 @@ public class ApplicationBaseSteps {
     /**
      * Retrieves all existing keys (OAuth2 credentials) for an application.
      * The consumer secret and key mapping ID from the first key are extracted and stored in the test context.
-     * 
+     *
      * @param appId Context key containing the application ID
      */
     @When("I retrieve existing application keys for {string}")
@@ -1149,7 +1149,7 @@ public class ApplicationBaseSteps {
     /**
      * Generates OAuth2 client credentials (consumer key and secret) for an application.
      * The generated consumer key, consumer secret, and key mapping ID are stored in the test context.
-     * 
+     *
      * @param appId Context key containing the application ID
      * @param payload Context key containing the key generation JSON payload
      */
@@ -1389,7 +1389,7 @@ public class ApplicationBaseSteps {
      * Requests an OAuth2 access token for an application using the generated client credentials.
      * The consumer secret from the context is injected into the payload before sending the request.
      * The generated access token is stored in the test context.
-     * 
+     *
      * @param appId Context key containing the application ID
      * @param payload Context key containing the token request JSON payload
      */
@@ -1940,6 +1940,13 @@ public class ApplicationBaseSteps {
 
         javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
+        // Harden against XXE: the template is self-built here, but disable DOCTYPE/external entities anyway so
+        // the parser never resolves an external reference (also clears findsecbugs XXE_DOCUMENT).
+        dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        dbf.setXIncludeAware(false);
+        dbf.setExpandEntityReferences(false);
         org.w3c.dom.Document doc = dbf.newDocumentBuilder()
                 .parse(new java.io.ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8)));
         org.w3c.dom.Element root = doc.getDocumentElement();
@@ -1977,8 +1984,20 @@ public class ApplicationBaseSteps {
                 new javax.xml.crypto.dsig.dom.DOMSignContext(privateKey, root, subjectEl);
         fac.newXMLSignature(signedInfo, keyInfo).sign(signContext);
 
-        javax.xml.transform.Transformer transformer =
-                javax.xml.transform.TransformerFactory.newInstance().newTransformer();
+        javax.xml.transform.TransformerFactory transformerFactory =
+                javax.xml.transform.TransformerFactory.newInstance();
+        // Harden against XXE: forbid external DTDs/stylesheets (clears findsecbugs XXE_*_TRANSFORM_FACTORY).
+        // Best-effort: some TransformerFactory impls on the test classpath don't recognise these JAXP 1.5
+        // attributes and throw IllegalArgumentException ("Not supported: ...accessExternalDTD"). This transformer
+        // only SERIALISES an in-memory DOM we just built (no external input is parsed), so a factory that lacks
+        // the knob is not a real XXE exposure — degrade gracefully rather than fail the flow.
+        try {
+            transformerFactory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            transformerFactory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+        } catch (IllegalArgumentException ignored) {
+            // attribute unsupported by this factory impl — acceptable on the serialisation-only path
+        }
+        javax.xml.transform.Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
         java.io.StringWriter writer = new java.io.StringWriter();
         transformer.transform(new javax.xml.transform.dom.DOMSource(doc),
@@ -2191,7 +2210,7 @@ public class ApplicationBaseSteps {
         JSONObject json;
         try {
             json = new JSONObject(response.getData());
-        } catch (Exception e) {
+        } catch (JSONException e) {
             return;
         }
         if (json.has("access_token")) {

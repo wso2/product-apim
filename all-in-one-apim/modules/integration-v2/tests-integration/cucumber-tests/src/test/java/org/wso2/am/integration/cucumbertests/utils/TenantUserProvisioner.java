@@ -165,6 +165,10 @@ public final class TenantUserProvisioner {
         tokenHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + tokenBasic);
         String form = "grant_type=password&username=" + URLEncoder.encode(admin.getUserName(), StandardCharsets.UTF_8)
                 + "&password=" + URLEncoder.encode(admin.getPassword(), StandardCharsets.UTF_8) + "&scope=openid";
+        // CHECKSTYLE:OFF deadlineLoop - phase 2 of a two-phase poll that SHARES the phase-1 absolute deadline
+        // (a fixed 120s total budget consumed across both phases). retryUntil computes its OWN deadline floored at
+        // RUNTIME_PROPAGATION_TIMEOUT (180s) from its own start, which would blow past the 120s contract asserted
+        // in the failure message; and it paces at 2s, not this poll's 3s. So the shared-deadline loop stays.
         while (System.currentTimeMillis() < deadline) {
             try {
                 HttpResponse tok = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
@@ -180,6 +184,7 @@ public final class TenantUserProvisioner {
                 break;
             }
         }
+        // CHECKSTYLE:ON
         Assert.fail("Runtime tenant admin '" + admin.getUserName() + "' obtained DCR credentials but no token was "
                 + "issued within 120s; last: " + last);
     }
@@ -597,13 +602,19 @@ public final class TenantUserProvisioner {
 
         long deadlineStart = System.currentTimeMillis();
         long deadline = deadlineStart + Constants.SERVER_STARTUP_WAIT_TIME;
+        // CHECKSTYLE:OFF deadlineLoop - a low-level admin-service readiness gate (peer of ServerReadiness), NOT a
+        // scenario assertion target: it has no checked-throwing contract (callers up to BlockLifecycleListener.onStart
+        // don't declare InterruptedException), restores the interrupt flag and throws IllegalStateException on
+        // timeout, and paces at 1s — none of which retryUntil (returns last, throws InterruptedException, 2s pacing,
+        // 180s floor) or awaitWithRetry (Assert.fail) reproduce without changing behavior and rippling a checked
+        // exception into the listener.
         while (System.currentTimeMillis() < deadline) {
             try {
                 if (sendRetrieveTenants().getResponseCode() == 200) {
                     return;
                 }
-            } catch (Exception ignored) {
-                // admin services not accepting the SOAP request yet
+            } catch (IOException ignored) {
+                // admin services not accepting the SOAP request yet (doPost/sendSoapRequest's only checked failure)
             }
             try {
                 logger.info("Waiting for the Tenant Mgt admin service to be ready for provisioning...");
@@ -613,6 +624,7 @@ public final class TenantUserProvisioner {
                 break;
             }
         }
+        // CHECKSTYLE:ON
         throw new IllegalStateException(
                 "Tenant Mgt admin service did not become ready for provisioning within "
                         + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");

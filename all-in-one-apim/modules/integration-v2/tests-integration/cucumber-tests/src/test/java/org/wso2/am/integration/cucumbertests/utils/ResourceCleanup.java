@@ -281,6 +281,9 @@ public final class ResourceCleanup {
      * created them), and a DCR client is a standalone service provider that the DevPortal application's deletion
      * does not remove — so it must be swept explicitly or it leaks. Best-effort: a 404 (already gone) is fine.
      */
+    @SuppressWarnings("checkstyle:IllegalCatch") // best-effort teardown: a SOAP fault / connectivity failure
+    // deregistering one DCR client must be swallowed (logged as a leak WARN) so the remaining clients are still
+    // swept — a narrower catch could let an unexpected runtime failure abort the whole sweep and leak the rest.
     private static void deleteDcrClients(String baseUrl) {
         String serviceUrl = baseUrl + "services/OAuthAdminService";
         // Axis2 wraps operation elements in this namespace (same as other Carbon admin-service SOAP calls).
@@ -324,6 +327,9 @@ public final class ResourceCleanup {
      * (via the recorded {@link OwnedResource#actorRef()}) avoids that. {@code tokenKeyFor} selects the token
      * TYPE for this resource kind (devportal for applications, publisher for APIs/policies/scopes).
      */
+    @SuppressWarnings("checkstyle:IllegalCatch") // best-effort teardown: a connectivity/runtime failure deleting
+    // one resource must be swallowed (logged as a leak WARN) so the remaining registered resources are still
+    // swept — a narrower catch could let an unexpected runtime failure abort the loop and leak everything after it.
     private static void deleteResources(String contextKey, Function<User, String> tokenKeyFor,
                                         Function<String, String> urlBuilder) {
 

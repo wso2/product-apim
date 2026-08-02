@@ -329,20 +329,12 @@ public class VisibilityAccessSteps {
 
     private void pollUntilStatus(String url, Map<String, String> headers, int expectedStatus, int timeoutSeconds)
             throws InterruptedException {
-        long pollStart = System.currentTimeMillis();
-        long deadline = pollStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(url, headers);
-                if (last.getResponseCode() == expectedStatus) {
-                    break;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
-        }
+        // retryUntil owns the deadline (floored at RUNTIME_PROPAGATION_TIMEOUT), the tiered pacing and the
+        // IOException-only retry (transient connectivity while visibility settles); it returns the last response,
+        // which we publish as httpResponse and assert against the expected status.
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance().doGet(url, headers),
+                resp -> resp.getResponseCode() == expectedStatus);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for " + url);
         Assert.assertEquals(last.getResponseCode(), expectedStatus,

@@ -28,7 +28,6 @@ import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -97,37 +96,47 @@ public class DevPortalSwaggerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        long deadline = System.currentTimeMillis()
-                + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        String lastServers = null;
-        String host = null;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalApiSwaggerURL(getBaseUrl(), apiId), headers);
-                if (last.getResponseCode() == 200 && last.getData() != null && !last.getData().isBlank()) {
-                    JSONObject swagger = new JSONObject(last.getData());
-                    // A definition with no servers section (or an empty one) counts as not-yet-propagated rather
-                    // than a hard failure, so the poll rides out the window before the deployment is reflected.
-                    JSONArray servers = swagger.optJSONArray("servers");
-                    if (servers != null && servers.length() > 0) {
-                        lastServers = servers.toString();
-                        host = URI.create(servers.getJSONObject(0).optString("url")).getHost();
-                        if (host != null && acceptableHosts.contains(host)) {
-                            TestContext.set("httpResponse", last);
-                            return;
-                        }
-                    }
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only — a bad api id / context key still fails fast above
-            }
-            Thread.sleep(2000);
-        }
+        // retryUntil owns the deadline (floored at RUNTIME_PROPAGATION_TIMEOUT), the tiered pacing and the
+        // IOException-only retry (a bad api id / context key still fails fast in resolve above); the accept
+        // condition parses the swagger and holds once servers[0].url's host is one we deployed to. It returns
+        // the last response, which we publish and (on non-match) re-parse for the failure message.
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance()
+                        .doGet(Utils.getDevportalApiSwaggerURL(getBaseUrl(), apiId), headers),
+                resp -> resolvedHostOf(resp, acceptableHosts) != null);
         TestContext.set("httpResponse", last);
+        String host = resolvedHostOf(last, acceptableHosts);
+        if (host != null) {
+            return;
+        }
         Assert.fail("DevPortal swagger of API " + apiId + " did not resolve its server host to " + expectation
-                + " within " + timeoutSeconds + "s. Last resolved host=" + host + ", servers=" + lastServers
+                + " within " + timeoutSeconds + "s. Last servers=" + serversOf(last)
                 + ". A blank host means the environment was resolved to one the API is not deployed to.");
+    }
+
+    /**
+     * The host of {@code servers[0].url} in the swagger response IF it is one of {@code acceptableHosts}, else
+     * {@code null} (a non-200/empty body, a missing/empty {@code servers} section — counted as not-yet-propagated
+     * rather than a hard failure — or a host that is not one we deployed to). Never throws on a malformed body.
+     */
+    private static String resolvedHostOf(HttpResponse resp, List<String> acceptableHosts) {
+        if (resp == null || resp.getResponseCode() != 200 || resp.getData() == null || resp.getData().isBlank()) {
+            return null;
+        }
+        JSONArray servers = new JSONObject(resp.getData()).optJSONArray("servers");
+        if (servers == null || servers.length() == 0) {
+            return null;
+        }
+        String host = URI.create(servers.getJSONObject(0).optString("url")).getHost();
+        return host != null && acceptableHosts.contains(host) ? host : null;
+    }
+
+    /** The raw {@code servers} array of the swagger response for the failure message, or {@code null}. */
+    private static String serversOf(HttpResponse resp) {
+        if (resp == null || resp.getResponseCode() != 200 || resp.getData() == null || resp.getData().isBlank()) {
+            return null;
+        }
+        JSONArray servers = new JSONObject(resp.getData()).optJSONArray("servers");
+        return servers == null ? null : servers.toString();
     }
 }

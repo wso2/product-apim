@@ -27,7 +27,6 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,21 +86,12 @@ public class MutualSslSteps {
     @When("I invoke the API at gateway context {string} with no client certificate until response status code becomes {int} within {int} seconds")
     public void iInvokeWithoutClientCert(String context, int expectedStatus, int timeoutSeconds) throws Exception {
         String endpointUrl = buildUrl(context);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 1000L);
-        HttpResponse last = null;
-        do {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(endpointUrl, acceptXml());
-                if (last.getResponseCode() == expectedStatus) {
-                    TestContext.set("httpResponse", last);
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry
-            }
-            Utils.pollPause(endTimeStart, 3000);
-        } while (System.currentTimeMillis() < endTime);
+        // retryUntil owns the deadline (floored at RUNTIME_PROPAGATION_TIMEOUT), the tiered pacing and the
+        // IOException-only retry (gateway warm-up); it returns the last response, which finish() publishes as
+        // httpResponse and asserts against the expected status.
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance().doGet(endpointUrl, acceptXml()),
+                resp -> resp.getResponseCode() == expectedStatus);
         finish(last, expectedStatus);
     }
 
@@ -109,22 +99,13 @@ public class MutualSslSteps {
             throws Exception {
         String endpointUrl = buildUrl(context);
         File keystore = Utils.classpathToTempFile(keystorePath, "mtls", ".jks");
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 1000L);
-        HttpResponse last = null;
-        do {
-            try {
-                last = SimpleHTTPClient.getInstance()
-                        .doMutualSSLGet(keystore.getAbsolutePath(), KEYSTORE_PASSWORD, endpointUrl, acceptXml());
-                if (last.getResponseCode() == expectedStatus) {
-                    TestContext.set("httpResponse", last);
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // TLS handshake / gateway warm-up — retry
-            }
-            Utils.pollPause(endTimeStart, 3000);
-        } while (System.currentTimeMillis() < endTime);
+        // retryUntil owns the deadline (floored at RUNTIME_PROPAGATION_TIMEOUT), the tiered pacing and the
+        // IOException-only retry (TLS handshake / gateway warm-up); it returns the last response, which finish()
+        // publishes as httpResponse and asserts against the expected status.
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance()
+                        .doMutualSSLGet(keystore.getAbsolutePath(), KEYSTORE_PASSWORD, endpointUrl, acceptXml()),
+                resp -> resp.getResponseCode() == expectedStatus);
         finish(last, expectedStatus);
     }
 

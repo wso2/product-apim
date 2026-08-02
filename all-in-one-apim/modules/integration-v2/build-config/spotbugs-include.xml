@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    SpotBugs + FindSecBugs INCLUDE filter for the V2 module. Narrowed to the specific high-signal security +
+    resource-leak patterns from docs/devs/static-analysis-plan.md (T1-9/12/13) plus XXE and weak-crypto. The whole
+    SECURITY category floods a TEST module with noise (CRLF_INJECTION_LOGS on every logger call, HARD_CODE_PASSWORD
+    on test credentials, UNENCRYPTED_SOCKET on the local CONNECT proxy, IMPROPER_UNICODE, PATH_TRAVERSAL_IN on the
+    framework reading its own resources, HTTP_PARAMETER_POLLUTION on URL builders) — none of which are real
+    vulnerabilities here. Every pattern below was confirmed present in the codebase (or is its direct write-side
+    counterpart), so the filter is not silently empty.
+
+    Ratchet: the maven plugin runs the report-only `spotbugs` goal (never fails the build) during the warning
+    phase; the sweep PR switches to the `check` goal to gate.
+-->
+<FindBugsFilter>
+    <!-- T1-13: weak TLS / trust-all manager / no-op hostname verifier (confine to self-signed test containers). -->
+    <Match>
+        <Bug pattern="WEAK_TRUST_MANAGER,WEAK_HOSTNAME_VERIFIER,SSL_CONTEXT,DEFAULT_HTTP_CLIENT"/>
+    </Match>
+    <!-- T1-12: Zip-Slip / path traversal on the WRITE side (archive-entry extraction). -->
+    <Match>
+        <Bug pattern="PATH_TRAVERSAL_OUT"/>
+    </Match>
+    <!-- T1-9: unclosed resources on the failure path. -->
+    <Match>
+        <Bug pattern="OBL_UNSATISFIED_OBLIGATION,OS_OPEN_STREAM,OS_OPEN_STREAM_EXCEPTION_PATH"/>
+    </Match>
+    <!-- XXE: XML parsed without disabling external entities (real, present in SOAP/response parsing). -->
+    <Match>
+        <Bug pattern="XXE_DOCUMENT,XXE_SAXPARSER,XXE_XMLREADER,XXE_DTD_TRANSFORM_FACTORY,XXE_XSLT_TRANSFORM_FACTORY,XXE_DTD_STREAM"/>
+    </Match>
+    <!-- Weak message digests (MD5 / SHA-1) — bonus, present in a JWT helper. -->
+    <Match>
+        <Bug pattern="WEAK_MESSAGE_DIGEST_MD5,WEAK_MESSAGE_DIGEST_SHA1"/>
+    </Match>
+    <!-- NOTE: D-10 (concurrency) and D-12 (mutable static) were trialled here but the SpotBugs MS_*/MT_ detectors
+         do not fire in this setup (fixture-proven: a public static mutable array/collection produced 0 MS_ findings
+         at effort=Max/threshold=Low). D-12 is enforced via PMD (MutableSharedStaticState) instead; D-10 stays
+         review-only (concurrency correctness isn't reliably statically detectable here). -->
+</FindBugsFilter>

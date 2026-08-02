@@ -639,7 +639,10 @@ public class BaseSteps {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         TestContext.set(Utils.normalizeContextKey(key), response.getData());
+        // Fixed settle pause after capturing the payload — a pure delay with no pollable condition to await.
+        // CHECKSTYLE:OFF threadSleep - fixed settle delay, no pollable condition available here
         Thread.sleep(Constants.WAIT_TIME);
+        // CHECKSTYLE:ON
     }
 
     /**
@@ -977,9 +980,14 @@ public class BaseSteps {
                     configMatches = true;
                     break;
                 } catch (AssertionError e) {
-                    // Configuration doesn't match yet, retry
+                    // Configuration doesn't match yet, retry. This is a fixed-count, AssertionError-driven
+                    // config-convergence poll (not an IOException-retry against a deadline), and it has a
+                    // distinct fallback-to-update-response branch, so it cannot be expressed as Utils.retryUntil
+                    // without changing behavior — the inter-attempt pause is retained deliberately.
                     if (i < maxRetries - 1) {
+                        // CHECKSTYLE:OFF threadSleep - fixed-count config-convergence retry, not a deadline poll
                         Thread.sleep(delayMs);
+                        // CHECKSTYLE:ON
                     } else {
                         throw e;
                     }
@@ -989,7 +997,10 @@ public class BaseSteps {
                     verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
                     return;
                 }
+                // Same fixed-count convergence poll for the not-yet-200 branch; retained deliberately (see above).
+                // CHECKSTYLE:OFF threadSleep - fixed-count config-convergence retry, not a deadline poll
                 Thread.sleep(delayMs);
+                // CHECKSTYLE:ON
             }
         }
 
@@ -1106,39 +1117,45 @@ public class BaseSteps {
         // programming error (bad context key, NPE) still fails fast instead of being masked as a deploy
         // timeout, and (3) lengthen the window to a freshly-imported-under-load budget. Fast cases still
         // exit early on the first positive poll.
-        long waitTimeStart = System.currentTimeMillis();
-        long waitTime = waitTimeStart + (2 * Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        boolean isApiDeployed = false;
-
-        while (System.currentTimeMillis() < waitTime) {
-            try {
-                HttpResponse revisionsResponse = SimpleHTTPClient.getInstance().doGet(revisionsUrl, revisionsHeaders);
-                if (revisionsResponse != null && revisionsResponse.getResponseCode() == 200
-                        && new JSONObject(revisionsResponse.getData()).getJSONArray("list").length() > 0) {
-                    isApiDeployed = true;
-                    break;
-                }
-                HttpResponse artifactResponse = SimpleHTTPClient.getInstance().doGet(artifactUrl, artifactHeaders);
-                if (artifactResponse != null && artifactResponse.getResponseCode() == 200) {
-                    isApiDeployed = true;
-                    break;
-                }
-            } catch (IOException | JSONException e) {
-                log.warn("API: " + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
-                        tenantDomain + " – retrying");
-            }
-            try {
-                log.info("Wait for availability of API: " + apiName + " with version: " + apiVersion +
-                        " in tenant " + tenantDomain);
-                Utils.pollPause(waitTimeStart, 500);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
+        // Poll the two readiness signals until either flips: the deployed-revisions list gains an entry (the
+        // publisher-plane distinguishing state) OR the gateway artifact endpoint answers 200 (secondary
+        // confirmation). The envelope retries only transient IOException (gateway warm-up); a not-yet-well-formed
+        // body is caught here as not-ready so the poll continues, exactly as the former IOException|JSONException
+        // tolerance did — a programming error (bad context key, NPE) still fails fast. Window is a
+        // freshly-imported-under-load budget (2× RUNTIME_PROPAGATION_TIMEOUT); fast cases exit on the first poll.
+        // These are intermediate reads (not the step's assertion target), so they use SimpleHTTPClient directly.
+        Boolean deployedResult = Utils.retryUntil(2 * Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> {
+                    try {
+                        HttpResponse revisionsResponse =
+                                SimpleHTTPClient.getInstance().doGet(revisionsUrl, revisionsHeaders);
+                        if (revisionsResponse != null && revisionsResponse.getResponseCode() == 200
+                                && new JSONObject(revisionsResponse.getData()).getJSONArray("list").length() > 0) {
+                            return Boolean.TRUE;
+                        }
+                    } catch (JSONException notYetWellFormed) {
+                        log.warn("API: " + apiName + " with version: " + apiVersion + " not yet deployed in tenant: "
+                                + tenantDomain + " – retrying");
+                        return null;
+                    }
+                    HttpResponse artifactResponse =
+                            SimpleHTTPClient.getInstance().doGet(artifactUrl, artifactHeaders);
+                    if (artifactResponse != null && artifactResponse.getResponseCode() == 200) {
+                        return Boolean.TRUE;
+                    }
+                    log.info("Wait for availability of API: " + apiName + " with version: " + apiVersion
+                            + " in tenant " + tenantDomain);
+                    return null;
+                },
+                found -> Boolean.TRUE.equals(found));
+        boolean isApiDeployed = Boolean.TRUE.equals(deployedResult);
         Assert.assertTrue(isApiDeployed, "API " + apiName + " v" + apiVersion +
                 " was not deployed within the timeout");
+        // Fixed post-deploy settle pause: the revision is live but the synapse artifact behind the gateway
+        // needs a moment before invocation; no finer-grained pollable signal exists in this step.
+        // CHECKSTYLE:OFF threadSleep - fixed post-deploy settle delay, no pollable condition available here
         Thread.sleep(10000);
+        // CHECKSTYLE:ON
     }
 
 

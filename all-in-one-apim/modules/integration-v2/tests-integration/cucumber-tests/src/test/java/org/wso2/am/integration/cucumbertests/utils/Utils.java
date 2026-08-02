@@ -60,7 +60,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class Utils {
-    
+
     private static final Log log = LogFactory.getLog(Utils.class);
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Pattern UNIQUE_PLACEHOLDER = Pattern.compile("\\$\\{UNIQUE:([^}]+)\\}");
@@ -103,7 +103,7 @@ public class Utils {
      * minute (fast pass-detection, where nearly all polls succeed), then {@code max(base, 5s)} in the second
      * minute and {@code max(base, 10s)} beyond — easing off the server exactly when a long tail says it is
      * struggling (see {@code Constants.RUNTIME_PROPAGATION_TIMEOUT}: 180s window = one tier per minute). For a
-     * loop whose whole window is under a minute this is identical to {@code Thread.sleep(base)}. Propagates
+     * loop whose whole window is under a minute this is identical to a plain {@code sleep(base)}. Propagates
      * {@link InterruptedException} so cancellation stops at the loop's own interrupt handling. Pass the
      * instant the POLL began (typically the value the loop's deadline was computed from).
      */
@@ -112,7 +112,10 @@ public class Utils {
         long interval = elapsed < 60_000L ? baseIntervalMillis
                 : elapsed < 120_000L ? Math.max(baseIntervalMillis, 5_000L)
                 : Math.max(baseIntervalMillis, 10_000L);
+        // CHECKSTYLE:OFF threadSleep - this IS the shared inter-poll pause primitive that every deadline-bounded
+        // wait funnels through; there is nothing pollable to await here, this call is the pacing itself.
         Thread.sleep(interval);
+        // CHECKSTYLE:ON
     }
 
     /**
@@ -137,6 +140,8 @@ public class Utils {
      */
     private static <T> T pollWithin(long pollStart, long deadline, PollAttempt<T> attempt)
             throws InterruptedException {
+        // CHECKSTYLE:OFF deadlineLoop - this IS the single deadline+pacing primitive that retryUntil/awaitWithRetry
+        // are built on; it cannot funnel through itself, so the deadline loop is owned here.
         while (System.currentTimeMillis() < deadline) {
             T outcome = attempt.attempt();
             if (outcome != null) {
@@ -144,6 +149,7 @@ public class Utils {
             }
             pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
         }
+        // CHECKSTYLE:ON
         return null;
     }
 
@@ -282,6 +288,9 @@ public class Utils {
      * occurrences stay countable across runs — this compensates for a product robustness gap and must not
      * silently hide its frequency. A probe exception counts as not-ready (indistinguishable during warm-up).
      */
+    // Broad catch is required: the probe/reTrigger functional interfaces declare `throws Exception`, and the
+    // contract deliberately treats any non-Interrupted throwable as not-ready (probe) / a heal failure (reTrigger).
+    @SuppressWarnings("checkstyle:IllegalCatch")
     public static void awaitWithRetry(String what, ReadinessProbe probe, ReadinessAction reTrigger, int maxAttempts)
             throws InterruptedException {
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -1492,7 +1501,7 @@ public class Utils {
 
         try {
             return JsonPath.read(jsonPayload, jsonPath);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new IOException("Path '" + jsonPath + "' not found or invalid in JSON payload.", e);
         }
     }
@@ -1511,7 +1520,7 @@ public class Utils {
             java.util.List<Object> ids = JsonPath.read(jsonPayload,
                     "$.list[?(@.name == '" + name + "')].id");
             return ids.isEmpty() ? null : String.valueOf(ids.get(0));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new IOException("Failed to locate id for name '" + name + "' in list payload.", e);
         }
     }
@@ -1722,7 +1731,7 @@ public class Utils {
         value = value.trim();
         try {
             return new JSONTokener(value.trim()).nextValue();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new IllegalArgumentException("Invalid JSON value to append: " + value, e);
         }
     }
@@ -1899,7 +1908,7 @@ public class Utils {
             }
 
             Assert.assertEquals(String.valueOf(actualValue), expectedValue, "String values do not match");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
             throw new AssertionError("Comparison failed: " + e.getMessage(), e);
         }

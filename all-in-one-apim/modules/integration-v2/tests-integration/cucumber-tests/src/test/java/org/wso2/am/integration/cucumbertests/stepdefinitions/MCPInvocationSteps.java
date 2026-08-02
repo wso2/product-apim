@@ -441,41 +441,46 @@ public class MCPInvocationSteps {
         String token = TestContext.resolve(accessToken).toString();
         List<String> expected = Arrays.stream(csvTools.split(",")).map(String::trim).collect(Collectors.toList());
 
-        long endTime = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
-        String lastError = null;
-        List<String> actual = null;
-        while (System.currentTimeMillis() < endTime) {
+        // Build the trust-all client ONCE, outside the retry envelope (§15): MCP session state rides the
+        // Mcp-Session-Id header, not the connection, so one client serves every attempt and the SSL setup's
+        // checked exception stays out of the envelope's transient-IOException policy. The envelope floors the
+        // wait at RUNTIME_PROPAGATION_TIMEOUT and retries only IOException; a not-yet-well-formed tools/list
+        // body is caught here as "not ready" so the poll continues (former broad-catch tolerance).
+        HttpClient client = newClient();
+        AtomicReference<String> lastError = new AtomicReference<>();
+        AtomicReference<List<String>> lastActual = new AtomicReference<>();
+        List<String> converged = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
-                HttpClient client = HttpClient.newBuilder().sslContext(trustAll())
-                        .connectTimeout(Duration.ofSeconds(15)).build();
                 HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
                 String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
                 if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
-                    lastError = "init status=" + initResp.statusCode() + " body=" + initResp.body();
-                    Thread.sleep(2000);
-                    continue;
+                    lastError.set("init status=" + initResp.statusCode() + " body=" + initResp.body());
+                    return null;
                 }
                 post(client, mcpUrl, token, sessionId, INITIALIZED);
                 HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
                 String listBody = sseOrJson(listResp.body());
                 if (listResp.statusCode() != 200 || listBody.isBlank()) {
-                    lastError = "tools/list status=" + listResp.statusCode() + " body=" + listResp.body();
-                    Thread.sleep(2000);
-                    continue;
+                    lastError.set("tools/list status=" + listResp.statusCode() + " body=" + listResp.body());
+                    return null;
                 }
-                actual = toolNames(listBody);
+                List<String> actual = toolNames(listBody);
+                lastActual.set(actual);
                 if (expected.equals(actual)) {
-                    return;
+                    return actual;
                 }
-                lastError = "tools/list status=" + listResp.statusCode() + " advertised " + actual
-                        + " body=" + listBody;
-            } catch (Exception transientDuringWarmup) {
-                lastError = transientDuringWarmup.getMessage();
+                lastError.set("tools/list status=" + listResp.statusCode() + " advertised " + actual
+                        + " body=" + listBody);
+                return null;
+            } catch (JSONException notYetWellFormed) {
+                lastError.set(notYetWellFormed.getMessage());
+                return null;
             }
-            Thread.sleep(2000);
+        }, result -> expected.equals(result));
+        if (!expected.equals(converged)) {
+            Assert.fail("The gateway did not advertise tools in the order " + expected + " within the deadline "
+                    + "(last advertised order: " + lastActual.get() + "); last: " + lastError.get());
         }
-        Assert.fail("The gateway did not advertise tools in the order " + expected + " within the deadline "
-                + "(last advertised order: " + actual + "); last: " + lastError);
     }
 
     /** Tool names from a {@code tools/list} JSON-RPC result, in the order the gateway advertised them. */
