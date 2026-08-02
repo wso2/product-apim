@@ -59,9 +59,13 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // Expose canonical ports; Docker assigns ephemeral host ports resolved via getMappedPort.
         // GATEWAY_WS_PORT (9099) is the gateway WebSocket inbound; GATEWAY_WSS_PORT (8099) is the SECURE WebSocket
         // inbound — both needed by WebSocket-API invocation tests (ws:// and wss://).
+        // WEBSUB_EVENT_RECEIVER_PORT (9021) is the WebSub event-receiver inbound (synapse WebhookServer) an event
+        // source POSTs content to — needed by WebSub-API invocation tests, which publish from the test JVM.
+        // Note every port listed here also joins the startup liveness set (Wait.forListeningPort waits on ALL
+        // exposed ports), so only list ports the server always binds — 9021 does, unconditionally, at boot.
         withExposedPorts(Constants.HTTPS_PORT, Constants.HTTP_PORT,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
-                Constants.GATEWAY_WSS_PORT);
+                Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
 
         // Env vars for APIMGT_DB
         withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
@@ -252,6 +256,15 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     /** Gateway SECURE WebSocket base URL (wss://host:mappedWssPort/) for wss:// WebSocket-API invocation. */
     public String getGatewayWssUrl() {
         return String.format("wss://%s:%d/", getHost(), getMappedPort(Constants.GATEWAY_WSS_PORT));
+    }
+
+    /**
+     * WebSub event-receiver base URL (http://host:mappedWebhookPort/) — where an event source POSTs content for a
+     * WebSub API's hub to fan out. Append the API context/version and
+     * {@link Constants#WEBSUB_EVENT_RECEIVER_RESOURCE}.
+     */
+    public String getWebSubEventReceiverUrl() {
+        return String.format("http://%s:%d/", getHost(), getMappedPort(Constants.WEBSUB_EVENT_RECEIVER_PORT));
     }
 
     /**

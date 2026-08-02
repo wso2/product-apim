@@ -19,6 +19,39 @@ Feature: Publisher Streaming API Design
       | publisherUser              |
       | publisherUser@tenant1.com  |
 
+  # SSE (type=SSE): create + deploy + publish, mirroring the WebSocket scenario. Management-plane only — SSE
+  # gateway invocation needs an SSE backend (a separate backlog infra item), so it is out of scope here. The
+  # create payload uses an ordinary HTTP endpoint (endpoint_type "http") and the AsyncUnlimited subscription
+  # tier. Runs in both tenants (×2). Ports ServerSentEventsAPITestCase#testPublishSseApi.
+  @cap:publisher @feat:streaming-design @type:smoke @legacy:ServerSentEventsAPITestCase
+  Scenario Outline: Create, deploy and publish an SSE API as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_sse_api.json" as "sseApiId" and deployed it
+    When I publish the "apis" resource with id "sseApiId"
+    Then The lifecycle status of API "sseApiId" should be "Published"
+
+    Examples:
+      | actor                      |
+      | publisherUser              |
+      | publisherUser@tenant1.com  |
+
+  # WebSub (type=WEBSUB): create + deploy + publish, carrying the websubSubscriptionConfiguration (secret /
+  # signingAlgorithm SHA1 / signatureHeader x-hub-signature) inline in the create payload, mirroring the legacy
+  # DTO update. Uses the AsyncWHUnlimited subscription tier. Management-plane only — WebSub gateway invocation
+  # (webhook subscribe/publish) needs a callback-receiver backend (a separate backlog infra item), so it is out
+  # of scope here. Runs in both tenants (×2). Ports WebSubAPITestCase#testPublishWebSubApi.
+  @cap:publisher @feat:streaming-design @type:smoke @legacy:WebSubAPITestCase
+  Scenario Outline: Create, deploy and publish a WebSub API as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_websub_api.json" as "websubApiId" and deployed it
+    When I publish the "apis" resource with id "websubApiId"
+    Then The lifecycle status of API "websubApiId" should be "Published"
+
+    Examples:
+      | actor                      |
+      | publisherUser              |
+      | publisherUser@tenant1.com  |
+
   # AsyncAPI import (advertise-only / third-party): an ASYNC API can only be created as a third-party API, so the
   # import carries advertiseInfo.advertised=true. Covers the new v2 & v3 AsyncAPI parser (import → 201 → publish),
   # the third-party-only guard, and spec-validation rejections. Management-plane only — an advertise-only API is

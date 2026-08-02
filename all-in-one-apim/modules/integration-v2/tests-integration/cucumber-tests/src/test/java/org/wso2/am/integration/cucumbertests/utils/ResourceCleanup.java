@@ -24,6 +24,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -96,6 +97,17 @@ public final class ResourceCleanup {
      */
     public static final String CREATED_SERVICE_CATALOG_IDS = "createdServiceCatalogIds";
 
+    /**
+     * Teardown list for users the PRODUCT created at runtime on a scenario's behalf — today the DevPortal
+     * self-sign-up user ({@code AM_USER_SIGNUP} workflow), holding each user's tenant-aware username. A signed-up
+     * user is a top-level user-store principal: nothing else removes it (the DevPortal has no delete-me endpoint
+     * and it is not tied to an API/application), so it would survive every other sweep and leak into the shared
+     * user store. Swept by {@link #deleteSignedUpUsers()} — a bespoke sweep, because a user delete is not a
+     * bearer-token REST call but the {@code RemoteUserStoreManagerService} SOAP {@code deleteUser} performed by
+     * the tenant ADMIN (a user cannot delete itself).
+     */
+    public static final String CREATED_SIGNUP_USERNAMES = "createdSignupUsernames";
+
     private ResourceCleanup() {
     }
 
@@ -162,7 +174,8 @@ public final class ResourceCleanup {
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
                 && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()
                 && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
-                && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()) {
+                && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()
+                && TestContext.getList(CREATED_SIGNUP_USERNAMES).isEmpty()) {
             return;
         }
         String baseUrl = baseUrlObj.toString();
@@ -250,6 +263,10 @@ public final class ResourceCleanup {
             // BYO OAuth clients registered via DCR: swept separately because they authenticate with the owner's
             // Basic credentials (not a bearer token) and are not removed by the DevPortal application's deletion.
             deleteDcrClients(baseUrl);
+            // Runtime-created users LAST: every resource a signed-up user owns (its applications, and the DCR
+            // client above) is swept as that user with its own credentials first — deleting the principal before
+            // its resources would strand them with no owner to delete them as.
+            deleteSignedUpUsers();
         } finally {
             TestContext.remove(Constants.CREATED_API_PRODUCT_IDS);
             TestContext.remove(Constants.CREATED_API_IDS);
@@ -272,7 +289,64 @@ public final class ResourceCleanup {
             TestContext.remove(CREATED_DCR_CLIENT_IDS);
             TestContext.remove(CREATED_ENDPOINT_CERTIFICATE_ALIASES);
             TestContext.remove(CREATED_SERVICE_CATALOG_IDS);
+            TestContext.remove(CREATED_SIGNUP_USERNAMES);
         }
+    }
+
+    /**
+     * Deletes users the product created at runtime for a scenario (the DevPortal self-sign-up users registered
+     * under {@link #CREATED_SIGNUP_USERNAMES}). Bespoke, not {@link #deleteResources}, for two reasons: there is
+     * no bearer-token REST delete for a user, and the deleting principal is not the resource's owner — a user
+     * cannot delete itself, so the recorded owner is used only to resolve WHICH TENANT's admin performs the
+     * {@code RemoteUserStoreManagerService.deleteUser} SOAP call.
+     *
+     * <p>Self-verifying: the outcome is confirmed with {@code isExistingUser} AFTER the delete, so a SOAP fault or
+     * a silently ignored delete cannot look green while leaking. Three outcomes are logged distinctly —
+     * already-absent (the reject arc: the product itself deletes a rejected sign-up), deleted, and STILL PRESENT
+     * (a WARN naming the leak).
+     */
+    private static void deleteSignedUpUsers() {
+
+        for (Object o : TestContext.getList(CREATED_SIGNUP_USERNAMES)) {
+            if (!(o instanceof OwnedResource res) || res.id() == null) {
+                continue;
+            }
+            String username = res.id();
+            String tenantDomain = Identity.resolveActor(res.actorRef()).getUserDomain();
+            try {
+                if (!userExists(tenantDomain, username)) {
+                    // Expected on the rejection arc: UserSignUpApprovalWorkflowExecutor deletes a REJECTED
+                    // sign-up itself, so there is nothing left to sweep.
+                    logger.info("Cleanup: signed-up user '" + username + "' in tenant '" + tenantDomain
+                            + "' is already absent — nothing to delete.");
+                    continue;
+                }
+                HttpResponse resp = TenantUserProvisioner.deleteUser(tenantDomain, username);
+                int code = resp == null ? -1 : resp.getResponseCode();
+                if (code < 200 || code >= 300) {
+                    logger.warn("Cleanup: deleteUser for signed-up user '" + username + "' in tenant '"
+                            + tenantDomain + "' returned HTTP " + code + ": "
+                            + trunc(resp == null ? null : resp.getData()));
+                }
+                if (userExists(tenantDomain, username)) {
+                    logger.warn("Cleanup: signed-up user '" + username + "' STILL EXISTS in tenant '" + tenantDomain
+                            + "' after deleteUser (HTTP " + code + ") — it leaks into the shared user store.");
+                } else {
+                    logger.info("Cleanup: deleted signed-up user '" + username + "' from tenant '" + tenantDomain
+                            + "' (HTTP " + code + ", verified absent).");
+                }
+            } catch (IOException | RuntimeException e) {
+                // Best-effort per user: one unreachable/faulting delete must not abort the sweep for the rest.
+                // IOException covers the SOAP transport; RuntimeException covers an unresolvable actor ref.
+                logger.warn("Cleanup failed to delete signed-up user '" + username + "' in tenant '" + tenantDomain
+                        + "': " + e.getMessage());
+            }
+        }
+    }
+
+    /** {@code isExistingUser} as a boolean — the only correct existence check (see SecondaryUserStoreSteps). */
+    private static boolean userExists(String tenantDomain, String username) throws IOException {
+        return TenantUserProvisioner.isExistingUser(tenantDomain, username).contains("<ns:return>true</ns:return>");
     }
 
     /**

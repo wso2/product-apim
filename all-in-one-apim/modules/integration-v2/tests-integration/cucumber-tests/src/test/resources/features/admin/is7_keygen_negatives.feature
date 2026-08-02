@@ -38,3 +38,22 @@ Feature: External Key Manager Key Generation Negatives
     """
     And I generate client credentials for application id "createdAppId" with payload "unreachableKeygenPayload"
     Then The response status code should be 409
+
+  @legacy:ExternalIDPJWTTestCase
+  Scenario: Key generation against a key manager that does not support OAuth app creation is refused
+    # A KM with enableOAuthAppCreation=false does not provision OAuth apps, so key generation is refused up front
+    # with 400 / 901405 "Key Manager doesn't support generating OAuth applications" - before any DCR to IS.
+    # Legacy parity: ExternalIDPJWTTestCase.generateKeysNegative / verifyTokenGenerationEnabledForTokenExchangeType.
+    Given I act as "admin"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-no-oauth-app-creation.json" as "noAppCreationKm"
+    Then The response status code should be 201
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app_oauth.json" in context as "noAppCreationAppPayload"
+    And I create an application with payload "noAppCreationAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "noAppCreationKeygenPayload"
+    """
+    {"keyType": "PRODUCTION", "keyManager": "{{noAppCreationKmName}}", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "noAppCreationKeygenPayload"
+    Then The response status code should be 400
+    And The response should contain "901405"

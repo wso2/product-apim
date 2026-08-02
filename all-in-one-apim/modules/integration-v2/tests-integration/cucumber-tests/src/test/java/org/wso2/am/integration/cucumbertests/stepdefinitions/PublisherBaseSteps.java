@@ -563,23 +563,65 @@ public class PublisherBaseSteps {
     /**
      * Verifies that a specific API ID exists in the list of all APIs.
      *
+     * <p>The publisher listing is served from the search index, which is NOT read-your-writes: a 201 from
+     * {@code POST /apis} does not guarantee the API is indexed yet, so asserting on a single listing read is a
+     * race (§7). It only looked stable because its one existing caller (api_lifecycle) reaches this step after
+     * an update + publish + lifecycle poll, i.e. behind an incidental delay. So the assertion is funnelled
+     * through a retry that RE-ISSUES the listing — retrying the parse of the response an earlier step already
+     * fetched could never change its verdict.
+     *
+     * <p>The response already in context is checked FIRST and short-circuits on a hit, so a caller that is
+     * already indexed by the time it gets here pays no added latency and its behaviour is unchanged; only the
+     * previously-failing path polls. The assertion itself is untouched: still presence-by-id, still exact.
+     *
      * @param apiId Context key containing the API ID to verify
      */
     @Then("The API with id {string} should be in the list of all APIS")
-    public void theApiShouldBeInTheListOfAllApis(String apiId) {
+    public void theApiShouldBeInTheListOfAllApis(String apiId) throws IOException, InterruptedException {
 
         String actualApiId = TestContext.resolve(apiId).toString();
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         // Guard before parsing — a cleared/failed list retrieval must fail clearly, not as an NPE/JSONException.
+        // Deliberately NOT retried: an absent response means the feature never ran the retrieve step, which is an
+        // authoring error that must fail fast rather than be reported as a propagation timeout (§7).
         Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
                 "No API-list response with a body captured to search for API '" + actualApiId + "' in");
-        JSONArray apisList = new JSONObject(response.getData()).getJSONArray("list");
 
-        boolean found = IntStream.range(0, apisList.length())
+        if (listContainsApiId(response, actualApiId)) {
+            return;
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String listUrl = Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), null, null, null);
+        HttpResponse lastResponse = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(listUrl, headers),
+                listResponse -> listContainsApiId(listResponse, actualApiId));
+
+        // Carry the last body into the failure text: without it, diagnosing "not found" costs another full run.
+        Assert.assertTrue(listContainsApiId(lastResponse, actualApiId),
+                "API with id " + actualApiId + " not found in the list within the retry window; last response: "
+                        + (lastResponse == null ? "none (requests failed)"
+                        : lastResponse.getResponseCode() + " / " + lastResponse.getData()));
+    }
+
+    /**
+     * True when the given publisher-listing response carries an entry whose {@code id} is {@code apiId}. Tolerates
+     * a null/empty/non-200 response by reporting "not present", so a listing read during warm-up keeps the poll in
+     * {@link #theApiShouldBeInTheListOfAllApis} going instead of throwing out of the accept condition.
+     */
+    private static boolean listContainsApiId(HttpResponse response, String apiId) {
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            return false;
+        }
+        JSONObject payload = new JSONObject(response.getData());
+        if (!payload.has("list")) {
+            return false;
+        }
+        JSONArray apisList = payload.getJSONArray("list");
+        return IntStream.range(0, apisList.length())
                 .mapToObj(apisList::getJSONObject)
-                .anyMatch(subJson -> actualApiId.equals(subJson.optString("id", null)));
-
-        Assert.assertTrue(found, "API with id " + actualApiId + " not found in the list.");
+                .anyMatch(subJson -> apiId.equals(subJson.optString("id", null)));
     }
 
     /**
@@ -1131,7 +1173,10 @@ public class PublisherBaseSteps {
                 : new JSONObject(ctxValue.toString());
 
         if ("endpointConfig".equals(configType)){
-            configValue = TestContext.resolve(configValue).toString();
+            // The value is a context key whose stored endpointConfig JSON may itself embed {{contextKey}}
+            // references to runtime-captured values (e.g. a DCR-registered clientId/clientSecret for OAUTH
+            // endpoint security), so resolve those after fetching the stored payload.
+            configValue = Utils.resolveContextPlaceholders(TestContext.resolve(configValue).toString());
         } else {
             // Resolve any {{contextKey}} placeholders in the value (e.g. a custom throttle-tier name captured
             // into context, when setting an API's business-plan "policies"). No-op when the value has none.

@@ -27,11 +27,13 @@ import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -50,6 +52,10 @@ public class TenantSharingSteps {
     private static final String KM_LIST_KEY = "tenantSharingKmList";
     private static final String TENANT_CREATED_EVENT =
             "https://schemas.identity.wso2.org/events/tenant/event-type/tenantCreated";
+    private static final String TENANT_OWNER_UPDATED_EVENT =
+            "https://schemas.identity.wso2.org/events/tenant/event-type/tenantOwnerUpdated";
+    private static final String TENANT_ACTIVATED_EVENT =
+            "https://schemas.identity.wso2.org/events/tenant/event-type/tenantActivated";
     /** Header the IS TenantSyncListener sends and APIM's TenantManagementEventHandler routes on. */
     private static final String KM_HEADER = "X-WSO2-KEY-MANAGER";
     private static final String KM_HEADER_VALUE = "TENANT_MANAGEMENT";
@@ -69,20 +75,70 @@ public class TenantSharingSteps {
                 .put("email", "admin@" + tenantDomain)
                 .put("firstname", "Tenant")
                 .put("lastname", "Sharing");
-        JSONObject tenant = new JSONObject()
+        JSONObject tenant = tenantBase(tenantDomain).put("owners", new JSONArray().put(owner));
+        postTenantEvent(TENANT_CREATED_EVENT, "CREATE", tenant);
+    }
+
+    /**
+     * POSTs a {@code tenantOwnerUpdated} event carrying the owner's NEW password (mirroring the legacy
+     * buildPayload, which OMITS the username on an update — only CREATE carries it). After this the tenant
+     * admin's OLD-password credentials are rejected and the NEW-password credentials accepted. Publishes the
+     * response for the following status assertion.
+     */
+    @When("I notify tenant owner update for {string} with new admin password {string} "
+            + "via the tenant-sharing notify endpoint")
+    public void iNotifyTenantOwnerUpdate(String tenantDomain, String newAdminPassword) throws IOException {
+
+        // Legacy OMITS username on the update event — only the new password + profile fields are sent.
+        JSONObject owner = new JSONObject()
+                .put("password", newAdminPassword)
+                .put("email", "admin@" + tenantDomain)
+                .put("firstname", "Tenant")
+                .put("lastname", "Sharing");
+        JSONObject tenant = tenantBase(tenantDomain).put("owners", new JSONArray().put(owner));
+        postTenantEvent(TENANT_OWNER_UPDATED_EVENT, "UPDATE", tenant);
+    }
+
+    /**
+     * POSTs a {@code tenantActivated} event with {@code lifecycleStatus.activated} = the given flag (legacy
+     * uses the SAME event URI for both activation and deactivation, distinguished only by this flag and the
+     * ACTIVATE/DEACTIVATE action string). After this the tenant admin's token issuance succeeds (activated) or
+     * fails (deactivated). Publishes the response for the following status assertion.
+     */
+    @When("I notify tenant {string} activation status {string} via the tenant-sharing notify endpoint")
+    public void iNotifyTenantActivation(String tenantDomain, String activated) throws IOException {
+
+        boolean isActive = Boolean.parseBoolean(activated);
+        JSONObject tenant = tenantBase(tenantDomain)
+                .put("lifecycleStatus", new JSONObject().put("activated", isActive));
+        postTenantEvent(TENANT_ACTIVATED_EVENT, isActive ? "ACTIVATE" : "DEACTIVATE", tenant);
+    }
+
+    /** The tenant sub-object common to every tenant-management event (id/domain/ref), mirroring the legacy. */
+    private static JSONObject tenantBase(String tenantDomain) {
+        return new JSONObject()
                 .put("id", "1234")
                 .put("domain", tenantDomain)
-                .put("ref", "https://wso2is:9443/api/server/v1/tenants/1234")
-                .put("owners", new JSONArray().put(owner));
+                .put("ref", "https://wso2is:9443/api/server/v1/tenants/1234");
+    }
+
+    /**
+     * Builds the tenant-management envelope for {@code eventUri}/{@code action} around the given tenant object
+     * and POSTs it to APIM's {@code /internal/data/v1/notify} as the ACTING actor (basic auth — the endpoint
+     * authenticates the event sender's carbon credentials, exactly as the IS TenantSyncListener does).
+     * Publishes the response for the following status assertion.
+     */
+    private static void postTenantEvent(String eventUri, String action, JSONObject tenant) throws IOException {
+
         JSONObject detail = new JSONObject()
                 .put("initiatorType", "SYSTEM")
-                .put("action", "CREATE")
+                .put("action", action)
                 .put("tenant", tenant);
         JSONObject event = new JSONObject()
                 .put("iss", "https://wso2is:9443")
                 .put("jti", UUID.randomUUID().toString())
                 .put("iat", System.currentTimeMillis() / 1000L)
-                .put("events", new JSONObject().put(TENANT_CREATED_EVENT, detail));
+                .put("events", new JSONObject().put(eventUri, detail));
 
         User actor = Identity.actingActor();
         Map<String, String> headers = new HashMap<>();
@@ -143,5 +199,88 @@ public class TenantSharingSteps {
             }
         }
         Assert.assertTrue(found, "No key manager of type '" + type + "' in " + list);
+    }
+
+    /**
+     * Asserts a tenant admin's credentials are ACCEPTED — polling until a password-grant token is issued (200).
+     * This is the observable the legacy update/activate assertions used ({@code new RestAPIAdminImpl(...)}
+     * succeeding): a full DCR + password-grant round trip as {@code admin@<domain>} with the given password.
+     * Polled because the notify event is processed asynchronously (an IS-side SOAP self-call), so the new
+     * password / re-activation takes a user-store-propagation moment to take effect.
+     */
+    @Then("a token request for tenant admin {string} with password {string} eventually succeeds")
+    public void aTokenRequestEventuallySucceeds(String adminRef, String password) throws Exception {
+
+        HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> attemptAdminToken(adminRef, password),
+                resp -> resp != null && resp.getResponseCode() == 200);
+        Assert.assertNotNull(response, "No response attempting a token for " + adminRef);
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Expected the credentials of " + adminRef + " to be accepted (token issued), but got="
+                        + response.getResponseCode() + "/" + response.getData());
+    }
+
+    /**
+     * Asserts a tenant admin's credentials are REJECTED with the given EXACT status — polling until the reject
+     * is observed. The rejection can surface at either leg of the credential check (DCR basic-auth or the
+     * password grant), whichever the product refuses first; {@link #attemptAdminToken} returns that failing
+     * response. Polled because the notify event is processed asynchronously, so the old password / deactivation
+     * takes a propagation moment to take effect (a stale 200 must not slip through as a false pass).
+     */
+    @Then("a token request for tenant admin {string} with password {string} is eventually rejected with status {int}")
+    public void aTokenRequestEventuallyRejected(String adminRef, String password, int expectedStatus)
+            throws Exception {
+
+        HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> attemptAdminToken(adminRef, password),
+                resp -> resp != null && resp.getResponseCode() == expectedStatus);
+        Assert.assertNotNull(response, "No response attempting a token for " + adminRef);
+        Assert.assertEquals(response.getResponseCode(), expectedStatus,
+                "Expected the credentials of " + adminRef + " to be rejected with " + expectedStatus
+                        + ", but got=" + response.getResponseCode() + "/" + response.getData());
+    }
+
+    /**
+     * Performs a fresh DCR + password-grant round trip for {@code admin@<domain>} with the given password,
+     * returning the response of whichever leg is the outcome: the DCR response if DCR itself fails (the admin's
+     * carbon credentials are refused — the first gate the legacy {@code RestAPIAdminImpl} constructor hits), or
+     * the token response otherwise. Not a scenario-owned assertion target and not published to
+     * {@code httpResponse}; the retry envelope in the caller asserts on it. Uses {@link SimpleHTTPClient}
+     * directly (raw round trip consumed locally), never cached actor tokens — the point is to exercise these
+     * exact credentials from scratch every attempt. A unique DCR clientName per attempt keeps parallel blocks
+     * isolated (DCR is an idempotent upsert by clientName). Only {@code IOException} propagates (retried by the
+     * envelope); a non-2xx HTTP response is returned as-is so the caller pins the exact status.
+     */
+    private static HttpResponse attemptAdminToken(String adminRef, String password) throws IOException {
+
+        Assert.assertTrue(adminRef.startsWith("admin@"),
+                "Tenant admin reference must be of the form admin@<domain>, got: " + adminRef);
+        // adminRef ("admin@<domain>") IS the login username for a tenant admin.
+        String username = adminRef;
+        Map<String, String> dcrBasic = Identity.basicAuthHeaders(username, password);
+        String dcrBody = new JSONObject()
+                .put("callbackUrl", "www.google.lk")
+                .put("clientName", "tenantSyncProbe_" + username.replaceAll("[^a-zA-Z0-9]", "_")
+                        + "_" + UUID.randomUUID())
+                .put("grantType", "password")
+                .put("saasApp", true)
+                .put("owner", username)
+                .toString();
+        HttpResponse dcr = SimpleHTTPClient.getInstance().doPost(Utils.getDCREndpointURL(Utils.getBaseUrl()),
+                dcrBasic, dcrBody, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        if (dcr == null || dcr.getResponseCode() != 200 || dcr.getData() == null || dcr.getData().isBlank()) {
+            // DCR (the admin's own basic-auth) is the first credential gate — a rejected password / deactivated
+            // tenant is refused here. Return that response so the caller pins its exact status.
+            return dcr;
+        }
+        JSONObject creds = new JSONObject(dcr.getData());
+        String tokenBasic = Base64.getEncoder().encodeToString((creds.getString("clientId") + ":"
+                + creds.getString("clientSecret")).getBytes(StandardCharsets.UTF_8));
+        Map<String, String> tokenHeaders = new HashMap<>();
+        tokenHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + tokenBasic);
+        String form = "grant_type=password&username=" + URLEncoder.encode(username, StandardCharsets.UTF_8)
+                + "&password=" + URLEncoder.encode(password, StandardCharsets.UTF_8) + "&scope=openid";
+        return SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
+                tokenHeaders, form, "application/x-www-form-urlencoded");
     }
 }

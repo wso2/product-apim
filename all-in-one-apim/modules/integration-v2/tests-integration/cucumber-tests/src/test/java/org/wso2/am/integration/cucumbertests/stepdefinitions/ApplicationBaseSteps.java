@@ -321,15 +321,39 @@ public class ApplicationBaseSteps {
      */
     @When("I create a subscription throttling policy {string} allowing {int} events per minute")
     public void iCreateSubscriptionEventCountPolicy(String policyBaseName, int eventsPerMinute) throws IOException {
+        // NOT 0 — see the subscriberCount javadoc below: 0 is a cap of ZERO, which rejects the very first webhook
+        // subscription. The product's own uncapped plan (AsyncWHUnlimited) is seeded with Integer.MAX_VALUE.
+        iCreateSubscriptionEventCountPolicy(policyBaseName, eventsPerMinute, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Event-count subscription policy that ALSO caps {@code subscriberCount} — the maximum number of concurrent
+     * WebSub topic subscriptions a subscription on this plan may hold. The hub counts the existing topic
+     * subscriptions when a {@code hub.mode=subscribe} arrives and rejects the one that would exceed the cap
+     * (unlike the event quota, this is enforced from the database, not through the Traffic Manager). Ports the
+     * subscription-count half of the WebSub ThrottlingTestCase, which the un-capped variant above cannot express.
+     *
+     * <p>{@code subscriberCount} lands in {@code AM_POLICY_SUBSCRIPTION.CONNECTIONS_COUNT}, which
+     * {@code WebhooksDAO.addSubscription} reads as {@code if (currentLimit >= throttleLimit) return false}. So
+     * {@code 0} is a cap of ZERO, not "uncapped": the first subscribe already satisfies {@code 0 >= 0}, the row is
+     * never inserted, and the hub answers 429/900808 while the gateway logs
+     * {@code APIManagementException: Throttled out}. For "uncapped" pass {@code Integer.MAX_VALUE} — that is what
+     * {@code APIUtil.addDefaultTenantAsyncThrottlePolicies} seeds AsyncWHUnlimited with.
+     *
+     * @param subscriberCount maximum concurrent webhook subscriptions ({@code Integer.MAX_VALUE} = uncapped)
+     */
+    @When("I create a subscription throttling policy {string} allowing {int} events per minute and at most {int} webhook subscriptions")
+    public void iCreateSubscriptionEventCountPolicy(String policyBaseName, int eventsPerMinute, int subscriberCount)
+            throws IOException {
         String policyName = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(policyBaseName));
         String payload = String.format(
                 "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Streaming event quota %d events/min\","
                         + "\"type\":\"SubscriptionThrottlePolicy\",\"defaultLimit\":{\"type\":\"EVENTCOUNTLIMIT\","
                         + "\"eventCount\":{\"timeUnit\":\"min\",\"unitTime\":1,\"eventCount\":%d}},"
                         + "\"rateLimitCount\":0,\"rateLimitTimeUnit\":\"min\",\"stopOnQuotaReach\":true,"
-                        + "\"billingPlan\":\"FREE\",\"customAttributes\":[],"
+                        + "\"subscriberCount\":%d,\"billingPlan\":\"FREE\",\"customAttributes\":[],"
                         + "\"permissions\":{\"permissionType\":\"ALLOW\",\"roles\":[\"Internal/everyone\"]}}",
-                policyName, policyName, eventsPerMinute, eventsPerMinute);
+                policyName, policyName, eventsPerMinute, eventsPerMinute, subscriberCount);
         postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "subThrottlePolicyName",
                 policyName, "subThrottlePolicyId", Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
     }
@@ -888,7 +912,9 @@ public class ApplicationBaseSteps {
     @When("I attempt to create an application with payload {string}")
     public void iAttemptToCreateAnApplicationWithPayload(String payload) throws IOException {
 
-        String jsonPayload = TestContext.resolve(payload).toString();
+        // Resolve any {{contextKey}} placeholders, mirroring the positive iCreateAnApplicationWithJsonPayload
+        // step (e.g. a captured cross-tenant application-policy name). No-op when the payload has none.
+        String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payload).toString());
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
@@ -927,6 +953,31 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
         Requests.get(Utils.getApplicationEndpointURL(Utils.getBaseUrl(), actualAppId), headers);
+    }
+
+    /**
+     * Lists the acting actor's own DevPortal applications ({@code GET devportal/applications}) with its DevPortal
+     * token and publishes the response. This is the canonical RESTRICTED DevPortal page: reaching it requires a
+     * token carrying the subscriber scopes, so it is the observable for whether a credential is a fully-fledged
+     * consumer — used by the user-sign-up approval workflow, whose pending user holds no subscriber role yet
+     * (the legacy {@code getAllApps()} assertion).
+     */
+    @When("I list the DevPortal applications")
+    public void iListTheDevportalApplications() throws IOException {
+
+        // Same collection URL as the create; a GET on it is the application list.
+        Requests.get(Utils.getApplicationCreateURL(Utils.getBaseUrl()), Identity.devportalHeaders());
+    }
+
+    /**
+     * Retrieves the topics a streaming (async) API exposes from the DevPortal, as the acting actor. A consumer
+     * discovers which channels it may subscribe to this way, so the count is the API's async-operation count.
+     */
+    @When("I retrieve the topics of devportal API {string}")
+    public void iRetrieveTheTopicsOfDevportalApi(String apiIdKey) throws IOException {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        Requests.get(Utils.getDevportalApiTopicsURL(Utils.getBaseUrl(), apiId), Identity.devportalHeaders());
     }
 
     /**
@@ -1039,6 +1090,99 @@ public class ApplicationBaseSteps {
 
         Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Cross-tenant subscribe: the acting actor (a CONSUMER-tenant subscriber, using its own-tenant devportal
+     * token) subscribes an application to an API PUBLISHED IN ANOTHER TENANT (with subscriptionAvailability
+     * ALL_TENANTS). The provider tenant is carried in the {@code X-WSO2-Tenant} header — the devportal
+     * subscriptions POST resolves the API against that tenant rather than the caller's. Ports the legacy
+     * {@code RestAPIStoreImpl.subscribeToAPI(apiId, appId, tier, providerTenant)} overload (whose
+     * {@code tenantDomain} argument is exactly this header). Non-asserting: the feature asserts the status
+     * (201 on a public tier; 403 when the tier is role-restricted and the actor lacks the role), mirroring
+     * {@link #iAttemptToSubscribeToApi}.
+     *
+     * @param apiId          context key holding the provider-tenant API id
+     * @param appId          context key holding the consumer's application id
+     * @param payload        subscription payload context key (with {{apiId}}/{{applicationId}} markers)
+     * @param providerTenant the tenant domain the API is published in (e.g. {@code carbon.super})
+     */
+    @When("I subscribe to API {string} using application {string} with payload {string} in provider tenant {string}")
+    public void iSubscribeCrossTenant(String apiId, String appId, String payload, String providerTenant)
+            throws Exception {
+
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String actualAppId = TestContext.resolve(appId).toString();
+
+        String jsonPayload = TestContext.resolve(payload).toString();
+        jsonPayload = jsonPayload.replace("{{applicationId}}", actualAppId);
+        jsonPayload = jsonPayload.replace("{{apiId}}", actualApiId);
+        jsonPayload = Utils.resolveContextPlaceholders(jsonPayload);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
+
+        Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
+                headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Cross-tenant DevPortal API listing: lists the APIs visible to the acting actor SCOPED to another tenant
+     * via the {@code X-WSO2-Tenant} header — the discovery facet by which an ALL_TENANTS API published in the
+     * provider tenant becomes visible to a consumer in a different tenant. Ports
+     * {@code RestAPIStoreImpl.getAllAPIs(providerTenant)}. Publishes the response for the following assertion.
+     *
+     * @param providerTenant the tenant whose devportal API listing to fetch (e.g. {@code carbon.super})
+     */
+    @When("I list DevPortal APIs in tenant {string}")
+    public void iListDevportalApisInTenant(String providerTenant) throws Exception {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
+        String url = Utils.getDevportalApisURL(Utils.getBaseUrl());
+        // Cross-tenant API visibility propagates ASYNCHRONOUSLY (the legacy test polled 15×5s for the API to
+        // appear in the other tenant's listing). Poll until the listing is non-empty; the funnel's last response
+        // is left as httpResponse for the following assertion (which checks the specific API id).
+        Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(url, headers),
+                resp -> resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                        && resp.getData().contains("\"count\":") && !resp.getData().contains("\"count\":0"));
+    }
+
+    /**
+     * Cross-tenant direct DevPortal API GET: retrieves a single API by id SCOPED to another tenant via the
+     * {@code X-WSO2-Tenant} header — proving the API is directly addressable across the tenant boundary (not
+     * merely listed). Ports {@code RestAPIStoreImpl.getAPI(apiId, providerTenant)}. Publishes the response for
+     * the following assertion.
+     *
+     * @param apiId          context key holding the provider-tenant API id
+     * @param providerTenant the tenant the API is published in
+     */
+    @When("I retrieve DevPortal API {string} in tenant {string}")
+    public void iRetrieveDevportalApiInTenant(String apiId, String providerTenant) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
+        Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), actualApiId), headers);
+    }
+
+    /**
+     * Cross-tenant DevPortal key-manager listing: lists the key managers of another tenant via the
+     * {@code X-WSO2-Tenant} header (the DevPortal {@code /key-managers} endpoint, distinct from the admin-plane
+     * KM CRUD). Ports {@code RestAPIStoreImpl.getKeyManagers(providerTenant)} — a consumer sees the provider
+     * tenant's key managers (always at least the Resident Key Manager) but not its own tenant's. Publishes the
+     * response for the following assertion.
+     *
+     * @param providerTenant the tenant whose key-manager listing to fetch
+     */
+    @When("I list DevPortal key managers in tenant {string}")
+    public void iListDevportalKeyManagersInTenant(String providerTenant) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
+        Requests.get(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers);
     }
 
     /**
@@ -1216,6 +1360,25 @@ public class ApplicationBaseSteps {
         // endpoint has no delete — so register its consumer key for teardown, which deregisters it via the
         // OAuthAdminService SOAP admin service (as its owner) rather than leaking it onto the shared server.
         ResourceCleanup.register(ResourceCleanup.CREATED_DCR_CLIENT_IDS, clientId);
+    }
+
+    /**
+     * Stores the acting actor's resource-owner username and password into context under the given keys, so a
+     * subsequent payload can embed them via {@code {{...}}} references. Needed by OAUTH password-grant endpoint
+     * security, whose endpoint_security block carries the resource owner's {@code username}/{@code password}
+     * (the gateway performs a password-grant token fetch on the backend leg). The credentials come from the
+     * resolved acting actor (an {@code Identity} principal) — not a hand-built value — so this stays within the
+     * actor model (§14).
+     *
+     * @param userKey context key to receive the acting actor's username
+     * @param passKey context key to receive the acting actor's password
+     */
+    @When("I store the acting actor credentials as {string} and {string}")
+    public void iStoreActingActorCredentials(String userKey, String passKey) {
+
+        User actor = Identity.resolveActor(Identity.actingActorRef());
+        TestContext.set(Utils.normalizeContextKey(userKey), actor.getUserName());
+        TestContext.set(Utils.normalizeContextKey(passKey), actor.getPassword());
     }
 
     /**

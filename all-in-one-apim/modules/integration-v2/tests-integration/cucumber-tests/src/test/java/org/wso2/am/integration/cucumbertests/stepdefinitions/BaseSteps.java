@@ -752,6 +752,31 @@ public class BaseSteps {
     }
 
     /**
+     * Captures the {@code id} of the entry called {@code name} in the last response's {@code {"list":[...]}}
+     * payload — the generic counterpart of {@link #iExtractResponseFieldAndStoreItAs} for the common "reference
+     * a resource whose id cannot be known ahead of time, by its name" need. It reads the response the PRECEDING
+     * list step already published, so no second HTTP call is made (and it works for any {@code {"list":[...]}}
+     * endpoint). Fails clearly when the response is missing/unsuccessful or holds no entry with that name.
+     *
+     * @param name       the exact {@code name} of the list entry to find
+     * @param contextKey context key under which the entry's id is stored
+     */
+    @Then("I capture the id of the list entry named {string} as {string}")
+    public void iCaptureListEntryIdByName(String name, String contextKey) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200
+                        && response.getResponseCode() < 300 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "No successful list response with a body captured to look up entry '" + name + "'; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        String entryName = Utils.resolveContextPlaceholders(name);
+        String id = Utils.extractIdByName(response.getData(), entryName);
+        Assert.assertNotNull(id, "No entry named '" + entryName + "' in the list response: " + response.getData());
+        TestContext.set(Utils.normalizeContextKey(contextKey), id);
+    }
+
+    /**
      * Extracts a field or JSONPath value from a JSON payload stored in TestContext
      * and stores the extracted value back in TestContext.
      *

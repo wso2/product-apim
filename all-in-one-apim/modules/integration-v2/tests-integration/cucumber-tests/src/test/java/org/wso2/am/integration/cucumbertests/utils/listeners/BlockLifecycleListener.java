@@ -67,6 +67,7 @@ public class BlockLifecycleListener implements ITestListener {
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
     static final String BASE_GATEWAY_WS_URL_KEY = "baseGatewayWsUrl";
     static final String BASE_GATEWAY_WSS_URL_KEY = "baseGatewayWssUrl";
+    static final String BASE_WEBSUB_EVENT_RECEIVER_URL_KEY = "baseWebSubEventReceiverUrl";
     static final String GATEWAY_CLIENT_IP_KEY = "gatewayClientIp";
 
     /** Optional {@code <parameter>} names read from the block's {@code <test>}. */
@@ -84,6 +85,45 @@ public class BlockLifecycleListener implements ITestListener {
     /** Selects which tenant/user set to provision: {@code default} (the else branch) or {@code adpsample}. */
     static final String PARAM_TENANT_SET = "tenantSet";
     static final String TENANT_SET_ADPSAMPLE = "adpsample";
+    /**
+     * When {@code true}, every user provisioned by {@link #PARAM_INIT_TENANT_USERS} (except the super-tenant
+     * {@code admin}) gets an EMAIL-FORM physical username — {@code <base>@email.com} instead of {@code <base>} —
+     * making "email as username" a first-class block mode. Pair it with the
+     * {@code artifacts/configFiles/emailUserName} extra overlay, which turns on {@code [tenant_mgt]
+     * enable_email_domain}; the two must be set together (see that file for why).
+     *
+     * <p><b>Actor references are unaffected.</b> Only the PHYSICAL username changes;
+     * {@code Identity.resolveActor} still resolves {@code publisherUser@tenant1.com} / {@code admin}, because it
+     * splits a ref on its FIRST {@code @} into {@code <userKey>@<domain>} — an email address must therefore never
+     * appear in an actor ref. So every existing {@code Scenario Outline} actor column keeps working verbatim.
+     *
+     * <p><b>Why the mode has to change the provisioned usernames at all</b> (this is the "the flag breaks
+     * provisioning" failure the mode exists to solve). With {@code enable_email_domain = true},
+     * {@code MultitenantUtils} resolves a username by counting {@code @}: for exactly ONE {@code @} it assumes a
+     * SUPER-TENANT login and keeps the whole string as the username; only with TWO or more does it split the
+     * tenant off the LAST {@code @}. The framework's plain tenant actors carry exactly one {@code @}
+     * ({@code admin@tenant1.com}), so with the flag on they resolve to a non-existent super-tenant user named
+     * "admin@tenant1.com" and every tenant SOAP/REST call as that principal is refused — provisioning dies on the
+     * first {@code addUser} into {@code tenant1.com}. Giving the user an email-form name restores the second
+     * {@code @} ({@code admin@email.com@tenant1.com}), which is exactly the tenant-qualified email form the
+     * product expects (the same {@code <email>@<tenantDomain>} shape the legacy EmailUserNameLoginTestCase
+     * builds). The super-tenant {@code admin} stays plain {@code admin} (zero {@code @}), which resolves
+     * correctly either way — converting it would destabilise every SOAP admin call in the block.
+     *
+     * <p>The username regexes are deliberately NOT touched: this build's {@code database_unique_id} defaults are
+     * {@code UsernameJavaRegEx}/{@code UsernameJavaScriptRegEx} = {@code ^[\S]{3,30}$}, which already admit
+     * {@code @}, so both the plain and the email form validate. Applies to the {@code default} tenant set only —
+     * the {@code adpsample} set's users ship fixed inside the migration dataset.
+     */
+    static final String PARAM_EMAIL_USER_MODE = "emailUserMode";
+    /**
+     * The mail domain appended to a provisioned user's base name in a {@link #PARAM_EMAIL_USER_MODE} block.
+     * A mail domain, NOT a tenant domain — it is the local part of the tenant-qualified username
+     * ({@code publisherUser11@email.com@tenant1.com}), mirroring the legacy {@code emailuser@email.com}.
+     * Keep it SHORT: the store's {@code UsernameJavaRegEx} caps the (tenant-unqualified) username at 30 chars,
+     * and the longest base name here is {@code subscriberUser11}, so this leaves 14 characters of headroom.
+     */
+    private static final String EMAIL_USERNAME_MAIL_DOMAIN = "@email.com";
     /**
      * When {@code true}, onStart ensures the shared NodeAppServer backend (network alias {@code nodebackend})
      * is running before APIM boots, so gateway-invocation tests have a reachable backend for deployed APIs.
@@ -234,12 +274,14 @@ public class BlockLifecycleListener implements ITestListener {
             TestContext.setShared(BASE_GATEWAY_URL_KEY, gatewayUrl);
             TestContext.setShared(BASE_GATEWAY_WS_URL_KEY, container.getGatewayWsUrl());
             TestContext.setShared(BASE_GATEWAY_WSS_URL_KEY, container.getGatewayWssUrl());
+            TestContext.setShared(BASE_WEBSUB_EVENT_RECEIVER_URL_KEY, container.getWebSubEventReceiverUrl());
             TestContext.setShared(GATEWAY_CLIENT_IP_KEY, container.getGatewayClientIp());
             logger.info("Block '" + label + "' booted and ready: baseUrl=" + baseUrl
                     + " baseGatewayUrl=" + gatewayUrl);
 
             if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
-                provisionTenantUsers(label, param(context, PARAM_TENANT_SET));
+                provisionTenantUsers(label, param(context, PARAM_TENANT_SET),
+                        Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE)));
             }
             // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
             // tenant admin SOAP credentials exist. Registered + seeded for BOTH tenants — one shared H2 DB,
@@ -339,8 +381,12 @@ public class BlockLifecycleListener implements ITestListener {
      * matches {@code tenant_users_initialisation.feature}; {@code adpsample} matches
      * {@code migrated_tenant_user_initialization.feature}. Called inside onStart's try, so a provisioning
      * failure becomes {@code bootError} and the block is skipped cleanly rather than NPE-ing mid-scenario.
+     *
+     * @param emailUserMode see {@link #PARAM_EMAIL_USER_MODE} — provisions every user of the {@code default} set
+     *                      (bar the super-tenant admin) with an email-form physical username
      */
-    private void provisionTenantUsers(String label, String tenantSet) throws java.io.IOException, JaxenException {
+    private void provisionTenantUsers(String label, String tenantSet, boolean emailUserMode)
+            throws java.io.IOException, JaxenException {
 
         // Gateway readiness can pass before the SOAP admin services finish deploying; gate on the Tenant Mgt
         // service being live so provisioning never fires into a transient 404 (a race parallel boots widen).
@@ -355,25 +401,38 @@ public class BlockLifecycleListener implements ITestListener {
             String publisherRoles = "Internal/creator, Internal/publisher";
             String subscriberRoles = "Internal/subscriber";
             TenantUserProvisioner.addSuperTenant();
-            TenantUserProvisioner.addTenant("tenant1.com", "admin", "admin", "First", "Tenant",
-                    "admin@tenant1.com");
+            // Only the USERNAME takes the email form; the password stays the plain base name, so an
+            // emailUserMode block differs from a default one in exactly one dimension.
+            TenantUserProvisioner.addTenant("tenant1.com", physicalUserName("admin", emailUserMode), "admin",
+                    "First", "Tenant", "admin@tenant1.com");
             // Keep the original all-roles user (back-compat for any actor that needs creator+publisher+subscriber).
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.USER_KEY,
-                    "testUser1", "testUser1", allRoles);
-            TenantUserProvisioner.addUser("tenant1.com", Constants.USER_KEY, "testUser11", "testUser11", allRoles);
+                    physicalUserName("testUser1", emailUserMode), "testUser1", allRoles);
+            TenantUserProvisioner.addUser("tenant1.com", Constants.USER_KEY,
+                    physicalUserName("testUser11", emailUserMode), "testUser11", allRoles);
             // Least-privilege publisher (creator+publisher, NOT admin) — the default actor for publisher tests.
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.PUBLISHER_USER_KEY,
-                    "publisherUser1", "publisherUser1", publisherRoles);
+                    physicalUserName("publisherUser1", emailUserMode), "publisherUser1", publisherRoles);
             TenantUserProvisioner.addUser("tenant1.com", Constants.PUBLISHER_USER_KEY,
-                    "publisherUser11", "publisherUser11", publisherRoles);
+                    physicalUserName("publisherUser11", emailUserMode), "publisherUser11", publisherRoles);
             // Subscriber-only (self-signup-equivalent) — for access-control negatives (publisher ops -> 403).
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.SUBSCRIBER_USER_KEY,
-                    "subscriberUser1", "subscriberUser1", subscriberRoles);
+                    physicalUserName("subscriberUser1", emailUserMode), "subscriberUser1", subscriberRoles);
             TenantUserProvisioner.addUser("tenant1.com", Constants.SUBSCRIBER_USER_KEY,
-                    "subscriberUser11", "subscriberUser11", subscriberRoles);
+                    physicalUserName("subscriberUser11", emailUserMode), "subscriberUser11", subscriberRoles);
         }
         logger.info("Block '" + label + "' provisioned tenant set '"
-                + (tenantSet == null || tenantSet.isBlank() ? "default" : tenantSet) + "'");
+                + (tenantSet == null || tenantSet.isBlank() ? "default" : tenantSet) + "'"
+                + (emailUserMode ? " with email-form usernames (" + EMAIL_USERNAME_MAIL_DOMAIN + ")" : ""));
+    }
+
+    /**
+     * The physical username to provision for a base actor name: the base name itself by default, or its
+     * email form in a {@link #PARAM_EMAIL_USER_MODE} block. Returning the base name UNCHANGED when the mode is
+     * off is what keeps every existing block byte-for-byte identical to before the mode existed.
+     */
+    private static String physicalUserName(String baseName, boolean emailUserMode) {
+        return emailUserMode ? baseName + EMAIL_USERNAME_MAIL_DOMAIN : baseName;
     }
 
     /**

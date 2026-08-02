@@ -29,7 +29,7 @@ Feature: Admin Secondary User Store (case-insensitive)
     # Existence is asserted via isExistingUser — NOT via a non-empty role list. PIN: getRoleListOfUser returns
     # "Internal/everyone" for ANY username string (existing or not), so a non-empty role list is a FALSE POSITIVE
     # for existence.
-    Then the store user "SECONDARY.COM/testUser1" in tenant "<tenant>" should exist
+    Then the user "SECONDARY.COM/testUser1" in tenant "<tenant>" should exist
     # The user carries the assigned store role (proves add + role binding).
     Then the roles of store user "SECONDARY.COM/testUser1" in tenant "<tenant>" should contain "SECONDARY.COM/userrole1"
     # The store is case-insensitive: the UPPERCASE username resolves the same user and returns the same role.
@@ -101,13 +101,13 @@ Feature: Admin Secondary User Store (case-insensitive)
     And I have valid access tokens as "admin"
     When I provision store role "SECONDARY.COM/isoRole1" in tenant "carbon.super"
     And I provision store user "SECONDARY.COM/isoUser1" with password "password123" and roles "SECONDARY.COM/isoRole1" in tenant "carbon.super"
-    Then the store user "SECONDARY.COM/isoUser1" in tenant "carbon.super" should exist
+    Then the user "SECONDARY.COM/isoUser1" in tenant "carbon.super" should exist
     # Same store domain, same username, other tenant → absent (distinct UM_TENANT_ID on the shared DB).
-    And the store user "SECONDARY.COM/isoUser1" in tenant "tenant1.com" should not exist
+    And the user "SECONDARY.COM/isoUser1" in tenant "tenant1.com" should not exist
     # The runtime facility builds a FRESH empty schema (dbscripts DDL only) and addUserStore just registers the
     # store config — so NO admin is auto-created on registration (unlike copying a pre-seeded WSO2SHARED_DB, which
     # carries a SECONDARY.COM/admin row). Every store user is one the framework explicitly seeds.
-    And the store user "SECONDARY.COM/admin" in tenant "carbon.super" should not exist
+    And the user "SECONDARY.COM/admin" in tenant "carbon.super" should not exist
     When I remove the secondary user store user "SECONDARY.COM/isoUser1" and role "SECONDARY.COM/isoRole1" in tenant "carbon.super"
 
   # PROBE (store user as actor): a least-privilege publisher living in the SECONDARY.COM store — seeded as an ACTOR

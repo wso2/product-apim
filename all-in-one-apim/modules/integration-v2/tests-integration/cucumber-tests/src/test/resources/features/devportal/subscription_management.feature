@@ -8,7 +8,7 @@ Feature: DevPortal Subscription Management
   at the gateway (401) is covered by gateway/security-enforcement. Teardown via the per-scenario cleanup
   hook (the subscription cascades when its application is deleted).
 
-  @cap:devportal @feat:subscription-management @type:regression @rule:blocking @legacy:SubscriptionBlockingTestCase
+  @cap:devportal @feat:subscription-management @type:regression @rule:blocking @legacy:SubscriptionBlockingTestCase @legacy:ApplicationBlockSubscriptionTestCase
   Scenario Outline: Block and unblock an API subscription as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

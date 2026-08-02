@@ -1,0 +1,12 @@
+{
+  "name": "sse-emitter",
+  "version": "1.0.0",
+  "description": "Deterministic Server-Sent-Events emitter backend for gateway SSE-API invocation tests",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

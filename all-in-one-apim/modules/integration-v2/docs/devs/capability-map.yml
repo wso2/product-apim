@@ -48,7 +48,7 @@ capabilities:
       rest-invocation:        { name: REST API invocation }
       soap-invocation:        { name: SOAP API invocation }
       graphql-invocation:     { name: GraphQL invocation (query/mutation/subscription) }
-      streaming-invocation:   { name: WebSocket / WebSub invocation }
+      streaming-invocation:   { name: WebSocket / SSE / WebSub invocation }
       ai-invocation:          { name: AI API invocation }
       mediation-policies:     { name: Mediation / message transformation }
       header-transformation:  { name: Header handling & rewriting }

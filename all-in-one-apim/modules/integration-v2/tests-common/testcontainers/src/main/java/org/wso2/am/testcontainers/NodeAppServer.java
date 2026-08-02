@@ -27,8 +27,13 @@ import java.time.Duration;
 public class NodeAppServer {
 
     private static final Log logger = LogFactory.getLog(NodeAppServer.class);
+    // Publishing is only needed for HOST access; container-to-container traffic over SHARED_NETWORK works
+    // regardless (which is why mcp-server on 3020 functions unpublished). 3021 (sse-emitter) and 3022
+    // (websub-receiver) ARE published because their introspection/reset endpoints are read from the test JVM.
+    // Every port listed also joins the startup liveness set (Wait.forListeningPort waits on ALL exposed ports),
+    // so an app added here must actually listen or every block's boot stalls.
     private final Integer[] exposedPorts = {3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011,
-            3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019};
+            3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019, 3021, 3022};
     private final GenericContainer<?> container;
 
     public NodeAppServer() {
@@ -44,6 +49,17 @@ public class NodeAppServer {
         container.withLogConsumer(logConsumer);
         container.start();
         logger.info("NodeAppServer successfully initialized");
+    }
+
+    /**
+     * HOST-reachable base URL of the node app listening on {@code containerPort}, e.g.
+     * {@code http://localhost:32771}. Needed by backends whose state the test JVM reads back over HTTP (the
+     * websub-receiver's delivery introspection, the sse-emitter's stream diagnostics). A caller INSIDE the docker
+     * network (an API's endpoint URL) must use {@code http://nodebackend:<containerPort>} instead — only the ports
+     * in {@link #exposedPorts} are published to the host.
+     */
+    public String getBaseUrl(int containerPort) {
+        return String.format("http://%s:%d", container.getHost(), container.getMappedPort(containerPort));
     }
 
     private static class InstanceHolder {

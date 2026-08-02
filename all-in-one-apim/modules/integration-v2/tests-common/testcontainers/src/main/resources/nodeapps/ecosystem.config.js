@@ -167,6 +167,22 @@ module.exports = {
     env: {
       PORT: 3020
     }
+  },
+  {
+    name: "sse-emitter",
+    script: "./sse-emitter/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3021
+    }
+  },
+  {
+    name: "websub-receiver",
+    script: "./websub-receiver/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3022
+    }
   }
   ]
 };

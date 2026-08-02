@@ -65,7 +65,7 @@ Feature: Gateway Security Enforcement
   # a subscribed token invokes (200), the subscription is blocked -> gateway refuses, then unblocked ->
   # invocation is restored. The block/unblock calls are management-plane (@dep:devportal); the assertion here is
   # the runtime enforcement, so it is @cap:gateway.
-  @cap:gateway @feat:security-enforcement @type:regression @rule:subscription-blocking @dep:publisher @dep:devportal @legacy:SubscriptionBlockingTestCase
+  @cap:gateway @feat:security-enforcement @type:regression @rule:subscription-blocking @dep:publisher @dep:devportal @legacy:SubscriptionBlockingTestCase @legacy:ApplicationBlockSubscriptionTestCase
   Scenario Outline: A blocked subscription is refused at the gateway and restored on unblock as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -374,6 +374,184 @@ Feature: Gateway Security Enforcement
       | admin             |
       | admin@tenant1.com |
 
+  # CHANGE path — updating the PRODUCTION endpoint-security credential on an EXISTING API. Ports the
+  # testUpdateEndpointSecurityForProduction arc of ChangeEndPointSecurityPerTypeTestCase: create a per-type
+  # BASIC-secured API (prodInit / sandInit), invoke with a production-key token and assert the backend received
+  # base64(prodInit:prodInitPass); then GET-mutate-PUT the endpoint_security to a NEW production credential
+  # (prodNew:prodNewPass), redeploy, and assert the gateway now injects base64(prodNew:prodNewPass) — proving the
+  # UPDATED credential (not the stale one) is injected. base64(prodInit:prodInitPass)=cHJvZEluaXQ6cHJvZEluaXRQYXNz,
+  # base64(prodNew:prodNewPass)=cHJvZE5ldzpwcm9kTmV3UGFzcw==. Runs in both tenants (×2).
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:ChangeEndPointSecurityPerTypeTestCase @legacy:ChangeEndPointSecurityOfAPITestCase
+  Scenario Outline: Updating the production endpoint-security credential injects the new Basic credential as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_endpoint_sec_change.json" as "epcApiId" and deployed it
+    When I publish the "apis" resource with id "epcApiId"
+    Then The lifecycle status of API "epcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "epcApiId"
+    And I extract response field "context" and store it as "epcCtx"
+
+    # Production key → backend receives the INITIAL production Basic credential.
+    When I have set up application with keys, subscribed to API "epcApiId", and obtained access token for "epcSubId"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "cHJvZEluaXQ6cHJvZEluaXRQYXNz"
+
+    # UPDATE the production endpoint_security to a NEW credential (GET-mutate-PUT), then redeploy.
+    When I retrieve the "apis" resource with id "epcApiId"
+    And I put the response payload in context as "epcPayload"
+    When I put the following JSON payload in context as "epcNewEndpoint"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"BASIC","username":"prodNew","password":"prodNewPass"},"sandbox":{"enabled":true,"type":"BASIC","username":"sandInit","password":"sandInitPass"}}}
+    """
+    When I update the "apis" resource "epcApiId" and "epcPayload" with configuration type "endpointConfig" and value:
+    """
+    epcNewEndpoint
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "epcApiId"
+    Then The response status code should be 201
+
+    # Production key on the SAME token → backend now receives the UPDATED production Basic credential.
+    When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "cHJvZE5ldzpwcm9kTmV3UGFzcw==" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "cHJvZE5ldzpwcm9kTmV3UGFzcw=="
+    And The response should not contain "cHJvZEluaXQ6cHJvZEluaXRQYXNz"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # CHANGE path — updating the SANDBOX endpoint-security credential on an EXISTING API. Ports the
+  # testUpdateEndpointSecurityForSandbox arc: a sandbox-key token receives base64(sandInit:sandInitPass) initially;
+  # after the sandbox endpoint_security is updated to sandNew:sandNewPass and redeployed, the same sandbox-key token
+  # receives base64(sandNew:sandNewPass). base64(sandInit:sandInitPass)=c2FuZEluaXQ6c2FuZEluaXRQYXNz,
+  # base64(sandNew:sandNewPass)=c2FuZE5ldzpzYW5kTmV3UGFzcw==. Runs in both tenants (×2).
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:ChangeEndPointSecurityPerTypeTestCase
+  Scenario Outline: Updating the sandbox endpoint-security credential injects the new Basic credential as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_endpoint_sec_change.json" as "epcApiId" and deployed it
+    When I publish the "apis" resource with id "epcApiId"
+    Then The lifecycle status of API "epcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "epcApiId"
+    And I extract response field "context" and store it as "epcCtx"
+
+    # Sandbox key → backend receives the INITIAL sandbox Basic credential.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "epcAppPayload"
+    And I create an application with payload "epcAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "epcApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "epcSubId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "epcSandboxKeys"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "epcSandboxKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "epcSandboxToken"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "epcSandboxToken"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "c2FuZEluaXQ6c2FuZEluaXRQYXNz"
+
+    # UPDATE the sandbox endpoint_security to a NEW credential (GET-mutate-PUT), then redeploy.
+    When I retrieve the "apis" resource with id "epcApiId"
+    And I put the response payload in context as "epcPayload"
+    When I put the following JSON payload in context as "epcNewEndpoint"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"BASIC","username":"prodInit","password":"prodInitPass"},"sandbox":{"enabled":true,"type":"BASIC","username":"sandNew","password":"sandNewPass"}}}
+    """
+    When I update the "apis" resource "epcApiId" and "epcPayload" with configuration type "endpointConfig" and value:
+    """
+    epcNewEndpoint
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "epcApiId"
+    Then The response status code should be 201
+
+    # Sandbox key on the SAME token → backend now receives the UPDATED sandbox Basic credential.
+    When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "c2FuZE5ldzpzYW5kTmV3UGFzcw==" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "c2FuZE5ldzpzYW5kTmV3UGFzcw=="
+    And The response should not contain "c2FuZEluaXQ6c2FuZEluaXRQYXNz"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # CHANGE path — updating BOTH production and sandbox endpoint-security credentials at once on an EXISTING API.
+  # Ports the testUpdateEndpointSecurityForSandboxAndProduction arc: after both are updated and redeployed, a
+  # production-key token receives base64(prodNew:prodNewPass) and a sandbox-key token (same application) receives
+  # base64(sandNew:sandNewPass) — the gateway selects the per-key-type UPDATED credential. Runs in both tenants (×2).
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:ChangeEndPointSecurityPerTypeTestCase
+  Scenario Outline: Updating both production and sandbox endpoint-security credentials injects each new Basic credential per key type as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_endpoint_sec_change.json" as "epcApiId" and deployed it
+    When I publish the "apis" resource with id "epcApiId"
+    Then The lifecycle status of API "epcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "epcApiId"
+    And I extract response field "context" and store it as "epcCtx"
+
+    # Set up an application subscribed to the API and generate a PRODUCTION token.
+    When I have set up application with keys, subscribed to API "epcApiId", and obtained access token for "epcSubId"
+    Then The response status code should be 200
+
+    # UPDATE both endpoint_security credentials (GET-mutate-PUT), then redeploy.
+    When I retrieve the "apis" resource with id "epcApiId"
+    And I put the response payload in context as "epcPayload"
+    When I put the following JSON payload in context as "epcNewEndpoint"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"BASIC","username":"prodNew","password":"prodNewPass"},"sandbox":{"enabled":true,"type":"BASIC","username":"sandNew","password":"sandNewPass"}}}
+    """
+    When I update the "apis" resource "epcApiId" and "epcPayload" with configuration type "endpointConfig" and value:
+    """
+    epcNewEndpoint
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "epcApiId"
+    Then The response status code should be 201
+
+    # Production key → backend receives the UPDATED production Basic credential.
+    When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "cHJvZE5ldzpwcm9kTmV3UGFzcw==" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "cHJvZE5ldzpwcm9kTmV3UGFzcw=="
+
+    # Sandbox key on the SAME application → backend receives the UPDATED sandbox Basic credential.
+    When I put the following JSON payload in context as "epcSandboxKeys"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "epcSandboxKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "epcSandboxToken"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "epcSandboxToken"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "c2FuZE5ldzpzYW5kTmV3UGFzcw==" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "c2FuZE5ldzpzYW5kTmV3UGFzcw=="
+    And The response should not contain "cHJvZE5ldzpwcm9kTmV3UGFzcw=="
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Per-type endpoint security (PRODUCTION only): the production backend is Basic-secured (admin1:admin123 →
   # YWRtaW4xOmFkbWluMTIz), the sandbox endpoint is unsecured. A production-key token gets the injected header; a
   # sandbox-key token, routed to the unsecured sandbox endpoint, gets none. Runs in both tenants (×2).
@@ -451,6 +629,105 @@ Feature: Gateway Security Enforcement
     When I invoke the API at gateway context "{{epsCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "YWRtaW4xOmFkbWluMTIz"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # OAUTH-type endpoint security (CLIENT_CREDENTIALS grant): the backend endpoint is OAUTH-secured, so the gateway
+  # obtains an access token from the configured tokenUrl (the resident key manager's own /oauth2/token, reachable
+  # in-container at https://localhost:9443) using the client_credentials of a DCR-registered backend client, and
+  # injects it as "Authorization: Bearer <token>" on the backend leg. The /sec route echoes that header, so a body
+  # carrying "Bearer " (and NOT the "Basic " of BASIC endpoint security) PROVES the gateway minted and injected a
+  # real backend OAuth token. Ports the client_credentials arc of ChangeEndPointSecurityPerTypeTestCase
+  # (testUpdateEndpointSecurityForOauthForClientCredentialsGrantType). The endpoint_security is switched to OAUTH
+  # via a GET-mutate-PUT that embeds the DCR client's raw id/secret. Also confirms the retrieved API redacts the
+  # stored clientSecret. Runs in both tenants (×2).
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:ChangeEndPointSecurityPerTypeTestCase
+  Scenario Outline: OAUTH client_credentials endpoint security injects a gateway-minted backend Bearer as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_endpoint_sec_change.json" as "epoApiId" and deployed it
+    When I publish the "apis" resource with id "epoApiId"
+    Then The lifecycle status of API "epoApiId" should be "Published"
+    When I retrieve the "apis" resource with id "epoApiId"
+    And I extract response field "context" and store it as "epoCtx"
+    When I have set up application with keys, subscribed to API "epoApiId", and obtained access token for "epoSubId"
+    Then The response status code should be 200
+
+    # Register a backend OAuth client (DCR) to act as the endpoint-security client_credentials principal.
+    When I register an OAuth client "epoBackendClient" as "epoBe"
+
+    # Switch the production endpoint_security to OAUTH client_credentials, tokenUrl = the in-container token endpoint.
+    When I retrieve the "apis" resource with id "epoApiId"
+    And I put the response payload in context as "epoPayload"
+    When I put the following JSON payload in context as "epoNewEndpoint"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{epoBeClientId}}","clientSecret":"{{epoBeClientSecret}}","customParameters":{}}}}
+    """
+    When I update the "apis" resource "epoApiId" and "epoPayload" with configuration type "endpointConfig" and value:
+    """
+    epoNewEndpoint
+    """
+    Then The response status code should be 200
+    # The retrieved API must redact the stored backend clientSecret (never returned in plaintext).
+    When I retrieve the "apis" resource with id "epoApiId"
+    Then The response should not contain "{{epoBeClientSecret}}"
+    When I deploy the API with id "epoApiId"
+    Then The response status code should be 201
+
+    # The backend receives a gateway-minted Bearer (OAUTH), NOT a Basic credential.
+    When I invoke the API at gateway context "{{epoCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Bearer " within 90 seconds
+    Then The response status code should be 200
+    And The response should contain "Bearer "
+    And The response should not contain "Basic "
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # OAUTH-type endpoint security (PASSWORD grant): as above but the gateway performs a resource-owner password
+  # grant against the tokenUrl using the acting actor's credentials, then injects the resulting Bearer on the
+  # backend leg. Ports the password-grant arc (testUpdateEndpointSecurityForOauthForPasswordGrantType). Runs in
+  # both tenants (×2).
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:ChangeEndPointSecurityPerTypeTestCase
+  Scenario Outline: OAUTH password-grant endpoint security injects a gateway-minted backend Bearer as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_endpoint_sec_change.json" as "eppApiId" and deployed it
+    When I publish the "apis" resource with id "eppApiId"
+    Then The lifecycle status of API "eppApiId" should be "Published"
+    When I retrieve the "apis" resource with id "eppApiId"
+    And I extract response field "context" and store it as "eppCtx"
+    When I have set up application with keys, subscribed to API "eppApiId", and obtained access token for "eppSubId"
+    Then The response status code should be 200
+
+    # Register a backend OAuth client and capture the acting actor's resource-owner credentials for the grant.
+    When I register an OAuth client "eppBackendClient" as "eppBe"
+    And I store the acting actor credentials as "eppRoUser" and "eppRoPass"
+
+    # Switch the production endpoint_security to OAUTH password grant, tokenUrl = the in-container token endpoint.
+    When I retrieve the "apis" resource with id "eppApiId"
+    And I put the response payload in context as "eppPayload"
+    When I put the following JSON payload in context as "eppNewEndpoint"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{eppBeClientId}}","clientSecret":"{{eppBeClientSecret}}","customParameters":{}}}}
+    """
+    When I update the "apis" resource "eppApiId" and "eppPayload" with configuration type "endpointConfig" and value:
+    """
+    eppNewEndpoint
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "eppApiId"
+    Then The response status code should be 201
+
+    # The backend receives a gateway-minted Bearer (OAUTH password grant), NOT a Basic credential.
+    When I invoke the API at gateway context "{{eppCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Bearer " within 90 seconds
+    Then The response status code should be 200
+    And The response should contain "Bearer "
+    And The response should not contain "Basic "
 
     Examples:
       | actor             |

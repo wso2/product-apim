@@ -71,22 +71,27 @@ public class SecondaryUserStoreSteps {
      * Asserts a store user EXISTS via {@code isExistingUser} — the CORRECT existence check. Never assert existence
      * via a non-empty {@code getRoleListOfUser}: that returns {@code Internal/everyone} for ANY username string
      * (existing or not), so a non-empty role list does not prove the user exists.
+     *
+     * <p>Store-agnostic: the username may be store-qualified ({@code SECONDARY.COM/testUser1}) or a plain
+     * primary-store name, so the user-sign-up approval-workflow feature asserts on its signed-up user with this
+     * same step rather than forking a near-duplicate (CLAUDE.md §7).
      */
-    @Then("the store user {string} in tenant {string} should exist")
-    public void theStoreUserShouldExist(String userName, String tenantDomain) throws Exception {
+    @Then("the user {string} in tenant {string} should exist")
+    public void theUserShouldExist(String userName, String tenantDomain) throws Exception {
         String body = TenantUserProvisioner.isExistingUser(tenantDomain, Utils.resolveContextPlaceholders(userName));
         Assert.assertTrue(body.contains("<ns:return>true</ns:return>"),
                 "isExistingUser for '" + userName + "' did not return true; response: " + body);
     }
 
     /**
-     * Asserts a store user does NOT exist in the given tenant — the negative of {@link #theStoreUserShouldExist}.
+     * Asserts a user does NOT exist in the given tenant — the negative of {@link #theUserShouldExist}.
      * Used to prove UM_TENANT_ID isolation on the shared store DB: a user seeded into one tenant's SECONDARY.COM
      * store is absent from another tenant's SECONDARY.COM store even though both point at the same H2 DB and the
-     * same store domain name.
+     * same store domain name. Also the user-sign-up workflow's rejection observable: the product DELETES a
+     * rejected self-sign-up, so the user must be gone from the primary store.
      */
-    @Then("the store user {string} in tenant {string} should not exist")
-    public void theStoreUserShouldNotExist(String userName, String tenantDomain) throws Exception {
+    @Then("the user {string} in tenant {string} should not exist")
+    public void theUserShouldNotExist(String userName, String tenantDomain) throws Exception {
         String body = TenantUserProvisioner.isExistingUser(tenantDomain, Utils.resolveContextPlaceholders(userName));
         Assert.assertTrue(body.contains("<ns:return>false</ns:return>"),
                 "isExistingUser for '" + userName + "' in tenant '" + tenantDomain + "' did not return false "

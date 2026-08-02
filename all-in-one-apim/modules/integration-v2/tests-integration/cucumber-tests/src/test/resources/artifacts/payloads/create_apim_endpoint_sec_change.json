@@ -1,0 +1,46 @@
+{
+  "name": "${UNIQUE:EndpointSecChange}",
+  "context": "${UNIQUE:endpointSecChange}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "prodInit",
+        "password": "prodInitPass"
+      },
+      "sandbox": {
+        "enabled": true,
+        "type": "BASIC",
+        "username": "sandInit",
+        "password": "sandInitPass"
+      }
+    }
+  },
+  "description": "Per-type endpoint security whose BASIC credentials are UPDATED (change path): created with initial prod/sandbox creds, then endpoint_security is mutated via GET-then-PUT and redeployed. The /sec backend echoes the injected Authorization header, proving the gateway injects the UPDATED credential.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/sec",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

@@ -41,6 +41,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -83,6 +84,30 @@ public class Utils {
     /** The block's gateway {@code wss://} base URL from the shared context; throws if not booted yet. */
     public static String getBaseGatewayWssUrl() {
         return requiredContextUrl("baseGatewayWssUrl");
+    }
+
+    /**
+     * The block's WebSub EVENT-RECEIVER base URL (the synapse {@code WebhookServer} inbound,
+     * {@code Constants.WEBSUB_EVENT_RECEIVER_PORT}) from the shared context; throws if not booted yet. This is
+     * where an event SOURCE posts content for a WebSub API's hub to fan out — a DIFFERENT listener from the
+     * gateway passthrough, so it is not derivable from {@link #getBaseGatewayUrl()}. Append the API's
+     * {@code context}/version, {@code Constants.WEBSUB_EVENT_RECEIVER_RESOURCE} and {@code ?topic=<topic>}.
+     */
+    public static String getBaseWebSubEventReceiverUrl() {
+        return requiredContextUrl("baseWebSubEventReceiverUrl");
+    }
+
+    /**
+     * HOST-reachable base URL of the node backend app listening on {@code containerPort} — for reading a backend's
+     * own state back from the test JVM (the sse-emitter's stream diagnostics, the websub-receiver's delivery log).
+     * An API's ENDPOINT must instead point at {@code http://nodebackend:<containerPort>}, the in-network alias.
+     *
+     * <p>Only valid in a block that declares {@code initBackend=true} — {@code BlockLifecycleListener} has then
+     * already started the singleton, so this resolves the running container's published port. In a block without
+     * it this would boot the backend mid-scenario, which is why it is not a general-purpose helper.
+     */
+    public static String getNodeBackendUrl(int containerPort) {
+        return NodeAppServer.getInstance().getBaseUrl(containerPort);
     }
 
     private static String requiredContextUrl(String key) {
@@ -196,6 +221,66 @@ public class Utils {
             }
         });
         return accepted != null ? accepted : lastResult.get();
+    }
+
+    /** One sample for {@link #awaitSettledCount}: reads the counter under test. Only {@link IOException} is retried. */
+    @FunctionalInterface
+    public interface CountProbe {
+        int sample() throws IOException;
+    }
+
+    /**
+     * Outcome of {@link #awaitSettledCount}: the last value observed, whether it had STOPPED CHANGING, and how
+     * many samples were taken (a diagnostic — one sample means the quiet window was never actually observed).
+     * {@code value} is -1 when the probe never returned at all.
+     */
+    public record SettledCount(int value, boolean settled, int samples) { }
+
+    /**
+     * THE retry envelope for a step asserting a MONOTONIC COUNTER's final value: polls {@code probe} until the
+     * value has been unchanged for {@code quietMillis}, and reports whether it settled so the caller can assert
+     * both that it did and the EXACT value (§12).
+     *
+     * <p>Exists because {@link #retryUntil} CANNOT express this assertion safely. Its accept condition can only
+     * say "has it reached N yet", so the natural spelling is accept on {@code count >= N} then assert
+     * {@code == N} — which passes the instant the counter touches N, while more arrivals are still in flight. That
+     * is the §12-forbidden widened form wearing an exact assertion: an OVER-delivery lands after the step already
+     * passed, so a duplicate or an unthrottled extra is INVISIBLE. Waiting a fixed period instead would be a
+     * {@code Thread.sleep} (§4) and would still only move the race. Settling is the only formulation that both
+     * bounds the wait and can observe an over-count, and it is what makes "exactly N were delivered" a real
+     * assertion rather than "at least N had been delivered at some sampling instant".
+     *
+     * <p>Sound ONLY for a counter that stops changing once the system is quiescent (deliveries for a fixed set of
+     * published events). Never use it for a counter something keeps incrementing — that can never settle. Pick
+     * {@code quietMillis} comfortably above the observed gap BETWEEN two arrivals, not above the total fan-out
+     * time: a gap longer than the quiet window would settle early and under-count.
+     */
+    public static SettledCount awaitSettledCount(long quietMillis, long timeoutMillis, CountProbe probe)
+            throws InterruptedException {
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        AtomicReference<Integer> lastValue = new AtomicReference<>();
+        AtomicReference<Long> lastChange = new AtomicReference<>(pollStart);
+        AtomicReference<Integer> samples = new AtomicReference<>(0);
+        SettledCount settled = pollWithin(pollStart, deadline, () -> {
+            int value;
+            try {
+                value = probe.sample();
+            } catch (IOException transientDuringWarmup) {
+                // Same tolerance as retryUntil: only connectivity is retried, anything else fails fast.
+                return null;
+            }
+            samples.set(samples.get() + 1);
+            long now = System.currentTimeMillis();
+            if (!Integer.valueOf(value).equals(lastValue.getAndSet(value))) {
+                // Changed (this includes the very first sample) — restart the quiet window.
+                lastChange.set(now);
+                return null;
+            }
+            return now - lastChange.get() >= quietMillis ? new SettledCount(value, true, samples.get()) : null;
+        });
+        return settled != null ? settled
+                : new SettledCount(lastValue.get() == null ? -1 : lastValue.get(), false, samples.get());
     }
 
     /**
@@ -407,6 +492,21 @@ public class Utils {
     public static String getUserInfoEndpointURL(String baseUrl) {
 
         return baseUrl + Constants.DEFAULT_APIM_USERINFO_EP;
+    }
+
+    /**
+     * Tenant-aware OIDC userinfo endpoint. A super-tenant token uses {@code oauth2/userinfo}; a TENANT token must
+     * be presented at the tenant-qualified {@code t/<tenant>/oauth2/userinfo} path — the actor's {@code @domain}
+     * does NOT re-route the super path by itself, so calling the un-prefixed endpoint with a tenant token exercises
+     * the super-tenant route instead (which is what the no-arg overload above does). Mirrors
+     * {@link #getIntrospectEndpointURL(String, String)} and the legacy
+     * {@code OpenIDTokenAPITestCase#testCallUserInfoApiWithOpenIdJWTAccessToken}, which prefixes
+     * {@code t/<tenant>/} for any non-super tenant.
+     */
+    public static String getUserInfoEndpointURL(String baseUrl, String tenantDomain) {
+        return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? baseUrl + Constants.DEFAULT_APIM_USERINFO_EP
+                : baseUrl + "t/" + tenantDomain + "/" + Constants.DEFAULT_APIM_USERINFO_EP;
     }
 
     /** OAuth2 token introspection endpoint: {@code oauth2/introspect} (POST {@code token=…} with Basic admin auth). */
@@ -771,6 +871,25 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId;
     }
 
+    /** DevPortal — the topics a streaming (async) API exposes: {@code /apis/{apiId}/topics} (GET). One entry per
+     *  async operation, so an SSE/WebSub API declaring a single {@code /*} SUBSCRIBE operation reports count 1. */
+    public static String getDevportalApiTopicsURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/topics";
+    }
+
+    /** DevPortal — list all visible APIs: {@code /apis} (GET). Combined with the {@code X-WSO2-Tenant} header this
+     *  is the cross-tenant discovery listing (an ALL_TENANTS API published in another tenant is visible here). */
+    public static String getDevportalApisURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis";
+    }
+
+    /** DevPortal — list the key managers of a tenant: {@code /key-managers} (GET). With the {@code X-WSO2-Tenant}
+     *  header this returns another tenant's key managers (the cross-tenant KM-listing facet). Distinct from the
+     *  admin-plane {@link #getKeyManagersURL(String)} used for KM registration CRUD. */
+    public static String getDevportalKeyManagersURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "key-managers";
+    }
+
     /** DevPortal — an API's document metadata: {@code /apis/{apiId}/documents/{docId}} (GET). Visibility-gated. */
     public static String getDevportalApiDocumentURL(String baseUrl, String apiId, String documentId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/documents/" + documentId;
@@ -934,6 +1053,37 @@ public class Utils {
     /** Carbon admin SOAP service — identity application management (service-provider get/update). */
     public static String getIdentityApplicationManagementServiceURL(String baseUrl) {
         return baseUrl + "services/IdentityApplicationManagementService";
+    }
+
+    /**
+     * Carbon admin SOAP service — registry resource admin. The only interface for reading/writing the
+     * governance-registry {@code workflow-extensions.xml} that selects the workflow executors (Simple = auto,
+     * Approval = manual). Used by the approval-workflow setup/teardown to flip executors and restore them.
+     */
+    public static String getResourceAdminServiceURL(String baseUrl) {
+        return baseUrl + "services/ResourceAdminService";
+    }
+
+    /**
+     * Admin workflows list endpoint filtered by workflow type (e.g. {@code AM_APPLICATION_CREATION},
+     * {@code AM_SUBSCRIPTION_CREATION}, {@code AM_API_STATE}). Returns the pending tasks of that type,
+     * each carrying a {@code referenceId} and a {@code properties} map (applicationName/apiName/...).
+     */
+    public static String getWorkflowsByTypeURL(String baseUrl, String workflowType) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows?workflowType="
+                + URLEncoder.encode(workflowType, StandardCharsets.UTF_8);
+    }
+
+    /** Admin single-workflow-by-external-reference endpoint (GET returns 404 once the task is cleaned up). */
+    public static String getWorkflowByReferenceURL(String baseUrl, String externalWorkflowReference) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows/"
+                + URLEncoder.encode(externalWorkflowReference, StandardCharsets.UTF_8);
+    }
+
+    /** Admin approve/reject endpoint — POST {@code {"status":"APPROVED"|"REJECTED","description":"..."}}. */
+    public static String getUpdateWorkflowStatusURL(String baseUrl, String workflowReferenceId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows/update-workflow-status?workflowReferenceId="
+                + URLEncoder.encode(workflowReferenceId, StandardCharsets.UTF_8);
     }
 
     public static String getNewAPIVersionURL(String baseUrl, String resourceType, String newVersion, Boolean defaultVersion, String apiId) {
@@ -1274,11 +1424,6 @@ public class Utils {
     /** SOAP admin service — claim-metadata management (register local claims). */
     public static String getClaimMetadataMgtServiceURL(String baseUrl) {
         return baseUrl + "services/ClaimMetadataManagementService";
-    }
-
-    /** DevPortal REST API — key managers visible to the calling user's organization. */
-    public static String getDevportalKeyManagersURL(String baseUrl) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "key-managers";
     }
 
     /** Admin REST API — tenant configuration (get/update). */

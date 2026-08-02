@@ -19,6 +19,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
@@ -48,6 +49,9 @@ public class TokenExchangeSteps {
 
     private static final String TOKEN_EXCHANGE_GRANT = "urn:ietf:params:oauth:grant-type:token-exchange";
     private static final String JWT_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:jwt";
+    /** The multi-value {@code groups} claim carried by the hand-signed subject token (legacy parity). */
+    private static final java.util.List<String> MULTI_VALUE_GROUPS =
+            java.util.Arrays.asList("engineering", "support", "analytics");
 
     /**
      * Fixture context keys that are per-tenant: the setup stashes them under a tenant-suffixed key for each
@@ -88,6 +92,21 @@ public class TokenExchangeSteps {
     public void iRegisterTrustedIdpJwks(String idpName) throws Exception {
         TokenExchangeProvisioner.registerTrustedIdpJwks(actingIdpScope(), idpName,
                 TestContext.resolve("txIsClientId").toString());
+        TestContext.set("txIdpName", idpName);
+    }
+
+    /**
+     * Registers the APIM trusted IdP (in the acting tenant) for the hand-signed multi-value-claim subject token:
+     * validates against the committed certificate whose key signs that token, and declares IdP claim mappings so
+     * the federated {@code groups}/{@code preferred_username} remote claims are recognised. Then configures the
+     * exchanging application's SP to request+mandate those claims - the two-part config (IdP claim mapping + SP
+     * requested claims) the legacy TokenExchangeMultiValueClaimTestCase set up via the custom KM and SP.
+     */
+    @When("I register the token-exchange trusted identity provider {string} for multi-value custom claims")
+    public void iRegisterMultiValueClaimIdp(String idpName) throws Exception {
+        TokenExchangeProvisioner.registerMultiValueClaimIdp(actingIdpScope(), idpName);
+        TokenExchangeProvisioner.requestSubjectClaimsOnApp(actingIdpScope(),
+                TestContext.resolve("consumerKey").toString());
         TestContext.set("txIdpName", idpName);
     }
 
@@ -198,6 +217,33 @@ public class TokenExchangeSteps {
     }
 
     /**
+     * Assembles a hand-signed RS256 subject JWT carrying a MULTI-VALUE {@code groups} claim
+     * ({@code ["engineering","support","analytics"]}) and a single-valued {@code preferred_username}
+     * ({@code user1}), stored under {@code subjectToken}. Signed with the committed key pair whose certificate
+     * the multi-value trusted IdP validates against (an IS client-credentials token carries no user claims, so
+     * the subject token cannot be minted from IS here - it is assembled directly, as the legacy test did via a
+     * keystore). {@code iss}/{@code aud} match the IdP's {@code idpIssuerName}/{@code alias}.
+     */
+    @When("I obtain a subject JWT carrying multi-value custom claims from the identity provider")
+    public void iObtainMultiValueSubjectJwt() throws Exception {
+        String key = Utils.readClasspathResource(TokenExchangeProvisioner.TRUSTED_IDP_KEY_RESOURCE);
+        long now = System.currentTimeMillis() / 1000L;
+        JSONObject header = new JSONObject().put("alg", "RS256").put("typ", "JWT");
+        JSONObject claims = new JSONObject()
+                .put("iss", TokenExchangeProvisioner.MULTI_VALUE_IDP_ISSUER)
+                .put("sub", "userexternal")
+                .put("aud", TokenExchangeProvisioner.MULTI_VALUE_IDP_ALIAS)
+                .put("azp", TokenExchangeProvisioner.MULTI_VALUE_IDP_ALIAS)
+                .put("groups", new JSONArray(MULTI_VALUE_GROUPS))
+                .put("preferred_username", "user1")
+                .put("scope", "openid profile email")
+                .put("iat", now).put("nbf", now).put("exp", now + 900);
+        String jwt = JwtTestUtils.buildRs256Jwt(header.toString(), claims.toString(),
+                JwtTestUtils.rsaPrivateKeyFromPem(key));
+        TestContext.set("subjectToken", jwt);
+    }
+
+    /**
      * Exchanges the stored subject token at APIM's own token endpoint (authenticated with the application's
      * Resident-KM client credentials) for an APIM access token. Publishes the response as {@code httpResponse}
      * and the issued token as {@code generatedAccessToken}. When {@code tamperSubject} is true the subject token
@@ -206,6 +252,21 @@ public class TokenExchangeSteps {
     @When("I exchange the subject token at the API Manager token endpoint")
     public void iExchangeSubjectToken() throws Exception {
         exchange(TestContext.resolve("subjectToken").toString(), JWT_TOKEN_TYPE);
+    }
+
+    /**
+     * Exchanges the subject token additionally REQUESTING the OIDC scopes ({@code openid profile email groups})
+     * that map the custom {@code groups}/{@code preferred_username} claims into the issued JWT - without the
+     * scope the JWT generator omits the OIDC claims (legacy parity: the legacy invokeTokenEndpoint requested
+     * these scopes on the multi-value exchange).
+     */
+    @When("I exchange the subject token at the API Manager token endpoint requesting the OIDC claim scopes")
+    public void iExchangeSubjectTokenWithScopes() throws Exception {
+        exchangeForm("grant_type=" + Utils.urlEncode(TOKEN_EXCHANGE_GRANT)
+                + "&requested_token_type=" + Utils.urlEncode(JWT_TOKEN_TYPE)
+                + "&subject_token_type=" + Utils.urlEncode(JWT_TOKEN_TYPE)
+                + "&scope=" + Utils.urlEncode("openid profile email groups")
+                + "&subject_token=" + Utils.urlEncode(TestContext.resolve("subjectToken").toString()));
     }
 
     /** As the exchange step but tampering the subject token first (flips a payload byte, keeping the signature). */
@@ -325,6 +386,40 @@ public class TokenExchangeSteps {
         String sub = new JSONObject(payloadJson).optString("sub");
         Assert.assertEquals(sub, TestContext.resolve("txIsClientId").toString(),
                 "Exchanged token subject should carry the IS subject app's identity. Payload: " + payloadJson);
+    }
+
+    /**
+     * Asserts the exchanged access token PRESERVES the subject token's multi-value {@code groups} claim as a
+     * JSON ARRAY of exactly {@code engineering}/{@code support}/{@code analytics} (order-independent) - NOT
+     * comma-joined into one string and NOT reduced to the first value - and that the single-valued
+     * {@code preferred_username} claim ({@code user1}) also survives the exchange.
+     */
+    @Then("the exchanged access token should preserve the multi-value groups claim and the single-valued claim")
+    public void theExchangedTokenPreservesMultiValueClaims() {
+        String token = TestContext.resolve("generatedAccessToken").toString();
+        String payloadJson = JwtTestUtils.decodePayload(token);
+        JSONObject payload = new JSONObject(payloadJson);
+
+        Assert.assertTrue(payload.has("groups"),
+                "Groups claim is missing in the exchanged access token. Payload: " + payloadJson);
+        Object groups = payload.get("groups");
+        Assert.assertTrue(groups instanceof JSONArray,
+                "Groups claim must be preserved as a JSON array, not comma-joined or first-only. Got type "
+                        + groups.getClass().getSimpleName() + " value=" + groups + ". Payload: " + payloadJson);
+        JSONArray groupsArray = (JSONArray) groups;
+        java.util.List<String> actual = new java.util.ArrayList<>();
+        for (int i = 0; i < groupsArray.length(); i++) {
+            actual.add(groupsArray.getString(i));
+        }
+        Assert.assertEquals(new java.util.HashSet<>(actual), new java.util.HashSet<>(MULTI_VALUE_GROUPS),
+                "Groups claim values are not preserved as expected (order-independent). Got=" + actual
+                        + " expected=" + MULTI_VALUE_GROUPS + ". Payload: " + payloadJson);
+        Assert.assertEquals(actual.size(), MULTI_VALUE_GROUPS.size(),
+                "Groups claim must have exactly " + MULTI_VALUE_GROUPS.size() + " elements. Got=" + actual
+                        + ". Payload: " + payloadJson);
+
+        Assert.assertEquals(payload.optString("preferred_username"), "user1",
+                "Single-valued preferred_username claim should be preserved. Payload: " + payloadJson);
     }
 
     /** Asserts the stored {@code generatedAccessToken} JWT header type equals {@code at+jwt} (RFC 9068). */

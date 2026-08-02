@@ -80,6 +80,17 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayPrototypeApiRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySchemaValidationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketInvocationRunner"/>
+            <!-- SSE invocation rides the ordinary HTTP passthrough (not the WS inbound), and additionally reads
+                 the node sse-emitter's own sent-event record back over its published port — both provided by
+                 this block's initBackend. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySseInvocationRunner"/>
+            <!-- WebSub invocation rides here rather than in its own block: both extra listeners it needs are
+                 already present on DEFAULT config (the synapse WebhookServer event-receiver inbound is
+                 unconditional — no TOML overlay), and its callback receiver is the node backend this block
+                 already starts. It shares nothing mutable with the sibling runners — every API, application and
+                 callback receiver is uniquely named, and a webhook subscription is scoped to its own API's
+                 context + topic — so thread-count stays 2. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSubInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMcpServersRunner"/>
@@ -108,6 +119,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApplicationRevocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerJwtGrantRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerPkceKeysRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerPasswordChangeRunner"/>
         </classes>
     </test>
     <!-- Admin-plane governance/policy tests (default config, no gateway backend). Concurrent block.
@@ -235,6 +247,37 @@
         <parameter name="initTenantUsers" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.RemoteLoggingRunner"/>
+        </classes>
+    </test>
+    <!-- Approval-workflow suite (ports WorkflowApprovalExecutorTest). MUST stay thread-count=1: the _setup_
+         feature flips the workflow executors to the Approval variants by writing workflow-extensions.xml into the
+         governance registry (via ResourceAdminService SOAP), which is server-global for the container; a sibling
+         class sharing the container would see the flipped executors. The overlay declares the three custom
+         devportal application_attributes the pending tasks surface. The runner's AfterClass restores the original
+         executors. -->
+    <test name="IntegrationV2-ApprovalWorkflow" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="approval-workflow"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/approveWorkflow/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.WorkflowApprovalRunner"/>
+        </classes>
+    </test>
+    <!-- Cross-tenant subscription: a consumer in tenant1.com subscribes to an ALL_TENANTS API published in
+         carbon.super, and then INVOKES it at the gateway. Own block for the enable_cross_tenant_subscriptions
+         overlay, which both runners need; initBackend so the provider tenant's API has a live upstream for the
+         invocation runner. thread-count=1 so the two runners share the container sequentially — they are
+         independent (each creates its own API/application) but neither benefits from concurrency and the
+         cross-tenant visibility polling is propagation-bound. -->
+    <test name="IntegrationV2-CrossTenantSubscription" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="cross-tenant-sub"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/crossTenantSub/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.CrossTenantSubscriptionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.CrossTenantInvocationRunner"/>
         </classes>
     </test>
     <!-- Gateway scenarios that mutate time-sensitive / container-global runtime state, so each needs a container
@@ -456,6 +499,23 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7nokm/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.TenantSharingOffRunner"/>
+        </classes>
+    </test>
+    <!-- Email as username. MUST stay its own block, and it is the only block that may set emailUserMode: the mode
+         changes the PHYSICAL username of every provisioned user (see BlockLifecycleListener.PARAM_EMAIL_USER_MODE)
+         and the overlay's enable_email_domain changes how the whole container resolves an '@' in ANY username, so
+         neither is co-hostable with a runner that expects the plain actor usernames. The parameter and the overlay
+         must be set TOGETHER: the overlay alone breaks the framework's own boot provisioning (a plain,
+         single-'@' tenant actor resolves to a non-existent super-tenant user), and the parameter alone provisions
+         email usernames the product then refuses to resolve. No backend needed — the scenarios exercise the
+         management planes only, with no gateway invocation. -->
+    <test name="IntegrationV2-EmailUserName" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="email-username"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="emailUserMode" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/emailUserName/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerEmailUserNameLoginRunner"/>
         </classes>
     </test>
 </suite>
