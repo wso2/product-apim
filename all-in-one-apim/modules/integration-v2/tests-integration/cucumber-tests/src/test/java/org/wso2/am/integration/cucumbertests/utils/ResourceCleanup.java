@@ -96,6 +96,14 @@ public final class ResourceCleanup {
      */
     public static final String CREATED_SERVICE_CATALOG_IDS = "createdServiceCatalogIds";
 
+    /**
+     * Teardown list for API Platform Gateway environments registered via {@code POST /api/am/admin/v4/gateways},
+     * holding each gateway's id. An admin-plane resource; swept AFTER the APIs (deleting an API undeploys it from
+     * the gateway, so the gateway delete is unblocked). Deleted via the generic bearer-token
+     * {@link #deleteResources} with the admin token.
+     */
+    public static final String CREATED_PLATFORM_GATEWAY_IDS = "createdPlatformGatewayIds";
+
     private ResourceCleanup() {
     }
 
@@ -162,7 +170,8 @@ public final class ResourceCleanup {
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
                 && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()
                 && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
-                && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()) {
+                && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()
+                && TestContext.getList(CREATED_PLATFORM_GATEWAY_IDS).isEmpty()) {
             return;
         }
         String baseUrl = baseUrlObj.toString();
@@ -212,6 +221,10 @@ public final class ResourceCleanup {
             // Gateway environments (admin). No revisions are deployed to test envs, so delete is unblocked.
             deleteResources(Constants.CREATED_ENVIRONMENT_IDS, Identity::adminTokenKey,
                     id -> Utils.getEnvironmentByIdURL(baseUrl, id));
+            // Platform gateway environments (admin) AFTER the APIs — deleting an API undeploys it from the
+            // gateway, so the gateway delete is unblocked. Deleted with the admin token.
+            deleteResources(CREATED_PLATFORM_GATEWAY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getPlatformGatewayByIdURL(baseUrl, id));
             // Governance policies BEFORE governance rulesets — a policy references rulesets, so a ruleset
             // delete is rejected with 409 while a policy still attaches it. Both deleted with the governance
             // token (apim:gov_*), not the admin token.

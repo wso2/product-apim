@@ -76,6 +76,17 @@
         <is.server.version>7.3.0</is.server.version>
         <is.docker.image.name>wso2/wso2is:${is.server.version}</is.docker.image.name>
 
+        <!-- WSO2 API Platform Gateway (external data-plane gateway the APIM control plane deploys APIs to;
+             integration-v2 platform-gateway block). Ships as TWO multi-arch (linux/arm64+amd64) images pulled
+             from ghcr.io, run as a testcontainers ComposeContainer by DynamicPlatformGatewayContainer. Drives
+             the image tags via ${PG_GATEWAY_VERSION} in platform-gateway/docker-compose.yaml. -->
+        <pg.gateway.version>1.2.0</pg.gateway.version>
+        <pg.gateway.controller.image.name>ghcr.io/wso2/api-platform/gateway-controller:${pg.gateway.version}</pg.gateway.controller.image.name>
+        <pg.gateway.runtime.image.name>ghcr.io/wso2/api-platform/gateway-runtime:${pg.gateway.version}</pg.gateway.runtime.image.name>
+        <!-- In-network echo backend for platform-gateway invocation tests (a service in the gateway's own compose
+             network — the runtime cannot reach the APIM block's nodebackend). Returns HTTP 200 on any path. -->
+        <pg.backend.echo.image.name>mendhak/http-https-echo:31</pg.backend.echo.image.name>
+
         <!-- Debug API Manager instance-->
         <apim.debug.enabled>False</apim.debug.enabled>
         <apim.debug.port>5006</apim.debug.port>
@@ -157,6 +168,7 @@
             <version>${json-smart.version}</version>
         </dependency>
     </dependencies>
+
     <profiles>
         <profile>
             <id>migration</id>

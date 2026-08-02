@@ -84,7 +84,9 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // Add host.docker.internal mapping for Linux compatibility (needed for accessing host services)
         withExtraHost("host.docker.internal", "host-gateway");
 
-        withNetwork(ContainerNetwork.SHARED_NETWORK);
+        // The docker network is assigned by the caller (BlockLifecycleListener creates one private network per
+        // block and joins APIM + its IS to it, so the wso2am/wso2is aliases never collide across blocks). Direct
+        // constructions (framework-verification probes) run standalone on the default bridge — they have no peers.
         // Copy the modified deployment.toml to the container
         withCopyToContainer(Transferable.of(deploymentTomlContent), getContainerTomlPath());
 

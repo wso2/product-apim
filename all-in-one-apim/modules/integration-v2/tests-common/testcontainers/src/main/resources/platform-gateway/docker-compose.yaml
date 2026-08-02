@@ -1,0 +1,66 @@
+# Trimmed platform-gateway compose for the integration-v2 harness — derived from the wso2apip-api-gateway
+# distribution's docker-compose.yaml, keeping ONLY the two gateway services (the distribution's observability
+# services are all `profiles:`-gated and never start on a plain `up`, so they are simply omitted here).
+#
+# Adaptations for the harness:
+#   - env_file uses the SHORT form (a bare list entry), not the distribution's `{path,required,format: raw}`
+#     long form, which needs Docker Compose >= 2.30 (Colima ships 2.29.7). Short-form env_file is literal (no
+#     interpolation) on 2.29, so the bcrypt admin hash's `$` survives intact.
+#   - the gateway-runtime data-plane port is published WITHOUT a fixed host port so testcontainers'
+#     ComposeContainer maps it to an ephemeral host port (parallel-block safe).
+#   - the image version is injected via ${PG_GATEWAY_VERSION} (DynamicPlatformGatewayContainer sets it from the
+#     `pg.gateway.version` system property; default keeps it runnable standalone).
+#   - config.toml, listener-certs, the aesgcm key and api-platform.env are materialized next to this file by
+#     DynamicPlatformGatewayContainer under a $HOME-shared path (Colima does NOT share /tmp into its VM, so
+#     file bind-mounts from /tmp silently become empty directories).
+services:
+  gateway-controller:
+    image: ghcr.io/wso2/api-platform/gateway-controller:${PG_GATEWAY_VERSION:-1.2.0}
+    command: ["-config", "/etc/gateway-controller/config.toml"]
+    env_file:
+      - api-platform.env
+    volumes:
+      - ./config.toml:/etc/gateway-controller/config.toml:ro
+      - ./certificates:/app/certificates
+      - ./listener-certs:/app/listener-certs:ro
+      - ./aesgcm-keys/default-aesgcm256-v1.bin:/app/data/aesgcm-keys/default-aesgcm256-v1.bin:ro
+    extra_hosts:
+      # Lets the controller reach an APIM control plane published on the host (APIM's testcontainers-mapped
+      # 9443) at host.docker.internal — the connection wiring used by the harness.
+      - "host.docker.internal:host-gateway"
+    networks:
+      - gateway-network
+
+  gateway-runtime:
+    image: ghcr.io/wso2/api-platform/gateway-runtime:${PG_GATEWAY_VERSION:-1.2.0}
+    command: ["--pol.config", "/etc/policy-engine/config.toml"]
+    env_file:
+      - api-platform.env
+    environment:
+      - GATEWAY_CONTROLLER_HOST=gateway-controller
+    ports:
+      - "8443"     # data-plane HTTPS ingress -> ephemeral host port (health: /_gateway-health/ready)
+    volumes:
+      - ./config.toml:/etc/policy-engine/config.toml:ro
+    extra_hosts:
+      # The runtime (Envoy) dials the API backend; host.docker.internal lets it reach a backend published on
+      # the host (e.g. the NodeAppServer sample apps on host-mapped ports 3000-3019). Not needed for the
+      # in-network echo backend below, but kept for tests that point an API at a host-published backend.
+      - "host.docker.internal:host-gateway"
+    networks:
+      - gateway-network
+
+  # In-network echo backend for platform-gateway invocation tests. The gateway-runtime resolves it by service
+  # name on the shared compose network (the runtime is NOT on the APIM block's network, so it cannot reach the
+  # block's nodebackend). Returns HTTP 200 + a JSON echo on any path — a deployed API's production endpoint
+  # points at http://echo-backend:8080/ and an invocation through the gateway routes here.
+  echo-backend:
+    image: mendhak/http-https-echo:31
+    environment:
+      - HTTP_PORT=8080
+    networks:
+      - gateway-network
+
+networks:
+  gateway-network:
+    driver: bridge

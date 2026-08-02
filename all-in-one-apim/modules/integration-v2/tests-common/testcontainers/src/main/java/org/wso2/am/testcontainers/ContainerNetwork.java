@@ -19,6 +19,18 @@ package org.wso2.am.testcontainers;
 
 import org.testcontainers.containers.Network;
 
+/**
+ * Static networks with a JVM lifetime. Per-block isolation networks are NOT here — {@code BlockLifecycleListener}
+ * creates one {@link Network} per block (APIM + its IS join it under the {@code wso2am}/{@code wso2is} aliases,
+ * scoped per network so blocks never collide) and closes it at block teardown.
+ */
 public class ContainerNetwork {
-    public static final Network SHARED_NETWORK = Network.newNetwork();
+
+    /**
+     * Home network of the shared {@link NodeAppServer} backend singleton. The backend starts here once and is
+     * additionally multi-homed onto each block's private network on demand (see
+     * {@link NodeAppServer#attachToNetwork}) — it is a stateless upstream, so one instance reachable from every
+     * block network is safe. Reaped by Ryuk at JVM exit (like the backend itself).
+     */
+    public static final Network BACKEND_HOME_NETWORK = Network.newNetwork();
 }

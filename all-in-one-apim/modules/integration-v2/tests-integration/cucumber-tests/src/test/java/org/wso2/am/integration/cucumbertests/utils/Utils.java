@@ -1256,6 +1256,14 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments/" + environmentId;
     }
 
+    public static String getPlatformGatewaysURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways";
+    }
+
+    public static String getPlatformGatewayByIdURL(String baseUrl, String gatewayId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways/" + gatewayId;
+    }
+
     /** Admin REST API — the gateway instances of an environment. */
     public static String getEnvironmentGatewaysURL(String baseUrl, String environmentId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments/" + environmentId + "/gateways";
