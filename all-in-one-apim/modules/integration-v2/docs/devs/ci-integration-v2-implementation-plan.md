@@ -302,4 +302,6 @@ matrix entries consume the prebuilt images (verified by the absence of an image-
 - Matrix sharding across blocks + per-shard `threads` (introduce once there is >1 real block).
 - Promoting the job to a PR gate (flip trigger to `pull_request` or fold into the legacy matrix once
   stable).
-- Shared `NodeAppServer.restart()` hazard under K>1 (see `parallel-framework-implementation-plan.md`).
+- ~~Shared `NodeAppServer.restart()` hazard under K>1.~~ **No longer applicable (verified 2026-08-03):**
+  `NodeAppServer` exposes no `restart()` (only the constructor, `getBaseUrl(int)` and `getInstance()`) and has
+  no restart callers, so a block cannot restart the shared backend out from under its peers.

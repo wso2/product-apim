@@ -7,8 +7,8 @@ Feature: Admin Throttling Policy CRUD
   Ports the CRUD of the backend Application/Subscription/Advanced/Custom ThrottlingPolicyTestCase (+ the CRUD
   half of the restart-family policy tests). Enforcement (429) is covered by gateway/throttling_enforcement.
   Application/subscription/advanced run ×2 tenant (tenant admins manage their own tiers); custom rules are an
-  admin-global feature (a tenant admin gets 403 creating one — see custom-throttling-policy-restart-port), so
-  the custom scenario is super-tenant only. Each scenario uses uniquely-named policies (parallel-safe) and
+  admin-global feature that WSO2 APIM supports for the super tenant ONLY, so the custom scenarios are
+  deliberately super-tenant only. Each scenario uses uniquely-named policies (parallel-safe) and
   cleans them up. Duplicate-name (409) and delete-of-an-in-use advanced policy (403) are covered below;
   export/import is in throttle_policy_export_import.feature. Deferred to a later increment: advanced
   op↔API-level enforcement (gateway) + cross-admin permission, subscription permission-visibility.
@@ -98,7 +98,10 @@ Feature: Admin Throttling Policy CRUD
       | admin             |
       | admin@tenant1.com |
 
-  # Custom (Siddhi) rules are admin-global — a tenant admin gets 403 creating one — so this runs super only.
+  # SUPER-TENANT ONLY BY PRODUCT DESIGN — not a missing tenant variant, do not "fix" this by adding a
+  # ×2-tenant Examples table. Custom (Siddhi) throttling rules are an admin-global capability that APIM
+  # supports for the super tenant only; a tenant admin is refused (403) when creating one. That 403 is
+  # deliberately not asserted — if you want it pinned, add its own @type:negative scenario.
   @cap:admin @feat:throttling-policies @type:regression @legacy:CustomThrottlingPolicyTestCase @legacy:CustomThrottlingPolicyServerRestartTestCase
   Scenario: Custom (Siddhi) throttling rule CRUD
     Given The system is ready
@@ -169,7 +172,7 @@ Feature: Admin Throttling Policy CRUD
       | admin             |
       | admin@tenant1.com |
 
-  # Custom (Siddhi) is super-tenant only (tenant create is 403).
+  # Super-tenant only by product design (a tenant admin is refused 403); intentionally no tenant row.
   @cap:admin @feat:throttling-policies @type:negative @legacy:CustomThrottlingPolicyTestCase
   Scenario: Creating a custom throttling policy with an existing name is rejected
     Given The system is ready
