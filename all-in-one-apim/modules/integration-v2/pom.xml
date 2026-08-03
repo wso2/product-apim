@@ -69,6 +69,12 @@
         <apim.docker.image.name>wso2am:${apim.server.version}-jdk21</apim.docker.image.name>
         <!--Node app servers docker image-->
         <node.docker.image.name>node-app-server:latest</node.docker.image.name>
+        <!-- WSO2 Identity Server image used as an external Key Manager (integration-v2 external-KM block). -->
+        <!-- WSO2 IS version used as the external key manager. 7.3.0 is multi-arch (native linux/arm64 and
+             linux/amd64), so it boots natively on Apple-silicon dev machines and amd64 CI alike (7.1.0 was
+             amd64-only, i.e. emulated/slow on arm64). Drives both the image tag and the in-container IS_HOME. -->
+        <is.server.version>7.3.0</is.server.version>
+        <is.docker.image.name>wso2/wso2is:${is.server.version}</is.docker.image.name>
 
         <!-- Debug API Manager instance-->
         <apim.debug.enabled>False</apim.debug.enabled>
@@ -177,6 +183,8 @@
                                 <apim.server.name>${apim.server.name}</apim.server.name>
                                 <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
+                                <is.docker.image.name>${is.docker.image.name}</is.docker.image.name>
+                                <is.server.version>${is.server.version}</is.server.version>
                                 <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>
@@ -242,6 +250,8 @@
                                 <apim.server.name>${apim.server.name}</apim.server.name>
                                 <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
+                                <is.docker.image.name>${is.docker.image.name}</is.docker.image.name>
+                                <is.server.version>${is.server.version}</is.server.version>
                                 <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>

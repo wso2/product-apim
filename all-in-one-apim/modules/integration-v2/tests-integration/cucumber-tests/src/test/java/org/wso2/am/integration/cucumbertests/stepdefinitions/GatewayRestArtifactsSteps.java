@@ -46,10 +46,6 @@ public class GatewayRestArtifactsSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
     /** Basic-auth header for the acting actor's tenant admin (the gateway REST API needs admin Basic auth). */
     private Map<String, String> gatewayBasicAuthHeaders() {
         User admin = Identity.actingTenantAdmin();
@@ -70,7 +66,7 @@ public class GatewayRestArtifactsSteps {
             throws IOException {
         String resolvedName = Utils.resolveContextPlaceholders(apiName);
         String resolvedVersion = Utils.resolveContextPlaceholders(version);
-        Requests.get(Utils.getGatewayArtifactURL(getBaseUrl(), kind, resolvedName, resolvedVersion, tenantDomain),
+        Requests.get(Utils.getGatewayArtifactURL(Utils.getBaseUrl(), kind, resolvedName, resolvedVersion, tenantDomain),
                 gatewayBasicAuthHeaders());
     }
 
@@ -86,9 +82,9 @@ public class GatewayRestArtifactsSteps {
             String tenantDomain, int timeoutSeconds) throws InterruptedException {
         String resolvedName = Utils.resolveContextPlaceholders(apiName);
         String resolvedVersion = Utils.resolveContextPlaceholders(version);
-        String url = Utils.getGatewayArtifactURL(getBaseUrl(), kind, resolvedName, resolvedVersion, tenantDomain);
-        long endTime = System.currentTimeMillis()
-                + Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        String url = Utils.getGatewayArtifactURL(Utils.getBaseUrl(), kind, resolvedName, resolvedVersion, tenantDomain);
+        long endTimeStart = System.currentTimeMillis();
+        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
         HttpResponse response = null;
         do {
             try {
@@ -100,7 +96,7 @@ public class GatewayRestArtifactsSteps {
                 // transient network failure while the gateway settles — keep polling; the previous
                 // response (if any) is retained for the failure message
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endTimeStart, 2000);
         } while (System.currentTimeMillis() < endTime);
         Assert.assertNotNull(response, "Gateway artifact '" + kind + "' for " + resolvedName
                 + " returned no response within " + timeoutSeconds + "s (every poll attempt failed)");

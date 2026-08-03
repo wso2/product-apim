@@ -45,20 +45,6 @@ public class APIInvocationSteps {
     /** Context key under which every invocation publishes its response for the following assertion step. */
     private static final String HTTP_RESPONSE_KEY = "httpResponse";
 
-    private String getBaseGatewayUrl() {
-
-        Object baseGatewayUrl = TestContext.get("baseGatewayUrl");
-        if (baseGatewayUrl == null) {
-            throw new IllegalStateException("baseGatewayUrl is not available in the test context yet");
-        }
-        return baseGatewayUrl.toString();
-    }
-
-    /** Tenant domain for the invocation URL — taken from the scenario's acting actor. */
-    private String actingTenantDomain() {
-        return Identity.actingActor().getUserDomain();
-    }
-
     /**
      * The single low-level invocation primitive every step funnels through. It CLEARS any prior
      * {@code httpResponse} first, so that if the call throws (a transient connectivity error during gateway
@@ -134,7 +120,7 @@ public class APIInvocationSteps {
             throws Exception {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String actualToken = TestContext.resolve(token).toString();
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualToken);
         char[] buf = new char[sizeKb * 1024];
@@ -165,6 +151,46 @@ public class APIInvocationSteps {
     }
 
     /**
+     * THE retry envelope for the invocation steps here: attempts until the expected status or the shared ceiling,
+     * then asserts. Delegates the loop to {@link Utils#retryUntil} so no step hand-rolls the deadline, pacing and
+     * exception policy again — 18 near-identical loops used to, and one had already drifted off the shared ceiling
+     * onto a hardcoded window.
+     *
+     * <p>Its second job is to be this family's ONE observable failure point. An unexpected 401 is reported once
+     * through {@link Utils#logAuthRejection} — naming the credential and its {@code jti} — instead of surfacing as
+     * an opaque status mismatch after a whole window has burned. A credential rejected on every attempt cannot
+     * recover by being replayed (see that method), so this diagnostic is the difference between pinpointing the
+     * cause from CI logs and re-running the investigation.
+     *
+     * @param what                 what is being invoked, for the diagnostic (typically the resolved context)
+     * @param credentialContextKey context key of the token/API key presented, or {@code null} when unauthenticated
+     */
+    private void invokeUntilStatus(String what, String credentialContextKey, int expectedStatus, int timeoutSeconds,
+                                   Utils.RetryAttempt<HttpResponse> attempt) throws Exception {
+
+        long started = System.currentTimeMillis();
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L, attempt,
+                response -> response.getResponseCode() == expectedStatus);
+        if (last != null && last.getResponseCode() == 401 && expectedStatus != 401) {
+            Utils.logAuthRejection(what, credentialContextKey, credentialForDiagnostic(credentialContextKey),
+                    last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);
+        }
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /** Resolves a credential for the diagnostic ONLY — never throws, because a diagnostic must not fail a test. */
+    private static String credentialForDiagnostic(String contextKey) {
+        if (contextKey == null) {
+            return null;
+        }
+        try {
+            return TestContext.resolve(contextKey).toString();
+        } catch (RuntimeException unresolvable) {
+            return null;
+        }
+    }
+
+    /**
      * Invokes a deployed API a FIXED number of times back-to-back and asserts every response is 200 — used to
      * prove a throttle limit is at least {@code times} per minute (i.e. a burst of {@code times} calls does NOT
      * trip 429). Distinguishes one application-throttle tier from another: pick {@code times} above the LOW
@@ -178,16 +204,10 @@ public class APIInvocationSteps {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         for (int i = 1; i <= times; i++) {
-            long warmupDeadline = System.currentTimeMillis() + Constants.DEPLOYMENT_WAIT_TIME;
-            HttpResponse response = null;
-            while (System.currentTimeMillis() < warmupDeadline) {
-                try {
-                    response = invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
-                    break;
-                } catch (IOException transientDuringWarmup) {
-                    Thread.sleep(2000);
-                }
-            }
+            // Each call is retried only until it COMPLETES (any status); the burst's assertion is 200 below.
+            HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                    () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
+                    completed -> true);
             Assert.assertNotNull(response, "Invocation " + i + " of " + times + " never completed (gateway "
                     + "unreachable within the warmup window).");
             Assert.assertEquals(response.getResponseCode(), 200, "Invocation " + i + " of " + times
@@ -207,26 +227,11 @@ public class APIInvocationSteps {
                                               int expectedStatus, int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        // Never wait less than the global deployment window: a freshly published API's gateway route can take
-        // longer than a short per-step value to become routable, especially under load. The feature's value
-        // can still request MORE than the floor.
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Only transient connectivity errors (e.g. an SSL handshake against a gateway listener still
-                // coming up after a restart or fresh deploy) are retried. A bad token/key context key throws
-                // IllegalArgumentException, which is NOT caught here so it fails fast rather than as a timeout.
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        // The envelope floors the wait at the global propagation window: a freshly published API's gateway route
+        // can take longer than a short per-step value to become routable, especially under load. The feature's
+        // value can still request MORE than the floor.
+        invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds,
+                () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload));
     }
 
     /**
@@ -241,21 +246,8 @@ public class APIInvocationSteps {
                                                  int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = invokeApiByRawContext(resolvedContext, accessToken);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Only transient connectivity errors are retried (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds,
+                () -> invokeApiByRawContext(resolvedContext, accessToken));
     }
 
     /** GET a full gateway context with the raw (un-normalized) path; publishes the response to {@code httpResponse}. */
@@ -265,7 +257,7 @@ public class APIInvocationSteps {
         // Join base + context with exactly one slash. The default invoke relies on the client's URI
         // normalization to collapse a "//", but doGetRaw disables normalization, so a double slash would reach
         // the gateway verbatim and be rejected as "Invalid URL".
-        String base = getBaseGatewayUrl();
+        String base = Utils.getBaseGatewayUrl();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
@@ -286,23 +278,10 @@ public class APIInvocationSteps {
                                                      int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl,
-                        new HashMap<>(), "");
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        invokeUntilStatus(resolvedContext, null, expectedStatus, timeoutSeconds,
+                () -> execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl,
+                        new HashMap<>(), ""));
     }
 
     /**
@@ -318,25 +297,12 @@ public class APIInvocationSteps {
                                              int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
         Map<String, String> headers = new HashMap<>();
         headers.put("Origin", origin);
         headers.put("Access-Control-Request-Method", requestMethod);
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = execute(CurlOption.HttpMethod.OPTIONS, endpointUrl, new HashMap<>(headers), "");
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        invokeUntilStatus(resolvedContext, null, expectedStatus, timeoutSeconds,
+                () -> execute(CurlOption.HttpMethod.OPTIONS, endpointUrl, new HashMap<>(headers), ""));
     }
 
     /**
@@ -351,21 +317,8 @@ public class APIInvocationSteps {
                                                       int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = invokeApiByContext(resolvedContext, httpMethod, accessToken, payload, headerName);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds,
+                () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload, headerName));
     }
 
     /**
@@ -381,30 +334,18 @@ public class APIInvocationSteps {
                                                         int expectedStatus, int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                String actualAccessToken = TestContext.resolve(accessToken).toString();
-                String actualPayload = (payload == null || payload.isEmpty())
-                        ? null : TestContext.resolve(payload).toString();
-                String endpointUrl = getBaseGatewayUrl()
-                        + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Authorization", "Bearer " + actualAccessToken);
-                headers.put(headerName, headerValue);
-                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
-                        actualPayload);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds, () -> {
+            String actualAccessToken = TestContext.resolve(accessToken).toString();
+            String actualPayload = (payload == null || payload.isEmpty())
+                    ? null : TestContext.resolve(payload).toString();
+            String endpointUrl = Utils.getBaseGatewayUrl()
+                    + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer " + actualAccessToken);
+            headers.put(headerName, headerValue);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                    actualPayload);
+        });
     }
 
     /**
@@ -421,29 +362,17 @@ public class APIInvocationSteps {
                                                              int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                String actualAccessToken = TestContext.resolve(accessToken).toString();
-                String actualPayload = (payload == null || payload.isEmpty())
-                        ? "" : TestContext.resolve(payload).toString();
-                String endpointUrl = getBaseGatewayUrl()
-                        + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Authorization", "Bearer " + actualAccessToken);
-                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
-                        actualPayload, contentType);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds, () -> {
+            String actualAccessToken = TestContext.resolve(accessToken).toString();
+            String actualPayload = (payload == null || payload.isEmpty())
+                    ? "" : TestContext.resolve(payload).toString();
+            String endpointUrl = Utils.getBaseGatewayUrl()
+                    + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer " + actualAccessToken);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                    actualPayload, contentType);
+        });
     }
 
     /**
@@ -457,27 +386,15 @@ public class APIInvocationSteps {
                                                               int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                String actualKey = TestContext.resolve(apiKey).toString();
-                String endpointUrl = getBaseGatewayUrl()
-                        + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-                Map<String, String> headers = new HashMap<>();
-                headers.put("accept", "application/json");
-                headers.put(headerName, actualKey);
-                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only.
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        invokeUntilStatus(resolvedContext, apiKey, expectedStatus, timeoutSeconds, () -> {
+            String actualKey = TestContext.resolve(apiKey).toString();
+            String endpointUrl = Utils.getBaseGatewayUrl()
+                    + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("accept", "application/json");
+            headers.put(headerName, actualKey);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+        });
     }
 
     /**
@@ -494,20 +411,17 @@ public class APIInvocationSteps {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String marker = Utils.resolveContextPlaceholders(expectedBody);
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
-                if (last.getResponseCode() == 200 && last.getData() != null && last.getData().contains(marker)) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
+        long started = System.currentTimeMillis();
+        // Accept on body content, not just status — so this one keeps its own accept condition and assertions
+        // rather than going through invokeUntilStatus.
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(marker));
+        if (last != null && last.getResponseCode() == 401) {
+            Utils.logAuthRejection(resolvedContext, accessToken, credentialForDiagnostic(accessToken),
+                    last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);
+        }
         assertReachedExpectedStatus(last, 200);
         String body = last.getData();
         Assert.assertTrue(body != null && body.contains(marker),
@@ -528,7 +442,7 @@ public class APIInvocationSteps {
         String actualAccessToken = TestContext.resolve(accessToken).toString();
         String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
         // The context already carries any /t/<tenant> prefix, so append it directly to the gateway base URL.
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
         Map<String, String> headers = new HashMap<>();
         headers.put(authHeaderName, "Bearer " + actualAccessToken);
@@ -555,7 +469,7 @@ public class APIInvocationSteps {
         // Resolve {{contextKey}} placeholders in the path so the invocation can target a uniquely-generated
         // API context (names/contexts are randomized by ${UNIQUE:...}), e.g. "{{apiContext}}/1.0.0/...".
         String resolvedPath = Utils.resolveContextPlaceholders(path);
-        String endpointUrl = Utils.getAPIInvocationURL(getBaseGatewayUrl(), resolvedPath, actingTenantDomain());
+        String endpointUrl = Utils.getAPIInvocationURL(Utils.getBaseGatewayUrl(), resolvedPath, Identity.actingTenantDomain());
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualAccessToken);
@@ -575,8 +489,8 @@ public class APIInvocationSteps {
     @When("I invoke the API resource at path {string} with method {string} using api key {string}")
     public HttpResponse invokeApiUsingKey(String path, String httpMethod, String apikey) throws IOException {
 
-        String endpointUrl = Utils.getAPIInvocationURL(getBaseGatewayUrl(),
-                Utils.resolveContextPlaceholders(path), actingTenantDomain());
+        String endpointUrl = Utils.getAPIInvocationURL(Utils.getBaseGatewayUrl(),
+                Utils.resolveContextPlaceholders(path), Identity.actingTenantDomain());
         return invokeWithApiKey(endpointUrl, httpMethod, apikey);
     }
 
@@ -591,22 +505,9 @@ public class APIInvocationSteps {
                                                       int expectedStatus, int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = invokeWithApiKey(endpointUrl, httpMethod, apikey);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        invokeUntilStatus(resolvedContext, apikey, expectedStatus, timeoutSeconds,
+                () -> invokeWithApiKey(endpointUrl, httpMethod, apikey));
     }
 
     /**
@@ -619,29 +520,17 @@ public class APIInvocationSteps {
                                                                 String payload, int expectedStatus,
                                                                 int timeoutSeconds) throws Exception {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                String actualKey = TestContext.resolve(apikey).toString();
-                String actualPayload = (payload == null || payload.isEmpty())
-                        ? "" : TestContext.resolve(payload).toString();
-                Map<String, String> headers = new HashMap<>();
-                headers.put("accept", "application/json");
-                headers.put("ApiKey", actualKey);
-                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
-                        actualPayload);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only.
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        invokeUntilStatus(resolvedContext, apikey, expectedStatus, timeoutSeconds, () -> {
+            String actualKey = TestContext.resolve(apikey).toString();
+            String actualPayload = (payload == null || payload.isEmpty())
+                    ? "" : TestContext.resolve(payload).toString();
+            Map<String, String> headers = new HashMap<>();
+            headers.put("accept", "application/json");
+            headers.put("ApiKey", actualKey);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                    actualPayload);
+        });
     }
 
     /**
@@ -655,26 +544,14 @@ public class APIInvocationSteps {
                                                             String forwardedFor, int expectedStatus,
                                                             int timeoutSeconds) throws Exception {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("accept", "application/json");
-                headers.put("ApiKey", TestContext.resolve(apikey).toString());
-                headers.put("X-Forwarded-For", Utils.resolveContextPlaceholders(forwardedFor));
-                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only.
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        invokeUntilStatus(resolvedContext, apikey, expectedStatus, timeoutSeconds, () -> {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("accept", "application/json");
+            headers.put("ApiKey", TestContext.resolve(apikey).toString());
+            headers.put("X-Forwarded-For", Utils.resolveContextPlaceholders(forwardedFor));
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+        });
     }
 
     /**
@@ -688,26 +565,14 @@ public class APIInvocationSteps {
                                                                 String referer, int expectedStatus,
                                                                 int timeoutSeconds) throws Exception {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("accept", "application/json");
-                headers.put("ApiKey", TestContext.resolve(apikey).toString());
-                headers.put("Referer", Utils.resolveContextPlaceholders(referer));
-                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only.
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        invokeUntilStatus(resolvedContext, apikey, expectedStatus, timeoutSeconds, () -> {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("accept", "application/json");
+            headers.put("ApiKey", TestContext.resolve(apikey).toString());
+            headers.put("Referer", Utils.resolveContextPlaceholders(referer));
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+        });
     }
 
     /**
@@ -757,25 +622,15 @@ public class APIInvocationSteps {
     private void invokeWithBasicAuthUntilStatus(String context, String httpMethod, String authHeader,
                                                 int expectedStatus, int timeoutSeconds) throws Exception {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("accept", "application/json");
-                headers.put("Authorization", authHeader);
-                last = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only.
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        // No credential context key: basic-auth credentials are built inline, and are not a JWT whose jti could
+        // be correlated against the gateway's revocation/invalid-token caches.
+        invokeUntilStatus(resolvedContext, null, expectedStatus, timeoutSeconds, () -> {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("accept", "application/json");
+            headers.put("Authorization", authHeader);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
+        });
     }
 
     /** Single API-key invocation against a fully-built gateway URL. */
@@ -800,22 +655,9 @@ public class APIInvocationSteps {
                                                               int expectedStatus, int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = invokeWithInternalKey(endpointUrl, httpMethod, internalKey);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        invokeUntilStatus(resolvedContext, internalKey, expectedStatus, timeoutSeconds,
+                () -> invokeWithInternalKey(endpointUrl, httpMethod, internalKey));
     }
 
     /** Single internal-key invocation against a fully-built gateway URL (token in the {@code Internal-Key} header). */
@@ -844,21 +686,8 @@ public class APIInvocationSteps {
     public void invokeApiUsingKeyUntilStatus(String path, String httpMethod, String apikey, int expectedStatus,
                                              int timeoutSeconds) throws Exception {
 
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = invokeApiUsingKey(path, httpMethod, apikey);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        invokeUntilStatus(Utils.resolveContextPlaceholders(path), apikey, expectedStatus, timeoutSeconds,
+                () -> invokeApiUsingKey(path, httpMethod, apikey));
     }
 
     /**
@@ -877,21 +706,8 @@ public class APIInvocationSteps {
     public void invokeApiUsingAccessTokenUntilStatus(String path, String httpMethod, String accessToken, String payload,
                                                      int expectedStatus, int timeoutSeconds) throws Exception {
 
-        long deadlineMillis = Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
-        long endTime = System.currentTimeMillis() + deadlineMillis;
-        HttpResponse last = null;
-        do {
-            try {
-                last = invokeApiUsingAccessToken(path, httpMethod, accessToken, payload);
-                if (last.getResponseCode() == expectedStatus) {
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // Retry transient connectivity only (see invokeApiByContextUntilStatus).
-            }
-            Thread.sleep(2000);
-        } while (System.currentTimeMillis() < endTime);
-        assertReachedExpectedStatus(last, expectedStatus);
+        invokeUntilStatus(Utils.resolveContextPlaceholders(path), accessToken, expectedStatus, timeoutSeconds,
+                () -> invokeApiUsingAccessToken(path, httpMethod, accessToken, payload));
     }
 
     /**
@@ -927,8 +743,8 @@ public class APIInvocationSteps {
 
         String actualAccessToken = TestContext.resolve(accessToken).toString();
         String actualPayload = TestContext.resolve(payload).toString();
-        String endpointUrl = Utils.getAPIInvocationURL(getBaseGatewayUrl(),
-                Utils.resolveContextPlaceholders(path), actingTenantDomain());
+        String endpointUrl = Utils.getAPIInvocationURL(Utils.getBaseGatewayUrl(),
+                Utils.resolveContextPlaceholders(path), Identity.actingTenantDomain());
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualAccessToken);
@@ -952,7 +768,7 @@ public class APIInvocationSteps {
         String actualAccessToken = TestContext.resolve(accessToken).toString();
         String actualPayload = TestContext.resolve(payload).toString();
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String endpointUrl = getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualAccessToken);

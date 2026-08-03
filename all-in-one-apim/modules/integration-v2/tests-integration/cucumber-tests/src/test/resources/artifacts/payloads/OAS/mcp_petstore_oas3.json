@@ -16,6 +16,14 @@
         }
       }
     },
+    "/oldpets": {
+      "delete": {
+        "summary": "Delete all old pets",
+        "description": "Delete all old pets",
+        "operationId": "delete_oldpets",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
     "/pets/{petId}": {
       "get": {
         "summary": "Get a pet by ID",

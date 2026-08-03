@@ -39,10 +39,6 @@ public class ApiProviderChangeSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
     /**
      * Changes an API's provider to {@code providerName} via the admin change-provider REST operation, using the
      * acting actor's admin token. {@code providerName} resolves {@code {{...}}} placeholders (so a provisioned
@@ -59,7 +55,7 @@ public class ApiProviderChangeSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         // change-provider is a POST with the new provider as a query param and no body.
-        Requests.post(Utils.getAPIProvider(getBaseUrl(), apiId, provider), headers, "",
+        Requests.post(Utils.getAPIProvider(Utils.getBaseUrl(), apiId, provider), headers, "",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 }

@@ -28,6 +28,9 @@ Feature: Gateway GraphQL Subscription Throttling
     And I deploy the API with id "gqlSubApiId"
     When I publish the "apis" resource with id "gqlSubApiId"
     Then The lifecycle status of API "gqlSubApiId" should be "Published"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "gqlSubApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "gqlSubApiId"
     And I extract response field "context" and store it as "gqlSubContext"
     When I have set up application with keys, subscribed to API "gqlSubApiId", and obtained access token for "gqlSubSubId"
@@ -53,6 +56,9 @@ Feature: Gateway GraphQL Subscription Throttling
     And I deploy the API with id "gqlSubBwApiId"
     When I publish the "apis" resource with id "gqlSubBwApiId"
     Then The lifecycle status of API "gqlSubBwApiId" should be "Published"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "gqlSubBwApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "gqlSubBwApiId"
     And I extract response field "context" and store it as "gqlSubBwContext"
     When I have set up application with keys, subscribed to API "gqlSubBwApiId", and obtained access token for "gqlSubBwSubId"

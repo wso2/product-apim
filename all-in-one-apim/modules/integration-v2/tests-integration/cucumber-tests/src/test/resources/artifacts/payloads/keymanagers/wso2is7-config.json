@@ -1,0 +1,37 @@
+{
+  "name": "${UNIQUE:Wso2Is7KM}",
+  "displayName": "Test Key Manager WSO2 IS 7",
+  "type": "WSO2-IS-7",
+  "description": "WSO2 IS 7 key manager with optional parameters",
+  "issuer": "https://is7.example.com:9444/oauth2/token",
+  "tokenEndpoint": "https://is7.example.com:9444/oauth2/token",
+  "introspectionEndpoint": "https://is7.example.com:9444/oauth2/introspect",
+  "revokeEndpoint": "https://is7.example.com:9444/oauth2/revoke",
+  "authorizeEndpoint": "https://is7.example.com:9444/oauth2/authorize",
+  "userInfoEndpoint": "https://is7.example.com:9444/scim2/Me",
+  "scopeManagementEndpoint": "https://is7.example.com:9444/api/identity/oauth2/v1.0/scopes",
+  "clientRegistrationEndpoint": "https://is7.example.com:9444/api/identity/oauth2/dcr/v1.1/register",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableOAuthAppCreation": true,
+  "enableMapOAuthConsumerApps": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "refresh_token"
+  ],
+  "certificates": {
+    "type": "JWKS",
+    "value": "https://is7.example.com:9444/oauth2/jwks"
+  },
+  "additionalProperties": {
+    "api_resource_management_endpoint": "https://is7.example.com:9444/api/server/v1/api-resources",
+    "is7_roles_endpoint": "https://is7.example.com:9444/scim2/v2/Roles",
+    "Username": "admin",
+    "Password": "admin",
+    "self_validate_jwt": true,
+    "enable_roles_creation": false
+  }
+}
