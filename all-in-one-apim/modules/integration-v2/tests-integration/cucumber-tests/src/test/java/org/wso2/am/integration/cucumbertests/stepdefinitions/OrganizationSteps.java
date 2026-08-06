@@ -44,16 +44,6 @@ public class OrganizationSteps {
 
     BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
-    private Map<String, String> adminAuthHeaders() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        return headers;
-    }
-
     /**
      * Registers the {@code http://wso2.org/claims/organizationId} local claim (mapped to the {@code
      * organizationId} attribute on the PRIMARY user store) via the ClaimMetadataManagementService SOAP admin
@@ -96,7 +86,7 @@ public class OrganizationSteps {
                         + "</soapenv:Body></soapenv:Envelope>";
 
         Requests.soap(
-                Utils.getClaimMetadataMgtServiceURL(getBaseUrl()), payload, "urn:addLocalClaim",
+                Utils.getClaimMetadataMgtServiceURL(Utils.getBaseUrl()), payload, "urn:addLocalClaim",
                 adminUser, adminPass);
     }
 
@@ -138,7 +128,7 @@ public class OrganizationSteps {
                         + "</soapenv:Body></soapenv:Envelope>";
 
         Requests.soap(
-                Utils.getRemoteUserStoreManagerServiceURL(getBaseUrl()), payload, "urn:setUserClaimValue",
+                Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()), payload, "urn:setUserClaimValue",
                 adminUser, adminPass);
     }
 
@@ -154,8 +144,8 @@ public class OrganizationSteps {
         orgPayload.put("externalOrganizationId", resolvedExternalId);
         orgPayload.put("displayName", displayName);
 
-        HttpResponse response = Requests.post(Utils.getOrganizationsURL(getBaseUrl()),
-                adminAuthHeaders(), orgPayload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse response = Requests.post(Utils.getOrganizationsURL(Utils.getBaseUrl()),
+                Identity.adminHeaders(), orgPayload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         // Store the internal UUID (used in an API's visibleOrganizations) under idKey, and the external id
         // (used to tag org users' organizationId claim) under <idKey>External.
@@ -171,7 +161,7 @@ public class OrganizationSteps {
     @When("I retrieve all organizations")
     public void iRetrieveAllOrganizations() throws IOException {
 
-        Requests.get(Utils.getOrganizationsURL(getBaseUrl()), adminAuthHeaders());
+        Requests.get(Utils.getOrganizationsURL(Utils.getBaseUrl()), Identity.adminHeaders());
     }
 
     /** Deletes the organization held under {@code idKey}. Non-asserting — the feature asserts the status. */
@@ -179,7 +169,7 @@ public class OrganizationSteps {
     public void iDeleteOrganization(String idKey) throws IOException {
 
         String orgId = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getOrganizationByIdURL(getBaseUrl(), orgId), adminAuthHeaders());
+        Requests.delete(Utils.getOrganizationByIdURL(Utils.getBaseUrl(), orgId), Identity.adminHeaders());
     }
 
     /**
@@ -312,7 +302,7 @@ public class OrganizationSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200
@@ -325,7 +315,7 @@ public class OrganizationSteps {
         api.put("visibleOrganizations", new JSONArray().put(resolved));
 
         Requests.put(
-                Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers, api.toString(),
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers, api.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -343,7 +333,7 @@ public class OrganizationSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         HttpResponse current = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers);
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200
@@ -360,7 +350,7 @@ public class OrganizationSteps {
         api.put("organizationPolicies", new JSONArray().put(policy));
 
         Requests.put(
-                Utils.getResourceEndpointURL(getBaseUrl(), "apis", apiId), headers, api.toString(),
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers, api.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -376,13 +366,14 @@ public class OrganizationSteps {
         String expected = Utils.resolveContextPlaceholders(marker);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        long deadline = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
         HttpResponse last = null;
         boolean found = false;
         while (System.currentTimeMillis() < deadline) {
             try {
                 last = SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId), headers);
+                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers);
                 // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
                 // IOException-only catch and killing the poll.
                 if (last.getResponseCode() == 200 && last.getData() != null && last.getData().contains(expected)) {
@@ -392,7 +383,7 @@ public class OrganizationSteps {
             } catch (IOException transientDuringWarmup) {
                 // retry transient connectivity only
             }
-            Thread.sleep(2000);
+            Utils.pollPause(deadlineStart, 2000);
         }
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
@@ -407,7 +398,7 @@ public class OrganizationSteps {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.get(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId), headers);
+        Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers);
     }
 
     /** Retrieves an API from the DevPortal with NO authentication (anonymous user). */
@@ -415,7 +406,7 @@ public class OrganizationSteps {
     public void iRetrieveDevportalApiAnonymously(String apiIdKey) throws IOException {
 
         String apiId = TestContext.resolve(apiIdKey).toString();
-        Requests.get(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId), new HashMap<>());
+        Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), new HashMap<>());
     }
 
     /**
@@ -466,12 +457,13 @@ public class OrganizationSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        long deadline = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
         HttpResponse last = null;
         boolean present = !shouldContain;
         while (System.currentTimeMillis() < deadline) {
             try {
-                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalKeyManagersURL(getBaseUrl()), headers);
+                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers);
                 // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
                 // IOException-only catch and killing the poll.
                 if (last.getResponseCode() == 200 && last.getData() != null) {
@@ -483,7 +475,7 @@ public class OrganizationSteps {
             } catch (IOException transientDuringWarmup) {
                 // retry transient connectivity only
             }
-            Thread.sleep(2000);
+            Utils.pollPause(deadlineStart, 2000);
         }
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal key-manager response received");
@@ -495,11 +487,12 @@ public class OrganizationSteps {
     private void pollDevportalApiUntil(String apiId, Map<String, String> headers, int expectedStatus,
                                        int timeoutSeconds) throws InterruptedException {
 
-        long deadline = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, Constants.DEPLOYMENT_WAIT_TIME);
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
         HttpResponse last = null;
         while (System.currentTimeMillis() < deadline) {
             try {
-                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApiDetailURL(getBaseUrl(), apiId),
+                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId),
                         headers);
                 if (last.getResponseCode() == expectedStatus) {
                     break;
@@ -507,7 +500,7 @@ public class OrganizationSteps {
             } catch (IOException transientDuringWarmup) {
                 // retry transient connectivity only
             }
-            Thread.sleep(2000);
+            Utils.pollPause(deadlineStart, 2000);
         }
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);

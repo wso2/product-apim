@@ -17,9 +17,11 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -31,8 +33,12 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Publisher-plane MCP-server glue (ports the create/proxy half of MCPServerTestCase). Focuses on the PROXY
@@ -41,10 +47,6 @@ import java.util.Map;
  * (the legacy used a stateless WireMock, a coverage gap this closes).
  */
 public class MCPServerSteps {
-
-    private String getBaseUrl() {
-        return TestContext.get("baseUrl").toString();
-    }
 
     /**
      * Creates an MCP server by PROXYING a third-party MCP server (POST /mcp-servers/generate-from-mcp-server),
@@ -77,7 +79,7 @@ public class MCPServerSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.post(Utils.getMCPServerProxyURL(getBaseUrl()), headers, requestJson,
+        HttpResponse response = Requests.post(Utils.getMCPServerProxyURL(Utils.getBaseUrl()), headers, requestJson,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -102,19 +104,10 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse getResp = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers);
-        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
-        // opaque JSONException/NPE instead of a clear failure.
-        org.testng.Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200
-                        && getResp.getResponseCode() < 300 && getResp.getData() != null && !getResp.getData().isEmpty(),
-                "Failed to fetch MCP server '" + id + "' before updating its tools: expected a 2xx response with a "
-                        + "body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
-                        + " / body=" + getResp.getData()));
-        JSONObject dto = new JSONObject(getResp.getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before updating its tools");
         dto.put("operations", new org.json.JSONArray(buildToolOperations(tools)));
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -135,8 +128,7 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before gating a tool with a scope");
 
         // Define the scope on the MCP server (inline local scope, bound to a role).
         JSONObject scopeDef = new JSONObject().put("scope", new JSONObject()
@@ -155,7 +147,7 @@ public class MCPServerSteps {
             }
         }
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -175,15 +167,14 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before updating its business plans");
         JSONArray policies = new JSONArray();
         for (String p : resolved.split(",")) {
             policies.put(p.trim());
         }
         dto.put("policies", policies);
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -248,7 +239,7 @@ public class MCPServerSteps {
         Map<String, String> formFields = new HashMap<>();
         formFields.put("additionalProperties", additionalProperties);
 
-        HttpResponse response = Requests.postMultipart(Utils.getMCPServerFromOpenAPIURL(getBaseUrl()), headers,
+        HttpResponse response = Requests.postMultipart(Utils.getMCPServerFromOpenAPIURL(Utils.getBaseUrl()), headers,
                 files, formFields);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -295,7 +286,7 @@ public class MCPServerSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.post(Utils.getMCPServerFromAPIURL(getBaseUrl()), headers, requestJson,
+        HttpResponse response = Requests.post(Utils.getMCPServerFromAPIURL(Utils.getBaseUrl()), headers, requestJson,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -320,15 +311,15 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before removing a tool");
         JSONArray ops = dto.getJSONArray("operations");
         JSONArray kept = new JSONArray();
         for (int i = 0; i < ops.length(); i++) {
             JSONObject op = ops.getJSONObject(i);
-            // Match by the operation's serialized JSON containing the tool name — robust across subtypes (the
-            // tool name may sit in `target` or be derived; a substring match on the op is unambiguous here).
-            if (op.toString().contains(tool)) {
+            // Match by the op's top-level target (the tool name for both proxy and DirectBackend subtypes —
+            // see the scope-assignment step above); a substring match on the whole op could select the wrong
+            // one if the tool name appears in another op's schema/description.
+            if (tool.equals(op.optString("target"))) {
                 // Capture the removed operation verbatim so it can be re-added later (preserving its exact
                 // subtype shape) — enables testing tool-update ADD as the inverse of REMOVE on any subtype.
                 TestContext.set("removedMcpTool", op.toString());
@@ -338,7 +329,7 @@ public class MCPServerSteps {
         }
         dto.put("operations", kept);
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -357,12 +348,147 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        JSONObject dto = new JSONObject(SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers).getData());
+        JSONObject dto = fetchMcpServerDto(id, headers, "before re-adding the removed tool");
         dto.getJSONArray("operations").put(new JSONObject(removed));
 
-        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(getBaseUrl(), id), headers, dto.toString(),
+        HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Asserts an MCP tool's PRODUCT-GENERATED input schema STRUCTURALLY — {@code JSONObject.similar}, so key
+     * order is irrelevant (ports the legacy MCPServerTestCase schema check as hardened by upstream PR #14237,
+     * whose exact-string compare flaked on unguaranteed key order). The docstring is the expected
+     * schemaDefinition JSON. The GET is an intermediate read (local, not the published httpResponse).
+     *
+     * @param idKey context key holding the MCP-server id
+     * @param tool  the tool whose operation carries the schema
+     */
+    @Then("the MCP server {string} tool {string} should have schema definition:")
+    public void mcpToolShouldHaveSchemaDefinition(String idKey, String tool, String expectedSchemaJson)
+            throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        HttpResponse resp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), publisherHeaders());
+        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                        && !resp.getData().isBlank(),
+                "MCP server fetch failed for the schema check: got="
+                        + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
+        JSONArray ops = new JSONObject(resp.getData()).getJSONArray("operations");
+        JSONObject match = null;
+        for (int i = 0; i < ops.length(); i++) {
+            if (tool.equals(ops.getJSONObject(i).optString("target"))) {
+                match = ops.getJSONObject(i);
+                break;
+            }
+        }
+        Assert.assertNotNull(match, "MCP server has no operation for tool '" + tool + "': " + ops);
+        String actualSchema = match.optString("schemaDefinition", null);
+        // Reject a BLANK schemaDefinition too, not just an absent one: optString returns "" for a present-but-
+        // empty value, which would slip past a null check into an opaque JSONException at the parse below.
+        Assert.assertTrue(actualSchema != null && !actualSchema.isBlank(),
+                "Operation for '" + tool + "' has no (or a blank) schemaDefinition: " + match);
+        JSONObject actual = new JSONObject(actualSchema);
+        JSONObject expected = new JSONObject(expectedSchemaJson);
+        Assert.assertTrue(expected.similar(actual),
+                "Tool '" + tool + "' schemaDefinition mismatch (structural): expected=" + expected
+                        + " actual=" + actual);
+    }
+
+    /**
+     * Replaces an MCP server's whole tool set (PUT /mcp-servers/{id}) with exactly two operations, submitted in
+     * this order: (1) a BRAND-NEW tool for {@code newToolSpec}, and (2) the server's existing {@code keptTool}
+     * with its description rewritten. Every other operation is dropped. Ports the update half of
+     * testMCPServerToolOperationsForDirectBackendSubtype / testToolsForExistingApiSubtype, which submit exactly
+     * {@code [addOp, updateOp]}.
+     *
+     * @param idKey       context key holding the MCP-server id
+     * @param newToolSpec the new tool's backend operation as {@code "<VERB> <path>"} (e.g. {@code DELETE /oldpets})
+     * @param keptTool    tool name of the existing operation to keep (submitted second)
+     * @param description the description to set on {@code keptTool}
+     */
+    @When("I update the MCP server {string} replacing its tools with {string} then {string} re-described as {string}")
+    public void iReplaceMcpToolsInOrder(String idKey, String newToolSpec, String keptTool, String description)
+            throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        Map<String, String> headers = publisherHeaders();
+
+        HttpResponse dtoResp = SimpleHTTPClient.getInstance().doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id),
+                headers);
+        Assert.assertTrue(dtoResp != null && dtoResp.getResponseCode() >= 200 && dtoResp.getResponseCode() < 300
+                        && dtoResp.getData() != null && !dtoResp.getData().isEmpty(),
+                "Could not read MCP server " + id + " before replacing its tools; got="
+                        + (dtoResp == null ? "null" : dtoResp.getResponseCode() + "/" + dtoResp.getData()));
+        JSONObject dto = new JSONObject(dtoResp.getData());
+
+        String[] spec = newToolSpec.trim().split("\\s+", 2);
+        Assert.assertEquals(spec.length, 2, "New tool spec must be \"<VERB> <path>\", got: " + newToolSpec);
+        String verb = spec[0].trim();
+        String path = spec[1].trim();
+
+        JSONArray existing = dto.getJSONArray("operations");
+        JSONObject keptOp = null;
+        JSONObject shapeSource = existing.length() > 0 ? existing.getJSONObject(0) : null;
+        for (int i = 0; i < existing.length(); i++) {
+            JSONObject op = existing.getJSONObject(i);
+            if (keptTool.equals(op.optString("target"))) {
+                keptOp = op;
+            }
+        }
+        Assert.assertNotNull(keptOp, "MCP server " + id + " has no operation with target '" + keptTool
+                + "'; operations=" + existing);
+        keptOp.put("description", description);
+
+        // Mirror the existing operations' mapping shape so one step works for both subtypes (see javadoc). Both
+        // keys are always PRESENT — the one that does not apply to the subtype is serialized as JSON null — so
+        // the shape has to be picked by which one holds an object, not by which key exists.
+        JSONObject apiMapping = shapeSource == null ? null : shapeSource.optJSONObject("apiOperationMapping");
+        JSONObject backendMapping = shapeSource == null ? null
+                : shapeSource.optJSONObject("backendOperationMapping");
+        JSONObject backendOperation = new JSONObject().put("target", path).put("verb", verb);
+        JSONObject newOp = new JSONObject().put("feature", "TOOL");
+        if (apiMapping != null) {
+            newOp.put("apiOperationMapping", new JSONObject()
+                    .put("apiId", apiMapping.getString("apiId"))
+                    .put("backendOperation", backendOperation));
+        } else if (backendMapping != null) {
+            newOp.put("backendOperationMapping", new JSONObject()
+                    .put("backendId", backendMapping.getString("backendId"))
+                    .put("backendOperation", backendOperation));
+        } else {
+            Assert.fail("MCP server " + id + " operations carry neither apiOperationMapping nor "
+                    + "backendOperationMapping, so a new tool cannot be shaped for this subtype: " + existing);
+        }
+
+        dto.put("operations", new JSONArray().put(newOp).put(keptOp));
+        Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Asserts the MCP server in the last response exposes EXACTLY these tools, in EXACTLY this order.
+     * The publisher returns the operations in the order their URL mappings were inserted, which is the order they
+     * were submitted, so a scenario that submitted a known order can pin it here.
+     *
+     * @param csvTargets comma-separated tool names (operation targets) in the exact expected order
+     */
+    @Then("the MCP server operations should be exactly {string} in that order")
+    public void mcpOperationsShouldBeExactlyInOrder(String csvTargets) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isEmpty(),
+                "No successful MCP server response to read operations from; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+
+        JSONArray operations = new JSONObject(response.getData()).getJSONArray("operations");
+        List<String> actual = new ArrayList<>();
+        for (int i = 0; i < operations.length(); i++) {
+            actual.add(operations.getJSONObject(i).optString("target"));
+        }
+        List<String> expected = Arrays.stream(csvTargets.split(",")).map(String::trim)
+                .collect(Collectors.toList());
+        Assert.assertEquals(actual, expected, "MCP server tool order mismatch — expected " + expected
+                + " but the publisher returned " + actual);
     }
 
     /** Deletes an MCP server (DELETE /mcp-servers/{id}) — the explicit delete scenarios use to assert removal.
@@ -375,7 +501,7 @@ public class MCPServerSteps {
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.delete(Utils.getMCPServerByIdURL(getBaseUrl(), id.toString()), headers);
+        HttpResponse response = Requests.delete(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id.toString()), headers);
     }
 
     // ---- MCP backend-endpoint management (/mcp-servers/{id}/backends) ----
@@ -383,6 +509,21 @@ public class MCPServerSteps {
     // from-OpenAPI → the OpenAPI backend). The backends resource exposes list/get/update (there is no separate
     // add/delete — the backend's lifecycle is bound to the server). from-API MCP servers have NO own backend
     // (they proxy an existing API), so this resource applies only to the proxy and from-OpenAPI subtypes.
+
+    /**
+     * Guarded GET of an MCP server's DTO: asserts a 2xx response carrying a non-blank body BEFORE parsing, so an
+     * error body is never silently parsed as the DTO and PUT back (which would corrupt the update), and a null
+     * response fails with a clear message rather than an NPE. {@code purpose} is folded into that message.
+     */
+    private JSONObject fetchMcpServerDto(String id, Map<String, String> headers, String purpose) throws IOException {
+        HttpResponse resp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers);
+        Assert.assertTrue(resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300
+                        && resp.getData() != null && !resp.getData().isBlank(),
+                "Failed to fetch MCP server '" + id + "' " + purpose + ": expected a 2xx response with a body, got "
+                        + (resp == null ? "no response" : resp.getResponseCode() + " / body=" + resp.getData()));
+        return new JSONObject(resp.getData());
+    }
 
     private Map<String, String> publisherHeaders() {
         Map<String, String> headers = new HashMap<>();
@@ -397,7 +538,7 @@ public class MCPServerSteps {
     @When("I retrieve the backends of MCP server {string} and store the first backend id as {string}")
     public void iRetrieveMcpServerBackends(String mcpServerId, String idKey) throws IOException {
         String actualId = TestContext.resolve(mcpServerId).toString();
-        HttpResponse response = Requests.get(Utils.getMCPServerBackendsURL(getBaseUrl(), actualId),
+        HttpResponse response = Requests.get(Utils.getMCPServerBackendsURL(Utils.getBaseUrl(), actualId),
                 publisherHeaders());
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             // The MCP backends collection is a BARE JSON array ([{id,name,endpointConfig,...}]), not a
@@ -411,7 +552,7 @@ public class MCPServerSteps {
     public void iRetrieveMcpServerBackend(String backendId, String mcpServerId) throws IOException {
         String actualId = TestContext.resolve(mcpServerId).toString();
         String actualBackendId = TestContext.resolve(backendId).toString();
-        HttpResponse response = Requests.get(Utils.getMCPServerBackendByIdURL(getBaseUrl(), actualId, actualBackendId),
+        HttpResponse response = Requests.get(Utils.getMCPServerBackendByIdURL(Utils.getBaseUrl(), actualId, actualBackendId),
                 publisherHeaders());
     }
 
@@ -421,7 +562,7 @@ public class MCPServerSteps {
         String actualId = TestContext.resolve(mcpServerId).toString();
         String actualBackendId = TestContext.resolve(backendId).toString();
         String jsonPayload = TestContext.resolve(payload).toString();
-        HttpResponse response = Requests.put(Utils.getMCPServerBackendByIdURL(getBaseUrl(), actualId, actualBackendId),
+        HttpResponse response = Requests.put(Utils.getMCPServerBackendByIdURL(Utils.getBaseUrl(), actualId, actualBackendId),
                 publisherHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 }

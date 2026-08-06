@@ -1,0 +1,32 @@
+{
+  "name": "${UNIQUE:mistralCorsAPI}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:mistralCorsContext}",
+  "gatewayType": "wso2/synapse",
+  "policies": ["Unlimited"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/no-auth"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/no-auth"
+    }
+  },
+  "corsConfiguration": {
+    "corsConfigurationEnabled": true,
+    "accessControlAllowOrigins": ["http://localhost"],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": ["authorization", "Access-Control-Allow-Origin", "Content-Type", "X-BrowserSessionID", "apikey"],
+    "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH"]
+  },
+  "subtypeConfiguration": {
+    "subtype": "AIAPI",
+    "configuration": {
+      "llmProviderName": "CorsAIService",
+      "llmProviderApiVersion": "1.0.0"
+    }
+  },
+  "securityScheme": ["oauth2", "api_key"],
+  "egress": true
+}

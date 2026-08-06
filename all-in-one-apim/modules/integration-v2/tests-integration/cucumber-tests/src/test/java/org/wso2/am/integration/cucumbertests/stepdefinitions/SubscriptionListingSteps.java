@@ -44,10 +44,6 @@ public class SubscriptionListingSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
 
-    private String getBaseUrl() {
-        return baseSteps.getBaseUrl();
-    }
-
     /**
      * Retrieves all subscriptions of a given API id (devportal {@code GET /subscriptions?apiId=…}) as the
      * devportal actor, publishing the response for assertion. The counterpart of the shared by-application
@@ -58,7 +54,7 @@ public class SubscriptionListingSteps {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.get(Utils.getAllSubscriptionsURL(getBaseUrl(), apiId, null, null, null, null), headers);
+        Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), apiId, null, null, null, null), headers);
     }
 
     /**

@@ -185,6 +185,24 @@ public class SimpleHTTPClient {
     }
 
     /**
+     * {@link DownloadResult} variant of {@link #isTransientGeneralError}: a 5xx whose file body (the error JSON
+     * {@link #doGetToFileOnce} writes on a non-2xx) carries code 900967 + "General Error". Guarded on {@code >= 500}
+     * so a successful (2xx) binary payload is never read back off disk.
+     */
+    private static boolean isTransientGeneralError(DownloadResult result) {
+        if (result == null || result.getStatusCode() < 500 || result.getFile() == null) {
+            return false;
+        }
+        try {
+            String body = new String(java.nio.file.Files.readAllBytes(result.getFile().toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8);
+            return body.contains(String.valueOf(GENERAL_ERROR_CODE)) && body.contains("General Error");
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
      * Send a HTTP GET request to the specified URL
      *
      * @param url     Target endpoint URL
@@ -217,10 +235,35 @@ public class SimpleHTTPClient {
      * @throws IOException if the request or file write fails
      */
     public DownloadResult doGetToFile(String url, Map<String, String> headers, String suffix) throws IOException {
+        // Downloads bypass the HttpResponse funnels, so apply the SAME transient 900967 "General Error" retry here
+        // (see withGeneralErrorRetry): load flakiness on an export/download is a given and is absorbed at the client
+        // level, not per step. Only a 5xx whose body carries code 900967 + "General Error" is retried; any other
+        // outcome (2xx, a deterministic 4xx, a different 5xx) returns on the first attempt.
+        DownloadResult result = null;
+        for (int attempt = 1; attempt <= GENERAL_ERROR_RETRIES; attempt++) {
+            result = doGetToFileOnce(url, headers, suffix);
+            if (attempt == GENERAL_ERROR_RETRIES || !isTransientGeneralError(result)) {
+                break;
+            }
+            logger.warn("Transient " + GENERAL_ERROR_CODE + " General Error on download attempt " + attempt + "/"
+                    + GENERAL_ERROR_RETRIES + "; retrying in " + GENERAL_ERROR_RETRY_WAIT_MS + "ms");
+            try {
+                Thread.sleep(GENERAL_ERROR_RETRY_WAIT_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        return result;
+    }
+
+    private DownloadResult doGetToFileOnce(String url, Map<String, String> headers, String suffix) throws IOException {
         HttpGet request = new HttpGet(url);
         setHeaders(headers, request);
         try (CloseableHttpResponse response = client.execute(request)) {
             int code = response.getStatusLine().getStatusCode();
+            org.apache.http.Header ct = response.getFirstHeader("Content-Type");
+            org.apache.http.Header cd = response.getFirstHeader("Content-Disposition");
             File file = File.createTempFile("download", suffix);
             file.deleteOnExit();
             if (response.getEntity() != null) {
@@ -229,7 +272,8 @@ public class SimpleHTTPClient {
                     in.transferTo(out);
                 }
             }
-            return new DownloadResult(code, file);
+            return new DownloadResult(code, file,
+                    ct == null ? null : ct.getValue(), cd == null ? null : cd.getValue());
         }
     }
 
@@ -237,10 +281,18 @@ public class SimpleHTTPClient {
     public static final class DownloadResult {
         private final int statusCode;
         private final File file;
+        private final String contentType;
+        private final String contentDisposition;
 
         public DownloadResult(int statusCode, File file) {
+            this(statusCode, file, null, null);
+        }
+
+        public DownloadResult(int statusCode, File file, String contentType, String contentDisposition) {
             this.statusCode = statusCode;
             this.file = file;
+            this.contentType = contentType;
+            this.contentDisposition = contentDisposition;
         }
 
         public int getStatusCode() {
@@ -249,6 +301,26 @@ public class SimpleHTTPClient {
 
         public File getFile() {
             return file;
+        }
+
+        /** Raw {@code Content-Type} response header (e.g. {@code application/zip}), or null if absent. */
+        public String getContentType() {
+            return contentType;
+        }
+
+        /** Raw {@code Content-Disposition} response header, or null if absent. */
+        public String getContentDisposition() {
+            return contentDisposition;
+        }
+
+        /** The {@code filename="..."} value from {@code Content-Disposition}, or null if absent/unparseable. */
+        public String getDownloadFilename() {
+            if (contentDisposition == null) {
+                return null;
+            }
+            java.util.regex.Matcher m =
+                    java.util.regex.Pattern.compile("filename=\"?([^\";]+)\"?").matcher(contentDisposition);
+            return m.find() ? m.group(1) : null;
         }
     }
 
@@ -301,6 +373,10 @@ public class SimpleHTTPClient {
      * routes an encoded URI path segment — the default {@link #doGet} lets Apache HttpClient normalize/decode the
      * path, changing what the gateway receives.
      *
+     * <p>Gateway-invocation primitive (used by {@code APIInvocationSteps}) — intentionally NOT wrapped in the
+     * {@link #withGeneralErrorRetry} 900967 retry, which is a management-plane transient; runtime gateway
+     * flakiness is absorbed by the invocation envelope ({@code Utils.retryUntil}), not here.
+     *
      * @param url     Target endpoint URL (with any percent-encoding already applied)
      * @param headers Any HTTP headers that should be added to the request
      * @return Returned HTTP response
@@ -323,6 +399,10 @@ public class SimpleHTTPClient {
      * offers that cert during the TLS handshake — while still trusting the gateway's server cert (trust-all).
      * Used to invoke an API whose securityScheme is {@code mutualssl}/{@code mutualssl_mandatory}. The singleton
      * client can't do this (it loads no key material), so this is a per-call client keyed to the keystore.
+     *
+     * <p>Gateway-invocation primitive (used by {@code MutualSslSteps}) — intentionally NOT wrapped in the
+     * {@link #withGeneralErrorRetry} 900967 retry (a management-plane transient); it also runs on a per-call
+     * mTLS client, not the shared one.
      *
      * @param clientKeyStorePath filesystem path to the client JKS keystore
      * @param keyStorePassword   the keystore (and key) password

@@ -32,8 +32,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.json.JSONTokener;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -50,6 +52,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -62,6 +65,330 @@ public class Utils {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Pattern UNIQUE_PLACEHOLDER = Pattern.compile("\\$\\{UNIQUE:([^}]+)\\}");
     private static final Pattern LENGTH_PLACEHOLDER = Pattern.compile("\\$\\{LENGTH:(\\d+)\\}");
+
+    /** The block's APIM management base URL from the shared context; throws if the block has not booted yet. */
+    public static String getBaseUrl() {
+        return requiredContextUrl("baseUrl");
+    }
+
+    /** The block's gateway HTTPS base URL from the shared context; throws if the block has not booted yet. */
+    public static String getBaseGatewayUrl() {
+        return requiredContextUrl("baseGatewayUrl");
+    }
+
+    /** The block's gateway {@code ws://} base URL from the shared context; throws if not booted yet. */
+    public static String getBaseGatewayWsUrl() {
+        return requiredContextUrl("baseGatewayWsUrl");
+    }
+
+    /** The block's gateway {@code wss://} base URL from the shared context; throws if not booted yet. */
+    public static String getBaseGatewayWssUrl() {
+        return requiredContextUrl("baseGatewayWssUrl");
+    }
+
+    private static String requiredContextUrl(String key) {
+        Object url = TestContext.get(key);
+        if (url == null) {
+            throw new IllegalStateException(key + " is not available in the test context yet");
+        }
+        return url.toString();
+    }
+
+    /** URL-encodes a value as UTF-8 — the one-liner formerly copied as {@code enc()}/{@code urlEncode()}. */
+    public static String urlEncode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Tiered inter-poll pause for deadline-bounded retry loops: the loop's own base cadence for the first
+     * minute (fast pass-detection, where nearly all polls succeed), then {@code max(base, 5s)} in the second
+     * minute and {@code max(base, 10s)} beyond — easing off the server exactly when a long tail says it is
+     * struggling (see {@code Constants.RUNTIME_PROPAGATION_TIMEOUT}: 180s window = one tier per minute). For a
+     * loop whose whole window is under a minute this is identical to {@code Thread.sleep(base)}. Propagates
+     * {@link InterruptedException} so cancellation stops at the loop's own interrupt handling. Pass the
+     * instant the POLL began (typically the value the loop's deadline was computed from).
+     */
+    public static void pollPause(long pollStartMillis, long baseIntervalMillis) throws InterruptedException {
+        long elapsed = System.currentTimeMillis() - pollStartMillis;
+        long interval = elapsed < 60_000L ? baseIntervalMillis
+                : elapsed < 120_000L ? Math.max(baseIntervalMillis, 5_000L)
+                : Math.max(baseIntervalMillis, 10_000L);
+        Thread.sleep(interval);
+    }
+
+    /**
+     * One attempt inside {@link #pollWithin}: returns the attempt's outcome, or {@code null} when this attempt
+     * did not satisfy the caller so polling should continue. Exception POLICY is deliberately the lambda's own
+     * (each public contract below tolerates different failures); only {@link InterruptedException} is reserved,
+     * and must always be propagated so cancellation is never mistaken for a failed attempt.
+     */
+    @FunctionalInterface
+    private interface PollAttempt<T> {
+        T attempt() throws InterruptedException;
+    }
+
+    /**
+     * THE inter-poll mechanics every deadline-bounded wait in this module shares: paces with {@link #pollPause}
+     * from {@code pollStart} and returns the first non-null attempt outcome, or {@code null} when the window
+     * closes. Holds NO policy of its own — the accept condition, exception tolerance and failure verdict all
+     * belong to the caller, which is exactly what lets the two very different public contracts built on it
+     * ({@link #awaitWithRetry} for PREREQUISITE state, {@link #retryUntil} for a scenario's ASSERTION TARGET)
+     * share one implementation of the loop instead of forking it. Keep it that way: a policy flag here would
+     * collapse the two contracts into one ambiguous method.
+     */
+    private static <T> T pollWithin(long pollStart, long deadline, PollAttempt<T> attempt)
+            throws InterruptedException {
+        while (System.currentTimeMillis() < deadline) {
+            T outcome = attempt.attempt();
+            if (outcome != null) {
+                return outcome;
+            }
+            pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
+        }
+        return null;
+    }
+
+    /** One attempt for {@link #retryUntil}: makes the call under test. Only {@link IOException} is retried. */
+    @FunctionalInterface
+    public interface RetryAttempt<T> {
+        T attempt() throws IOException;
+    }
+
+    /** The accept condition for {@link #retryUntil}: true once an attempt's result is what the step awaited. */
+    @FunctionalInterface
+    public interface RetryAccept<T> {
+        boolean isAcceptable(T result);
+    }
+
+    /**
+     * THE retry envelope for a step whose RESULT IS THE ASSERTION TARGET (an invocation retried while a freshly
+     * published API becomes routable): attempts until {@code accept} holds or the window closes, then returns
+     * the LAST result so the caller can publish it as {@code httpResponse} and assert the EXACT expected value
+     * itself (§7/§12). The deadline is {@code max(timeoutMillis, RUNTIME_PROPAGATION_TIMEOUT)} — the one ceiling,
+     * so no call site can drift below it (one hand-rolled loop had, silently capping itself at 150s).
+     *
+     * <p>Contrast {@link #awaitWithRetry}, and pick deliberately — the choice states the intent:
+     * <ul>
+     *   <li>this returns the last result / that returns nothing (boolean probe);</li>
+     *   <li>this retries ONLY {@link IOException} — a bad context key must fail FAST rather than be masked as a
+     *       timeout (§7) / that treats every exception as not-ready, since during warm-up "not ready" and
+     *       "probe threw" are indistinguishable;</li>
+     *   <li>this is SIDE-EFFECT-FREE / that fires a MUTATING re-trigger to re-emit a dropped event;</li>
+     *   <li>this leaves the verdict to the caller / that fails the test itself.</li>
+     * </ul>
+     * Using the readiness gate for an assertion target would both swallow fail-fast errors and rob the step of
+     * its exact-value assertion; using this one for prerequisite state would never self-heal a dropped event.
+     */
+    public static <T> T retryUntil(long timeoutMillis, RetryAttempt<T> attempt, RetryAccept<T> accept)
+            throws InterruptedException {
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        AtomicReference<T> lastResult = new AtomicReference<>();
+        T accepted = pollWithin(pollStart, deadline, () -> {
+            try {
+                T result = attempt.attempt();
+                lastResult.set(result);
+                return accept.isAcceptable(result) ? result : null;
+            } catch (IOException transientDuringWarmup) {
+                // Only transient connectivity is retried: a gateway still warming up refuses/severs the
+                // connection. Anything else (e.g. IllegalArgumentException from TestContext.resolve on a
+                // typo'd key) escapes to fail fast instead of being reported as a timeout.
+                return null;
+            }
+        });
+        return accepted != null ? accepted : lastResult.get();
+    }
+
+    /**
+     * Emits THE single grep-able diagnostic ({@code "auth-reject:"}) for an auth rejection observed inside a
+     * {@link #retryUntil} loop that did NOT expect one, and returns the same text for the caller's assertion
+     * message. Exists because this failure mode is otherwise near-undiagnosable from CI: the gateway logs only
+     * a masked {@code Invalid JWT token}, while the step reports a generic status mismatch after burning the
+     * whole window — the two are hard to correlate across parallel blocks, which cost one full investigation.
+     *
+     * <p>Logs the token's {@code jti} deliberately: the gateway's revoked-JWT map and invalid-token cache are
+     * BOTH keyed by it, so a jti here can be matched straight against a gateway {@code
+     * RevokedJWTDataHolder}/invalid-token-cache hit. A token rejected on EVERY attempt is almost never a
+     * propagation delay — both those caches outlive any window we wait (revocation until the token's own
+     * expiry, the invalid-token cache 900s by default), so replaying one can NEVER recover, and re-minting on
+     * rejection would only mask it: a freshly issued token must not be rejected intermittently.
+     */
+    public static String logAuthRejection(String what, String tokenContextKey, String token, int statusCode,
+                                          String responseBody, long elapsedMillis) {
+        StringBuilder detail = new StringBuilder("auth-reject: ").append(what)
+                .append(" was rejected with status ").append(statusCode)
+                .append(" on every attempt over ").append(elapsedMillis / 1000).append("s");
+        if (tokenContextKey != null) {
+            detail.append("; credential context key='").append(tokenContextKey).append('\'');
+        }
+        detail.append("; ").append(describeCredential(token));
+        String body = responseBody == null ? "" : responseBody.trim();
+        if (!body.isBlank()) {
+            detail.append("; gateway said ").append(body.length() > 300 ? body.substring(0, 300) + "..." : body);
+        }
+        detail.append(". A credential rejected on EVERY attempt is a REVOKED/invalidated credential, not a "
+                + "propagation delay — match the jti above against the gateway log ('revoked jwt token map' / "
+                + "'invalid token cache' at DEBUG); replaying it cannot recover.");
+        String message = detail.toString();
+        log.warn(message);
+        return message;
+    }
+
+    /**
+     * Best-effort identification of a credential for {@link #logAuthRejection} — the JWT claims that pin WHICH
+     * token was rejected ({@code jti}, issuing client and expiry) without validating anything. Never throws:
+     * an opaque (non-JWT) token or an unparseable payload degrades to a masked form, because a diagnostic that
+     * can fail is worse than no diagnostic.
+     */
+    private static String describeCredential(String token) {
+        if (token == null || token.isBlank()) {
+            return "credential=<absent>";
+        }
+        String masked = token.length() <= 12 ? "***"
+                : token.substring(0, 6) + "..." + token.substring(token.length() - 4);
+        try {
+            JSONObject claims = new JSONObject(JwtTestUtils.decodePayload(token));
+            StringBuilder described = new StringBuilder("jti=").append(claims.optString("jti", "<none>"));
+            for (String claim : new String[] {"azp", "client_id", "sub", "exp"}) {
+                if (claims.has(claim)) {
+                    described.append(' ').append(claim).append('=').append(claims.opt(claim));
+                }
+            }
+            return described.append(" token=").append(masked).toString();
+        } catch (RuntimeException notAJwt) {
+            return "credential=" + masked + " (opaque or unparseable — no jti to correlate)";
+        }
+    }
+
+    /** A readiness probe for {@link #awaitWithRetry}: true once the awaited state is observable. */
+    @FunctionalInterface
+    public interface ReadinessProbe {
+        boolean isReady() throws Exception;
+    }
+
+    /** The re-trigger for {@link #awaitWithRetry}: re-fires the action whose propagation event was lost. */
+    @FunctionalInterface
+    public interface ReadinessAction {
+        void trigger() throws Exception;
+    }
+
+    /**
+     * SELF-HEALING readiness gate for PREREQUISITE state (never for a scenario's assertion target): polls
+     * {@code probe} with the {@link #pollPause} tiers for a full {@code RUNTIME_PROPAGATION_TIMEOUT} window,
+     * and on exhaustion fires {@code reTrigger} and waits again (shorter 60s windows — a re-emitted event
+     * lands fast or not at all), up to {@code maxAttempts} total attempts. Exists because the product's
+     * runtime-propagation events are delivered at-most-once: a gateway that consumes a deploy event and then
+     * fails its artifact fetch NEVER retries ("Storage returned null"), so no amount of waiting can succeed —
+     * only re-firing the action re-emits the event. Every heal logs a grep-able WARN ("self-heal: ...") so
+     * occurrences stay countable across runs — this compensates for a product robustness gap and must not
+     * silently hide its frequency. A probe exception counts as not-ready (indistinguishable during warm-up).
+     */
+    public static void awaitWithRetry(String what, ReadinessProbe probe, ReadinessAction reTrigger, int maxAttempts)
+            throws InterruptedException {
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            long start = System.currentTimeMillis();
+            long deadline = start + (attempt == 1 ? Constants.RUNTIME_PROPAGATION_TIMEOUT : 60_000L);
+            Boolean ready = pollWithin(start, deadline, () -> {
+                try {
+                    return probe.isReady() ? Boolean.TRUE : null;
+                } catch (InterruptedException interrupted) {
+                    // Cancellation is NOT a transient probe failure. Throwing InterruptedException already CLEARED
+                    // the interrupt flag, so swallowing it here would let this method keep polling — and even fire
+                    // MUTATING re-triggers (e.g. re-deploying an API) — after the thread was asked to stop.
+                    Thread.currentThread().interrupt();
+                    throw interrupted;
+                } catch (Exception transientProbeFailure) {
+                    // not-ready and probe-failed look identical during warm-up — keep polling within the window
+                    return null;
+                }
+            });
+            if (ready != null) {
+                long waitedSeconds = (System.currentTimeMillis() - start) / 1000;
+                if (attempt > 1) {
+                    log.warn("self-heal: " + what + " became ready after re-trigger (attempt "
+                            + attempt + "/" + maxAttempts + ", " + waitedSeconds + "s into the window)");
+                } else if (waitedSeconds >= 60) {
+                    // Slow-pass watch: the delayed-but-not-dropped population creeping toward the window
+                    // edge — the early-warning signal a silent pass would hide.
+                    log.warn("self-heal-watch: " + what + " became ready only after " + waitedSeconds
+                            + "s (no re-trigger needed — delayed, not dropped)");
+                }
+                return;
+            }
+            if (attempt < maxAttempts) {
+                log.warn("self-heal: re-triggering " + what + " (attempt " + (attempt + 1) + "/" + maxAttempts
+                        + ") — runtime-propagation event presumed dropped after an exhausted wait window");
+                try {
+                    reTrigger.trigger();
+                } catch (InterruptedException interrupted) {
+                    // Same rule as the probe: propagate cancellation instead of reporting it as a re-trigger
+                    // failure (which would fail the test with a misleading message and hide the interruption).
+                    Thread.currentThread().interrupt();
+                    throw interrupted;
+                } catch (Exception reTriggerFailure) {
+                    Assert.fail("self-heal re-trigger for " + what + " failed: " + reTriggerFailure);
+                }
+            }
+        }
+        Assert.fail(what + " did not become ready within " + maxAttempts
+                + " attempt(s) including self-heal re-triggers (runtime-propagation event presumed dropped)");
+    }
+
+    /**
+     * Extracts a query parameter's decoded value from a URL, or {@code null} when absent. Splits on
+     * {@code &}/{@code =} rather than regex-matching the name, so a parameter whose name suffixes another's
+     * (e.g. {@code code} vs {@code session_code}) is never mismatched.
+     */
+    public static String queryParam(String url, String name) {
+        if (url == null) {
+            return null;
+        }
+        int q = url.indexOf('?');
+        if (q < 0) {
+            return null;
+        }
+        for (String pair : url.substring(q + 1).split("&")) {
+            int eq = pair.indexOf('=');
+            String k = eq < 0 ? pair : pair.substring(0, eq);
+            if (k.equals(name)) {
+                String v = eq < 0 ? "" : pair.substring(eq + 1);
+                return java.net.URLDecoder.decode(v, StandardCharsets.UTF_8);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Copies a classpath resource into a delete-on-exit temp file (for multipart uploads that need a
+     * {@link File}), failing clearly when the resource is missing.
+     */
+    public static File classpathToTempFile(String resourcePath, String tempPrefix, String tempSuffix)
+            throws IOException {
+        try (InputStream in = Utils.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new FileNotFoundException("Classpath resource not found: " + resourcePath);
+            }
+            // NIO's createTempFile creates the file with owner-only access ALREADY APPLIED (0600 on POSIX,
+            // owner-restricted ACLs elsewhere), unlike File.createTempFile whose mode is umask-dependent and
+            // typically world-readable (0644). The JDK owns that platform difference, so no manual
+            // PosixFilePermissions-with-fallback branching is needed — and the permissions are in place before
+            // any content is written, since the file is created restricted rather than tightened afterwards.
+            File temp = Files.createTempFile(tempPrefix, tempSuffix).toFile();
+            temp.deleteOnExit();
+            Files.copy(in, temp.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return temp;
+        }
+    }
+
+    /** Reads a classpath resource as a UTF-8 string, failing clearly when it is missing. */
+    public static String readClasspathResource(String resourcePath) throws IOException {
+        try (InputStream in = Utils.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new FileNotFoundException("Classpath resource not found: " + resourcePath);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
 
     public static String getDCREndpointURL(String baseUrl) {
 
@@ -710,6 +1037,36 @@ public class Utils {
 
     public static String getAPIScopesById(String baseUrl, String scopeId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "scopes/" + scopeId;
+    }
+
+    /**
+     * Fetches a list resource ({@code {"list":[...]}}) via the RAW client and returns the {@code idField} of
+     * the first entry whose {@code name} equals {@code name} — the shared primitive for resolving a create
+     * whose response was lost mid-flight, so the caller registers/adopts the survivor instead of blindly
+     * re-POSTing a non-idempotent create (or silently orphaning it when the retry uses fresh names). Raw
+     * client on purpose: this is an intermediate read that must not clobber the step's published
+     * {@code httpResponse}. Returns {@code null} when no entry matches, the response is not a 2xx-with-body,
+     * or the call/parse fails — callers treat every null as "not created" and retry or fail loudly on their
+     * own POST path.
+     */
+    public static String findIdByNameInListResponse(String listUrl, Map<String, String> headers,
+                                                    String name, String idField) {
+        try {
+            HttpResponse resp = SimpleHTTPClient.getInstance().doGet(listUrl, headers);
+            if (resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                    && !resp.getData().isEmpty()) {
+                JSONArray list = new JSONObject(resp.getData()).optJSONArray("list");
+                for (int i = 0; list != null && i < list.length(); i++) {
+                    JSONObject entry = list.getJSONObject(i);
+                    if (name.equals(entry.optString("name"))) {
+                        return entry.getString(idField);
+                    }
+                }
+            }
+        } catch (IOException | JSONException lookupFailure) {
+            // treated as not-found — the caller retries the create or fails loudly on its POST path
+        }
+        return null;
     }
 
     /** Publisher — retrieve (GET) or update (PUT multipart {@code schemaDefinition}) a GraphQL API's schema. */
@@ -1558,6 +1915,31 @@ public class Utils {
             log.error("Error comparing values. Actual: " + actualValue + ", Expected: " + expectedValue, e);
             throw new AssertionError("Comparison failed: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * True if the zip has at least one entry whose base file name equals any of {@code fileNames} — a light
+     * membership check (no extraction) used to verify a downloaded export archive is COMPLETE before relying on
+     * it. A corrupt/truncated/unreadable archive reads as "missing" (returns false), so callers can re-export.
+     */
+    public static boolean zipContainsEntryNamed(File zipFile, String... fileNames) {
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                int slash = name.lastIndexOf('/');
+                String base = slash < 0 ? name : name.substring(slash + 1);
+                for (String fn : fileNames) {
+                    if (base.equals(fn)) {
+                        return true;
+                    }
+                }
+                zis.closeEntry();
+            }
+        } catch (IOException corruptOrUnreadable) {
+            return false;
+        }
+        return false;
     }
 
     /**
