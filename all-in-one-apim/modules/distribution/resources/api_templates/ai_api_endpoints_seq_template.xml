@@ -47,6 +47,9 @@
 #end
 </class>
         #end
+        #if( $endpoint.authenticationType == "umi" || $endpoint.authenticationType == "UMI")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.AzureUMIMediator"/>
+        #end
         #end
 
         #if( $endpoint && $endpoint.endpointUuid )
