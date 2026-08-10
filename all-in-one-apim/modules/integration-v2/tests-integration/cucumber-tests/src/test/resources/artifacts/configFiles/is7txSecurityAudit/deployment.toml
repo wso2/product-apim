@@ -1,0 +1,52 @@
+# Merged overlay for the IntegrationV2-Is7TokenExchange block, which now ALSO hosts the publisher
+# security-audit runner (thread-count=2).
+#
+# WHY THESE TWO CO-HOST, AND WHY CONCURRENTLY.
+# The two tables below are disjoint and mutually inert, verified rather than assumed:
+#   - The security-audit runner performs ZERO gateway invocations (it is publisher-plane only: create,
+#     publish, then GET /apis/{id}/auditapi). [apim.token.validation] enforce_type_header_validation
+#     changes how the Resident Key Manager's TypeEnforcedJWTValidatorImpl treats a token presented AT THE
+#     GATEWAY, so it cannot affect a runner that never reaches the gateway.
+#   - [security_audit] is inert for everything else in the container: ApisApiServiceImplUtils
+#     #getAuditReport has exactly ONE product call site (the GET /apis/{id}/auditapi resource), and
+#     nothing in API create/update/publish consults it. global=true is tenant SCOPING only, not an
+#     auto-audit switch.
+# Neither runner mutates container-global runtime state, so at thread-count=2 they overlap safely.
+#
+# The pairing exists to amortise the EXTERNAL IDENTITY SERVER BOOT (bootExternalIdentityServer starts a
+# full WSO2 IS 7 container), which previously bought a container used by one runner.
+#
+# ---------------------------------------------------------------------------------------------
+# From the former is7tx/deployment.toml
+# ---------------------------------------------------------------------------------------------
+# The shipped distribution config already enables the token-exchange grant
+# ([oauth.grant_type.token_exchange] enable=true, allow_refresh_tokens=true, iat_validity_period="1h"),
+# and this overlay deep-merges on top of base+basic, so that is inherited.
+#
+# The one behaviour this block adds: enforce JWT type-header validation at the gateway. With this on, the
+# Resident Key Manager's TypeEnforcedJWTValidatorImpl only accepts self-contained JWTs whose header typ is
+# "at+jwt" (RFC 9068 access tokens) - so the at+jwt token the exchange issues is accepted, while an OIDC
+# id_token (no at+jwt type header) is refused (900905). That is what lets this block pin "ID tokens cannot
+# invoke gateway APIs" alongside the token-exchange happy paths.
+[apim.token.validation]
+enforce_type_header_validation = true
+
+# ---------------------------------------------------------------------------------------------
+# From the former securityAudit/deployment.toml
+# ---------------------------------------------------------------------------------------------
+# Without a [security_audit] block the product's getSecurityAuditAttributesFromConfig() returns null and
+# GET /apis/{id}/auditapi NPEs into a raw 500, so this table is the whole reason the feature can run.
+#
+# base_url points at the `am-auditApi-sample` Express mock baked into the node-app-server image
+# (nodeapps/am-auditApi-sample, pm2 app on port 3002, network alias `nodebackend`) — hence initBackend is
+# load-bearing for this runner. The mock speaks plain HTTP, which the product accepts: APIUtil
+# .getHttpClient() short-circuits to a plain PlainConnectionSocketFactory for non-https schemes.
+#
+# api_token is echoed as the X-API-KEY header on all three outbound calls and collection_id as the `cid`
+# multipart field on the create call. The mock checks neither, but the product requires both to be
+# non-empty or it treats the feature as unconfigured and returns null.
+[security_audit]
+api_token = "b57973cf-b74c-4ade-921d-ece83251eceb"
+collection_id = "f73b8171-4f71-499b-891a-d34aa71f2d45"
+base_url = "http://nodebackend:3002/auditapi"
+global = true

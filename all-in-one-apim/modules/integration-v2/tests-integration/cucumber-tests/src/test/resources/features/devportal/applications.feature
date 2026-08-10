@@ -27,11 +27,23 @@ Feature: DevPortal Application Management
     When I retrieve the application with id "createdAppId"
     Then The response status code should be 200
 
-    # Update the application
-    When I put JSON payload from file "artifacts/payloads/update_apim_test_app.json" in context as "appUpdatePayload"
+    # Update the application. The description and tier asserted here must DIFFER from the create payload's:
+    # this check previously re-asserted "Test application for scenarios" — the description the create payload
+    # already set — and the tier stayed Unlimited, so it passed whether or not the update did anything.
+    When I extract response field "name" and store it as "lifecycleAppName"
+    And I put JSON payload from file "artifacts/payloads/update_apim_test_app.json" in context as "appUpdatePayload"
+    And I set the field "name" to "{{lifecycleAppName}}" in the payload "appUpdatePayload"
+    And I set the field "description" to "This app has been edited" in the payload "appUpdatePayload"
+    And I set the field "throttlingPolicy" to "10PerMin" in the payload "appUpdatePayload"
     And I update the application "createdAppId" with payload "appUpdatePayload"
     Then The response status code should be 200
-    And The response should contain "Test application for scenarios"
+    And The response should contain "This app has been edited"
+    And The response should contain "10PerMin"
+    # Re-read: the change is persisted, not merely echoed back by the PUT.
+    When I retrieve the application with id "createdAppId"
+    Then The response status code should be 200
+    And The response should contain "This app has been edited"
+    And The response should contain "10PerMin"
 
     # Delete the application
     When I delete the application with id "createdAppId"
@@ -106,6 +118,21 @@ Feature: DevPortal Application Management
 
     # They are independent applications (distinct ids).
     Then The stored value "isoAdminAppId" should not equal "isoSubAppId"
+
+    # Distinct ids at CREATE time is the weaker half of the isolation claim: it says the two records were
+    # created separately, not that they stay separate. The regression this guards is a DELETE of one owner's
+    # application taking the other's with it, so delete one and prove the other survives — the lifetime half.
+    # Ports ApplicationSharingTestCase#testUserTwoApplicationRemoval.
+    When I delete the application with id "isoSubAppId"
+    Then The response status code should be 200
+    # The deleted one is really gone...
+    When I retrieve the application "isoSubAppId"
+    Then The response status code should be 404
+    # ...and the OTHER owner's same-named application is untouched.
+    Given I act as "<owner>"
+    When I retrieve the application "isoAdminAppId"
+    Then The response status code should be 200
+    And The response should contain "{{isoSharedName}}"
 
     Examples:
       | owner             | otherOwner                 |

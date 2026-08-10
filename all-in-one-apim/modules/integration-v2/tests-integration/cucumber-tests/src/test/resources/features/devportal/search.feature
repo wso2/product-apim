@@ -88,8 +88,15 @@ Feature: DevPortal Search & Discovery
     When I publish the "apis" resource with id "apiCamel"
     Then The lifecycle status of API "apiCamel" should be "Published"
 
-    # Poll the tag cloud until the last-published tag is indexed, then assert all four distinct tags, each count 1.
-    When I retrieve the DevPortal tag cloud until it contains "apiTag_{{grp}}" within 60 seconds
+    # Poll for EACH tag in turn before asserting the counts. Polling only the last-published tag assumes Solr
+    # indexes in publish order -- it does not (the same non-order-preserving behaviour the tag-search and
+    # search-syntax scenarios below wait on a COUNT to avoid). apiTag_ can land first, leaving the other three
+    # unindexed when the count assertions run. Four sequential waits admit the assertions only once all four
+    # documents are indexed; each is a no-op once its tag is present, so this costs nothing in the settled case.
+    When I retrieve the DevPortal tag cloud until it contains "API_{{grp}}" within 60 seconds
+    And I retrieve the DevPortal tag cloud until it contains "api_{{grp}}" within 60 seconds
+    And I retrieve the DevPortal tag cloud until it contains "api {{grp}}" within 60 seconds
+    And I retrieve the DevPortal tag cloud until it contains "apiTag_{{grp}}" within 60 seconds
     Then The response status code should be 200
     And the DevPortal tag cloud should contain tag "API_{{grp}}" with count 1
     And the DevPortal tag cloud should contain tag "api_{{grp}}" with count 1
@@ -100,6 +107,43 @@ Feature: DevPortal Search & Discovery
       | actor                      |
       | publisherUser              |
       | publisherUser@tenant1.com  |
+
+  # A PROTOTYPED (pre-published) API's tag DOES reach the DevPortal tag cloud — verified live on 4.7.0 (GET /tags
+  # answered {"count":1,"list":[{"value":"<the tag>","count":1}],...}). This is the OPPOSITE of what legacy
+  # APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase#testTagsOfPrototypedAPIVisibilityInTagList claimed,
+  # and legacy could never have detected the difference: its assertion was
+  # assertFalse(allTags.getList().contains(apiTags)), comparing a List<TagDTO> against the raw CSV String
+  # "pizza, order, pizza-menu" — a value no TagDTO list can ever contain — so it passed unconditionally and verified
+  # nothing. Consistent with the API itself being discoverable while prototyped (publisher/prototype_api.feature).
+  @cap:devportal @feat:discovery @rule:tag-cloud @type:regression @dep:publisher @legacy:APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase
+  Scenario Outline: A prototyped API's tag appears in the DevPortal tag cloud as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I generate a unique value and store it as "protoTag"
+    When I put JSON payload from file "artifacts/payloads/create_apim_prototype_api.json" in context as "protoTagPayload"
+    And I create an "apis" resource with payload "protoTagPayload" as "protoTagApiId"
+    Then The response status code should be 201
+    # A uniquely-generated tag: the shipped payload's literal "prototype" tag is shared with other scenarios and
+    # could not be attributed to this API.
+    When I set the tags of API "protoTagApiId" to "{{protoTag}}"
+    Then The response status code should be 200
+    When I change the lifecycle of API "protoTagApiId" with action "Deploy as a Prototype"
+    Then The response status code should be 200
+    And The lifecycle status of API "protoTagApiId" should be "Prototyped"
+    When I deploy the API with id "protoTagApiId"
+    Then The response status code should be 201
+    # Wait for the API itself to be indexed in the DevPortal FIRST, so a slow index cannot be mistaken for the tag
+    # being withheld.
+    When I retrieve the devportal API "protoTagApiId" until it contains "PROTOTYPED" within 60 seconds
+    Then The response status code should be 200
+    # The tag is present, attributed to exactly this one API.
+    When I retrieve the DevPortal tag cloud until it contains "{{protoTag}}" within 60 seconds
+    Then The response status code should be 200
+    And the DevPortal tag cloud should contain tag "{{protoTag}}" with count 1
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
 
   # Search DevPortal APIs by tag: a common tag matches both APIs, a distinct tag only its own, a non-existent tag
   # matches nothing. Ports APISearchAPIByTagTestCase (tag search).
@@ -122,7 +166,10 @@ Feature: DevPortal Search & Discovery
     And I extract response field "name" and store it as "api2Name"
 
     # Common tag → both APIs. Poll until the later-published api2 is indexed, then assert both are present.
-    When I search DevPortal APIs with query "tags:{{commonTag}}" until it contains "{{api2Name}}" within 60 seconds
+    # Common tag -> both APIs, and only those two. Waiting on the COUNT rather than on api2's name: Solr indexing is
+    # asynchronous and not order-preserving, so waiting for the later-published api2 can exit while api1 is still
+    # unindexed, failing the next line against a one-API response. The count admits neither until both are indexed.
+    When I search DevPortal APIs with query "tags:{{commonTag}}" and limit 25 until the result count is 2 within 60 seconds
     Then The response status code should be 200
     And The response should contain "{{api1Name}}"
     And The response should contain "{{api2Name}}"
@@ -174,6 +221,9 @@ Feature: DevPortal Search & Discovery
     # restricted API's visibility filter is still converging, and its tag transiently leaks into every viewer's
     # cloud (observed under CI load).
     When I act as "tvUser<suffix>"
+    # Both tags must be indexed before the counts are asserted. Waiting only on the restricted tag assumes the
+    # public API (published first) is already indexed -- the same order assumption that is not safe here.
+    And I retrieve the DevPortal tag cloud until it contains "{{tvPublicTag}}" within 60 seconds
     And I retrieve the DevPortal tag cloud until it contains "{{tvRestrictedTag}}" within 60 seconds
     Then The response status code should be 200
     And the DevPortal tag cloud should contain tag "{{tvPublicTag}}" with count 1
@@ -276,13 +326,21 @@ Feature: DevPortal Search & Discovery
     And I extract response field "name" and store it as "ssApi2Name"
 
     # Multi-tag OR: both distinct tags in one query returns both APIs. Poll until the later-published api2 indexes.
-    When I search DevPortal APIs with query "tags:{{ssTagA}} tags:{{ssTagB}}" until it contains "{{ssApi2Name}}" within 60 seconds
+    # WAIT ON THE COUNT, NOT ON ONE NAME. An earlier revision polled "until it contains <api2>" on the theory that
+    # api2 publishing last meant api1 was already indexed. Solr indexing is asynchronous and NOT order-preserving,
+    # so api2 can land first; the wait then exits with api1 still unindexed and the next line fails on a response
+    # holding exactly one API. Waiting for the count admits neither document until BOTH are indexed. It is also a
+    # strictly stronger assertion: the two "should contain" lines only prove the query returns AT LEAST these APIs,
+    # so an over-broad query matching the whole tenant would pass -- pinning 2 proves the "and nothing else" half.
+    # Both tags are ${UNIQUE}, so exactly 2 can ever match. limit 25 is the store default, not a new constraint.
+    When I search DevPortal APIs with query "tags:{{ssTagA}} tags:{{ssTagB}}" and limit 25 until the result count is 2 within 60 seconds
     Then The response status code should be 200
     And The response should contain "{{ssApi1Name}}"
     And The response should contain "{{ssApi2Name}}"
 
     # Multi-name OR returns both named APIs.
-    When I search DevPortal APIs with query "name:{{ssApi1Name}} name:{{ssApi2Name}}" until it contains "{{ssApi2Name}}" within 60 seconds
+    # Multi-name OR returns both named APIs, and only those two. Same count-based wait, same reason as above.
+    When I search DevPortal APIs with query "name:{{ssApi1Name}} name:{{ssApi2Name}}" and limit 25 until the result count is 2 within 60 seconds
     Then The response status code should be 200
     And The response should contain "{{ssApi1Name}}"
     And The response should contain "{{ssApi2Name}}"

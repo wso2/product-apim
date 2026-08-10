@@ -1,0 +1,57 @@
+# Merged overlay for the IntegrationV2-Solace block, which now ALSO hosts the mutual-SSL
+# certificate-chain-validation runner (thread-count=2).
+#
+# WHY THESE TWO CO-HOST, AND WHY CONCURRENTLY.
+# The two tables below are disjoint and mutually inert, verified rather than assumed:
+#   - Solace never invokes the APIM gateway. Its traffic goes to the Solace BROKER (the
+#     "publish an event to the Solace topic" steps); it exercises the publisher/devportal management
+#     planes plus notifier propagation. So [apimgt.mutual_ssl] — which only switches
+#     MutualSSLAuthenticator onto a different code path at the GATEWAY — cannot reach it.
+#   - The chain-validation runner never touches Solace. [apim.solace_config] is read only by the
+#     Solace notifiers (SolaceSubscriptionsNotifier / SolaceKeyGenNotifier / SolaceApplicationNotifier),
+#     which are driven by Solace-typed APIs only.
+# Neither runner mutates container-global runtime state, so at thread-count=2 they overlap safely.
+#
+# The pairing exists to amortise the Solace BROKER BOOT (~1-2 min for a full PubSub+ broker plus the
+# shim), which previously bought a container used by one short runner.
+#
+# ---------------------------------------------------------------------------------------------
+# From the former solace/deployment.toml
+# ---------------------------------------------------------------------------------------------
+# Solace is integrated through NOTIFIERS on the v2 Event-Portal API (SolaceSubscriptionsNotifier,
+# SolaceKeyGenNotifier, SolaceApplicationNotifier), registered by SolaceManagerComponent as OSGi
+# `Notifier` services. There is deliberately NO [[apim.gateway.environment]] provider = "solace" block:
+# SolaceBrokerDeployer implements only the retired ExternalGatewayDeployer SPI, which nothing binds, so
+# deploying a revision to a Solace environment fails 207 / 902060. The notifiers read only the config
+# below.
+#
+# apim_api_endpoint is the shim's NETWORK ALIAS, not localhost: APIM calls it from inside the container,
+# so a host-mapped port would be unreachable. DynamicSolaceBroker publishes the alias `solaceshim` and
+# the block starts it BEFORE APIM.
+[apim.solace_config]
+apim_api_endpoint = "http://solaceshim:8081"
+# Any non-empty value. The shim LOGS the bearer token but never rejects it -- a 401 from the double
+# would masquerade as an APIM misconfiguration.
+token = "integration-v2-solace-token"
+
+# ---------------------------------------------------------------------------------------------
+# From the former mtlsChainValidation/deployment.toml
+# ---------------------------------------------------------------------------------------------
+# Certificate-chain validation is an OPT-IN mutual-SSL mode. With it OFF (the product default) the
+# gateway's MutualSSLAuthenticator matches the single presented certificate by "<serial>_<subjectDN>"
+# against the certificates uploaded to the API. With it ON the authenticator walks the presented ISSUER
+# PATH (completing it from the listener trust store) and authorises if any certificate along that path is
+# one the API holds.
+#
+# The two modes are mutually exclusive at runtime (a single boolean picks the code path), so this still
+# cannot be folded into the mtlsWsCors block: turning it on there would silently convert every existing
+# mutual-SSL assertion into a statement about the opt-in mode and leave the DEFAULT mode untested.
+# gateway/mutual_ssl_invocation.feature keeps asserting the default; this runner asserts the opt-in.
+[apimgt.mutual_ssl]
+enable_certificate_chain_validation = true
+
+# An uploaded client certificate reaches the gateway trust store only on the passthrough HTTPS listener's
+# next dynamic SSL-profile read (default 600000 ms = 10 min). Shrink it to 10s so an uploaded certificate
+# is honoured within seconds. SSLVerifyClient already defaults to "optional" on 8243.
+[transport.http.listener.ssl_profile]
+read_interval = "10000"

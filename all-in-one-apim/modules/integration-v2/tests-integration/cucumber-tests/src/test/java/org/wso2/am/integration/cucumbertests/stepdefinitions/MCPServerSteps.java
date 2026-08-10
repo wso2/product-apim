@@ -48,6 +48,9 @@ import java.util.stream.Collectors;
  */
 public class MCPServerSteps {
 
+    /** Page size for the devportal MCP-server listing read — comfortably above any one block's server count. */
+    private static final int DEVPORTAL_LIST_PAGE_SIZE = 200;
+
     /**
      * Creates an MCP server by PROXYING a third-party MCP server (POST /mcp-servers/generate-from-mcp-server),
      * exposing the given comma-separated tool set. The gateway discovers the tools from {@code backendUrl} at
@@ -175,6 +178,77 @@ public class MCPServerSteps {
         dto.put("policies", policies);
 
         HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Sets an MCP server's SERVER-LEVEL (advanced/"API-level") throttling policy (PUT /mcp-servers/{id}) — the
+     * {@code throttlingPolicy} field, which caps the whole server irrespective of the subscription tier. Ports
+     * the API-level half of testThrottlingForProxySubtype. Non-asserting; the response reflects the persisted
+     * policy so the feature can pin it.
+     *
+     * @param idKey      context key holding the MCP-server id
+     * @param policyName the advanced throttling policy name (may carry {@code {{contextKey}}} placeholders)
+     */
+    @When("I update the MCP server {string} to use API-level throttling policy {string}")
+    public void iSetMcpServerLevelThrottlingPolicy(String idKey, String policyName) throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        String resolved = Utils.resolveContextPlaceholders(policyName);
+        Map<String, String> headers = publisherHeaders();
+
+        JSONObject dto = fetchMcpServerDto(id, headers, "before setting its API-level throttling policy");
+        dto.put("throttlingPolicy", resolved);
+        // Neutralise every operation-level policy explicitly, so the server-level policy is the only thing that
+        // can throttle. The product would do this anyway — a non-null server-level policy overwrites each
+        // operation's throttlingPolicy with it — but stating it here keeps the intent independent of that.
+        JSONArray ops = dto.getJSONArray("operations");
+        for (int i = 0; i < ops.length(); i++) {
+            ops.getJSONObject(i).put("throttlingPolicy", "Unlimited");
+        }
+
+        Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Sets an OPERATION-LEVEL throttling policy on one MCP tool (PUT /mcp-servers/{id}) and CLEARS the
+     * SERVER-LEVEL policy, so any throttling observed afterwards can only come from the operation's own policy.
+     * Ports the operation-level half of testThrottlingForProxySubtype. Non-asserting.
+     * <p>
+     * The server-level policy must be sent as JSON {@code null}, not {@code "Unlimited"}: a NON-NULL
+     * server-level {@code throttlingPolicy} overwrites EVERY operation's {@code throttlingPolicy} with it, so a
+     * per-tool policy survives only when the server level is unset. Verified against 4.7.0-SNAPSHOT — sending
+     * {@code "Unlimited"} at the server level echoes the tool back as {@code Unlimited}, and sending the policy
+     * at the server level forces it onto every tool including the ones left at {@code Unlimited}. This is why
+     * the legacy called {@code setThrottlingPolicy(null)} before setting the operation policy.
+     *
+     * @param idKey      context key holding the MCP-server id
+     * @param tool       the tool (operation target) to bind the policy to
+     * @param policyName the advanced throttling policy name (may carry {@code {{contextKey}}} placeholders)
+     */
+    @When("I update the MCP server {string} setting tool {string} throttling policy {string}")
+    public void iSetMcpOperationThrottlingPolicy(String idKey, String tool, String policyName) throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        String resolved = Utils.resolveContextPlaceholders(policyName);
+        Map<String, String> headers = publisherHeaders();
+
+        JSONObject dto = fetchMcpServerDto(id, headers, "before setting an operation-level throttling policy");
+        dto.put("throttlingPolicy", JSONObject.NULL);
+        JSONArray ops = dto.getJSONArray("operations");
+        boolean matched = false;
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if (tool.equals(op.optString("target"))) {
+                op.put("throttlingPolicy", resolved);
+                matched = true;
+            } else {
+                op.put("throttlingPolicy", "Unlimited");
+            }
+        }
+        Assert.assertTrue(matched, "MCP server " + id + " has no operation with target '" + tool
+                + "' to bind a throttling policy to; operations=" + ops);
+
+        Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -367,22 +441,7 @@ public class MCPServerSteps {
     @Then("the MCP server {string} tool {string} should have schema definition:")
     public void mcpToolShouldHaveSchemaDefinition(String idKey, String tool, String expectedSchemaJson)
             throws IOException {
-        String id = TestContext.resolve(idKey).toString();
-        HttpResponse resp = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), publisherHeaders());
-        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
-                        && !resp.getData().isBlank(),
-                "MCP server fetch failed for the schema check: got="
-                        + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
-        JSONArray ops = new JSONObject(resp.getData()).getJSONArray("operations");
-        JSONObject match = null;
-        for (int i = 0; i < ops.length(); i++) {
-            if (tool.equals(ops.getJSONObject(i).optString("target"))) {
-                match = ops.getJSONObject(i);
-                break;
-            }
-        }
-        Assert.assertNotNull(match, "MCP server has no operation for tool '" + tool + "': " + ops);
+        JSONObject match = fetchOperation(idKey, tool, "the schema check");
         String actualSchema = match.optString("schemaDefinition", null);
         // Reject a BLANK schemaDefinition too, not just an absent one: optString returns "" for a present-but-
         // empty value, which would slip past a null check into an opaque JSONException at the parse below.
@@ -393,6 +452,96 @@ public class MCPServerSteps {
         Assert.assertTrue(expected.similar(actual),
                 "Tool '" + tool + "' schemaDefinition mismatch (structural): expected=" + expected
                         + " actual=" + actual);
+    }
+
+    /**
+     * Asserts an MCP tool's DESCRIPTION equals {@code expected} EXACTLY — the sibling of
+     * {@link #mcpToolShouldHaveSchemaDefinition} for the other half of the legacy tool-fidelity check
+     * (schemaDefinition + description). A description is what an MCP client shows the model to decide whether to
+     * call the tool, so it is the tool's contract as much as its schema: a {@code contains} check on the whole DTO
+     * would pass on a description that merely mentions the text, and would not notice one silently inherited from
+     * another operation. The GET is an intermediate read (local, not the published httpResponse).
+     *
+     * @param idKey    context key holding the MCP-server id
+     * @param tool     the tool whose operation carries the description
+     * @param expected the exact expected description
+     */
+    @Then("the MCP server {string} tool {string} should have description {string}")
+    public void mcpToolShouldHaveDescription(String idKey, String tool, String expected) throws IOException {
+        JSONObject match = fetchOperation(idKey, tool, "the description check");
+        Assert.assertEquals(match.optString("description", null), expected,
+                "Tool '" + tool + "' description mismatch: " + match);
+    }
+
+    /**
+     * Asserts the MCP server is visible to a CONSUMER in the devportal: it appears in the devportal MCP-server
+     * LISTING exactly once and its detail representation agrees with the publisher DTO (id / name / version, the
+     * devportal {@code context} carrying the version, and {@code lifeCycleStatus} equal to the publisher
+     * {@code state}). Ports the {@code isMCPServerAvailableInList} visibility check of
+     * testMCPServerSubscribeAndInvokeForDirectBackendSubtype.
+     *
+     * <p>FINDING (verify-first): an MCP server has its OWN devportal collection — {@code /mcp-servers}. It is NOT
+     * in {@code /apis}, and {@code /apis/{mcpId}} answers 404, so the listing below is the only way a consumer
+     * discovers it. The listing is Solr-indexed and therefore eventually consistent (observed answering
+     * {@code count:0} for a just-published server), so it is POLLED — a single read would flake.</p>
+     *
+     * @param idKey          context key holding the MCP-server id
+     * @param timeoutSeconds how long to wait for the devportal index to catch up
+     */
+    @Then("The devportal should report MCP server {string} exactly once with the same fields within {int} seconds")
+    public void theDevportalShouldReportMcpServerOnce(String idKey, int timeoutSeconds)
+            throws IOException, InterruptedException {
+        String id = TestContext.resolve(idKey).toString();
+        JSONObject publisherDto = fetchMcpServerDto(id, publisherHeaders(), "for the devportal visibility check");
+
+        Map<String, String> devportalHeaders = new HashMap<>();
+        devportalHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+
+        String listUrl = Utils.getDevportalMcpServerListURL(Utils.getBaseUrl(), DEVPORTAL_LIST_PAGE_SIZE);
+        Integer matches = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            HttpResponse resp = SimpleHTTPClient.getInstance().doGet(listUrl, devportalHeaders);
+            if (resp == null || resp.getResponseCode() != 200 || resp.getData() == null || resp.getData().isBlank()) {
+                return null;
+            }
+            JSONArray list = new JSONObject(resp.getData()).optJSONArray("list");
+            if (list == null) {
+                return null;
+            }
+            int count = 0;
+            for (int i = 0; i < list.length(); i++) {
+                if (id.equals(list.getJSONObject(i).optString("id"))) {
+                    count++;
+                }
+            }
+            return count == 1 ? Integer.valueOf(count) : null;
+        }, result -> true);
+        Assert.assertNotNull(matches, "MCP server " + id + " (" + publisherDto.optString("name")
+                + ") never appeared exactly once in the devportal MCP-server listing " + listUrl
+                + " within " + timeoutSeconds + "s");
+
+        HttpResponse detail = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getDevportalMcpServerDetailURL(Utils.getBaseUrl(), id), devportalHeaders);
+        Assert.assertTrue(detail != null && detail.getResponseCode() == 200 && detail.getData() != null
+                        && !detail.getData().isBlank(),
+                "Devportal MCP server " + id + " is not retrievable: got="
+                        + (detail == null ? "null" : detail.getResponseCode() + "/" + detail.getData()));
+        JSONObject portal = new JSONObject(detail.getData());
+
+        Assert.assertEquals(portal.optString("id"), publisherDto.optString("id"),
+                "Devportal MCP server id does not match the publisher DTO: " + portal);
+        Assert.assertEquals(portal.optString("name"), publisherDto.optString("name"),
+                "Devportal MCP server name does not match the publisher DTO: " + portal);
+        Assert.assertEquals(portal.optString("version"), publisherDto.optString("version"),
+                "Devportal MCP server version does not match the publisher DTO: " + portal);
+        Assert.assertEquals(portal.optString("lifeCycleStatus"), publisherDto.optString("lifeCycleStatus"),
+                "Devportal lifeCycleStatus does not match the publisher DTO for MCP server " + id);
+        // The devportal context carries the version: /<context>/<version> (or {version} substituted in place).
+        String context = publisherDto.getString("context");
+        String version = publisherDto.getString("version");
+        String expectedContext = context.contains("{version}")
+                ? context.replace("{version}", version) : context + "/" + version;
+        Assert.assertEquals(portal.optString("context"), expectedContext,
+                "Devportal context does not carry the version for MCP server " + id);
     }
 
     /**
@@ -515,6 +664,24 @@ public class MCPServerSteps {
      * error body is never silently parsed as the DTO and PUT back (which would corrupt the update), and a null
      * response fails with a clear message rather than an NPE. {@code purpose} is folded into that message.
      */
+    /**
+     * Guarded GET of an MCP server plus the lookup of ONE of its operations by tool name — the single read the
+     * per-tool fidelity assertions (schemaDefinition / description) share, so neither re-implements the guard or
+     * the target match. Fails clearly when the tool is absent rather than returning null into an opaque NPE.
+     */
+    private JSONObject fetchOperation(String idKey, String tool, String purpose) throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        JSONObject dto = fetchMcpServerDto(id, publisherHeaders(), "for " + purpose);
+        JSONArray ops = dto.getJSONArray("operations");
+        for (int i = 0; i < ops.length(); i++) {
+            if (tool.equals(ops.getJSONObject(i).optString("target"))) {
+                return ops.getJSONObject(i);
+            }
+        }
+        Assert.fail("MCP server " + id + " has no operation for tool '" + tool + "': " + ops);
+        return null;
+    }
+
     private JSONObject fetchMcpServerDto(String id, Map<String, String> headers, String purpose) throws IOException {
         HttpResponse resp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers);

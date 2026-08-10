@@ -8,7 +8,7 @@ Feature: Publisher API Shared Scopes
   tenant and tenant1.com. Each scenario creates its own resources and is torn down by the per-scenario
   cleanup hook (created scopes and APIs are both registered for teardown).
 
-  @cap:publisher @feat:scopes @type:smoke @legacy:SharedScopeTestCase
+  @cap:publisher @feat:scopes @type:smoke @legacy:SharedScopeTestCase @legacy:SharedScopeTestWithRestart
   Scenario Outline: Create and retrieve a shared scope as <admin>
     Given The system is ready and I have valid publisher access tokens as "<admin>"
     When I create a new shared scope as "scope-create-test"
@@ -17,6 +17,14 @@ Feature: Publisher API Shared Scopes
     When I fetch the shared scope with name "scope-create-test" into context as "fetchedScopeId"
     Then The response status code should be 200
     And The response should contain "scope-create-test"
+    # Retrieve THAT scope by id and assert its stored fields, including the role bindings the create payload
+    # requested. Ports SharedScopeTestWithRestart.testGetAndUpdateSharedScope's name/displayName/bindings
+    # assertions; the by-name list read above could otherwise be satisfied by another scope's bindings.
+    When I retrieve the shared scope with id "fetchedScopeId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "scope-create-test"
+    And The value of response field "displayName" should be "scope-create-test"
+    And The response field "bindings" should be exactly the list "admin"
 
     Examples:
       | admin             |
@@ -75,14 +83,29 @@ Feature: Publisher API Shared Scopes
       | admin             |
       | admin@tenant1.com |
 
+  # THREE consecutive description updates, each asserted — legacy SharedScopeTestWithRestart deliberately
+  # exercised repeated updates of the same scope (a second or third PUT on an already-updated scope is a distinct
+  # path from the first, e.g. if an update were implemented as insert-if-absent). A single update cannot show that.
+  # The final re-read confirms the last write is what is stored, not merely what the PUT echoed back.
   @cap:publisher @feat:scopes @type:regression @legacy:SharedScopeTestWithRestart
-  Scenario Outline: Update a shared scope's description as <admin>
+  Scenario Outline: A shared scope survives three consecutive description updates as <admin>
     Given The system is ready and I have valid publisher access tokens as "<admin>"
     When I create a new shared scope as "scope-update-test"
     Then The response status code should be 201
     When I update the shared scope "scopeID" setting its description to "Updated shared scope description"
     Then The response status code should be 200
-    And The response should contain "Updated shared scope description"
+    And The value of response field "description" should be "Updated shared scope description"
+    When I update the shared scope "scopeID" setting its description to "Updated shared scope description 1"
+    Then The response status code should be 200
+    And The value of response field "description" should be "Updated shared scope description 1"
+    When I update the shared scope "scopeID" setting its description to "Updated shared scope description 2"
+    Then The response status code should be 200
+    And The value of response field "description" should be "Updated shared scope description 2"
+    When I retrieve the shared scope with id "scopeID"
+    Then The response status code should be 200
+    And The value of response field "description" should be "Updated shared scope description 2"
+    And The value of response field "name" should be "scope-update-test"
+    And The response field "bindings" should be exactly the list "admin"
 
     Examples:
       | admin             |

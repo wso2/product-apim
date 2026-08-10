@@ -312,14 +312,25 @@ tenants (`carbon.super` and `tenant1.com`) on boot — pick the one with the lea
     of who is acting at the end.)
 - **Tenant ×2.** Run a feature in both tenants with a `Scenario Outline` over an actor column
   (`| admin | admin@tenant1.com |`, etc.) — no per-step changes; the actor's `@domain` drives tenant routing.
-- **Secondary user store (opt-in seeder).** A block that sets `initSecondaryUserStore=true` gets a
-  `SECONDARY.COM` JDBC store stood up at boot (fresh in-container H2 → SOAP `addUserStore` → poll active),
-  seeding two extra actors **per tenant** on top of the primary ones: `SECONDARY.COM/publisherUser1`
-  (`Internal/creator,publisher`) and `SECONDARY.COM/subscriberUser1` (`Internal/subscriber`). Purely additive —
-  it touches no primary user/role/claim or global server config, so it is safe to enable on any block (the store
-  provisions once, before any runner). No true-admin store actor: the primary `admin` role poisons a store
-  account (it authenticates as 401). Reference a store actor by its store-qualified key. See
-  `utils/SecondaryUserStoreProvisioner`.
+- **Secondary user store — available to ANY block, by design.** A block that sets
+  `initSecondaryUserStore=true` gets a `SECONDARY.COM` JDBC store stood up at boot (fresh in-container H2 →
+  SOAP `addUserStore` → poll active), seeding two extra actors **per tenant** on top of the primary ones:
+  `SECONDARY.COM/publisherUser1` (`Internal/creator,publisher`) and `SECONDARY.COM/subscriberUser1`
+  (`Internal/subscriber`).
+  - **Enable it wherever a feature needs a store actor — no justification required.** The seeder was built to
+    be usable everywhere, not as an Admin-block special case. It is purely additive: it touches no primary
+    user/role/claim and no global server config, creates its own separate H2 database, and provisions once
+    before any runner. Adding the parameter to a `<test>` block is a routine, expected change; the only cost is
+    a few seconds of boot. That several blocks don't set it today reflects what they happened to need, **not** a
+    restriction.
+  - **Any feature may use the store actors** — a secondary-store user is a first-class actor, same as the
+    primary ones. Reference it by its store-qualified key (`resolveActor` splits on `@`, which follows the key,
+    so `SECONDARY.COM/secondaryUser@tenant1.com` resolves correctly).
+  - **The one real constraint: there is no true-admin store actor.** The primary `admin` role poisons a store
+    account — it authenticates as 401 — so store actors cover the publisher and subscriber planes only. An
+    admin-scoped step must act as a primary-store admin.
+  - Legacy's `SUPER_TENANT_USER_STORE_USER` factory mode maps onto these actors; that fan-out is real parity
+    coverage, so port it rather than treating it as unavailable. See `utils/SecondaryUserStoreProvisioner`.
 - **The acting actor leaks across scenarios — always set it explicitly.** There is no per-scenario reset:
   the acting actor persists from whatever ran last. A `Scenario Outline` leaves it set to its **last Examples
   row** — so an outline with `super` then `tenant1.com` rows leaves the actor on `admin@tenant1.com`. Any

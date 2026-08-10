@@ -86,10 +86,21 @@ public class ApiCategorySteps {
         Requests.get(Utils.getApiCategoriesURL(Utils.getBaseUrl()), adminHeaders());
     }
 
-    /** Deletes an API category by id (admin). Non-asserting; the feature confirms the status. */
+    /**
+     * Deletes an API category by id (admin). Non-asserting; the feature confirms the status. On a successful
+     * delete the id is DEREGISTERED from the teardown sweep: the create registers every category as a
+     * failure-safe backstop, so without this the sweep re-deletes an already-gone category and the server answers
+     * 500 "API category corresponding to UUID … does not exist" — which ResourceCleanup then logs as a
+     * "resource NOT deleted; it may leak" WARN for a category that was in fact deleted cleanly. A leak warning
+     * that fires when nothing leaked is worse than none, because it teaches readers to skip the real ones.
+     */
     @When("I delete the API category {string}")
     public void iDeleteApiCategory(String categoryIdKey) throws IOException {
         String categoryId = TestContext.resolve(categoryIdKey).toString();
-        Requests.delete(Utils.getApiCategoryByIdURL(Utils.getBaseUrl(), categoryId), adminHeaders());
+        HttpResponse response = Requests.delete(Utils.getApiCategoryByIdURL(Utils.getBaseUrl(), categoryId),
+                adminHeaders());
+        if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            ResourceCleanup.deregister(Constants.CREATED_API_CATEGORY_IDS, categoryId);
+        }
     }
 }

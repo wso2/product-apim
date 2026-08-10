@@ -570,6 +570,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/endpoints";
     }
 
+    /** Publisher security audit report: {@code /apis/{apiId}/auditapi} (GET). */
+    public static String getSecurityAuditURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/auditapi";
+    }
+
     /** Publisher endpoint-validation probe: {@code /apis/validate-endpoint?endpointUrl=&apiId=} (POST). */
     public static String getValidateEndpointURL(String baseUrl, String endpointUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-endpoint?endpointUrl="
@@ -582,9 +587,43 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/graphql-policies/complexity";
     }
 
+    /**
+     * Publisher GraphQL schema TYPE LIST: {@code /apis/{apiId}/graphql-policies/complexity/types} (GET). The
+     * per-type/per-field inventory the publisher UI reads to offer complexity weights — the input to
+     * {@link #getGraphQLComplexityURL}, so its content is what makes a complexity config expressible at all.
+     */
+    public static String getGraphQLSchemaTypeListURL(String baseUrl, String apiId) {
+        return getGraphQLComplexityURL(baseUrl, apiId) + "/types";
+    }
+
+    /**
+     * DevPortal GraphQL per-field complexity config: {@code /apis/{apiId}/graphql-policies/complexity} (GET only).
+     * A DISTINCT plane from the publisher URL above — the devportal exposes the weights read-only to a consumer,
+     * so a subscriber can see what a query will cost. Ports the devportal half of
+     * {@code GraphQLQueryAnalysisTest.testRetrieveGraphQLComplexity}.
+     */
+    public static String getDevportalGraphQLComplexityURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/graphql-policies/complexity";
+    }
+
+    /** DevPortal GraphQL schema TYPE LIST: {@code /apis/{apiId}/graphql-policies/complexity/types} (GET). */
+    public static String getDevportalGraphQLSchemaTypeListURL(String baseUrl, String apiId) {
+        return getDevportalGraphQLComplexityURL(baseUrl, apiId) + "/types";
+    }
+
     /** Publisher API client-certificates (mutual SSL) collection: {@code /apis/{apiId}/client-certificates}. */
     public static String getClientCertificatesURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/client-certificates";
+    }
+
+    /**
+     * Publisher client certificates for a given KEY TYPE: {@code /apis/{apiId}/client-certs/{keyType}}. This is
+     * the current endpoint — the un-typed {@link #getClientCertificatesURL} POST is marked {@code deprecated} in
+     * publisher-api.yaml. The key type matters to mutual SSL: a certificate uploaded under SANDBOX authorises the
+     * sandbox key type, so it is part of the resource identity, not a default.
+     */
+    public static String getClientCertificatesByKeyTypeURL(String baseUrl, String apiId, String keyType) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/client-certs/" + keyType;
     }
 
     /** Publisher single API endpoint: {@code /apis/{apiId}/endpoints/{endpointId}} (GET, PUT, DELETE). */
@@ -732,10 +771,17 @@ public class Utils {
                 + URLEncoder.encode(owner, StandardCharsets.UTF_8);
     }
 
-    /** Publisher — force-change a subscription's business plan (validates the plan; POST, query params). */
+    /**
+     * Publisher — force-change a subscription's business plan (validates the plan; POST, query params).
+     * The plan parameter is named {@code businessPlan} (publisher-api.yaml, operation
+     * {@code changeSubscriptionBusinessPlan}). It was previously sent as {@code throttlingPolicy}, which the
+     * operation does not declare — so the required parameter was ALWAYS absent and the endpoint always answered
+     * 400 "changeSubscriptionBusinessPlan.arg1: must not be null", making every 400 assertion against it pass for
+     * the wrong reason. Keep the name in step with the spec.
+     */
     public static String getChangeSubscriptionBusinessPlanURL(String baseUrl, String subscriptionId, String plan) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/change-business-plan?subscriptionId="
-                + URLEncoder.encode(subscriptionId, StandardCharsets.UTF_8) + "&throttlingPolicy="
+                + URLEncoder.encode(subscriptionId, StandardCharsets.UTF_8) + "&businessPlan="
                 + URLEncoder.encode(plan, StandardCharsets.UTF_8);
     }
 
@@ -811,8 +857,15 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/topics";
     }
 
-    /** DevPortal — list all visible APIs: {@code /apis} (GET). Combined with the {@code X-WSO2-Tenant} header this
-     *  is the cross-tenant discovery listing (an ALL_TENANTS API published in another tenant is visible here). */
+    /**
+     * DevPortal — the unfiltered API LIST ({@code /apis}), i.e. the marketplace listing a consumer browses. A
+     * DISTINCT visibility surface from {@link #getDevportalApiDetailURL}: an API can be excluded from the detail
+     * view and still leak in the listing (or vice versa), so organization/role visibility must be asserted on
+     * both. The search variant ({@link #getApiSearchURL}) filters by query and is not the same read.
+     *
+     * <p>Combined with the {@code X-WSO2-Tenant} header this is also the cross-tenant discovery listing — an
+     * ALL_TENANTS API published in another tenant is visible here.
+     */
     public static String getDevportalApisURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis";
     }
@@ -927,8 +980,14 @@ public class Utils {
                 keyMappingId + "/generate-token";
     }
 
-    public static String getGenerateAPIKeyURL(String baseUrl, String applicationId) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION/generate";
+    /**
+     * DevPortal — generate an application API key for a given KEY TYPE
+     * ({@code applications/{id}/api-keys/{keyType}/generate}). The key type is part of the path, and the gateway
+     * routes a SANDBOX api key to the API's sandbox endpoint, so it cannot be defaulted away.
+     */
+    public static String getGenerateAPIKeyURL(String baseUrl, String applicationId, String keyType) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/" + keyType
+                + "/generate";
     }
 
     /** DevPortal — revoke an application API key ({@code applications/{id}/api-keys/PRODUCTION/revoke}). */
@@ -1192,6 +1251,21 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products?query=" + productName;
     }
 
+    /**
+     * Publisher REST — the UNFILTERED API-product listing with an explicit page-size {@code limit}
+     * ({@code /api-products?limit=}). Needed to assert a product's presence in the listing: the
+     * {@code ?query=<name>} search form goes through the artifact index and answers {@code total: 0} for a
+     * just-created product, so listing-membership checks must page the plain collection instead.
+     */
+    public static String getApiProductListURL(String baseUrl, int limit) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products?limit=" + limit;
+    }
+
+    /** DevPortal — the UNFILTERED API listing with an explicit page-size {@code limit} ({@code /apis?limit=}). */
+    public static String getDevportalApiListURL(String baseUrl, int limit) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?limit=" + limit;
+    }
+
     public static String getCommonPolicy(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "operation-policies";
     }
@@ -1283,6 +1357,20 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/" + mcpServerId;
     }
 
+    /**
+     * DevPortal — the MCP-server listing ({@code /mcp-servers?limit=}). MCP servers have their OWN devportal
+     * collection: they are NOT returned by {@code /apis}, and {@code /apis/{mcpId}} 404s (verified live), so a
+     * consumer discovers a published MCP server only here.
+     */
+    public static String getDevportalMcpServerListURL(String baseUrl, int limit) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "mcp-servers?limit=" + limit;
+    }
+
+    /** DevPortal — a single MCP server by id ({@code /mcp-servers/{id}}). */
+    public static String getDevportalMcpServerDetailURL(String baseUrl, String mcpServerId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "mcp-servers/" + mcpServerId;
+    }
+
     /** Publisher REST API — an MCP server's backend endpoints collection {@code /mcp-servers/{id}/backends} (GET). */
     public static String getMCPServerBackendsURL(String baseUrl, String mcpServerId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/" + mcpServerId + "/backends";
@@ -1306,6 +1394,16 @@ public class Utils {
     /** Publisher REST API — an AI service provider's model list ({@code /ai-service-providers/{id}/models}). */
     public static String getAIServiceProviderModelsURL(String baseUrl, String providerId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "ai-service-providers/" + providerId + "/models";
+    }
+
+    /**
+     * Publisher REST API — an AI service provider's OpenAPI definition
+     * ({@code /ai-service-providers/{id}/api-definition}). This is the definition an AIAPI bound to that provider
+     * is imported from, so a built-in provider's shipped OAS reaches the test without being copied into a fixture.
+     */
+    public static String getAIServiceProviderApiDefinitionURL(String baseUrl, String providerId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "ai-service-providers/" + providerId
+                + "/api-definition";
     }
 
     /** Admin REST API — application throttling policies (create/list). */
@@ -1346,6 +1444,15 @@ public class Utils {
     /** Admin REST API — a single throttling policy of a given type by id (get/update/delete). */
     public static String getThrottlingPolicyByTypeURL(String baseUrl, String policyType, String policyId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/" + policyType + "/" + policyId;
+    }
+
+    /**
+     * Admin REST API — throttling-policy search across ALL policy types at once ({@code ?query=type:all}), the
+     * only endpoint that returns application, subscription and advanced policies in one list; the per-type
+     * collection URLs above cannot express that.
+     */
+    public static String getThrottlingPolicySearchURL(String baseUrl, String query) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/search?query=" + urlEncode(query);
     }
 
     /** Admin REST API — gateway environments (create/list). */

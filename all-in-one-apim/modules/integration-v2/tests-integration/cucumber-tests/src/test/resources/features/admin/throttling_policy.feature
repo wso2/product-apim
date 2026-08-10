@@ -121,19 +121,6 @@ Feature: Admin Throttling Policy CRUD
     When I retrieve the "custom" throttling policy with id "customThrottlePolicyId"
     Then The response status code should be 404
 
-  @cap:admin @feat:throttling-policies @type:regression @legacy:GetThrottlingPoliciesTestCase
-  Scenario Outline: List throttling policies and confirm the built-in defaults are present as <actor>
-    Given The system is ready
-    And I have valid access tokens as "<actor>"
-    When I retrieve all "subscription" throttling policies
-    Then The response status code should be 200
-    And The response should contain "Unlimited"
-
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
-
   # --- Duplicate-name → 409 (increment-2 Group A). Create, then re-create with the captured name. ---
   @cap:admin @feat:throttling-policies @type:negative @legacy:ApplicationThrottlingPolicyTestCase
   Scenario Outline: Creating an application throttling policy with an existing name is rejected as <actor>
@@ -375,3 +362,245 @@ Feature: Admin Throttling Policy CRUD
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Custom (Siddhi) rules are GLOBAL, so every operation on them is guarded by an explicit super-tenant check in
+  # ThrottlingApiServiceImpl#checkTenantDomainForCustomRules — a tenant admin holding a valid apim:admin token is
+  # refused 403 (NOT the 401 a missing scope produces). Legacy CustomThrottlingPolicyTestCase asserted this only
+  # inside a catch block that never had to run, so neither outcome was pinned; each operation is pinned here.
+  # A well-formed random UUID is enough for get/update/delete: the tenant guard fires before any id lookup, so a
+  # real policy id is not needed (and a tenant admin cannot create one to get one).
+  @cap:admin @feat:throttling-policies @type:negative @legacy:CustomThrottlingPolicyTestCase
+  Scenario: Every custom (Siddhi) throttling rule operation is refused to a tenant admin
+    Given The system is ready
+    And I have valid access tokens as "admin@tenant1.com"
+    When I create a custom throttling policy "tenantCustom${UNIQUE:P}" throttling API context "/tc${UNIQUE:C}" after 1000 requests per minute
+    Then The response status code should be 403
+    When I retrieve all "custom" throttling policies
+    Then The response status code should be 403
+    When I generate a random UUID and store it as "tenantCustomPolicyId"
+    And I retrieve the "custom" throttling policy with id "tenantCustomPolicyId"
+    Then The response status code should be 403
+    When I attempt to update the custom throttling policy "tenantCustomPolicyId" with description "tenant update attempt"
+    Then The response status code should be 403
+    When I delete the "custom" throttling policy with id "tenantCustomPolicyId"
+    Then The response status code should be 403
+
+  # Multi-condition conditional group (ports AdvancedThrottlingPolicyTestCase#testAddPolicyWithConditionalGroups,
+  # whose DTO round-trip covered FOUR condition types in ONE group). The CRUD scenario above only creates a
+  # single HEADERCONDITION group, so the IP / query-parameter / JWT-claim condition shapes were never stored or
+  # read back. Each condition's detail is asserted through a type-filtered path, so the assertion is exact and
+  # independent of the order the server returns the conditions in.
+  @cap:admin @feat:throttling-policies @type:regression @legacy:AdvancedThrottlingPolicyTestCase
+  Scenario Outline: An advanced throttling policy round-trips a conditional group of all four condition types as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an advanced throttling policy "${UNIQUE:advFour}" allowing 50 requests per minute with a conditional group of all four condition types
+    Then The response status code should be 201
+    And The value of response field "policyName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "type" should be "AdvancedThrottlePolicy"
+    And The value of response field "defaultLimit.type" should be "REQUESTCOUNTLIMIT"
+    And The value of response field "defaultLimit.requestCount.requestCount" should be "50"
+    # Read the stored policy back so the assertions prove persistence, not just the create echo.
+    When I retrieve the "advanced" throttling policy with id "advThrottlePolicyId"
+    Then The response status code should be 200
+    And The response field "conditionalGroups[*].description" should be exactly the list "conditional group"
+    And The response field "conditionalGroups[0].conditions[*].type" should be exactly the list "IPCONDITION,HEADERCONDITION,QUERYPARAMETERCONDITION,JWTCLAIMSCONDITION"
+    And The value of response field "conditionalGroups[0].limit.type" should be "REQUESTCOUNTLIMIT"
+    And The value of response field "conditionalGroups[0].limit.requestCount.requestCount" should be "50"
+    And The response field "conditionalGroups[0].conditions[?(@.type=='IPCONDITION')].ipCondition.ipConditionType" should be exactly the list "IPSPECIFIC"
+    And The response field "conditionalGroups[0].conditions[?(@.type=='IPCONDITION')].ipCondition.specificIP" should be exactly the list "10.100.1.22"
+    And The response field "conditionalGroups[0].conditions[?(@.type=='HEADERCONDITION')].headerCondition.headerName" should be exactly the list "Host"
+    And The response field "conditionalGroups[0].conditions[?(@.type=='HEADERCONDITION')].headerCondition.headerValue" should be exactly the list "10.100.7.77"
+    And The response field "conditionalGroups[0].conditions[?(@.type=='QUERYPARAMETERCONDITION')].queryParameterCondition.parameterName" should be exactly the list "claimUrl"
+    And The response field "conditionalGroups[0].conditions[?(@.type=='QUERYPARAMETERCONDITION')].queryParameterCondition.parameterValue" should be exactly the list "claimAttribute"
+    And The response field "conditionalGroups[0].conditions[?(@.type=='JWTCLAIMSCONDITION')].jwtClaimsCondition.claimUrl" should be exactly the list "name"
+    And The response field "conditionalGroups[0].conditions[?(@.type=='JWTCLAIMSCONDITION')].jwtClaimsCondition.attribute" should be exactly the list "admin"
+    And The response field "conditionalGroups[0].conditions[*].invertCondition" should be exactly the list "false"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  @cap:admin @feat:throttling-policies @type:regression @legacy:GetThrottlingPoliciesTestCase
+  Scenario Outline: Searching all throttling policies returns the built-in defaults as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I retrieve all "subscription" throttling policies
+    Then The response status code should be 200
+    And The response should contain "Unlimited"
+    # The type:all search spans every policy type at once; assert one built-in default per type by an exact
+    # name-filtered path (exactly one hit each), rather than a substring match that a similarly-named policy
+    # created by a concurrent scenario could satisfy.
+    When I search throttling policies with query "type:all"
+    Then The response status code should be 200
+    And The response field "list[?(@.policyName=='50PerMin')].policyName" should be exactly the list "50PerMin"
+    And The response field "list[?(@.policyName=='Gold')].policyName" should be exactly the list "Gold"
+    And The response field "list[?(@.policyName=='10KPerMin')].policyName" should be exactly the list "10KPerMin"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Full SubscriptionThrottlePolicy DTO round-trip (ports SubscriptionThrottlingPolicyTestCase
+  # #testAddPolicyWithRequestCountLimit, which DTO-verified the whole business plan). The shared low-limit create
+  # step used by the enforcement suites deliberately omits the GraphQL query-analysis limits, the subscriber
+  # count and custom attributes — adding them there would change what those suites enforce — so the complete
+  # business-plan shape is created and asserted here instead.
+  @cap:admin @feat:throttling-policies @type:regression @legacy:SubscriptionThrottlingPolicyTestCase
+  Scenario Outline: A subscription throttling policy round-trips its full business plan as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create a subscription throttling policy "${UNIQUE:subFull}" allowing 50 requests per minute with the full business plan configuration
+    Then The response status code should be 201
+    When I retrieve the "subscription" throttling policy with id "subThrottlePolicyId"
+    Then The response status code should be 200
+    And The value of response field "policyName" should be "{{subThrottlePolicyName}}"
+    And The value of response field "type" should be "SubscriptionThrottlePolicy"
+    And The value of response field "defaultLimit.type" should be "REQUESTCOUNTLIMIT"
+    And The value of response field "defaultLimit.requestCount.requestCount" should be "50"
+    And The value of response field "defaultLimit.requestCount.timeUnit" should be "min"
+    And The value of response field "defaultLimit.requestCount.unitTime" should be "1"
+    And The value of response field "graphQLMaxComplexity" should be "400"
+    And The value of response field "graphQLMaxDepth" should be "10"
+    And The value of response field "rateLimitCount" should be "-1"
+    And The value of response field "rateLimitTimeUnit" should be "NA"
+    And The value of response field "stopOnQuotaReach" should be "false"
+    And The value of response field "billingPlan" should be "COMMERCIAL"
+    And The value of response field "subscriberCount" should be "0"
+    And The value of response field "monetization.monetizationPlan" should be "DYNAMICRATE"
+    And The response field "customAttributes[*].name" should be exactly the list "testAttribute"
+    And The response field "customAttributes[*].value" should be exactly the list "testValue"
+    And The value of response field "permissions.permissionType" should be "ALLOW"
+    And The response field "permissions.roles" should be exactly the list "Internal/creator"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Deleting an application policy by a well-formed but unknown id is a 404 on the DELETE itself. The CRUD
+  # scenario above only proves a GET after a successful delete is 404, which does not pin the DELETE's own
+  # not-found behaviour. Ports ApplicationThrottlingPolicyTestCase#testDeletePolicyWithNonExistingPolicyId.
+  @cap:admin @feat:throttling-policies @type:negative @legacy:ApplicationThrottlingPolicyTestCase
+  Scenario Outline: Deleting an application throttling policy by an unknown id is not found as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I generate a random UUID and store it as "absentAppPolicyId"
+    And I delete the "application" throttling policy with id "absentAppPolicyId"
+    Then The response status code should be 404
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Cross-admin delete of an ASSIGNED advanced policy. Together with the two scenarios above this separates the
+  # two possible causes of the refusal: an unassigned policy created by admin1 IS deletable by admin2 (200, above),
+  # and an assigned policy is refused to its own creator (403, above) — so pinning the refusal for a DIFFERENT
+  # admin here establishes that ASSIGNMENT, not ownership, is what blocks the delete. Ports
+  # AdvancedThrottlingPolicyTestCase#testDeleteAssignedAPILevelAdvancedPolicyWithDifferentAdminUser (whose
+  # try/catch had no Assert.fail, so a successful delete would have passed silently). The API is only CREATED,
+  # not deployed: the in-use check reads the stored API record, so a gateway deployment adds nothing. The API and
+  # policy are left to the cleanup hook, which deletes APIs before advanced policies (FK-safe) as their creator.
+  @cap:admin @feat:throttling-policies @type:negative @dep:publisher @legacy:AdvancedThrottlingPolicyTestCase
+  Scenario Outline: An advanced throttling policy assigned to an API cannot be deleted by a different admin in <tenant>
+    Given The system is ready
+    And I provision user "policyAdmin3" with roles "admin" in tenant "<tenant>"
+    And I have valid access tokens as "<admin1>"
+    When I create an advanced throttling policy "xAdminApi${UNIQUE:P}" allowing 1000 requests per minute
+    Then The response status code should be 201
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "xAdminApiPayload"
+    And I create an "apis" resource with payload "xAdminApiPayload" as "xAdminApiId"
+    When I retrieve the "apis" resource with id "xAdminApiId"
+    And I put the response payload in context as "xAdminApiFetched"
+    And I update the "apis" resource "xAdminApiId" and "xAdminApiFetched" with configuration type "apiThrottlingPolicy" and value:
+    """
+    {{advThrottlePolicyName}}
+    """
+    Then The response status code should be 200
+    And I have valid access tokens as "<admin2>"
+    When I delete the "advanced" throttling policy with id "advThrottlePolicyId"
+    Then The response status code should be 403
+
+    Examples:
+      | tenant       | admin1            | admin2                   |
+      | carbon.super | admin             | policyAdmin3             |
+      | tenant1.com  | admin@tenant1.com | policyAdmin3@tenant1.com |
+
+  # The RESOURCE-level (per-operation) form of the same refusal: the policy is attached to a single operation's
+  # throttlingPolicy rather than to the API's apiThrottlingPolicy, so the in-use check has to consult the API's
+  # URL templates and not just the API-level tier. Ports AdvancedThrottlingPolicyTestCase
+  # #testDeleteAssignedResourceLevelAdvancedPolicyWithDifferentAdminUser (also vacuous in legacy).
+  @cap:admin @feat:throttling-policies @type:negative @dep:publisher @legacy:AdvancedThrottlingPolicyTestCase
+  Scenario Outline: An advanced throttling policy assigned to one API operation cannot be deleted by a different admin in <tenant>
+    Given The system is ready
+    And I provision user "policyAdmin4" with roles "admin" in tenant "<tenant>"
+    And I have valid access tokens as "<admin1>"
+    When I create an advanced throttling policy "xAdminOp${UNIQUE:P}" allowing 1000 requests per minute
+    Then The response status code should be 201
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "xAdminOpApiPayload"
+    And I create an "apis" resource with payload "xAdminOpApiPayload" as "xAdminOpApiId"
+    When I retrieve the "apis" resource with id "xAdminOpApiId"
+    And I put the response payload in context as "xAdminOpApiFetched"
+    And I update the "apis" resource "xAdminOpApiId" and "xAdminOpApiFetched" with configuration type "operations" and value:
+    """
+    [{"verb":"GET","target":"/customers/{id}","authType":"Application & Application User","throttlingPolicy":"{{advThrottlePolicyName}}","scopes":[]}]
+    """
+    Then The response status code should be 200
+    And The response field "operations[*].throttlingPolicy" should be exactly the list "{{advThrottlePolicyName}}"
+    And I have valid access tokens as "<admin2>"
+    When I delete the "advanced" throttling policy with id "advThrottlePolicyId"
+    Then The response status code should be 403
+
+    Examples:
+      | tenant       | admin1            | admin2                   |
+      | carbon.super | admin             | policyAdmin4             |
+      | tenant1.com  | admin@tenant1.com | policyAdmin4@tenant1.com |
+
+  # Subscription-tier role permission enforced on the PUBLISHER force-change path. The scenario above proves the
+  # ALLOW list is enforced at SUBSCRIBE time in the devportal; this one proves the same policy permission also
+  # gates a publisher forcing an existing subscription onto that tier, and that flipping an existing policy's
+  # permission from ALLOW to DENY takes effect on an already-created subscription. Ports
+  # ChangeSubscriptionBusinessPlanForcefullyTestCase#testUpdateSubscriptionBusinessPlanWhenSubscriberRestrictedToUseSpecificTier
+  # (legacy's refusal assertion lived in a catch with no Assert.fail, so a successful force-change passed silently).
+  @cap:admin @feat:throttling-policies @type:negative @dep:publisher @dep:devportal @legacy:ChangeSubscriptionBusinessPlanForcefullyTestCase
+  Scenario Outline: Flipping a subscription tier permission to DENY refuses a publisher business-plan force-change as <adminActor>
+    Given The system is ready
+    And I have valid access tokens as "<adminActor>"
+    When I create a subscription throttling policy "denyFlipTier${UNIQUE:P}" allowing 1000 requests per minute restricted to role "Internal/subscriber"
+    Then The response status code should be 201
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "flipApiId" and deployed it
+    When I retrieve the "apis" resource with id "flipApiId"
+    And I put the response payload in context as "flipApiPayload"
+    And I update the "apis" resource "flipApiId" and "flipApiPayload" with configuration type "policies" and value:
+    """
+    ["Unlimited","{{subThrottlePolicyName}}"]
+    """
+    Then The response status code should be 200
+    When I publish the "apis" resource with id "flipApiId"
+    Then The lifecycle status of API "flipApiId" should be "Published"
+    And The system is ready and I have valid devportal access token as "<subscriberActor>"
+    And I create an application "${UNIQUE:FlipApp}" with visibility "PRIVATE" as "flipAppId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "flipSub"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "flipApiId" using application "flipAppId" with payload "flipSub" as "flipSubId"
+    Then The response status code should be 201
+    # While the tier still ALLOWs Internal/subscriber, the publisher may force the subscription onto it.
+    And I act as "<adminActor>"
+    When I change the subscription business plan of "flipSubId" to "{{subThrottlePolicyName}}"
+    Then The response status code should be 200
+    # Flip the SAME policy's permission to DENY for that role, then repeat the identical force-change.
+    When I set the "subscription" throttling policy "subThrottlePolicyId" permission to "DENY" for role "Internal/subscriber"
+    Then The response status code should be 200
+    When I change the subscription business plan of "flipSubId" to "{{subThrottlePolicyName}}"
+    Then The response status code should be 403
+
+    Examples:
+      | adminActor        | subscriberActor            |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |

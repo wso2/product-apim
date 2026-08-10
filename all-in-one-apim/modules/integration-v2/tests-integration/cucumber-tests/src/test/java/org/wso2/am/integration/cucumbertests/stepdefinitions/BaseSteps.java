@@ -29,6 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
@@ -45,8 +47,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class BaseSteps {
 
@@ -411,14 +417,18 @@ public class BaseSteps {
     }
 
     /**
-     * Stores a generic string value or a value from a different context key into the test context.
+     * Copies the value of an EXISTING context key under a second key (an alias, e.g. to keep a value stable under
+     * a scenario-specific name after a later step overwrites the original). {@code value} must therefore already
+     * be a context key: {@link TestContext#resolve} throws when it is not, so a typo'd key fails fast with a clear
+     * message instead of silently aliasing the literal text (§7 — {@code resolve} is the default for step
+     * arguments precisely for that reason). To seed a value the product never produced, use a step that MINTS it
+     * (e.g. {@link #iGenerateRandomUuidAndStore}) rather than passing a literal here.
      *
-     * @param value The raw string value or a context key to resolve
+     * @param value The name of an existing context key whose value should be copied
      * @param contextKey The key under which the value should be stored in TestContext
      */
     @When("I put value {string} in context as {string}")
     public void iPutValueInContextAs(String value, String contextKey) {
-        // Resolve value if it's a reference to another context key
         Object resolvedValue = TestContext.resolve(value);
 
         log.info("Setting context key: " + contextKey + " with value: " + resolvedValue);
@@ -591,6 +601,20 @@ public class BaseSteps {
     }
 
     /**
+     * Mints a random UUID and stores it, giving a scenario a WELL-FORMED resource id that names nothing — the input
+     * a "not found" negative needs (e.g. deleting a key manager id that does not exist must be 404, not 400). Do NOT
+     * merge this with {@link #iGenerateUniqueValueAndStore}: that mints a readable {@code Names.unique} token, which
+     * is not a UUID, so an API that validates id FORMAT could reject it before ever looking the id up and the
+     * scenario would pass for the wrong reason. Reference the value later via {@code {{contextKey}}}.
+     *
+     * @param contextKey the context key under which the generated UUID is stored
+     */
+    @When("I generate a random UUID and store it as {string}")
+    public void iGenerateRandomUuidAndStore(String contextKey) {
+        TestContext.set(Utils.normalizeContextKey(contextKey), UUID.randomUUID().toString());
+    }
+
+    /**
      * Stores the fully upper-cased form of a stored value. Used to build a case-variant that is case-insensitively
      * equal to the source (e.g. proving API-name uniqueness is case-insensitive) while both values remain unique
      * across parallel scenarios (the source is itself a uniquely generated token).
@@ -717,9 +741,15 @@ public class BaseSteps {
     /**
      * Asserts that a field in the stored JSON response equals an exact expected value (not a substring — use this
      * where {@code The response should contain} would be ambiguous, e.g. a boolean flag whose literal could match
-     * another field). {@code fieldName} is a field name / JSONPath resolved by {@link Utils#extractValueFromPayload};
-     * {@code {{contextKey}}} placeholders in the expected value are resolved. Comparison is on string form so
-     * {@code "true"}/{@code "false"}/numbers work without type ceremony.
+     * another field). {@code fieldName} is a field name / JSONPath resolved by {@link Utils#extractValueFromPayload}.
+     * Comparison is on string form so {@code "true"}/{@code "false"}/numbers work without type ceremony.
+     *
+     * <p>{@code {{contextKey}}} placeholders are resolved in BOTH arguments. Resolving them in the PATH matters
+     * as much as in the expected value: a JSONPath predicate routinely filters on a per-scenario value
+     * ({@code list[?(@.conditionValue=='{{apiContext}}')]}), and an unresolved literal makes the predicate match
+     * nothing — which surfaces as an empty result compared against a correct expectation, i.e. a failure in the
+     * TEST while the response was in fact right. Do not "fix" such a failure by
+     * restructuring the calling scenario to avoid a placeholder in the path; the resolution belongs here.</p>
      *
      * @param fieldName     field name or JSONPath to read from the response body
      * @param expectedValue the exact expected value (string form)
@@ -759,6 +789,7 @@ public class BaseSteps {
     private void assertResponseFieldValue(String fieldName, String expectedValue, boolean expectSuccess)
             throws IOException {
 
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
         expectedValue = Utils.resolveContextPlaceholders(expectedValue);
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         // Pin the response to the expected side of the 2xx boundary: an error body (401/500 JSON) can carry a
@@ -778,6 +809,124 @@ public class BaseSteps {
         Assert.assertEquals(String.valueOf(actual), expectedValue,
                 String.format("Field '%s' was [%s] but expected [%s]. Data: %s",
                         fieldName, actual, expectedValue, response.getData()));
+    }
+
+    /**
+     * Asserts a response field is PRESENT and holds JSON {@code null} — the one value
+     * {@link #theValueOfResponseFieldShouldBe} deliberately cannot express, because it rejects null so a MISSING
+     * field can never silently satisfy an expected {@code "null"} literal. That distinction is exactly why this
+     * exists as its own step rather than as a magic expected-value: "the server returns the field as null" and
+     * "the server omits the field" are different contracts, and a test that pins one must fail on the other.
+     * A field that is absent fails here too (the path lookup throws), so this cannot degrade into "either way".
+     *
+     * <p>First consumer: a plain API's {@code apiThrottlingPolicy}, which is JSON {@code null} — not
+     * {@code "Unlimited"} — on an API created without an API-level policy.</p>
+     *
+     * @param fieldName field name or JSONPath expected to resolve to JSON null
+     */
+    @Then("The response field {string} should be null")
+    public void theResponseFieldShouldBeNull(String fieldName) throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body to read field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        // Throws when the path resolves to nothing — an ABSENT field must not pass a "should be null" assertion.
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertNull(actual, String.format("Field '%s' was [%s] but expected JSON null. Data: %s",
+                fieldName, actual, response.getData()));
+    }
+
+    /**
+     * Asserts that SEVERAL response fields all hold the SAME expected value — the plural counterpart of
+     * {@link #theValueOfResponseFieldShouldBe} (which pins one field to one value). Use it where the property
+     * under test is shared by a whole SET of fields whose membership varies by case, so a fixed number of
+     * singular steps cannot express it: the write-only connector secrets a key manager masks on GET are one
+     * such set ({@code client_secret} alone for Auth0/KeyCloak/Forgerock, {@code apiKey} AND
+     * {@code client_secret} for Okta, {@code password} AND {@code client_secret} for PingFederate), all of
+     * which must come back as exactly the {@code *****} sentinel.
+     *
+     * @param fieldNamesCsv comma-separated field names / JSONPaths to read from the response body
+     * @param expectedValue the exact expected value every one of them must equal (string form)
+     */
+    @Then("Each of the response fields {string} should be {string}")
+    public void eachOfTheResponseFieldsShouldBe(String fieldNamesCsv, String expectedValue) throws IOException {
+
+        for (String fieldName : fieldNamesCsv.split(",")) {
+            theValueOfResponseFieldShouldBe(fieldName.trim(), expectedValue);
+        }
+    }
+
+    /**
+     * Asserts that a JSON ARRAY field of the response holds exactly the given elements — no more, no fewer,
+     * order-independent. Set equality is the right contract for a collection the server may reorder (e.g. a key
+     * manager's {@code availableGrantTypes}), where an index-by-index check would be brittle and a substring
+     * {@code contains} would silently pass with extra elements present. An empty expected list asserts the array
+     * is empty (or absent). {@code fieldName} resolves through {@link Utils#extractValueFromPayload}, i.e. the same
+     * JSONPath resolution as its singular sibling {@link #theValueOfResponseFieldShouldBe}, so a nested path such
+     * as {@code additionalProperties.someList} works and a path that resolves to a NON-array fails loudly instead
+     * of being read as "empty".
+     *
+     * <p>{@code {{contextKey}}} placeholders are resolved in BOTH arguments, for the reason spelled out on
+     * {@link #theValueOfResponseFieldShouldBe}: an unresolved placeholder inside a JSONPath predicate matches
+     * nothing and reports an empty result against a correct response.</p>
+     *
+     * @param fieldName     field name or JSONPath of the array to read from the response body
+     * @param expectedCsv   comma-separated expected elements; empty means "the array must be empty"
+     */
+    @Then("The response field {string} should be exactly the list {string}")
+    public void theResponseArrayFieldShouldBeExactly(String fieldName, String expectedCsv) throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // Require a SUCCESSFUL response with a body: an error payload must never satisfy an assertion written
+        // against the success shape.
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body to read array field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        Set<String> expected = new HashSet<>();
+        for (String element : Utils.resolveContextPlaceholders(expectedCsv).split(",")) {
+            if (!element.isBlank()) {
+                expected.add(element.trim());
+            }
+        }
+
+        Object actualValue;
+        try {
+            actualValue = Utils.extractValueFromPayload(response.getData(), fieldName);
+        } catch (IOException e) {
+            // The path resolves to nothing. Absent is only acceptable when nothing was expected.
+            Assert.assertTrue(expected.isEmpty(),
+                    String.format("Response array field '%s' is absent but expected exactly %s. Data: %s",
+                            fieldName, expected, response.getData()));
+            return;
+        }
+        Assert.assertNotNull(actualValue,
+                String.format("Response array field '%s' is null but expected exactly %s. Data: %s",
+                        fieldName, expected, response.getData()));
+
+        Set<String> actual = new HashSet<>();
+        if (actualValue instanceof Collection<?> elements) {
+            for (Object element : elements) {
+                actual.add(String.valueOf(element));
+            }
+        } else if (actualValue instanceof JSONArray array) {
+            for (int i = 0; i < array.length(); i++) {
+                actual.add(String.valueOf(array.get(i)));
+            }
+        } else {
+            // A path that resolves to a scalar or an object is a real mismatch and must not be read as "empty".
+            Assert.fail(String.format("Response field '%s' resolved to a non-array value [%s]; expected a JSON "
+                    + "array holding exactly %s. Data: %s", fieldName, actualValue, expected, response.getData()));
+        }
+
+        Assert.assertEquals(actual, expected,
+                String.format("Response array field '%s' was %s but expected exactly %s. Data: %s",
+                        fieldName, actual, expected, response.getData()));
     }
 
     /**
@@ -1333,5 +1482,74 @@ public class BaseSteps {
         Object actualValue = TestContext.resolve(actualKey);
         String finalExpectedValue = Utils.resolveIfContextKey(expectedValue).toString();
         Utils.assertConfigValueMatchesExpectedValue(actualValue, finalExpectedValue);
+    }
+
+    /**
+     * Asserts a value previously stored in context CONTAINS the given substring. The exact-match step above
+     * cannot express this for values that are legitimately larger than what is being asserted — a rendered HTML
+     * page, or the joined {@code Set-Cookie} headers of one response — where the assertion is that a specific
+     * token is present in it. {@code {{contextKey}}} placeholders in the expected substring are resolved, so a
+     * scenario can assert on a runtime-generated identifier.
+     *
+     * @param actualKey        TestContext key holding the value to search
+     * @param expectedFragment the substring that must be present
+     */
+    @Then("The stored value {string} should contain {string}")
+    public void theStoredValueShouldContain(String actualKey, String expectedFragment) {
+
+        String actual = TestContext.resolve(actualKey).toString();
+        String expected = Utils.resolveContextPlaceholders(expectedFragment);
+        Assert.assertTrue(actual.contains(expected),
+                "Stored value '" + actualKey + "' does not contain '" + expected + "'. Value: " + actual);
+    }
+
+    /**
+     * Asserts a value previously stored in context is EXACTLY the given literal, with {@code {{contextKey}}}
+     * placeholders resolved in that literal first. Distinct from {@code The stored value X should equal Y},
+     * which compares two context KEYS: this one compares a stored value against an expected literal that is
+     * partly composed of runtime identifiers (e.g. an OAuth service-provider name built from an application
+     * UUID). The exact-match step {@code the actual value of X should match the expected value:} cannot be used
+     * for those — it resolves only whole-value {@code <key>} references, not embedded placeholders.
+     *
+     * @param actualKey     TestContext key holding the value to check
+     * @param expectedValue the expected value, possibly containing {@code {{contextKey}}} placeholders
+     */
+    @Then("The stored value {string} should be {string}")
+    public void theStoredValueShouldBe(String actualKey, String expectedValue) {
+
+        String actual = TestContext.resolve(actualKey).toString();
+        String expected = Utils.resolveContextPlaceholders(expectedValue);
+        Assert.assertEquals(actual, expected, "Stored value '" + actualKey + "' is not the expected value");
+    }
+
+    /**
+     * Asserts the WHOLE response body is JSON equal — STRICTLY, i.e. no extra and no missing members at any
+     * depth — to a classpath JSON fixture. Use it where the endpoint's contract is "give back exactly this
+     * object": the publisher linter-custom-rules read returns the tenant-config {@code LinterCustomRules} block
+     * verbatim, so comparing against the very fixture that seeded it is the only assertion that proves the
+     * round trip. A {@code The response should contain} check cannot: it passes on a body that dropped or
+     * rewrote every rule but one.
+     *
+     * <p>Strict is deliberate. {@link Utils#assertConfigValueMatchesExpectedValue} compares LENIENTly (extra
+     * members tolerated), which is right for "the field I set is now present" but would let this endpoint
+     * silently return the seeded rules PLUS unrelated content and still pass.</p>
+     *
+     * @param jsonFilePath classpath path of the expected JSON document
+     */
+    @Then("The response body should equal the JSON file {string}")
+    public void theResponseBodyShouldEqualJsonFile(String jsonFilePath) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body to compare against '" + jsonFilePath + "', but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        String expected = Utils.readClasspathResource(jsonFilePath);
+        try {
+            JSONAssert.assertEquals(expected, response.getData(), JSONCompareMode.STRICT);
+        } catch (JSONException e) {
+            throw new AssertionError("Response body is not valid JSON or could not be compared against '"
+                    + jsonFilePath + "': " + response.getData(), e);
+        }
     }
 }

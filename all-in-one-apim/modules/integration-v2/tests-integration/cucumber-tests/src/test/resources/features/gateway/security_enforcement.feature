@@ -187,7 +187,16 @@ Feature: Gateway Security Enforcement
 
   # Basic-auth application security: an API whose securityScheme is basic_auth accepts a valid carbon user's HTTP
   # Basic credentials at the gateway (200) and rejects invalid credentials (401). Ports the basic-auth cases of
-  # APISecurityTestCase (a distinct auth SCHEME, not tested elsewhere in the suite).
+  # APISecurityTestCase (a distinct auth SCHEME, not tested elsewhere in the suite) — testInvokeBasicAuth's
+  # valid-user/wrong-password pair plus testInvokeBasicAuthInvalidCredentials2, which is the DISTINCT failure of an
+  # entirely UNKNOWN user (no such account) as opposed to a known user with the wrong password: the two take
+  # different paths through the user store yet must both answer 401, so each is asserted here — plus legacy's
+  # email-form-username fan-out, where the username ITSELF is an email address.
+  #
+  # The email-form rows do NOT depend on the absent email-username ACTOR infrastructure — an Identity principal
+  # needing token issuance, publisher-plane resolution and per-actor cleanup — which stays out of scope. What legacy's testInvokeBasicAuth needs here is only a gateway Basic CREDENTIAL, so the
+  # users are provisioned inline through UserAccountSteps and referenced as raw username/password strings. Legacy
+  # applied no server config for them either, so no email-username TOML overlay is involved.
   @cap:gateway @feat:security-enforcement @rule:basic-auth @type:regression @dep:publisher @legacy:APISecurityTestCase
   Scenario Outline: A basic-auth-secured API accepts valid user credentials and rejects invalid ones as <actor>
     Given The system is ready
@@ -208,17 +217,50 @@ Feature: Gateway Security Enforcement
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
-    # Valid carbon user credentials → 200
+    # Valid carbon user credentials → 200 carrying the BACKEND payload. The body is what makes this a credential
+    # ACCEPTANCE assertion rather than a bare reachability one: it shows the Basic credential carried the request
+    # all the way through to node-customer-service, which is the claim the two 401 refusals below are contrasted
+    # against.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    # A valid user with the WRONG password → 401
+    And The response should contain "\"name\":\"John\""
+
+    # NOT COVERED HERE — email-form usernames as a gateway Basic credential (legacy's users[] fan-out,
+    # apisecUser2@wso2.com / apisecUser2@abc.com). This belongs to the parked email-username ACTOR work, not skipped
+    # casually. Verified why: an email-form username requires the server-level carbon.xml setting
+    # `EnableEmailUserName`, which ships COMMENTED OUT (see carbon-apimgt's test carbon.xml:390) and is enabled by
+    # NO block overlay in this suite. Without it the store splits the tenant off the last "@", so
+    # `local@wso2.com` resolves as user `local` in a tenant `wso2.com` that does not exist and the gateway answers
+    # 401 / 900901 "Invalid Credentials". Attempting the doubly-qualified `<local>@<emailDomain>@<tenant>` form does
+    # not help, because the deficiency is the store's parsing, not the qualifier order — empirically confirmed
+    # (that variant also 401s).
+    # So this row needs exactly the same missing infrastructure as B9's SUPER_TENANT_EMAIL_USER factory mode, which
+    # the repo owner decided on 2026-08-05 is out of scope. It lands cheaply as extra rows once that
+    # infrastructure exists; nothing else in this scenario depends on it.
+
+    # The two REFUSAL paths. Both are 401 carrying 900901 "Invalid Credentials", and that identity is the point:
+    # a known user with a wrong password and a user that does not exist at all take different paths through the user
+    # store (BasicAuthCredentialValidator#validate returns not-authenticated either way) yet the gateway answers
+    # BYTE-IDENTICALLY, so the response is not a user-enumeration oracle. Pinned as the exact code, never widened —
+    # a future build that distinguished them (e.g. 900902 for the unknown user) would be a real information leak and
+    # must fail here. The cases stay distinguishable by construction (which credential is sent), not by response.
+    #
+    # A valid user with the WRONG password → 401 / 900901.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" with password "totallyWrongPassword" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The response should contain "900901"
+    And The response should contain "Invalid Credentials"
+    # An entirely UNKNOWN user (no such account in the tenant) → also 401 / 900901. Fully qualified with the tenant
+    # domain: a domainless made-up name resolves against the super tenant and answers 403 on a tenant API instead.
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "noSuchUser@<domain>" password "randomPassword" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+    And The response should contain "Invalid Credentials"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | domain       |
+      | admin             | carbon.super |
+      | admin@tenant1.com | tenant1.com  |
 
   # A large request body does NOT bypass gateway authentication: a POST of a ~1 MB body with an INVALID bearer token
   # is rejected, regardless of body size. Ports InvalidAuthTokenLargePayloadTestCase (uploads 1KB/100KB/1MB with a
@@ -331,7 +373,14 @@ Feature: Gateway Security Enforcement
   # distinction is the "None" auth type: a resource with authType "None" is invocable WITHOUT any token (200),
   # whereas the default "Application & Application User" resource requires one (401 without a token). This scenario
   # pins that discriminating behaviour. The resource is switched to authType None via an operations update + redeploy.
-  @cap:gateway @feat:security-enforcement @rule:resource-auth-type @type:regression @dep:publisher @legacy:ChangeAuthTypeOfResourceTestCase
+  #
+  # Also carries the DECLARATION half of APISecurityTestCase#testValidateSecurityOfResources, which legacy asserted
+  # on two separate fixture APIs (a security-disabled one and a security-enabled one): every DTO operation's
+  # authType is the expected literal, AND the served OpenAPI definition's per-operation x-auth-type matches it
+  # (non-null). Asserting both states on ONE API across the flip is strictly stronger than legacy's two static
+  # snapshots — it proves the update actually propagates into the regenerated definition, which two fixed APIs
+  # cannot show.
+  @cap:gateway @feat:security-enforcement @rule:resource-auth-type @type:regression @dep:publisher @legacy:ChangeAuthTypeOfResourceTestCase @legacy:APISecurityTestCase
   Scenario Outline: A resource with authType None is invocable without a token as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -344,6 +393,14 @@ Feature: Gateway Security Enforcement
     And the "apis" resource "atApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "atApiId"
     And I extract response field "context" and store it as "atContext"
+
+    # Security ENABLED: every operation declares the default "Application & Application User" auth type, and the
+    # served definition's x-auth-type matches it operation for operation.
+    Then Every operation of API "atApiId" should declare authType "Application & Application User"
+    When I retrieve the swagger of "apis" resource "atApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "atSecuredSwagger"
+    And The definition stored as "atSecuredSwagger" should declare exactly the operations of API "atApiId"
 
     # Default resource (Application & Application User): a token-less invocation is rejected (401).
     When I invoke the API at gateway context "{{atContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 401 within 60 seconds
@@ -360,9 +417,73 @@ Feature: Gateway Security Enforcement
     When I deploy the API with id "atApiId"
     Then The response status code should be 201
 
-    # Now the resource is invocable WITHOUT a token (200).
+    # Security DISABLED: every operation now declares "None", and the regenerated definition's x-auth-type
+    # followed it (the extension is present and equal, not silently dropped).
+    Then Every operation of API "atApiId" should declare authType "None"
+    When I retrieve the swagger of "apis" resource "atApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "atNoneSwagger"
+    And The definition stored as "atNoneSwagger" should declare exactly the operations of API "atApiId"
+
+    # Now the resource is invocable WITHOUT a token (200) and the backend really served it — the same body
+    # assertion the swagger-route twin scenario below already makes, for the same reason: it separates "the
+    # unauthenticated call went through to node-customer-service" from any gateway-produced 200.
     When I invoke the API at gateway context "{{atContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The SWAGGER route to the same authType flip. The scenario above sets authType on the API's `operations` array;
+  # this one sets `x-auth-type` in the OPENAPI DEFINITION and PUTs the definition back, which is a different product
+  # surface — it proves the definition→operations direction (APIM re-derives the URI templates from the uploaded
+  # definition), where the scenario above proves operations→definition. Ports
+  # DisableSecurityAndTryOutRESTResourceWithElkAnalyticsEnabledTestCase#testTurnOffSecurityAndInvokeGETResource.
+  #
+  # NO ELK-ANALYTICS BLOCK IS STOOD UP, deliberately. The legacy class applied an ElkAnalytics deployment.toml in its
+  # BeforeClass and then asserted NOTHING analytics-specific: its only assertions are the swagger changed, the
+  # invocation returned 200, and the body carried the customer payload — all reachable on default config. The toml
+  # was pure backdrop, the same "config with no observable" shape as the open-tracing rows (see the note in
+  # gateway/websocket_invocation.feature), so an ELK container/overlay would add cost and zero assertion. The class
+  # was also never executed: its <class> entry is COMMENTED OUT at legacy testng.xml:30.
+  #
+  # Legacy asserted the response BODY (its accept: text/xml made the customer service answer XML); the v2 backend
+  # answers JSON, so the same payload is pinned as "name":"John". The body matters: it proves the call reached the
+  # backend rather than being short-circuited by the gateway.
+  @cap:gateway @feat:security-enforcement @rule:resource-auth-type @type:regression @dep:publisher @legacy:DisableSecurityAndTryOutRESTResourceWithElkAnalyticsEnabledTestCase
+  Scenario Outline: A resource switched to authType None through the swagger definition is invocable without a token as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "swApiId" and deployed it
+    When I publish the "apis" resource with id "swApiId"
+    Then The lifecycle status of API "swApiId" should be "Published"
+    When I retrieve the "apis" resource with id "swApiId"
+    And I extract response field "context" and store it as "swContext"
+
+    # Baseline: the operation is secured, so a token-less call is refused.
+    Then Every operation of API "swApiId" should declare authType "Application & Application User"
+    When I invoke the API at gateway context "{{swContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+
+    # Flip x-auth-type to None IN THE DEFINITION, for the GET only, and PUT the definition back.
+    When I set x-auth-type "None" for path "/customers/{id}" verb "GET" in the swagger of API "swApiId"
+    Then The response status code should be 200
+    # The definition update PROPAGATED to the API's operations — the assertion the operations-route scenario cannot
+    # make, and what the swagger PUT is actually for. Asserted per operation, not "every operation": the DELETE on
+    # the same path must be UNTOUCHED, which is what proves the update was scoped to the one resource rather than
+    # rewriting the API's security wholesale.
+    Then The "GET" operation on "/customers/{id}" of API "swApiId" should declare authType "None"
+    And The "DELETE" operation on "/customers/{id}" of API "swApiId" should declare authType "Application & Application User"
+    When I deploy the API with id "swApiId"
+    Then The response status code should be 201
+
+    # The resource is now invocable with NO Authorization header, and the backend really served it.
+    When I invoke the API at gateway context "{{swContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
@@ -1067,3 +1188,306 @@ Feature: Gateway Security Enforcement
       | admin@tenant1.com         | admin@tenant1.com |
       | publisherUser             | admin             |
       | publisherUser@tenant1.com | admin@tenant1.com |
+
+  # Cross-credential confusion: a credential that is perfectly VALID of its own kind must not be accepted when it
+  # is presented in the header belonging to a DIFFERENT kind. Ports the five cross-credential negatives of
+  # APISecurityTestCase (testInvokeApiKeyAsJWTNegative, testInvokeJWTAsAPIKeyNegative,
+  # testInvokeInternalKeyAsAPIKeyNegative, testInvokeInternalKeyAsJWTNegative, testInvokeJWTasInternalKeyNegative,
+  # testInvokeAPIKeyAsInternalKeyNegative) against an API that permits BOTH oauth2 and api_key — so every
+  # credential here is one the API would accept in its own header. The two POSITIVE CONTROLS come first and are
+  # what make the refusals meaningful: they prove the token and the api key are genuinely valid on this API, so
+  # each later 401 is about the credential KIND, not a bad credential. Each case pins its OWN exact status (they
+  # are not assumed uniform — see CLAUDE.md §12 on per-subtype differences).
+  @cap:gateway @feat:security-enforcement @type:negative @rule:cross-credential @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: A valid credential presented in another credential kind's header is refused as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_oauth_apikey_api.json" as "xcApiId" and deployed it
+    When I publish the "apis" resource with id "xcApiId"
+    Then The lifecycle status of API "xcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "xcApiId"
+    And I extract response field "context" and store it as "xcContext"
+    When I have set up application with keys, subscribed to API "xcApiId", and obtained access token for "xcSubId"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "xcApiKeyGenPayload"
+    """
+    {"keyName": "CrossCredentialKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
+    """
+    And I request an api key for application id "createdAppId" using payload "xcApiKeyGenPayload"
+    Then The response status code should be 200
+    When I generate an internal API key for API "xcApiId" and store it as "xcInternalKey"
+    Then The response status code should be 200
+
+    # POSITIVE CONTROL 1: the OAuth2 token IS valid on this API in its own header. The control only does its job —
+    # making each refusal below attributable to the credential KIND — if it shows the credential reached the
+    # BACKEND, so the payload is pinned, not just the status.
+    When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+    # POSITIVE CONTROL 2: the api key IS valid on this API in its own header.
+    When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    # The OAuth2 access token in the api-key header -> refused.
+    When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "generatedAccessToken" verbatim in header "apikey" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+    # The publisher internal key in the api-key header -> refused.
+    When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "xcInternalKey" verbatim in header "apikey" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+    # The publisher internal key as an Authorization bearer -> refused.
+    When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" using access token "xcInternalKey" and payload "" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+    # The OAuth2 access token in the Internal-Key header -> refused.
+    When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "generatedAccessToken" verbatim in header "Internal-Key" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+    # The devportal api key in the Internal-Key header -> refused.
+    When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "apiKey" verbatim in header "Internal-Key" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The HTTP Basic SCHEME is refused where the API does not permit it. This replaces the hollow legacy
+  # testInvocationWithBasicAuthForOauthOnlyAPINegative, which was vacuous for TWO independent reasons: it sent
+  # "Authorization: Basic abcce" (not valid base64 of any user:password, so a 401 only proves "a garbage header is
+  # refused"), AND it targeted an API with mutual SSL AND OAuth mandatory while presenting NO client certificate,
+  # so the refusal could not be distinguished from a missing-certificate rejection. Here the target is an
+  # OAUTH2-ONLY API (no mTLS in the mix) and the credential is a WELL-FORMED base64 of a REAL existing user's
+  # username:password — a credential the gateway CAN decode and authenticate, and which succeeds on a
+  # basic_auth-permitting API (see the basic-auth scenario above). So the refusal below is genuinely about the
+  # SCHEME not being permitted. The OAuth positive control first proves the API itself is routable.
+  #
+  # OBSERVED, and stronger than expected: the refusal is 401 with code 900902 "Missing Credentials" - NOT 900901
+  # "Invalid Credentials". The gateway does not merely reject the Basic credential, it does not treat the header as
+  # a candidate credential AT ALL for an API that does not permit basic_auth. That is the sharpest possible form of
+  # scheme enforcement, and it is exactly what legacy's "Basic abcce" could never have shown: a malformed Basic
+  # header on a basic_auth-PERMITTING API is 900901 (the wrong-password case above), so legacy's bare 401 was
+  # equally consistent with the Basic scheme being fully accepted. The code is pinned per case, empirically: the
+  # cross-credential scenario above answers 900901 on the very same status, so a status-only assertion would
+  # conflate two different product behaviours.
+  @cap:gateway @feat:security-enforcement @type:negative @rule:basic-auth @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: A well-formed Basic credential is refused on an oauth2-only API as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_oauth2_only_api.json" as "boApiId" and deployed it
+    When I publish the "apis" resource with id "boApiId"
+    Then The lifecycle status of API "boApiId" should be "Published"
+    When I retrieve the "apis" resource with id "boApiId"
+    And I extract response field "context" and store it as "boContext"
+    When I have set up application with keys, subscribed to API "boApiId", and obtained access token for "boSubId"
+    Then The response status code should be 200
+
+    # POSITIVE CONTROL: the API is routable and its permitted scheme (oauth2) works, all the way to the backend.
+    When I invoke the API at gateway context "{{boContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    # A WELL-FORMED Basic credential for a real user, on an API that does not permit basic_auth -> refused (401).
+    When I invoke the API at gateway context "{{boContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900902"
+    And The response should contain "Missing Credentials"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Which credential kinds a basic_auth-ONLY API honours at the gateway. Ports testInvokeBearerTokenForBasicNegative
+  # (a VALID OAuth bearer -> 401), testInvokeAPIKeyForBasicOauthAPINegative (a VALID api key -> 401) and
+  # testInvokeInternalKeyForBasicAuthOnlyAPI (the publisher internal key -> 200: the internal key deliberately
+  # BYPASSES the declared application-security scheme, which is the try-out path). The Basic positive control comes
+  # first so the two refusals cannot be confused with an unroutable API. The bearer token and the api key are both
+  # minted against a real subscription, so they are valid credentials refused purely on scheme grounds.
+  # OBSERVED: both refusals are 401 with code 900902 "Missing Credentials" - on a basic_auth-only API neither an
+  # Authorization: Bearer header nor an ApiKey header is even a candidate credential, so nothing is "invalid": there
+  # is simply no Basic credential present. Contrast the cross-credential scenario above, where the same 401 carries
+  # 900901 because the header IS one the API's authenticators read. Pinned per case, never widened.
+  @cap:gateway @feat:security-enforcement @rule:scheme-enforcement @type:regression @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: A basic_auth-only API accepts Basic and the internal key but refuses bearer and api-key credentials as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_basicauth_only_api.json" as "baApiId" and deployed it
+    When I publish the "apis" resource with id "baApiId"
+    Then The lifecycle status of API "baApiId" should be "Published"
+    When I retrieve the "apis" resource with id "baApiId"
+    And I extract response field "context" and store it as "baContext"
+    When I have set up application with keys, subscribed to API "baApiId", and obtained access token for "baSubId"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "baApiKeyGenPayload"
+    """
+    {"keyName": "BasicOnlyApiKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
+    """
+    And I request an api key for application id "createdAppId" using payload "baApiKeyGenPayload"
+    Then The response status code should be 200
+    When I generate an internal API key for API "baApiId" and store it as "baInternalKey"
+    Then The response status code should be 200
+
+    # POSITIVE CONTROL: the permitted scheme (basic_auth) authorises a valid carbon user through to the backend.
+    When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    # A VALID OAuth2 bearer token on a basic_auth-only API -> refused (401).
+    When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900902"
+    And The response should contain "Missing Credentials"
+    # A VALID api key on a basic_auth-only API -> refused (401).
+    When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900902"
+    And The response should contain "Missing Credentials"
+    # The publisher internal key BYPASSES the declared scheme -> 200 from the backend. The payload matters here
+    # more than anywhere else in this scenario: the claim is that a credential the API's declared scheme does NOT
+    # permit still reaches the upstream, and only the backend body shows that it did.
+    When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using internal key "baInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The WWW-Authenticate challenge on an api-key-enabled API. Ports testWWWAuthorizationHeaderForApiWithApiKeys:
+  # invoking an API whose securityScheme includes api_key with NO Authorization header must answer with a
+  # WWW-Authenticate response header advertising the API Key realm. This is the first v2 assertion on a RESPONSE
+  # HEADER of a gateway auth rejection. (Legacy's second case — putting a null value in the Authorization header
+  # map, which the client drops — is byte-for-byte the same request as the first, so there is one case here.)
+  @cap:gateway @feat:security-enforcement @type:negative @rule:auth-challenge @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: An api-key-enabled API answers an unauthenticated call with a WWW-Authenticate challenge as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_oauth_apikey_api.json" as "wwApiId" and deployed it
+    When I publish the "apis" resource with id "wwApiId"
+    Then The lifecycle status of API "wwApiId" should be "Published"
+    When I retrieve the "apis" resource with id "wwApiId"
+    And I extract response field "context" and store it as "wwContext"
+
+    When I invoke the API at gateway context "{{wwContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response header "WWW-Authenticate" should contain "API Key realm=\"WSO2 API Manager\""
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Subscription REMOVAL (as opposed to never having subscribed) is enforced on an api-key credential. Ports
+  # testInvocationWithApiKeysWithoutSubscription: an api key generated on a SUBSCRIBED application invokes the
+  # api_key-secured API (200); once the subscription is DELETED the same key is refused (403). The never-subscribed
+  # OAuth case is covered by the no-subscription scenario above; this one proves the gateway also drops an
+  # already-valid api key when its subscription goes away (a JMS-propagated invalidation, hence the retry window).
+  @cap:gateway @feat:security-enforcement @type:negative @rule:no-subscription @dep:publisher @dep:devportal @legacy:APISecurityTestCase
+  Scenario Outline: An api key is refused after its application's subscription is removed as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_apikey_only_api.json" as "srApiId" and deployed it
+    When I publish the "apis" resource with id "srApiId"
+    Then The lifecycle status of API "srApiId" should be "Published"
+    When I retrieve the "apis" resource with id "srApiId"
+    And I extract response field "context" and store it as "srContext"
+    When I have set up application with keys, subscribed to API "srApiId", and obtained access token for "srSubId"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "srApiKeyGenPayload"
+    """
+    {"keyName": "SubRemovalKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
+    """
+    And I request an api key for application id "createdAppId" using payload "srApiKeyGenPayload"
+    Then The response status code should be 200
+
+    # Subscribed -> the api key invokes successfully.
+    When I invoke the API at gateway context "{{srContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # Remove the subscription -> the SAME api key is refused (403).
+    When I delete the subscription with id "srSubId"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{srContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # An admin-side PASSWORD RESET invalidates the credentials already issued to that user, enforced at the gateway.
+  # Ports APISecurityTestCase#testInvokeJWTUserToken (a password-grant USER token invokes with 200; after the admin
+  # changes that user's password the SAME already-issued token returns 401) and #testInvokeBasicAuthAfterCredentialsInvalid
+  # (Basic with the OLD password is then 401 while Basic with the NEW password is 200). The two are one arc on one
+  # user and are asserted together: the Basic legs are what prove the reset actually took effect in the user store,
+  # so the token rejection is credential invalidation rather than an unrelated token failure.
+  #
+  # The user is provisioned BY THIS SCENARIO under a generated name and swept afterwards. It cannot be one of the
+  # block-seeded actors: changing a shared actor's password would invalidate the tokens of every scenario running in
+  # parallel as that actor. The API permits both oauth2 and basic_auth so one fixture carries both credential kinds.
+  # The application's keys must include the password grant, so the app is built inline rather than via the
+  # client-credentials-only composite.
+  @cap:gateway @feat:security-enforcement @rule:password-change @type:regression @dep:publisher @dep:admin @legacy:APISecurityTestCase
+  Scenario Outline: A password reset invalidates the user's already-issued token and old Basic credential as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_oauth_basicauth_api.json" as "pcApiId" and deployed it
+    When I publish the "apis" resource with id "pcApiId"
+    Then The lifecycle status of API "pcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "pcApiId"
+    And I extract response field "context" and store it as "pcContext"
+
+    # A scenario-owned user whose password this scenario is free to change.
+    When I provision a user with name prefix "pcUser" password "Password@123" and roles "Internal/subscriber" storing the username as "pcUsername"
+
+    # An application subscribed to the API, with keys that support the PASSWORD grant.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "pcAppPayload"
+    And I create an application with payload "pcAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "pcKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "pcKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "pcSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "pcApiId" using application "createdAppId" with payload "pcSubPayload" as "pcSubId"
+    Then The response status code should be 201
+
+    # A password-grant token FOR THAT USER invokes the API (200) — the token is issued and works.
+    When I request an OAuth access token using password grant as user "{{pcUsernameLoginName}}" with password "Password@123"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # The user's Basic credential also works (the second credential kind, before the reset).
+    When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{pcUsernameLoginName}}" password "Password@123" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # The admin resets that user's password.
+    When I change the password of user "pcUsername" to "Changed@456" as the tenant admin
+
+    # The SAME already-issued access token is now rejected at the gateway (401) — the credential change invalidated
+    # it. This is the assertion the whole arc exists for; it is NOT a re-run of the token grant.
+    When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+    # Basic with the OLD password is refused (401) and Basic with the NEW password is accepted (200) — proof the
+    # reset landed in the user store, so the token rejection above is credential invalidation.
+    When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{pcUsernameLoginName}}" password "Password@123" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+    When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{pcUsernameLoginName}}" password "Changed@456" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

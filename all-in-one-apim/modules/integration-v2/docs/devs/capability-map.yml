@@ -28,6 +28,7 @@ capabilities:
       soap-design:       { name: SOAP (passthrough) API design }
       service-catalog:   { name: Service catalog }
       mcp-servers:       { name: MCP server authoring (create proxy/from-OpenAPI/from-API, CRUD, backends) }
+      security-audit:    { name: API security audit report (external audit service) }
 
   devportal:
     name: DevPortal — discovery & consumption
@@ -110,5 +111,7 @@ capabilities:
     features:
       request-logging:  { name: Request / access logging }
       remote-logging:   { name: Remote server log publishing }
+      correlation-logging: { name: Correlation log component configuration (devops API) }
+      per-api-logging:  { name: Per-API / per-resource log level (devops API) }
       analytics-events: { name: Analytics events }
       alerts:           { name: Alerts }

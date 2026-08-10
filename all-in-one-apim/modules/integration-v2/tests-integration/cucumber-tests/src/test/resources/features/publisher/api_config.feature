@@ -163,20 +163,10 @@ Feature: Publisher API Runtime & Common Configuration
       | super       |              |
       | tenant1.com | @tenant1.com |
 
-  # Small self-contained publisher read endpoints (no shared config API needed). Ports GetLinterCustomRules and
-  # the publisher throttling-policies read (APIM634 tiers / APIMGetAllSubscriptionThrottlingPolicies).
-  @cap:publisher @feat:api-config @type:smoke @legacy:GetLinterCustomRulesThroughThePublisherRestAPITestCase
-  Scenario Outline: Retrieve the linter custom rules as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I retrieve the linter custom rules
-    Then The response status code should be 200
-
-    Examples:
-      | actor                     |
-      | publisherUser             |
-      | publisherUser@tenant1.com |
-
-  @cap:publisher @feat:api-config @type:smoke @legacy:APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase @legacy:APIMGetAllSubscriptionThrottlingPolicies
+  # Small self-contained publisher read endpoints (no shared config API needed).
+  # (The linter-custom-rules round trip lives in publisher/api_lifecycle — it must UPDATE tenant-conf, and that
+  # file already owns this block's only tenant-conf mutation, so co-locating serialises the two.)
+  @cap:publisher @feat:api-config @type:smoke @legacy:APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
   Scenario Outline: Retrieve available <level> throttling policies as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the publisher "<level>" throttling policies
@@ -189,6 +179,113 @@ Feature: Publisher API Runtime & Common Configuration
       | subscription | publisherUser@tenant1.com |
       | api          | publisherUser             |
       | api          | publisherUser@tenant1.com |
+
+  # The default SUBSCRIPTION tiers, asserted by NAME and quota rather than by list index. Ports APIM634, which
+  # asserted count == 5 plus each tier's name/displayName/description positionally (list.get(0..4)). Here the
+  # exact name SET is asserted alongside the count, so a failure says WHICH tier changed — a bare count is brittle
+  # against the product adding a default tier and, on its own, tells you nothing about which one moved. Every
+  # description is pinned exactly, so a silently re-quota'd default tier fails the test.
+  @cap:publisher @feat:api-config @rule:throttling-tiers @type:regression @legacy:APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
+  Scenario Outline: The default subscription throttling tiers carry their exact names and quotas as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I retrieve the publisher "subscription" throttling policies
+    Then The response status code should be 200
+    And The value of response field "count" should be "5"
+    And The response field "list[*].name" should be exactly the list "Bronze,DefaultSubscriptionless,Gold,Silver,Unlimited"
+    And The response field "list[?(@.name=='Bronze')].displayName" should be exactly the list "Bronze"
+    And The response field "list[?(@.name=='Bronze')].description" should be exactly the list "Allows 1000 requests per minute"
+    And The response field "list[?(@.name=='Gold')].displayName" should be exactly the list "Gold"
+    And The response field "list[?(@.name=='Gold')].description" should be exactly the list "Allows 5000 requests per minute"
+    And The response field "list[?(@.name=='Silver')].displayName" should be exactly the list "Silver"
+    And The response field "list[?(@.name=='Silver')].description" should be exactly the list "Allows 2000 requests per minute"
+    And The response field "list[?(@.name=='Unlimited')].displayName" should be exactly the list "Unlimited"
+    And The response field "list[?(@.name=='Unlimited')].description" should be exactly the list "Allows unlimited requests"
+    And The response field "list[?(@.name=='DefaultSubscriptionless')].displayName" should be exactly the list "DefaultSubscriptionless"
+    And The response field "list[?(@.name=='DefaultSubscriptionless')].description" should be exactly the list "Allows 10000 requests per minute when subscription validation is disabled"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The STREAMING subscription policies — the nine event-count-quota tiers. Ports
+  # APIMGetAllSubscriptionThrottlingPolicies.testGetAllSubscriptionThrottlingPoliciesByQuotaType. The endpoint
+  # (/throttling-policies/streaming/subscription) IS the eventCount filter; it is a different resource from the
+  # /throttling-policies/{policyLevel} read above, which has no quota-type dimension at all. See the step's
+  # javadoc for why legacy's "quotaType=eventCount" argument never reached the wire.
+  @cap:publisher @feat:api-config @rule:throttling-tiers @type:regression @legacy:APIMGetAllSubscriptionThrottlingPolicies
+  Scenario Outline: The streaming subscription throttling policies carry their exact names and quotas as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I retrieve the publisher streaming subscription throttling policies
+    Then The response status code should be 200
+    And The value of response field "count" should be "9"
+    # NOTE the field name: this endpoint returns SubscriptionPolicyDTOs keyed on "policyName", NOT the
+    # ThrottlingPolicyDTO "name" of the scenario above. Confirmed live — filtering on "name" here matches nothing.
+    And The response field "list[*].policyName" should be exactly the list "AsyncBronze,AsyncGold,AsyncSilver,AsyncUnlimited,AsyncDefaultSubscriptionless,AsyncWHBronze,AsyncWHGold,AsyncWHSilver,AsyncWHUnlimited"
+    And The response field "list[*].defaultLimit.type" should be exactly the list "EVENTCOUNTLIMIT"
+    And The response field "list[?(@.policyName=='AsyncBronze')].displayName" should be exactly the list "AsyncBronze"
+    And The response field "list[?(@.policyName=='AsyncBronze')].description" should be exactly the list "Allows 5000 events per day"
+    And The response field "list[?(@.policyName=='AsyncBronze')].defaultLimit.eventCount.eventCount" should be exactly the list "5000"
+    And The response field "list[?(@.policyName=='AsyncGold')].displayName" should be exactly the list "AsyncGold"
+    And The response field "list[?(@.policyName=='AsyncGold')].description" should be exactly the list "Allows 50000 events per day"
+    And The response field "list[?(@.policyName=='AsyncGold')].defaultLimit.eventCount.eventCount" should be exactly the list "50000"
+    And The response field "list[?(@.policyName=='AsyncSilver')].displayName" should be exactly the list "AsyncSilver"
+    And The response field "list[?(@.policyName=='AsyncSilver')].description" should be exactly the list "Allows 25000 events per day"
+    And The response field "list[?(@.policyName=='AsyncSilver')].defaultLimit.eventCount.eventCount" should be exactly the list "25000"
+    And The response field "list[?(@.policyName=='AsyncUnlimited')].displayName" should be exactly the list "AsyncUnlimited"
+    And The response field "list[?(@.policyName=='AsyncUnlimited')].description" should be exactly the list "Allows unlimited events"
+    And The response field "list[?(@.policyName=='AsyncDefaultSubscriptionless')].displayName" should be exactly the list "AsyncDefaultSubscriptionless"
+    And The response field "list[?(@.policyName=='AsyncDefaultSubscriptionless')].description" should be exactly the list "Allows 10000 events per day when subscription validation is disabled"
+    And The response field "list[?(@.policyName=='AsyncDefaultSubscriptionless')].defaultLimit.eventCount.eventCount" should be exactly the list "10000"
+    # The four webhook (WH) tiers additionally cap active subscriptions. subscriberCount is pinned alongside the
+    # description because the two DISAGREE for AsyncWHBronze — see the note under the scenario.
+    And The response field "list[?(@.policyName=='AsyncWHBronze')].displayName" should be exactly the list "AsyncWHBronze"
+    And The response field "list[?(@.policyName=='AsyncWHBronze')].description" should be exactly the list "Allows 1000 events per month and 500 active subscriptions"
+    And The response field "list[?(@.policyName=='AsyncWHBronze')].subscriberCount" should be exactly the list "100"
+    And The response field "list[?(@.policyName=='AsyncWHGold')].displayName" should be exactly the list "AsyncWHGold"
+    And The response field "list[?(@.policyName=='AsyncWHGold')].description" should be exactly the list "Allows 10000 events per month and 1000 active subscriptions"
+    And The response field "list[?(@.policyName=='AsyncWHGold')].subscriberCount" should be exactly the list "1000"
+    And The response field "list[?(@.policyName=='AsyncWHSilver')].displayName" should be exactly the list "AsyncWHSilver"
+    And The response field "list[?(@.policyName=='AsyncWHSilver')].description" should be exactly the list "Allows 5000 events per month and 500 active subscriptions"
+    And The response field "list[?(@.policyName=='AsyncWHSilver')].subscriberCount" should be exactly the list "500"
+    And The response field "list[?(@.policyName=='AsyncWHUnlimited')].displayName" should be exactly the list "AsyncWHUnlimited"
+    And The response field "list[?(@.policyName=='AsyncWHUnlimited')].description" should be exactly the list "Allows unlimited events and unlimited active subscriptions"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # An API's own gatewayType field (wso2/synapse vs wso2/apk) — set at create, surviving a revision deploy, and
+  # reflected on re-fetch. Ports APICreationTestCase.testCreateAndDeployApiWithGatewayType. NOTE this is the
+  # API-level field: admin/gateway_environments.feature:42 sets a gateway type on an ENVIRONMENT, a different
+  # resource. The revision deploy is part of the legacy assertion (it asserted a non-null revision id), so it is
+  # kept: it proves the field does not block deployment.
+  @cap:publisher @feat:api-config @rule:gateway-type @type:regression @legacy:APICreationTestCase
+  Scenario Outline: An API created with gatewayType <gatewayType> reports it after deployment as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "gwTypeApiPayload"
+    And I set the field "gatewayType" to "<gatewayType>" in the payload "gwTypeApiPayload"
+    And I create an "apis" resource with payload "gwTypeApiPayload" as "gwTypeApiId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "gwTypeRevPayload"
+    """
+    {"description":"revision for gatewayType check"}
+    """
+    And I make a request to create a revision for "apis" resource "gwTypeApiId" with payload "gwTypeRevPayload"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "apis" resource "gwTypeApiId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "gwTypeApiId"
+    Then The response status code should be 200
+    And The value of response field "gatewayType" should be "<gatewayType>"
+
+    Examples:
+      | gatewayType   | actor                     |
+      | wso2/apk      | publisherUser             |
+      | wso2/apk      | publisherUser@tenant1.com |
+      | wso2/synapse  | publisherUser             |
+      | wso2/synapse  | publisherUser@tenant1.com |
 
   # I1: a CORS-disabled API returns EMPTY arrays (not null) for the CORS allow-lists. Ports
   # CheckEmptyCORSConfigurationsTestCase — creating an API with an explicit CORS object whose lists are null

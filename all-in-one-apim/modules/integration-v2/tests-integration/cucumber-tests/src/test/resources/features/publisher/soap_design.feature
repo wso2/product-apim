@@ -19,7 +19,7 @@ Feature: Publisher SOAP API Design
       | publisherUser@tenant1.com  |
 
   @cap:publisher @feat:soap-design @type:negative @legacy:APIMANAGERPublisherTestCase
-  Scenario Outline: A subscriber-role user cannot create an API as <actor>
+  Scenario Outline: A subscriber-role user cannot create a SOAP API as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_soap_api.json" in context as "subscriberApiPayload"
     And I attempt to create an "apis" resource with payload "subscriberApiPayload"

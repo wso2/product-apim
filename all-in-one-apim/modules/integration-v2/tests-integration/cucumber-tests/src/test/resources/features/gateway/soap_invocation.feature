@@ -77,6 +77,11 @@ Feature: Gateway SOAP API Invocation
     """
     When I invoke the API at gateway context "{{srContext}}/1.0.0/sayHello" with method "POST" using access token "generatedAccessToken" and payload "srBody" with content type "application/json" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    # The conversion IS the subject, so the SOAP backend's own payload must reach the client. "SOAP Stub" is the
+    # soap-stub's distinctive response value; a 200 alone would be satisfied by an empty body, i.e. by the
+    # out-sequence dropping the backend response entirely — which is the exact failure this scenario exists to
+    # catch.
+    And The response should contain "SOAP Stub"
 
     Examples:
       | actor             |
