@@ -36,6 +36,7 @@ Feature: Key Manager Token Revocation
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
 
     When I revoke the OAuth access token "generatedAccessToken"
     Then The response status code should be 200
@@ -170,3 +171,78 @@ Feature: Key Manager Token Revocation
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Ports testInvokeJWTUserToken: a password-grant token is invalidated IMPLICITLY when the resource owner's
+  # password is reset out of band by an admin — no explicit revoke call. This is the security property a
+  # re-authentication test cannot show: proving the NEW password works says nothing about whether the token
+  # issued under the OLD one is still honoured at the gateway.
+  #
+  # The resource owner is a principal this scenario provisions at runtime, NOT one of the block's seeded actors:
+  # those live in the block-shared actor registry with their passwords cached there, so resetting one would break
+  # every sibling runner in the block. Because that principal is deliberately not registered as an actor, the
+  # token is requested with the EXPLICIT-credentials password-grant step.
+  #
+  # Runs x2 tenants so token invalidation on credential change is verified in each tenant's key-manager context.
+  @cap:key-manager @feat:token-revocation @rule:password-change @type:regression @dep:gateway @dep:admin @legacy:APISecurityTestCase
+  Scenario Outline: An already-issued access token is rejected after its user's password is reset
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pcApiId" and deployed it
+    When I publish the "apis" resource with id "pcApiId"
+    Then The lifecycle status of API "pcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "pcApiId"
+    And I extract response field "context" and store it as "pcApiContext"
+
+    # The resource owner, provisioned for this scenario only, under a runner-unique name.
+    When I generate a unique alphanumeric value and store it as "pcUsr"
+    And I provision store user "{{pcUsr}}" with password "OldPass@123" and roles "Internal/subscriber" in tenant "<tenant>"
+
+    # An application (password grant enabled) subscribed to the API.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "pcAppPayload"
+    And I create an application with payload "pcAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "pcAppKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "pcAppKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "pcSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "pcApiId" using application "createdAppId" with payload "pcSubscriptionPayload" as "pcSubscriptionId"
+    Then The response status code should be 201
+
+    # A token issued to that user under the OLD password invokes successfully.
+    When I request an OAuth access token using password grant as user "{{pcUsr}}<suffix>" with password "OldPass@123"
+    Then The response status code should be 200
+    And I invoke the API at gateway context "{{pcApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+
+    # The admin resets that user's password. The token is not touched, and nothing is revoked explicitly.
+    When I change the password of user "pcUsr" to "NewPass@456" as the tenant admin
+
+    # The ALREADY-ISSUED token is now rejected at the gateway (polled — the invalidation propagates via JMS).
+    # "generatedAccessToken" still holds the OLD token: the new one is requested only AFTER this assertion, so
+    # the old value is asserted in place rather than copied to a second key (a copy that silently failed to
+    # resolve would send a garbage bearer token and 401 for the wrong reason).
+    When I invoke the API at gateway context "{{pcApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+
+    # Positive control: the account itself still works — a token issued under the NEW password invokes (200). So
+    # the 401 above is the old token being invalidated, not the user having been locked out or deleted.
+    When I request an OAuth access token using password grant as user "{{pcUsr}}<suffix>" with password "NewPass@456"
+    Then The response status code should be 200
+    And I invoke the API at gateway context "{{pcApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+
+    # Remove the runtime principal (the step's deleteUser is store-agnostic; this name is in the primary store).
+    When I remove the secondary user store user "{{pcUsr}}" in tenant "<tenant>"
+
+    Examples:
+      | actor | tenant | suffix |
+      | admin | carbon.super |  |
+      | admin@tenant1.com | tenant1.com | @tenant1.com |

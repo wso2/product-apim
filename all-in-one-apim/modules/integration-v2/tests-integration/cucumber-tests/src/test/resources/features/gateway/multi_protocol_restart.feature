@@ -25,6 +25,7 @@ Feature: Gateway Multi-Protocol Invocation Across Restart
     And I copy context value "generatedAccessToken" to "restToken"
     And I invoke the API at gateway context "{{restContext}}/1.0.0/customers/123/" with method "GET" using access token "restToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
 
     # --- GraphQL API: deploy, subscribe, invoke a query, preserve its token/context ---
     When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "gqlRsPayload"
@@ -44,6 +45,7 @@ Feature: Gateway Multi-Protocol Invocation Across Restart
     """
     And I invoke the API at gateway context "{{gqlRsContext}}/1.0.0" with method "POST" using access token "gqlToken" and payload "gqlRsQuery" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "Afrikaans"
 
     # --- WebSocket API: deploy, subscribe (async), invoke echo, preserve its token/context ---
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsRsApiId" and deployed it
@@ -60,6 +62,8 @@ Feature: Gateway Multi-Protocol Invocation Across Restart
     When I gracefully restart the API Manager server
     And I invoke the API at gateway context "{{restContext}}/1.0.0/customers/123/" with method "GET" using access token "restToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
     When I invoke the API at gateway context "{{gqlRsContext}}/1.0.0" with method "POST" using access token "gqlToken" and payload "gqlRsQuery" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "Afrikaans"
     When I invoke the WebSocket API at gateway ws context "{{wsRsContext}}/1.0.0" with message "hello ws" using access token "wsToken" expecting echo "HELLO WS" within 60 seconds

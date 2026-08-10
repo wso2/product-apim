@@ -47,10 +47,11 @@ import java.util.Map;
  *       actor or anonymously-in-tenant, polling until the visibility-driven status settles (the store index is
  *       eventually consistent after a publish / visibility change);</li>
  *   <li>content search on the publisher and devportal planes asserting an exact result <em>count</em> — a
- *       {@code description:}-scoped query matches exactly one API (pinned live: a bare content query does not match
- *       a {@code Names.unique}-style underscore-joined token, so the feature uses the {@code description:} field),
- *       and a role-restricted API is found (count 1) only by an authorised searcher (count 0 otherwise), plus
- *       tag-cloud presence/absence of a specific tag value.</li>
+ *       {@code description:}-scoped query matches exactly one API. The field MUST be named: pinned live, a
+ *       FIELDLESS query on this build is a NAME search, not a content search (a bare query for a token appearing
+ *       only in an API's description returns 0 while {@code description:<sameToken>} returns 1), which is also why
+ *       document-content search is not portable here. Also: a role-restricted API is found (count 1) only by an
+ *       authorised searcher (count 0 otherwise), plus tag-cloud presence/absence of a specific tag value.</li>
  * </ul>
  * The role-restricted status the DevPortal returns to an unauthorised caller is <b>404</b> (verified live and in
  * the legacy DevPortalVisibilityTestCase — the store hides a restricted API rather than 403-ing it), so the
@@ -94,6 +95,47 @@ public class VisibilityAccessSteps {
     }
 
     /**
+     * The mode-PARAMETERISED generalisation of the two {@code restricted visibility} steps above: creates an API
+     * from a payload already in context with its DevPortal {@code visibility} set to the given mode, then revisions
+     * and deploys it through the same shared primitive. It exists so ONE {@code Scenario Outline} can drive
+     * {@code PUBLIC}, {@code PRIVATE} and {@code RESTRICTED} from an Examples column — which is the whole point of
+     * the cross-domain visibility features (proving the publisher-plane listing is tenant-scoped *regardless* of
+     * the DevPortal visibility mode requires all three modes side by side, and a per-mode step would make that
+     * table impossible). The two steps above remain the RESTRICTED-only shorthands the role-visibility features
+     * read better with.
+     * <p>
+     * {@code visibility} is one of:
+     * <ul>
+     *   <li>{@code PUBLIC} — visible to everyone, including anonymous store callers;</li>
+     *   <li>{@code PRIVATE} — the DTO value behind the UI's "Visible to my domain": visible to every principal of
+     *       the API's own tenant but to nobody outside it, and NOT to an anonymous store caller. This is a
+     *       DevPortal-plane field only — it does not restrict the Publisher plane;</li>
+     *   <li>{@code RESTRICTED} — visible only to a caller carrying one of {@code roles}.</li>
+     * </ul>
+     * {@code roles} MUST be empty for PUBLIC/PRIVATE (those modes carry no role list) and non-empty for RESTRICTED;
+     * a mismatch fails fast rather than silently authoring a different API than the scenario describes.
+     */
+    @When("I have created an api from context payload {string} with devportal visibility {string} for roles {string} as {string} and deployed it")
+    public void iCreateApiWithDevportalVisibility(String payloadKey, String visibility, String rolesCsv,
+                                                  String apiIdKey) throws IOException, InterruptedException {
+        boolean restricted = "RESTRICTED".equals(visibility);
+        if (!restricted && !"PUBLIC".equals(visibility) && !"PRIVATE".equals(visibility)) {
+            throw new IllegalArgumentException("Unknown DevPortal visibility '" + visibility
+                    + "' (expected PUBLIC | PRIVATE | RESTRICTED)");
+        }
+        boolean rolesGiven = rolesCsv != null && !rolesCsv.isBlank();
+        Assert.assertEquals(rolesGiven, restricted, "DevPortal visibility '" + visibility + "' was given roles='"
+                + rolesCsv + "': roles are required for RESTRICTED and must be empty for PUBLIC/PRIVATE");
+
+        JSONObject json = new JSONObject(TestContext.resolve(payloadKey).toString());
+        json.put("visibility", visibility);
+        if (restricted) {
+            json.put("visibleRoles", csvToJsonArray(rolesCsv));
+        }
+        createAndDeployFromJson(json, apiIdKey);
+    }
+
+    /**
      * Sets the {@code description} field on a payload already stored in a context key (resolving {@code {{...}}}
      * placeholders), writing it back to the same key. Used to plant a scenario-unique word in an API's description
      * for a content-search assertion. Non-asserting (a pure payload mutation).
@@ -114,6 +156,22 @@ public class VisibilityAccessSteps {
     public void iCreateAccessControlRestrictedApi(String payloadPath, String rolesCsv, String apiIdKey)
             throws IOException, InterruptedException {
         JSONObject json = loadPayload(payloadPath);
+        json.put("accessControl", "RESTRICTED");
+        json.put("accessControlRoles", csvToJsonArray(rolesCsv));
+        createAndDeployFromJson(json, apiIdKey);
+    }
+
+    /**
+     * As above, but starting from a payload already prepared into a context key — so a scenario can set a
+     * scenario-unique description AND restrict the publisher-plane access control on the same API. That
+     * combination is what the access-control-filtered CONTENT SEARCH needs (ContentSearchTestCase
+     * testContentSearchWithAccessControl): the description carries the searched token while the access role
+     * decides which publisher principal the API is counted for.
+     */
+    @When("I have created an api from context payload {string} with restricted access control for roles {string} as {string} and deployed it")
+    public void iCreateAccessControlRestrictedApiFromContext(String payloadKey, String rolesCsv, String apiIdKey)
+            throws IOException, InterruptedException {
+        JSONObject json = new JSONObject(TestContext.resolve(payloadKey).toString());
         json.put("accessControl", "RESTRICTED");
         json.put("accessControlRoles", csvToJsonArray(rolesCsv));
         createAndDeployFromJson(json, apiIdKey);
@@ -327,22 +385,24 @@ public class VisibilityAccessSteps {
         }
     }
 
+    /**
+     * Polls the devportal read path until it answers {@code expectedStatus}, publishes the LAST response as the
+     * step's assertion target and asserts the exact status itself (§7/§12).
+     *
+     * <p>Funnelled through {@link Utils#retryUntil} rather than a hand-rolled deadline loop (§7/§15): the
+     * envelope owns the {@code max(timeout, RUNTIME_PROPAGATION_TIMEOUT)} ceiling, so this call site cannot
+     * drift below it, and it retries ONLY {@code IOException} — a bad context key still fails fast instead of
+     * being masked as a timeout. Behaviourally identical to the loop it replaces, which already used the same
+     * ceiling and the same {@code pollPause} cadence.
+     */
     private void pollUntilStatus(String url, Map<String, String> headers, int expectedStatus, int timeoutSeconds)
             throws InterruptedException {
-        long pollStart = System.currentTimeMillis();
-        long deadline = pollStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(url, headers);
-                if (last.getResponseCode() == expectedStatus) {
-                    break;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
-        }
+        // Cleared BEFORE the call so a throw leaves httpResponse ABSENT rather than stale — otherwise a
+        // following assertion could pass against the previous step's response (§7's stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance().doGet(url, headers),
+                response -> response.getResponseCode() == expectedStatus);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for " + url);
         Assert.assertEquals(last.getResponseCode(), expectedStatus,
@@ -353,10 +413,19 @@ public class VisibilityAccessSteps {
     // ---- Content search (publisher + devportal), asserting an exact result count -------------------------
 
     /**
-     * Publisher content search ({@code /apis?query=<content>}) as the acting actor, polling until the result count
-     * equals {@code expectedCount} (the search index is asynchronous, hence the poll). Used with a
-     * {@code description:<uniqueWord>} query — which matches exactly the one API whose description carries the word.
-     * Ports the publisher half of ContentSearch (search by description).
+     * Publisher search ({@code /apis?query=<query>}) as the acting actor, polling until the result count equals
+     * {@code expectedCount} (the search index is asynchronous, hence the poll). Two query shapes use it:
+     * <ul>
+     *   <li>{@code description:<uniqueWord>} — matches exactly the one API whose description carries the word
+     *       (the publisher half of ContentSearch, search by description);</li>
+     *   <li>{@code name:<uniqueName>} — the publisher LIST membership probe of the cross-domain visibility
+     *       features: count 1 means the API is in the list this principal is entitled to see, count 0 means it is
+     *       absent. Scoping the list by the API's scenario-unique name (rather than reading the unfiltered
+     *       {@code /apis} page) is what makes the assertion exact under parallel load — an unfiltered first page
+     *       would otherwise hide the API behind the default page size and read as "absent".</li>
+     * </ul>
+     * The count is compared exactly, so a genuine absence is count 0 on a real 200 — never a 401/error read as
+     * "not there" (a non-200 leaves the count at -1 and fails the step).
      */
     @When("I search Publisher APIs with content query {string} until the result count is {int} within {int} seconds")
     public void iSearchPublisherContentUntilCount(String query, int expectedCount, int timeoutSeconds)
@@ -368,10 +437,20 @@ public class VisibilityAccessSteps {
     }
 
     /**
-     * DevPortal content search ({@code /apis?query=<content>}) as the acting actor's devportal token, polling until
-     * the result count equals {@code expectedCount}. Ports the store half of ContentSearch (search by description
-     * and visibility-filtered search): with a {@code description:<uniqueWord>} query, an authorised searcher gets
-     * count 1 and an unauthorised one (lacking the visibility role) gets count 0.
+     * DevPortal search ({@code /apis?query=<query>}) as the acting actor's devportal token, polling until the result
+     * count equals {@code expectedCount}. It is the EXACT-COUNT counterpart of the {@code until it contains} /
+     * {@code until it does not contain} DevPortal search steps — same endpoint, but the assertion is the count, so
+     * use this wherever a count is available (§12) and those only where the subject is genuinely membership.
+     * <p>
+     * The {@code query} is any DevPortal search expression, not only a content one:
+     * <ul>
+     *   <li>{@code description:<uniqueWord>} — the store half of ContentSearch (search by description, and the
+     *       visibility-filtered variant where an authorised searcher gets 1 and an unauthorised one 0);</li>
+     *   <li>a bare token, {@code name:}, {@code tags:}/{@code tag:} and any AND/OR combination of them — the
+     *       exact-count query matrix of DevPortalSearchTest. Measured semantics: terms of the same field OR
+     *       together, different fields AND together, a bare term matches an API's NAME but never a tag or a
+     *       description word, and a tag match is case-SENSITIVE.</li>
+     * </ul>
      */
     @When("I search DevPortal APIs with content query {string} until the result count is {int} within {int} seconds")
     public void iSearchDevportalContentUntilCount(String query, int expectedCount, int timeoutSeconds)
@@ -380,31 +459,57 @@ public class VisibilityAccessSteps {
                 Identity.devportalHeaders(), expectedCount, timeoutSeconds);
     }
 
+    /**
+     * ANONYMOUS DevPortal API LIST search ({@code /apis?query=<query>} with no credentials), polling until the
+     * result count equals {@code expectedCount}. The tenant is addressed by the {@code X-WSO2-Tenant} header, as the
+     * anonymous by-id reads above do — without it the store resolves against the super tenant and a tenant API is
+     * missing for the wrong reason, masking the visibility check.
+     * <p>
+     * This is the one genuinely new probe the cross-domain visibility ports need: the existing anonymous steps are
+     * all by-ID GETs of an API or a sub-resource, and the legacy classes assert LIST membership
+     * ({@code getAPIListFromStoreAsAnonymousUser} + {@code isAPIAvailableInStore}) — a different observable, since a
+     * by-id 404 does not prove the API is absent from the anonymous listing.
+     * <p>
+     * Because count 0 is also what a stale index returns, a scenario asserting an anonymous ABSENCE must first
+     * establish the API IS listed for a principal entitled to see it (or, for PUBLIC, anonymously in its own
+     * tenant); otherwise the absence could pass before the API would ever have appeared.
+     */
+    @When("I search DevPortal APIs anonymously in tenant {string} with query {string} until the result count is {int} within {int} seconds")
+    public void iSearchDevportalAnonymouslyUntilCount(String tenantDomain, String query, int expectedCount,
+                                                      int timeoutSeconds) throws IOException, InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("X-WSO2-Tenant", tenantDomain);
+        searchUntilCount(Utils.getApiSearchURL(Utils.getBaseUrl(), Utils.resolveContextPlaceholders(query)),
+                headers, expectedCount, timeoutSeconds);
+    }
+
+    /**
+     * Polls a search URL until its result {@code count} equals {@code expectedCount}, through
+     * {@link Utils#retryUntil} — the shared envelope for a step whose RESULT IS THE ASSERTION TARGET (§7/§15):
+     * it owns the deadline (floored at the shared propagation ceiling), the tiered pacing and the
+     * retry-only-{@code IOException} policy, and returns the LAST response so this method publishes it and
+     * asserts the exact count itself. The count is compared exactly, so an absence is count 0 on a real 200 —
+     * a non-200 leaves the count at -1 and fails.
+     */
     private void searchUntilCount(String url, Map<String, String> headers, int expectedCount, int timeoutSeconds)
-            throws IOException, InterruptedException {
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + timeoutSeconds * 1000L;
-        HttpResponse response = null;
-        int actual = -1;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                if (response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isBlank()) {
-                    actual = new JSONObject(response.getData()).optInt("count", -1);
-                }
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+            throws InterruptedException {
+        HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(url, headers),
+                resp -> countOf(resp) == expectedCount);
         Assert.assertNotNull(response, "No content-search response for " + url);
-        Assert.assertEquals(actual, expectedCount,
-                "Content search result count did not reach " + expectedCount + " within " + timeoutSeconds
-                        + "s for " + url + "; last count=" + actual);
+        Assert.assertEquals(countOf(response), expectedCount,
+                "Content search result count did not reach " + expectedCount + " within the retryUntil window "
+                        + "(max(" + timeoutSeconds + "s, the shared propagation ceiling)) for " + url
+                        + "; last response: " + response.getResponseCode() + " / " + response.getData());
+    }
+
+    /** The {@code count} of a search response, or -1 when the response is not a 200 with a body. */
+    private int countOf(HttpResponse response) {
+        if (response == null || response.getResponseCode() != 200
+                || response.getData() == null || response.getData().isBlank()) {
+            return -1;
+        }
+        return new JSONObject(response.getData()).optInt("count", -1);
     }
 
     // ---- DevPortal tag cloud presence / absence of a specific tag ----------------------------------------

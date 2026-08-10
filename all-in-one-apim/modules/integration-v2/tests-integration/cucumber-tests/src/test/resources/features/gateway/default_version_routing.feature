@@ -108,6 +108,7 @@ Feature: Gateway Default Version Routing
     # Versionless invoke of the ".../v1" context (no version segment appended) routes to the default version → 200.
     When I invoke the API at gateway context "{{cvcContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
 
     Examples:
       | actor             |

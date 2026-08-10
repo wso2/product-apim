@@ -183,6 +183,22 @@ module.exports = {
     env: {
       PORT: 3022
     }
+  },
+  {
+    name: "tls-backend",
+    script: "./tls-backend/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3023
+    }
+  },
+  {
+    name: "custom-status-backend",
+    script: "./custom-status-backend/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3024
+    }
   }
   ]
 };

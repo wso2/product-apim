@@ -34,6 +34,14 @@ Feature: Gateway Application Tier Change Enforcement
     Then The lifecycle status of API "tierApiId" should be "Published"
     When I retrieve the "apis" resource with id "tierApiId"
     And I extract response field "context" and store it as "tierApiContext"
+    # §15 SELF-HEALING deploy gate — mandatory here, and this is the one scenario in the wave that cannot do
+    # without it. Every other gateway scenario's FIRST gateway call is an invoke-until-200, which incidentally
+    # waits out propagation; here the first call expects 429, so there was no gate at all and a dropped deploy
+    # event surfaced as an endless 404 ("Invalid URL" in the gateway log, no "Initializing API" line) that the
+    # until-429 poll could only report as "did not return 429". The gate re-emits the at-most-once deploy event
+    # rather than just waiting, and it runs on the management plane so it consumes none of the throttle quota
+    # the assertions below depend on.
+    And the "apis" resource "tierApiId" should be live on the gateway, redeploying if propagation is lost
 
     # An application on the LOW policy, subscribed and keyed for the password grant.
     When I put the following JSON payload in context as "tierAppPayload"
@@ -58,15 +66,28 @@ Feature: Gateway Application Tier Change Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # LOW tier active: the app trips 429 quickly (3/min).
+    # LOW tier active: the app trips 429 quickly (3/min). The 429 carries the THROTTLED-OUT fault payload — legacy
+    # asserts the body (MESSAGE_THROTTLED_OUT), not just the status, and 429 alone cannot say WHICH limit fired.
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The response should contain "900803"
+    And The response should contain "Message throttled out"
+    And The response should contain "You have exceeded your quota"
 
     # Switch the application to the HIGH (20/min) policy. The gateway's per-minute throttle window must roll over
     # before the new limit is observed (a counter reset only clears the persisted count, not the in-flight window),
     # so poll until the app can invoke again (200) — this waits out the old window AND confirms the change is live.
-    # Then a burst of 8 calls all succeed (200) — impossible under the old 3/min limit — proving the tier change
+    # Then a burst of calls all succeed (200) — impossible under the old 3/min limit — proving the tier change
     # raised the enforced limit.
+    #
+    # PRE-LIMIT BOUNDARY (the legacy's "every call up to the limit returns 200"). The burst size is 15, not 20, on
+    # purpose. The poll-until-200 above necessarily lands as the FIRST call of a FRESH window (the previous window
+    # was already over quota, so a 200 can only come from a rolled-over one), leaving the count at 1. A subsequent
+    # window roll mid-burst only RESETS the count, so the worst case is 1 + 15 = 16 of the 20/min budget — four
+    # calls of headroom absorbing any counter the traffic manager double-counts or delivers late. That is what keeps
+    # the boundary deterministic while still proving 16 consecutive in-window successes, far above the 3/min low
+    # tier. No pre-limit boundary is attempted on the LOW (3/min) tier: with a budget of 3 there is no room for
+    # headroom, so any burst assertion there would be a coin flip rather than a boundary.
     When I put the following JSON payload in context as "tierAppToHighPayload"
     """
     {"name":"{{tierAppName}}","throttlingPolicy":"{{appTierHighPolicy}}","description":"switched to high tier"}
@@ -75,10 +96,14 @@ Feature: Gateway Application Tier Change Enforcement
     Then The response status code should be 200
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 90 seconds
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 8 times expecting status 200
-    # And it still trips 429 at the higher limit.
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 15 times expecting status 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    # And it still trips 429 at the higher limit, with the same throttled-out fault payload.
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The response should contain "900803"
+    And The response should contain "Message throttled out"
 
     # Switch the application BACK to the LOW (3/min) policy — the low limit is re-imposed. Wait out the current
     # window (poll until 200), then a fresh burn trips 429 again quickly, proving the change back took effect.
@@ -90,8 +115,11 @@ Feature: Gateway Application Tier Change Enforcement
     Then The response status code should be 200
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 90 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The response should contain "900803"
+    And The response should contain "Message throttled out"
 
     Examples:
       | actor             |

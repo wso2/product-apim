@@ -93,7 +93,8 @@ public final class ResourceCleanup {
      * Teardown list for Service Catalog entries created via {@code /api/am/service-catalog/v1/services}, holding
      * each service's id. A catalog service is admin-plane tenant config that nothing else removes; a service still
      * referenced by an API 409s on delete, so it is swept AFTER the APIs. Deleted via the generic bearer-token
-     * {@link #deleteResources} with the owner's admin token.
+     * {@link #deleteResources} with the owner's SERVICE CATALOG token
+     * ({@link Identity#serviceCatalogTokenKey}) — NOT the admin token, which that plane rejects with 401.
      */
     public static final String CREATED_SERVICE_CATALOG_IDS = "createdServiceCatalogIds";
 
@@ -165,7 +166,18 @@ public final class ResourceCleanup {
      * {@code TestContext.addToList(...)} for anything that must be torn down.
      */
     public static void register(String listKey, Object id) {
-        TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), Identity.actingActorRef()));
+        registerFor(listKey, id, Identity.actingActorRef());
+    }
+
+    /**
+     * As {@link #register} but tagging an EXPLICIT owner reference instead of whoever happens to be acting. For a
+     * resource whose OWNERSHIP CHANGES mid-scenario: after a successful admin change-owner the application belongs
+     * to the new owner, so the creating actor's token can no longer delete it and the sweep would log a misleading
+     * failure while the application leaked. The change-owner step therefore re-registers it under the new owner.
+     * Pass {@code null} for the super-tenant admin default.
+     */
+    public static void registerFor(String listKey, Object id, String actorRef) {
+        TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), actorRef));
     }
 
     /**
@@ -365,9 +377,11 @@ public final class ResourceCleanup {
             // Deleted by alias with the owner's publisher token.
             deleteResources(CREATED_ENDPOINT_CERTIFICATE_ALIASES, Identity::publisherTokenKey,
                     alias -> Utils.getEndpointCertificateByAliasURL(baseUrl, alias));
-            // Service Catalog entries (admin) AFTER the APIs — a service still referenced by an API 409s on
-            // delete, so the APIs (swept above) must go first. Deleted by id with the owner's admin token.
-            deleteResources(CREATED_SERVICE_CATALOG_IDS, Identity::adminTokenKey,
+            // Service Catalog entries AFTER the APIs — a service still referenced by an API 409s on delete, so the
+            // APIs (swept above) must go first. Deleted by id with the owner's SERVICE CATALOG token: this plane is
+            // gated by the service_catalog:service_* scopes, so the admin token used here originally was rejected
+            // 401 on every entry and the whole list leaked (proved against a container; see the key's javadoc).
+            deleteResources(CREATED_SERVICE_CATALOG_IDS, Identity::serviceCatalogTokenKey,
                     id -> Utils.getServiceCatalogByIdURL(baseUrl, id));
             // BYO OAuth clients registered via DCR: swept separately because they authenticate with the owner's
             // Basic credentials (not a bearer token) and are not removed by the DevPortal application's deletion.

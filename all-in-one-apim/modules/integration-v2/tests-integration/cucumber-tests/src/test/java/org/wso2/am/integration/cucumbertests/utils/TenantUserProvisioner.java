@@ -51,7 +51,58 @@ public final class TenantUserProvisioner {
 
     private static final Log logger = LogFactory.getLog(TenantUserProvisioner.class);
 
+    /**
+     * Shared-scope key published by {@code BlockLifecycleListener} (from its {@code emailUserMode} block
+     * parameter): {@code TRUE} when this block runs in email-as-username mode. Published BEFORE any provisioning
+     * so both the block's own boot-time users and any user a scenario provisions later ({@code I provision user
+     * …}) get the same physical username form — see {@link #physicalUserName(String)}. Absent (⇒ false) in every
+     * other block, which is what keeps those blocks byte-for-byte identical to before the mode existed.
+     */
+    public static final String EMAIL_USER_MODE_KEY = "emailUserMode";
+    /**
+     * The mail domain appended to a base actor name in an email-mode block. A mail domain, NOT a tenant domain —
+     * it is the local part of the tenant-qualified username ({@code publisherUser11@email.com@tenant1.com}),
+     * mirroring the legacy {@code emailuser@email.com}. Kept SHORT: the store's {@code UsernameJavaRegEx} caps
+     * the (tenant-unqualified) username at 30 chars.
+     */
+    private static final String EMAIL_USERNAME_MAIL_DOMAIN = "@email.com";
+
     private TenantUserProvisioner() {
+    }
+
+    /**
+     * The PHYSICAL, tenant-unqualified username to provision for a base actor name: the base name itself
+     * normally, or its email form ({@code <base>@email.com}) in an email-mode block ({@link #EMAIL_USER_MODE_KEY}).
+     *
+     * <p>Applied by {@link #addTenant} and {@link #addUser}, so EVERY user the framework provisions — the block's
+     * boot-time set AND one a scenario provisions at runtime — carries the same form. That uniformity is not
+     * cosmetic: with {@code [tenant_mgt] enable_email_domain = true}, {@code MultitenantUtils} splits a username
+     * on its LAST {@code @} only when it holds TWO OR MORE, and reads a single {@code @} as a super-tenant login
+     * whose name happens to contain one. A plain runtime user would therefore be registered as
+     * {@code someUser@tenant1.com} (one {@code @}) and resolve to a non-existent super-tenant user, so every
+     * token request as that principal fails; the email form restores the second {@code @}
+     * ({@code someUser@email.com@tenant1.com}), the tenant-qualified email shape the product expects.
+     *
+     * <p>ACTOR REFERENCES ARE UNAFFECTED — only the physical username changes. {@code Identity.resolveActor}
+     * splits a ref on its FIRST {@code @} into {@code <userKey>@<domain>}, and the userKey registered here is
+     * still the plain base name, so every existing {@code Examples} actor column keeps working verbatim.
+     *
+     * <p>Left UNCHANGED for a name that is already store-qualified ({@code SECONDARY.COM/publisherUser1}) — a
+     * secondary-store username is addressed through its store domain, not a mail domain — and for a name that
+     * already carries the mail domain, so the transform is idempotent.
+     */
+    public static String physicalUserName(String baseName) {
+
+        if (baseName == null || !emailUserMode() || baseName.contains("/")
+                || baseName.endsWith(EMAIL_USERNAME_MAIL_DOMAIN)) {
+            return baseName;
+        }
+        return baseName + EMAIL_USERNAME_MAIL_DOMAIN;
+    }
+
+    /** Whether the block currently in scope runs in email-as-username mode. */
+    private static boolean emailUserMode() {
+        return Boolean.TRUE.equals(TestContext.get(EMAIL_USER_MODE_KEY));
     }
 
 
@@ -204,11 +255,15 @@ public final class TenantUserProvisioner {
      * exists, then publishes the tenant bean to shared scope. Copied from the
      * {@code "I add a new tenant with the following details"} step (with the existing-tenants retrieval,
      * formerly a separate step, folded in).
+     *
+     * @param adminUsername the tenant admin's BASE name; the stored/created username is its
+     *                      {@link #physicalUserName(String)} form (email-mode blocks only)
      */
     public static void addTenant(String tenantDomain, String adminUsername, String adminPassword,
                                  String firstName, String lastName, String email)
             throws IOException, JaxenException {
 
+        adminUsername = physicalUserName(adminUsername);
         List<String> existingTenantDomains = retrieveExistingTenantDomains();
 
         if (existingTenantDomains.contains(tenantDomain)) {
@@ -252,10 +307,15 @@ public final class TenantUserProvisioner {
      * already exists, then attaches the user to the tenant bean in shared scope. Copied from the
      * {@code "I add user ... to the tenant domain ..."} step (with the existing-users retrieval, formerly a
      * separate step, folded in).
+     *
+     * @param username the user's BASE name; the created/registered username is its
+     *                 {@link #physicalUserName(String)} form (email-mode blocks only). {@code userKey} — the
+     *                 handle actors are referenced by — is NEVER transformed.
      */
     public static void addUser(String tenantDomain, String userKey, String username, String password,
                                String roles) throws IOException, JaxenException {
 
+        username = physicalUserName(username);
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
         List<String> existingTenantUsers = retrieveExistingUsers(tenant);
 
@@ -648,6 +708,7 @@ public final class TenantUserProvisioner {
                 tenantAdmin.getUserName(), tenantAdmin.getPassword());
     }
 
+
     /**
      * Polls the Tenant Management Admin Service until it answers 200, closing the race between gateway
      * readiness ({@link ServerReadiness#awaitReady}) and admin-service deployment: the gateway health-check
@@ -747,13 +808,16 @@ public final class TenantUserProvisioner {
      * backend JWT. {@code username} is the bare user name (no tenant suffix for the super tenant).
      *
      * @param tenantDomain the tenant the user belongs to
-     * @param username     bare user name (the user store user, without an {@code @tenant} suffix)
+     * @param username     the user's BASE name, without an {@code @tenant} suffix; resolved to its
+     *                     {@link #physicalUserName(String)} form, so it addresses the same store account
+     *                     {@link #addUser} created in an email-mode block
      * @param claimUri     the local claim URI (e.g. {@code http://wso2.org/claims/mobile})
      * @param claimValue   the value to set
      */
     public static void setUserClaimValue(String tenantDomain, String username, String claimUri, String claimValue)
             throws IOException {
 
+        username = physicalUserName(username);
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
                 "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">" +

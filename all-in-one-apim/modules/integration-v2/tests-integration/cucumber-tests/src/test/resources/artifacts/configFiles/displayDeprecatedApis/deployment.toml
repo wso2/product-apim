@@ -1,0 +1,23 @@
+# Feature-specific TOML overlay for the IntegrationV2-DisplayDeprecatedApis block.
+#
+# Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the extra key this feature
+# needs lives here; everything else (DB, ports, gateway wiring) is inherited.
+#
+#   - [apim.devportal] display_deprecated_apis = true : renders
+#     <APIStore><DisplayAllAPIs>true</DisplayAllAPIs> into api-manager.xml — verified against the SHIPPED
+#     template, repository/resources/conf/templates/repository/conf/api-manager.xml.j2 line 640, whose own
+#     comment reads "whether to display all the APIs [which are having DEPRECATED/PUBLISHED status] or only
+#     display the APIs with having their status is as 'PUBLISHED'". The distribution's default.json ships
+#     apim.devportal.display_deprecated_apis = false, so this overlay is the ONLY way to observe the true
+#     direction.
+#
+# WHY A DEDICATED BLOCK RATHER THAN CO-HOSTING (§13). This key is deliberately NOT folded into an existing
+# overlay block. RegistrySearchUtil.getDevPortalSearchQuery appends `lcState=(PUBLISHED OR PROTOTYPED)` to
+# EVERY devportal query and adds DEPRECATED to that list when the flag is on — so the flag changes the result
+# set of every devportal search and listing in its container, which is exactly the "loud" cross-feature
+# behavioural change §13 says must not be co-located. Any block hosting a devportal search/listing feature
+# would have its counts altered by it.
+
+[apim.devportal]
+display_deprecated_apis = true

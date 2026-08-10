@@ -23,10 +23,12 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -115,7 +117,15 @@ public class KeyManagerAdminSteps {
         String newOwner = apiUsername(Identity.resolveActor(newOwnerRef));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.post(Utils.getChangeApplicationOwnerURL(Utils.getBaseUrl(), appId, newOwner), headers, "", null);
+        HttpResponse response = Requests.post(Utils.getChangeApplicationOwnerURL(Utils.getBaseUrl(), appId, newOwner),
+                headers, "", null);
+        // On a SUCCESSFUL transfer the application now belongs to the new owner, so teardown must delete it AS the
+        // new owner (CLAUDE.md §5): the DevPortal delete is scoped to the requesting subscriber, so sweeping it with
+        // the original creator's token would 404 and leak the application while looking like an already-gone id.
+        if (response.getResponseCode() == 200) {
+            ResourceCleanup.deregister(Constants.CREATED_APPLICATION_IDS, appId);
+            ResourceCleanup.registerFor(Constants.CREATED_APPLICATION_IDS, appId, newOwnerRef);
+        }
     }
 
     /**
@@ -150,13 +160,34 @@ public class KeyManagerAdminSteps {
      */
     @When("I request a client-credentials token using consumer key {string} and secret {string}")
     public void iRequestClientCredentialsToken(String consumerKeyRef, String secretRef) throws IOException {
+        requestClientCredentialsToken(consumerKeyRef, secretRef, "");
+    }
+
+    /**
+     * As the client-credentials step, but requesting an explicit scope. The key manager caches an issued token per
+     * (client, scope) pair and answers a repeat request with the SAME token, so asking for a distinct scope is the
+     * only way to force a genuinely NEW token out of a client that already holds one — which is what proves a
+     * gateway verdict was cached against the earlier token rather than against the client itself.
+     */
+    @When("I request a client-credentials token using consumer key {string} and secret {string} with scope {string}")
+    public void iRequestClientCredentialsTokenWithScope(String consumerKeyRef, String secretRef, String scope)
+            throws IOException {
+        requestClientCredentialsToken(consumerKeyRef, secretRef, scope);
+    }
+
+    private void requestClientCredentialsToken(String consumerKeyRef, String secretRef, String scope)
+            throws IOException {
         String consumerKey = TestContext.resolve(consumerKeyRef).toString();
         String secret = TestContext.resolve(secretRef).toString();
         String creds = Base64.getEncoder().encodeToString(
                 (consumerKey + ":" + secret).getBytes(StandardCharsets.UTF_8));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + creds);
-        Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()), headers, "grant_type=client_credentials",
+        String body = "grant_type=client_credentials";
+        if (scope != null && !scope.isEmpty()) {
+            body += "&scope=" + Utils.urlEncode(Utils.resolveContextPlaceholders(scope));
+        }
+        Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()), headers, body,
                 "application/x-www-form-urlencoded");
     }
 
@@ -182,6 +213,81 @@ public class KeyManagerAdminSteps {
         String a = TestContext.resolve(keyA).toString();
         String b = TestContext.resolve(keyB).toString();
         Assert.assertEquals(a, b, "Stored value '" + keyA + "' (" + a + ") != '" + keyB + "' (" + b + ")");
+    }
+
+    /**
+     * Admin: the scope settings of {@code apim:subscribe} (or any scope) FOR A PARTICULAR USER
+     * ({@code GET system-scopes/{base64(scope)}?username=…}) — the lookup change-owner performs to decide whether a
+     * candidate owner is a valid subscriber. {@code username} is a RAW username (not an actor reference) so the
+     * non-existent-user negative can address a name that was never provisioned; {@code {{...}}} placeholders are
+     * resolved so a uniquified name can be passed. Non-asserting — the feature asserts the exact status.
+     */
+    @When("I retrieve the system scope {string} for the raw user {string}")
+    public void iRetrieveSystemScopeForUser(String scopeName, String rawUsername) throws IOException {
+        String username = Utils.resolveContextPlaceholders(rawUsername);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        Requests.get(Utils.getSystemScopeForUserURL(Utils.getBaseUrl(), scopeName, username), headers);
+    }
+
+    /** As {@link #iRetrieveSystemScopeForUser} but for a provisioned ACTOR (resolved to its API username form). */
+    @When("I retrieve the system scope {string} for {string}")
+    public void iRetrieveSystemScopeForActor(String scopeName, String actorRef) throws IOException {
+        iRetrieveSystemScopeForUser(scopeName, apiUsername(Identity.resolveActor(actorRef)));
+    }
+
+    /**
+     * Asserts the consumer-secrets list response is INTERNALLY consistent: its {@code count} field equals the number
+     * of entries in {@code list}. No generic step can express this — it compares two fields of the SAME body against
+     * each other rather than a field against a literal, and a wrong {@code count} (the thing this guards) would pass
+     * every contains/field assertion.
+     */
+    @Then("The consumer secrets list count should equal the number of listed secrets")
+    public void theSecretsCountShouldMatchListSize() {
+        JSONObject body = successBody("consumer secrets list");
+        Assert.assertTrue(body.has("count"), "count field missing in secrets list response: " + body);
+        int listSize = body.getJSONArray("list").length();
+        Assert.assertEquals(body.getInt("count"), listSize,
+                "secrets list count field (" + body.getInt("count") + ") != number of entries (" + listSize
+                        + "): " + body);
+    }
+
+    /**
+     * Asserts the secret whose id is held under {@code secretIdKey} appears in the published consumer-secrets list
+     * AND that its {@code additionalProperties.description} equals {@code expectedDescription} exactly — i.e. the
+     * description supplied at generation round-trips. Needs its own step because it is a lookup of one list entry BY
+     * ID followed by a nested-property comparison; the JSONPath field step cannot express it (it resolves
+     * placeholders only in the expected value, not inside the path).
+     */
+    @Then("The listed consumer secret {string} should have description {string}")
+    public void theListedSecretShouldHaveDescription(String secretIdKey, String expectedDescription) {
+        String secretId = TestContext.resolve(secretIdKey).toString();
+        JSONObject body = successBody("consumer secrets list");
+        org.json.JSONArray list = body.getJSONArray("list");
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject secret = list.getJSONObject(i);
+            if (secretId.equals(secret.optString("secretId"))) {
+                JSONObject props = secret.optJSONObject("additionalProperties");
+                Assert.assertNotNull(props, "secret " + secretId + " has no additionalProperties: " + secret);
+                Assert.assertEquals(props.optString("description", null), expectedDescription,
+                        "description of secret " + secretId + " did not round-trip: " + secret);
+                return;
+            }
+        }
+        Assert.fail("Secret id " + secretId + " is not present in the secrets list: " + body);
+    }
+
+    /**
+     * The published {@code httpResponse} parsed as a JSON object, after asserting it is a 2xx WITH a body (CLAUDE.md
+     * §7): parsing a failed/empty response otherwise throws an opaque JSONException instead of a clear failure.
+     */
+    private static JSONObject successBody(String what) {
+        HttpResponse resp = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300
+                        && resp.getData() != null && !resp.getData().isBlank(),
+                "Expected a 2xx response with a body for the " + what + ", but got: "
+                        + (resp == null ? "null" : resp.getResponseCode() + " / " + resp.getData()));
+        return new JSONObject(resp.getData());
     }
 
     /** Asserts two previously-stored context values differ (e.g. two independent application ids). */

@@ -40,6 +40,7 @@ Feature: External Key Manager Tenant Token Revocation
     # The tenant API's context already carries the /t/tenant1.com prefix - invoke it verbatim.
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
     # Revoke at IS; prove IS itself reflects it, then that the tenant-org gateway context enforces it.
     When I revoke the access token at the external key manager
     Then The response status code should be 200

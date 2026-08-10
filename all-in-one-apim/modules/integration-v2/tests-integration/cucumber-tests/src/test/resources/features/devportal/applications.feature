@@ -11,11 +11,16 @@ Feature: DevPortal Application Management
   the default server silently drops the `groups` field. That assertion belongs in a feature with its own
   group-sharing TOML overlay, like gateway/custom-auth-header has its own block.
 
-  # Also tags ApplicationCallbackURLTestCase (commented-out in the legacy suite): its two ENABLED methods verified
-  # basic callback-URL persistence through application create + update, which this create/update/delete lifecycle
-  # subsumes. The class's two DISABLED methods asserted callback-URL FORMAT validation (malformed URL / invalid
-  # IP), which the product no longer enforces (the legacy comments state the validation was removed) — so there is
-  # nothing left to port for those.
+  # Also tags ApplicationCallbackURLTestCase (commented out of the legacy testng.xml). Its observable — "create an
+  # application with callbackUrl X, then the app list entry's callbackUrl equals X" — is NOT PORTABLE: the DevPortal
+  # store v1 ApplicationDTO has NO callbackUrl field on this build (verified against the shipped
+  # api#am#devportal.war); callbackUrl exists only on the KEY (ApplicationKeyDTO /
+  # ApplicationKeyGenerateRequestDTO). The product removed the application-level field, which is consistent with the
+  # class being commented out AND with two of its four methods being @Test(enabled=false) noting that callback-URL
+  # validation was removed. So this lifecycle scenario carries the tag for the class's create/update arc, but the
+  # callback-URL assertion itself has no product surface left to assert. The KEY-level callbackUrl (including the
+  # cross-owner overwrite regression) is covered in key-manager/oauth_keys.feature — deliberately NOT substituted
+  # here, since a key field is not the application field the legacy asserted.
   @cap:devportal @feat:applications @type:smoke @legacy:ApplicationCreationTestCase @legacy:ApplicationCallbackURLTestCase
   Scenario Outline: Create, update and delete an application as <actor>
     Given The system is ready and I have valid devportal access token as "<actor>"
@@ -140,3 +145,122 @@ Feature: DevPortal Application Management
       | owner             | otherOwner                 |
       | admin             | subscriberUser             |
       | admin@tenant1.com | subscriberUser@tenant1.com |
+
+  # Ports the EMPTY-description row of APIM678ApplicationCreationTestCase's createApplicationWithValidData provider
+  # ({"NewApplication2", appTier, ""}). Every other application create in this suite supplies a non-empty
+  # description, so a server that rejected or silently defaulted a blank one would go unnoticed. The description is
+  # asserted as exactly the empty string on the create response AND on the subsequent GET (proving it persisted
+  # rather than merely echoing).
+  @cap:devportal @feat:applications @rule:empty-description @type:regression @legacy:APIM678ApplicationCreationTestCase
+  Scenario Outline: An application can be created with an empty description as <actor>
+    Given The system is ready and I have valid devportal access token as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "emptyDescApp"
+    And I set the field "description" to "" in the payload "emptyDescApp"
+    And I create an application with payload "emptyDescApp"
+    Then The response status code should be 201
+    And The value of response field "description" should be ""
+    When I retrieve the application with id "createdAppId"
+    Then The response status code should be 200
+    And The value of response field "description" should be ""
+
+    Examples:
+      | actor                      |
+      | subscriberUser             |
+      | subscriberUser@tenant1.com |
+
+  # Ports APIM678ApplicationCreationTestCase#testUpdateApplication's tier and name updates. The lifecycle scenario
+  # above performs ONE combined update and asserts only the description, so a PUT that silently ignored
+  # throttlingPolicy or name would still pass it. Here each field is changed in its OWN request and the response is
+  # pinned to the exact new value, with the pre-update value captured as the baseline so "changed" is provable.
+  @cap:devportal @feat:applications @rule:field-updates @type:regression @legacy:APIM678ApplicationCreationTestCase
+  Scenario Outline: An application's throttling tier and name can each be updated as <actor>
+    Given The system is ready and I have valid devportal access token as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "fieldUpdApp"
+    And I create an application with payload "fieldUpdApp"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "fieldUpdOrigName"
+    # BASELINE — the tier and name as created (Unlimited / the generated name).
+    And The value of response field "throttlingPolicy" should be "Unlimited"
+
+    # Update ONLY the throttling tier (name/description unchanged) — the new tier must be reflected.
+    When I put the following JSON payload in context as "fieldUpdTierPayload"
+    """
+    {"name": "{{fieldUpdOrigName}}", "throttlingPolicy": "10PerMin", "description": "Test application for scenarios"}
+    """
+    And I update the application "createdAppId" with payload "fieldUpdTierPayload"
+    Then The response status code should be 200
+    And The value of response field "throttlingPolicy" should be "10PerMin"
+    And The value of response field "name" should be "{{fieldUpdOrigName}}"
+
+    # Update ONLY the name (tier stays on the just-updated value) — the new name must be reflected.
+    When I generate a unique value and store it as "fieldUpdNewName"
+    And I put the following JSON payload in context as "fieldUpdNamePayload"
+    """
+    {"name": "{{fieldUpdNewName}}", "throttlingPolicy": "10PerMin", "description": "Test application for scenarios"}
+    """
+    And I update the application "createdAppId" with payload "fieldUpdNamePayload"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{fieldUpdNewName}}"
+    And The value of response field "throttlingPolicy" should be "10PerMin"
+    # ...and the rename really replaced the original name rather than adding an alias.
+    When I retrieve the application with id "createdAppId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{fieldUpdNewName}}"
+    And The response should not contain "{{fieldUpdOrigName}}"
+
+    Examples:
+      | actor                      |
+      | subscriberUser             |
+      | subscriberUser@tenant1.com |
+
+  # Ports APIM678ApplicationCreationTestCase#testRemoveApplication. The legacy put its post-delete assertion INSIDE a
+  # catch block with no fail() on the non-throwing path, so a GET that still returned the application would have
+  # passed silently — deletion was never actually proven. Here the post-delete GET is asserted 404 directly. (The
+  # per-scenario cleanup hook re-deletes the id; ResourceCleanup treats a 404 as already-gone, so no leak warning.)
+  @cap:devportal @feat:applications @rule:delete @type:regression @legacy:APIM678ApplicationCreationTestCase
+  Scenario Outline: A deleted application can no longer be retrieved as <actor>
+    Given The system is ready and I have valid devportal access token as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "delApp"
+    And I create an application with payload "delApp"
+    Then The response status code should be 201
+    # BASELINE — the application is retrievable before the delete.
+    When I retrieve the application with id "createdAppId"
+    Then The response status code should be 200
+    When I delete the application with id "createdAppId"
+    Then The response status code should be 200
+    When I retrieve the application with id "createdAppId"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                      |
+      | subscriberUser             |
+      | subscriberUser@tenant1.com |
+
+  # Ports the createApplicationWithInValidData provider of APIM678ApplicationCreationTestCase, which was ENTIRELY
+  # COMMENTED OUT in the legacy source pending product issue 6012, and whose assertion was assertNull(response) — the
+  # SDK-null idiom, not an HTTP status. So nothing could be carried over: the expectations below were determined
+  # EMPIRICALLY against the 4.7 container. BOTH an empty application name and an empty throttlingPolicy ARE rejected
+  # (product issue 6012 is fixed as far as these two rows go) with exactly:
+  #   400 {"code":400,"message":"Bad Request","description":"Validation Error",
+  #        "error":[{"code":"400_name","message":"name: size must be between 1 and 100"}]}
+  #   400 {... "error":[{"code":"400_throttlingPolicy",
+  #        "message":"throttlingPolicy: size must be between 1 and 2147483647"}]}
+  # — i.e. bean-validation size constraints, not an APIM error code. The per-field message is asserted (not just the
+  # 400) so a validator that started rejecting the WRONG field would fail here. Uses the non-asserting
+  # attempt-to-create step so a wrongly-SUCCESSFUL create fails this scenario instead of passing silently.
+  @cap:devportal @feat:applications @rule:invalid-data @type:negative @legacy:APIM678ApplicationCreationTestCase
+  Scenario Outline: Creating an application with an empty <field> is rejected as <actor>
+    Given The system is ready and I have valid devportal access token as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "invalidApp"
+    And I set the field "<field>" to "" in the payload "invalidApp"
+    And I attempt to create an application with payload "invalidApp"
+    Then The response status code should be 400
+    And The response should contain "400_<field>"
+    And The response should contain "<field>: size must be between 1 and <max>"
+
+    Examples:
+      | actor                      | field            | max        |
+      | subscriberUser             | name             | 100        |
+      | subscriberUser             | throttlingPolicy | 2147483647 |
+      | subscriberUser@tenant1.com | name             | 100        |
+      | subscriberUser@tenant1.com | throttlingPolicy | 2147483647 |

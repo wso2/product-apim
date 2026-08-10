@@ -1,0 +1,34 @@
+{
+  "name": "${UNIQUE:APIMTlsEndpoint}",
+  "context": "${UNIQUE:apiTlsEndpointContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "https://nodebackend:3023/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "https://nodebackend:3023/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API whose backend is the tls-backend HTTPS app (self-signed cert, CN=nodebackend). The gateway does NOT trust that certificate out of the box, so invocation fails until the certificate is uploaded through the publisher endpoint-certificates API. Used by the endpoint-certificate invocation arc.",
+  "policies": [
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": [
+
+      ]
+    }
+  ],
+  "isDefaultVersion": false,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

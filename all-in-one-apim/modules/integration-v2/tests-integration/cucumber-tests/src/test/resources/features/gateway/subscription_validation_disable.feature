@@ -11,10 +11,11 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
   restores it. Runs x2-tenant (super + tenant1): tokens and API scope to the acting actor's tenant. Needs the
   block backend for the runtime invocations; per-scenario cleanup removes the API/application.
 
-  # SCOPE: the external non-APIM OAuth service-provider half of the legacy (a second token minted from an IS-side
-  # OAuth SP via SOAP identity provisioning) is a DOCUMENTED REDUCTION — the portable core is subscriptionless
-  # enforcement itself (no-subscription invocation → 200 when disabled; → refused when re-enabled), which a normal
-  # application token exercises fully.
+  # The external non-APIM OAuth service-provider legs ARE covered (an earlier port had reduced them away): the
+  # scenario registers a standalone OAuth client in the RESIDENT key manager via DCR — no Developer Portal
+  # application, no subscription — which is the same principal legacy built through the SOAP OAuthAdminService plus
+  # a ServiceProvider. Its token is accepted (200) while validation is off and refused (403) once re-enabled, and
+  # the DCR client is deregistered by teardown as its owner.
   @cap:gateway @feat:security-enforcement @rule:subscriptionless @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:SubscriptionValidationDisableTestCase
   Scenario Outline: Clearing an API's plans enables subscriptionless invocation only when the tenant allows it as <actor>
     Given The system is ready
@@ -63,6 +64,41 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
     Then The response status code should be 200
     And I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 90 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    # Keep this token: it must still work AFTER validation is re-enabled (the internal subscription it was granted
+    # survives), which the port previously only claimed in a comment.
+    And I copy context value "generatedAccessToken" to "subValApp1Token"
+
+    # The invocation AUTO-CREATED an internal subscription: the API now has exactly ONE subscription, on the
+    # internal DefaultSubscriptionless plan. This is the observable that distinguishes "subscriptionless
+    # invocation" from "subscription validation skipped" — without it, a gateway that simply bypassed the check
+    # would pass the 200 above. The listing is POLLED: the internal subscription is published asynchronously after
+    # the invocation is answered, so an immediate single read races it (observed empty on one tenant row while the
+    # other saw it in time). The exact count is still asserted after the poll, so a genuine absence fails loudly.
+    When I retrieve all subscriptions of api "subValApiId" until the list contains 1 subscriptions within 60 seconds
+    Then The response status code should be 200
+    And The subscription list should contain exactly 1 subscriptions
+    And The value of response field "list[0].throttlingPolicy" should be "DefaultSubscriptionless"
+
+    # An EXTERNAL, non-APIM OAuth client — a service provider registered directly in the resident key manager via
+    # DCR, with NO Developer Portal application and therefore no subscription of any kind. Its token is accepted
+    # while validation is disabled. This is the legacy's externalSP leg (legacy built the same thing through the
+    # SOAP OAuthAdminService + a ServiceProvider; DCR against the resident KM produces the identical principal and
+    # its client is swept by teardown).
+    When I register an OAuth client "subValExternalSp" as "subValExtSp"
+    Then The response status code should be 200
+    When I request a client-credentials token using consumer key "subValExtSpClientId" and secret "subValExtSpClientSecret"
+    Then The response status code should be 200
+    And I extract response field "access_token" and store it as "subValExternalToken"
+    When I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "subValExternalToken" and payload "" until response status code becomes 200 within 90 seconds
+    Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+
+    # The external token did NOT create a subscription of its own — the count is unchanged at 1 (legacy asserts
+    # exactly this, i.e. the internal subscription is per-application, not per-token).
+    When I retrieve all subscriptions of api "subValApiId"
+    Then The response status code should be 200
+    And The subscription list should contain exactly 1 subscriptions
 
     # Re-add a business plan — subscription enforcement returns. The FIRST application's token keeps working (it was
     # granted the auto-created internal subscription while validation was disabled, matching the legacy), but a
@@ -92,6 +128,33 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
     And I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 120 seconds
+    Then The response status code should be 403
+
+    # The FIRST application's token STILL invokes successfully: it holds the internal subscription created while
+    # validation was disabled, so re-enabling enforcement does not retroactively revoke it. Asserted, not merely
+    # asserted-in-a-comment — and it is what makes the 403 above meaningful (enforcement discriminates by
+    # subscription, it did not just start rejecting everything).
+    When I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "subValApp1Token" and payload "" until response status code becomes 200 within 120 seconds
+    Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+
+    # The EXTERNAL non-APIM principal is now refused (403): it has no application, hence never an internal
+    # subscription, so with validation back on it cannot pass. This is the legacy's final external-token assertion,
+    # but on a token minted FRESH from the same external client after re-enabling.
+    #
+    # OBSERVED — the token that was ALREADY used successfully while validation was disabled keeps returning 200 for
+    # at least 120 s after enforcement is restored (measured: sustained 200 with the backend body, on both the
+    # carbon.super and tenant1.com rows), so the legacy's assertion on the REUSED token does not reproduce here.
+    # The gateway caches the key-validation verdict per token (default [apim.cache.gateway_token] TTL 15 min) and an
+    # API deploy does not evict it. A distinct scope is requested so the key manager cannot answer from its own
+    # per-(client, scope) token cache: this is a genuinely NEW token for the SAME external principal, and its 403
+    # both closes the legacy leg and localises the stale 200 above to the per-token gateway cache rather than to the
+    # principal having been grandfathered a subscription. The previously-warmed token is deliberately NOT asserted —
+    # its 200 is a cache-lifetime artefact, and pinning it would pin a TTL.
+    When I request a client-credentials token using consumer key "subValExtSpClientId" and secret "subValExtSpClientSecret" with scope "subValFreshProbe"
+    Then The response status code should be 200
+    And I extract response field "access_token" and store it as "subValExternalTokenAfterReEnable"
+    When I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "subValExternalTokenAfterReEnable" and payload "" until response status code becomes 403 within 120 seconds
     Then The response status code should be 403
 
     # Restore the tenant configuration.

@@ -16,10 +16,13 @@
  */
 
  // GET /sec
+ // Mirrors node-customer-service's /sec (the route the endpoint-security tests actually hit, on :3001):
+ // an absent Authorization header yields an explicit marker, not an empty body, so "no credential was
+ // injected" is a positive assertion instead of one that also passes when the request never arrived.
 const getSec = (req, res) => {
     const authHeader = req.header('Authorization');
     console.log(`----invoking getSec: ${authHeader}`);
-    res.type('text/plain').send(authHeader || '');
+    res.type('text/plain').send(authHeader || 'no-authorization-header-received');
 }
 
 // GET /handler

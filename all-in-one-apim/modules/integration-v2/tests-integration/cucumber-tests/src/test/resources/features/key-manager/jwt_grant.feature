@@ -155,10 +155,13 @@ Feature: Key Manager JWT (jwt-bearer) grant with an external trusted IdP
 
   # An assertion signed by a DIFFERENT key than the registered IdP's cert fails signature verification. The
   # IdP is registered with extidpjwt's cert but the assertion is signed with other-keystore's private key.
-  # error_description is not pinned here: legacy expected "Signature or Message Authentication invalid" but the
-  # corrupted-signature path on 4.7.0 was observed to surface a claimset-retrieval error for the tampered case,
-  # so the exact description for a wrong-key (but structurally intact) signature is left to the suite run to
-  # confirm; status 400 + error invalid_grant are stable across every rejection path probed.
+  # error_description IS pinned to legacy's "Signature or Message Authentication invalid": a bare 400 +
+  # invalid_grant is the token endpoint's catch-all for every jwt-bearer rejection (missing IdP, expired
+  # assertion, bad audience), so without the description this negative would pass for the WRONG reason — the
+  # whole point is that the failure is SIGNATURE verification. The earlier caveat here conflated this with the
+  # tampered-payload case: a payload edit that breaks base64/JSON parsing surfaces a claimset-retrieval error,
+  # but a structurally intact assertion signed with the wrong key reaches signature verification, which is the
+  # same path the tamper scenario above already pins this string on.
   @cap:key-manager @feat:token-issuance @type:negative @legacy:JWTGrantTestCase
   Scenario Outline: Reject a JWT signed with a certificate not matching the IdP as <actor>
     Given The system is ready
@@ -186,6 +189,7 @@ Feature: Key Manager JWT (jwt-bearer) grant with an external trusted IdP
     And I exchange the JWT assertion "wrongCertJwt" for a token using consumer key "consumerKey" secret "consumerSecret" scope ""
     Then The response status code should be 400
     And The response should contain "invalid_grant"
+    And The response should contain "Signature or Message Authentication invalid"
 
     Examples:
       | actor             |

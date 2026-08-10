@@ -737,6 +737,13 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.delete(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id.toString()), headers);
+        // Deregister on a confirmed 2xx: without this the sweep re-deletes the already-gone server and logs
+        // "resource NOT deleted; it may leak" for a resource that is genuinely gone — 14 such WARNs in one
+        // full-suite run, which is noise that hides real leaks. Only a SUCCESSFUL delete deregisters; a failed one
+        // means the server still exists and must stay queued for teardown.
+        if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            ResourceCleanup.deregister(ResourceCleanup.CREATED_MCP_SERVER_IDS, id.toString());
+        }
     }
 
     // ---- MCP backend-endpoint management (/mcp-servers/{id}/backends) ----

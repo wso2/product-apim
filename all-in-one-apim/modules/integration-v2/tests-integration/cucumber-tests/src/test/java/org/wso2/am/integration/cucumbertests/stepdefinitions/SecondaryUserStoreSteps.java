@@ -40,6 +40,10 @@ public class SecondaryUserStoreSteps {
      * Adds a user directly in a user store domain (e.g. {@code SECONDARY/testUser1}) with roles, in a tenant. Uses
      * the user-store-manager SOAP service (which resolves the {@code SECONDARY/} domain); retries on the transient
      * "Invalid Domain Name" a freshly-added store can throw while it is still warming up.
+     *
+     * <p>Store-AGNOSTIC despite the name: an UNQUALIFIED username (no {@code DOMAIN/} prefix) resolves in the
+     * tenant's PRIMARY store. That is how {@code gateway/basic_auth_security.feature} seeds the email-style
+     * principal it needs (a username whose local part contains an {@code @}) without a block-boot change.
      */
     @When("I provision store user {string} with password {string} and roles {string} in tenant {string}")
     public void iProvisionStoreUser(String userName, String password, String roles, String tenantDomain)
@@ -107,6 +111,37 @@ public class SecondaryUserStoreSteps {
     }
 
     /**
+     * Asserts that listing the roles of {@code userName} does NOT return {@code unexpectedRole} — the negative of
+     * {@link #theRolesShouldContain}, used to prove a DELETED store role has disappeared from the user's role list.
+     *
+     * <p>Deliberately CASE-INSENSITIVE while the positive assertion is case-SENSITIVE, and that asymmetry is the
+     * strict form of each direction: the positive pins the exact casing the store returns, while the negative must
+     * prove the role is gone in ANY casing. A case-sensitive absence check would pass vacuously — asserting that
+     * {@code SECONDARY.COM/USERROLE1} is absent is trivially true while {@code SECONDARY.COM/userrole1} is still
+     * assigned, so it would not notice a delete that silently did nothing.
+     */
+    @Then("the roles of store user {string} in tenant {string} should not contain {string}")
+    public void theRolesShouldNotContain(String userName, String tenantDomain, String unexpectedRole)
+            throws Exception {
+        String body = TenantUserProvisioner.getRoleListOfUser(tenantDomain,
+                Utils.resolveContextPlaceholders(userName));
+        String unexpected = Utils.resolveContextPlaceholders(unexpectedRole);
+        Assert.assertFalse(body.toLowerCase(java.util.Locale.ROOT).contains(unexpected.toLowerCase(java.util.Locale.ROOT)),
+                "Role list of '" + userName + "' still contained '" + unexpected + "' in some casing; "
+                        + "response: " + body);
+    }
+
+    /**
+     * Deletes a store ROLE only, leaving the users that carried it in place — so a scenario can assert what the
+     * role deletion did to those users' role lists. The user+role teardown variant below cannot express that
+     * (it removes the user first, so there is nothing left to query).
+     */
+    @When("I remove the secondary user store role {string} in tenant {string}")
+    public void iRemoveSecondaryUserStoreRole(String roleName, String tenantDomain) throws Exception {
+        TenantUserProvisioner.deleteRole(tenantDomain, Utils.resolveContextPlaceholders(roleName));
+    }
+
+    /**
      * Best-effort teardown: delete the store user and role in the tenant. The store itself is registered at block
      * boot by the framework and lives for the container's lifetime — the container is discarded after the block, so
      * there is nothing to undeploy.
@@ -127,4 +162,5 @@ public class SecondaryUserStoreSteps {
     public void iRemoveSecondaryUserStoreUser(String userName, String tenantDomain) throws Exception {
         TenantUserProvisioner.deleteUser(tenantDomain, Utils.resolveContextPlaceholders(userName));
     }
+
 }

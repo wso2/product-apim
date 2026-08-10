@@ -39,11 +39,13 @@ Feature: Key Manager Token Persistence Across Restart
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
 
     # Restart the server — a valid token must survive (state persisted to the DB)
     When I gracefully restart the API Manager server
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
 
     # Revoke the token — invocation is now rejected
     When I revoke the OAuth access token "generatedAccessToken"

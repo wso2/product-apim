@@ -107,8 +107,15 @@ const checkPerson = (req, res) => {
     }
 };
 
+// The upstream for the backend-routed-OPTIONS test: when an API disables gateway CORS handling and declares an
+// explicit OPTIONS resource, the gateway must route the pre-flight here and relay THESE headers untouched.
+// Allow-Origin is a concrete origin (not "*") on purpose — a gateway that substituted its own default CORS
+// response would answer "*", so the exact value is what distinguishes routed-to-backend from handled-at-gateway.
+// Allow-Credentials is deliberately NOT set: its absence is asserted, proving the gateway adds no CORS header of
+// its own on this path.
 const getOptions = (req, res) => {
     res.set({
+        'Access-Control-Allow-Origin': 'http://localhost',
         'Access-Control-Allow-Methods': 'GET, POST, DELETE, PUT, OPTIONS, HEAD',
         'Access-Control-Allow-Headers': 'Content-Type'
     }).status(200).end();

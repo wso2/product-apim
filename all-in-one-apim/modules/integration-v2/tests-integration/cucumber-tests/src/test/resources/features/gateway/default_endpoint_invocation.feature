@@ -32,7 +32,7 @@ Feature: Gateway Default Endpoint Invocation
     # somewhere.
     When I invoke the API at gateway context "{{deInvContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The response should contain "{\"id\":123,\"name\":\"John\"}"
 
     Examples:
       | actor             |

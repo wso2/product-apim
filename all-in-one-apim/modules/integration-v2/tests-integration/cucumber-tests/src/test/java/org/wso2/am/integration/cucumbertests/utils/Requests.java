@@ -109,6 +109,14 @@ public final class Requests {
                 .doPostMultipartWithJsonFields(url, headers, files, textFields, jsonFields));
     }
 
+    /** Multipart PUT with some form fields sent as {@code application/json} parts (see the client method). */
+    public static HttpResponse putMultipartWithJsonFields(String url, Map<String, String> headers,
+            Map<String, File> files, Map<String, String> textFields, Map<String, String> jsonFields)
+            throws IOException {
+        return execute(() -> SimpleHTTPClient.getInstance()
+                .doPutMultipartWithJsonFields(url, headers, files, textFields, jsonFields));
+    }
+
     public static HttpResponse head(String url, Map<String, String> headers) throws IOException {
         return execute(() -> SimpleHTTPClient.getInstance().doHead(url, headers));
     }

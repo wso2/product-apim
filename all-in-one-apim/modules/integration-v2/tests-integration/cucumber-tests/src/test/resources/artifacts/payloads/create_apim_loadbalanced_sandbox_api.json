@@ -1,0 +1,36 @@
+{
+  "name": "${UNIQUE:LoadBalancedSandboxAPI}",
+  "context": "${UNIQUE:loadBalancedSandboxContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "load_balance",
+    "algoCombo": "org.apache.synapse.endpoints.algorithms.RoundRobin",
+    "sessionManagement": "",
+    "sessionTimeOut": "",
+    "algoClassName": "org.apache.synapse.endpoints.algorithms.RoundRobin",
+    "production_endpoints": [
+      { "url": "http://nodebackend:3014/" },
+      { "url": "http://nodebackend:3015/" },
+      { "url": "http://nodebackend:3016/" }
+    ],
+    "sandbox_endpoints": [
+      { "url": "http://nodebackend:3009/" },
+      { "url": "http://nodebackend:3011/" },
+      { "url": "http://nodebackend:3013/" }
+    ]
+  },
+  "description": "API with round-robin load-balanced PRODUCTION (File 1/2/3) and SANDBOX (File 1_Sandbox/2_Sandbox/3_Sandbox) endpoint groups — distinguishable per member AND per key type, so a sandbox-key token proves the sandbox group is the one round-robinned.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/name",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}
