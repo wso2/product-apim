@@ -4,11 +4,9 @@
 # carries incorrect credentials. The profile matches "nodebackend" and points at squid-proxy:3129
 # (the Basic-auth Squid instance), but the username/password are intentionally wrong.
 #
-# Squid validates incoming CONNECT requests against its htpasswd file (testproxyuser:testproxypass).
-# When the gateway sends Proxy-Authorization with the wrong credentials, Squid returns 407
-# Proxy Authentication Required. The gateway cannot establish the CONNECT tunnel, so the WS
-# upgrade is rejected. A CONNECT count of 1 in the authenticated proxy access log confirms that
-# the proxy was reached and the rejection came from Squid (not a pre-proxy network failure).
+# The gateway cannot establish the proxy tunnel because the credentials are wrong, so the WS
+# upgrade fails. APIM's WS proxy client fails before sending CONNECT to Squid (the auth access
+# log receives no entry), so only the WS rejection itself is asserted.
 
 [[transport.ws.proxy_profile]]
 target_hosts = ["nodebackend"]

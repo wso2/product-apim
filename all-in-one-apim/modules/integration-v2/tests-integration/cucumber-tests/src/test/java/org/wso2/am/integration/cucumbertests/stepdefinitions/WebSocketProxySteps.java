@@ -52,7 +52,7 @@ public class WebSocketProxySteps {
         log.debug("Squid access logs cleared");
     }
 
-    @Then("the anonymous proxy should have received exactly {int} CONNECT request(s)")
+    @Then("the anonymous proxy should have received exactly {int} CONNECT request\\(s)")
     public void assertAnonConnectCount(int expected) throws Exception {
         int actual = getProxy().getAnonConnectCount();
         Assert.assertEquals(actual, expected,
@@ -60,7 +60,7 @@ public class WebSocketProxySteps {
                         + " — check that the proxy profile target_hosts and bypass_hosts are configured correctly");
     }
 
-    @Then("the authenticated proxy should have received exactly {int} CONNECT request(s)")
+    @Then("the authenticated proxy should have received exactly {int} CONNECT request\\(s)")
     public void assertAuthConnectCount(int expected) throws Exception {
         int actual = getProxy().getAuthConnectCount();
         Assert.assertEquals(actual, expected,
