@@ -84,12 +84,6 @@
                  the node sse-emitter's own sent-event record back over its published port — both provided by
                  this block's initBackend. -->
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySseInvocationRunner"/>
-            <!-- WebSub invocation rides here rather than in its own block: both extra listeners it needs are
-                 already present on DEFAULT config (the synapse WebhookServer event-receiver inbound is
-                 unconditional — no TOML overlay), and its callback receiver is the node backend this block
-                 already starts. It shares nothing mutable with the sibling runners — every API, application and
-                 callback receiver is uniquely named, and a webhook subscription is scoped to its own API's
-                 context + topic — so thread-count stays 2. -->
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSubInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>

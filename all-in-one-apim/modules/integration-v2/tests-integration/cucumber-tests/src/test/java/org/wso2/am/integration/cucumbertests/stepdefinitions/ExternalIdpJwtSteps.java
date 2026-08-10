@@ -25,6 +25,7 @@ import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.JwtTestUtils;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -271,5 +272,21 @@ public class ExternalIdpJwtSteps {
 
         Requests.put(url, Identity.devportalHeaders(), keyMapping.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    @When("I register key mapping {string} on application {string} for cleanup restoration")
+    public void iRegisterKeyMappingForRestoration(String keyMappingIdKey, String appIdKey) throws IOException {
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
+        String appId = TestContext.resolve(appIdKey).toString();
+        HttpResponse current = SimpleHTTPClient.getInstance().doGet(
+                Utils.getUpdateKey(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders());
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
+                        && current.getData() != null && !current.getData().isBlank(),
+                "Failed to capture key mapping '" + keyMappingId + "' on application '" + appId
+                        + "' for cleanup restoration: got=" + (current == null ? "null"
+                        : current.getResponseCode() + "/" + current.getData()));
+        JSONObject payload = new JSONObject(current.getData());
+        payload.remove("additionalProperties");
+        ResourceCleanup.registerKeyMapping(appId, keyMappingId, payload.toString());
     }
 }

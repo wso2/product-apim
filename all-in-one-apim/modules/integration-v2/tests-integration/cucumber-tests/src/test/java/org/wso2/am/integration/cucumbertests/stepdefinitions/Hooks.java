@@ -38,4 +38,10 @@ public class Hooks {
     public void cleanUpCreatedResources() {
         ResourceCleanup.deleteRegisteredResources();
     }
+
+    /** Restores scenario-mutated shared fixtures without deleting the runner-scoped fixture resources. */
+    @After("@restore-key-mapping")
+    public void restoreKeyMappings() {
+        ResourceCleanup.restoreKeyMappings();
+    }
 }

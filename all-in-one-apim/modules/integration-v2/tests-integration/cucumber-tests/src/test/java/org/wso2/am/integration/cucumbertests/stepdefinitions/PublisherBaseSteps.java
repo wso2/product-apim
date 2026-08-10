@@ -607,21 +607,26 @@ public class PublisherBaseSteps {
 
     /**
      * True when the given publisher-listing response carries an entry whose {@code id} is {@code apiId}. Tolerates
-     * a null/empty/non-200 response by reporting "not present", so a listing read during warm-up keeps the poll in
+     * a null/empty/non-2xx response by reporting "not present", so a listing read during warm-up keeps the poll in
      * {@link #theApiShouldBeInTheListOfAllApis} going instead of throwing out of the accept condition.
      */
     private static boolean listContainsApiId(HttpResponse response, String apiId) {
-        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+        if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
+                || response.getData() == null || response.getData().isEmpty()) {
             return false;
         }
-        JSONObject payload = new JSONObject(response.getData());
-        if (!payload.has("list")) {
+        try {
+            JSONObject payload = new JSONObject(response.getData());
+            if (!payload.has("list")) {
+                return false;
+            }
+            JSONArray apisList = payload.getJSONArray("list");
+            return IntStream.range(0, apisList.length())
+                    .mapToObj(apisList::getJSONObject)
+                    .anyMatch(subJson -> apiId.equals(subJson.optString("id", null)));
+        } catch (JSONException e) {
             return false;
         }
-        JSONArray apisList = payload.getJSONArray("list");
-        return IntStream.range(0, apisList.length())
-                .mapToObj(apisList::getJSONObject)
-                .anyMatch(subJson -> apiId.equals(subJson.optString("id", null)));
     }
 
     /**

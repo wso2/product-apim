@@ -182,4 +182,3 @@ Feature: Gateway SSE API Invocation
     Examples:
       | actor             |
       | admin             |
-      | admin@tenant1.com |

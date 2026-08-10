@@ -47,6 +47,8 @@ public final class ISResourceCleanup {
     public static final String CREATED_IS_APPLICATION_IDS = "createdIsApplicationIds";
     /** IS users created via {@code scim2/Users} (SCIM ids). */
     public static final String CREATED_IS_USER_IDS = "createdIsUserIds";
+    /** IS identity providers created via {@code api/server/v1/identity-providers} (ids from the Location header). */
+    public static final String CREATED_IS_IDENTITY_PROVIDER_IDS = "createdIsIdentityProviderIds";
 
     private ISResourceCleanup() {
     }
@@ -61,10 +63,16 @@ public final class ISResourceCleanup {
         TestContext.addToList(CREATED_IS_USER_IDS, String.valueOf(userId));
     }
 
+    /** Registers an IS identity provider (by id) for the teardown sweep. */
+    public static void registerIdentityProvider(Object idpId) {
+        TestContext.addToList(CREATED_IS_IDENTITY_PROVIDER_IDS, String.valueOf(idpId));
+    }
+
     /** True if nothing is registered (lets callers skip without resolving the integration actor). */
     public static boolean isEmpty() {
         return TestContext.getList(CREATED_IS_APPLICATION_IDS).isEmpty()
-                && TestContext.getList(CREATED_IS_USER_IDS).isEmpty();
+                && TestContext.getList(CREATED_IS_USER_IDS).isEmpty()
+                && TestContext.getList(CREATED_IS_IDENTITY_PROVIDER_IDS).isEmpty();
     }
 
     /**
@@ -82,6 +90,7 @@ public final class ISResourceCleanup {
             return;
         }
         String base = IntegrationActors.baseUrl(IntegrationActors.IS);
+        deleteAll(CREATED_IS_IDENTITY_PROVIDER_IDS, base + "api/server/v1/identity-providers/", "IS identity provider");
         deleteAll(CREATED_IS_APPLICATION_IDS, base + "api/server/v1/applications/", "IS application");
         deleteAll(CREATED_IS_USER_IDS, base + "scim2/Users/", "IS user");
     }
@@ -110,5 +119,6 @@ public final class ISResourceCleanup {
     private static void clear() {
         TestContext.getList(CREATED_IS_APPLICATION_IDS).clear();
         TestContext.getList(CREATED_IS_USER_IDS).clear();
+        TestContext.getList(CREATED_IS_IDENTITY_PROVIDER_IDS).clear();
     }
 }

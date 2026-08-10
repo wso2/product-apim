@@ -23,6 +23,7 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
     # Set AllowSubscriptionValidationDisabling DEFENSIVELY — proven NOT required on 4.7.0 (subscriptionless works
     # by default); kept idempotently for robustness against an environment whose default differs. Capture to restore.
     When I capture the tenant configuration as "originalTenantConf"
+    And I register tenant configuration "originalTenantConf" for cleanup
     And I copy context value "originalTenantConf" to "subValTenantConf"
     And I set the boolean field "AllowSubscriptionValidationDisabling" to "true" in the payload "subValTenantConf"
     And I update the tenant configuration from "subValTenantConf"

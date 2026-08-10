@@ -37,7 +37,7 @@
 const express = require('express');
 
 const app = express();
-const port = 3022;
+const port = process.env.PORT || 3022;
 
 // Raw bytes, not parsed JSON: the x-hub-signature HMAC is computed over the exact delivered body, so
 // re-serialising it through a JSON parser would break signature verification in the test.

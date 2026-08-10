@@ -17,6 +17,7 @@
 
 package org.wso2.am.testcontainers;
 
+import com.github.dockerjava.api.model.Ulimit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -166,6 +167,7 @@ public class DynamicSolaceBroker {
                 .withEnv("system_scaling_maxconnectioncount", "100")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.getHostConfig().withShmSize(1024L * 1024L * 1024L);
+                    cmd.getHostConfig().withUlimits(new Ulimit[]{new Ulimit("nofile", 2448, 1048576)});
                 })
                 // Wait on SEMP answering, NOT on a log line. MEASURED: this image (SolOS 10.26.0) never
                 // logs "Primary Virtual Router is now active" -- greps for ready|active|started|Virtual
@@ -231,7 +233,16 @@ public class DynamicSolaceBroker {
         logger.info("Starting Solace broker (this takes ~1-2 min; it is a full event broker)...");
         broker.start();
         logger.info("Solace broker up. SEMP at " + getSempUrl());
-        shim.start();
+        try {
+            shim.start();
+        } catch (RuntimeException | Error startupFailure) {
+            try {
+                stop();
+            } catch (RuntimeException | Error cleanupFailure) {
+                startupFailure.addSuppressed(cleanupFailure);
+            }
+            throw startupFailure;
+        }
         logger.info("Solace connector shim up at " + getConnectorBaseUrl());
     }
 

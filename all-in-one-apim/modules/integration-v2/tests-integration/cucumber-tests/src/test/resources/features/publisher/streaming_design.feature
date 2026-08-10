@@ -162,7 +162,7 @@ Feature: Publisher Streaming API Design
     Then The response status code should be 201
     When I put the following JSON payload in context as "asyncSubPayload"
     """
-    {"applicationId": "{{applicationId}}", "apiId": "{{asyncSubApiId}}", "throttlingPolicy": "AsyncWHUnlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "AsyncWHUnlimited"}
     """
     And I subscribe to API "asyncSubApiId" using application "createdAppId" with payload "asyncSubPayload" as "asyncSubId"
     Then The response status code should be 201

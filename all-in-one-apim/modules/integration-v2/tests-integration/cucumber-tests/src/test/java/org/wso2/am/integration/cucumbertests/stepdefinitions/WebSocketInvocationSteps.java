@@ -216,10 +216,11 @@ public class WebSocketInvocationSteps {
         long connectDeadlineStart = System.currentTimeMillis();
         long connectDeadline = connectDeadlineStart + Math.max(timeoutSeconds * 1000L, 30000L);
         WebSocket ws = null;
+        HttpClient client = null;
         while (ws == null && System.currentTimeMillis() < connectDeadline) {
+            HttpClient attemptClient = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
             try {
-                ws = HttpClient.newBuilder().sslContext(trustAllSslContext()).build()
-                        .newWebSocketBuilder()
+                ws = attemptClient.newWebSocketBuilder()
                         .header("Authorization", "Bearer " + token)
                         .connectTimeout(java.time.Duration.ofSeconds(15))
                         .buildAsync(URI.create(wsUrl), new WebSocket.Listener() {
@@ -248,11 +249,14 @@ public class WebSocketInvocationSteps {
                                 closed.set(true);
                             }
                         }).get(20, TimeUnit.SECONDS);
+                client = attemptClient;
             } catch (InterruptedException interrupted) {
                 // Cancellation is not a transient/expected outcome — restore the flag and stop.
+                closeQuietly(attemptClient);
                 Thread.currentThread().interrupt();
                 throw interrupted;
             } catch (Exception warmup) {
+                closeQuietly(attemptClient);
                 Utils.pollPause(connectDeadlineStart, 2000);
             }
         }
@@ -293,6 +297,7 @@ public class WebSocketInvocationSteps {
             } catch (Exception ignore) {
                 // already closed
             }
+            closeQuietly(client);
         }
 
         String observed = "frames=" + frames + ", closed=" + closed.get() + ", closeCode=" + closeCode.get();
@@ -1279,27 +1284,35 @@ public class WebSocketInvocationSteps {
         for (Map.Entry<String, String> e : headers.entrySet()) {
             builder.header(e.getKey(), e.getValue());
         }
-        WebSocket ws = builder
-                .connectTimeout(java.time.Duration.ofSeconds(15))
-                .buildAsync(URI.create(wsUrl), new WebSocket.Listener() {
-                    private final StringBuilder parts = new StringBuilder();
-
-                    @Override
-                    public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-                        parts.append(data);
-                        if (last) {
-                            response.complete(parts.toString());
-                        }
-                        webSocket.request(1);
-                        return null;
-                    }
-                })
-                .get(20, TimeUnit.SECONDS);
+        WebSocket ws = null;
         try {
+            ws = builder
+                    .connectTimeout(java.time.Duration.ofSeconds(15))
+                    .buildAsync(URI.create(wsUrl), new WebSocket.Listener() {
+                        private final StringBuilder parts = new StringBuilder();
+
+                        @Override
+                        public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
+                            parts.append(data);
+                            if (last) {
+                                response.complete(parts.toString());
+                            }
+                            webSocket.request(1);
+                            return null;
+                        }
+                    })
+                    .get(20, TimeUnit.SECONDS);
             ws.sendText(message, true);
             return response.get(20, TimeUnit.SECONDS);
         } finally {
-            ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            if (ws != null) {
+                try {
+                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+                } catch (Exception closeFailure) {
+                    log.warn("Ignoring failure to send WebSocket close frame: " + closeFailure.getMessage());
+                }
+            }
+            closeQuietly(client);
         }
     }
 }

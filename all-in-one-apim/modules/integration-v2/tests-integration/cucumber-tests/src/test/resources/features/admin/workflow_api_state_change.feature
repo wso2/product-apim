@@ -6,9 +6,8 @@ Feature: Approval workflow - API state change
   which it becomes PUBLISHED. Ports the API-state arc of
   WorkflowApprovalExecutorTest#testAPIWorkflowProcess.
 
-  Runs twice over the REQUESTER axis (the legacy SUPER_TENANT_ADMIN vs SUPER_TENANT_USER factory): the admin
-  decides both parked workflows in both rows, while the actor that creates the API and requests the publish is
-  the admin itself in one row and a least-privilege publisher user in the other.
+  Runs across both the REQUESTER axis (admin vs publisher) and the tenant axis (super tenant vs tenant1.com),
+  producing four rows. The tenant admin decides both parked workflows for each request.
 
   @cap:admin @feat:workflows @dep:publisher @legacy:WorkflowApprovalExecutorTest @type:regression
   Scenario Outline: API stays CREATED after a publish request until the state change is approved as requester <requester>
@@ -25,11 +24,13 @@ Feature: Approval workflow - API state change
     {"description": "Initial Revision"}
     """
     And I make a request to create a revision for "apis" resource "wfApiId" with payload "wfRevision"
+    Then The response status code should be 201
     When I put the following JSON payload in context as "wfDeploy"
     """
     [{"name": "{{gatewayEnvironment}}", "vhost": "localhost", "displayOnDevportal": true}]
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "wfApiId" with payload "wfDeploy"
+    Then The response status code should be 201
     Given I act as the tenant admin for "<requester>"
     When I capture the pending "AM_REVISION_DEPLOYMENT" workflow reference where "apiName" is "{{wfApiName}}" as "depWfRef"
     And I "APPROVED" the workflow with reference "depWfRef"

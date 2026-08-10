@@ -146,6 +146,21 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <!-- Pull the public Solace broker image before the test blocks start. -->
+                    <execution>
+                        <id>pull-solace-broker-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${solace.broker.docker.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>build-apim-docker-image</id>
                         <phase>pre-integration-test</phase>

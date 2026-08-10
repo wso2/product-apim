@@ -23,11 +23,12 @@ Feature: Admin Tenant Configuration
       | admin             |
       | admin@tenant1.com |
 
-  @cap:admin @feat:tenants-orgs @type:regression @legacy:AdvancedConfigurationsTestCase
+  @cleanup @cap:admin @feat:tenants-orgs @type:regression @legacy:AdvancedConfigurationsTestCase
   Scenario Outline: Update the tenant configuration and restore it as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I capture the tenant configuration as "tcOriginal"
+    And I register tenant configuration "tcOriginal" for cleanup
     And I capture the tenant configuration as "tcModified"
     And I set the boolean field "EnableMonetization" to "true" in the payload "tcModified"
     And I update the tenant configuration from "tcModified"

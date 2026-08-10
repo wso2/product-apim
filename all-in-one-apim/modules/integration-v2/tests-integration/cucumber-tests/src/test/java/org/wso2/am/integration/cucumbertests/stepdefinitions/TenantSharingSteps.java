@@ -140,9 +140,11 @@ public class TenantSharingSteps {
             return ((HttpResponse) TestContext.get("httpResponse")).getResponseCode();
         }, status -> status == expectedStatus);
         HttpResponse last = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertEquals(reached.intValue(), expectedStatus, "The tenantActivated notify for '" + tenantDomain
+        String failureMessage = "The tenantActivated notify for '" + tenantDomain
                 + "' (activated=" + activated + ") never answered " + expectedStatus + " within " + timeoutSeconds
-                + "s; last response: " + (last == null ? "<none>" : last.getResponseCode() + " " + last.getData()));
+                + "s; last response: " + (last == null ? "<none>" : last.getResponseCode() + " " + last.getData());
+        Assert.assertNotNull(reached, failureMessage);
+        Assert.assertEquals(reached.intValue(), expectedStatus, failureMessage);
     }
 
     /** The tenant sub-object common to every tenant-management event (id/domain/ref), mirroring the legacy. */
@@ -258,9 +260,10 @@ public class TenantSharingSteps {
      */
     @Then("a token request for tenant admin {string} with password {string} eventually succeeds")
     public void aTokenRequestEventuallySucceeds(String adminRef, String password) throws Exception {
+        String clientName = tenantSyncProbeClientName(adminRef);
 
         HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
-                () -> attemptAdminToken(adminRef, password),
+                () -> attemptAdminToken(adminRef, password, clientName),
                 resp -> resp != null && resp.getResponseCode() == 200);
         Assert.assertNotNull(response, "No response attempting a token for " + adminRef);
         Assert.assertEquals(response.getResponseCode(), 200,
@@ -278,9 +281,10 @@ public class TenantSharingSteps {
     @Then("a token request for tenant admin {string} with password {string} is eventually rejected with status {int}")
     public void aTokenRequestEventuallyRejected(String adminRef, String password, int expectedStatus)
             throws Exception {
+        String clientName = tenantSyncProbeClientName(adminRef);
 
         HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
-                () -> attemptAdminToken(adminRef, password),
+                () -> attemptAdminToken(adminRef, password, clientName),
                 resp -> resp != null && resp.getResponseCode() == expectedStatus);
         Assert.assertNotNull(response, "No response attempting a token for " + adminRef);
         Assert.assertEquals(response.getResponseCode(), expectedStatus,
@@ -295,11 +299,13 @@ public class TenantSharingSteps {
      * the token response otherwise. Not a scenario-owned assertion target and not published to
      * {@code httpResponse}; the retry envelope in the caller asserts on it. Uses {@link SimpleHTTPClient}
      * directly (raw round trip consumed locally), never cached actor tokens — the point is to exercise these
-     * exact credentials from scratch every attempt. A unique DCR clientName per attempt keeps parallel blocks
-     * isolated (DCR is an idempotent upsert by clientName). Only {@code IOException} propagates (retried by the
-     * envelope); a non-2xx HTTP response is returned as-is so the caller pins the exact status.
+     * exact credentials from scratch every attempt. The caller supplies one unique DCR client name per retry
+     * envelope, keeping parallel blocks isolated while making repeated DCR calls idempotent. Only
+     * {@code IOException} propagates (retried by the envelope); a non-2xx HTTP response is returned as-is so the
+     * caller pins the exact status.
      */
-    private static HttpResponse attemptAdminToken(String adminRef, String password) throws IOException {
+    private static HttpResponse attemptAdminToken(String adminRef, String password, String clientName)
+            throws IOException {
 
         Assert.assertTrue(adminRef.startsWith("admin@"),
                 "Tenant admin reference must be of the form admin@<domain>, got: " + adminRef);
@@ -308,8 +314,7 @@ public class TenantSharingSteps {
         Map<String, String> dcrBasic = Identity.basicAuthHeaders(username, password);
         String dcrBody = new JSONObject()
                 .put("callbackUrl", "www.google.lk")
-                .put("clientName", "tenantSyncProbe_" + username.replaceAll("[^a-zA-Z0-9]", "_")
-                        + "_" + UUID.randomUUID())
+                .put("clientName", clientName)
                 .put("grantType", "password")
                 .put("saasApp", true)
                 .put("owner", username)
@@ -330,5 +335,9 @@ public class TenantSharingSteps {
                 + "&password=" + URLEncoder.encode(password, StandardCharsets.UTF_8) + "&scope=openid";
         return SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 tokenHeaders, form, "application/x-www-form-urlencoded");
+    }
+
+    private static String tenantSyncProbeClientName(String adminRef) {
+        return "tenantSyncProbe_" + adminRef.replaceAll("[^a-zA-Z0-9]", "_") + "_" + UUID.randomUUID();
     }
 }

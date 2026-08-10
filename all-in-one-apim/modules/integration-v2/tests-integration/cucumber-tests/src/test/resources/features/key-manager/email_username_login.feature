@@ -14,19 +14,20 @@ Feature: Email-Form Username Login
   user — the step that fails with 401 when enable_email_domain is off. Ports EmailUserNameLoginTestCase.
   Teardown via the per-scenario cleanup hook.
 
-  # Legacy arc 1: a tenant whose ADMIN is an email address logs in to all three planes. The tenant admin is the
-  # one actor with admin rights, so it is the only one that can prove the Admin portal. The DevPortal and Admin
-  # planes are proven by shipped data (DefaultApplication / Unlimited), not merely a 200; the Publisher list is
+  # Legacy arc 1: an ADMIN whose username is an email address logs in to all three planes. A dedicated admin-role
+  # actor is provisioned in both organizations because the configured super-tenant admin must remain plain
+  # `admin` for the block's SOAP provisioning. The DevPortal and Admin planes are proven by shipped data
+  # (DefaultApplication / Unlimited), not merely a 200; the Publisher list is
   # legitimately empty for a fresh tenant, so it asserts the list envelope and the API round trip is left to the
   # second scenario.
   @cap:key-manager @feat:token-issuance @type:smoke @rule:email-username @legacy:EmailUserNameLoginTestCase
-  Scenario: A tenant admin whose username is an email address reaches the Publisher, DevPortal and Admin planes
+  Scenario Outline: An admin whose username is an email address reaches the Publisher, DevPortal and Admin planes as <actor>
     Given The system is ready
-    And I have valid access tokens as "admin@tenant1.com"
+    And I have valid access tokens as "<actor>"
     When I store the acting actor credentials as "emailAdminName" and "emailAdminPassword"
     Then the actual value of "emailAdminName" should match the expected value:
       """
-      admin@email.com@tenant1.com
+      <expectedUsername>
       """
     When I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
@@ -37,6 +38,11 @@ Feature: Email-Form Username Login
     When I retrieve all "application" throttling policies
     Then The response status code should be 200
     And The response should contain "Unlimited"
+
+    Examples:
+      | actor                       | expectedUsername                       |
+      | emailAdmin                  | emailAdmin@email.com@carbon.super      |
+      | emailAdmin@tenant1.com      | emailAdmin@email.com@tenant1.com       |
 
   # Legacy arc 2: a NON-ADMIN tenant user whose username is an email address logs in to the Publisher. The
   # tenant1.com row is the legacy case — and it was provisioned BY the email-form tenant admin above, so it also

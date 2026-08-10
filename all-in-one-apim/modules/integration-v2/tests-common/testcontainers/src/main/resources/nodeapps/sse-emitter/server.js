@@ -30,7 +30,7 @@
 const express = require('express');
 
 const app = express();
-const port = 3021;
+const port = process.env.PORT || 3021;
 
 // Small enough that a stream of a few dozen events finishes in well under a second, large enough that the
 // events arrive as separate chunks rather than one flush (which is what makes this an SSE test and not a

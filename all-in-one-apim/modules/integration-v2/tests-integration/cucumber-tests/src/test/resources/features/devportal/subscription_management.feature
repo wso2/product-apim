@@ -20,8 +20,14 @@ Feature: DevPortal Subscription Management
 
     When I block the subscription with "subscriptionId" for the resource
     Then The response status code should be 200
+    When I get the subscription with id "subscriptionId"
+    Then The response status code should be 200
+    And The value of response field "status" should be "BLOCKED"
     When I unblock the subscription with "subscriptionId" for the resource
     Then The response status code should be 200
+    When I get the subscription with id "subscriptionId"
+    Then The response status code should be 200
+    And The value of response field "status" should be "UNBLOCKED"
 
     Examples:
       | actor             |
@@ -85,13 +91,13 @@ Feature: DevPortal Subscription Management
     Then The response status code should be 201
     When I put the following JSON payload in context as "brSubBroken"
     """
-    {"applicationId": "{{brAppId}}", "apiId": "{{brBrokenApi}}", "throttlingPolicy": "Gold"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Gold"}
     """
     And I subscribe to API "brBrokenApi" using application "brAppId" with payload "brSubBroken" as "brBrokenSubId"
     Then The response status code should be 201
     When I put the following JSON payload in context as "brSubHealthy"
     """
-    {"applicationId": "{{brAppId}}", "apiId": "{{brHealthyApi}}", "throttlingPolicy": "Gold"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Gold"}
     """
     And I subscribe to API "brHealthyApi" using application "brAppId" with payload "brSubHealthy" as "brHealthySubId"
     Then The response status code should be 201
@@ -192,19 +198,19 @@ Feature: DevPortal Subscription Management
     # Cross-subscribe: app1 -> api1, app1 -> api2, app2 -> api1.
     When I put the following JSON payload in context as "subApp1Api1Payload"
     """
-    {"applicationId": "{{listApp1}}", "apiId": "{{listApi1}}", "throttlingPolicy": "Unlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
     """
     And I subscribe to API "listApi1" using application "listApp1" with payload "subApp1Api1Payload" as "subApp1Api1"
     Then The response status code should be 201
     When I put the following JSON payload in context as "subApp1Api2Payload"
     """
-    {"applicationId": "{{listApp1}}", "apiId": "{{listApi2}}", "throttlingPolicy": "Unlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
     """
     And I subscribe to API "listApi2" using application "listApp1" with payload "subApp1Api2Payload" as "subApp1Api2"
     Then The response status code should be 201
     When I put the following JSON payload in context as "subApp2Api1Payload"
     """
-    {"applicationId": "{{listApp2}}", "apiId": "{{listApi1}}", "throttlingPolicy": "Unlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
     """
     And I subscribe to API "listApi1" using application "listApp2" with payload "subApp2Api1Payload" as "subApp2Api1"
     Then The response status code should be 201

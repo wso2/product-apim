@@ -79,9 +79,9 @@ Feature: External Key Manager OAuth Grant Types
     # self-signed RS256 assertion at the token endpoint. IS 7.x has no SOAP admin services, so REST is the only
     # IdP registration path; without the IdP, IS rejects the assertion with "No registered identity provider
     # found for the JWT with issuer name".
-    When I register a JWT bearer identity provider in the external key manager storing its name as "jwtIdpName"
+    When I register a JWT bearer identity provider in the external key manager storing its name as "jwtTrustedIdpName"
     Then The response status code should be 201
-    When I request an OAuth access token from the external key manager using JWT bearer grant with issuer stored as "jwtIdpName"
+    When I request an OAuth access token from the external key manager using JWT bearer grant with issuer stored as "jwtTrustedIdpName"
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
@@ -98,9 +98,9 @@ Feature: External Key Manager OAuth Grant Types
     # assertion issuer - unlike jwt-bearer, name-only resolution fails with "Identity provider is null" - plus
     # the committed test cert and token-endpoint alias), then exchange an enveloped-signed SAML 2.0 assertion
     # (RSA-SHA256, bearer subject confirmation, audience = the alias) at the token endpoint.
-    When I register a SAML bearer identity provider in the external key manager storing its name as "samlIdpName"
+    When I register a SAML bearer identity provider in the external key manager storing its name as "samlTrustedIdpName"
     Then The response status code should be 201
-    When I request an OAuth access token from the external key manager using SAML bearer grant with issuer stored as "samlIdpName"
+    When I request an OAuth access token from the external key manager using SAML bearer grant with issuer stored as "samlTrustedIdpName"
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200

@@ -7,9 +7,8 @@ Feature: Approval workflow - application creation
   every workflow endpoint - the type listing, the get-by-external-reference and the deciding
   update-workflow-status. Ports WorkflowApprovalExecutorTest#testApplicationWorkflowProcess.
 
-  The regression scenario runs twice over the REQUESTER axis (the legacy SUPER_TENANT_ADMIN vs
-  SUPER_TENANT_USER factory): the admin approves in both rows, while the actor that creates the application is
-  the admin itself in one row and a plain devportal subscriber in the other.
+  The regression scenario runs across both the REQUESTER axis (admin vs subscriber) and the tenant axis
+  (super tenant vs tenant1.com), producing four rows. The tenant admin approves each request.
 
   @cap:admin @feat:workflows @dep:devportal @legacy:WorkflowApprovalExecutorTest @type:regression
   Scenario Outline: Application stays CREATED until approved, then APPROVED as requester <requester>

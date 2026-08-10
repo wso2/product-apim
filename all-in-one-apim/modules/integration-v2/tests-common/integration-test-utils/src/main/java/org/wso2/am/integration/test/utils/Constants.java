@@ -143,6 +143,8 @@ public class Constants {
     // publisher to take it through lifecycle) — deliberately NOT admin (no apim:admin scope).
     public static final String PUBLISHER_USER_KEY = "publisherUser";
     public static final String SUBSCRIBER_USER_KEY = "subscriberUser";
+    /** Admin-role actor provisioned in email-username blocks so the admin login arc can run in both tenants. */
+    public static final String EMAIL_ADMIN_USER_KEY = "emailAdmin";
 
     public static final String ADPSAMPLE_TENANT_DOMAIN = "adpsample.com";
     public static final String ADPSAMPLE_TENANT_ADMIN_USERNAME = "admin@adpsample.com";

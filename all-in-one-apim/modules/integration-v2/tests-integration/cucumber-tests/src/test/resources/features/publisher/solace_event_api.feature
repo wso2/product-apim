@@ -176,7 +176,7 @@ Feature: Solace event-API integration
     # working grant, that would notice.
     When I put the following JSON payload in context as "solaceSubPayload"
     """
-    {"applicationId": "{{applicationId}}", "apiId": "{{solaceApiId}}", "throttlingPolicy": "AsyncUnlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "AsyncUnlimited"}
     """
     And I subscribe to API "solaceApiId" using application "createdAppId" with payload "solaceSubPayload" as "solaceSubId"
     # 201 is the load-bearing assertion: the subscription notifier runs INLINE (APIConsumerImpl
@@ -226,7 +226,7 @@ Feature: Solace event-API integration
     # tests nothing, which is precisely why the SEMP assertion below exists to catch that.
     When I put the following JSON payload in context as "solaceKeySubPayload"
     """
-    {"applicationId": "{{applicationId}}", "apiId": "{{solaceKeyApiId}}", "throttlingPolicy": "AsyncUnlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "AsyncUnlimited"}
     """
     And I subscribe to API "solaceKeyApiId" using application "createdAppId" with payload "solaceKeySubPayload" as "solaceKeySubId"
     Then The response status code should be 201
@@ -247,25 +247,6 @@ Feature: Solace event-API integration
     # not happen. This is what makes the scenario title ("pushes the credentials to Solace") true.
     When I retrieve the Solace broker client username for consumer key "{{consumerKey}}"
     Then The response status code should be 200
-    # TEARDOWN ORDER: keys, then subscription, then the application (the last by the @cleanup hook). Both
-    # explicit steps are workarounds for delete-time product defects, and each covers a DIFFERENT one -- the
-    # application cannot be deleted while either artifact is still attached.
-    #
-    # 1. Keys. MEASURED: ANY application that generated keys fails to delete, independently of subscriptions --
-    #      NullPointerException: Cannot invoke "Application.getId()" because "application" is null
-    #        at SolaceKeyGenNotifier.processKeyGenerationEvent(SolaceKeyGenNotifier.java:68)
-    #    -> 500 and the application is NOT deleted. Two applications leaked per run (here and in the invoke
-    #    scenario) until this step was added, which is a @cleanup residue violation, so do not drop it.
-    #    This is a real key DELETE (the operation the DevPortal keys page performs), NOT the {@code clean-up}
-    #    endpoint: clean-up only discards APIM's key-mapping record for a partial registration, which would
-    #    unlink the keys while leaving the OAuth client behind.
-    When I delete the keys for application "createdAppId" with key mapping "keyMappingId"
-    Then The response status code should be 200
-    # 2. Subscription -- the second defect, described in the subscription scenario above (a different notifier,
-    #    the same root cause: the application row is deleted before the notifier re-resolves it).
-    When I delete the subscription with id "solaceKeySubId"
-    Then The response status code should be 200
-
     # SUPER-TENANT ONLY, and this is a PRODUCT LIMITATION, not an oversight. Running this row as
     # admin@tenant1.com fails with HTTP 500 from APIM's own notifier, measured 2026-08-09:
     #   SolaceKeyGenNotifier.java:67  NullPointerException: Cannot invoke "String.intern()" because "key" is null
@@ -292,7 +273,7 @@ Feature: Solace event-API integration
     Then The response status code should be 201
     When I put the following JSON payload in context as "solaceInvokeSubPayload"
     """
-    {"applicationId": "{{applicationId}}", "apiId": "{{solaceInvokeApiId}}", "throttlingPolicy": "AsyncUnlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "AsyncUnlimited"}
     """
     And I subscribe to API "solaceInvokeApiId" using application "createdAppId" with payload "solaceInvokeSubPayload" as "solaceInvokeSubId"
     Then The response status code should be 201
@@ -346,13 +327,6 @@ Feature: Solace event-API integration
     # ACL rather than a broken credential.
     When I subscribe over MQTT to the Solace topic "orders/created" with OAuth token "{{generatedAccessToken}}" expecting "granted"
     When I subscribe over MQTT to the Solace topic "orders/forbidden" with OAuth token "{{generatedAccessToken}}" expecting "denied"
-    # Teardown: keys, then subscription, then the application (by the @cleanup hook). Both steps are needed --
-    # they work around two SEPARATE delete-time defects; see the notes in the key-generation scenario above.
-    When I delete the keys for application "createdAppId" with key mapping "keyMappingId"
-    Then The response status code should be 200
-    When I delete the subscription with id "solaceInvokeSubId"
-    Then The response status code should be 200
-
     # SUPER-TENANT ONLY, and this is a PRODUCT LIMITATION, not an oversight. Running this row as
     # admin@tenant1.com fails with HTTP 500 from APIM's own notifier, measured 2026-08-09:
     #   SolaceKeyGenNotifier.java:67  NullPointerException: Cannot invoke "String.intern()" because "key" is null
@@ -387,4 +361,3 @@ Feature: Solace event-API integration
     # guards that configuration: if it stops happening, this fails instead of silently passing. (Startup, not
     # on first credential push, precisely so this scenario cannot depend on another scenario running first.)
     When I publish an event to the Solace topic "orders/created" with OAuth token "not-a-valid-token" until the response status code becomes 403 within 30 seconds
-

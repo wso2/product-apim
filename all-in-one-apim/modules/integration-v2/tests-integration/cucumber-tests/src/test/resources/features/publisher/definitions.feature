@@ -315,6 +315,14 @@ Feature: Publisher API Definition Import
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "epImportApiId"
     Then The response status code should be 200
+    And The value of response field "endpointConfig.endpoint_security.production.type" should be "BASIC"
+    And The value of response field "endpointConfig.endpoint_security.production.username" should be "importUser"
+    And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.production.password" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "BASIC"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.username" should be "importUser"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.password" should be ""
     And The response should not contain "importSecret123"
 
     Examples:
@@ -341,6 +349,7 @@ Feature: Publisher API Definition Import
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
     And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "CLIENT_CREDENTIALS"
     And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
@@ -353,8 +362,18 @@ Feature: Publisher API Definition Import
     # Re-fetch confirms the persisted API keeps the round-tripped config and the redaction.
     When I retrieve the "apis" resource with id "epImportOauthApiId"
     Then The response status code should be 200
+    And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
+    And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "CLIENT_CREDENTIALS"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
+    And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "CLIENT_CREDENTIALS"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
     And The response should not contain "oasImportProdClientSecret0001"
     And The response should not contain "oasImportSandClientSecret0002"
     # The imported API with OAUTH endpoint security is publishable.
@@ -395,6 +414,7 @@ Feature: Publisher API Definition Import
     And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "PASSWORD"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.username" should be "oasImportSandRoUser0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
@@ -411,9 +431,24 @@ Feature: Publisher API Definition Import
     # Re-fetch confirms the persisted API keeps the round-tripped config and the redaction.
     When I retrieve the "apis" resource with id "epImportOauthPwApiId"
     Then The response status code should be 200
+    And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "PASSWORD"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "PASSWORD"
     And The value of response field "endpointConfig.endpoint_security.production.username" should be "oasImportProdRoUser0001"
+    And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
+    And The value of response field "endpointConfig.endpoint_security.production.password" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.username" should be "oasImportSandRoUser0002"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.password" should be ""
+    And The response should not contain "oasImportProdClientSecret0001"
+    And The response should not contain "oasImportSandClientSecret0002"
     And The response should not contain "oasImportProdRoPass0001"
     And The response should not contain "oasImportSandRoPass0002"
     # The imported API with PASSWORD-grant endpoint security is publishable.

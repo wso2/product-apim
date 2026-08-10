@@ -8,8 +8,8 @@ Feature: Approval workflow - API product state change
   WorkflowApprovalExecutorTest#testAPIProductWorkflowProcess, which had no equivalent in integration-v2 at all.
 
   The pending task is keyed by apiName carrying the PRODUCT's name (not the underlying API's), which is what
-  the capture asserts. Runs twice over the REQUESTER axis (the legacy SUPER_TENANT_ADMIN vs SUPER_TENANT_USER
-  factory).
+  the capture asserts. Runs across both the REQUESTER axis (admin vs publisher) and the tenant axis
+  (super tenant vs tenant1.com), producing four rows.
 
   @cap:admin @feat:workflows @dep:publisher @legacy:WorkflowApprovalExecutorTest @type:regression
   Scenario Outline: API product stays CREATED after a publish request until the state change is approved as requester <requester>

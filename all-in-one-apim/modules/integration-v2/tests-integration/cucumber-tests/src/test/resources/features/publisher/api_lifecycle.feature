@@ -404,6 +404,7 @@ Feature: Publisher API Lifecycle
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I capture the tenant configuration as "origTenantConf"
+    And I register tenant configuration "origTenantConf" for cleanup
     When I capture the tenant configuration as "customTenantConf"
     And I set the JSON field "LifeCycle" from file "artifacts/lifecycle/custom_api_lifecycle.json" in the payload "customTenantConf"
     And I update the tenant configuration from "customTenantConf"

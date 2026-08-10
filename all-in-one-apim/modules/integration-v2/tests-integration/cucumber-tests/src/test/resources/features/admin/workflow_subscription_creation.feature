@@ -10,9 +10,8 @@ Feature: Approval workflow - subscription creation
   after the first scenario — so each subscription scenario publishes its own API (approving the
   revision-deployment and API-state workflows that publishing parks under the active Approval executors).
 
-  Runs twice over the REQUESTER axis (the legacy SUPER_TENANT_ADMIN vs SUPER_TENANT_USER factory): the admin
-  decides in both rows, while the actor that owns the application and subscribes is the admin itself in one row
-  and a plain devportal subscriber in the other.
+  Runs across both the REQUESTER axis (admin vs subscriber) and the tenant axis (super tenant vs tenant1.com),
+  producing four rows. The tenant admin decides each request.
 
   @cap:admin @feat:workflows @dep:devportal @legacy:WorkflowApprovalExecutorTest @type:regression
   Scenario Outline: Subscription stays ON_HOLD until approved as requester <requester>

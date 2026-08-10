@@ -30,6 +30,7 @@ Feature: Admin Configurable Default Throttling Policy
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I capture the tenant configuration as "cdpGqlOriginal"
+    And I register tenant configuration "cdpGqlOriginal" for cleanup
     And I capture the tenant configuration as "cdpGqlModified"
     And I set the field "DefaultAPILevelTier" to "20KPerMin" in the payload "cdpGqlModified"
     And I update the tenant configuration from "cdpGqlModified"
@@ -58,6 +59,7 @@ Feature: Admin Configurable Default Throttling Policy
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I capture the tenant configuration as "cdpRestOriginal"
+    And I register tenant configuration "cdpRestOriginal" for cleanup
     And I capture the tenant configuration as "cdpRestModified"
     And I set the field "DefaultAPILevelTier" to "20KPerMin" in the payload "cdpRestModified"
     And I update the tenant configuration from "cdpRestModified"
@@ -85,6 +87,7 @@ Feature: Admin Configurable Default Throttling Policy
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I capture the tenant configuration as "cdpSettingsOriginal"
+    And I register tenant configuration "cdpSettingsOriginal" for cleanup
     And I capture the tenant configuration as "cdpSettingsModified"
     And I set the field "DefaultAPILevelTier" to "20KPerMin" in the payload "cdpSettingsModified"
     And I set the field "DefaultSubscriptionLevelTier" to "Gold" in the payload "cdpSettingsModified"
@@ -111,6 +114,7 @@ Feature: Admin Configurable Default Throttling Policy
     Given The system is ready
     And I have valid access tokens as "<adminActor>"
     When I capture the tenant configuration as "cdpAppOriginal"
+    And I register tenant configuration "cdpAppOriginal" for cleanup
     And I capture the tenant configuration as "cdpAppModified"
     And I set the field "DefaultApplicationLevelTier" to "20PerMin" in the payload "cdpAppModified"
     And I update the tenant configuration from "cdpAppModified"
@@ -143,6 +147,7 @@ Feature: Admin Configurable Default Throttling Policy
     When I create an advanced throttling policy "cdpGuard${UNIQUE:P}" allowing 1000 requests per minute
     Then The response status code should be 201
     When I capture the tenant configuration as "cdpGuardOriginal"
+    And I register tenant configuration "cdpGuardOriginal" for cleanup
     And I capture the tenant configuration as "cdpGuardModified"
     And I set the field "DefaultAPILevelTier" to "{{advThrottlePolicyName}}" in the payload "cdpGuardModified"
     And I update the tenant configuration from "cdpGuardModified"

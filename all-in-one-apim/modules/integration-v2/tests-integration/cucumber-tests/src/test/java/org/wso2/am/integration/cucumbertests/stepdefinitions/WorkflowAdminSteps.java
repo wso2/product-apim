@@ -23,10 +23,12 @@ import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -127,29 +129,38 @@ public class WorkflowAdminSteps {
     @When("I publish API from {string} through the approval workflow as {string}")
     public void iPublishApiThroughApprovalWorkflow(String payloadFile, String apiIdKey)
             throws IOException, InterruptedException {
+        User approver = Identity.tenantOf(Identity.actingActor()).getTenantAdmin();
+        Map<String, String> approverHeaders = Identity.bearerHeaders(Identity.adminToken(approver));
         baseSteps.putJsonPayloadFromFile(payloadFile, "<wfApiPayload>");
         publisherSteps.iCreateAnAPIWithPayloadAs("apis", "<wfApiPayload>", apiIdKey);
-        String apiName = Utils.extractValueFromPayload(
-                ((HttpResponse) TestContext.get("httpResponse")).getData(), "name").toString();
+        HttpResponse createResponse = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(createResponse, "Create API produced no response");
+        Assert.assertTrue(createResponse.getResponseCode() >= 200 && createResponse.getResponseCode() < 300,
+                "Create API failed: " + createResponse.getResponseCode() + "/" + createResponse.getData());
+        Assert.assertNotNull(createResponse.getData(), "Create API response had no body");
+        Object apiNameValue = Utils.extractValueFromPayload(createResponse.getData(), "name");
+        Assert.assertNotNull(apiNameValue, "Create API response had no name: " + createResponse.getData());
+        String apiName = apiNameValue.toString();
         TestContext.set("wfApiName", apiName);
         baseSteps.putJsonPayloadInContext("<wfRevisionPayload>", "{\"description\":\"Initial Revision\"}");
         publisherSteps.iCreateResourceRevision("apis", apiIdKey, "<wfRevisionPayload>");
         baseSteps.putJsonPayloadInContext("<wfDeployPayload>",
                 "[{\"name\":\"{{gatewayEnvironment}}\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
         publisherSteps.iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiIdKey, "<wfDeployPayload>");
-        approveByProperty("AM_REVISION_DEPLOYMENT", "apiName", apiName);
+        approveByProperty("AM_REVISION_DEPLOYMENT", "apiName", apiName, approverHeaders);
         publisherSteps.iPublishTheResource("apis", apiIdKey);
-        approveByProperty("AM_API_STATE", "apiName", apiName);
+        approveByProperty("AM_API_STATE", "apiName", apiName, approverHeaders);
         organizationSteps.iRetrieveDevportalApiUntilContains(apiIdKey, "PUBLISHED", 60);
     }
 
     /** Captures the pending workflow of a type by a property match and approves it, asserting the 200. */
-    private void approveByProperty(String workflowType, String property, String value) throws IOException {
-        String reference = findPendingWorkflowReference(workflowType, property, value);
+    private void approveByProperty(String workflowType, String property, String value,
+                                   Map<String, String> approverHeaders) throws IOException {
+        String reference = findPendingWorkflowReference(workflowType, property, value, approverHeaders);
         Assert.assertNotNull(reference, "No pending '" + workflowType + "' workflow with " + property
                 + "='" + value + "' to approve.");
         HttpResponse resp = Requests.post(Utils.getUpdateWorkflowStatusURL(Utils.getBaseUrl(), reference),
-                Identity.adminHeaders(),
+                approverHeaders,
                 new JSONObject().put("status", "APPROVED").put("description", "auto").toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(resp.getResponseCode(), 200, "Approving " + workflowType + " failed: " + resp.getData());
@@ -160,7 +171,7 @@ public class WorkflowAdminSteps {
      * the runner's {@code @AfterClass} can restore it. Static because the setup feature and the runner teardown
      * are different instances on the same runner; a null value means the setup never ran (nothing to restore).
      */
-    private static final Map<String, String> originalWorkflowExtensions = new ConcurrentHashMap<>();
+    private static final Map<String, Map<String, String>> originalWorkflowExtensions = new ConcurrentHashMap<>();
 
     /**
      * Enables the Approval workflow executors: reads the current {@code workflow-extensions.xml} from the registry
@@ -172,11 +183,17 @@ public class WorkflowAdminSteps {
     @When("I enable approval workflow executors from {string}")
     public void iEnableApprovalWorkflowExecutors(String resourcePath) throws IOException {
         String tenant = Identity.actingTenantDomain();
-        String original = getRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH);
-        Assert.assertNotNull(original,
-                "Could not read the current workflow-extensions.xml from the registry — cannot safely flip "
-                        + "executors without a captured original to restore for tenant " + tenant + ".");
-        originalWorkflowExtensions.put(tenant, original);
+        Map<String, String> originalsByTenant = originalWorkflowExtensions.computeIfAbsent(
+                Utils.getBaseUrl(), ignored -> new ConcurrentHashMap<>());
+        synchronized (originalsByTenant) {
+            if (!originalsByTenant.containsKey(tenant)) {
+                String original = getRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH);
+                Assert.assertNotNull(original,
+                        "Could not read the current workflow-extensions.xml from the registry — cannot safely flip "
+                                + "executors without a captured original to restore for tenant " + tenant + ".");
+                originalsByTenant.put(tenant, original);
+            }
+        }
         String approvalXml = Utils.readClasspathResource(resourcePath);
         boolean written = updateRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH, approvalXml);
         Assert.assertTrue(written, "ResourceAdminService.updateTextContent did not return true for the "
@@ -189,10 +206,11 @@ public class WorkflowAdminSteps {
      * a later run against the same DB. A no-op if the setup step never captured an original.
      */
     public static void restoreWorkflowExecutors() {
-        if (originalWorkflowExtensions.isEmpty()) {
+        Map<String, String> originalsByTenant = originalWorkflowExtensions.remove(Utils.getBaseUrl());
+        if (originalsByTenant == null) {
             return;
         }
-        for (Map.Entry<String, String> entry : originalWorkflowExtensions.entrySet()) {
+        for (Map.Entry<String, String> entry : originalsByTenant.entrySet()) {
             String tenant = entry.getKey();
             try {
                 String actorRef = Constants.SUPER_TENANT_DOMAIN.equals(tenant) ? Constants.ADMIN_USER_KEY
@@ -206,7 +224,6 @@ public class WorkflowAdminSteps {
                         + ": " + e.getMessage());
             }
         }
-        originalWorkflowExtensions.clear();
     }
 
     /**
@@ -340,7 +357,7 @@ public class WorkflowAdminSteps {
                 "Pending workflow carried no applicationAttributes (is applicationAttributesVisibility enabled?): "
                         + properties);
         JSONObject attributes = new JSONObject(properties.getString("applicationAttributes"));
-        Assert.assertEquals(attributes.optString(attributeName), expectedValue,
+        Assert.assertEquals(attributes.optString(attributeName), Utils.resolveContextPlaceholders(expectedValue),
                 "Application attribute '" + attributeName + "' mismatch. Full attributes: " + attributes);
     }
 
@@ -503,20 +520,41 @@ public class WorkflowAdminSteps {
                 .put("throttlingPolicy", "Unlimited").toString();
         Map<String, String> headers = Identity.devportalHeaders();
         String url = Utils.getCreateSubscriptionURL(Utils.getBaseUrl());
+        String listUrl = Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), apiId, appId, null, null, null);
         // retryUntil retries only IOException; the transient here is an HTTP 500 body, so the accept predicate
-        // drives the retry (accept only 201) and the raw client is used for the attempt so a 500 is a returned
-        // response, not a thrown assertion.
+        // drives the retry. Check first whether an earlier attempt already committed the non-idempotent POST.
         HttpResponse last = Utils.retryUntil(0L,
-                () -> SimpleHTTPClient.getInstance().doPost(url, headers, payload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON),
+                () -> {
+                    HttpResponse existing = SimpleHTTPClient.getInstance().doGet(listUrl, headers);
+                    if (existing.getResponseCode() == 200 && existing.getData() != null) {
+                        try {
+                            JSONArray subscriptions = new JSONObject(existing.getData()).optJSONArray("list");
+                            for (int i = 0; subscriptions != null && i < subscriptions.length(); i++) {
+                                JSONObject subscription = subscriptions.getJSONObject(i);
+                                if (apiId.equals(subscription.optString("apiId"))
+                                        && appId.equals(subscription.optString("applicationId"))) {
+                                    return new HttpResponse(subscription.toString(), 201, existing.getHeaders());
+                                }
+                            }
+                        } catch (JSONException e) {
+                            return existing;
+                        }
+                    }
+                    return SimpleHTTPClient.getInstance().doPost(url, headers, payload,
+                            Constants.CONTENT_TYPES.APPLICATION_JSON);
+                },
                 resp -> resp != null && resp.getResponseCode() == 201);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "Subscribe never returned a response for app " + appId + " -> api " + apiId);
         Assert.assertEquals(last.getResponseCode(), 201,
                 "Subscribe did not reach 201 within the window: got=" + last.getResponseCode() + "/"
                         + last.getData());
+        Assert.assertNotNull(last.getData(),
+                "Subscribe response had no body for app " + appId + " -> api " + apiId);
         Object subId = Utils.extractValueFromPayload(last.getData(), "subscriptionId");
+        Assert.assertNotNull(subId, "Subscribe response had no subscriptionId: " + last.getData());
         TestContext.set(Utils.normalizeContextKey(subKey), subId);
+        ResourceCleanup.registerSubscription(subId, null);
     }
 
     /**
@@ -531,8 +569,16 @@ public class WorkflowAdminSteps {
         String payload = new JSONObject().put("keyType", "PRODUCTION")
                 .put("grantTypesToBeSupported", new JSONArray().put("client_credentials").put("password"))
                 .put("validityTime", 3600).toString();
-        Requests.post(Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), appId), Identity.devportalHeaders(),
-                payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse response = Requests.post(Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), appId),
+                Identity.devportalHeaders(), payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertNotNull(response, "Pending key generation produced no response for application " + appId);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Assert.assertNotNull(response.getData(), "Pending key-generation response had no body");
+            Object keyMappingId = Utils.extractValueFromPayload(response.getData(), "keyMappingId");
+            Assert.assertNotNull(keyMappingId,
+                    "Pending key-generation response had no keyMappingId: " + response.getData());
+            ResourceCleanup.registerApplicationKeyMapping(appId, keyMappingId);
+        }
     }
 
     // --------------------------------------------------------------------------------------------------------
@@ -542,8 +588,13 @@ public class WorkflowAdminSteps {
     /** Fetches the {@code list} of pending tasks of a type and returns the referenceId of the property match. */
     private String findPendingWorkflowReference(String workflowType, String matchProperty, String expected)
             throws IOException {
+        return findPendingWorkflowReference(workflowType, matchProperty, expected, Identity.adminHeaders());
+    }
+
+    private String findPendingWorkflowReference(String workflowType, String matchProperty, String expected,
+                                                Map<String, String> adminHeaders) throws IOException {
         HttpResponse response = Requests.get(Utils.getWorkflowsByTypeURL(Utils.getBaseUrl(), workflowType),
-                Identity.adminHeaders());
+                adminHeaders);
         Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
                         && !response.getData().isBlank(),
                 "Listing '" + workflowType + "' workflows did not return a 200 body: got="

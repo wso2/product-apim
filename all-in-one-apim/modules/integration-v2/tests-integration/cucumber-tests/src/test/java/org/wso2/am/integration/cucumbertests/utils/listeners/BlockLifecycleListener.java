@@ -434,6 +434,15 @@ public class BlockLifecycleListener implements ITestListener {
             // emailUserMode block differs from a default one in exactly one dimension.
             TenantUserProvisioner.addTenant("tenant1.com", physicalUserName("admin", emailUserMode), "admin",
                     "First", "Tenant", "admin@tenant1.com");
+            // The configured super-tenant admin must remain the plain `admin` because SOAP provisioning depends
+            // on it. Give both organizations a separate admin-role actor in email mode so the email-login admin
+            // arc is still a genuine Tenant ×2 outline rather than a tenant-only special case.
+            if (emailUserMode) {
+                TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.EMAIL_ADMIN_USER_KEY,
+                        physicalUserName("emailAdmin", true), "emailAdmin", "admin");
+                TenantUserProvisioner.addUser("tenant1.com", Constants.EMAIL_ADMIN_USER_KEY,
+                        physicalUserName("emailAdmin", true), "emailAdmin", "admin");
+            }
             // Keep the original all-roles user (back-compat for any actor that needs creator+publisher+subscriber).
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.USER_KEY,
                     physicalUserName("testUser1", emailUserMode), "testUser1", allRoles);

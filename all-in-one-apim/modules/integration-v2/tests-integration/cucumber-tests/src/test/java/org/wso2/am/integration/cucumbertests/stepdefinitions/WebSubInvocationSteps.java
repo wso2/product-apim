@@ -401,12 +401,6 @@ public class WebSubInvocationSteps {
     }
 
     /**
-     * Asserts the named receiver's delivery count RIGHT NOW, with no waiting — the "and nothing more was
-     * delivered" half of an absence check. Only sound after a POSITIVE BARRIER has been awaited (a second,
-     * still-subscribed receiver observing the same event proves the hub's fan-out for that event has completed),
-     * which is how these scenarios avoid a sleep.
-     */
-    /**
      * Asserts the named receiver's delivery count SETTLED strictly BELOW a ceiling — the assertion shape an
      * EVENT-COUNT QUOTA needs, because an exact count is not available to assert against.
      *
@@ -442,6 +436,12 @@ public class WebSubInvocationSteps {
                 + ", not below " + ceiling + " (" + observed + ") — the event-count quota did not stop delivery.");
     }
 
+    /**
+     * Asserts the named receiver's delivery count RIGHT NOW, with no waiting — the "and nothing more was
+     * delivered" half of an absence check. Only sound after a POSITIVE BARRIER has been awaited (a second,
+     * still-subscribed receiver observing the same event proves the hub's fan-out for that event has completed),
+     * which is how these scenarios avoid a sleep.
+     */
     @Then("The WebSub receiver {string} should have received exactly {int} event(s)")
     public void receiverShouldHaveReceivedExactly(String receiverKey, int expectedCount) throws Exception {
 

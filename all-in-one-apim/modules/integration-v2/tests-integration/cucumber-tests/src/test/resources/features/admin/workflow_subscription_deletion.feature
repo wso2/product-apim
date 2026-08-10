@@ -7,9 +7,8 @@ Feature: Approval workflow - subscription deletion
   200 (which a silent no-op would also return). Ports the subscription-deletion arc of
   WorkflowApprovalExecutorTest#testSubscriptionDeletionWorkflowProcess.
 
-  Runs twice over the REQUESTER axis (the legacy SUPER_TENANT_ADMIN vs SUPER_TENANT_USER factory): the admin
-  decides in both rows, while the actor that owns the application and subscription is the admin itself in one
-  row and a plain devportal subscriber in the other.
+  Runs across both the REQUESTER axis (admin vs subscriber) and the tenant axis (super tenant vs tenant1.com),
+  producing four rows. The tenant admin decides each request.
 
   @cap:admin @feat:workflows @dep:devportal @legacy:WorkflowApprovalExecutorTest @type:regression
   Scenario Outline: Subscription stays DELETE_PENDING until the deletion is approved, then is removed as requester <requester>

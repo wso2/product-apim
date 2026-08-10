@@ -7,9 +7,8 @@ Feature: Approval workflow - subscription update
   basis on which the approver decides, so it is asserted rather than only the end state. Ports the
   subscription-update arc of WorkflowApprovalExecutorTest#testSubscriptionUpdateWorkflowProcess.
 
-  Runs twice over the REQUESTER axis (the legacy SUPER_TENANT_ADMIN vs SUPER_TENANT_USER factory): the admin
-  decides in both rows, while the actor that owns the application and requests the tier change is the admin
-  itself in one row and a plain devportal subscriber in the other.
+  Runs across both the REQUESTER axis (admin vs subscriber) and the tenant axis (super tenant vs tenant1.com),
+  producing four rows. The tenant admin decides each request.
 
   @cap:admin @feat:workflows @dep:devportal @legacy:WorkflowApprovalExecutorTest @type:regression
   Scenario Outline: Subscription tier change is applied only after approval as requester <requester>

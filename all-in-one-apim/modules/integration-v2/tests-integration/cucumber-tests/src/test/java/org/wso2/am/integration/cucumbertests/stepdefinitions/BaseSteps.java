@@ -495,16 +495,6 @@ public class BaseSteps {
     }
 
     /**
-     * Sets a top-level field of a JSON payload already in context to the given value, writing it back under the
-     * same key. Used to build create-validation negatives from a valid base payload (e.g. blank name/context/
-     * version, or an invalid context) without a separate fixture per case. An empty {@code value} sets the
-     * field to an empty string.
-     *
-     * @param field      the top-level JSON field to set
-     * @param value      the value to set (may be empty)
-     * @param contextKey the context key holding the JSON payload
-     */
-    /**
      * Sets a top-level field to a JSON VALUE (array or object) rather than a string — e.g. giving an API two
      * subscription policies, {@code ["QuotaPlan","AsyncWHUnlimited"]}, which a scenario needs when it compares a
      * limited subscriber against an unlimited control on the SAME API.
@@ -533,6 +523,16 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
 
+    /**
+     * Sets a top-level field of a JSON payload already in context to the given value, writing it back under the
+     * same key. Used to build create-validation negatives from a valid base payload (e.g. blank name/context/
+     * version, or an invalid context) without a separate fixture per case. An empty {@code value} sets the
+     * field to an empty string.
+     *
+     * @param field      the top-level JSON field to set
+     * @param value      the value to set (may be empty)
+     * @param contextKey the context key holding the JSON payload
+     */
     @When("I set the field {string} to {string} in the payload {string}")
     public void iSetFieldInPayload(String field, String value, String contextKey) {
 
@@ -1122,8 +1122,8 @@ public class BaseSteps {
      */
     private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
         Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
-                "No response with a body to verify configuration '" + config + "' in; got "
-                        + (response == null ? "no response" : response.getResponseCode()));
+                "No response with a body to verify configuration '" + config + "' in; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONObject json = new JSONObject(response.getData());
         Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
 

@@ -7,9 +7,8 @@ Feature: Approval workflow - API revision deployment
   arc and the second-revision (replacement) arc. Ports
   WorkflowApprovalExecutorTest#testAPIRevisionDeploymentWorkflowProcess.
 
-  Runs twice over the REQUESTER axis (the legacy SUPER_TENANT_ADMIN vs SUPER_TENANT_USER factory): the admin
-  decides every parked workflow in both rows, while the actor that creates the API and requests each
-  deploy/undeploy is the admin itself in one row and a least-privilege publisher user in the other.
+  Runs across both the REQUESTER axis (admin vs publisher) and the tenant axis (super tenant vs tenant1.com),
+  producing four rows. The tenant admin decides every parked workflow for each request.
 
   @cap:admin @feat:workflows @dep:publisher @legacy:WorkflowApprovalExecutorTest @type:regression
   Scenario Outline: Revision deployment is held until approved and a second revision replaces the first as requester <requester>
@@ -34,6 +33,7 @@ Feature: Approval workflow - API revision deployment
 
     # First deploy request → parked. Reject it → the revision is not deployed.
     When I make a request to deploy revision "wfRev1Id" of "apis" resource "wfApiId" with payload "wfDeploy"
+    Then The response status code should be 201
     Given I act as the tenant admin for "<requester>"
     When I capture the pending "AM_REVISION_DEPLOYMENT" workflow reference where "apiName" is "{{wfApiName}}" as "depWfRef"
     And I "REJECTED" the workflow with reference "depWfRef"
@@ -45,6 +45,7 @@ Feature: Approval workflow - API revision deployment
 
     # Deploy again → approve it → revision 1 is deployed.
     When I make a request to deploy revision "wfRev1Id" of "apis" resource "wfApiId" with payload "wfDeploy"
+    Then The response status code should be 201
     Given I act as the tenant admin for "<requester>"
     When I capture the pending "AM_REVISION_DEPLOYMENT" workflow reference where "apiName" is "{{wfApiName}}" as "depWfRef2"
     And I "APPROVED" the workflow with reference "depWfRef2"
@@ -69,6 +70,7 @@ Feature: Approval workflow - API revision deployment
 
     # Re-deploy revision 1 (approved), then request a SECOND revision's deployment while revision 1 is live.
     When I make a request to deploy revision "wfRev1Id" of "apis" resource "wfApiId" with payload "wfDeploy"
+    Then The response status code should be 201
     Given I act as the tenant admin for "<requester>"
     When I capture the pending "AM_REVISION_DEPLOYMENT" workflow reference where "apiName" is "{{wfApiName}}" as "depWfRef3"
     And I "APPROVED" the workflow with reference "depWfRef3"
@@ -82,6 +84,7 @@ Feature: Approval workflow - API revision deployment
     Then The response status code should be 201
     And I extract response field "id" and store it as "wfRev2Id"
     When I make a request to deploy revision "wfRev2Id" of "apis" resource "wfApiId" with payload "wfDeploy"
+    Then The response status code should be 201
 
     # Revision 2's request is held: revision 1 is STILL the only revision with an APPROVED deployment.
     # The entry COUNT cannot be used from here on — measured: `query=deployed:true` also lists a revision whose
@@ -103,6 +106,7 @@ Feature: Approval workflow - API revision deployment
 
     # Request revision 2 again and APPROVE it → revision 2 is deployed and revision 1 is replaced.
     When I make a request to deploy revision "wfRev2Id" of "apis" resource "wfApiId" with payload "wfDeploy"
+    Then The response status code should be 201
     Given I act as the tenant admin for "<requester>"
     When I capture the pending "AM_REVISION_DEPLOYMENT" workflow reference where "apiName" is "{{wfApiName}}" as "rev2ApproveWfRef"
     And I "APPROVED" the workflow with reference "rev2ApproveWfRef"

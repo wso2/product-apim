@@ -10,9 +10,8 @@ Feature: Approval workflow - pending task cleanup on resource delete
   Each scenario reads the reference back for a 200 BEFORE the delete: that is what separates "the task was
   cleaned up" from "the reference was never resolvable in the first place", which a bare 404 cannot distinguish.
 
-  Every scenario runs twice over the REQUESTER axis (the legacy SUPER_TENANT_ADMIN vs SUPER_TENANT_USER
-  factory): the admin decides in both rows, while the actor that owns the resource is the admin itself in one
-  row and a non-admin in the other.
+  Every scenario runs across both the REQUESTER axis (admin vs non-admin resource owner) and the tenant axis
+  (super tenant vs tenant1.com), producing four rows. The tenant admin decides each request.
 
   @cap:admin @feat:workflows @dep:devportal @legacy:WorkflowApprovalExecutorTest @type:regression
   Scenario Outline: Deleting an application with a pending creation task cleans up the task as requester <requester>
@@ -71,6 +70,7 @@ Feature: Approval workflow - pending task cleanup on resource delete
     [{"name": "{{gatewayEnvironment}}", "vhost": "localhost", "displayOnDevportal": true}]
     """
     And I make a request to deploy revision "cleanupRevId" of "apis" resource "cleanupApiId" with payload "cleanupDeploy"
+    Then The response status code should be 201
     Given I act as the tenant admin for "<requester>"
     When I capture the pending "AM_REVISION_DEPLOYMENT" workflow reference where "apiName" is "{{cleanupApiName}}" as "cleanupDepWfRef"
     And I "APPROVED" the workflow with reference "cleanupDepWfRef"

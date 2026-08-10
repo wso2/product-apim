@@ -19,7 +19,7 @@
 const nameRoutes = require('./routes/nameRoutes');
 
 const app = express();
-const port = 3014;
+const port = process.env.PORT || 3014;
 
 app.use('/', nameRoutes);
 

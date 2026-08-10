@@ -1167,7 +1167,9 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
-        TestContext.set(subscriptionID,Utils.extractValueFromPayload(response.getData(), "subscriptionId"));
+        Object createdSubscriptionId = Utils.extractValueFromPayload(response.getData(), "subscriptionId");
+        TestContext.set(subscriptionID, createdSubscriptionId);
+        ResourceCleanup.registerSubscription(createdSubscriptionId, null);
     }
 
     /**
@@ -1194,8 +1196,12 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
+        HttpResponse response = Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            ResourceCleanup.registerSubscription(
+                    Utils.extractValueFromPayload(response.getData(), "subscriptionId"), null);
+        }
     }
 
     /**
@@ -1225,8 +1231,13 @@ public class ApplicationBaseSteps {
         jsonPayload = jsonPayload.replace("{{apiId}}", actualApiId);
         jsonPayload = Utils.resolveContextPlaceholders(jsonPayload);
 
-        Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
-                devportalHeadersInTenant(providerTenant), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        String actualProviderTenant = Utils.resolveContextPlaceholders(providerTenant);
+        HttpResponse response = Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
+                devportalHeadersInTenant(actualProviderTenant), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            ResourceCleanup.registerSubscription(
+                    Utils.extractValueFromPayload(response.getData(), "subscriptionId"), actualProviderTenant);
+        }
     }
 
     /**
@@ -1512,7 +1523,9 @@ public class ApplicationBaseSteps {
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             TestContext.set("consumerKey", Utils.extractValueFromPayload(response.getData(), "consumerKey"));
             TestContext.set("consumerSecret", Utils.extractValueFromPayload(response.getData(), "consumerSecret"));
-            TestContext.set("keyMappingId", Utils.extractValueFromPayload(response.getData(), "keyMappingId"));
+            Object keyMappingId = Utils.extractValueFromPayload(response.getData(), "keyMappingId");
+            TestContext.set("keyMappingId", keyMappingId);
+            ResourceCleanup.registerApplicationKeyMapping(actualAppId, keyMappingId);
         }
     }
 
@@ -1655,9 +1668,19 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        return Requests.post(
+        HttpResponse response = Requests.post(
                 Utils.getMapKeysURL(Utils.getBaseUrl(), actualAppId), headers, json.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            String body = response.getData();
+            Assert.assertTrue(body != null && !body.isBlank(),
+                    "Successful map-keys response did not contain a response body");
+            String keyMappingId = new JSONObject(body).optString("keyMappingId", null);
+            if (keyMappingId != null) {
+                ResourceCleanup.registerApplicationKeyMapping(actualAppId, keyMappingId);
+            }
+        }
+        return response;
     }
 
     /**
@@ -1813,8 +1836,12 @@ public class ApplicationBaseSteps {
     public void theReflectedBackendJwtShouldNotContainClaim(String claimName) {
         String payload = decodeReflectedBackendJwtPayload();
         String name = Utils.resolveContextPlaceholders(claimName);
-        Assert.assertFalse(new JSONObject(payload).has(name),
-                "Decoded backend JWT unexpectedly carries claim '" + name + "': " + payload);
+        String dialectQualifiedName = name.startsWith(WSO2_CLAIM_DIALECT)
+                ? name : WSO2_CLAIM_DIALECT + name;
+        JSONObject claims = new JSONObject(payload);
+        Assert.assertFalse(claims.has(name) || claims.has(dialectQualifiedName),
+                "Decoded backend JWT unexpectedly carries claim '" + name + "' or '" + dialectQualifiedName
+                        + "': " + payload);
     }
 
     /**
@@ -2287,6 +2314,16 @@ public class ApplicationBaseSteps {
     private static final String IS7_TRUSTED_IDP_KEY_RESOURCE = "artifacts/certs/is7trustedidp/idp-key.pem";
     private static final String IS7_TRUSTED_IDP_CERT_RESOURCE = "artifacts/certs/is7trustedidp/idp-cert.pem";
 
+    private static String responseLocationId(HttpResponse response, String resourceName) {
+        String location = response.getHeaders() == null ? null : response.getHeaders().get("Location");
+        if (location == null && response.getHeaders() != null) {
+            location = response.getHeaders().get("location");
+        }
+        Assert.assertNotNull(location, "Could not read created " + resourceName + " id from Location header");
+        int slash = location.lastIndexOf('/');
+        return slash >= 0 ? location.substring(slash + 1) : location;
+    }
+
     /**
      * Registers a trusted identity provider in the EXTERNAL key manager (IS) for the RFC 7523 jwt-bearer grant,
      * via IS's IdP REST API ({@code /api/server/v1/identity-providers}, super-admin basic auth). IS 7.x does NOT
@@ -2295,8 +2332,7 @@ public class ApplicationBaseSteps {
      * certificate (IS validates the assertion signature against it) and a token-endpoint alias (IS validates the
      * assertion audience against it); {@code isEnabled} must be omitted - the create schema rejects it with 400
      * and IdPs are created enabled anyway. The generated unique IdP name doubles as the trusted issuer and is
-     * stored under {@code idpNameKey} for the token step. The IdP dies with the per-block IS container, so no
-     * cleanup registration is needed (same lifecycle as the SCIM-created IS users).
+     * stored under {@code idpNameKey} for the token step and registered for per-scenario IS cleanup.
      */
     @When("I register a JWT bearer identity provider in the external key manager storing its name as {string}")
     public void iRegisterJwtBearerIdpAtExternalKm(String idpNameKey) throws Exception {
@@ -2317,6 +2353,7 @@ public class ApplicationBaseSteps {
         Assert.assertTrue(resp != null && resp.getResponseCode() == 201,
                 "IS IdP create failed for jwt-bearer trusted issuer '" + idpName + "': got="
                         + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
+        ISResourceCleanup.registerIdentityProvider(responseLocationId(resp, "JWT bearer identity provider"));
         TestContext.set(idpNameKey, idpName);
     }
 
@@ -2393,6 +2430,7 @@ public class ApplicationBaseSteps {
         Assert.assertTrue(resp != null && resp.getResponseCode() == 201,
                 "IS IdP create failed for saml2-bearer trusted issuer '" + idpName + "': got="
                         + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
+        ISResourceCleanup.registerIdentityProvider(responseLocationId(resp, "SAML bearer identity provider"));
         TestContext.set(idpNameKey, idpName);
     }
 
@@ -3381,6 +3419,10 @@ public class ApplicationBaseSteps {
                         Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), probeAppId), headers, keygenPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
                 operational = keyResp != null && keyResp.getResponseCode() >= 200 && keyResp.getResponseCode() < 300;
+                if (operational) {
+                    ResourceCleanup.registerApplicationKeyMapping(probeAppId,
+                            Utils.extractValueFromPayload(keyResp.getData(), "keyMappingId"));
+                }
             } catch (IOException transientKeygenFailure) {
                 // transient — the probe simply counts as not operational this round; the finally still
                 // deletes the throwaway app and the deadline bounds the overall wait
@@ -3870,6 +3912,12 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.get(Utils.getTenantConfigURL(Utils.getBaseUrl()), Identity.adminHeaders());
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         TestContext.set(Utils.normalizeContextKey(contextKey), response.getData());
+    }
+
+    /** Registers a captured tenant configuration for failure-safe restoration by the cleanup hook. */
+    @When("I register tenant configuration {string} for cleanup")
+    public void iRegisterTenantConfigurationForCleanup(String contextKey) {
+        ResourceCleanup.registerTenantConfiguration(TestContext.resolve(contextKey));
     }
 
     /** Updates the tenant configuration with the JSON held under {@code contextKey}. Non-asserting. */

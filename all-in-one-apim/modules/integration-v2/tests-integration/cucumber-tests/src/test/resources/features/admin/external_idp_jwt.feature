@@ -223,7 +223,7 @@ Feature: External IdP Self-Validated JWT and Key Manager Token Type Lifecycle
       | admin             |
       | admin@tenant1.com |
 
-  @rule:key-mapping-grants @type:regression
+  @restore-key-mapping @rule:key-mapping-grants @type:regression
   Scenario Outline: Removing the token-exchange grant from an existing key mapping refuses the exchange and restoring it recovers as <actor>
     # The update-key-mapping round trip: PUT supportedGrantTypes on the application's EXISTING Resident-KM key
     # mapping and assert the returned grant list before and after, with the exchange proving the change took
@@ -233,6 +233,7 @@ Feature: External IdP Self-Validated JWT and Key Manager Token Type Lifecycle
     And I use the token-exchange fixture for the acting tenant
     When I update the key manager "extIdpKm1" setting its token type to "BOTH" with identity provider alias "external-idp-1-audience"
     Then The response status code should be 200
+    When I register key mapping "keyMappingId" on application "createdAppId" for cleanup restoration
     When I update the supported grant types of key mapping "keyMappingId" on application "createdAppId" to "client_credentials"
     Then The response status code should be 200
     And The response should contain "client_credentials"
@@ -282,9 +283,6 @@ Feature: External IdP Self-Validated JWT and Key Manager Token Type Lifecycle
     Then The response status code should be 400
     And The value of error response field "code" should be "901405"
     And The value of error response field "message" should be "Key Manager doesn't support generating OAuth applications"
-    When I delete the key manager "exchangeOnlyKm"
-    Then The response status code should be 200
-
     Examples:
       | actor             |
       | admin             |

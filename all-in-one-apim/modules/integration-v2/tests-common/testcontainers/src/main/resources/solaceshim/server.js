@@ -633,6 +633,10 @@ const server = http.createServer((req, res) => {
                         .then(() => {
                             delete state.registrations[seg[1]];
                             send(res, 200, { data: { registrationId: seg[1], deleted: true }, meta: {} });
+                        })
+                        .catch((error) => {
+                            log(`     ERROR deleting registration ${seg[1]}: ${error.stack || error}`);
+                            send(res, 500, { message: `failed to delete registration ${seg[1]}` });
                         });
                 return;
             }
@@ -661,7 +665,11 @@ const server = http.createServer((req, res) => {
              * gets its 201 -- awaiting changes the ordering, not the error policy.
              */
             provisionClientUsername(cred.secret.consumerKey, cred.secret.consumerSecret, seg[1])
-                    .then(() => send(res, 201, cred));
+                    .then(() => send(res, 201, cred))
+                    .catch((error) => {
+                        log(`     ERROR provisioning credentials for registration ${seg[1]}: ${error.stack || error}`);
+                        send(res, 500, { message: `failed to provision credentials for registration ${seg[1]}` });
+                    });
             return;
         }
 
@@ -697,7 +705,11 @@ const server = http.createServer((req, res) => {
                 // route awaits its SEMP call: a scenario that publishes as soon as the subscription returns
                 // would otherwise race the ACL write and be denied.
                 ensureAclProfile(seg[1], ar.permissions)
-                        .then(() => send(res, 201, { data: ar, meta: {} }));
+                        .then(() => send(res, 201, { data: ar, meta: {} }))
+                        .catch((error) => {
+                            log(`     ERROR provisioning access request for registration ${seg[1]}: ${error.stack || error}`);
+                            send(res, 500, { message: `failed to provision access request for registration ${seg[1]}` });
+                        });
                 return;
             }
             if (m === 'GET') return send(res, 200, { data: reg.accessRequests, meta: {} });
@@ -738,7 +750,9 @@ server.listen(PORT, () => {
      * JWKS lazily when it first validates a token, which is long after APIM has booted.
      * The broker starts BEFORE this container (DynamicSolaceBroker.start), so SEMP is already answering.
      */
-    configureApimOAuth();
+    configureApimOAuth().catch((error) => {
+        log(`     ERROR configuring broker OAuth: ${error.stack || error}`);
+    });
     log(`listening on http://localhost:${PORT}`);
     log(`set  [apim.solace_config]  apim_api_endpoint = "http://localhost:${PORT}"  token = "anything"`);
     log(`ids: product=${PRODUCT_ID} plan=${PLAN_ID} eventApi=${EVENT_API_ID}`);
