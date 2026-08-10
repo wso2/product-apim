@@ -2,17 +2,15 @@
 Feature: Gateway WebSocket API — Specific Proxy Profile Precedence over Catch-All
 
   Verifies that a specific proxy profile takes precedence over a catch-all profile when both match
-  the backend hostname. Runs in a container whose deployment.toml carries two profiles
-  (wsProxySpecificOverCatchAll overlay):
-    Profile 1 — specific: target_hosts: ["nodebackend"], no bypass_hosts, proxy_port: 3128.
-                Routes nodebackend through the anonymous Squid proxy.
-    Profile 2 — catch-all: target_hosts: ["*"], bypass_hosts: ["nodebackend"], proxy_port: 3128.
-                Would bypass the proxy for nodebackend if selected.
-  "nodebackend" satisfies both profiles. The CONNECT count is the decisive assertion: count = 1
-  means the specific profile was selected and the gateway routed through Squid; count = 0 would
-  mean the catch-all's bypass_hosts suppressed the CONNECT, revealing that the catch-all won.
-  This test documents the profile-selection semantics: a non-wildcard target_hosts match beats
-  a wildcard match regardless of declaration order in the TOML.
+  the backend hostname, and that this holds regardless of declaration order. Runs in a container
+  whose deployment.toml carries two profiles (wsProxySpecificOverCatchAll overlay):
+    Profile 1 — catch-all: target_hosts: ["*"], bypass_hosts: ["nodebackend"] — declared FIRST.
+                A first-match implementation would select this and bypass the proxy (CONNECT = 0).
+    Profile 2 — specific: target_hosts: ["nodebackend"], no bypass_hosts — declared SECOND.
+                A most-specific-match implementation selects this regardless of order (CONNECT = 1).
+  The CONNECT count is the decisive assertion: count = 1 proves the specific profile overrides the
+  catch-all even though the catch-all is listed first. A first-match implementation would produce
+  count = 0 (catch-all bypass suppresses the CONNECT) and fail the test.
 
   @cap:gateway @feat:streaming-invocation @rule:proxy-routing @type:smoke @dep:publisher @legacy:WebSocketProxyProfileTestCase
   Scenario: specific profile beats catch-all — gateway routes through proxy rather than bypassing
@@ -26,11 +24,11 @@ Feature: Gateway WebSocket API — Specific Proxy Profile Precedence over Catch-
     And I extract response field "context" and store it as "wsContext"
     When I have set up application with keys, subscribed to API "wsApiId" with plan "AsyncUnlimited", and obtained access token for "wsSubId"
     Then The response status code should be 200
-    # Both profiles match "nodebackend". Profile 1 (specific) has no bypass_hosts — it routes
-    # through squid-proxy:3128. Profile 2 (catch-all) has bypass_hosts = ["nodebackend"] — it
-    # would connect directly. The expected outcome is that Profile 1 wins: echo succeeds through
-    # the proxy and the CONNECT count is 1.
+    # Both profiles match "nodebackend". The catch-all (bypass_hosts = ["nodebackend"]) is listed
+    # FIRST; the specific profile (no bypass_hosts, routes through proxy) is listed SECOND.
+    # A first-match implementation selects the catch-all → direct connection → CONNECT = 0 → FAIL.
+    # A most-specific-match implementation selects the specific profile → proxy → CONNECT = 1 → PASS.
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "specific-wins" using access token "generatedAccessToken" expecting echo "SPECIFIC-WINS" within 60 seconds
-    # count = 1  → specific profile selected, gateway routed through Squid (correct behaviour)
-    # count = 0  → catch-all selected, bypass suppressed the CONNECT (profile precedence bug)
+    # count = 1  → specific profile selected regardless of declaration order (correct behaviour)
+    # count = 0  → catch-all selected due to first-match (profile precedence bug)
     Then the anonymous proxy should have received exactly 1 CONNECT request(s)
