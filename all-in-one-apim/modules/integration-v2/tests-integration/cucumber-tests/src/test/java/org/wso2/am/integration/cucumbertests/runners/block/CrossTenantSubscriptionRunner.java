@@ -18,6 +18,8 @@
 package org.wso2.am.integration.cucumbertests.runners.block;
 
 import io.cucumber.testng.CucumberOptions;
+import org.testng.annotations.AfterClass;
+import org.wso2.am.integration.cucumbertests.stepdefinitions.WorkflowAdminSteps;
 
 /**
  * Runner for the cross-tenant subscription discovery + subscribe facets (devportal plane). Needs the
@@ -32,4 +34,16 @@ import io.cucumber.testng.CucumberOptions;
         plugin = {"pretty", "html:target/cucumber-report/cross-tenant-subscription.html"}
 )
 public class CrossTenantSubscriptionRunner extends BaseBlockRunner {
+
+    /**
+     * Restores the original workflow-extensions.xml once after all scenarios (idempotent, failure-safe, and a
+     * no-op unless a scenario actually flipped it). The last scenario in this feature flips ONLY the
+     * SubscriptionUpdate executor to the Approval variant — a server-global registry write — so the runner
+     * un-does it here rather than leaving it flipped for the sibling {@link CrossTenantInvocationRunner} that
+     * shares this block's container.
+     */
+    @AfterClass(alwaysRun = true)
+    void restoreWorkflowExecutors() {
+        WorkflowAdminSteps.restoreWorkflowExecutors();
+    }
 }

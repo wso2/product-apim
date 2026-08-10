@@ -254,6 +254,59 @@ public class ApplicationBaseSteps {
         }
     }
 
+    /**
+     * Advanced (API-level) throttling policy with an EVENT-COUNT limit — the ASYNC quota an API can carry as its
+     * {@code apiThrottlingPolicy}, enforced across every subscription to that API rather than per subscription.
+     * Ports the policy of ServerSentEventsAPITestCase#testSseApiThrottling
+     * ({@code configFiles/streamingAPIs/serverSentEventsTest/policy.json}), which the request-count variant above
+     * cannot express: a streaming API's quota is counted in EVENTS (SSE frames / WS frames / WebSub deliveries),
+     * and the admin API rejects a REQUESTCOUNTLIMIT default on the async path.
+     *
+     * <p>The limit goes under {@code eventCount}, not {@code requestCount}. The legacy fixture
+     * ({@code streamingAPIs/serverSentEventsTest/policy.json}) is MISLEADING here: it declares
+     * {@code "type":"EVENTCOUNTLIMIT"} with a {@code requestCount} object, because the test only read scalars out
+     * of that file and fed them to {@code DtoFactory.createEventCountLimitDTO}, which emits {@code eventCount}.
+     * Copying the file's shape onto the wire is rejected — MEASURED: {@code 500 "Error while adding an Advanced
+     * level policy"} (run1). The admin API's {@code ThrottleLimit} schema pairs each {@code type} with its own
+     * field ({@code REQUESTCOUNTLIMIT}/{@code requestCount}, {@code EVENTCOUNTLIMIT}/{@code eventCount}), so
+     * advanced and subscription policies carry an event quota identically.
+     *
+     * <p>NOT a streaming lever, and its caller says so. Streaming limits are SUBSCRIPTION-plan-only (see the
+     * windowed event-count subscription step below for the docs and the product's own seeding), so an API-level
+     * event quota is not how a WebSocket/SSE/WebSub API is rate-limited — an earlier revision of
+     * {@code gateway/sse_invocation.feature} attached one via {@code apiThrottlingPolicy} and its "20/20 frames
+     * delivered" measurement therefore proved nothing about the quota. Its live caller is the admin CRUD scenario
+     * "An advanced policy can carry an event-count limit" in {@code admin/throttling_policy.feature}, which is what
+     * this step legitimately covers: the admin API accepts and persists an EVENTCOUNTLIMIT on an advanced policy.
+     */
+    @When("I create an advanced throttling policy {string} allowing {int} events per minute")
+    public void iCreateAdvancedEventCountThrottlingPolicy(String policyBaseName, int eventsPerMinute)
+            throws IOException {
+
+        String policyName = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(policyBaseName));
+        String payload = String.format(
+                "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Async event quota %d events/min\","
+                        + "\"type\":\"AdvancedThrottlePolicy\",\"defaultLimit\":{\"type\":\"EVENTCOUNTLIMIT\","
+                        + "\"eventCount\":{\"timeUnit\":\"min\",\"unitTime\":1,\"eventCount\":%d}},"
+                        + "\"conditionalGroups\":[]}",
+                policyName, policyName, eventsPerMinute, eventsPerMinute);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+
+        HttpResponse response = Requests.post(Utils.getAdvancedThrottlingPoliciesURL(Utils.getBaseUrl()), headers,
+                payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("advThrottlePolicyName", policyName);
+
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
+            if (policyId != null) {
+                TestContext.set("advThrottlePolicyId", policyId);
+                ResourceCleanup.register(Constants.CREATED_ADVANCED_POLICY_IDS, policyId);
+            }
+        }
+    }
+
     // ---- Admin throttling-policy CRUD breadth (application/subscription/advanced/custom) ----
 
     private void postAdminPolicy(String listUrl, String payload, String nameKey, String policyName, String idKey,
@@ -327,6 +380,40 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Event-count subscription policy over an EXPLICIT quota window — the general form of the per-minute step above,
+     * and the ONE shape in which all THREE documented streaming rate-limiting types are expressed.
+     *
+     * <p>SETTLED FROM THE PRODUCT'S OWN MODEL, not assumed: {@code SubscriptionThrottlePolicyDTO} carries no
+     * duration/validity field at all (its fields are graphQLMaxComplexity, graphQLMaxDepth, defaultLimit,
+     * monetization, rateLimitCount, rateLimitTimeUnit, customAttributes, stopOnQuotaReach, billingPlan, permissions,
+     * subscriberCount), and {@code EventCountLimitDTO} carries only {@code timeUnit}/{@code unitTime}/
+     * {@code eventCount}. So "count-based", "time-based" and "count-time hybrid" are not three schemas — they are
+     * three configurations of ONE {@code EventCountLimit} triple:
+     * <ul>
+     *   <li>COUNT-BASED — a finite {@code eventCount}; the window is the accounting period ("1M total events").</li>
+     *   <li>TIME-BASED — the window IS the limit ("subscribe for 1 week"), with {@code eventCount} set to the
+     *       product's own "unlimited" sentinel {@code Integer.MAX_VALUE}.</li>
+     *   <li>HYBRID — finite on both axes ("1M events within a day").</li>
+     * </ul>
+     * That is exactly how the product seeds its own streaming plans: {@code APIUtil}'s
+     * {@code addDefaultTenantAsyncThrottlePolicies} builds AsyncGold/Silver/Bronze/Unlimited as one
+     * {@code EventCountLimit} with {@code unitTime=1, timeUnit="days"} and eventCounts
+     * {50000, 25000, 5000, Integer.MAX_VALUE}, and the AsyncWH* family the same with {@code timeUnit="months"} —
+     * i.e. AsyncGold ("50000 events per day") is literally the HYBRID shape and AsyncUnlimited the TIME-BASED one.
+     *
+     * <p>{@code timeUnit} is passed through UNVALIDATED by the admin REST layer
+     * ({@code CommonThrottleMappingUtil.fromThrottleLimitDTOToEventCountLimit} just copies it), so it is a free
+     * string. Use the product's own spellings — {@code "days"} / {@code "months"} as seeded above, or the
+     * admin-api.yaml examples {@code "sec"}/{@code "min"}/{@code "hour"}/{@code "day"} — and note the two disagree
+     * on pluralisation; that is the product's inconsistency, not the caller's choice to smooth over.
+     */
+    @When("I create a subscription throttling policy {string} allowing {int} events per {int} {string}")
+    public void iCreateSubscriptionEventCountPolicyOverWindow(String policyBaseName, int eventCount, int unitTime,
+                                                              String timeUnit) throws IOException {
+        postEventCountSubscriptionPolicy(policyBaseName, eventCount, unitTime, timeUnit, Integer.MAX_VALUE);
+    }
+
+    /**
      * Event-count subscription policy that ALSO caps {@code subscriberCount} — the maximum number of concurrent
      * WebSub topic subscriptions a subscription on this plan may hold. The hub counts the existing topic
      * subscriptions when a {@code hub.mode=subscribe} arrives and rejects the one that would exceed the cap
@@ -345,15 +432,34 @@ public class ApplicationBaseSteps {
     @When("I create a subscription throttling policy {string} allowing {int} events per minute and at most {int} webhook subscriptions")
     public void iCreateSubscriptionEventCountPolicy(String policyBaseName, int eventsPerMinute, int subscriberCount)
             throws IOException {
+        postEventCountSubscriptionPolicy(policyBaseName, eventsPerMinute, 1, "min", subscriberCount);
+    }
+
+    /**
+     * Windowed counterpart of the step above, for a WebSub plan whose limit is a period rather than a minute — the
+     * shape the product's own AsyncWH* plans use ({@code unitTime=1, timeUnit="months"} plus a subscriberCount cap).
+     */
+    @When("I create a subscription throttling policy {string} allowing {int} events per {int} {string} and at most {int} webhook subscriptions")
+    public void iCreateSubscriptionEventCountPolicyOverWindow(String policyBaseName, int eventCount, int unitTime,
+                                                              String timeUnit, int subscriberCount)
+            throws IOException {
+        postEventCountSubscriptionPolicy(policyBaseName, eventCount, unitTime, timeUnit, subscriberCount);
+    }
+
+    /** Single-sourced body of all four EVENTCOUNTLIMIT subscription-policy steps. */
+    private void postEventCountSubscriptionPolicy(String policyBaseName, int eventCount, int unitTime,
+                                                  String timeUnit, int subscriberCount) throws IOException {
         String policyName = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(policyBaseName));
         String payload = String.format(
-                "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Streaming event quota %d events/min\","
-                        + "\"type\":\"SubscriptionThrottlePolicy\",\"defaultLimit\":{\"type\":\"EVENTCOUNTLIMIT\","
-                        + "\"eventCount\":{\"timeUnit\":\"min\",\"unitTime\":1,\"eventCount\":%d}},"
+                "{\"policyName\":\"%s\",\"displayName\":\"%s\",\"description\":\"Streaming event quota %d events "
+                        + "per %d %s\",\"type\":\"SubscriptionThrottlePolicy\",\"defaultLimit\":{"
+                        + "\"type\":\"EVENTCOUNTLIMIT\",\"eventCount\":{\"timeUnit\":\"%s\",\"unitTime\":%d,"
+                        + "\"eventCount\":%d}},"
                         + "\"rateLimitCount\":0,\"rateLimitTimeUnit\":\"min\",\"stopOnQuotaReach\":true,"
                         + "\"subscriberCount\":%d,\"billingPlan\":\"FREE\",\"customAttributes\":[],"
                         + "\"permissions\":{\"permissionType\":\"ALLOW\",\"roles\":[\"Internal/everyone\"]}}",
-                policyName, policyName, eventsPerMinute, eventsPerMinute, subscriberCount);
+                policyName, policyName, eventCount, unitTime, timeUnit, timeUnit, unitTime, eventCount,
+                subscriberCount);
         postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "subThrottlePolicyName",
                 policyName, "subThrottlePolicyId", Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
     }
@@ -1119,12 +1225,24 @@ public class ApplicationBaseSteps {
         jsonPayload = jsonPayload.replace("{{apiId}}", actualApiId);
         jsonPayload = Utils.resolveContextPlaceholders(jsonPayload);
 
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
-
         Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
-                headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+                devportalHeadersInTenant(providerTenant), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * The acting actor's DevPortal bearer headers PLUS the {@code X-WSO2-Tenant} scope header — the ONE mechanism
+     * by which every cross-tenant DevPortal call in this class addresses another tenant's resources (the header is
+     * the {@code requestedTenant} parameter the DevPortal API declares on /apis, /apis/{id}, /key-managers,
+     * /throttling-policies/{level}, /applications/{id}, /applications/{id}/oauth-keys, /subscriptions and the
+     * subscriptions POST/PUT). Factored out of the eight cross-tenant steps below so the header name and the
+     * placeholder resolution live in exactly one place; do NOT re-hand-roll it in a new step.
+     *
+     * @param providerTenant tenant domain to address, possibly a {@code {{contextKey}}} reference
+     */
+    private static Map<String, String> devportalHeadersInTenant(String providerTenant) {
+        Map<String, String> headers = new HashMap<>(Identity.devportalHeaders());
+        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
+        return headers;
     }
 
     /**
@@ -1137,9 +1255,7 @@ public class ApplicationBaseSteps {
      */
     @When("I list DevPortal APIs in tenant {string}")
     public void iListDevportalApisInTenant(String providerTenant) throws Exception {
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
+        Map<String, String> headers = devportalHeadersInTenant(providerTenant);
         String url = Utils.getDevportalApisURL(Utils.getBaseUrl());
         // Cross-tenant API visibility propagates ASYNCHRONOUSLY (the legacy test polled 15×5s for the API to
         // appear in the other tenant's listing). Poll until the listing is non-empty; the funnel's last response
@@ -1162,10 +1278,8 @@ public class ApplicationBaseSteps {
     @When("I retrieve DevPortal API {string} in tenant {string}")
     public void iRetrieveDevportalApiInTenant(String apiId, String providerTenant) throws IOException {
         String actualApiId = TestContext.resolve(apiId).toString();
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
-        Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), actualApiId), headers);
+        Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), actualApiId),
+                devportalHeadersInTenant(providerTenant));
     }
 
     /**
@@ -1179,10 +1293,94 @@ public class ApplicationBaseSteps {
      */
     @When("I list DevPortal key managers in tenant {string}")
     public void iListDevportalKeyManagersInTenant(String providerTenant) throws IOException {
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(providerTenant));
-        Requests.get(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers);
+        Requests.get(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()),
+                devportalHeadersInTenant(providerTenant));
+    }
+
+    /**
+     * DevPortal throttling-policy listing with a tenant addressed in the {@code X-WSO2-Tenant} header. Ports
+     * {@code RestAPIStoreImpl.getApplicationPolicies(tenantDomain)} and its subscription-level sibling.
+     *
+     * <p><b>The header is accepted but has NO effect on this endpoint</b> — unlike every other cross-tenant step
+     * here. {@code ThrottlingPoliciesApiServiceImpl.throttlingPoliciesPolicyLevelGet} takes the {@code xWSO2Tenant}
+     * parameter and never reads it, resolving {@code organization} from the message context, so the answer is
+     * always the CALLER's own tenant's policies (measured in both directions; the legacy assertions in
+     * {@code CrossTenantSubscriptionTestCase#testApplicationPolicyAvailabilityInTenant1/2} pin the same thing).
+     * That is why an application referencing another tenant's application policy is refused with 400: the plan is
+     * never offered to it in the first place. Keep the parameter in the step anyway — it is what makes the
+     * "addressing another tenant changes nothing" assertion expressible.
+     *
+     * <p>Deliberately NOT the same step as {@code I retrieve all {string} throttling policies}: that one is the
+     * PUBLISHER-plane {@code /throttling-policies/{level}} read on an admin token, a different endpoint with a
+     * different audience. Here the observable is what a DEVPORTAL CONSUMER may see, on its devportal token.
+     *
+     * @param policyLevel    {@code application} or {@code subscription}
+     * @param providerTenant the tenant whose policy listing to fetch
+     */
+    @When("I retrieve DevPortal {string} throttling policies in tenant {string}")
+    public void iRetrieveDevportalThrottlingPoliciesInTenant(String policyLevel, String providerTenant)
+            throws IOException {
+        Requests.get(Utils.getDevportalThrottlingPoliciesURL(Utils.getBaseUrl(), policyLevel),
+                devportalHeadersInTenant(providerTenant));
+    }
+
+    /**
+     * Cross-tenant DevPortal application-keys listing: lists an application's OAuth key MAPPINGS
+     * ({@code /applications/{id}/oauth-keys}) SCOPED to another tenant via the {@code X-WSO2-Tenant} header. Ports
+     * {@code RestAPIStoreImpl.getApplicationOauthKeys(appId, tenantDomain)}. One application may hold a key
+     * mapping per key manager, and key managers are tenant-local — so this listing is filtered to the mappings
+     * whose key manager belongs to the ADDRESSED tenant.
+     *
+     * <p>Separate from {@link #iRetrieveExistingApplicationKeys}, which is not merely the same call without the
+     * header: that step extracts the FIRST entry's {@code consumerSecret}/{@code keyMappingId} into the shared
+     * context keys and throws when the list is empty. Both behaviours are wrong here — the subject is exactly
+     * WHICH mapping the list contains, so overwriting the ids under test would destroy the assertion, and an empty
+     * list is a legitimate (assertable) outcome. This variant therefore only publishes the response.
+     *
+     * @param appId          context key holding the application id
+     * @param providerTenant the tenant whose key-manager mappings should be listed
+     */
+    @When("I retrieve existing application keys for {string} in tenant {string}")
+    public void iRetrieveApplicationKeysInTenant(String appId, String providerTenant) throws IOException {
+        String actualAppId = TestContext.resolve(appId).toString();
+        Requests.get(Utils.getApplicationAllKeys(Utils.getBaseUrl(), actualAppId),
+                devportalHeadersInTenant(providerTenant));
+    }
+
+    /**
+     * Cross-tenant DevPortal subscription listing for an application: {@code /subscriptions?applicationId=...}
+     * SCOPED to another tenant via the {@code X-WSO2-Tenant} header. Ports
+     * {@code RestAPIStoreImpl.getAllSubscriptionsOfApplication(appId, tenantDomain)}. An application may be
+     * subscribed to APIs of several tenants at once (its own plus any ALL_TENANTS API it reached across the
+     * boundary); this listing — and the {@code count} it reports — is filtered to the subscriptions whose API
+     * belongs to the ADDRESSED tenant.
+     *
+     * @param appIdKey       context key holding the application id
+     * @param providerTenant the tenant whose subscriptions of that application should be listed
+     */
+    @When("I retrieve all subscriptions of application {string} in tenant {string}")
+    public void iRetrieveAllSubscriptionsOfApplicationInTenant(String appIdKey, String providerTenant)
+            throws IOException {
+        String appId = TestContext.resolve(appIdKey).toString();
+        Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), null, appId, null, null, null),
+                devportalHeadersInTenant(providerTenant));
+    }
+
+    /**
+     * Cross-tenant DevPortal application GET: retrieves an application SCOPED to another tenant via the
+     * {@code X-WSO2-Tenant} header. Ports {@code RestAPIStoreImpl.getApplicationById(appId, tenantDomain)}. The
+     * application itself is tenant-local to its owner, but its {@code subscriptionCount} is computed per ADDRESSED
+     * tenant — so the same application reports a different count depending on this header, which is the only way
+     * to observe that the count is tenant-filtered rather than a total.
+     *
+     * @param appId          context key holding the application id
+     * @param providerTenant the tenant to scope the retrieval (and hence the subscription count) to
+     */
+    @When("I retrieve the application with id {string} in tenant {string}")
+    public void iRetrieveApplicationInTenant(String appId, String providerTenant) throws IOException {
+        String actualAppId = TestContext.resolve(appId).toString();
+        Requests.get(Utils.getApplicationEndpointURL(Utils.getBaseUrl(), actualAppId),
+                devportalHeadersInTenant(providerTenant));
     }
 
     /**
@@ -1388,12 +1586,61 @@ public class ApplicationBaseSteps {
      * asserts the status (200 on a clean map, 409 "Key Mappings already exists" when keys are already
      * generated/mapped) — so this one step serves both the positive and negative scenarios.
      *
-     * @param idKey      context prefix of a client registered via the register-OAuth-client step
+     * @param idKey      context prefix of a client registered via the register-OAuth-client step, or of a bare
+     *                   consumer key/secret pair minted for an external IdP (same context contract)
      * @param appId      context key holding the target application id
-     * @param keyManager the key manager to map against (e.g. "Resident Key Manager")
+     * @param keyManager the key manager to map against — a literal name (e.g. "Resident Key Manager") or a
+     *                   {@code {{contextKey}}} reference, since a test-created key manager's name is generated
      */
     @When("I map OAuth client {string} to application {string} via key manager {string}")
     public void iMapOAuthClientToApplication(String idKey, String appId, String keyManager) throws IOException {
+
+        postMapKeys(idKey, appId, keyManager);
+    }
+
+    /**
+     * Same map-keys call as {@link #iMapOAuthClientToApplication}, but RETRIED until the key manager has reached
+     * the runtime key-manager holder. Use it when the mapping happens shortly after the key manager was
+     * registered; the plain variant is for an already-propagated key manager (the Resident one, or one a
+     * scenario is deliberately probing for a refusal).
+     *
+     * <p>A freshly-registered key manager propagates to the in-memory holder ASYNCHRONOUSLY, and map-keys needs
+     * the holder to resolve the key-manager instance: inside that window it answers
+     * {@code 400 / 901403 "Key Manager not Registered"}. MEASURED: with the tenant fixture provisioned right
+     * after the super-tenant one, ~5s elapsed between register and map and the call lost the race
+     * (/tmp/w7-run8-baseline.log), taking every later scenario of that tenant down with it — so the window is
+     * real and the "the API create/deploy/publish arc covers it" assumption does not hold.
+     *
+     * <p>The 60s-floored {@link Utils#retryUntil} envelope is the right one of the three (§15) rather than
+     * {@link Utils#awaitWithRetry}: the result IS what the setup asserts (it publishes {@code httpResponse} and
+     * the feature asserts the exact 200), and nothing needs re-triggering — no event was dropped, the holder is
+     * simply not populated yet. Re-POSTing is safe because a 901403 is refused BEFORE any key-mapping row is
+     * written, so a retry cannot duplicate a mapping or leak one; and this waits for the CONDITION rather than
+     * masking a real refusal, since a persistent 400 still fails the setup's assertion.
+     *
+     * <p>The step-level variant exists instead of folding the wait into the plain step because the map-keys
+     * NEGATIVE scenarios assert a 400 deliberately (a token-exchange-only key manager, an already-mapped
+     * application): retrying there would burn the whole propagation window before returning the same 400.
+     *
+     * @param idKey      see {@link #iMapOAuthClientToApplication}
+     * @param appId      see {@link #iMapOAuthClientToApplication}
+     * @param keyManager see {@link #iMapOAuthClientToApplication}
+     */
+    @When("I map OAuth client {string} to application {string} via key manager {string} "
+            + "once the key manager is operational")
+    public void iMapOAuthClientOnceKeyManagerOperational(String idKey, String appId, String keyManager)
+            throws Exception {
+
+        Utils.retryUntil(60_000L,
+                () -> postMapKeys(idKey, appId, keyManager),
+                resp -> resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300);
+    }
+
+    /**
+     * The map-keys POST both map-keys steps share: builds the BYO consumer key/secret payload for the target
+     * application and publishes the response as {@code httpResponse} for the feature's status assertion.
+     */
+    private HttpResponse postMapKeys(String idKey, String appId, String keyManager) throws IOException {
 
         String actualAppId = TestContext.resolve(appId).toString();
         String consumerKey = TestContext.resolve(idKey + "ClientId").toString();
@@ -1403,14 +1650,39 @@ public class ApplicationBaseSteps {
         json.put("consumerKey", consumerKey);
         json.put("consumerSecret", consumerSecret);
         json.put("keyType", "PRODUCTION");
-        json.put("keyManager", keyManager);
+        json.put("keyManager", Utils.resolveContextPlaceholders(keyManager));
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.post(
+        return Requests.post(
                 Utils.getMapKeysURL(Utils.getBaseUrl(), actualAppId), headers, json.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Deletes an application's generated keys ({@code DELETE applications/{id}/oauth-keys/{keyMappingId}}) —
+     * the operation the DevPortal UI performs from an application's Production/Sandbox keys page.
+     * Non-asserting — the feature asserts the status.
+     *
+     * <p>Distinct from {@link #iCleanUpKeyRegistration}, and the difference matters when picking one: that one
+     * POSTs {@code .../clean-up}, which discards APIM's key-mapping record for a partial/failed registration;
+     * this one deletes the keys proper. Prefer this for teardown of a successful key generation, so the OAuth
+     * client is removed rather than merely unlinked from the application.
+     *
+     * @param appId           context key holding the application id
+     * @param keyMappingIdKey context key holding the key mapping id
+     */
+    @When("I delete the keys for application {string} with key mapping {string}")
+    public void iDeleteApplicationKeys(String appId, String keyMappingIdKey) throws IOException {
+
+        String actualAppId = TestContext.resolve(appId).toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+
+        Requests.delete(Utils.getOAuthKeyURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers);
     }
 
     /**
@@ -1435,23 +1707,46 @@ public class ApplicationBaseSteps {
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
+    /** The WSO2 claim dialect the gateway JWT generator prefixes onto local claim names. */
+    private static final String WSO2_CLAIM_DIALECT = "http://wso2.org/claims/";
+
     /**
      * Asserts that the backend JWT (the {@code X-JWT-Assertion} request header the gateway injects towards the
-     * backend, reflected back by the /reflect-headers backend route) carries the given application attribute.
-     * The last {@code httpResponse} body is expected to be {@code {"headers": {"x-jwt-assertion": "<jwt>", ...}}};
-     * the JWT payload segment is base64-decoded and checked for the attribute name and value. Ports the
-     * applicationAttributes-claim assertion of ApplicationAttributesTestCase.
+     * backend, reflected back by the /reflect-headers backend route) carries the given application attribute
+     * mapped to the given value. Ports the applicationAttributes-claim assertion of ApplicationAttributesTestCase.
+     *
+     * <p>The attribute is looked up as an exact KEY of the parsed {@code applicationAttributes} claim and its value
+     * compared exactly, so the name and value are verified AS A PAIR. A substring check over the payload text
+     * cannot do that: it tests the two independently, so the name appearing under one attribute plus the expected
+     * value appearing under a DIFFERENT attribute satisfies it without this attribute ever carrying this value. It
+     * also cannot match a name containing {@code /}, since the raw JSON escapes it as {@code \/}.
      *
      * @param attributeName  the application attribute name (e.g. "External Reference Id")
      * @param attributeValue the expected value (e.g. "c1237890")
      */
     @Then("The reflected backend JWT should contain application attribute {string} with value {string}")
     public void theReflectedBackendJwtShouldContainAttribute(String attributeName, String attributeValue) {
+        JSONObject attrs = reflectedApplicationAttributes();
+        String name = Utils.resolveContextPlaceholders(attributeName);
+        String value = Utils.resolveContextPlaceholders(attributeValue);
+        Assert.assertTrue(attrs.has(name),
+                "Decoded backend JWT applicationAttributes claim has no attribute '" + name + "': " + attrs);
+        Assert.assertEquals(attrs.optString(name), value,
+                "applicationAttributes['" + name + "'] does not carry '" + value + "': " + attrs);
+    }
+
+    /**
+     * Reads the reflected backend JWT's {@code applicationAttributes} claim as a map. The gateway renders it either
+     * as a nested JSON object or as a string-encoded object, so both are handled. Shared by the attribute-value and
+     * empty-value assertions so neither has to fall back to a substring match over the payload text.
+     */
+    private JSONObject reflectedApplicationAttributes() {
         String payload = decodeReflectedBackendJwtPayload();
-        Assert.assertTrue(payload.contains(attributeName),
-                "Decoded backend JWT does not contain attribute name '" + attributeName + "': " + payload);
-        Assert.assertTrue(payload.contains(attributeValue),
-                "Decoded backend JWT does not contain attribute value '" + attributeValue + "': " + payload);
+        Object attrsClaim = new JSONObject(payload).opt(WSO2_CLAIM_DIALECT + "applicationAttributes");
+        Assert.assertNotNull(attrsClaim, "Decoded backend JWT has no applicationAttributes claim: " + payload);
+        return (attrsClaim instanceof JSONObject)
+                ? (JSONObject) attrsClaim
+                : new JSONObject(attrsClaim.toString());
     }
 
     /**
@@ -1466,27 +1761,29 @@ public class ApplicationBaseSteps {
      */
     @Then("The reflected backend JWT applicationAttributes claim should contain {string} with an empty value")
     public void theReflectedBackendJwtAttributeIsEmpty(String attributeName) {
-        String payload = decodeReflectedBackendJwtPayload();
-        // The applicationAttributes claim is a nested JSON object (e.g. {"External Reference Id":"c1237890",
-        //   "Optional attribute":""}). Parse it and assert the attribute key is present with an empty-string
-        //   value — robust to key order and to whether the gateway renders the claim as an object or a
-        //   string-encoded object.
-        JSONObject jwt = new JSONObject(payload);
-        Object attrsClaim = jwt.opt("http://wso2.org/claims/applicationAttributes");
-        Assert.assertNotNull(attrsClaim,
-                "Decoded backend JWT has no applicationAttributes claim: " + payload);
-        JSONObject attrs = (attrsClaim instanceof JSONObject)
-                ? (JSONObject) attrsClaim
-                : new JSONObject(attrsClaim.toString());
+        JSONObject attrs = reflectedApplicationAttributes();
         Assert.assertTrue(attrs.has(attributeName) && attrs.optString(attributeName).isEmpty(),
                 "Decoded backend JWT applicationAttributes claim does not carry '" + attributeName
-                        + "' with an empty value: " + payload);
+                        + "' with an empty value: " + attrs);
     }
 
     /**
-     * Asserts the gateway-injected backend JWT (X-JWT-Assertion) carries a claim name and value (substring match,
-     * so the short dialect suffix — e.g. "applicationname", "subscriber", "givenname" — suffices for the
-     * fully-qualified claim URIs). Shares the decode helper with the application-attribute assertion above.
+     * Asserts the gateway-injected backend JWT (X-JWT-Assertion) carries a claim name and value. Accepts EITHER
+     * form of claim name, because both are legitimately useful:
+     * <ul>
+     *   <li>a FULLY-QUALIFIED claim URI (e.g. {@code http://wso2.org/claims/givenname}) — matched as an exact
+     *       claim KEY, with an exact value comparison. Required wherever two claims share a dialect suffix
+     *       (a mapped {@code http://wso2.org/claims/givenname} next to an unmapped
+     *       {@code http://idp.org/claims/givenname}), where matching on the suffix alone would be satisfied by
+     *       either one and so could not tell a translated claim from an untranslated one.</li>
+     *   <li>a SHORT dialect suffix (e.g. {@code applicationname}, {@code subscriber}) — resolved to a claim key by
+     *       prefixing the {@code http://wso2.org/claims/} dialect, then matched exactly like the qualified form.</li>
+     * </ul>
+     * Exact-key matching in BOTH forms is deliberate. The raw JSON text escapes {@code /} as {@code \/}, so a
+     * fully-qualified URI can never be found by a substring match and would fail on a claim that is present. And a
+     * substring fallback is unsound in the other direction: it checks name and value INDEPENDENTLY, so a name
+     * present under one claim plus the expected value present under a DIFFERENT claim satisfies it without this
+     * claim ever carrying this value. Shares the decode helper with the application-attribute assertion above.
      * {@code {{...}}} placeholders in the expected name/value are resolved first.
      */
     @Then("The reflected backend JWT should contain claim {string} with value {string}")
@@ -1494,10 +1791,53 @@ public class ApplicationBaseSteps {
         String payload = decodeReflectedBackendJwtPayload();
         String name = Utils.resolveContextPlaceholders(claimName);
         String value = Utils.resolveContextPlaceholders(claimValue);
-        Assert.assertTrue(payload.contains(name),
-                "Decoded backend JWT does not contain claim '" + name + "': " + payload);
-        Assert.assertTrue(payload.contains(value),
-                "Decoded backend JWT claim '" + name + "' does not carry value '" + value + "': " + payload);
+        JSONObject claims = new JSONObject(payload);
+        String key = claims.has(name) ? name : WSO2_CLAIM_DIALECT + name;
+        Assert.assertTrue(claims.has(key),
+                "Decoded backend JWT has no claim '" + name + "' (also tried '" + WSO2_CLAIM_DIALECT + name
+                        + "'): " + payload);
+        Assert.assertEquals(String.valueOf(claims.get(key)), value,
+                "Decoded backend JWT claim '" + key + "' does not carry value '" + value + "': " + payload);
+    }
+
+    /**
+     * Asserts a claim is ABSENT from the gateway-injected backend JWT — the counterpart of the contains-claim
+     * assertion above, for a claim the configuration is supposed to keep OUT. The gateway JWT generator copies
+     * every claim of the validated token into the backend JWT except a hard-coded restricted set and the
+     * configured {@code [apim.jwt.gateway_generator] excluded_claims}, so absence is a real, config-driven
+     * outcome and not a given: a remote claim that is merely UNMAPPED still passes through under its original
+     * name. Asserted on the parsed claim SET (not a substring of the payload) so a claim name that happens to be
+     * a prefix of another cannot mask a genuine leak.
+     */
+    @Then("The reflected backend JWT should not contain claim {string}")
+    public void theReflectedBackendJwtShouldNotContainClaim(String claimName) {
+        String payload = decodeReflectedBackendJwtPayload();
+        String name = Utils.resolveContextPlaceholders(claimName);
+        Assert.assertFalse(new JSONObject(payload).has(name),
+                "Decoded backend JWT unexpectedly carries claim '" + name + "': " + payload);
+    }
+
+    /**
+     * Asserts which algorithm signed the gateway-injected backend JWT, read from the assertion's {@code alg} header.
+     * The expected value is a step PARAMETER rather than a constant because it is configuration-dependent:
+     * {@code [apim.jwt] signing_algorithm} defaults to {@code SHA256withRSA} (header {@code alg} = {@code RS256}),
+     * and setting it to {@code NONE} disables signing altogether — a block configured that way must be able to
+     * assert the unsigned outcome with the same step.
+     *
+     * <p>This is deliberately NOT covered by the presence-only {@code header.has("alg")} check in
+     * {@code theGeneratedAccessTokenShouldBeInJWTFormat}: that answers "is this a JWT at all" about the ACCESS
+     * token, and would still pass for an unsigned assertion. Every other backend-JWT assertion decodes the PAYLOAD,
+     * which is identical whether or not the gateway signed it — so without this step, signing silently switching
+     * off would leave the whole suite green while backends lost the ability to trust the injected identity.
+     *
+     * @param expectedAlgorithm the exact expected {@code alg} header value (e.g. {@code RS256})
+     */
+    @Then("The reflected backend JWT should be signed with algorithm {string}")
+    public void theReflectedBackendJwtShouldBeSignedWithAlgorithm(String expectedAlgorithm) {
+        String headerJson = decodeReflectedBackendJwtSegment(0);
+        JSONObject header = new JSONObject(headerJson);
+        Assert.assertEquals(header.optString("alg"), Utils.resolveContextPlaceholders(expectedAlgorithm),
+                "Unexpected backend JWT signing algorithm. Header: " + headerJson);
     }
 
     /**
@@ -1507,6 +1847,16 @@ public class ApplicationBaseSteps {
      * guarded so a missing header / malformed assertion fails with a clear message.
      */
     private String decodeReflectedBackendJwtPayload() {
+        return decodeReflectedBackendJwtSegment(1);
+    }
+
+    /**
+     * Shared extractor for the reflected {@code X-JWT-Assertion}: pulls the header out of the echoed headers object
+     * and base64-decodes the requested segment (0 = JOSE header, 1 = claims payload), URL-safe first then standard
+     * because the gateway config uses {@code encoding = "base64"}. Each step is guarded so a missing header or a
+     * malformed assertion fails with a clear message rather than an opaque decode error.
+     */
+    private String decodeReflectedBackendJwtSegment(int segmentIndex) {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No invocation response captured");
         JSONObject body = new JSONObject(response.getData());
@@ -1524,11 +1874,12 @@ public class ApplicationBaseSteps {
         Assert.assertNotNull(jwt, "No X-JWT-Assertion header reached the backend: " + headers);
 
         String[] segments = jwt.split("\\.");
-        Assert.assertTrue(segments.length >= 2, "Malformed JWT assertion (expected >= 2 segments): " + jwt);
+        Assert.assertTrue(segments.length > segmentIndex,
+                "Malformed JWT assertion (expected > " + segmentIndex + " segments): " + jwt);
         try {
-            return new String(Base64.getUrlDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+            return new String(Base64.getUrlDecoder().decode(segments[segmentIndex]), StandardCharsets.UTF_8);
         } catch (IllegalArgumentException e) {
-            return new String(Base64.getDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+            return new String(Base64.getDecoder().decode(segments[segmentIndex]), StandardCharsets.UTF_8);
         }
     }
 
@@ -2505,6 +2856,62 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Requests a subscription plan change by sending the DevPortal PUT's TWO-FIELD form: {@code throttlingPolicy}
+     * = the plan the subscription is on TODAY, {@code requestedThrottlingPolicy} = the plan being asked for. That
+     * is the contract {@code SubscriptionsApiServiceImpl} reads
+     * ({@code currentThrottlingPolicy = body.getThrottlingPolicy()},
+     * {@code requestedThrottlingPolicy = body.getRequestedThrottlingPolicy()}), and it is the only shape that
+     * expresses a PENDING change — which is what an approval workflow needs: the parked task's {@code updates}
+     * delta is built from exactly this pair, so a payload that puts the NEW plan in {@code throttlingPolicy}
+     * makes the product describe the change backwards.
+     *
+     * <p>Deliberately NOT folded into {@link #iUpdateTheSubscriptionWithSubscriptionPlan}: that step takes a
+     * SINGLE plan and rewrites {@code throttlingPolicy} to it, so it cannot say what the change is FROM and
+     * therefore cannot drive (or assert) a pending tier change. Stating both plans in the feature is what lets
+     * the delta the approver is shown be asserted against the literal values the step sent.
+     *
+     * @param subscriptionId context key holding the subscription id
+     * @param currentPlan    the plan the subscription is currently on
+     * @param requestedPlan  the plan being requested
+     */
+    @When("I request a subscription plan change of {string} from {string} to {string}")
+    public void iRequestASubscriptionPlanChange(String subscriptionId, String currentPlan, String requestedPlan)
+            throws IOException {
+        requestSubscriptionPlanChange(subscriptionId, currentPlan, requestedPlan, Identity.devportalHeaders());
+    }
+
+    /**
+     * As above, but CROSS-TENANT: the subscription's API lives in another tenant, so the PUT carries that tenant in
+     * the {@code X-WSO2-Tenant} header. Ports the {@code tenantDomain} argument of the legacy
+     * {@code RestAPIStoreImpl.updateSubscriptionToAPI(..., tenantDomain)} overload used by
+     * {@code CrossTenantSubscriptionUpdateTestCase}. The header is load-bearing, not cosmetic: the devportal PUT
+     * resolves the ORGANIZATION from it and then authorises the caller against the API in that organization
+     * ({@code SubscriptionsApiServiceImpl} → {@code RestApiUtil.getValidatedOrganization} →
+     * {@code isUserAccessAllowedForAPIByUUID(apiId, organization)}), so without it a cross-tenant API is not found.
+     *
+     * @param providerTenant the tenant the subscription's API is published in
+     */
+    @When("I request a subscription plan change of {string} from {string} to {string} in provider tenant {string}")
+    public void iRequestASubscriptionPlanChangeCrossTenant(String subscriptionId, String currentPlan,
+                                                           String requestedPlan, String providerTenant)
+            throws IOException {
+        requestSubscriptionPlanChange(subscriptionId, currentPlan, requestedPlan,
+                devportalHeadersInTenant(providerTenant));
+    }
+
+    private void requestSubscriptionPlanChange(String subscriptionId, String currentPlan, String requestedPlan,
+                                               Map<String, String> headers) throws IOException {
+
+        String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
+        JSONObject payload = new JSONObject(TestContext.resolve("subscriptionPayload").toString());
+        payload.put("throttlingPolicy", currentPlan);
+        payload.put("requestedThrottlingPolicy", requestedPlan);
+
+        Requests.put(Utils.getSubscriptionURL(Utils.getBaseUrl(), actualSubscriptionId),
+                headers, payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
      * Retrieves the details of a specific subscription by its ID.
      *
      * @param subscriptionId Context key containing the subscription ID to retrieve
@@ -2519,6 +2926,27 @@ public class ApplicationBaseSteps {
 
         Requests.get(Utils.getSubscriptionURL(Utils.getBaseUrl(),
                 actualSubscriptionId), headers);
+    }
+
+    /**
+     * As above, but CROSS-TENANT: the subscription's API lives in another tenant, carried in the
+     * {@code X-WSO2-Tenant} header. Required — not cosmetic — whenever the retrieved DTO is used as the payload of
+     * a following update: the mapper resolves the API in the ADDRESSED organization
+     * ({@code SubscriptionMappingUtil.fromSubscriptionToDTO} → {@code getAPIorAPIProductByUUID(uuid, organization)})
+     * and SWALLOWS a lookup failure, degrading to an {@code apiInfo} with only name/version and leaving
+     * {@code apiId} unset. The GET still answers 200, so the omission is silent — and the subsequent PUT then
+     * fails with 400 "Request must contain either apiIdentifier ...". Addressing the provider tenant keeps
+     * {@code apiId} in the payload.
+     *
+     * @param subscriptionId context key holding the subscription id
+     * @param providerTenant the tenant the subscription's API is published in
+     */
+    @When("I get the subscription with id {string} in tenant {string}")
+    public void iGetSubscriptionInTenant(String subscriptionId, String providerTenant) throws IOException {
+
+        String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
+        Requests.get(Utils.getSubscriptionURL(Utils.getBaseUrl(), actualSubscriptionId),
+                devportalHeadersInTenant(providerTenant));
     }
 
     /**
@@ -3119,6 +3547,79 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.put(
                 Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), km.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Changes a key manager's {@code tokenType} — its API-invocation method — in place (GET→modify→PUT), across
+     * {@code DIRECT} / {@code EXCHANGED} / {@code BOTH}. This is a RUNTIME-affecting update, not just config:
+     * a non-EXCHANGED key manager is registered in the gateway's JWT-validator map (so its issuer's tokens are
+     * accepted directly) while an EXCHANGED one is not, and an EXCHANGED/BOTH key manager is backed by a trusted
+     * IdP that is created on the way in and DELETED when the type moves to DIRECT (so the token exchange stops
+     * trusting that issuer). Non-asserting — the feature asserts the status, the reflected {@code tokenType} and
+     * the resulting runtime behaviour.
+     *
+     * @param idKey        context key holding the key-manager id
+     * @param newTokenType {@code DIRECT}, {@code EXCHANGED} or {@code BOTH}
+     */
+    @When("I update the key manager {string} setting its token type to {string}")
+    public void iUpdateKeyManagerTokenType(String idKey, String newTokenType) throws IOException {
+
+        updateKeyManagerTokenType(idKey, newTokenType, null);
+    }
+
+    /**
+     * As {@link #iUpdateKeyManagerTokenType} but also (re-)setting the trusted identity provider's {@code alias},
+     * which is REQUIRED whenever the new type is {@code EXCHANGED} or {@code BOTH} and the key manager is
+     * currently {@code DIRECT}.
+     *
+     * <p>Why it cannot be carried over silently: the alias is NOT a column of {@code AM_KEY_MANAGER}. It lives on
+     * the trusted IdP that only an EXCHANGED/BOTH key manager has, and a GET reads it back by merging that IdP in
+     * — so a DIRECT key manager reports NO alias, and a plain GET→mutate→PUT to EXCHANGED/BOTH would recreate the
+     * IdP with an empty one. The alias has to appear in the subject token's {@code aud} for an exchange to
+     * validate, so the transition must restate it; stating it in the feature keeps that requirement visible
+     * rather than hiding it in remembered glue state.
+     *
+     * @param alias the identity-provider alias to set (resolves {@code {{...}}})
+     */
+    @When("I update the key manager {string} setting its token type to {string} with identity provider alias {string}")
+    public void iUpdateKeyManagerTokenTypeWithAlias(String idKey, String newTokenType, String alias)
+            throws IOException {
+
+        updateKeyManagerTokenType(idKey, newTokenType, Utils.resolveContextPlaceholders(alias));
+    }
+
+    private void updateKeyManagerTokenType(String idKey, String newTokenType, String alias) throws IOException {
+
+        String kmId = TestContext.resolve(idKey).toString();
+        JSONObject km = fetchKeyManagerForUpdate(kmId, "token type");
+        km.put("tokenType", newTokenType);
+        if (alias != null) {
+            km.put("alias", alias);
+        }
+
+        Requests.put(
+                Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), km.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Intermediate GET of a key-manager GET→mutate→PUT round trip: fetches the current config as JSON, asserting
+     * a 2xx WITH a body first so a failed/empty fetch fails clearly instead of throwing an opaque
+     * JSONException/NPE. The read is consumed locally and must NOT touch {@code httpResponse} (§7), so it goes
+     * through the raw client — the following PUT is what publishes the response under test.
+     *
+     * @param what what is about to be updated, for the failure message
+     */
+    private JSONObject fetchKeyManagerForUpdate(String kmId, String what) throws IOException {
+
+        HttpResponse current = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
+                        && current.getData() != null && !current.getData().isBlank(),
+                "Failed to fetch key manager '" + kmId + "' before updating its " + what + ": expected a 2xx "
+                        + "response with a body, got " + (current == null ? "no response" : current.getResponseCode()
+                        + " / body=" + current.getData()));
+        return new JSONObject(current.getData());
     }
 
     /** Deletes the key manager held under {@code idKey}. Non-asserting — the feature asserts the status. */

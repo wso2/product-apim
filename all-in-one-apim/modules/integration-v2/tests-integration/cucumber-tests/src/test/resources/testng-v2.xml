@@ -457,6 +457,29 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeRunner"/>
         </classes>
     </test>
+    <!-- External-IdP self-validated JWT (legacy ExternalIDPJWTTestCase + its ExternalIDPJWTTestSuite config
+         harness): the key-manager tokenType lifecycle (DIRECT / EXCHANGED / BOTH and what each does at the
+         gateway and at the token endpoint), KM claimMapping -> backend X-JWT-Assertion translation, and the
+         unknown-azp / untrusted-signer negatives.
+         NO external Identity Server: both key managers here only SELF-VALIDATE JWTs the test signs itself
+         against a committed PEM certificate, and their management endpoints are never contacted
+         (enableOAuthAppCreation=false, enableTokenGeneration=false, provisionedAppValidation=false) — so this
+         block boots APIM + the node backend only. Needs the backend (the /reflect-headers route) to observe the
+         gateway-injected backend JWT, and its own overlay ([apim.jwt] enable + gateway_generator excluded_claims
+         — see the overlay for why each key is load-bearing) which is NOT orthogonal to the other blocks'
+         config, hence its own container.
+         thread-count=1: the single runner's scenarios MUTATE the shared fixture key manager's tokenType, and a
+         tokenType change is a container-wide runtime event (it adds/removes the KM from the gateway's JWT
+         validator map and creates/deletes its trusted IdP), so no sibling class may share this container. -->
+    <test name="IntegrationV2-ExternalIdpJwt" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="external-idp-jwt"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/externalIdpJwt/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ExternalIdpJwtRunner"/>
+        </classes>
+    </test>
     <!-- IS7 tenant-sharing default-KM path: overlay suppresses the Resident KM and enables
          [[apim.tenant_sharing]] auto_configure_key_manager, so a tenant provisioned through the notify endpoint
          gets a WSO2-IS-7 KM by default. Config-only — no external IS is booted (the feature asserts on the
@@ -516,6 +539,49 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/emailUserName/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerEmailUserNameLoginRunner"/>
+        </classes>
+    </test>
+    <!-- Unlimited tier disabled + configurable default throttling policies (ports UnlimitedTierDisabledTestCase
+         and ConfigurableDefaultPolicyTestCase, which the legacy suite also ran in ONE server, in that order).
+         MUST stay its own block: [apim.throttling] enable_unlimited_tier = false is a container-wide, "loud"
+         change — Unlimited stops being a defined tier, so ANY sibling runner whose API payload lists Unlimited as
+         a subscription policy or whose application is created on the Unlimited tier would be refused with
+         400/900305. Almost every existing fixture does exactly that, so nothing else may join this container.
+         MUST stay thread-count=1 — STRUCTURAL, not load: the ConfigurableDefaultPolicy runner MUTATES the
+         tenant configuration (DefaultAPILevelTier / DefaultSubscriptionLevelTier / DefaultApplicationLevelTier)
+         and restores it per scenario, while the UnlimitedTierDisabled runner asserts the EXACT fall-through tier
+         that those same keys override. Sequential classes make the two safe in either order; at thread-count=2
+         they would interleave and a configured default would silently replace the fall-through the sibling pins.
+         No gateway backend and no external IS — both features assert the management planes only. -->
+    <test name="IntegrationV2-UnlimitedTierDisabled" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="unlimited-tier-disabled"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/unlimitedTierDisabled/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.UnlimitedTierDisabledRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ConfigurableDefaultPolicyRunner"/>
+        </classes>
+    </test>
+
+    <!-- Solace event-API integration. initSolaceBroker boots DynamicSolaceBroker BEFORE APIM: a MOCK of the
+         Solace Cloud Event-Portal API (the solaceshim image) plus a REAL PubSub+ broker. APIM reaches the mock
+         by network alias, which the [apim.solace_config] overlay names, so it has to be listening before APIM
+         resolves it.
+         MUST stay its own block for the overlay alone: [apim.solace_config] points APIM's Solace client at the
+         mock, and any sibling runner would inherit that.
+         COST, stated because it is the largest single addition to this suite: the broker is a full event broker
+         (~1-2 min to boot, needs 1GB /dev/shm and a raised nofile limit). It is booted once per suite and shared,
+         and the block's 7 scenarios take ~75s, so the cost is dominated by that one boot.
+         The broker is deliberately real and load-bearing: it validates APIM-issued OAuth tokens against APIM's
+         own JWKS and holds the client usernames the connector provisions, so it is the one component here that
+         can contradict the mock. See DynamicSolaceBroker. -->
+    <test name="IntegrationV2-Solace" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="solace"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSolaceBroker" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/solace/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.SolaceApiLifecycleRunner"/>
         </classes>
     </test>
 </suite>

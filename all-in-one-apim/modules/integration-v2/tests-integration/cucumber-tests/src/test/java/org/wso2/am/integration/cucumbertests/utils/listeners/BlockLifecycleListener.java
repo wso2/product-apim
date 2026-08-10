@@ -35,6 +35,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.am.testcontainers.IdentityServerContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
+import org.wso2.am.testcontainers.DynamicSolaceBroker;
 import org.wso2.am.testcontainers.NodeAppServer;
 
 import java.nio.file.Files;
@@ -130,6 +131,19 @@ public class BlockLifecycleListener implements ITestListener {
      */
     static final String PARAM_INIT_BACKEND = "initBackend";
     /**
+     * When {@code true}, onStart boots {@link DynamicSolaceBroker} — a faked Solace connector control plane
+     * (network alias {@code solaceshim}) plus a REAL PubSub+ broker (alias {@code solacebroker}) — BEFORE APIM,
+     * because the block's toml declares a gateway environment whose {@code service_url} is
+     * {@code http://solaceshim:8081}. Ordering follows {@link #PARAM_INIT_BACKEND} (before APIM) rather than
+     * {@link #PARAM_BOOT_EXTERNAL_IS} (after APIM): nothing in the Solace arc needs APIM's certificate, and an
+     * environment pointing at an absent host is a needless race.
+     *
+     * <p>Infrastructure ONLY (CLAUDE.md 14). Registering the Solace environment is toml; importing, deploying,
+     * subscribing and key generation are feature steps run as an {@code Identity} actor. Do not add product
+     * calls here — that is what got {@code KeyManagerRegistration} removed.
+     */
+    static final String PARAM_INIT_SOLACE_BROKER = "initSolaceBroker";
+    /**
      * Optional comma-separated list of {@code <hostPath>::<serverRelativePath>} pairs copied into the block's
      * server directory tree BEFORE boot (host paths relative to the module working dir). For fixtures the
      * server only reads at startup — e.g. a secondary user-store XML under
@@ -219,6 +233,14 @@ public class BlockLifecycleListener implements ITestListener {
                 logger.info("Block '" + label + "' ensured NodeAppServer backend is running");
             }
 
+            // Solace: faked connector + real broker, up BEFORE APIM so the toml-declared solaceEnv
+            // (service_url = http://solaceshim:8081, by network alias) resolves the moment APIM needs it.
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_SOLACE_BROKER))) {
+                DynamicSolaceBroker solace = DynamicSolaceBroker.getInstance();
+                logger.info("Block '" + label + "' ensured Solace is running; connector="
+                        + solace.getConnectorBaseUrl() + " SEMP=" + solace.getSempUrl());
+            }
+
             // IS infrastructure only. Registering IS as a key manager is admin product behaviour and lives in
             // the features (see PARAM_BOOT_EXTERNAL_IS javadoc).
             boolean bootExternalIs = Boolean.parseBoolean(param(context, PARAM_BOOT_EXTERNAL_IS));
@@ -259,6 +281,13 @@ public class BlockLifecycleListener implements ITestListener {
                 IS_NOTIFY_ALIAS_PERMIT.acquireUninterruptibly();
                 context.setAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
                 container.withExternalIsNotificationAlias();
+            }
+            // Solace: the BROKER validates APIM-issued tokens by fetching APIM's JWKS itself, so APIM needs an
+            // alias the broker can resolve. APIM has none by default; without this every publish is rejected
+            // 403 with the reason only inside the broker's event.log. Unlike the wso2am alias above this needs
+            // no permit — see DynamicApimContainer.withSolaceJwksAlias.
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_SOLACE_BROKER))) {
+                container.withSolaceJwksAlias();
             }
             container.start();
 

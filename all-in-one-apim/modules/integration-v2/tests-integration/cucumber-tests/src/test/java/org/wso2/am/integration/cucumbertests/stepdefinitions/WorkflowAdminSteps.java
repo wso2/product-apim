@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
@@ -34,6 +35,8 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import java.io.IOException;
 
@@ -73,6 +76,45 @@ public class WorkflowAdminSteps {
     private final BaseSteps baseSteps = new BaseSteps();
     private final PublisherBaseSteps publisherSteps = new PublisherBaseSteps();
     private final OrganizationSteps organizationSteps = new OrganizationSteps();
+
+    /**
+     * Auth composite for the approval-workflow suite's TWO-ACTOR topology: an admin APPROVER plus a (possibly
+     * non-admin) REQUESTER. Every approval flow has both — the requester performs the product action that parks
+     * a pending task, the approver decides it — and legacy {@code WorkflowApprovalExecutorTest} runs each flow
+     * twice over exactly this axis ({@code SUPER_TENANT_ADMIN} = requester is the admin itself,
+     * {@code SUPER_TENANT_USER} = requester is a non-admin while {@code restAPIAdmin} stays the approver).
+     *
+     * <p>Neither existing composite in {@link BaseSteps} can express it: each records ONE acting actor and mints
+     * that actor's tokens only, whereas here the admin's {@code apim:admin} token must stay available for the
+     * workflow-admin steps while the scenario acts as the requester. So this delegates to the existing
+     * composites (no token logic is duplicated) and leaves the REQUESTER acting — scenarios flip to the approver
+     * with {@code Given I act as the tenant admin for "<requester>"} around the capture/approve steps, which is what makes the actor
+     * hand-off visible in the feature rather than hidden in glue.
+     *
+     * @param requesterRef actor reference performing the workflow-triggering action ({@code admin},
+     *                     {@code publisherUser} for publisher-plane flows, {@code subscriberUser} for
+     *                     devportal-plane flows)
+     */
+    @Given("The system is ready with an admin approver and {string} as the requester")
+    public void systemIsReadyWithApproverAndRequester(String requesterRef) throws Exception {
+        baseSteps.theSystemIsReady();
+        // The approver is the admin of the requester's tenant.
+        baseSteps.iHaveTokensAs(adminActorRef(requesterRef));
+        // The requester: DCR + publisher + devportal tokens (NO admin token — a non-admin is denied apim:admin).
+        // Also re-records the acting actor as the requester, which is where the scenario starts.
+        baseSteps.iHavePublisherTokensAs(requesterRef);
+    }
+
+    /** Selects the admin belonging to the referenced actor's tenant. */
+    @Given("I act as the tenant admin for {string}")
+    public void iActAsTenantAdminFor(String actorRef) {
+        Identity.setActingActor(adminActorRef(actorRef));
+    }
+
+    private static String adminActorRef(String actorRef) {
+        String tenant = Identity.resolveActor(actorRef).getUserDomain();
+        return Constants.SUPER_TENANT_DOMAIN.equals(tenant) ? Constants.ADMIN_USER_KEY : "admin@" + tenant;
+    }
 
     /**
      * Composite fixture for the subscription scenarios: creates an API from the given payload file, deploys it
@@ -118,21 +160,23 @@ public class WorkflowAdminSteps {
      * the runner's {@code @AfterClass} can restore it. Static because the setup feature and the runner teardown
      * are different instances on the same runner; a null value means the setup never ran (nothing to restore).
      */
-    private static volatile String originalWorkflowExtensions;
+    private static final Map<String, String> originalWorkflowExtensions = new ConcurrentHashMap<>();
 
     /**
      * Enables the Approval workflow executors: reads the current {@code workflow-extensions.xml} from the registry
      * (stored for restore), then writes the Approval variant from the classpath resource. Runs as the acting
-     * actor (super-tenant admin). This is a {@code _setup_} step — it enables behaviour the scenarios then test.
+     * tenant admin. This is a {@code _setup_} step — it enables behaviour the scenarios then test.
      *
      * @param resourcePath classpath path of the Approval {@code workflow-extensions.xml}
      */
     @When("I enable approval workflow executors from {string}")
     public void iEnableApprovalWorkflowExecutors(String resourcePath) throws IOException {
-        originalWorkflowExtensions = getRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH);
-        Assert.assertNotNull(originalWorkflowExtensions,
+        String tenant = Identity.actingTenantDomain();
+        String original = getRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH);
+        Assert.assertNotNull(original,
                 "Could not read the current workflow-extensions.xml from the registry — cannot safely flip "
-                        + "executors without a captured original to restore.");
+                        + "executors without a captured original to restore for tenant " + tenant + ".");
+        originalWorkflowExtensions.put(tenant, original);
         String approvalXml = Utils.readClasspathResource(resourcePath);
         boolean written = updateRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH, approvalXml);
         Assert.assertTrue(written, "ResourceAdminService.updateTextContent did not return true for the "
@@ -145,23 +189,24 @@ public class WorkflowAdminSteps {
      * a later run against the same DB. A no-op if the setup step never captured an original.
      */
     public static void restoreWorkflowExecutors() {
-        String original = originalWorkflowExtensions;
-        if (original == null) {
+        if (originalWorkflowExtensions.isEmpty()) {
             return;
         }
-        try {
-            User admin = Identity.resolveActor("admin");
-            String envelope = updateEnvelope(WF_EXTENSIONS_REGISTRY_PATH, original);
-            Requests.soap(Utils.getResourceAdminServiceURL(Utils.getBaseUrl()), envelope,
-                    "urn:updateTextContent", admin.getUserName(), admin.getPassword());
-        } catch (IOException | RuntimeException e) {
-            // A restore failure must not mask the run result; log and move on (the container is torn down anyway,
-            // and the next run's setup re-reads whatever is there and overwrites it). IOException covers the SOAP
-            // transport; RuntimeException covers an unresolvable actor ref.
-            logger.warn("WorkflowAdminSteps: failed to restore workflow-extensions.xml: " + e.getMessage());
-        } finally {
-            originalWorkflowExtensions = null;
+        for (Map.Entry<String, String> entry : originalWorkflowExtensions.entrySet()) {
+            String tenant = entry.getKey();
+            try {
+                String actorRef = Constants.SUPER_TENANT_DOMAIN.equals(tenant) ? Constants.ADMIN_USER_KEY
+                        : "admin@" + tenant;
+                User admin = Identity.resolveActor(actorRef);
+                String envelope = updateEnvelope(WF_EXTENSIONS_REGISTRY_PATH, entry.getValue());
+                Requests.soap(Utils.getResourceAdminServiceURL(Utils.getBaseUrl()), envelope,
+                        "urn:updateTextContent", admin.getUserName(), admin.getPassword());
+            } catch (IOException | RuntimeException e) {
+                logger.warn("WorkflowAdminSteps: failed to restore workflow-extensions.xml for tenant " + tenant
+                        + ": " + e.getMessage());
+            }
         }
+        originalWorkflowExtensions.clear();
     }
 
     /**
@@ -215,6 +260,34 @@ public class WorkflowAdminSteps {
     public void iGetTheWorkflowByReference(String refKey) throws IOException {
         String reference = TestContext.resolve(refKey).toString();
         Requests.get(Utils.getWorkflowByReferenceURL(Utils.getBaseUrl(), reference), Identity.adminHeaders());
+    }
+
+    /**
+     * Attempts the GET-workflow-BY-EXTERNAL-REFERENCE with the acting actor's DEVPORTAL token (a non-admin
+     * credential) and publishes the response — the admin-only guard on the single-task read. A separate step from
+     * {@link #iAttemptToListPendingWorkflowsAsNonAdmin} because it is a DIFFERENT endpoint
+     * ({@code /workflows/{externalWorkflowRef}} vs {@code /workflows?workflowType=}); the legacy test asserts 401
+     * on each independently, and a guard can regress on one without the other.
+     */
+    @When("I attempt to get the workflow with reference {string} as a non-admin")
+    public void iAttemptToGetTheWorkflowByReferenceAsNonAdmin(String refKey) throws IOException {
+        String reference = TestContext.resolve(refKey).toString();
+        Requests.get(Utils.getWorkflowByReferenceURL(Utils.getBaseUrl(), reference), Identity.devportalHeaders());
+    }
+
+    /**
+     * Attempts the update-workflow-status POST (approve/reject) with the acting actor's DEVPORTAL token and
+     * publishes the response — the admin-only guard on the DECIDING endpoint, the one whose bypass would be an
+     * actual privilege escalation (a non-admin self-approving its own pending request). Distinct from
+     * {@link #iDecideTheWorkflow}, which sends the admin token.
+     */
+    @When("I attempt to {string} the workflow with reference {string} as a non-admin")
+    public void iAttemptToDecideTheWorkflowAsNonAdmin(String decision, String refKey) throws IOException {
+        String reference = TestContext.resolve(refKey).toString();
+        String body = new JSONObject().put("status", decision)
+                .put("description", "integration-v2 non-admin approval attempt").toString();
+        Requests.post(Utils.getUpdateWorkflowStatusURL(Utils.getBaseUrl(), reference), Identity.devportalHeaders(),
+                body, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /**
@@ -272,10 +345,87 @@ public class WorkflowAdminSteps {
     }
 
     /**
+     * Asserts the pending task's {@code updates} property (a JSON-ARRAY string nested under {@code properties})
+     * carries an entry for {@code attributeName} whose {@code current} and {@code expected} values are exactly as
+     * given. This is the WHAT-WILL-CHANGE payload an approver decides on — the subscription-update workflow's
+     * {@code Subscription Tier: Unlimited -> Gold} and the application-update workflow's attribute deltas. It
+     * cannot be expressed with {@link #theWorkflowPropertyShouldBe}, whose value is a flat string; here the
+     * property must be parsed as an array and the matching entry located, and asserting only the end state (the
+     * pre-existing check) would pass even if the approver were shown the wrong delta.
+     *
+     * @param attributeName  the {@code attributeName} of the entry to locate (e.g. {@code Subscription Tier})
+     * @param currentValue   expected {@code current} value of that entry
+     * @param expectedValue  expected {@code expected} (post-approval) value of that entry
+     */
+    @Then("The workflow update entry {string} should change from {string} to {string}")
+    public void theWorkflowUpdateEntryShouldChange(String attributeName, String currentValue, String expectedValue) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200
+                        && response.getResponseCode() < 300 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Cannot read the workflow 'updates' property — last response was not a successful body: got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        JSONObject properties = new JSONObject(response.getData()).getJSONObject("properties");
+        Assert.assertTrue(properties.has("updates"),
+                "Pending workflow carried no 'updates' property, so the approver is shown no delta at all: "
+                        + properties);
+        JSONArray updates = new JSONArray(properties.getString("updates"));
+        JSONObject match = null;
+        for (int i = 0; i < updates.length(); i++) {
+            JSONObject entry = updates.getJSONObject(i);
+            if (attributeName.equals(entry.optString("attributeName"))) {
+                match = entry;
+                break;
+            }
+        }
+        Assert.assertNotNull(match, "No 'updates' entry with attributeName '" + attributeName + "'. Full updates: "
+                + updates);
+        Assert.assertEquals(match.optString("current"), Utils.resolveContextPlaceholders(currentValue),
+                "'" + attributeName + "' current value mismatch in the updates entry: " + match);
+        Assert.assertEquals(match.optString("expected"), Utils.resolveContextPlaceholders(expectedValue),
+                "'" + attributeName + "' expected value mismatch in the updates entry: " + match);
+    }
+
+    /**
+     * Asserts NO pending task of the given type carries a property matching the given value — the negative form of
+     * {@link #iCaptureThePendingWorkflowReference}, needed where the product must have CLEANED UP an entry (the
+     * revision-deployment workflow entry after an undeploy). A get-by-reference 404 cannot express this: the
+     * reference of an entry that was never created is unknown, so the absence has to be asserted against the
+     * listing. Retries the listing within the shared propagation window while an entry is still present, so a
+     * lagging cleanup is waited out rather than flaking, and fails with the offending referenceId when it persists.
+     *
+     * @param workflowType  workflow type filter (e.g. {@code AM_REVISION_DEPLOYMENT})
+     * @param matchProperty property name inside each task's {@code properties} object
+     * @param matchValue    context-resolvable value that must match NO pending task
+     */
+    @Then("There should be no pending {string} workflow where {string} is {string}")
+    public void thereShouldBeNoPendingWorkflow(String workflowType, String matchProperty, String matchValue)
+            throws InterruptedException {
+        String expected = Utils.resolveContextPlaceholders(matchValue);
+        // The probe returns the BOOLEAN "is it gone", not the reference: retryUntil can never ACCEPT a null
+        // result (its accept-then-return contract treats null as "not yet"), so probing for the reference
+        // itself would burn the whole propagation window even on an immediate pass. The last reference seen is
+        // carried out separately for the failure message.
+        AtomicReference<String> lastSeen = new AtomicReference<>();
+        Boolean absent = Utils.retryUntil(0L, () -> {
+            String reference = findPendingWorkflowReference(workflowType, matchProperty, expected);
+            lastSeen.set(reference);
+            return reference == null;
+        }, Boolean::booleanValue);
+        Assert.assertTrue(Boolean.TRUE.equals(absent), "A pending '" + workflowType + "' workflow with "
+                + matchProperty + "='" + expected + "' still exists (referenceId=" + lastSeen.get()
+                + ") — it was not cleaned up.");
+    }
+
+    /**
      * Asserts the length of the {@code list} array in the last response equals an expected count. Used by the
      * revision-deployment scenario to confirm a held/rejected deploy left zero deployed revisions and an
      * approved one left exactly one — the effect an approve/reject has on the deployment, which a plain
      * substring "contains" check cannot express.
+     *
+     * <p>Sound for the deployed-revisions listing ONLY while no deploy request is outstanding: a revision whose
+     * deployment is still pending approval is ALSO listed by {@code query=deployed:true}. Use
+     * {@link #theOnlyApprovedDeployedRevisionShouldBe} once a request is parked.
      */
     @Then("The response list should have {int} entries")
     public void theResponseListShouldHaveEntries(int expectedCount) {
@@ -289,6 +439,47 @@ public class WorkflowAdminSteps {
         int actual = list == null ? 0 : list.length();
         Assert.assertEquals(actual, expectedCount,
                 "Expected " + expectedCount + " list entries but found " + actual + ": " + response.getData());
+    }
+
+    /**
+     * Asserts that EXACTLY ONE revision in the last deployed-revisions listing has an {@code APPROVED}
+     * deployment, and that it is the given revision.
+     *
+     * <p>Needed because {@code GET /revisions?query=deployed:true} also lists a revision whose deployment is
+     * still PENDING an approval — measured behaviour: with revision 1 approved and revision 2's deploy request
+     * parked, the listing returns BOTH, revision 2 carrying {@code deploymentInfo[0].status = CREATED}. So
+     * {@code The response list should have 1 entries} cannot express "only revision 1 is actually deployed"
+     * whenever a request is outstanding; the deployment STATUS is the discriminator. Asserting exactly-one
+     * matters as much as the id: the legacy loop only checked ids of entries that happened to be APPROVED, so it
+     * passed vacuously when none was.
+     *
+     * @param revisionIdKey context key holding the id of the revision that must be the sole APPROVED deployment
+     */
+    @Then("The only revision deployed with an APPROVED deployment should be {string}")
+    public void theOnlyApprovedDeployedRevisionShouldBe(String revisionIdKey) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200
+                        && response.getResponseCode() < 300 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Cannot read the deployed-revisions listing — last response was not a successful body: got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        String expectedRevisionId = TestContext.resolve(revisionIdKey).toString();
+        JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+        JSONArray approved = new JSONArray();
+        for (int i = 0; list != null && i < list.length(); i++) {
+            JSONObject revision = list.getJSONObject(i);
+            JSONArray deployments = revision.optJSONArray("deploymentInfo");
+            for (int d = 0; deployments != null && d < deployments.length(); d++) {
+                if ("APPROVED".equals(deployments.getJSONObject(d).optString("status"))) {
+                    approved.put(revision.optString("id"));
+                    break;
+                }
+            }
+        }
+        Assert.assertEquals(approved.length(), 1, "Expected exactly one revision with an APPROVED deployment but "
+                + "found " + approved.length() + " (" + approved + "): " + response.getData());
+        Assert.assertEquals(approved.getString(0), expectedRevisionId,
+                "The APPROVED-deployed revision is not the expected one: " + response.getData());
     }
 
     /**

@@ -78,3 +78,54 @@ Feature: Email-Form Username Login
       | actor                     | expectedUsername                      | password        |
       | publisherUser             | publisherUser1@email.com@carbon.super | publisherUser1  |
       | publisherUser@tenant1.com | publisherUser11@email.com@tenant1.com | publisherUser11 |
+
+  # Legacy arc 2, the two planes the outline above cannot reach: LoginWithTenantUserEmailUserNameTestCase proved the
+  # NON-ADMIN email user on the DevPortal (getAllApps) and the Admin portal (throttlingPoliciesApplicationGet) as
+  # well as the Publisher, and only the Publisher leg was ported.
+  # A SIBLING scenario rather than extra steps on the outline above, for a token reason and not a stylistic one:
+  # that outline deliberately opens with the LEAST-PRIVILEGE publisher composite, which mints no admin token at all
+  # (§12), so the Admin-portal leg is unreachable from inside it. Here the full composite is used instead, and the
+  # scenario therefore also pins something the least-privilege one cannot: that an email-form credential survives
+  # the password grant for the ADMIN token's scope set, not only the publisher/devportal ones.
+  # The DevPortal leg is a WRITE followed by a READ (create an application, then find it by name in the listing)
+  # rather than the legacy's bare assertNotNull on an empty list, which would have passed for a user whose
+  # DevPortal access was completely broken as long as the endpoint answered. A UNIQUE application name is the
+  # marker rather than "DefaultApplication", so the read cannot be satisfied by something this scenario did not
+  # create.
+  # THE ACTOR IS `userKey1`, NOT `publisherUser`, and that is a correctness requirement rather than a preference.
+  # Legacy's LoginWithTenantUserEmailUserNameTestCase provisioned its tenant user with
+  # {Internal/subscriber, Internal/publisher, Internal/creator} (EmailUserNameLoginTestCase:151-152); v2's
+  # `userKey1` (testUser1 / testUser11) is exactly that role set, while `publisherUser` carries creator+publisher
+  # with NO subscriber role. MEASURED with publisherUser first, under the build lock: the DevPortal application
+  # create answered `{"code":401,...,"description":"Unauthenticated request"} expected [201] but found [401]` in
+  # BOTH tenants (/tmp/w10w8-run4-locked-deliveryprobe.log) - i.e. porting the row onto the publisher actor cannot
+  # express it at all, because the role set legacy relied on is the whole point of the row.
+  @cap:key-manager @feat:token-issuance @type:regression @rule:email-username @legacy:EmailUserNameLoginTestCase
+  Scenario Outline: A non-admin user whose username is an email address reaches the DevPortal and Admin planes as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I store the acting actor credentials as "emailPlaneUserName" and "emailPlaneUserPassword"
+    Then the actual value of "emailPlaneUserName" should match the expected value:
+      """
+      <expectedUsername>
+      """
+    # DevPortal plane: an application created by this credential is listed back to it
+    When I generate a unique alphanumeric value and store it as "emailPlaneAppName"
+    And I put the following JSON payload in context as "emailPlaneAppCreate"
+    """
+    {"name": "{{emailPlaneAppName}}", "throttlingPolicy": "Unlimited", "description": "Email-username DevPortal plane"}
+    """
+    And I create an application with payload "emailPlaneAppCreate"
+    Then The response status code should be 201
+    When I list the DevPortal applications
+    Then The response status code should be 200
+    And The response should contain "{{emailPlaneAppName}}"
+    # Admin plane: the shipped application policies are readable, asserted on shipped data and not on a bare 200
+    When I retrieve all "application" throttling policies
+    Then The response status code should be 200
+    And The response should contain "Unlimited"
+
+    Examples:
+      | actor                | expectedUsername                 |
+      | userKey1             | testUser1@email.com@carbon.super |
+      | userKey1@tenant1.com | testUser11@email.com@tenant1.com |

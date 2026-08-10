@@ -1,0 +1,39 @@
+{
+  "name": "${UNIQUE:OAS3EpSecOauthRestAPI}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:oas3epsecoauth}",
+  "gatewayType": "wso2/synapse",
+  "policies": [
+    "Unlimited",
+    "Bronze"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "OAUTH",
+        "grantType": "CLIENT_CREDENTIALS",
+        "tokenUrl": "https://localhost:9443/oauth2/token",
+        "clientId": "oasImportProdClientId0001",
+        "clientSecret": "oasImportProdClientSecret0001",
+        "customParameters": {}
+      },
+      "sandbox": {
+        "enabled": true,
+        "type": "OAUTH",
+        "grantType": "CLIENT_CREDENTIALS",
+        "tokenUrl": "https://localhost:9443/oauth2/token",
+        "clientId": "oasImportSandClientId0002",
+        "clientSecret": "oasImportSandClientSecret0002",
+        "customParameters": {}
+      }
+    }
+  }
+}

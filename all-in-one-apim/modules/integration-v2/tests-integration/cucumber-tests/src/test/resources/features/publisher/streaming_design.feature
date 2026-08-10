@@ -83,6 +83,98 @@ Feature: Publisher Streaming API Design
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # ---- Advertise-only consequences: no revisions, but still discoverable and subscribable ----------------
+  # W6. Three behaviours legacy asserted that v2 did not: revision creation is refused, the published API is
+  # visible in the publisher listing, and a subscription to it lands UNBLOCKED. None of them depends on which
+  # AsyncAPI parser is configured, which is why they are covered once here rather than in a second container
+  # (see the parser note below).
+  #
+  # THE PARSER CONFLICT, RESOLVED — read this before "fixing" the :105 rejection row. The audit flagged that
+  # legacy's async/asyncapi.yaml is byte-identical to v2's and yet legacy asserts it imports 201 while
+  # streaming_design.feature asserts the SAME file is rejected 400 "Implicit OAuth Flow is missing", concluding
+  # "both cannot hold on one build". They never were on one build: legacy has TWO classes with TWO tomls —
+  # AsyncAPITestCase runs configFiles/streamingAPIs/legacyAsync (use_legacy_async_parser = TRUE, lenient, so the
+  # file imports) and AsyncAPITestWithValidationCase runs configFiles/streamingAPIs/async
+  # (use_legacy_async_parser = FALSE, strict, so it is rejected). This block carries the strict setting via the
+  # backendJwtUrlSafe overlay, so the 400 here is correct. Both assertions are right.
+  @cap:publisher @feat:streaming-design @rule:async-import @type:negative @legacy:AsyncAPITestCase @legacy:AsyncAPITestWithValidationCase
+  Scenario Outline: Creating a revision of an advertise-only AsyncAPI is refused (<def>) as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import asyncapi definition from "<def>" with additional properties "artifacts/payloads/async/asyncapi_advertised_props.json" as "asyncRevApiId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "asyncRevPayload"
+    """
+    {"description":"advertise-only revision attempt"}
+    """
+    # Asserted EXACTLY, unlike legacy. Legacy wrapped this in try/catch and asserted
+    #   e.getMessage().contains("Error while adding new API Revision for API : ")
+    #     || e.getMessage().contains("Creating API Revisions is not supported")
+    # which (a) accepts either message and (b) passes SILENTLY when no exception is thrown at all — the
+    # rejection could stop happening and legacy would stay green. 903225 is the third-party-revision guard,
+    # the same code the Solace work pinned for an advertised API.
+    And I attempt to create a revision for "apis" resource "asyncRevApiId" with payload "asyncRevPayload"
+    Then The response status code should be 400
+    And The response should contain "903225"
+
+    Examples:
+      | actor                     | def                                      |
+      | publisherUser             | artifacts/payloads/async/asyncapiv2.yaml |
+      | publisherUser             | artifacts/payloads/async/asyncapiv3.yaml |
+      | publisherUser@tenant1.com | artifacts/payloads/async/asyncapiv2.yaml |
+      | publisherUser@tenant1.com | artifacts/payloads/async/asyncapiv3.yaml |
+
+  # Legacy asserted this with APIMTestCaseUtils.isAPIAvailable over the publisher's full API list, i.e. that an
+  # advertise-only API is a first-class publisher artifact despite never being deployed to a gateway.
+  @cap:publisher @feat:streaming-design @rule:async-import @type:regression @legacy:AsyncAPITestCase
+  Scenario Outline: A published advertise-only AsyncAPI appears in the publisher API listing as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import asyncapi definition from "artifacts/payloads/async/asyncapiv2.yaml" with additional properties "artifacts/payloads/async/asyncapi_advertised_props.json" as "asyncListApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "asyncListApiId"
+    Then The lifecycle status of API "asyncListApiId" should be "Published"
+    When I retrieve all APIs created through the Publisher REST API
+    Then The API with id "asyncListApiId" should be in the list of all APIS
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Subscription to an advertise-only ASYNC API. Tagged @cap:devportal but kept in this publisher file on
+  # purpose (CLAUDE.md §2): it is an intrinsic facet of the cohesive async-import arc — import -> publish ->
+  # subscribe, the same chain legacy expressed with dependsOnMethods — not a devportal scenario merely parked
+  # here. The acting actor is admin rather than publisherUser because a
+  # publisherUser holds no application-manage scope and POST /applications answers 401 for it.
+  # UNBLOCKED is the load-bearing value: it says the subscription is immediately usable, NOT parked ON_HOLD by a
+  # workflow — asserted as the status FIELD rather than a body substring, since ON_HOLD would also contain the
+  # API's id. AsyncWHUnlimited is the tier the advertised props declare; a tier outside `policies` is refused
+  # 400 before any subscription is created.
+  @cap:devportal @feat:streaming-design @rule:async-import @type:regression @dep:publisher @legacy:AsyncAPITestCase @legacy:AsyncAPITestWithValidationCase
+  Scenario Outline: Subscribing to an advertise-only AsyncAPI lands UNBLOCKED (<def>) as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I import asyncapi definition from "<def>" with additional properties "artifacts/payloads/async/asyncapi_advertised_props.json" as "asyncSubApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "asyncSubApiId"
+    Then The lifecycle status of API "asyncSubApiId" should be "Published"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "asyncSubAppPayload"
+    And I create an application with payload "asyncSubAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "asyncSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{asyncSubApiId}}", "throttlingPolicy": "AsyncWHUnlimited"}
+    """
+    And I subscribe to API "asyncSubApiId" using application "createdAppId" with payload "asyncSubPayload" as "asyncSubId"
+    Then The response status code should be 201
+    And The value of response field "status" should be "UNBLOCKED"
+
+    Examples:
+      | actor             | def                                      |
+      | admin             | artifacts/payloads/async/asyncapiv2.yaml |
+      | admin             | artifacts/payloads/async/asyncapiv3.yaml |
+      | admin@tenant1.com | artifacts/payloads/async/asyncapiv2.yaml |
+      | admin@tenant1.com | artifacts/payloads/async/asyncapiv3.yaml |
+
   # An ASYNC API imported WITHOUT advertiseInfo (i.e. as a normal managed API) is rejected — for both v2 and v3,
   # in both tenants.
   @cap:publisher @feat:streaming-design @rule:async-import @type:negative @legacy:AsyncAPITestWithValidationCase

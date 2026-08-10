@@ -20,7 +20,7 @@ Feature: Backend JWT URL-safe encoding
     When I invoke the API at gateway context "{{usjApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
-    And The reflected backend JWT should contain claim "subscriber" with value "admin"
+    And The reflected backend JWT should contain claim "subscriber" with value "<actor>"
 
     Examples:
       | actor             |

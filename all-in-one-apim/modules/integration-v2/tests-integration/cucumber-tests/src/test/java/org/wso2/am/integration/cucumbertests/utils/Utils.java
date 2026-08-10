@@ -890,6 +890,15 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "key-managers";
     }
 
+    /** DevPortal — list the throttling policies of a level: {@code /throttling-policies/{application|subscription}}
+     *  (GET). This is the CONSUMER-facing policy listing (the plans an application create may choose from),
+     *  distinct from the publisher-plane {@link #getThrottlingPoliciesByTypeURL(String, String)} and the admin-plane
+     *  CRUD URLs. With the {@code X-WSO2-Tenant} header it returns ANOTHER tenant's policies — the cross-tenant
+     *  policy-visibility facet, which must never leak the calling tenant's own policies. */
+    public static String getDevportalThrottlingPoliciesURL(String baseUrl, String policyLevel) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "throttling-policies/" + policyLevel;
+    }
+
     /** DevPortal — an API's document metadata: {@code /apis/{apiId}/documents/{docId}} (GET). Visibility-gated. */
     public static String getDevportalApiDocumentURL(String baseUrl, String apiId, String documentId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/documents/" + documentId;
@@ -998,8 +1007,21 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION";
     }
 
-    public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
+    /**
+     * DevPortal — one application key mapping ({@code applications/{id}/oauth-keys/{keyMappingId}}). The same
+     * resource serves PUT (update) and DELETE (remove the keys), so both callers share this builder rather
+     * than each assembling the path.
+     *
+     * <p>Not to be confused with {@link #getCleanupRegistrationURL}: {@code clean-up} discards APIM's
+     * key-mapping record for a partial/failed registration, whereas DELETE here is the real "delete keys"
+     * operation the DevPortal UI performs.
+     */
+    public static String getOAuthKeyURL(String baseUrl, String applicationId, String keyMappingId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" + keyMappingId;
+    }
+
+    public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
+        return getOAuthKeyURL(baseUrl, applicationId, keyMappingId);
     }
 
     public static String getAPIInvocationURL(String baseGatewayUrl, String resourcePath, String tenantDomain) {
@@ -1548,6 +1570,15 @@ public class Utils {
     /** Publisher REST API — available throttling policies for a policy level (subscription / api / application). */
     public static String getPublisherThrottlingPoliciesURL(String baseUrl, String policyLevel) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "throttling-policies/" + policyLevel;
+    }
+
+    /**
+     * Publisher REST API — the publisher settings document, which advertises (among other things) the tenant's
+     * resolved default advanced/subscription throttling policies (SettingsMappingUtil reads them through
+     * APIUtil.getDefaultAPILevelPolicy / getDefaultSubscriptionPolicy).
+     */
+    public static String getPublisherSettingsURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "settings";
     }
 
 

@@ -20,10 +20,13 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.HmacTestUtils;
+import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -47,6 +50,9 @@ import java.util.Map;
  *   <li><b>Content publish</b> — a POST by the event SOURCE to the hub's event-receiver inbound, a listener
  *       SEPARATE from the gateway passthrough ({@link Utils#getBaseWebSubEventReceiverUrl()}), signed with the
  *       API's own {@code websubSubscriptionConfiguration.secret}.</li>
+ *   <li><b>Persisted-subscription read</b> — the internal {@code webhooks-subscriptions} resource, which is the only
+ *       surface that observes a registration having been RECORDED without depending on the hub's fan-out (and,
+ *       because its query filters on {@code EXPIRY_AT}, is also where lease expiry is observable).</li>
  *   <li><b>Subscriber-side introspection</b> — reading back what the hub actually delivered. The callback must be
  *       reachable from INSIDE the APIM container (the hub delivers server-to-server), so it is the
  *       {@code websub-receiver} node app on the shared network; the recorded deliveries are read from the test JVM
@@ -57,18 +63,22 @@ import java.util.Map;
  * via {@link Names#unique}. Absence of a delivery is proved with a POSITIVE BARRIER — a second, still-subscribed
  * receiver that must observe the same event — never by sleeping and hoping.
  *
- * <p><b>Leg 3 is currently PARKED in the feature.</b> Every step here that asserts a delivery — the settled and
- * exact delivery counts, the delivered body/signature and the {@code link} header — is retained and working glue,
+ * <p><b>The FAN-OUT leg is currently PARKED in the feature.</b> Every step here that asserts a delivery — the settled
+ * and exact delivery counts, the delivered body/signature and the {@code link} header — is retained and working glue,
  * but is referenced ONLY by the commented-out scenarios in {@code features/gateway/websub_invocation.feature}. The
- * hub's fan-out reads an in-memory subscriber map that is never populated for a runtime-created subscription on this
- * lane; the feature's shared park note carries the full evidence and the named next step. Nothing needs to be added
- * here to re-enable those scenarios — do not "simplify" these steps away as unused.
+ * hub's fan-out reads an in-memory subscriber map that is empty for a runtime-created subscription on this lane; the
+ * feature's shared park note carries the full evidence and the named next step. What is NOT parked, and is what
+ * narrowed that note this increment, is the persisted-subscription read below: it proves the registration reached the
+ * DAO, so the break lies strictly between the {@code asyncWebhooksData} publish and the gateway's in-memory map.
+ * Nothing needs to be added here to re-enable those scenarios — do not "simplify" these steps away as unused.
  *
  * <p>Every wait funnels through {@link Utils#retryUntil}; the request steps publish through {@link Requests} so the
  * feature asserts the exact status itself, and the local introspection reads use {@link SimpleHTTPClient} directly
  * because their bodies are consumed inside the step (§7).
  */
 public class WebSubInvocationSteps {
+
+    private static final Log log = LogFactory.getLog(WebSubInvocationSteps.class);
 
     /**
      * Container port of the {@code websub-receiver} node app (see
@@ -134,6 +144,29 @@ public class WebSubInvocationSteps {
      * keeping the added cost to one quiet window per count assertion. Raise it if a count ever settles LOW.
      */
     private static final long DELIVERY_SETTLE_QUIET_MILLIS = 10_000L;
+
+    /**
+     * Internal (data-plane) REST resource listing the PERSISTED webhook subscriptions of one tenant — the
+     * {@code AM_WEBHOOKS_SUBSCRIPTION} read the legacy WebSubAPITestCase#testMultipleSubscriptions asserted
+     * through {@code restAPIInternal.retrieveWebhooksSubscriptions()}. It is the only interface that observes the
+     * persistence leg of a registration WITHOUT relying on the hub's fan-out, so it also carries the lease-expiry
+     * assertion: its query is {@code WHERE (EXPIRY_AT >= now OR EXPIRY_AT = 0)}, so a subscription whose
+     * {@code hub.lease_seconds} has elapsed drops out of this list by construction.
+     */
+    private static final String INTERNAL_WEBHOOKS_SUBSCRIPTIONS_PATH = "internal/data/v1/webhooks-subscriptions";
+
+    /** Header the internal API requires to select the tenant whose subscriptions are listed. */
+    private static final String TENANT_HEADER = "xWSO2Tenant";
+
+    /**
+     * Quiet window for the PERSISTED-subscription count. Far shorter than {@link #DELIVERY_SETTLE_QUIET_MILLIS}
+     * because the write is synchronous with the hub request rather than an asynchronous fan-out: the hub's
+     * {@code SubscribersPersistMediator} POSTs to {@code /internal/data/v1/notify} with a BLOCKING http client and
+     * inspects the status, so by the time a subscribe/unsubscribe has answered, the row is already written. The
+     * window only has to outlast the gap between two consecutive rows of one scenario's back-to-back
+     * registrations, which is one HTTP round trip.
+     */
+    private static final long PERSISTED_SETTLE_QUIET_MILLIS = 5_000L;
 
     /**
      * Mints a uniquely-named WebSub callback receiver on the node backend and stores BOTH the name (under
@@ -373,6 +406,42 @@ public class WebSubInvocationSteps {
      * still-subscribed receiver observing the same event proves the hub's fan-out for that event has completed),
      * which is how these scenarios avoid a sleep.
      */
+    /**
+     * Asserts the named receiver's delivery count SETTLED strictly BELOW a ceiling — the assertion shape an
+     * EVENT-COUNT QUOTA needs, because an exact count is not available to assert against.
+     *
+     * <p>WHY NOT AN EXACT COUNT, measured rather than assumed: APIM's throttling counts locally on the gateway and
+     * reconciles with the traffic manager ASYNCHRONOUSLY, so a burst OVERSHOOTS the configured limit before
+     * enforcement engages. Measured on a live server: a 9-events/month plan delivered 12, and in this suite a
+     * 2-event plan delivered 6. The quota is real, but its boundary is approximate under burst, so
+     * {@code should have received N events} can only be written by guessing the overshoot — which is how the
+     * previous version of the quota scenario came to assert a number it could never reliably hit.
+     *
+     * <p>WHY NOT A STATUS ASSERTION: the quota is invisible to the publisher. Measured — publishing past an
+     * exhausted quota still answers 200 with an empty body; the only observable effect is that deliveries to THAT
+     * subscriber stop. (Contrast the subscriber-COUNT cap, which the hub rejects on subscribe with 429/900808.)
+     *
+     * <p>This assertion is only sound WITH A CONTROL SUBSCRIBER on an unlimited plan: "fewer than N" is equally
+     * satisfied by delivery being broken entirely, which is exactly the failure that kept these scenarios parked.
+     * The control receiving all N is what makes the shortfall attributable to the quota.
+     */
+    @Then("The WebSub receiver {string} should have settled below {int} event(s) within {int} seconds")
+    public void receiverShouldSettleBelow(String receiverKey, int ceiling, int timeoutSeconds) throws Exception {
+
+        String name = TestContext.resolve(receiverKey).toString();
+        Utils.SettledCount count = Utils.awaitSettledCount(DELIVERY_SETTLE_QUIET_MILLIS, timeoutSeconds * 1000L,
+                () -> readReceiver(name).getInt("count"));
+        String observed = "last seen " + count.value() + " over " + count.samples() + " sample(s), quiet window "
+                + DELIVERY_SETTLE_QUIET_MILLIS + "ms";
+        Assert.assertTrue(count.settled(), "WebSub receiver '" + name + "' delivery count never stopped changing ("
+                + observed + "), so no ceiling can be asserted.");
+        Assert.assertTrue(count.value() > 0, "WebSub receiver '" + name + "' received NOTHING (" + observed
+                + "). A quota that withholds every event is indistinguishable from broken delivery, so this fails "
+                + "rather than passing as 'below the ceiling'.");
+        Assert.assertTrue(count.value() < ceiling, "WebSub receiver '" + name + "' settled at " + count.value()
+                + ", not below " + ceiling + " (" + observed + ") — the event-count quota did not stop delivery.");
+    }
+
     @Then("The WebSub receiver {string} should have received exactly {int} event(s)")
     public void receiverShouldHaveReceivedExactly(String receiverKey, int expectedCount) throws Exception {
 
@@ -380,6 +449,173 @@ public class WebSubInvocationSteps {
         JSONObject state = readReceiver(name);
         Assert.assertEquals(state.getInt("count"), expectedCount, "WebSub receiver '" + name
                 + "' delivery count mismatch; state: " + state);
+    }
+
+    /**
+     * Asserts how many webhook subscriptions the product has PERSISTED for one API, read back from the internal
+     * webhooks-subscriptions resource as the acting actor for the acting actor's tenant. Ports the halves of
+     * WebSubAPITestCase#testMultipleSubscriptions that v2 could not express — the registration count rising by one
+     * per {@code hub.mode=subscribe} and returning to its starting value after the unsubscribes — and carries the
+     * lease-expiry assertion (LeaseTimeSubscriptionTestCase), since an expired lease removes the row from this
+     * list's own query.
+     *
+     * <p>Scoped to ONE API's uuid rather than to the whole tenant list (the legacy's {@code initialCount + 3}
+     * delta). That is deliberate and strictly stronger: an absolute per-API count cannot be satisfied by another
+     * scenario's leftover row, so it is exact under §4 parallelism, whereas a whole-tenant delta silently absorbs
+     * a residual row from a scenario that failed before its unsubscribe (see this file's RESIDUE NOTE).
+     *
+     * <p>TWO-PHASE wait, and both phases are load-bearing (§15). {@link Utils#retryUntil} first waits for the count
+     * to REACH the expected value — needed because the count also DECREASES (unsubscribe, lease expiry), which
+     * {@link Utils#awaitSettledCount} alone cannot wait for: it returns at the first quiet window, so a value
+     * sitting at 1 for a 15-second lease would settle at 1 and never observe the drop to 0. Then
+     * {@code awaitSettledCount} confirms the count STAYS there, which is what makes an OVER-count catchable — the
+     * exact failure mode a plain accept-on-reached loop cannot see.
+     */
+    @Then("The internal webhooks subscription list should hold exactly {int} subscription(s) for API {string} within {int} seconds")
+    public void internalWebhooksListShouldHold(int expectedCount, String apiIdKey, int timeoutSeconds)
+            throws Exception {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        String tenantDomain = Identity.actingTenantDomain();
+        Integer reached = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> countPersistedSubscriptions(apiId, tenantDomain),
+                count -> count == expectedCount);
+        // Settle even when the reach loop timed out: the settled value is the number the failure message must
+        // report, and a settled-but-wrong count is the over/under-count signal rather than a transient sample.
+        Utils.SettledCount settled = Utils.awaitSettledCount(PERSISTED_SETTLE_QUIET_MILLIS,
+                PERSISTED_SETTLE_QUIET_MILLIS * 2, () -> countPersistedSubscriptions(apiId, tenantDomain));
+        String observed = "reached=" + reached + ", settled=" + settled.value() + " over " + settled.samples()
+                + " sample(s), quiet window " + PERSISTED_SETTLE_QUIET_MILLIS + "ms";
+        Assert.assertTrue(settled.settled(), "The persisted webhook-subscription count for API " + apiId
+                + " in tenant " + tenantDomain + " never stopped changing (" + observed + "), so no exact count "
+                + "can be asserted.");
+        Assert.assertEquals(settled.value(), expectedCount, "Persisted webhook-subscription count mismatch for API "
+                + apiId + " in tenant " + tenantDomain + " (" + observed + "); list: "
+                + readPersistedSubscriptions(tenantDomain));
+    }
+
+    /** Subscriptions the internal list reports for {@code apiId} in {@code tenantDomain}, right now. */
+    private static int countPersistedSubscriptions(String apiId, String tenantDomain) throws IOException {
+        JSONArray list = readPersistedSubscriptions(tenantDomain);
+        int matches = 0;
+        for (int i = 0; i < list.length(); i++) {
+            if (apiId.equals(list.getJSONObject(i).optString("apiUUID", null))) {
+                matches++;
+            }
+        }
+        return matches;
+    }
+
+    /**
+     * Asserts ONE exact field of the single webhook subscription the product has PERSISTED for an API, read back
+     * from the internal webhooks-subscriptions resource. One field per step (§12) rather than a multi-field
+     * composite, so a mismatch names the field that drifted.
+     *
+     * <p>This is the product's OWN record of a registration — {@code apiUUID}, {@code apiContext},
+     * {@code apiVersion}, {@code topicName}, {@code callbackURL}, {@code tier} — and therefore the only surface on
+     * which the test's constructed event-receiver URL can be checked against what the hub actually stored. The
+     * fan-out's in-memory subscriber map is keyed off exactly these values ({@code apiUUID + "_" + topicName}), so a
+     * drift here is a drift in the fan-out key.
+     *
+     * <p>Asserts there is EXACTLY ONE row for the API first: with several rows "the persisted subscription" is
+     * ambiguous, and picking the first would make the field assertion pass or fail for a reason the feature never
+     * stated. Use the count step for the multi-registration arcs.
+     */
+    @Then("The persisted webhook subscription for API {string} should have {string} equal to {string}")
+    public void persistedSubscriptionFieldShouldBe(String apiIdKey, String field, String expectedValue)
+            throws Exception {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        String expected = Utils.resolveContextPlaceholders(expectedValue);
+        JSONObject row = theOnlyPersistedSubscription(apiId);
+        Assert.assertEquals(row.optString(field, null), expected, "Persisted webhook-subscription field '" + field
+                + "' mismatched for API " + apiId + "; row: " + row);
+    }
+
+    /**
+     * Asserts the event-receiver URL an event SOURCE posts to is the very URL the product's own persisted
+     * registration describes — the check that was an unstated ASSUMPTION until now. The test constructs that URL
+     * from the API context it captured plus {@code Constants.WEBSUB_EVENT_RECEIVER_RESOURCE} and {@code ?topic=};
+     * this step rebuilds it a second time from the PERSISTED row's {@code apiContext}/{@code apiVersion}/
+     * {@code topicName} and requires the two to be byte-identical.
+     *
+     * <p>Why it matters: the shipped {@code websub_api_template.xml} answers 200 to the source once
+     * {@code TOPIC_VALIDITY} passes, and fans out to however many subscribers the in-memory map yields — zero
+     * included, with no error. So a post that reached a DIFFERENT context/topic than the one registered would look
+     * exactly like a successful publish with no subscribers. Comparing the two URLs is what tells those apart, and
+     * it settles by construction whether the registered {@code hub.topic} string differs from the source's
+     * {@code ?topic=} string.
+     */
+    @Then("The event receiver URL for gateway context {string} topic {string} should match the persisted webhook subscription of API {string}")
+    public void persistedSubscriptionShouldDescribeReceiverUrl(String context, String topic, String apiIdKey)
+            throws Exception {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        String resolvedTopic = Utils.resolveContextPlaceholders(topic);
+        String posted = eventReceiverUrl(context, resolvedTopic);
+
+        JSONObject row = theOnlyPersistedSubscription(apiId);
+        // MEASURED: the persisted apiContext ALREADY ends in the version (e.g. "/myctx_ab12/1.0.0") — the hub stores
+        // the versioned synapse context, not the bare one — while apiVersion repeats it separately. Appending
+        // apiVersion here produced a "/1.0.0/1.0.0/" URL and a mismatch that was the step's bug, not the product's.
+        String persistedContext = row.optString("apiContext", null);
+        String persistedVersion = row.optString("apiVersion", null);
+        String persistedTopic = row.optString("topicName", null);
+        Assert.assertNotNull(persistedContext, "The persisted webhook subscription carries no apiContext; row: " + row);
+        Assert.assertNotNull(persistedVersion, "The persisted webhook subscription carries no apiVersion; row: " + row);
+        Assert.assertNotNull(persistedTopic, "The persisted webhook subscription carries no topicName; row: " + row);
+        Assert.assertTrue(persistedContext.endsWith("/" + persistedVersion), "The persisted apiContext ("
+                + persistedContext + ") does not end in the persisted apiVersion (" + persistedVersion + "), so the "
+                + "receiver URL cannot be rebuilt from the context alone; row: " + row);
+
+        String described = eventReceiverUrl(persistedContext, persistedTopic);
+        Assert.assertEquals(posted, described, "The event source posts to a URL the product's own registration does "
+                + "not describe — so a 200 from the receiver cannot mean the published event entered fan-out. "
+                + "posted=" + posted + " persisted-row=" + row);
+        // Both URLs on a green run too: "they matched" is only interpretable next to what they matched AS, and this
+        // is the check the fan-out park note's wrong-listener hypothesis turns on.
+        log.info("WebSub event-receiver URL agreed with the product's own registration: posted=" + posted
+                + " described-by-persisted-row=" + described + " row=" + row);
+    }
+
+    /** The single persisted webhook-subscription row for {@code apiId}, failing clearly on 0 or 2+ rows. */
+    private static JSONObject theOnlyPersistedSubscription(String apiId) throws Exception {
+        String tenantDomain = Identity.actingTenantDomain();
+        // The registration is persisted asynchronously (hub -> /internal/data/v1/notify -> DAO), so wait for the
+        // row rather than reading once and racing it.
+        Integer reached = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> countPersistedSubscriptions(apiId, tenantDomain), count -> count == 1);
+        JSONArray list = readPersistedSubscriptions(tenantDomain);
+        JSONArray matches = new JSONArray();
+        for (int i = 0; i < list.length(); i++) {
+            if (apiId.equals(list.getJSONObject(i).optString("apiUUID", null))) {
+                matches.put(list.getJSONObject(i));
+            }
+        }
+        Assert.assertEquals(matches.length(), 1, "Expected EXACTLY ONE persisted webhook subscription for API "
+                + apiId + " in tenant " + tenantDomain + " (reached=" + reached + "), so that \"the persisted "
+                + "subscription\" is unambiguous; matched rows: " + matches);
+        return matches.getJSONObject(0);
+    }
+
+    /**
+     * The tenant's persisted webhook-subscription array. An intermediate read consumed inside the step, so it uses
+     * {@link SimpleHTTPClient} directly and must NOT publish {@code httpResponse} (§7) — the preceding hub request
+     * left its response there for the feature's own status assertion.
+     */
+    private static JSONArray readPersistedSubscriptions(String tenantDomain) throws IOException {
+        String url = Utils.getBaseUrl() + INTERNAL_WEBHOOKS_SUBSCRIPTIONS_PATH;
+        Map<String, String> headers = new HashMap<>(Identity.actingBasicAuthHeaders());
+        headers.put(TENANT_HEADER, tenantDomain);
+        HttpResponse response = SimpleHTTPClient.getInstance().doGet(url, headers);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Failed to read the internal webhooks-subscriptions list at " + url + " for tenant " + tenantDomain
+                        + "; got=" + (response == null ? "null" : response.getResponseCode() + "/"
+                        + response.getData()));
+        // An empty tenant may serialise without the array at all, which is not an error — it is a count of zero.
+        JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+        return list != null ? list : new JSONArray();
     }
 
     /**

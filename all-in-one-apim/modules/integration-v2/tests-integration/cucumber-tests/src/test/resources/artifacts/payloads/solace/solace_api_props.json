@@ -1,0 +1,10 @@
+{
+    "name": "${UNIQUE:SolaceEventApi}",
+    "context": "/${UNIQUE:solaceevent}",
+    "version": "1.0.0",
+    "type": "WEBSUB",
+    "gatewayVendor": "solace",
+    "policies": [
+        "AsyncUnlimited"
+    ]
+}

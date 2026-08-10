@@ -6,8 +6,13 @@ Feature: External Key Manager Token Validation and UserInfo
   signature no longer matches its payload (JWKS validation), and that the IS7 UserInfo endpoint (SCIM2 /scim2/Me,
   the documented gotcha vs /oauth2/userinfo) returns the token owner's profile.
 
+  The setup provisions and stashes a complete API/application/key-manager fixture per APIM tenant. Each outline
+  explicitly selects its actor and restores that tenant's fixture before obtaining a token from the external IS.
+
   @rule:token-validation @type:negative @dep:gateway
-  Scenario: A tampered IS7 JWT is rejected at the gateway
+  Scenario Outline: A tampered IS7 JWT is rejected at the gateway as <actor>
+    Given I act as "<actor>"
+    And I use the token-exchange fixture for the acting tenant
     # Obtain a valid IS JWT, alter a payload claim while keeping the original signature, then confirm the gateway
     # rejects it (signature no longer validates against IS's JWKS).
     When I request an OAuth access token from the external key manager using client credentials grant
@@ -16,8 +21,15 @@ Feature: External Key Manager Token Validation and UserInfo
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 30 seconds
     Then The response status code should be 401
 
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   @rule:token-validation @type:regression
-  Scenario: The IS7 UserInfo endpoint (SCIM2 Me) returns the token owner profile
+  Scenario Outline: The IS7 UserInfo endpoint (SCIM2 Me) returns the token owner profile as <actor>
+    Given I act as "<actor>"
+    And I use the token-exchange fixture for the acting tenant
     # A password-grant token with the openid scope resolves the token owner's SCIM2 profile at UserInfo.
     When I request an OAuth access token from the external key manager using password grant as "admin" with password "admin" requesting scope "openid"
     Then The response status code should be 200
@@ -25,9 +37,21 @@ Feature: External Key Manager Token Validation and UserInfo
     Then The response status code should be 200
     And The response should contain "admin"
 
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   @rule:grant-types @type:negative
-  Scenario: A grant the application is not authorized for is rejected at the token endpoint
+  Scenario Outline: A grant the application is not authorized for is rejected at the token endpoint as <actor>
+    Given I act as "<actor>"
+    And I use the token-exchange fixture for the acting tenant
     # The setup app is registered for client_credentials/password/refresh_token/authorization_code/device_code but
     # NOT token-exchange; requesting that grant is rejected with 400 (disallowed-grant negative).
     When I attempt an OAuth token from the external key manager using the unsupported grant "urn:ietf:params:oauth:grant-type:token-exchange"
     Then The response status code should be 400
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

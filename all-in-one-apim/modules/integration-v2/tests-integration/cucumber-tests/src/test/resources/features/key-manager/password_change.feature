@@ -11,13 +11,18 @@ Feature: DevPortal Self-Service Password Change
   per-scenario cleanup hook.
 
   @cap:key-manager @feat:token-issuance @type:regression @legacy:PasswordChangeTestCase
-  Scenario: A subscriber changes their password and re-authenticates with the new one
+  Scenario Outline: A subscriber changes their password and re-authenticates with the new one in <tenant>
     Given The system is ready
-    When I provision a throwaway subscriber "throwawaySub" in tenant "carbon.super" with password "Password123!"
-    And The system is ready and I have valid devportal access token as "throwawaySub"
+    When I provision a throwaway subscriber "throwawaySub" in tenant "<tenant>" with password "Password123!"
+    And The system is ready and I have valid devportal access token as "<actor>"
     When I change the acting user's password from "Password123!" to "NewPass456!" via the DevPortal
     Then The response status code should be 200
     # The NEW password issues a token; the OLD password is refused. The refusal surfaces at the DCR basic-auth
     # gate of the password-grant round trip, which returns 401 "Unauthenticated request" (not a 400 invalid_grant).
     Then a password-grant token request for the acting user with password "NewPass456!" returns status 200
     And a password-grant token request for the acting user with password "Password123!" returns status 401
+
+    Examples:
+      | tenant       | actor                     |
+      | carbon.super | throwawaySub              |
+      | tenant1.com  | throwawaySub@tenant1.com  |

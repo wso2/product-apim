@@ -1,0 +1,8 @@
+{
+  "name": "solace-apim-shim",
+  "version": "1.0.0",
+  "description": "Control-plane fake for APIM's Solace integration; pairs with a real PubSub+ broker",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.19.2" }
+}

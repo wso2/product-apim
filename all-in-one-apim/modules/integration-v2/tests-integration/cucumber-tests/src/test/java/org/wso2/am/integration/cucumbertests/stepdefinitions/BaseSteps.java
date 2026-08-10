@@ -480,6 +480,21 @@ public class BaseSteps {
     }
 
     /**
+     * Stores a filler text payload of exactly {@code sizeKb} KB in the context, for a request whose BYTE COUNT is
+     * the point rather than its content — a bandwidth (BANDWIDTHLIMIT) throttle quota is spent by bytes, so one
+     * body larger than the whole quota trips it in a single call. Generated rather than held as a fixture so the
+     * size is stated at the call site and no multi-KB literal lands in a feature file.
+     *
+     * @param sizeKb size of the payload in KB
+     * @param key    context key to store the payload under
+     */
+    @When("I put a {int} KB text payload in context as {string}")
+    public void putSizedTextPayloadInContext(int sizeKb, String key) {
+
+        TestContext.set(Utils.normalizeContextKey(key), "A".repeat(sizeKb * 1024));
+    }
+
+    /**
      * Sets a top-level field of a JSON payload already in context to the given value, writing it back under the
      * same key. Used to build create-validation negatives from a valid base payload (e.g. blank name/context/
      * version, or an invalid context) without a separate fixture per case. An empty {@code value} sets the
@@ -489,6 +504,35 @@ public class BaseSteps {
      * @param value      the value to set (may be empty)
      * @param contextKey the context key holding the JSON payload
      */
+    /**
+     * Sets a top-level field to a JSON VALUE (array or object) rather than a string — e.g. giving an API two
+     * subscription policies, {@code ["QuotaPlan","AsyncWHUnlimited"]}, which a scenario needs when it compares a
+     * limited subscriber against an unlimited control on the SAME API.
+     *
+     * <p>Deliberately a separate step from {@link #iSetFieldInPayload}, not a smart-parsing upgrade of it: that one
+     * sets a STRING and callers depend on it doing exactly that (a value that merely looks like JSON must stay a
+     * string there). Picking the step IS the statement of intent, like TestContext.resolve/get/contains. Fails
+     * loudly if the value is not parseable JSON, so a typo cannot silently land as a string.
+     *
+     * @param field      the top-level JSON field to set
+     * @param json       a JSON array or object literal
+     * @param contextKey the context key holding the JSON payload
+     */
+    @When("I set the field {string} to the JSON value {string} in the payload {string}")
+    public void iSetFieldToJsonValueInPayload(String field, String json, String contextKey) {
+
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        String resolved = Utils.resolveContextPlaceholders(json).trim();
+        Object value;
+        try {
+            value = resolved.startsWith("[") ? new org.json.JSONArray(resolved) : new JSONObject(resolved);
+        } catch (org.json.JSONException e) {
+            throw new IllegalArgumentException("Value for field '" + field + "' is not valid JSON: " + resolved, e);
+        }
+        payload.put(field, value);
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
     @When("I set the field {string} to {string} in the payload {string}")
     public void iSetFieldInPayload(String field, String value, String contextKey) {
 
@@ -684,13 +728,49 @@ public class BaseSteps {
     @Then("The value of response field {string} should be {string}")
     public void theValueOfResponseFieldShouldBe(String fieldName, String expectedValue) throws IOException {
 
+        assertResponseFieldValue(fieldName, expectedValue, true);
+    }
+
+    /**
+     * Asserts a field's exact value in an ERROR (non-2xx) response body — the counterpart of
+     * {@link #theValueOfResponseFieldShouldBe} for a fault payload that names WHY the call was refused, where the
+     * status alone is ambiguous. Example: a gateway 429 carries a {@code code} identifying which throttle limit
+     * fired (application vs subscription vs burst vs API-level vs operation-level vs custom rule), so the status
+     * by itself cannot tell those dimensions apart.
+     *
+     * <p>Its status guard is the MIRROR IMAGE of the 2xx twin's, not an absence of one: the response must be
+     * non-2xx with a body, so a success payload carrying a same-named field can never satisfy this step either.
+     * Assert the status itself in its own step; this one pins the diagnosis in the body.
+     *
+     * @param fieldName     field name or JSONPath to read from the error response body
+     * @param expectedValue the exact expected value (string form)
+     */
+    @Then("The value of error response field {string} should be {string}")
+    public void theValueOfErrorResponseFieldShouldBe(String fieldName, String expectedValue) throws IOException {
+
+        assertResponseFieldValue(fieldName, expectedValue, false);
+    }
+
+    /**
+     * Shared body of the two field-value assertions: requires a body on the expected side of the 2xx boundary,
+     * then compares the field's string form to the expected value exactly.
+     *
+     * @param expectSuccess whether the response under assertion must be 2xx ({@code false} = must be non-2xx)
+     */
+    private void assertResponseFieldValue(String fieldName, String expectedValue, boolean expectSuccess)
+            throws IOException {
+
         expectedValue = Utils.resolveContextPlaceholders(expectedValue);
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        // Require a SUCCESSFUL response: an error body (401/500 JSON) can carry a same-named field and must
-        // never satisfy a field assertion written against the success payload.
-        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+        // Pin the response to the expected side of the 2xx boundary: an error body (401/500 JSON) can carry a
+        // same-named field and must never satisfy a field assertion written against the success payload, nor
+        // vice versa.
+        boolean successful = response != null && response.getResponseCode() >= 200
+                && response.getResponseCode() < 300;
+        Assert.assertTrue(response != null && successful == expectSuccess
                         && response.getData() != null && !response.getData().isBlank(),
-                "Expected a 2xx response with a body to read field '" + fieldName + "' from, but got: "
+                "Expected a " + (expectSuccess ? "2xx" : "non-2xx") + " response with a body to read field '"
+                        + fieldName + "' from, but got: "
                         + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
         Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
         // Distinguish a MISSING field from a field literally equal to "null": without this a missing field

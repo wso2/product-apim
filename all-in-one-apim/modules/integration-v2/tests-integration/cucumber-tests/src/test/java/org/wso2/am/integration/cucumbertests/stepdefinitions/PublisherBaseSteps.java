@@ -2890,6 +2890,47 @@ public class PublisherBaseSteps {
         Requests.get(Utils.getLinterCustomRulesURL(Utils.getBaseUrl()), headers);
     }
 
+    /**
+     * Retrieves the publisher settings document (GET /settings), which advertises the tenant's resolved default
+     * throttling policies ({@code defaultAdvancePolicy} / {@code defaultSubscriptionPolicy}) alongside the
+     * environments and other publisher-UI settings. Non-asserting — the feature asserts the status and the fields.
+     */
+    @When("I retrieve the publisher settings")
+    public void iRetrievePublisherSettings() throws IOException {
+
+        Requests.get(Utils.getPublisherSettingsURL(Utils.getBaseUrl()), Identity.publisherHeaders());
+    }
+
+    /**
+     * Asserts that EVERY operation of the API in the last (2xx) response carries exactly the given throttling
+     * policy. The all-operations form matters for the default-tier substitution tests: the product applies the
+     * resolved default to each tier-less resource, so an assertion on one operation would miss a partial
+     * substitution. Reads back the shared {@code httpResponse}, so it follows a retrieve step.
+     *
+     * @param expectedPolicy the exact throttling policy name every operation must carry
+     */
+    @Then("Every operation in the response should have throttling policy {string}")
+    public void everyOperationShouldHaveThrottlingPolicy(String expectedPolicy) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx API response with a body to read operations from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONArray operations = new JSONObject(response.getData()).optJSONArray("operations");
+        Assert.assertTrue(operations != null && !operations.isEmpty(),
+                "The API response carries no operations to assert a throttling policy on: " + response.getData());
+
+        String expected = Utils.resolveContextPlaceholders(expectedPolicy);
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject operation = operations.getJSONObject(i);
+            Assert.assertEquals(operation.optString("throttlingPolicy", null), expected,
+                    "Operation " + operation.optString("verb") + " " + operation.optString("target")
+                            + " carries the wrong throttling policy; all operations: " + operations);
+        }
+    }
+
     /** Retrieves the available publisher throttling policies for a policy level (subscription / api / application). */
     @When("I retrieve the publisher {string} throttling policies")
     public void iRetrievePublisherThrottlingPolicies(String policyLevel) throws IOException {

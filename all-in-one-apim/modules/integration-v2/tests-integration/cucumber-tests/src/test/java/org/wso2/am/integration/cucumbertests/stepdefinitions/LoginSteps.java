@@ -112,16 +112,45 @@ public class LoginSteps {
      */
     @When("I self-sign-up a DevPortal user with password {string} as actor {string} storing the username as {string}")
     public void iSelfSignUpDevportalUser(String password, String actorRef, String usernameKey) throws IOException {
+        selfSignUp(password, actorRef, usernameKey, false);
+    }
+
+    /**
+     * As {@link #iSelfSignUpDevportalUser} but the generated username contains a HYPHEN — the specific regression
+     * ApplicationBlockSubscriptionTestCase guards, which signed up {@code test-user} and had it own {@code test-app}.
+     * A hyphen is legal in the store's {@code UsernameJavaRegEx}, so the plain variant's blanket
+     * non-alphanumeric strip is what makes it unreachable there rather than any product constraint; keeping the
+     * strip as the default and adding this variant leaves every other caller's username shape untouched.
+     *
+     * <p>Worth its own step because the downstream key is composite: a blocked subscription is looked up at the
+     * gateway by the application's OWNER plus its NAME, so a separator character in either is exactly what a
+     * parsing regression would break, and no other scenario in the suite produces one.
+     */
+    @When("I self-sign-up a DevPortal user with a hyphenated username and password {string} as actor {string} storing the username as {string}")
+    public void iSelfSignUpDevportalUserWithHyphen(String password, String actorRef, String usernameKey)
+            throws IOException {
+        selfSignUp(password, actorRef, usernameKey, true);
+    }
+
+    private void selfSignUp(String password, String actorRef, String usernameKey, boolean hyphenated)
+            throws IOException {
 
         String tenantDomain = Identity.actingTenantDomain();
-        String username = Names.unique(actorRef).replaceAll("[^A-Za-z0-9]", "");
-        // Self-registration takes the tenant-QUALIFIED username for a tenant sign-up and the bare name for the
-        // super tenant (the same convention the token endpoint uses).
-        String signUpName = Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
-                ? username : username + Constants.CHAR_AT + tenantDomain;
+        // actorRef is a context handle and may carry "@tenant"; that suffix is routing metadata, not part of the
+        // physical username. Including it makes the generated tenant username exceed UsernameJavaRegEx's limit.
+        String actorBase = actorRef.contains(Constants.CHAR_AT)
+                ? actorRef.substring(0, actorRef.indexOf(Constants.CHAR_AT)) : actorRef;
+        String username = Names.unique(actorBase).replaceAll("[^A-Za-z0-9]", "");
+        if (hyphenated) {
+            // A single interior hyphen: enough to exercise the separator, and it keeps the name inside the store's
+            // UsernameJavaRegEx (which allows '-' but not, say, ':' or '/').
+            username = "sub-" + username;
+        }
         String body = new JSONObject()
                 .put("user", new JSONObject()
-                        .put("username", signUpName)
+                        // The identity API models these as separate fields. Putting "@tenant" in username makes
+                        // the primary store's UsernameJavaRegEx reject an otherwise valid tenant registration.
+                        .put("username", username)
                         .put("password", password)
                         .put("claims", new JSONArray()
                                 .put(signUpClaim("http://wso2.org/claims/givenname", username))
@@ -130,12 +159,17 @@ public class LoginSteps {
                 .put("properties", new JSONArray())
                 .toString();
 
-        HttpResponse response = Requests.post(Utils.getBaseUrl() + SELF_REGISTRATION_PATH,
+        // Carbon selects a tenant for identity endpoints through the standard /t/<domain>/ URL prefix. Without
+        // that prefix the request is handled in carbon.super, where tenant-admin Basic credentials are invalid;
+        // qualifying the username instead is also wrong because '@' is then checked by UsernameJavaRegEx.
+        String tenantPath = Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? SELF_REGISTRATION_PATH : "t/" + tenantDomain + "/" + SELF_REGISTRATION_PATH;
+        HttpResponse response = Requests.post(Utils.getBaseUrl() + tenantPath,
                 Identity.actingBasicAuthHeaders(), body, Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response != null && response.getResponseCode() == 201) {
             TestContext.set(Utils.normalizeContextKey(usernameKey), username);
             ResourceCleanup.register(ResourceCleanup.CREATED_SIGNUP_USERNAMES, username);
-            TenantUserProvisioner.registerRuntimeUserAsActor(tenantDomain, actorRef, username, password);
+            TenantUserProvisioner.registerRuntimeUserAsActor(tenantDomain, actorBase, username, password);
         }
     }
 

@@ -57,9 +57,17 @@ public class TokenExchangeSteps {
      * Fixture context keys that are per-tenant: the setup stashes them under a tenant-suffixed key for each
      * tenant, and the select-fixture step copies the acting tenant's values back into these plain keys so the
      * exchange / invoke / id_token steps read them unchanged.
+     *
+     * <p>Only keys PRESENT in context are stashed and only stashed keys are restored, so one list can serve
+     * several setups: the RFC 8693 setup populates the first five, while the external-IdP setup
+     * ({@code _setup_external_idp_jwt}) additionally populates the application / key-mapping / external key
+     * manager / mapped-azp keys. Extending this list is what lets that setup REUSE the stash+select steps rather
+     * than fork a second per-tenant fixture mechanism.
      */
     private static final String[] FIXTURE_KEYS =
-            {"apiContext", "consumerKey", "consumerSecret", "txNoGrantKey", "txNoGrantSecret"};
+            {"apiContext", "consumerKey", "consumerSecret", "txNoGrantKey", "txNoGrantSecret",
+             "createdAppId", "keyMappingId", "extIdpKm1", "extIdpKm1Name", "extIdpKm2", "extIdpKm2Name",
+             "extIdpAzp1", "extIdpAzp2", "grantKm", "grantKmName"};
 
     /** IdP scope (tenant SOAP path + admin creds) for the currently-acting actor's tenant. */
     private static IdpScope actingIdpScope() {
@@ -164,12 +172,28 @@ public class TokenExchangeSteps {
     @When("I use the token-exchange fixture for the acting tenant")
     public void iUseFixtureForActingTenant() {
         String tenant = Identity.actingTenantDomain();
+        int restored = 0;
         for (String key : FIXTURE_KEYS) {
             Object v = TestContext.get(key + "::" + tenant);
             if (v != null) {
                 TestContext.set(key, v);
+                restored++;
+            } else {
+                // CLEAR rather than leave. A plain key surviving from ANOTHER tenant's Examples row is exactly the
+                // cross-tenant bleed this pair exists to prevent, and leaving it makes the bleed SILENT: the
+                // scenario would read a resource belonging to the tenant that happened to run last and still pass.
+                // Removing it makes the next TestContext.resolve fail fast with "No value found in context".
+                // Local scope only, which is where every fixture key is written (the setup steps use
+                // TestContext.set); shared keys are framework-managed and none of them are FIXTURE_KEYS.
+                TestContext.remove(key);
             }
         }
+        // A tenant with NO stash at all means the setup outline never ran for it — the single mistake that would
+        // otherwise leave every key cleared and produce a confusing cascade of "No value found in context"
+        // failures far from the cause. Fail here instead, naming the tenant.
+        Assert.assertTrue(restored > 0, "No token-exchange fixture was stashed for tenant " + tenant
+                + ". The setup feature must run 'I stash the token-exchange fixture for the acting tenant' for "
+                + "every tenant its consumers act as — check the setup's Examples rows cover this tenant.");
     }
 
     /** Removes the trusted IdP (in the acting tenant) so the subject token's issuer is untrusted. */

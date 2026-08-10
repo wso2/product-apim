@@ -114,6 +114,37 @@ public class TenantSharingSteps {
         postTenantEvent(TENANT_ACTIVATED_EVENT, isActive ? "ACTIVATE" : "DEACTIVATE", tenant);
     }
 
+    /**
+     * The same {@code tenantActivated} notify as {@link #iNotifyTenantActivation}, but RE-POSTED until the endpoint
+     * answers {@code expectedStatus}. Needed only for the DEACTIVATE direction, where the handler's synchronous
+     * TenantMgtAdminService self-call is intermittently unavailable on this lane and the notify then answers
+     * {@code 500 {"Message":"Error while executing tenant management service"}} — observed on ONE of the two
+     * deactivate calls in a single locked run while the other answered 200
+     * (/tmp/w10w8-run4-locked-deliveryprobe.log), so it is genuinely nondeterministic rather than a fixed lane
+     * behaviour.
+     *
+     * <p>This is {@code retryUntil} and not {@code awaitWithRetry} on purpose (§15): the STATUS is the assertion
+     * target of the row being ported (the legacy {@code assertEquals(SC_OK)}), so the retry must fail loudly if a
+     * 200 is never reached rather than heal a prerequisite. Re-posting is safe because the event is idempotent —
+     * it carries the desired {@code lifecycleStatus.activated} flag rather than a toggle. The LAST response stays
+     * published, so the following {@code The response status code should be} assertion is a real assertion on a
+     * real response and not a widened "any status passes" form.
+     */
+    @When("I notify tenant {string} activation status {string} via the tenant-sharing notify endpoint until it "
+            + "returns status {int} within {int} seconds")
+    public void iNotifyTenantActivationUntilStatus(String tenantDomain, String activated, int expectedStatus,
+                                                   int timeoutSeconds) throws Exception {
+
+        Integer reached = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            iNotifyTenantActivation(tenantDomain, activated);
+            return ((HttpResponse) TestContext.get("httpResponse")).getResponseCode();
+        }, status -> status == expectedStatus);
+        HttpResponse last = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertEquals(reached.intValue(), expectedStatus, "The tenantActivated notify for '" + tenantDomain
+                + "' (activated=" + activated + ") never answered " + expectedStatus + " within " + timeoutSeconds
+                + "s; last response: " + (last == null ? "<none>" : last.getResponseCode() + " " + last.getData()));
+    }
+
     /** The tenant sub-object common to every tenant-management event (id/domain/ref), mirroring the legacy. */
     private static JSONObject tenantBase(String tenantDomain) {
         return new JSONObject()
@@ -199,6 +230,23 @@ public class TenantSharingSteps {
             }
         }
         Assert.assertTrue(found, "No key manager of type '" + type + "' in " + list);
+    }
+
+    /** Asserts the stashed key-manager list contains an entry with the given display name. */
+    @Then("the key manager list includes a key manager named {string}")
+    public void theKeyManagerListIncludesName(String name) {
+
+        Object list = TestContext.get(KM_LIST_KEY);
+        Assert.assertNotNull(list, "No key manager list captured; assert the count first");
+        JSONArray managers = new JSONObject(list.toString()).getJSONArray("list");
+        boolean found = false;
+        for (int i = 0; i < managers.length(); i++) {
+            if (name.equals(managers.getJSONObject(i).optString("name"))) {
+                found = true;
+                break;
+            }
+        }
+        Assert.assertTrue(found, "No key manager named '" + name + "' in " + list);
     }
 
     /**

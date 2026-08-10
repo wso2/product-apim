@@ -41,6 +41,7 @@ import org.wso2.am.integration.cucumbertests.stepdefinitions.WorkflowAdminSteps;
                 "src/test/resources/features/admin/workflow_subscription_creation.feature",
                 "src/test/resources/features/admin/workflow_application_creation.feature",
                 "src/test/resources/features/admin/workflow_api_state_change.feature",
+                "src/test/resources/features/admin/workflow_api_product_state_change.feature",
                 "src/test/resources/features/admin/workflow_application_update.feature",
                 "src/test/resources/features/admin/workflow_revision_deployment.feature",
                 "src/test/resources/features/admin/workflow_subscription_update.feature",

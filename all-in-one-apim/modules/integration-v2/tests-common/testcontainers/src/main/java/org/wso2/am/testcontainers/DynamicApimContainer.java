@@ -222,6 +222,26 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return this;
     }
 
+    /**
+     * Binds the alias the SOLACE BROKER resolves to reach this APIM, so it can fetch APIM's JWKS and validate
+     * an APIM-issued access token itself. Without it the broker has no host to resolve and every publish is
+     * rejected 403 — with the reason visible ONLY inside the broker's own event.log, which is exactly how it
+     * cost a whole suite run to find.
+     *
+     * <p>APIM has NO network alias by default (nothing normally calls IN to it), and this deliberately does not
+     * reuse the {@code wso2am} notification alias: that one is baked into the IS toml and the wso2am.p12 cert,
+     * so it is SINGLE-HOLDER and permit-guarded ({@link #withExternalIsNotificationAlias}) — binding it here
+     * would make a Solace block contend with, and be able to steal notifications from, an external-IS block.
+     * A separate name has no such constraint: only the Solace block binds it, there is one such block per run,
+     * and the shared network is per-JVM, so no two live containers can claim it.
+     */
+    public DynamicApimContainer withSolaceJwksAlias() {
+        withNetworkAliases(DynamicSolaceBroker.APIM_JWKS_ALIAS);
+        logger.info("APIM network alias set to '{}' (Solace broker -> APIM JWKS)",
+                DynamicSolaceBroker.APIM_JWKS_ALIAS);
+        return this;
+    }
+
     /** Host for dumping coverage (valid after start). */
     public String getCoverageDumpHost() {
         return getHost();

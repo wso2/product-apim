@@ -322,6 +322,111 @@ Feature: Publisher API Definition Import
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # OAUTH endpoint security on IMPORT: the BASIC case above only proves a password is not echoed back, which a
+  # server that DROPPED the whole endpoint_security block would also satisfy. This asserts the positive round-trip
+  # for the OAUTH type — type, grantType, tokenUrl and clientId all survive the OAS import for BOTH key types —
+  # while the clientSecrets stay redacted, then PUBLISHES the imported API to prove the imported endpoint-security
+  # config is a publishable artifact. Ports
+  # AddEndPointSecurityPerTypeTestCase#testAPIDefinitionImportWithEndpointSecurity, whose assertions are exactly
+  # the per-key-type OAUTH type/tokenUrl/clientId equality plus clientSecret == "" and the publish that follows.
+  @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:AddEndPointSecurityPerTypeTestCase
+  Scenario Outline: Importing an OpenAPI definition with OAUTH endpoint security round-trips the config and redacts the client secrets as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import open api definition from "artifacts/payloads/OAS/OAS3ApiDefinition.json" , additional properties from "artifacts/payloads/OAS/OAS3EndpointSecurityOauthProps.json" and create api as "epImportOauthApiId"
+    Then The response status code should be 201
+    # Non-secret fields round-trip on the import response, per key type.
+    And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
+    And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "CLIENT_CREDENTIALS"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
+    And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
+    # The client secrets are blanked — legacy asserts clientSecret == "" exactly, which also proves the field is
+    # present rather than dropped (a "should not contain" alone would pass on a stripped field too).
+    And The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
+    And The response should not contain "oasImportProdClientSecret0001"
+    And The response should not contain "oasImportSandClientSecret0002"
+    # Re-fetch confirms the persisted API keeps the round-tripped config and the redaction.
+    When I retrieve the "apis" resource with id "epImportOauthApiId"
+    Then The response status code should be 200
+    And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
+    And The response should not contain "oasImportProdClientSecret0001"
+    And The response should not contain "oasImportSandClientSecret0002"
+    # The imported API with OAUTH endpoint security is publishable.
+    When I publish the "apis" resource with id "epImportOauthApiId"
+    Then The lifecycle status of API "epImportOauthApiId" should be "Published"
+
+    # Both the tenant ADMIN and the non-admin publisher rows run: this is an import ROUND-TRIP assertion, not an
+    # authz one, and the stored provider differs per actor, so admin is NOT implied by publisherUser passing.
+    # (The BASIC-endpoint-security import scenario above is deliberately publisherUser-only — it asserts only that
+    # a password is not echoed back, which is actor-independent.)
+    Examples:
+      | actor                     |
+      | admin                     |
+      | admin@tenant1.com         |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # OAUTH endpoint security on IMPORT, PASSWORD grant. A sibling of the client_credentials scenario above rather
+  # than another row in its Examples, because its assertion set cannot be expressed on a client_credentials row:
+  # it pins grantType PASSWORD, the per-key-type resource-owner USERNAME round-trip, and the redaction of the
+  # resource-owner PASSWORD. That last one is assertable HERE — and only here — because these import properties
+  # carry distinct literal credentials that collide with nothing else in the payload, whereas the gateway
+  # password-grant scenario uses the acting actor's own carbon password (see the OAUTH password-grant scenario in
+  # gateway/security_enforcement.feature). Together with that scenario this pins the PASSWORD-grant config on BOTH
+  # the create path (here) and the update path (there).
+  # Ports the PASSWORD-grant half of AddEndPointSecurityPerTypeTestCase#testAPIDefinitionImportWithEndpointSecurity.
+  @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:AddEndPointSecurityPerTypeTestCase
+  Scenario Outline: Importing an OpenAPI definition with PASSWORD-grant OAUTH endpoint security round-trips the config and redacts the secrets as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import open api definition from "artifacts/payloads/OAS/OAS3ApiDefinition.json" , additional properties from "artifacts/payloads/OAS/OAS3EndpointSecurityOauthPasswordProps.json" and create api as "epImportOauthPwApiId"
+    Then The response status code should be 201
+    # Non-secret fields round-trip on the import response, per key type — including the resource-owner username.
+    And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
+    And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "PASSWORD"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
+    And The value of response field "endpointConfig.endpoint_security.production.username" should be "oasImportProdRoUser0001"
+    And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "PASSWORD"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.username" should be "oasImportSandRoUser0002"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
+    # Both the client secrets AND the resource-owner passwords are blanked to "" (the probed 4.7.0 contract), and
+    # neither plaintext value appears anywhere in the payload.
+    And The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
+    And The value of response field "endpointConfig.endpoint_security.production.password" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.password" should be ""
+    And The response should not contain "oasImportProdClientSecret0001"
+    And The response should not contain "oasImportSandClientSecret0002"
+    And The response should not contain "oasImportProdRoPass0001"
+    And The response should not contain "oasImportSandRoPass0002"
+    # Re-fetch confirms the persisted API keeps the round-tripped config and the redaction.
+    When I retrieve the "apis" resource with id "epImportOauthPwApiId"
+    Then The response status code should be 200
+    And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "PASSWORD"
+    And The value of response field "endpointConfig.endpoint_security.production.username" should be "oasImportProdRoUser0001"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.username" should be "oasImportSandRoUser0002"
+    And The response should not contain "oasImportProdRoPass0001"
+    And The response should not contain "oasImportSandRoPass0002"
+    # The imported API with PASSWORD-grant endpoint security is publishable.
+    When I publish the "apis" resource with id "epImportOauthPwApiId"
+    Then The lifecycle status of API "epImportOauthPwApiId" should be "Published"
+
+    Examples:
+      | actor                     |
+      | admin                     |
+      | admin@tenant1.com         |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
   # preserveProvider=true: a round-trip (export -> delete -> re-import with ?preserveProvider=true by the SAME
   # provider) keeps the API's original provider. Ports APIImportExportTestCase#testPreserveProviderTrue...Import.
   # Runs as admin (import needs apim:api_import_export). ×2 tenant proves the provider (incl. the tenant-qualified
