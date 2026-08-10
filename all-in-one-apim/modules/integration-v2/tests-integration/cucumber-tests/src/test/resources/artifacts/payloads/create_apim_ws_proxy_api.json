@@ -20,10 +20,10 @@
   "endpointConfig": {
     "endpoint_type": "ws",
     "sandbox_endpoints": {
-      "url": "ws://proxied.backend.test:3001"
+      "url": "ws://nodebackend:3001"
     },
     "production_endpoints": {
-      "url": "ws://proxied.backend.test:3001"
+      "url": "ws://nodebackend:3001"
     }
   },
   "endpointImplementationType": "ENDPOINT",

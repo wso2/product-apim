@@ -91,9 +91,12 @@ public class SquidProxyServer {
      * ("proxy received N connections") and bypass assertions ("proxy received 0 connections").
      */
     public int getAnonConnectCount() throws Exception {
+        // grep -c exits with status 1 when it finds zero matches — the || echo 0 fallback then appends a
+        // second "0" line, making stdout "0\n0" and breaking Integer.parseInt. Using grep | wc -l instead:
+        // wc -l always exits 0 and always emits exactly one number, even for an absent or empty log file.
         ExecResult result = container.execInContainer(
                 "sh", "-c",
-                "grep -c ' CONNECT ' /var/log/squid/anon-access.log 2>/dev/null || echo 0"
+                "grep ' CONNECT ' /var/log/squid/anon-access.log 2>/dev/null | wc -l"
         );
         return Integer.parseInt(result.getStdout().trim());
     }
@@ -105,7 +108,7 @@ public class SquidProxyServer {
     public int getAuthConnectCount() throws Exception {
         ExecResult result = container.execInContainer(
                 "sh", "-c",
-                "grep -c ' CONNECT ' /var/log/squid/auth-access.log 2>/dev/null || echo 0"
+                "grep ' CONNECT ' /var/log/squid/auth-access.log 2>/dev/null | wc -l"
         );
         return Integer.parseInt(result.getStdout().trim());
     }
