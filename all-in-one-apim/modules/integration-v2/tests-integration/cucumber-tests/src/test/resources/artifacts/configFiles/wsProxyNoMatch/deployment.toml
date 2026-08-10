@@ -1,0 +1,18 @@
+# Extra overlay for the IntegrationV2-WsProxyNoMatch block.
+#
+# Tests that a backend hostname not matched by any profile's target_hosts is connected to directly,
+# without going through any proxy.
+#
+#   Profile — target_hosts = ["proxied\\.backend\\.test"]: only this specific hostname is affected.
+#             proxy_port 19099 is intentionally unreachable. Any backend whose hostname does NOT match
+#             this pattern falls outside all profiles and the gateway connects directly.
+#
+# The test API uses ws://nodebackend:3001. "nodebackend" does not match "proxied\.backend\.test",
+# so no profile is selected and the gateway connects to nodebackend directly. A passing echo proves
+# that unmatched hostnames are not inadvertently routed through a proxy. The Squid access log should
+# record zero CONNECT entries (asserted via SquidProxyServer.getAnonConnectCount()).
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["proxied\\.backend\\.test"]
+proxy_host = "squid-proxy"
+proxy_port = 3128

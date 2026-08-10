@@ -1,0 +1,18 @@
+# Extra overlay for the IntegrationV2-WsProxyCatchAll block.
+#
+# Tests bypass_hosts within a catch-all ws proxy profile. A single catch-all profile is loaded:
+#
+#   Profile — target_hosts = ["*"]: matches every backend hostname, including "nodebackend".
+#             bypass_hosts contains "nodebackend", so the gateway bypasses Squid and connects
+#             directly to the node WS echo backend.
+#             A passing echo proves the bypass path was taken; no CONNECT is recorded in the Squid
+#             access log (asserted via SquidProxyServer.getAnonConnectCount()).
+#
+# No specific profile is present — nodebackend falls through to this catch-all, which is the exact
+# condition needed to test catch-all bypass_hosts behaviour in isolation from specific-profile bypass.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["*"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
+bypass_hosts = ["nodebackend"]
