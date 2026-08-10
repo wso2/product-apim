@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+# Initialise the UFS cache directory structures required by both instances.
+# Must run before the daemon starts; -z writes the swap.state files.
+squid -f /etc/squid/squid-anon.conf -z --foreground
+squid -f /etc/squid/squid-auth.conf -z --foreground
+
+# Start both Squid instances in the background.
+squid -N -f /etc/squid/squid-anon.conf &
+ANON_PID=$!
+
+squid -N -f /etc/squid/squid-auth.conf &
+AUTH_PID=$!
+
+echo "squid-anon  started on port 3128 (PID ${ANON_PID})"
+echo "squid-auth  started on port 3129 (PID ${AUTH_PID})"
+
+# Block until either process exits (abnormal); the container stops with it.
+wait

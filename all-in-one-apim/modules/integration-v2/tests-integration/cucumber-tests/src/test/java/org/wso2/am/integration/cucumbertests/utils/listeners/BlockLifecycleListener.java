@@ -37,6 +37,7 @@ import org.wso2.am.testcontainers.IdentityServerContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
 import org.wso2.am.testcontainers.NodeAppServer;
+import org.wso2.am.testcontainers.SquidProxyServer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -152,6 +153,14 @@ public class BlockLifecycleListener implements ITestListener {
      */
     static final String PARAM_INIT_SOLACE_BROKER = "initSolaceBroker";
     /**
+     * When {@code true}, onStart ensures the shared {@link SquidProxyServer} (network alias {@code squid-proxy})
+     * is running before APIM boots and publishes it into the block's shared scope under {@value #SQUID_PROXY_KEY}.
+     * Use for proxy-profile tests that need a real HTTP CONNECT proxy reachable from the gateway container.
+     * The TOML overlay for such blocks sets {@code proxy_host = "squid-proxy"}.
+     */
+    static final String PARAM_INIT_PROXY = "initProxy";
+    static final String SQUID_PROXY_KEY = "blockSquidProxy";
+    /**
      * Optional comma-separated list of {@code <hostPath>::<serverRelativePath>} pairs copied into the block's
      * server directory tree BEFORE boot (host paths relative to the module working dir). For fixtures the
      * server only reads at startup — e.g. a secondary user-store XML under
@@ -264,6 +273,11 @@ public class BlockLifecycleListener implements ITestListener {
             if (Boolean.parseBoolean(param(context, PARAM_INIT_BACKEND))) {
                 NodeAppServer.getInstance();
                 logger.info("Block '" + label + "' ensured NodeAppServer backend is running");
+            }
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_PROXY))) {
+                SquidProxyServer proxy = SquidProxyServer.getInstance();
+                TestContext.setShared(SQUID_PROXY_KEY, proxy);
+                logger.info("Block '" + label + "' ensured SquidProxyServer is running");
             }
 
             // Solace: faked connector + real broker, up BEFORE APIM so the toml-declared solaceEnv

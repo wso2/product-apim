@@ -1,0 +1,29 @@
+# Extra overlay for the IntegrationV2-WsProxySpecificOverCatchAll block.
+#
+# Tests that a specific profile takes precedence over a catch-all profile when both match the
+# backend hostname. Two profiles are loaded:
+#
+#   Profile 1 — specific: target_hosts = ["nodebackend"], no bypass_hosts.
+#               Routes nodebackend through the anonymous Squid proxy.
+#
+#   Profile 2 — catch-all: target_hosts = ["*"], bypass_hosts = ["nodebackend"].
+#               Would bypass the proxy for nodebackend if selected.
+#
+# "nodebackend" satisfies both profiles. The expected behaviour is that the specific profile
+# (Profile 1) is preferred over the catch-all (Profile 2), so the gateway sends CONNECT
+# nodebackend:3001 to squid-proxy:3128 rather than connecting directly.
+#
+# A passing echo proves the tunnel was established. A CONNECT count of 1 in the anonymous
+# proxy access log is the decisive assertion: if the catch-all had won, bypass_hosts would have
+# suppressed the CONNECT entirely and the count would be 0.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["*"]
+bypass_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
