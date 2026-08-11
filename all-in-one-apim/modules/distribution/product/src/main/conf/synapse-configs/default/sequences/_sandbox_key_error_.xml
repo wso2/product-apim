@@ -20,5 +20,15 @@
     <property name="ERROR_CODE" value="900901"/>
     <property name="ERROR_MESSAGE" value="Sandbox key offered to the API with no sandbox endpoint"/>
     <property name="CUSTOM_HTTP_SC" value="403"/>
-    <sequence key="fault"/>
+    <!-- For AI APIs, delegate to the configured custom error response formatter
+     when available; otherwise use the default fault sequence. -->
+    <filter source="boolean(get-property('AI_CUSTOM_ERROR_FORMAT_SEQUENCE'))" regex="true">
+        <then>
+            <property name="API_ERROR_TYPE" value="KEY_ERROR"/>
+            <sequence key="{$ctx:AI_CUSTOM_ERROR_FORMAT_SEQUENCE}"/>
+        </then>
+        <else>
+            <sequence key="fault"/>
+        </else>
+    </filter>
 </sequence>
