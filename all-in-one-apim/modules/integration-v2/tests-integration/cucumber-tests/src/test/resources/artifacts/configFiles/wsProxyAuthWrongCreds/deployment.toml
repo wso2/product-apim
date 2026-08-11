@@ -4,9 +4,10 @@
 # carries incorrect credentials. The profile matches "nodebackend" and points at squid-proxy:3129
 # (the Basic-auth Squid instance), but the username/password are intentionally wrong.
 #
-# The gateway cannot establish the proxy tunnel because the credentials are wrong, so the WS
-# upgrade fails. APIM's WS proxy client fails before sending CONNECT to Squid (the auth access
-# log receives no entry), so only the WS rejection itself is asserted.
+# APIM's WS proxy client fails before sending CONNECT to Squid when the credentials are wrong,
+# so both Squid access logs receive zero CONNECT entries. The test asserts WS rejection plus
+# anon count = 0 and auth count = 0, distinguishing this failure from broken network, wrong
+# target host, or stale API state.
 
 [[transport.ws.proxy_profile]]
 target_hosts = ["nodebackend"]
