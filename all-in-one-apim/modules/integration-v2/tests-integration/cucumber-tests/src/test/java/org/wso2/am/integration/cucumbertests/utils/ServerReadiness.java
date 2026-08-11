@@ -87,7 +87,7 @@ public final class ServerReadiness {
     /**
      * Polls an external WSO2 Identity Server's OIDC discovery document until it returns 200 or
      * {@link Constants#SERVER_STARTUP_WAIT_TIME} elapses. Used by the external-KM block after starting the
-     * {@code IdentityServerContainer} to gate KM registration on IS actually serving OAuth endpoints — the same
+     * {@code DynamicISContainer} to gate KM registration on IS actually serving OAuth endpoints — the same
      * 200-gated poll shape as {@link #awaitReady} but against IS's {@code .well-known/openid-configuration}
      * rather than the APIM gateway health-check.
      *

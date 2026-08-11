@@ -458,4 +458,29 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.TenantSharingOffRunner"/>
         </classes>
     </test>
+    <!-- External-IdP console SSO (#17744): the publisher/admin/devportal consoles are federated to the external
+         IS via a MULTI-OPTION login step; a headless browser-equivalent client drives the federated login and
+         asserts cross-console single sign-on. The multi-option federated /commonauth carries the OAuth2 scope
+         list, so a too-small maxHttpHeaderSize rejects it with 400 and the login never lands. Needs the IS. -->
+    <test name="IntegrationV2-ExternalIdpConsoleSso" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="external-idp-sso"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ExternalIdpConsoleSsoRunner"/>
+        </classes>
+    </test>
+    <!-- API Platform Gateway: a standalone gateway runtime driven by the control plane. The block boots the
+         gateway compose (DynamicPlatformGatewayContainer) via bootPlatformGateway; the journey registers it via
+         the admin API, connects it with the minted registration token, and asserts it becomes active.
+         thread-count=1 (a single sequential journey). -->
+    <test name="IntegrationV2-PlatformGateway" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="platform-gateway"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="bootPlatformGateway" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PlatformGatewayRunner"/>
+        </classes>
+    </test>
 </suite>

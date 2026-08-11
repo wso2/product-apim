@@ -162,6 +162,50 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <!-- API Platform Gateway support: pull BOTH gateway images up front (idempotent) so the
+                         DynamicPlatformGatewayContainer compose start doesn't stall on a first-use pull. -->
+                    <execution>
+                        <id>pull-pg-controller-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${pg.gateway.controller.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pull-pg-runtime-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${pg.gateway.runtime.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pull-pg-echo-backend-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${pg.backend.echo.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <!-- Extract the IS image's OWN default deployment.toml to target/is7 so IdentityServerContainer
                          can deep-merge the small is7/deployment-overlay.toml onto it (base+overlay pattern) instead
                          of shipping a full-file config. Runs after pull-is-docker-image (declaration order). -->

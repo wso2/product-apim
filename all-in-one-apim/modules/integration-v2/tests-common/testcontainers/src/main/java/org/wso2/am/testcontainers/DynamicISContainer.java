@@ -30,37 +30,44 @@ import java.io.InputStream;
 import java.time.Duration;
 
 /**
- * WSO2 Identity Server 7.x container used as a third-party (external) Key Manager for APIM in the
- * integration-v2 lane. Modelled on {@link NodeAppServer}: a lazy singleton {@link GenericContainer} joined to
- * {@link ContainerNetwork#SHARED_NETWORK} under the network alias {@code wso2is}, so APIM (alias {@code wso2am})
- * reaches it at {@code https://wso2is:9443/...} — the same host baked into the KM registration payload and the
- * IS OAuth issuer.
+ * WSO2 Identity Server 7.x container for the parallel-on-shared lane — the external IdP / third-party Key
+ * Manager APIM federates to. A per-block {@link GenericContainer} modelled on {@link DynamicApimContainer}:
+ * one instance per IS-booting block, configured here and joined to the block's OWN docker network (with the
+ * {@code wso2is} alias) BY THE CALLER, so APIM reaches it at {@code https://wso2is:9443/...} — the host baked
+ * into the KM registration payload and the IS OAuth issuer — without the alias colliding with any other
+ * block's IS (each block's network is private).
+ *
+ * <p>The network and alias are deliberately NOT set in the constructor (mirroring {@link DynamicApimContainer}):
+ * {@code BlockLifecycleListener} owns network assignment so every block is fully isolated. Earlier this class
+ * was a per-overlay JVM singleton pinned to one shared network under the fixed {@code wso2is} alias, which made
+ * two distinct IS instances unable to coexist in a JVM; per-block networks remove that limitation.
  *
  * <p>Before start it injects these fixtures over the image defaults:
  * <ul>
  *   <li>a {@code deployment.toml} produced by deep-merging the small overlay {@code is7/deployment-overlay.toml}
- *       (only the documented key-manager additions: {@code hostname = "wso2is"}, the {@code wso2is.p12} TLS
- *       keystore, and the oauth/scim/role_mgt/revocation config) onto the IS image's OWN default
- *       {@code deployment.toml} (extracted at build time to {@code target/is7/is-default-deployment.toml}).
- *       This keeps IS on its distribution defaults across versions - same base+overlay pattern the APIM
- *       container uses - instead of restating a full file;</li>
+ *       (the documented key-manager additions: {@code hostname = "wso2is"}, the {@code wso2is.p12} TLS keystore,
+ *       and the oauth/scim/role_mgt/revocation config) onto the IS image's OWN default {@code deployment.toml}
+ *       (extracted at build time to {@code target/is7/is-default-deployment.toml}), optionally with a
+ *       block-specific EXTRA overlay appended — same base+overlay pattern the APIM container uses;</li>
  *   <li>a fixed TLS keystore {@code wso2is.p12} (CN=wso2is + SAN dns:wso2is) so IS presents a cert valid for
- *       the {@code wso2is} hostname that APIM trusts (APIM's truststore is augmented with its public cert —
- *       see {@code DynamicApimContainer#withExternalKmTrust});</li>
+ *       the {@code wso2is} alias that APIM trusts (APIM's truststore is augmented with its public cert —
+ *       see {@link DynamicApimContainer#withExternalKmTrust});</li>
  *   <li>the {@code wso2is.notification.event.handlers} jar into {@code repository/components/dropins/}, whose
- *       class the deployment.toml's token-revocation {@code event_listener} references.</li>
+ *       class the deployment.toml's token-revocation {@code event_listener} references;</li>
+ *   <li>a client-truststore augmented with APIM's {@code wso2am} cert, so IS trusts {@code https://wso2am:9443}
+ *       for the reverse (token-revocation / tenant-sync notification) channel under strict hostname verification.</li>
  * </ul>
  *
  * <p>IS 7.3.0 is multi-arch (native {@code linux/arm64} and {@code linux/amd64}), so it boots natively on both
- * Apple-silicon dev machines and amd64 CI - typically well under a minute. The version is driven by the
+ * Apple-silicon dev machines and amd64 CI — typically well under a minute. The version is driven by the
  * {@code is.server.version} system property (default {@value #DEFAULT_IS_VERSION}), which also derives the
  * in-container {@code IS_HOME}; the image can be overridden wholesale via {@code is.docker.image.name}.
  */
-public class IdentityServerContainer {
+public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
 
-    private static final Log logger = LogFactory.getLog(IdentityServerContainer.class);
+    private static final Log logger = LogFactory.getLog(DynamicISContainer.class);
 
-    /** Network alias APIM and the KM registration payload use to reach IS on the shared network. */
+    /** Network alias APIM and the KM registration payload use to reach IS on the block's network. */
     public static final String NETWORK_ALIAS = "wso2is";
     /** IS management HTTPS port (token, JWKS, DCR, SCIM, admin REST). */
     public static final int HTTPS_PORT = 9443;
@@ -79,54 +86,43 @@ public class IdentityServerContainer {
     private static final String CONTAINER_TRUSTSTORE_PATH =
             IS_HOME + "/repository/resources/security/client-truststore.p12";
 
-    /** Multiton key for the built-in default overlay ({@link #DEPLOYMENT_OVERLAY_RESOURCE}). */
-    public static final String DEFAULT_OVERLAY_KEY = "__default__";
-
-    private final GenericContainer<?> container;
-
-    public IdentityServerContainer() {
-        this(DEFAULT_OVERLAY_KEY, null);
-    }
-
     /**
-     * @param overlayKey          multiton key identifying the overlay variant (a block's
-     *                            {@code isTomlExtraOverlayPath}, or {@link #DEFAULT_OVERLAY_KEY})
+     * @param blockLabel          the owning block's label (log prefix / diagnostics only — no caching)
      * @param extraOverlayContent additional IS deployment toml text appended AFTER the built-in
      *                            {@link #DEPLOYMENT_OVERLAY_RESOURCE} (additive, mirroring the APIM
      *                            {@code tomlExtraOverlayPath} semantics), or {@code null} for none
      */
-    public IdentityServerContainer(String overlayKey, String extraOverlayContent) {
+    public DynamicISContainer(String blockLabel, String extraOverlayContent) {
 
-        logger.info("Initializing IdentityServerContainer (WSO2 IS " + IS_VERSION + ", overlay='"
-                + overlayKey + "')...");
+        super(System.getProperty("is.docker.image.name", DEFAULT_IMAGE));
+        logger.info("Initializing DynamicISContainer (WSO2 IS " + IS_VERSION + ", block='" + blockLabel + "')...");
+
         String deploymentToml = buildDeploymentToml(extraOverlayContent);
-        container = new GenericContainer<>(System.getProperty("is.docker.image.name", DEFAULT_IMAGE))
-                .withExposedPorts(HTTPS_PORT)
-                .withNetwork(ContainerNetwork.SHARED_NETWORK)
-                .withNetworkAliases(NETWORK_ALIAS)
-                // deployment.toml = IS image default (extracted at build time) + is7/deployment-overlay.toml
-                // (hostname=wso2is, TLS keystore, oauth/scim/role_mgt/revocation config) - see buildDeploymentToml.
-                .withCopyToContainer(Transferable.of(deploymentToml), CONTAINER_TOML_PATH)
-                // Fixed TLS keystore whose cert (CN=wso2is, SAN dns:wso2is) APIM trusts.
-                .withCopyToContainer(MountableFile.forClasspathResource("is7/wso2is.p12"),
-                        CONTAINER_TLS_KEYSTORE_PATH)
-                // Notification handler jar referenced by the revocation event_listener in deployment.toml.
-                .withCopyToContainer(MountableFile.forHostPath(notificationJarPath()),
-                        CONTAINER_DROPINS_DIR + NOTIFICATION_JAR_NAME)
-                // Truststore augmented with APIM's wso2am cert, so IS trusts https://wso2am:9443 for the reverse
-                // (token-revocation notification) channel — see build-augmented-is-truststore in the pom. IS's
-                // outbound EventSender does STRICT hostname verification by default; APIM presents a cert whose
-                // SAN includes 'wso2am' (see DynamicApimContainer#withExternalKmTrust + the is7km toml overlay),
-                // so verification passes without the -Dhttpclient.hostnameVerifier=AllowAll workaround.
-                .withCopyToContainer(MountableFile.forHostPath(augmentedTruststorePath()),
-                        CONTAINER_TRUSTSTORE_PATH)
-                // IS 7.3.0 is multi-arch and boots natively (well under a minute); allow margin for CI/load.
-                .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(4)));
+        withExposedPorts(HTTPS_PORT);
+        // NOTE: the docker network + 'wso2is' alias are set by the caller (BlockLifecycleListener) so each block
+        // is isolated on its own network — mirroring DynamicApimContainer.
+        // deployment.toml = IS image default (extracted at build time) + is7/deployment-overlay.toml
+        // (hostname=wso2is, TLS keystore, oauth/scim/role_mgt/revocation config) - see buildDeploymentToml.
+        withCopyToContainer(Transferable.of(deploymentToml), CONTAINER_TOML_PATH);
+        // Fixed TLS keystore whose cert (CN=wso2is, SAN dns:wso2is) APIM trusts.
+        withCopyToContainer(MountableFile.forClasspathResource("is7/wso2is.p12"), CONTAINER_TLS_KEYSTORE_PATH);
+        // Notification handler jar referenced by the revocation event_listener in deployment.toml.
+        withCopyToContainer(MountableFile.forHostPath(notificationJarPath()),
+                CONTAINER_DROPINS_DIR + NOTIFICATION_JAR_NAME);
+        // Truststore augmented with APIM's wso2am cert, so IS trusts https://wso2am:9443 for the reverse
+        // (token-revocation notification) channel — see build-augmented-is-truststore in the pom. IS's outbound
+        // EventSender does STRICT hostname verification by default; APIM presents a cert whose SAN includes
+        // 'wso2am' (see DynamicApimContainer#withExternalKmTrust + the is7km toml overlay), so verification
+        // passes without the -Dhttpclient.hostnameVerifier=AllowAll workaround.
+        withCopyToContainer(MountableFile.forHostPath(augmentedTruststorePath()), CONTAINER_TRUSTSTORE_PATH);
+        withLogConsumer(new JclLogConsumer(logger).withPrefix(blockLabel));
+        // IS 7.3.0 is multi-arch and boots natively (well under a minute); allow margin for CI/load.
+        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(4)));
+    }
 
-        JclLogConsumer logConsumer = new JclLogConsumer(logger);
-        container.withLogConsumer(logConsumer);
-        container.start();
-        logger.info("IdentityServerContainer successfully initialized: " + getBaseHttpsUrl());
+    /** Host-mapped IS management HTTPS base URL (valid after start), e.g. {@code https://localhost:32771/}. */
+    public String getBaseHttpsUrl() {
+        return String.format("https://%s:%d/", getHost(), getMappedPort(HTTPS_PORT));
     }
 
     /**
@@ -147,7 +143,7 @@ public class IdentityServerContainer {
         try {
             String baseToml = java.nio.file.Files.readString(base.toPath());
             // Override the single default key we change: [server] hostname = "localhost" -> the network alias,
-            // so the OAuth issuer and endpoints resolve to https://wso2is:9443 on the shared network. Done in
+            // so the OAuth issuer and endpoints resolve to https://wso2is:9443 on the block network. Done in
             // place (not via the overlay) to avoid a duplicate [server] table when the overlay is appended.
             String withHost = baseToml.replaceFirst("(?m)^(\\s*hostname\\s*=\\s*).*$",
                     "$1\"" + NETWORK_ALIAS + "\"");
@@ -174,7 +170,7 @@ public class IdentityServerContainer {
 
     /** Reads the built-in default external-key-manager overlay from the classpath. */
     private static String defaultOverlayContent() throws IOException {
-        try (InputStream overlay = IdentityServerContainer.class.getClassLoader()
+        try (InputStream overlay = DynamicISContainer.class.getClassLoader()
                 .getResourceAsStream(DEPLOYMENT_OVERLAY_RESOURCE)) {
             if (overlay == null) {
                 throw new IllegalStateException("IS deployment overlay resource not found on the classpath: "
@@ -235,63 +231,5 @@ public class IdentityServerContainer {
                     + "-Dis.truststore.path to its location.");
         }
         return ts.getAbsolutePath();
-    }
-
-    /** Host-mapped IS management HTTPS base URL (valid after start), e.g. {@code https://localhost:32771/}. */
-    public String getBaseHttpsUrl() {
-        return String.format("https://%s:%d/", container.getHost(), container.getMappedPort(HTTPS_PORT));
-    }
-
-    /**
-     * Per-JVM registry of IS instances keyed by overlay. Each distinct overlay is a distinct IS container, but
-     * all share {@link ContainerNetwork#SHARED_NETWORK} and the {@link #NETWORK_ALIAS} {@code wso2is} - because
-     * the committed TLS cert (CN=wso2is, SAN dns:wso2is) is bound to that alias. Two DISTINCT overlays therefore
-     * cannot coexist on the shared network in one JVM (docker DNS would round-robin the alias between them), so
-     * {@link #getInstance(String, String)} fails fast in that case. This is not a limitation in practice: blocks
-     * that need different IS tomls live in separate suites (separate JVMs, each with its own shared network).
-     * The extension point for running distinct overlays IN PARALLEL within one JVM is per-overlay docker networks
-     * (one {@code Network} per overlay, APIM joining its IS's network) - deferred until a suite actually needs it,
-     * since it also requires the shared NodeAppServer backend to join those networks.
-     */
-    private static final java.util.Map<String, IdentityServerContainer> INSTANCES =
-            new java.util.concurrent.ConcurrentHashMap<>();
-
-    /** Returns the shared IS instance for the built-in default overlay (external key-manager config). */
-    public static IdentityServerContainer getInstance() {
-        return getInstance(DEFAULT_OVERLAY_KEY, null);
-    }
-
-    /**
-     * Returns the IS instance for the given overlay variant, creating and starting it on first request.
-     * Instances are cached per {@code overlayKey}. All instances share the network alias {@code wso2is};
-     * requesting a SECOND distinct overlay in the same JVM throws (see {@link #INSTANCES} for why and the
-     * extension point).
-     *
-     * @param overlayKey          a stable key for the variant ({@link #DEFAULT_OVERLAY_KEY} or a block's
-     *                            {@code isTomlExtraOverlayPath})
-     * @param extraOverlayContent extra toml appended after the built-in default overlay, or {@code null}
-     */
-    public static IdentityServerContainer getInstance(String overlayKey, String extraOverlayContent) {
-        String key = (overlayKey == null || overlayKey.isBlank()) ? DEFAULT_OVERLAY_KEY : overlayKey;
-        IdentityServerContainer existing = INSTANCES.get(key);
-        if (existing != null) {
-            return existing;
-        }
-        synchronized (INSTANCES) {
-            IdentityServerContainer already = INSTANCES.get(key);
-            if (already != null) {
-                return already;
-            }
-            if (!INSTANCES.isEmpty()) {
-                throw new IllegalStateException("An Identity Server with a different overlay is already running in "
-                        + "this JVM (existing overlays: " + INSTANCES.keySet() + ", requested: '" + key + "'). "
-                        + "Distinct IS overlays share the '" + NETWORK_ALIAS + "' alias on the shared network and "
-                        + "cannot coexist in one JVM - run blocks needing different IS overlays in separate suites, "
-                        + "or add per-overlay docker networks (see IdentityServerContainer.INSTANCES).");
-            }
-            IdentityServerContainer created = new IdentityServerContainer(key, extraOverlayContent);
-            INSTANCES.put(key, created);
-            return created;
-        }
     }
 }

@@ -32,15 +32,16 @@ import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
+import org.testcontainers.containers.Network;
 import org.wso2.am.testcontainers.DynamicApimContainer;
-import org.wso2.am.testcontainers.IdentityServerContainer;
+import org.wso2.am.testcontainers.DynamicISContainer;
+import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.NodeAppServer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Semaphore;
 
 /**
  * Per-block lifecycle for the parallel-on-shared-container lane. Fires once per TestNG {@code <test>}
@@ -110,8 +111,8 @@ public class BlockLifecycleListener implements ITestListener {
      * When {@code true}, provisions the external-Identity-Server INFRASTRUCTURE for this block: APIM's
      * client-truststore is augmented with the IS TLS cert BEFORE APIM boots (via
      * {@link DynamicApimContainer#withExternalKmTrust}), so APIM trusts {@code https://wso2is:9443}; and after
-     * APIM is ready and tenants/users are provisioned, the {@code IdentityServerContainer} is started, its OIDC
-     * discovery is awaited, and the host-mapped IS base URL is published to the block's shared scope under
+     * APIM is ready and tenants/users are provisioned, this block's {@link DynamicISContainer} is started on the
+     * block's private network, its OIDC discovery is awaited, and the host-mapped IS base URL is published under
      * {@link #IS_BASE_URL_KEY}. This is deliberately infrastructure ONLY — registering IS as a key manager is
      * ADMIN PRODUCT BEHAVIOUR and is done by the features themselves ({@code I create a key manager from
      * payload …}, typically in a {@code _setup_*} fixture or inline where registration is the subject). The IS
@@ -119,40 +120,50 @@ public class BlockLifecycleListener implements ITestListener {
      */
     static final String PARAM_BOOT_EXTERNAL_IS = "bootExternalIdentityServer";
     /**
-     * When {@code true}, this block's APIM binds the fixed {@code wso2am} shared-network alias and becomes the
-     * receiver of the external IS's reverse-channel notifications (token-revocation / tenant-sync POSTs to
-     * {@code https://wso2am:9443/internal/data/v1/notify}). The alias is fixed — baked into the IS toml and the
-     * wso2am.p12 cert — so at most one LIVE container may hold it (duplicate holders make Docker DNS route
-     * notifications to an arbitrary APIM). The listener enforces this with a JVM-wide permit
-     * ({@link #IS_NOTIFY_ALIAS_PERMIT}): holder blocks queue for the permit before booting and release it after
-     * their container stops, serializing ONLY among themselves — alias-free external-KM blocks (which make
-     * APIM→IS calls only) keep running fully concurrently under {@code parallel="tests"}. Set this on every
-     * block whose tests assert on a delivered notification (e.g. the self-validate revoke→401 walk); leave it
-     * off everywhere else. See {@link DynamicApimContainer#withExternalIsNotificationAlias}.
+     * When {@code true}, this block's APIM binds the {@code wso2am} network alias on the block's OWN private
+     * network and becomes the receiver of the external IS's reverse-channel notifications (token-revocation /
+     * tenant-sync POSTs to {@code https://wso2am:9443/internal/data/v1/notify}). Because every block runs on its
+     * own docker network (see {@link #BLOCK_NETWORK_KEY}), the alias is network-scoped and any number of blocks
+     * may hold it concurrently with no collision — no JVM-wide serialization is needed. Set this on every block
+     * whose tests assert on a delivered notification (e.g. the self-validate revoke→401 walk); leave it off
+     * everywhere else. See {@link DynamicApimContainer#withExternalIsNotificationAlias}.
      */
     static final String PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS = "receiveExternalIsNotifications";
     /**
-     * JVM-wide permit backing {@link #PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS}: at most one live container may
-     * hold the {@code wso2am} alias, so holder blocks serialize on this while all other blocks run free. A
-     * {@link Semaphore} (not a lock) because acquire happens on the block's onStart thread and release on its
-     * onFinish thread. Release is guarded by {@link #ALIAS_PERMIT_HELD_ATTRIBUTE} so the boot-failure path and
-     * onFinish can't double-release.
-     */
-    private static final Semaphore IS_NOTIFY_ALIAS_PERMIT = new Semaphore(1);
-    /** Test-context attribute marking that this block holds {@link #IS_NOTIFY_ALIAS_PERMIT} (single-release guard). */
-    private static final String ALIAS_PERMIT_HELD_ATTRIBUTE = "isNotifyAliasPermitHeld";
-    /**
      * Optional block param: module-relative path of an IS deployment.toml EXTRA overlay, appended AFTER the
      * built-in external-key-manager overlay (additive, mirroring the APIM {@code tomlExtraOverlayPath}
-     * semantics) so a block can boot IS with block-specific config (e.g. the tenant-sync listener). Distinct
-     * extra overlays map to distinct IS containers ({@link IdentityServerContainer#getInstance(String, String)});
-     * note distinct overlays cannot run in parallel within one JVM (see that method) - they belong in separate
-     * suites.
+     * semantics) so a block can boot IS with block-specific config (e.g. the tenant-sync listener). Each block
+     * gets its OWN {@link DynamicISContainer} on its own private network, so distinct overlays now coexist across
+     * concurrent blocks (the old shared-singleton fail-fast is gone).
      */
     static final String PARAM_IS_TOML_EXTRA_OVERLAY = "isTomlExtraOverlayPath";
     /** Shared-scope key holding the host-mapped external IS base URL (for scenarios requesting a token from IS). */
     static final String IS_BASE_URL_KEY = "isBaseUrl";
+    /** Shared-scope key holding this block's private docker {@link Network} (closed at block teardown). */
+    static final String BLOCK_NETWORK_KEY = "blockNetwork";
+    /** Shared-scope key holding this block's {@link DynamicISContainer} (stopped at block teardown), when booted. */
+    static final String IS_CONTAINER_KEY = "blockIsContainer";
+    /** Shared-scope flag: the shared backend was attached to this block's network (detach it at teardown). */
+    static final String BACKEND_ATTACHED_KEY = "backendAttachedToBlockNetwork";
+    /**
+     * When {@code true}, spins up this block's API Platform Gateway INFRASTRUCTURE: a
+     * {@link DynamicPlatformGatewayContainer} (the two-service gateway compose) started STANDALONE after APIM is
+     * ready, with its host-mapped data-plane URL and the gateway→control-plane host published to shared scope.
+     * Infrastructure ONLY — registering the gateway ({@code POST /api/am/admin/v4/gateways}) and connecting it are
+     * ADMIN PRODUCT BEHAVIOUR done by the feature journey (§14), which resolves the container from
+     * {@link #PLATFORM_GATEWAY_KEY} and calls {@link DynamicPlatformGatewayContainer#connect} with the token.
+     */
+    static final String PARAM_BOOT_PLATFORM_GATEWAY = "bootPlatformGateway";
+    /** Shared-scope key holding this block's {@link DynamicPlatformGatewayContainer} (stopped at teardown). */
+    static final String PLATFORM_GATEWAY_KEY = "blockPlatformGateway";
+    /** Shared-scope key: host-mapped platform-gateway data-plane HTTPS base URL (APIs are invoked here). */
+    static final String PLATFORM_GATEWAY_DATA_PLANE_URL_KEY = "platformGatewayDataPlaneUrl";
+    /** Shared-scope key: the control-plane host the gateway dials ({@code host.docker.internal:<APIM mapped 9443>}). */
+    static final String PLATFORM_GATEWAY_CONTROLPLANE_HOST_KEY = "platformGatewayControlPlaneHost";
 
+    // Boot path deliberately catches broadly: ANY boot failure (incl. Error) is captured into the block context
+    // so the block fails cleanly and a best-effort container stop still runs, rather than aborting the listener.
+    @SuppressWarnings("checkstyle:IllegalCatch")
     @Override
     public void onStart(ITestContext context) {
 
@@ -171,12 +182,23 @@ public class BlockLifecycleListener implements ITestListener {
         // handed off to TestContext (below). Without this a boot failure on the start()/URL/readiness path
         // leaks a live Docker container for the JVM lifetime (only reaped later by Ryuk).
         DynamicApimContainer container = null;
+        DynamicISContainer isContainer = null;
+        DynamicPlatformGatewayContainer platformGateway = null;
+        Network blockNetwork = null;
         try {
-            // Start the shared backend first (idempotent singleton on the shared network) when the block opts
-            // in, so APIs deployed by gateway-invocation tests have a reachable "nodebackend" upstream.
+            // Every block runs on its OWN private docker network, so the wso2am/wso2is aliases are network-scoped
+            // and never collide across concurrent blocks. Created up front and stored in scope so both the
+            // boot-failure catch and onFinish can close it (and detach the shared backend from it first).
+            blockNetwork = Network.newNetwork();
+            TestContext.setShared(BLOCK_NETWORK_KEY, blockNetwork);
+
+            // Multi-home the shared (stateless) backend onto THIS block's network when the block opts in, so its
+            // APIM gateway resolves "nodebackend". One backend instance serves every block; it is detached at
+            // teardown before the network is closed.
             if (Boolean.parseBoolean(param(context, PARAM_INIT_BACKEND))) {
-                NodeAppServer.getInstance();
-                logger.info("Block '" + label + "' ensured NodeAppServer backend is running");
+                NodeAppServer.getInstance().attachToNetwork(blockNetwork);
+                TestContext.setShared(BACKEND_ATTACHED_KEY, Boolean.TRUE);
+                logger.info("Block '" + label + "' attached the shared NodeAppServer backend to its network");
             }
 
             // IS infrastructure only. Registering IS as a key manager is admin product behaviour and lives in
@@ -185,6 +207,7 @@ public class BlockLifecycleListener implements ITestListener {
 
             container = new DynamicApimContainer(label, resolveTomlContent(context));
             container.withLabel("block", label);
+            container.withNetwork(blockNetwork);
             // Boot-time server files (see PARAM_SERVER_FILES_TO_COPY): copied before start so boot-only
             // deployers (e.g. the user-store config deployer) pick them up.
             String filesToCopy = param(context, PARAM_SERVER_FILES_TO_COPY);
@@ -210,14 +233,10 @@ public class BlockLifecycleListener implements ITestListener {
             if (bootExternalIs) {
                 container.withExternalKmTrust();
             }
-            // Reverse-channel receiver (opt-in): queue for the JVM-wide alias permit, then bind the fixed
-            // wso2am alias so IS's notification POSTs reach THIS container. Holder blocks serialize among
-            // themselves here; alias-free external-KM blocks never touch the permit and stay concurrent.
+            // Reverse-channel receiver (opt-in): bind the wso2am alias so IS's notification POSTs reach THIS
+            // container. The alias is scoped to the block's private network, so no cross-block serialization is
+            // needed — any number of receiver blocks run concurrently.
             if (Boolean.parseBoolean(param(context, PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS))) {
-                logger.info("Block '" + label + "' waiting for the wso2am notification-alias permit"
-                        + (IS_NOTIFY_ALIAS_PERMIT.availablePermits() == 0 ? " (held by another block)" : ""));
-                IS_NOTIFY_ALIAS_PERMIT.acquireUninterruptibly();
-                context.setAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
                 container.withExternalIsNotificationAlias();
             }
             container.start();
@@ -248,11 +267,21 @@ public class BlockLifecycleListener implements ITestListener {
                 SecondaryUserStoreProvisioner.provision(container, Constants.SUPER_TENANT_DOMAIN, "tenant1.com");
             }
 
-            // External IS: start IS on the shared network and publish its host-mapped base URL. Done AFTER
-            // provisioning so a super-admin token exists for any subsequent admin REST call. APIM's truststore
-            // was already augmented above (before boot), so federated OIDC / JWKS / introspection calls trust IS.
+            // External IS: start this block's OWN IS on the block's private network and publish its host-mapped
+            // base URL. Done AFTER provisioning so a super-admin token exists for any subsequent admin REST call.
+            // APIM's truststore was already augmented above (before boot), so federated OIDC / JWKS /
+            // introspection calls trust IS.
             if (bootExternalIs) {
-                bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY));
+                isContainer = bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY),
+                        blockNetwork);
+                TestContext.setShared(IS_CONTAINER_KEY, isContainer);
+            }
+
+            // Platform gateway infrastructure only. Boot the gateway compose STANDALONE and publish its handles;
+            // registering + connecting it to the control plane is admin product behaviour done by the feature.
+            if (Boolean.parseBoolean(param(context, PARAM_BOOT_PLATFORM_GATEWAY))) {
+                platformGateway = bootPlatformGateway(label, baseUrl);
+                TestContext.setShared(PLATFORM_GATEWAY_KEY, platformGateway);
             }
         } catch (Throwable t) {
             context.setAttribute(BOOT_ERROR_ATTRIBUTE, t);
@@ -269,9 +298,17 @@ public class BlockLifecycleListener implements ITestListener {
                     logger.warn("Block '" + label + "' failed-container stop() also failed", stopErr);
                 }
             }
-            // A boot failure after the alias permit was acquired must free it here — onFinish also releases,
-            // but only-if-held, so the two paths can't double-release (see releaseAliasPermitIfHeld).
-            releaseAliasPermitIfHeld(context);
+            if (platformGateway != null) {
+                try {
+                    platformGateway.stop();
+                } catch (Throwable pgErr) {
+                    logger.warn("Block '" + label + "' failed-platform-gateway stop() also failed", pgErr);
+                }
+            }
+            // A boot failure must leave no live IS container and no dangling private network. Detach the shared
+            // backend (if attached) before closing the network, then close it.
+            teardownBlockNetworkAndIs(label, isContainer, blockNetwork,
+                    Boolean.TRUE.equals(TestContext.get(BACKEND_ATTACHED_KEY)));
         } finally {
             // Defensive hygiene: never leave this block's scope bound to the (pooled) thread that ran
             // onStart. Per-invocation scoping in BlockScopeListener already resets scope before any body
@@ -281,6 +318,9 @@ public class BlockLifecycleListener implements ITestListener {
         }
     }
 
+    // Teardown deliberately catches broadly per step (coverage dump / IS stop / network close): each is
+    // best-effort and logged, so one cleanup failure never aborts the remaining teardown or masks the result.
+    @SuppressWarnings("checkstyle:IllegalCatch")
     @Override
     public void onFinish(ITestContext context) {
 
@@ -310,25 +350,56 @@ public class BlockLifecycleListener implements ITestListener {
                 logger.info("Block '" + context.getName()
                         + "' container stopped; dynamic host ports released by Docker");
             }
+            // Stop this block's IS (if booted) and close its private network, detaching the shared backend first.
+            Object is = TestContext.get(IS_CONTAINER_KEY);
+            Object net = TestContext.get(BLOCK_NETWORK_KEY);
+            teardownBlockNetworkAndIs(label,
+                    is instanceof DynamicISContainer dis ? dis : null,
+                    net instanceof Network n ? n : null,
+                    Boolean.TRUE.equals(TestContext.get(BACKEND_ATTACHED_KEY)));
+            // Stop this block's platform gateway (if booted) — its own compose network/volumes go with it.
+            Object pg = TestContext.get(PLATFORM_GATEWAY_KEY);
+            if (pg instanceof DynamicPlatformGatewayContainer dpg) {
+                try {
+                    dpg.stop();
+                    logger.info("Block '" + label + "' platform gateway stopped");
+                } catch (Throwable e) {
+                    logger.warn("Block '" + label + "' platform gateway stop() failed: " + e.getMessage());
+                }
+            }
         } finally {
-            // AFTER the container is stopped (its wso2am alias is gone from the network only then), hand the
-            // notification-alias permit to the next queued holder block. No-op if this block never held it or
-            // the boot-failure path already released it.
-            releaseAliasPermitIfHeld(context);
             TestContext.clear();
             TestContext.clearScope();
         }
     }
 
     /**
-     * Releases {@link #IS_NOTIFY_ALIAS_PERMIT} exactly once per holding block: the held-marker attribute is
-     * flipped before releasing, so whichever of the two callers (boot-failure catch, onFinish) runs second
-     * finds it cleared and no-ops — a double release would let two alias holders run live simultaneously.
+     * Stops this block's {@link DynamicISContainer} and closes its private docker {@link Network}, detaching the
+     * shared backend from it first (Docker refuses to remove a network that still has a container connected).
+     * Each step is independently guarded so one failure never masks another or the block's real outcome. Shared
+     * by the boot-failure catch (local refs) and {@link #onFinish} (scope-resolved refs).
      */
-    private static void releaseAliasPermitIfHeld(ITestContext context) {
-        if (Boolean.TRUE.equals(context.getAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE))) {
-            context.setAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.FALSE);
-            IS_NOTIFY_ALIAS_PERMIT.release();
+    @SuppressWarnings("checkstyle:IllegalCatch")
+    private void teardownBlockNetworkAndIs(String label, DynamicISContainer is, Network network,
+            boolean backendAttached) {
+        if (is != null) {
+            try {
+                is.stop();
+                logger.info("Block '" + label + "' IS container stopped");
+            } catch (Throwable e) {
+                logger.warn("Block '" + label + "' IS stop() failed (continuing teardown): " + e.getMessage());
+            }
+        }
+        if (network != null) {
+            if (backendAttached) {
+                NodeAppServer.getInstance().detachFromNetwork(network);
+            }
+            try {
+                network.close();
+                logger.info("Block '" + label + "' private network closed");
+            } catch (Throwable e) {
+                logger.warn("Block '" + label + "' network close() failed: " + e.getMessage());
+            }
         }
     }
 
@@ -379,22 +450,25 @@ public class BlockLifecycleListener implements ITestListener {
     /**
      * Starts (or reuses) the external WSO2 IS container for this block's IS toml overlay, waits for its OIDC
      * discovery to serve 200, and publishes its host-mapped base URL under {@link #IS_BASE_URL_KEY}. Does NOT
-     * register a key manager. The IS singleton(s) are reaped by Ryuk at JVM exit (not per block), like
-     * {@code NodeAppServer} - stopping one per block would break sibling blocks sharing it.
+     * register a key manager. This block's IS is its OWN {@link DynamicISContainer} on the block's private
+     * network (alias {@code wso2is}), started here and stopped at block teardown ({@link #teardownBlockNetworkAndIs}).
      *
      * @param isTomlExtraOverlayPath module-relative path of an IS EXTRA overlay toml appended after the built-in
      *                               overlay, or {@code null}/blank for none
+     * @param blockNetwork           the block's private docker network the IS joins under the {@code wso2is} alias
+     * @return the started IS container (for teardown), never {@code null}
      */
-    private void bootExternalIdentityServer(String label, String isTomlExtraOverlayPath) throws java.io.IOException {
+    private DynamicISContainer bootExternalIdentityServer(String label, String isTomlExtraOverlayPath,
+            Network blockNetwork) throws java.io.IOException {
 
-        IdentityServerContainer is;
+        String extraContent = null;
         if (isTomlExtraOverlayPath != null && !isTomlExtraOverlayPath.isBlank()) {
             String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
-            String extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
-            is = IdentityServerContainer.getInstance(isTomlExtraOverlayPath, extraContent);
-        } else {
-            is = IdentityServerContainer.getInstance();
+            extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
         }
+        DynamicISContainer is = new DynamicISContainer(label, extraContent);
+        is.withNetwork(blockNetwork).withNetworkAliases(DynamicISContainer.NETWORK_ALIAS);
+        is.start();
         String isBaseUrl = is.getBaseHttpsUrl();
         if (!ServerReadiness.awaitIdentityServerReady(isBaseUrl)) {
             throw new IllegalStateException("External Identity Server for block '" + label
@@ -409,6 +483,33 @@ public class BlockLifecycleListener implements ITestListener {
         logger.info("Block '" + label + "' booted external Identity Server (extra overlay='"
                 + (isTomlExtraOverlayPath == null || isTomlExtraOverlayPath.isBlank() ? "none"
                         : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl);
+        return is;
+    }
+
+    /**
+     * Starts this block's API Platform Gateway (the two-service gateway compose) STANDALONE — not yet connected
+     * to the control plane — and publishes its host-mapped data-plane URL plus the control-plane host the gateway
+     * should dial. Registration + connection are ADMIN PRODUCT BEHAVIOUR done by a feature step (§14), which
+     * resolves the container from {@link #PLATFORM_GATEWAY_KEY} and calls
+     * {@link DynamicPlatformGatewayContainer#connect} with the token minted by {@code POST /gateways}.
+     *
+     * <p>APIM runs on the block's private network, but the gateway's own compose network cannot resolve the
+     * {@code wso2am} alias; instead the gateway reaches APIM's control plane at
+     * {@code host.docker.internal:<APIM's host-mapped 9443 port>} (the compose grants the controller the
+     * {@code host.docker.internal} host entry, and {@code insecure_skip_verify=true} means no cert exchange).
+     *
+     * @param apimBaseUrl this block's APIM management HTTPS URL (host-mapped 9443)
+     * @return the started gateway container (for teardown), never {@code null}
+     */
+    private DynamicPlatformGatewayContainer bootPlatformGateway(String label, String apimBaseUrl) {
+        DynamicPlatformGatewayContainer gateway = new DynamicPlatformGatewayContainer(label);
+        gateway.start();
+        String controlPlaneHost = "host.docker.internal:" + java.net.URI.create(apimBaseUrl).getPort();
+        TestContext.setShared(PLATFORM_GATEWAY_DATA_PLANE_URL_KEY, gateway.getDataPlaneHttpsUrl());
+        TestContext.setShared(PLATFORM_GATEWAY_CONTROLPLANE_HOST_KEY, controlPlaneHost);
+        logger.info("Block '" + label + "' booted platform gateway (standalone); dataPlane="
+                + gateway.getDataPlaneHttpsUrl() + " controlPlaneHost=" + controlPlaneHost);
+        return gateway;
     }
 
     private String resolveTomlContent(ITestContext context) throws java.io.IOException {

@@ -122,6 +122,20 @@
             <version>${slf4j.api.version}</version>
             <scope>test</scope>
         </dependency>
+        <!--
+            Playwright drives a REAL browser for the external-IdP console-SSO test: the APIM consoles are React
+            SPAs whose login callback exchanges the code for the session cookie via browser-scoped session/JS that
+            a headless HTTP walk cannot reproduce. The browser runs on the test host/CI-VM (no browser container)
+            and reaches the mapped container ports through an in-process CONNECT proxy that maps the servers'
+            internal host:port (localhost:9443 / wso2is:9443) to their mapped ports — so redirects need no
+            rewriting and the servers' own redirect_uri (localhost:9443) stays consistent end to end.
+        -->
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.49.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -133,6 +147,44 @@
                     <source>21</source>
                     <target>21</target>
                 </configuration>
+            </plugin>
+
+            <!--
+                Install the Playwright Chromium browser before the tests run (the external-IdP console-SSO test
+                drives a real browser). Idempotent: a fast no-op when the browser is already cached under
+                ~/.cache/ms-playwright (so it needs no network on a warm machine and is offline-safe); it only
+                downloads on a cold CI VM. The client sets PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD so nothing is fetched
+                at test runtime — this step is the single, explicit browser-provisioning point.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>install-playwright-chromium</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <!--
+                                exec (a SEPARATE java process), NOT java: the Playwright CLI's main() calls
+                                System.exit(), which under exec:java would terminate the Maven JVM before the
+                                tests run. A subprocess isolates that exit.
+                            -->
+                            <executable>${java.home}/bin/java</executable>
+                            <classpathScope>test</classpathScope>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath/>
+                                <argument>com.microsoft.playwright.CLI</argument>
+                                <argument>install</argument>
+                                <argument>chromium</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
