@@ -254,6 +254,13 @@ public class Utils {
      * published events). Never use it for a counter something keeps incrementing — that can never settle. Pick
      * {@code quietMillis} comfortably above the observed gap BETWEEN two arrivals, not above the total fan-out
      * time: a gap longer than the quiet window would settle early and under-count.
+     *
+     * <p>{@code timeoutMillis} is a FLOOR, not a bound: like {@link #retryUntil} this deadline is
+     * {@code max(timeoutMillis, RUNTIME_PROPAGATION_TIMEOUT)}, so a call site CANNOT ask for a shorter wait than
+     * the shared propagation ceiling. Passing a small value to cap the pathological case does nothing — a counter
+     * that never goes quiet still polls for the full ceiling. What actually bounds the normal case is
+     * {@code quietMillis}: the call returns as soon as the value holds still for that long, so a settled counter
+     * costs one quiet window regardless of what is passed here.
      */
     public static SettledCount awaitSettledCount(long quietMillis, long timeoutMillis, CountProbe probe)
             throws InterruptedException {
@@ -1020,10 +1027,6 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" + keyMappingId;
     }
 
-    public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
-        return getOAuthKeyURL(baseUrl, applicationId, keyMappingId);
-    }
-
     public static String getAPIInvocationURL(String baseGatewayUrl, String resourcePath, String tenantDomain) {
         return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
                 ? baseGatewayUrl + resourcePath
@@ -1443,11 +1446,6 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "organizations/" + organizationId;
     }
 
-    /** SOAP admin service — claim-metadata management (register local claims). */
-    public static String getClaimMetadataMgtServiceURL(String baseUrl) {
-        return baseUrl + "services/ClaimMetadataManagementService";
-    }
-
     /** Admin REST API — tenant configuration (get/update). */
     public static String getTenantConfigURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "tenant-config";
@@ -1546,10 +1544,6 @@ public class Utils {
 
     public static String getSwaggerURL(String baseUrl, String resourceType, String resourceId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/swagger";
-    }
-
-    public static String getAPIDefinitionURL(String baseUrl) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-openapi";
     }
 
     /** Publisher REST API — AsyncAPI definition import (multipart {@code file} + {@code additionalProperties}). */

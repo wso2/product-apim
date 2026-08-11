@@ -251,7 +251,7 @@ public class ExternalIdpJwtSteps {
 
         String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
         String appId = TestContext.resolve(appIdKey).toString();
-        String url = Utils.getUpdateKey(Utils.getBaseUrl(), appId, keyMappingId);
+        String url = Utils.getOAuthKeyURL(Utils.getBaseUrl(), appId, keyMappingId);
         HttpResponse current = SimpleHTTPClient.getInstance().doGet(url, Identity.devportalHeaders());
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
@@ -279,7 +279,7 @@ public class ExternalIdpJwtSteps {
         String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
         String appId = TestContext.resolve(appIdKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance().doGet(
-                Utils.getUpdateKey(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders());
+                Utils.getOAuthKeyURL(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders());
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
                         && current.getData() != null && !current.getData().isBlank(),
                 "Failed to capture key mapping '" + keyMappingId + "' on application '" + appId

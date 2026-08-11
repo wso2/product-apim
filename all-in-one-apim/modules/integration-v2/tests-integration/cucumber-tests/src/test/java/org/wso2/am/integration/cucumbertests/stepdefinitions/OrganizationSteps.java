@@ -86,7 +86,7 @@ public class OrganizationSteps {
                         + "</soapenv:Body></soapenv:Envelope>";
 
         Requests.soap(
-                Utils.getClaimMetadataMgtServiceURL(Utils.getBaseUrl()), payload, "urn:addLocalClaim",
+                Utils.getClaimMetadataManagementServiceURL(Utils.getBaseUrl()), payload, "urn:addLocalClaim",
                 adminUser, adminPass);
     }
 

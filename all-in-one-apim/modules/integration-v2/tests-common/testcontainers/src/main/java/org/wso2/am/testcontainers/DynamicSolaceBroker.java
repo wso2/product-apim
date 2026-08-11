@@ -31,11 +31,16 @@ import java.time.Duration;
  * <p><b>Why the control plane is faked.</b> APIM's Solace integration is written against Solace Cloud,
  * which cannot be reached from integration tests, and there is no public Solace API-Management-Connector
  * image (Docker Hub's {@code solace/*} namespace ships the broker, operator, exporter, event-management
- * agent and ~12 protocol bridges — no connector). So the connector API APIM calls
- * ({@code /{org}/environments}, {@code /apis}, {@code /apiProducts}, {@code /developers},
- * {@code /developers/{dev}/apps}) is served by the {@code solaceshim} image, whose contract was recovered
- * from the legacy {@code SolaceTestCase} WireMock stubs and cross-checked against
- * {@code org.wso2.carbon.apimgt.solace} bytecode.
+ * agent and ~12 protocol bridges — no connector). So that API is served by the {@code solaceshim} image.
+ *
+ * <p>The surface it serves is the v2 EVENT PORTAL one APIM actually calls — {@code /eventApiProducts},
+ * {@code /eventApiProducts/{id}/plans}, that plan's {@code /eventApis/{id}} AsyncAPI, and the
+ * {@code /appRegistrations} family (registration, {@code /credentials}, {@code /accessRequests}) — taken from
+ * the Feign interface {@code SolaceV2ApimApisClient} in {@code org.wso2.carbon.apimgt.solace} and
+ * cross-checked against Solace's published API walkthrough. NOT the v1 connector surface
+ * ({@code /{org}/environments}, {@code /apis}, {@code /apiProducts}, {@code /developers}) that the legacy
+ * {@code SolaceTestCase} WireMock stubs described: that mechanism is gone on this product, which is also why
+ * the legacy deploy-to-Solace-environment rows are not ported (see solace_event_api.feature).
  *
  * <p><b>Why the data plane is REAL.</b> The broker is the only component in the arc we did not author, so
  * it is the only one that can contradict us: it REJECTS malformed topic syntax and unsupported protocol
@@ -45,7 +50,8 @@ import java.time.Duration;
  *
  * <p><b>Assertion rule (non-negotiable).</b> A shim built to satisfy APIM passes BY CONSTRUCTION. Scenarios
  * MUST assert broker state through SEMP ({@link #getSempUrl()}), never the shim's own responses. The shim's
- * {@code /_shim/state} endpoint exists for debugging only and is not an assertion target.
+ * {@code GET /_mock/state} and {@code POST /_mock/reset} endpoints exist for debugging only and are not
+ * assertion targets.
  *
  * <p><b>Why two GenericContainers rather than {@code DockerComposeContainer}.</b> Compose support creates
  * its OWN network, so APIM — which lives on {@link ContainerNetwork#SHARED_NETWORK} — could not resolve the
@@ -130,6 +136,12 @@ public class DynamicSolaceBroker {
      * {@code initSolaceBroker}, and a full event broker is far too heavy to boot per block. Holder-idiom
      * initialisation, so the containers start exactly once on first use and are never stopped per block —
      * stopping one would break sibling blocks sharing it (the same reason NodeAppServer is never stopped).
+     *
+     * <p>Sharing is NOT symmetric with NodeAppServer, though, and the difference decides the alias. Blocks CALL
+     * the node backend, so any number may share it; this broker CALLS BACK into APIM to fetch its JWKS, and its
+     * OAuth profile holds a single {@code endpointJwks} configured once per JVM. So while several blocks may opt
+     * in, only one live APIM may own the {@code apimforsolace} alias that URL resolves to — the listener
+     * serializes those blocks on a permit ({@code SOLACE_JWKS_ALIAS_PERMIT}); they run, just not concurrently.
      */
     private static class InstanceHolder {
         private static final DynamicSolaceBroker instance = createStarted();
@@ -189,10 +201,13 @@ public class DynamicSolaceBroker {
                 .withNetworkAliases(SHIM_ALIAS)
                 // The shim advertises broker endpoint URIs to APIM using the in-network alias, so the URIs
                 // APIM stores are reachable from inside the network rather than only from the host.
-                .withEnv("SOLACE_BROKER_HOST", BROKER_ALIAS)
                 .withEnv("SEMP_URL", "http://" + BROKER_ALIAS + ":" + SEMP_PORT)
                 .withEnv("SEMP_USER", SEMP_USER)
                 .withEnv("SEMP_PASSWORD", SEMP_PASSWORD)
+                // The shim reads SEMP_VPN and otherwise falls back to its own "default" literal, so without this
+                // the two sides hardcode the VPN independently and changing the constant above would silently
+                // leave the shim provisioning into the old one. Same reason OAUTH_PROFILE is passed.
+                .withEnv("SEMP_VPN", SEMP_VPN)
                 /*
                  * What the shim needs to make the broker trust APIM as an OAuth authorization server, so an
                  * application can publish with the access token APIM issued it.
@@ -271,12 +286,12 @@ public class DynamicSolaceBroker {
 
     /** Host-side connector URL, for a test that needs to inspect the shim directly (debugging only). */
     public String getConnectorHostUrl() {
-        return "http://localhost:" + shim.getMappedPort(SHIM_PORT);
+        return "http://" + shim.getHost() + ":" + shim.getMappedPort(SHIM_PORT);
     }
 
     /** SEMP base URL from the HOST — this is what scenarios assert broker state against. */
     public String getSempUrl() {
-        return "http://localhost:" + broker.getMappedPort(SEMP_PORT) + "/SEMP/v2";
+        return "http://" + broker.getHost() + ":" + broker.getMappedPort(SEMP_PORT) + "/SEMP/v2";
     }
 
     /** SMF messaging URI reachable from inside the shared network. */
@@ -296,7 +311,7 @@ public class DynamicSolaceBroker {
      * {@link #REST_PORT} for why a Bearer header rather than the {@code OAUTH~} password form).
      */
     public String getRestMessagingUrl() {
-        return "http://localhost:" + broker.getMappedPort(REST_PORT);
+        return "http://" + broker.getHost() + ":" + broker.getMappedPort(REST_PORT);
     }
 
     /**
@@ -306,6 +321,15 @@ public class DynamicSolaceBroker {
      */
     public int getMappedMqttPort() {
         return broker.getMappedPort(MQTT_PORT);
+    }
+
+    /**
+     * Broker host as seen FROM THE HOST, to pair with {@link #getMappedMqttPort()} — the testcontainers-resolved
+     * host, not a {@code localhost} literal, for the same reason the URL getters above use it: under a remote or
+     * rootless daemon (or some Colima setups) the mapped port is not published on loopback.
+     */
+    public String getBrokerHost() {
+        return broker.getHost();
     }
 
     public int getMappedSempPort() {

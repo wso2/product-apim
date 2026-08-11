@@ -153,7 +153,11 @@ Feature: Gateway SSE API Invocation
   Scenario Outline: SSE events beyond the subscription plan's event quota are not delivered as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create a subscription throttling policy "${UNIQUE:sseEvQuota}" allowing 2 events per minute
+    # AN HOUR, not a minute, and the assertion below depends on it: the arc waits for the traffic manager's verdict
+    # and then requires a FRESH stream to deliver exactly 0. A per-minute window can replenish during that wait, so
+    # the fresh stream would legitimately deliver events again and the wait would time out — a failure with nothing
+    # wrong. Over an hour the quota is spent once and stays spent, so 0 is the only sound expectation.
+    When I create a subscription throttling policy "${UNIQUE:sseEvQuota}" allowing 2 events per 60 "min"
     Then The response status code should be 201
     When I put JSON payload from file "artifacts/payloads/create_apim_test_sse_api.json" in context as "sseApiPayload"
     And I replace "AsyncUnlimited" with "{{subThrottlePolicyName}}" in the payload "sseApiPayload"
@@ -173,10 +177,10 @@ Feature: Gateway SSE API Invocation
     When I get the subscription with id "sseSubId"
     Then The value of response field "status" should be "UNBLOCKED"
     And The value of response field "throttlingPolicy" should be "{{subThrottlePolicyName}}"
-    # 10 frames offered per stream, one per second; the 2-events/min quota must silence the stream entirely once the
-    # traffic manager's verdict has landed. 10 rather than 20 so each attempt costs ~10s and the deadline affords
-    # many attempts inside one quota window — the window RESETS every minute, so an attempt that happens to straddle
-    # a reset gets a fresh allowance and the loop must be able to try again rather than run out of budget.
+    # 10 events offered per stream, one per second, so each attempt costs ~10s and the 120s deadline affords many
+    # attempts while the traffic manager's verdict propagates. Because the quota window is an hour it stays
+    # exhausted between attempts, so a later attempt cannot be handed a fresh allowance: once the verdict lands,
+    # every subsequent stream must deliver exactly 0, and reaching the deadline means it never landed.
     When I invoke the SSE API at gateway context "{{sseContext}}/1.0.0" using access token "generatedAccessToken" requesting 10 events tagged "{{sseApiId}}" until its event quota throttles the stream to zero within 120 seconds
 
     Examples:

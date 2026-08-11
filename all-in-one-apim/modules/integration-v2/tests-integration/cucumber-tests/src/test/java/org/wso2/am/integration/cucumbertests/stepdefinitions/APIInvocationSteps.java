@@ -869,6 +869,12 @@ public class APIInvocationSteps {
      * no halving applies. The caller attaches the quota as the API's SUBSCRIPTION TIER; an earlier revision used an
      * API-level {@code apiThrottlingPolicy}, which is not a streaming lever at all, so its "20/20 delivered"
      * measurement was uninterpretable.
+     *
+     * <p>REQUIRES A QUOTA WINDOW LONGER THAN THIS STEP'S DEADLINE, and the caller must supply one (the scenarios
+     * use an hour). "A fresh stream delivers exactly 0" is only sound while the quota STAYS exhausted: on a
+     * per-minute plan the window can replenish inside the retry loop, the next stream then legitimately delivers
+     * events again, and the step times out reporting an unenforced quota when nothing is wrong. Do not "simplify"
+     * the plan back to per-minute.
      */
     @When("I invoke the SSE API at gateway context {string} using access token {string} requesting {int} events tagged {string} until its event quota throttles the stream to zero within {int} seconds")
     public void invokeSseUntilThrottledToZero(String context, String accessToken, int events, String tag,

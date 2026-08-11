@@ -26,7 +26,12 @@ import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -172,16 +177,16 @@ public class SolaceSteps {
     private static final int MQTT_SOCKET_TIMEOUT_MS = 15000;
 
     /** MQTT's length-prefixed UTF-8 string: two big-endian length bytes then the bytes. */
-    private static void writeMqttString(java.io.ByteArrayOutputStream out, String value) {
+    private static void writeMqttString(ByteArrayOutputStream out, String value) {
 
-        byte[] bytes = value.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
         out.write(bytes.length >> 8);
         out.write(bytes.length & 0xFF);
         out.write(bytes, 0, bytes.length);
     }
 
     /** MQTT's variable-length integer encoding of a packet's remaining length. */
-    private static void writeRemainingLength(java.io.OutputStream out, int length) throws IOException {
+    private static void writeRemainingLength(OutputStream out, int length) throws IOException {
 
         int remaining = length;
         do {
@@ -192,7 +197,7 @@ public class SolaceSteps {
     }
 
     /** Reads a packet's remaining-length field, which is what says how many bytes follow. */
-    private static int readRemainingLength(java.io.InputStream in) throws IOException {
+    private static int readRemainingLength(InputStream in) throws IOException {
 
         int multiplier = 1;
         int value = 0;
@@ -208,7 +213,7 @@ public class SolaceSteps {
         return value;
     }
 
-    private static int readOrFail(java.io.InputStream in, String what) throws IOException {
+    private static int readOrFail(InputStream in, String what) throws IOException {
 
         int b = in.read();
         if (b < 0) {
@@ -228,13 +233,13 @@ public class SolaceSteps {
     private static int mqttSubscribe(String topic, String token) throws IOException {
 
         DynamicSolaceBroker broker = DynamicSolaceBroker.getInstance();
-        try (java.net.Socket socket = new java.net.Socket("localhost", broker.getMappedMqttPort())) {
+        try (Socket socket = new Socket(broker.getBrokerHost(), broker.getMappedMqttPort())) {
             socket.setSoTimeout(MQTT_SOCKET_TIMEOUT_MS);
-            java.io.OutputStream out = socket.getOutputStream();
-            java.io.InputStream in = socket.getInputStream();
+            OutputStream out = socket.getOutputStream();
+            InputStream in = socket.getInputStream();
 
             // ---- CONNECT: clean session, username+password present (flags 0xC2), keep-alive 60s.
-            java.io.ByteArrayOutputStream body = new java.io.ByteArrayOutputStream();
+            ByteArrayOutputStream body = new ByteArrayOutputStream();
             writeMqttString(body, "MQTT");
             body.write(0x04);                       // protocol level 4 == MQTT 3.1.1
             body.write(0xC2);                       // username | password | clean-session
@@ -263,7 +268,7 @@ public class SolaceSteps {
                     + " Check the broker's event.log SYSTEM_CLIENT_CONNECT_AUTH_FAIL line.");
 
             // ---- SUBSCRIBE: one filter at QoS 0, packet id 1.
-            java.io.ByteArrayOutputStream sub = new java.io.ByteArrayOutputStream();
+            ByteArrayOutputStream sub = new ByteArrayOutputStream();
             sub.write(0x00);
             sub.write(0x01);                        // packet identifier
             writeMqttString(sub, topic);
@@ -298,7 +303,8 @@ public class SolaceSteps {
 
         int code = mqttSubscribe(topic, Utils.resolveContextPlaceholders(token));
         boolean denied = code == MQTT_SUBACK_FAILURE;
-        boolean granted = code >= 0x00 && code <= 0x02;
+        // No lower bound needed: readOrFail throws on EOF rather than returning -1, so code is 0..255 here.
+        boolean granted = code <= 0x02;
         Assert.assertTrue(denied || granted, "Unexpected MQTT SUBACK code 0x" + Integer.toHexString(code)
                 + " for topic " + topic + " — neither a granted QoS (0x00-0x02) nor a failure (0x80)");
 

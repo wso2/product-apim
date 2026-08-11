@@ -298,7 +298,7 @@ Feature: Gateway WebSocket API Invocation
   Scenario Outline: A WS API is throttled once its frames exceed the subscription plan's event quota as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create a subscription throttling policy "${UNIQUE:wsEv4perMin}" allowing 4 events per minute
+    When I create a subscription throttling policy "${UNIQUE:wsEv4perHour}" allowing 4 events per 60 "min"
     Then The response status code should be 201
     When I put JSON payload from file "artifacts/payloads/create_apim_ws_echo_api.json" in context as "wsThrPayload"
     And I replace "AsyncUnlimited" with "{{subThrottlePolicyName}}" in the payload "wsThrPayload"
@@ -317,7 +317,7 @@ Feature: Gateway WebSocket API Invocation
     When I get the subscription with id "wsThrSubId"
     Then The value of response field "status" should be "UNBLOCKED"
     And The value of response field "throttlingPolicy" should be "{{subThrottlePolicyName}}"
-    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" sending 12 messages using access token "generatedAccessToken" expecting a throttled-out frame within 120 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" using access token "generatedAccessToken" expecting a throttled-out frame within 120 seconds
 
     Examples:
       | actor             |

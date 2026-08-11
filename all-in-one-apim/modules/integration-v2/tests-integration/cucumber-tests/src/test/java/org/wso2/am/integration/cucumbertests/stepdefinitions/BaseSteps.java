@@ -40,7 +40,6 @@ import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -112,7 +111,7 @@ public class BaseSteps {
         json.addProperty("saasApp", true);
         json.addProperty("owner", actor.getUserName());
 
-        String encodedCredentials = DatatypeConverter.printBase64Binary(
+        String encodedCredentials = Base64.getEncoder().encodeToString(
                     (actor.getUserName() + ':' + actor.getPassword()).getBytes(StandardCharsets.UTF_8));
 
         Map<String, String> headers = new HashMap<>();
@@ -1191,7 +1190,7 @@ public class BaseSteps {
 
         String artifactUrl = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
 
-        String encodedCredentials = DatatypeConverter.printBase64Binary(
+        String encodedCredentials = Base64.getEncoder().encodeToString(
                 (tenantAdmin.getUserName() + ':' + tenantAdmin.getPassword()).getBytes(StandardCharsets.UTF_8));
         Map<String, String> artifactHeaders = new HashMap<>();
         artifactHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);

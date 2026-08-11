@@ -42,7 +42,20 @@ const DEFAULT_EVENT_NAME = 'message';
 // Diagnostic record of every stream served, newest last. Reset via POST /streams/reset. This is a debugging aid
 // and NOT a parallel-safe assertion source unless the caller scopes it with ?tag=<unique> on both the invocation
 // and the introspection read.
+// Bounded: NodeAppServer is a singleton that is never stopped, so this records every stream served for the whole
+// suite run. Each record is small fixed metadata (no event bodies), so the exposure is modest — but unbounded is
+// unbounded, and a future scenario that loops over streams would grow it without limit. Keeps the most recent
+// MAX_RETAINED_STREAMS; eviction drops the OLDEST, and the diagnostic reader matches by TAG on the stream it just
+// opened, so the cap stays well above what one scenario can open before asserting (the quota arc retries ~12x).
+const MAX_RETAINED_STREAMS = 200;
 const streams = [];
+
+function retainStream(stream) {
+    streams.push(stream);
+    while (streams.length > MAX_RETAINED_STREAMS) {
+        streams.shift();
+    }
+}
 
 function intParam(raw, fallback, min, max) {
     const parsed = Number.parseInt(raw, 10);
@@ -83,7 +96,7 @@ app.get('/*', (req, res) => {
         completed: false,
         startedAt: new Date().toISOString()
     };
-    streams.push(stream);
+    retainStream(stream);
     console.log(`----SSE stream opened path=${req.path} count=${count} delayMs=${delayMs} tag=${stream.tag}`);
 
     res.status(200).set({

@@ -1478,7 +1478,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.put(Utils.getUpdateKey(Utils.getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
+        Requests.put(Utils.getOAuthKeyURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -1496,7 +1496,7 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.delete(Utils.getUpdateKey(Utils.getBaseUrl(), actualAppId, keyMappingId), headers);
+        Requests.delete(Utils.getOAuthKeyURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers);
     }
 
     /**
@@ -4081,7 +4081,7 @@ public class ApplicationBaseSteps {
 
         String appId = TestContext.resolve(appIdKey).toString();
         String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
-        Requests.get(Utils.getUpdateKey(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders());
+        Requests.get(Utils.getOAuthKeyURL(Utils.getBaseUrl(), appId, keyMappingId), Identity.devportalHeaders());
     }
 
     /**

@@ -61,7 +61,6 @@ public class WebSocketInvocationSteps {
 
     // Base gap between outbound frames in the frame-quota arc — the traffic manager's throttle decision is
     // asynchronous, so frames must be spaced for it to land in the gateway's ThrottleDataHolder before the next send.
-    private static final long FRAME_PACING_MILLIS = 1500L;
 
     // The EXACT text frame the gateway writes back when a raw-WS frame is throttled out. Assembled by
     // InboundProcessorResponseDTO.getErrorResponseString() from FrameErrorConstants.THROTTLED_OUT_ERROR (4003) and
@@ -171,8 +170,8 @@ public class WebSocketInvocationSteps {
     }
 
     /**
-     * Sends up to {@code messageCount} messages over ONE WebSocket connection and asserts the gateway answered with
-     * a THROTTLED-OUT frame — having first echoed the opening message, so a never-routed API cannot satisfy it.
+     * Sends frames over ONE WebSocket connection until the gateway answers with a THROTTLED-OUT frame — having
+     * first echoed the opening message, so a never-routed API cannot satisfy it.
      *
      * <p>WHAT THE OBSERVABLE ACTUALLY IS, and why the previous shape could not see it. On a raw-WS frame throttle
      * the gateway does NOT go quiet and does NOT close: {@code doThrottle} sets only {@code error=true} with
@@ -180,7 +179,7 @@ public class WebSocketInvocationSteps {
      * {@code WebsocketHandler} take the non-close branch and {@code writeAndFlush} a TEXT frame whose whole body is
      * {@code InboundProcessorResponseDTO.getErrorResponseString()} —
      * {@code "Error code: 4003 reason: Websocket frame throttled out"}. This step previously counted EVERY inbound
-     * text frame as an echo and asserted {@code received < messageCount}, so a throttled frame was tallied as an
+     * text frame as an echo and asserted a shortfall against the offered count, so a throttled frame was tallied as an
      * echo and a fully throttled run reported "all messages echoed, no throttling observed". Classifying the frame
      * is therefore not a refinement — without it the measurement cannot distinguish enforcement from its absence,
      * and the earlier "10 frames on a 4/min limit ALL echoed (0 throttled)" reading is not evidence of a product
@@ -199,11 +198,14 @@ public class WebSocketInvocationSteps {
      * 4003 frame arrived, and no frame carried a DIFFERENT error code (so an auth/blocked refusal can never be read
      * as a throttle). This is the same observable the live GraphQL subscription-throttling feature asserts.
      *
-     * <p>Frames are SPACED through {@link Utils#pollPause} — the shared pacing primitive (§15), never a bare
-     * {@code Thread.sleep} — because a back-to-back burst outruns the asynchronous decision and never trips.
+     * <p>DEADLINE-bounded, and the plan's window is what allows that. Over an HOUR the quota is spent once and
+     * stays spent, so every frame after the limit is over quota and the only variable left is when the decision
+     * reaches the gateway — which the deadline absorbs. A per-minute window would instead replenish underneath a
+     * waiting test, and a fixed send count would make the send RATE an input to the assertion (too fast outruns the
+     * decision, too slow spreads across windows). Neither is a property of the product, so neither is asserted.
      */
-    @When("I invoke the WebSocket API at gateway ws context {string} sending {int} messages using access token {string} expecting a throttled-out frame within {int} seconds")
-    public void invokeWsExpectThrottling(String context, int messageCount, String accessToken, int timeoutSeconds)
+    @When("I invoke the WebSocket API at gateway ws context {string} using access token {string} expecting a throttled-out frame within {int} seconds")
+    public void invokeWsExpectThrottling(String context, String accessToken, int timeoutSeconds)
             throws Exception {
         String wsUrl = buildWsUrl(context);
         String token = TestContext.resolve(accessToken).toString();
@@ -263,9 +265,14 @@ public class WebSocketInvocationSteps {
         Assert.assertNotNull(ws, "Could not establish the WebSocket connection for the throttling test");
 
         java.util.List<String> frames = new java.util.ArrayList<>();
-        long framePacingStart = System.currentTimeMillis();
         try {
-            for (int i = 0; i < messageCount; i++) {
+            // DEADLINE-bounded, not count-bounded, and no artificial pacing. The plan's window is an hour, so
+            // once the quota is spent it STAYS spent: every later frame is over quota and the only open question is
+            // when the traffic manager's decision reaches the gateway's ThrottleDataHolder. Keep sending until that
+            // shows up as an error frame or the deadline expires — which makes the verdict independent of send
+            // rate, where a fixed count plus a paced burst made the rate an input to the assertion.
+            long sendDeadline = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 30000L);
+            for (int i = 0; System.currentTimeMillis() < sendDeadline; i++) {
                 if (closed.get()) {
                     break;
                 }
@@ -284,12 +291,8 @@ public class WebSocketInvocationSteps {
                 }
                 frames.add(frame);
                 if (isFrameError(frame)) {
-                    break;   // the gateway answered with an error frame instead of the echo — stop sending
+                    break;   // the throttle verdict landed — this is the outcome the assertions below grade
                 }
-                // Space the frames so the traffic manager's async throttle decision has time to be computed and
-                // pushed back into the gateway's ThrottleDataHolder — a rapid burst outruns it and never trips.
-                // The shared pacing primitive (§15), never a bare Thread.sleep.
-                Utils.pollPause(framePacingStart, FRAME_PACING_MILLIS);
             }
         } finally {
             try {
@@ -318,13 +321,13 @@ public class WebSocketInvocationSteps {
         // 3. The throttle itself, on the exact frame body the gateway emits for 4003.
         boolean throttled = frames.stream().anyMatch(WS_THROTTLED_OUT_FRAME::equals);
         Assert.assertTrue(throttled, "The gateway never returned the WS throttled-out frame (\""
-                + WS_THROTTLED_OUT_FRAME + "\") within " + messageCount + " messages, so the API's frame quota was "
+                + WS_THROTTLED_OUT_FRAME + "\") before the deadline, so the API's frame quota was "
                 + "not enforced; " + observed);
         // The measured trajectory, not just the verdict: WHICH send tripped is what confirms the both-direction
         // arithmetic (a send plus its echo costs two events), and a green run records nothing about it otherwise.
         long echoed = frames.stream().filter(frame -> !isFrameError(frame)).count();
-        log.info("WS frame quota measured: " + echoed + " of " + messageCount + " offered sends were echoed before "
-                + "the throttled-out frame arrived; " + observed);
+        log.info("WS frame quota measured: " + echoed + " frame(s) echoed before the throttled-out frame arrived; "
+                + observed);
     }
 
     /**

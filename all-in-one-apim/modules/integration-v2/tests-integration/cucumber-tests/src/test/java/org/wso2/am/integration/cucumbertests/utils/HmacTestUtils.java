@@ -20,6 +20,7 @@ package org.wso2.am.integration.cucumbertests.utils;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
 import java.security.GeneralSecurityException;
 import java.util.Locale;
 
@@ -48,11 +49,9 @@ public final class HmacTestUtils {
             Mac mac = Mac.getInstance(macAlgorithm);
             mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), macAlgorithm));
             byte[] digest = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hex = new StringBuilder(digest.length * 2);
-            for (byte b : digest) {
-                hex.append(String.format("%02x", b));
-            }
-            return hex.toString();
+            // HexFormat (JDK 17+) rather than a per-byte String.format: same lower-case output, no formatter
+            // allocated per byte. Lower case is not cosmetic — it is the digest form the x-hub-signature carries.
+            return HexFormat.of().formatHex(digest);
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException("Failed to compute an " + macAlgorithm + " MAC over the given data", e);
         }

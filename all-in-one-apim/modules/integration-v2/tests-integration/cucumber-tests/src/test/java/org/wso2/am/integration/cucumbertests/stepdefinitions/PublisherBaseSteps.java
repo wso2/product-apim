@@ -2718,7 +2718,7 @@ public class PublisherBaseSteps {
         files.put("file", openapiFile);
         files.put("additionalProperties", additionalPropertiesFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files, null);
+        HttpResponse response = Requests.postMultipart(Utils.getImportOpenAPIURL(Utils.getBaseUrl()), headers, files, null);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(resourceId, createdId);
@@ -2760,7 +2760,7 @@ public class PublisherBaseSteps {
         files.put("file", archiveFile);
         files.put("additionalProperties", additionalPropertiesFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getImportOpenAPIURL(Utils.getBaseUrl()), headers, files,
                 null);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -3021,7 +3021,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", openapiFile);
         files.put("additionalProperties", additionalPropertiesFile);
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getImportOpenAPIURL(Utils.getBaseUrl()), headers, files,
                 null);
         if (resourceId != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");

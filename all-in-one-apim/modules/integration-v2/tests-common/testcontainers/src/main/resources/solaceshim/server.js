@@ -1,10 +1,22 @@
 #!/usr/bin/env node
 /*
- * Standalone mock of the Solace Cloud / Event Portal API that WSO2 APIM's v2 Solace client calls.
+ * TWO JOBS, and only the first is a mock.
+ *
+ *  1. CONTROL PLANE DOUBLE -- mocks the Solace Cloud / Event Portal API that WSO2 APIM's v2 Solace client
+ *     calls (the routes and envelope rules below). This is what makes "APIM drives the documented Solace
+ *     contract correctly" assertable without a Solace Cloud account.
+ *  2. BROKER PROVISIONER -- configures a REAL PubSub+ broker over SEMP, and nothing else does. On startup it
+ *     makes the broker an OAuth resource server against APIM's JWKS, disables basic auth and the fallback
+ *     `default` clientUsername, and per app registration it provisions a clientUsername and an ACL profile
+ *     derived from the served AsyncAPI's channels. Without this the broker accepts ANY credential, so every
+ *     "bad credential is rejected" assertion would be vacuous -- see configureApimOAuth and ensureAclProfile.
+ *     The HTTP port is opened only AFTER that configuration settles, so container readiness means "broker
+ *     secured"; a failure is fatal rather than logged (see the server.listen block at the bottom).
+ *
  * Zero dependencies -- pure node:http. Run it, point APIM at it, watch the log.
  *
- *   node solace-mock.js                 # listens on 9081
- *   PORT=9090 node solace-mock.js
+ *   node server.js                      # listens on 9081 standalone; the container sets PORT=8081
+ *   PORT=9090 node server.js            # no SEMP_URL => job 2 is skipped, job 1 still works
  *
  * Then in APIM's deployment.toml:
  *
@@ -736,24 +748,39 @@ const server = http.createServer((req, res) => {
     });
 });
 
-server.listen(PORT, () => {
-    /*
-     * Configure the broker's client authentication AT STARTUP, not on first use.
-     *
-     * Why it matters: a "bad token is rejected" scenario needs no APIM setup at all -- it just publishes with
-     * a bogus token. But an untouched broker accepts ANY credential (see authenticationBasicEnabled above).
-     * If this ran lazily on the first credential push, that scenario's verdict would depend on whether some
-     * OTHER scenario had already run -- ordering-dependent, and forbidden by the isolation rule. Doing it
-     * here makes every scenario see the same broker regardless of order.
-     *
-     * This does NOT require APIM to be up: nothing is fetched now, only configured. The broker fetches the
-     * JWKS lazily when it first validates a token, which is long after APIM has booted.
-     * The broker starts BEFORE this container (DynamicSolaceBroker.start), so SEMP is already answering.
-     */
-    configureApimOAuth().catch((error) => {
-        log(`     ERROR configuring broker OAuth: ${error.stack || error}`);
+/*
+ * Configure the broker's client authentication BEFORE the HTTP port opens, and treat a failure as fatal.
+ *
+ * WHY BEFORE: an untouched broker accepts ANY credential (see authenticationBasicEnabled above), so the
+ * "bad token is rejected" scenario -- which needs no APIM setup, it just publishes a bogus token -- would
+ * get a 200 from an unconfigured broker. The readiness probe is Wait.forListeningPort (DynamicSolaceBroker),
+ * so binding the port IS the container's ready signal: opening it only after configureApimOAuth() settles is
+ * what makes "container ready" mean "broker secured". Chaining rather than awaiting inside the listen
+ * callback is the whole point -- the callback runs AFTER the bind, so configuring there leaves a window in
+ * which the port is live and the broker is still permissive. Nothing today can reach that window (APIM boots
+ * between this container and the first scenario), but the guarantee is now structural rather than a timing
+ * margin nobody declared.
+ *
+ * WHY FATAL: a swallowed failure here leaves the broker permissive and the container ready, and the only
+ * symptom is the invalid-token scenario failing minutes later because the broker accepted a bad token --
+ * which points at the test rather than at the provisioning that actually failed. Exiting instead fails
+ * shim.start() at the cause. A HANG is covered by the probe's own startup timeout, for the same reason.
+ *
+ * This does NOT require APIM to be up: nothing is fetched now, only configured. The broker fetches the
+ * JWKS lazily when it first validates a token, which is long after APIM has booted. The broker starts
+ * BEFORE this container (DynamicSolaceBroker.start), so SEMP is already answering. With no SEMP_URL (the
+ * standalone path) configureApimOAuth() returns immediately, so the listener starts as it always did.
+ */
+configureApimOAuth()
+    .then(() => {
+        server.listen(PORT, () => {
+            log(`listening on http://localhost:${PORT}`);
+            log(`set  [apim.solace_config]  apim_api_endpoint = "http://localhost:${PORT}"  token = "anything"`);
+            log(`ids: product=${PRODUCT_ID} plan=${PLAN_ID} eventApi=${EVENT_API_ID}`);
+        });
+    })
+    .catch((error) => {
+        log(`     FATAL configuring broker OAuth: ${error.stack || error}`);
+        log('     the port is deliberately NOT opened: a ready shim would mean a broker that accepts anything');
+        process.exit(1);
     });
-    log(`listening on http://localhost:${PORT}`);
-    log(`set  [apim.solace_config]  apim_api_endpoint = "http://localhost:${PORT}"  token = "anything"`);
-    log(`ids: product=${PRODUCT_ID} plan=${PLAN_ID} eventApi=${EVENT_API_ID}`);
-});

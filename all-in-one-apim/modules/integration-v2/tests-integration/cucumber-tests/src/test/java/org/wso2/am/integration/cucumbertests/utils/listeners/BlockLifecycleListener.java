@@ -138,6 +138,14 @@ public class BlockLifecycleListener implements ITestListener {
      * {@link #PARAM_BOOT_EXTERNAL_IS} (after APIM): nothing in the Solace arc needs APIM's certificate, and an
      * environment pointing at an absent host is a needless race.
      *
+     * <p>The broker and shim are a shared singleton, so SEVERAL blocks may set this — but they SERIALIZE on
+     * {@link #SOLACE_JWKS_ALIAS_PERMIT}, because each such block's APIM must bind the {@code apimforsolace} alias
+     * and the shared broker resolves a single {@code endpointJwks} through it. Holder blocks queue for that permit
+     * before booting and release it after their container stops, exactly as the {@code wso2am} holders do
+     * ({@link #PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS}); every other block stays concurrent. So a second Solace
+     * block is supported but costs wall-clock, and each one boots a full event broker — worth weighing before
+     * adding one.
+     *
      * <p>Infrastructure ONLY (CLAUDE.md 14). Registering the Solace environment is toml; importing, deploying,
      * subscribing and key generation are feature steps run as an {@code Identity} actor. Do not add product
      * calls here — that is what got {@code KeyManagerRegistration} removed.
@@ -195,6 +203,31 @@ public class BlockLifecycleListener implements ITestListener {
     private static final Semaphore IS_NOTIFY_ALIAS_PERMIT = new Semaphore(1);
     /** Test-context attribute marking that this block holds {@link #IS_NOTIFY_ALIAS_PERMIT} (single-release guard). */
     private static final String ALIAS_PERMIT_HELD_ATTRIBUTE = "isNotifyAliasPermitHeld";
+
+    /**
+     * JVM-wide permit for the {@code apimforsolace} alias, the Solace counterpart of
+     * {@link #IS_NOTIFY_ALIAS_PERMIT} — same reason for existing, different reason for mattering.
+     *
+     * <p>{@link DynamicSolaceBroker} is a shared singleton (like {@code NodeAppServer}), so several blocks MAY opt
+     * in via {@code initSolaceBroker}. But the alias it depends on is not on the shared container: unlike
+     * {@code nodebackend}, which the one node container owns, {@code apimforsolace} is bound by EACH block's own
+     * APIM ({@link DynamicApimContainer#withSolaceJwksAlias}), so N such blocks would put N containers behind one
+     * name and Docker would round-robin between them.
+     *
+     * <p>What makes that unsafe is on the broker side: its OAuth profile carries a SINGLE {@code endpointJwks},
+     * configured once per JVM, so exactly one APIM can be its key provider. Two holders happen to work today only
+     * because every APIM container is a clone of one image and serves an identical JWKS (verified: wso2carbon.jks
+     * is baked at image build, not generated per boot) — an image-level fact that nothing here enforces. A
+     * per-tenant signing keystore or a second APIM image would make it fail as intermittent 403s whose reason
+     * lives only in the broker's event.log. This permit makes "one live APIM answers the broker's endpointJwks"
+     * true by construction instead.
+     *
+     * <p>Queues rather than failing, so the several-blocks contract the singleton inherits is preserved: a second
+     * Solace block runs, just not concurrently. Serializing two full event brokers is desirable regardless.
+     */
+    private static final Semaphore SOLACE_JWKS_ALIAS_PERMIT = new Semaphore(1);
+    /** Test-context attribute marking that this block holds {@link #SOLACE_JWKS_ALIAS_PERMIT}. */
+    private static final String SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE = "solaceJwksAliasPermitHeld";
     /**
      * Optional block param: module-relative path of an IS deployment.toml EXTRA overlay, appended AFTER the
      * built-in external-key-manager overlay (additive, mirroring the APIM {@code tomlExtraOverlayPath}
@@ -284,9 +317,14 @@ public class BlockLifecycleListener implements ITestListener {
             }
             // Solace: the BROKER validates APIM-issued tokens by fetching APIM's JWKS itself, so APIM needs an
             // alias the broker can resolve. APIM has none by default; without this every publish is rejected
-            // 403 with the reason only inside the broker's event.log. Unlike the wso2am alias above this needs
-            // no permit — see DynamicApimContainer.withSolaceJwksAlias.
+            // 403 with the reason only inside the broker's event.log. Queue for the permit first: the broker's
+            // profile has ONE endpointJwks, so only one live APIM may answer that name (see
+            // SOLACE_JWKS_ALIAS_PERMIT).
             if (Boolean.parseBoolean(param(context, PARAM_INIT_SOLACE_BROKER))) {
+                logger.info("Block '" + label + "' waiting for the apimforsolace JWKS-alias permit"
+                        + (SOLACE_JWKS_ALIAS_PERMIT.availablePermits() == 0 ? " (held by another block)" : ""));
+                SOLACE_JWKS_ALIAS_PERMIT.acquireUninterruptibly();
+                context.setAttribute(SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
                 container.withSolaceJwksAlias();
             }
             container.start();
@@ -392,14 +430,20 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
-     * Releases {@link #IS_NOTIFY_ALIAS_PERMIT} exactly once per holding block: the held-marker attribute is
-     * flipped before releasing, so whichever of the two callers (boot-failure catch, onFinish) runs second
-     * finds it cleared and no-ops — a double release would let two alias holders run live simultaneously.
+     * Releases every alias permit this block holds, exactly once each: the held-marker attribute is flipped before
+     * releasing, so whichever of the two callers (boot-failure catch, onFinish) runs second finds it cleared and
+     * no-ops — a double release would let two holders of the same alias run live simultaneously.
      */
     private static void releaseAliasPermitIfHeld(ITestContext context) {
-        if (Boolean.TRUE.equals(context.getAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE))) {
-            context.setAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.FALSE);
-            IS_NOTIFY_ALIAS_PERMIT.release();
+        releaseIfHeld(context, ALIAS_PERMIT_HELD_ATTRIBUTE, IS_NOTIFY_ALIAS_PERMIT);
+        releaseIfHeld(context, SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE, SOLACE_JWKS_ALIAS_PERMIT);
+    }
+
+    /** One permit's flip-then-release, so a block holding both cannot leak either on the boot-failure path. */
+    private static void releaseIfHeld(ITestContext context, String heldAttribute, Semaphore permit) {
+        if (Boolean.TRUE.equals(context.getAttribute(heldAttribute))) {
+            context.setAttribute(heldAttribute, Boolean.FALSE);
+            permit.release();
         }
     }
 

@@ -64,14 +64,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * via {@link Names#unique}. Absence of a delivery is proved with a POSITIVE BARRIER — a second, still-subscribed
  * receiver that must observe the same event — never by sleeping and hoping.
  *
- * <p><b>The FAN-OUT leg is currently PARKED in the feature.</b> Every step here that asserts a delivery — the settled
- * and exact delivery counts, the delivered body/signature and the {@code link} header — is retained and working glue,
- * but is referenced ONLY by the commented-out scenarios in {@code features/gateway/websub_invocation.feature}. The
- * hub's fan-out reads an in-memory subscriber map that is empty for a runtime-created subscription on this lane; the
- * feature's shared park note carries the full evidence and the named next step. What is NOT parked, and is what
- * narrowed that note this increment, is the persisted-subscription read below: it proves the registration reached the
- * DAO, so the break lies strictly between the {@code asyncWebhooksData} publish and the gateway's in-memory map.
- * Nothing needs to be added here to re-enable those scenarios — do not "simplify" these steps away as unused.
+ * <p><b>The FAN-OUT leg is asserted live.</b> Every delivery step here is reached by a scenario in
+ * {@code features/gateway/websub_invocation.feature} with a populated {@code Examples:} table: the settled and exact
+ * delivery counts, the delivered body, the {@code link} header, the hub re-signing each delivery with the
+ * SUBSCRIBER's own {@code hub.secret}, deliveries stopping at unsubscribe, and the event-count quota.
+ *
+ * <p>ONE limitation is real and remains uncovered: the INBOUND rejection of a mis-signed post to the event
+ * receiver. The template {@code <drop/>}s such a post with no response at all, so it presents as a client timeout
+ * rather than a status and cannot be asserted with the status-based publish step. That is a missing negative, not
+ * a parked scenario — everything else on this leg is covered.
  *
  * <p>Every wait funnels through {@link Utils#retryUntil}; the request steps publish through {@link Requests} so the
  * feature asserts the exact status itself, and the local introspection reads use {@link SimpleHTTPClient} directly
@@ -94,48 +95,6 @@ public class WebSubInvocationSteps {
 
     /** Suffix appended to the receiver's context key to hold its in-network callback URL. */
     private static final String CALLBACK_KEY_SUFFIX = "Callback";
-
-    /**
-     * Sub-path appended to a WebSub API's gateway context for HUB (un)subscribe requests. NOT known to be required:
-     * it is retained only so that the payload fix below and this path were not changed as two variables at once, and
-     * is a candidate for removal once the block runs green.
-     *
-     * <p>MEASURED, in this order:
-     * <ol>
-     *   <li>posting to the bare {@code <context>/<version>} was rejected with {@code 403} and
-     *       {@code 900906 "No matching resource found in the API for the given request"};</li>
-     *   <li>appending this segment did NOT fix it — the same {@code 403}/900906 came back. So the path shape was
-     *       never the cause.</li>
-     * </ol>
-     *
-     * <p>RESOLVED cause: the API's own declared operations — but NOT because the {@code POST} verb was rejected. The
-     * matcher never sees {@code POST}. {@code WebhookApiHandler.handleRequest} rewrites the request before auth: it
-     * sets {@code HTTP_METHOD} to the literal {@code SUBSCRIBE} and elects {@code hub.topic} as
-     * {@code API_ELECTED_RESOURCE}, then delegates to {@code APIAuthenticationHandler}. So the URI-template match
-     * that decides 900906 is <em>verb {@code SUBSCRIBE} AND urlPattern == the request's {@code hub.topic}</em>, and it
-     * runs against the API's declared operations, not against the synapse template's
-     * {@code <resource url-mapping="/*">}. These payloads declared
-     * {@code operations: [{target:"/*", verb:"SUBSCRIBE"}]} while every scenario subscribes to topic
-     * {@code _default}: the verb agreed, the target did not ({@code /*} != {@code _default}), so no template matched,
-     * {@code NO_MATCHING_AUTH_SCHEME} became 900906 and the request never reached the hub resource. No path, empty or
-     * otherwise, can get past that. The fix is therefore in the payloads: they no longer send {@code operations},
-     * letting the product default the WEBSUB URI templates to target {@code _default} exactly as the legacy did (the
-     * legacy posted to the bare context and asserted 202 precisely because it never sent {@code operations}).
-     * Declaring {@code operations} explicitly would have to use {@code target:"_default", verb:"SUBSCRIBE"}, which is
-     * byte-identical to that default — hence sending none.
-     *
-     * <p>The same topic-vs-template match gates the delivery leg: {@code WebhookApiHandler.validateTopic} matches the
-     * event receiver's {@code ?topic=} against the same {@code getUrlMappings()}, and a miss becomes the {@code 404}
-     * the unknown-topic scenario asserts.
-     *
-     * <p>The SSE port is not subject to this: {@code type=SSE} renders {@code methods="GET"} and its invocation is a
-     * GET, so its declared operation and its verb agree. Its own {@code /events} sub-path records the bare-context
-     * symptom as a {@code 404}, a different code from the {@code 403}/900906 measured here.
-     *
-     * <p>Cost a killed run to find, because a wrong expectation on a hub leg burns the full 180s {@code retryUntil}
-     * floor per step.
-     */
-    private static final String HUB_PATH = "/hub";
 
     /**
      * How long a receiver's delivery count must stay UNCHANGED before it is taken as final (see
@@ -198,7 +157,7 @@ public class WebSubInvocationSteps {
      * No reset is needed (and none is issued): the name is unique per scenario, so nothing can be inherited.
      */
     @Given("I have a {string} WebSub callback receiver stored as {string}")
-    public void iHaveAWebSubCallbackReceiver(String flavour, String contextKey) {
+    public void iHaveAWebSubCallbackReceiver(String flavour, String contextKey) throws IOException {
 
         String family = switch (flavour) {
             case "verifying" -> "receiver";
@@ -211,6 +170,17 @@ public class WebSubInvocationSteps {
         TestContext.set(key, name);
         TestContext.set(key + CALLBACK_KEY_SUFFIX,
                 "http://" + NODE_BACKEND_HOST + ":" + WEBSUB_RECEIVER_PORT + "/" + family + "/" + name);
+        // DECLARE the name to the receiver app now. Its introspection route 404s for a name it has never seen, so
+        // that a typo'd receiver key fails loudly instead of reading back an invented empty receiver and satisfying
+        // an "expected 0 events" assertion. Registering here is what keeps a legitimate not-yet-delivered receiver
+        // answering 200 with a zero count. Infra-side call consumed inside the step, so it does NOT publish
+        // httpResponse (§7).
+        String registerUrl = Utils.getNodeBackendUrl(WEBSUB_RECEIVER_PORT) + "/register/" + name;
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(registerUrl, new HashMap<>(), "",
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200,
+                "Could not register WebSub receiver '" + name + "' at " + registerUrl + "; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
     }
 
     /**
@@ -241,6 +211,14 @@ public class WebSubInvocationSteps {
                 timeoutSeconds);
     }
 
+    /**
+     * Sends one hub request — {@code subscribe} or {@code unsubscribe} — to the API's gateway context, carrying the
+     * {@code hub.*} parameters either as QUERY parameters or as a form-urlencoded BODY. Both encodings exist because
+     * the product does not treat them interchangeably, and the caller picks one.
+     *
+     * <p>The hub is addressed at the BARE context; there is no sub-path. Retries through
+     * {@link #retryUntilStatus} so a freshly published API still becoming routable is not read as a rejection.
+     */
     private void sendHubRequest(String hubMode, String context, String callback, String topic, String secret,
                                 String leaseSeconds, String accessToken, boolean asQueryParameters,
                                 int expectedStatus, int timeoutSeconds) throws Exception {
@@ -251,12 +229,9 @@ public class WebSubInvocationSteps {
         String resolvedSecret = Utils.resolveContextPlaceholders(secret);
         String parameters = hubParameters(hubMode, resolvedCallback, resolvedTopic, resolvedSecret,
                 Utils.resolveContextPlaceholders(leaseSeconds));
-        // HUB_PATH is not known to be required — the 403/900906 came from the payload's declared operations, not from
-        // the path. Retained pending a green run; see the constant.
         String gatewayUrl = Utils.getBaseGatewayUrl()
-                + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext + HUB_PATH;
-        String what = "WebSub " + (hubMode.isEmpty() ? "<no hub.mode>" : hubMode) + " at "
-                + resolvedContext + HUB_PATH;
+                + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        String what = "WebSub " + (hubMode.isEmpty() ? "<no hub.mode>" : hubMode) + " at " + resolvedContext;
 
         retryUntilStatus(what, accessToken, expectedStatus, timeoutSeconds, () -> {
             Map<String, String> headers = new HashMap<>();
@@ -393,16 +368,22 @@ public class WebSubInvocationSteps {
 
         Assert.assertTrue(quotaEvents > 0, "Receiver '" + quotaName + "' was throttled out without ever receiving an "
                 + "event, so its callback was never working and the throttle proves nothing about delivery.");
-        Integer delivered = Utils.retryUntil(timeoutSeconds * 1000L, () -> countEventDeliveries(controlName, body),
-                count -> count >= published.get());
-        Assert.assertNotNull(delivered, "The control receiver '" + controlName + "' never observed the fan-out.");
-        Assert.assertEquals(delivered.intValue(), published.get(), "The UNLIMITED-plan control receiver '"
-                + controlName + "' received " + delivered + " of the " + published.get() + " events published, so the "
-                + "fan-out was not healthy throughout and receiver '" + quotaName + "' stopping cannot be attributed "
-                + "to its quota.");
+        // SETTLED, not accept-on->=: the control's count is the attribution claim, so an OVER-count has to be
+        // catchable too. retryUntil's accept returns the instant the value reaches N, leaving a duplicate that
+        // arrives moments later invisible to the assertEquals below — the widened-form-wearing-an-exact-assertion
+        // shape awaitSettledCount exists to prevent (see its javadoc).
+        Utils.SettledCount control = Utils.awaitSettledCount(DELIVERY_SETTLE_QUIET_MILLIS, timeoutSeconds * 1000L,
+                () -> countEventDeliveries(controlName, body));
+        Assert.assertTrue(control.settled(), "The UNLIMITED-plan control receiver '" + controlName + "' never stopped "
+                + "receiving (last seen " + control.value() + " over " + control.samples() + " sample(s), quiet window "
+                + DELIVERY_SETTLE_QUIET_MILLIS + "ms), so the fan-out cannot be called healthy.");
+        Assert.assertEquals(control.value(), published.get(), "The UNLIMITED-plan control receiver '"
+                + controlName + "' settled at " + control.value() + " of the " + published.get() + " events published, "
+                + "so the fan-out was not healthy throughout and receiver '" + quotaName + "' stopping cannot be "
+                + "attributed to its quota.");
         log.info("WebSub event quota measured: " + published.get() + " event(s) published, quota receiver '"
                 + quotaName + "' took " + quotaEvents + " before its " + THROTTLED_OUT_CODE + " throttled-out "
-                + "notice, control receiver '" + controlName + "' took all " + delivered + ".");
+                + "notice, control receiver '" + controlName + "' took all " + control.value() + ".");
     }
 
     /** True once the named receiver has recorded a delivery carrying the hub's throttled-out notice. */
@@ -514,42 +495,6 @@ public class WebSubInvocationSteps {
     }
 
     /**
-     * Asserts the named receiver's delivery count SETTLED strictly BELOW a ceiling — the assertion shape an
-     * EVENT-COUNT QUOTA needs, because an exact count is not available to assert against.
-     *
-     * <p>WHY NOT AN EXACT COUNT, measured rather than assumed: APIM's throttling counts locally on the gateway and
-     * reconciles with the traffic manager ASYNCHRONOUSLY, so a burst OVERSHOOTS the configured limit before
-     * enforcement engages. Measured on a live server: a 9-events/month plan delivered 12, and in this suite a
-     * 2-event plan delivered 6. The quota is real, but its boundary is approximate under burst, so
-     * {@code should have received N events} can only be written by guessing the overshoot — which is how the
-     * previous version of the quota scenario came to assert a number it could never reliably hit.
-     *
-     * <p>WHY NOT A STATUS ASSERTION: the quota is invisible to the publisher. Measured — publishing past an
-     * exhausted quota still answers 200 with an empty body; the only observable effect is that deliveries to THAT
-     * subscriber stop. (Contrast the subscriber-COUNT cap, which the hub rejects on subscribe with 429/900808.)
-     *
-     * <p>This assertion is only sound WITH A CONTROL SUBSCRIBER on an unlimited plan: "fewer than N" is equally
-     * satisfied by delivery being broken entirely, which is exactly the failure that kept these scenarios parked.
-     * The control receiving all N is what makes the shortfall attributable to the quota.
-     */
-    @Then("The WebSub receiver {string} should have settled below {int} event(s) within {int} seconds")
-    public void receiverShouldSettleBelow(String receiverKey, int ceiling, int timeoutSeconds) throws Exception {
-
-        String name = TestContext.resolve(receiverKey).toString();
-        Utils.SettledCount count = Utils.awaitSettledCount(DELIVERY_SETTLE_QUIET_MILLIS, timeoutSeconds * 1000L,
-                () -> readReceiver(name).getInt("count"));
-        String observed = "last seen " + count.value() + " over " + count.samples() + " sample(s), quiet window "
-                + DELIVERY_SETTLE_QUIET_MILLIS + "ms";
-        Assert.assertTrue(count.settled(), "WebSub receiver '" + name + "' delivery count never stopped changing ("
-                + observed + "), so no ceiling can be asserted.");
-        Assert.assertTrue(count.value() > 0, "WebSub receiver '" + name + "' received NOTHING (" + observed
-                + "). A quota that withholds every event is indistinguishable from broken delivery, so this fails "
-                + "rather than passing as 'below the ceiling'.");
-        Assert.assertTrue(count.value() < ceiling, "WebSub receiver '" + name + "' settled at " + count.value()
-                + ", not below " + ceiling + " (" + observed + ") — the event-count quota did not stop delivery.");
-    }
-
-    /**
      * Asserts the named receiver's delivery count RIGHT NOW, with no waiting — the "and nothing more was
      * delivered" half of an absence check. Only sound after a POSITIVE BARRIER has been awaited (a second,
      * still-subscribed receiver observing the same event proves the hub's fan-out for that event has completed),
@@ -595,8 +540,10 @@ public class WebSubInvocationSteps {
                 count -> count == expectedCount);
         // Settle even when the reach loop timed out: the settled value is the number the failure message must
         // report, and a settled-but-wrong count is the over/under-count signal rather than a transient sample.
+        // The timeout argument is a FLOOR (awaitSettledCount raises it to RUNTIME_PROPAGATION_TIMEOUT), so it does
+        // NOT cap this call — the quiet window does, and a persisted count goes quiet in one round trip.
         Utils.SettledCount settled = Utils.awaitSettledCount(PERSISTED_SETTLE_QUIET_MILLIS,
-                PERSISTED_SETTLE_QUIET_MILLIS * 2, () -> countPersistedSubscriptions(apiId, tenantDomain));
+                PERSISTED_SETTLE_QUIET_MILLIS, () -> countPersistedSubscriptions(apiId, tenantDomain));
         String observed = "reached=" + reached + ", settled=" + settled.value() + " over " + settled.samples()
                 + " sample(s), quiet window " + PERSISTED_SETTLE_QUIET_MILLIS + "ms";
         Assert.assertTrue(settled.settled(), "The persisted webhook-subscription count for API " + apiId
@@ -685,8 +632,8 @@ public class WebSubInvocationSteps {
         Assert.assertEquals(posted, described, "The event source posts to a URL the product's own registration does "
                 + "not describe — so a 200 from the receiver cannot mean the published event entered fan-out. "
                 + "posted=" + posted + " persisted-row=" + row);
-        // Both URLs on a green run too: "they matched" is only interpretable next to what they matched AS, and this
-        // is the check the fan-out park note's wrong-listener hypothesis turns on.
+        // Both URLs on a green run too: "they matched" is only interpretable next to what they matched AS, and a
+        // publish that reaches the WRONG listener is otherwise indistinguishable from one that fans out to nobody.
         log.info("WebSub event-receiver URL agreed with the product's own registration: posted=" + posted
                 + " described-by-persisted-row=" + described + " row=" + row);
     }

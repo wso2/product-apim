@@ -133,6 +133,15 @@ public final class ResourceCleanup {
     private record KeyMappingRestore(String applicationId, String keyMappingId, String payload, String actorRef) {
     }
 
+    /**
+     * A tenant-configuration SNAPSHOT to PUT back on teardown. A dedicated record rather than
+     * {@link OwnedResource}: the value is the whole tenant-config document, and storing a request BODY in a field
+     * named {@code id} misreads at both ends — the register call looks like it is tagging a resource id, and the
+     * restore reads {@code id()} where a payload is meant.
+     */
+    private record TenantConfigRestore(String payload, String actorRef) {
+    }
+
     private record ApplicationKeyMapping(String applicationId, String keyMappingId, String actorRef) {
     }
 
@@ -150,7 +159,8 @@ public final class ResourceCleanup {
 
     /** Registers a tenant configuration snapshot for failure-safe restoration by the cleanup hook. */
     public static void registerTenantConfiguration(Object payload) {
-        register(ORIGINAL_TENANT_CONFIGURATIONS, payload);
+        TestContext.addToList(ORIGINAL_TENANT_CONFIGURATIONS,
+                new TenantConfigRestore(String.valueOf(payload), Identity.actingActorRef()));
     }
 
     public static void registerKeyMapping(String applicationId, String keyMappingId, String payload) {
@@ -425,7 +435,7 @@ public final class ResourceCleanup {
                     continue;
                 }
                 HttpResponse resp = SimpleHTTPClient.getInstance().doPut(
-                        Utils.getUpdateKey(baseUrlObj.toString(), restore.applicationId(), restore.keyMappingId()),
+                        Utils.getOAuthKeyURL(baseUrlObj.toString(), restore.applicationId(), restore.keyMappingId()),
                         Identity.bearerHeaders(token.toString()), restore.payload(),
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
                 int code = resp == null ? -1 : resp.getResponseCode();
@@ -444,7 +454,7 @@ public final class ResourceCleanup {
 
     private static void restoreTenantConfigurations(String baseUrl) {
         for (Object o : TestContext.getList(ORIGINAL_TENANT_CONFIGURATIONS)) {
-            if (!(o instanceof OwnedResource res) || res.id() == null) {
+            if (!(o instanceof TenantConfigRestore res) || res.payload() == null) {
                 continue;
             }
             try {
@@ -457,7 +467,7 @@ public final class ResourceCleanup {
                 }
                 Map<String, String> headers = Identity.bearerHeaders(token.toString());
                 HttpResponse resp = SimpleHTTPClient.getInstance().doPut(Utils.getTenantConfigURL(baseUrl),
-                        headers, res.id(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+                        headers, res.payload(), Constants.CONTENT_TYPES.APPLICATION_JSON);
                 int code = resp == null ? -1 : resp.getResponseCode();
                 if (code < 200 || code >= 300) {
                     logger.warn("Cleanup: tenant configuration restore for actor '" + res.actorRef()

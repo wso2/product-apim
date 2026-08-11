@@ -43,14 +43,39 @@ const port = process.env.PORT || 3022;
 // re-serialising it through a JSON parser would break signature verification in the test.
 app.use(express.raw({ type: '*/*', limit: '5mb' }));
 
-// name -> { verifications: [...], events: [...] }. Created on first touch so a test never has to pre-register.
+// name -> { verifications, events, verificationCount, count }.
+//
+// WRITES create, READS DO NOT. The hub-driven paths (verification handshake, delivery) create on first touch
+// because the name arrives from the product and its absence is not a test error. The introspection GET must NOT:
+// allocating there made every read answer 200, so a typo'd receiver key reported count 0 and an "expected 0
+// events" assertion passed vacuously against a receiver that never existed. A test therefore REGISTERS its
+// receiver name up front (POST /register/:name) so an empty-but-real receiver is distinguishable from a wrong one.
+//
+// RETENTION IS BOUNDED. This container lives for the whole suite run and the WebSub steps deliberately never
+// reset, so retaining every body unboundedly is a leak (express.raw accepts up to 5mb each). The COUNTS are exact
+// and authoritative; the arrays keep only the most recent MAX_RETAINED records, and each stored body is truncated.
+// Assertions read `count`/`verificationCount`; anything walking `events` sees a TAIL, not the whole history.
+const MAX_RETAINED = 200;
+const MAX_BODY_CHARS = 4096;
 const receivers = new Map();
 
+function newReceiver() {
+    return { verifications: [], events: [], verificationCount: 0, count: 0 };
+}
+
+/** Hub-driven paths only: creates on first touch. */
 function receiverFor(name) {
     if (!receivers.has(name)) {
-        receivers.set(name, { verifications: [], events: [] });
+        receivers.set(name, newReceiver());
     }
     return receivers.get(name);
+}
+
+function retain(list, record) {
+    list.push(record);
+    while (list.length > MAX_RETAINED) {
+        list.shift();
+    }
 }
 
 function recordVerification(req) {
@@ -62,7 +87,9 @@ function recordVerification(req) {
         headers: req.headers,
         receivedAt: new Date().toISOString()
     };
-    receiverFor(req.params.name).verifications.push(record);
+    const receiver = receiverFor(req.params.name);
+    receiver.verificationCount += 1;
+    retain(receiver.verifications, record);
     console.log(`----WebSub verification name=${req.params.name} mode=${record.mode} topic=${record.topic}`
         + ` challenge=${record.challenge}`);
     return record;
@@ -71,12 +98,14 @@ function recordVerification(req) {
 function recordDelivery(req) {
     const record = {
         headers: req.headers,
-        body: Buffer.isBuffer(req.body) ? req.body.toString('utf8') : '',
+        body: Buffer.isBuffer(req.body) ? req.body.toString('utf8').slice(0, MAX_BODY_CHARS) : '',
         signature: req.headers['x-hub-signature'] || null,
         linkHeader: req.headers.link || null,
         receivedAt: new Date().toISOString()
     };
-    receiverFor(req.params.name).events.push(record);
+    const receiver = receiverFor(req.params.name);
+    receiver.count += 1;
+    retain(receiver.events, record);
     console.log(`----WebSub delivery name=${req.params.name} signature=${record.signature} body=${record.body}`);
     return record;
 }
@@ -108,15 +137,31 @@ function handleDelivery(req, res) {
 app.post('/receiver/:name', handleDelivery);
 app.post('/silent/:name', handleDelivery);
 
-// Introspection read by the test JVM over the HOST-published port.
+// Declares a receiver name BEFORE the hub knows about it, so the introspection read below can answer 404 for a
+// name nothing ever registered instead of inventing an empty one. Idempotent.
+app.post('/register/:name', (req, res) => {
+    if (!receivers.has(req.params.name)) {
+        receivers.set(req.params.name, newReceiver());
+    }
+    res.status(200).json({ name: req.params.name, registered: true });
+});
+
+// Introspection read by the test JVM over the HOST-published port. 404s for an unregistered name — never creates.
 app.get('/events/:name', (req, res) => {
-    const receiver = receiverFor(req.params.name);
+    const receiver = receivers.get(req.params.name);
+    if (!receiver) {
+        return res.status(404).json({
+            name: req.params.name,
+            message: 'no such receiver — it was never registered and the hub never touched it; check the key'
+        });
+    }
     res.json({
         name: req.params.name,
-        count: receiver.events.length,
-        verificationCount: receiver.verifications.length,
+        count: receiver.count,
+        verificationCount: receiver.verificationCount,
         verifications: receiver.verifications,
-        events: receiver.events
+        events: receiver.events,
+        retained: { events: receiver.events.length, max: MAX_RETAINED }
     });
 });
 

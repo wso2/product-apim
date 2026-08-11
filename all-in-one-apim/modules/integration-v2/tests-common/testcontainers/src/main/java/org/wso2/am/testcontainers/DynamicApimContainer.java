@@ -232,8 +232,13 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      * reuse the {@code wso2am} notification alias: that one is baked into the IS toml and the wso2am.p12 cert,
      * so it is SINGLE-HOLDER and permit-guarded ({@link #withExternalIsNotificationAlias}) — binding it here
      * would make a Solace block contend with, and be able to steal notifications from, an external-IS block.
-     * A separate name has no such constraint: only the Solace block binds it, there is one such block per run,
-     * and the shared network is per-JVM, so no two live containers can claim it.
+     * A separate name avoids that contention, but it is NOT unguarded: this alias is bound by EACH block that
+     * opts into Solace, so it is single-holder too, and for a reason on the broker side rather than the cert's.
+     * {@code DynamicSolaceBroker} is a shared singleton whose OAuth profile carries a SINGLE {@code endpointJwks},
+     * configured once per JVM — so exactly one live APIM may answer this name, or Docker round-robins the broker's
+     * key fetch between containers. The listener enforces that with its own permit
+     * ({@code SOLACE_JWKS_ALIAS_PERMIT}), queueing Solace blocks among themselves exactly as the {@code wso2am}
+     * holders queue. Do not bind this without taking that permit.
      */
     public DynamicApimContainer withSolaceJwksAlias() {
         withNetworkAliases(DynamicSolaceBroker.APIM_JWKS_ALIAS);

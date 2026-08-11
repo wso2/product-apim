@@ -201,9 +201,20 @@ public class WorkflowAdminSteps {
     }
 
     /**
-     * Restores the workflow executors to whatever content was captured before the flip. Best-effort and
-     * idempotent: called from the runner's {@code @AfterClass} so the shared registry is not left mutated for
-     * a later run against the same DB. A no-op if the setup step never captured an original.
+     * Restores the workflow executors to the content captured before the flip, and VERIFIES the restore by reading
+     * the registry back. Called from the runner's {@code @AfterClass}; a no-op if the setup step never captured an
+     * original.
+     *
+     * <p>Self-verifying because {@code workflow-extensions.xml} is SERVER-GLOBAL: a silently failed restore leaves
+     * the Approval executors active for every OTHER runner sharing this block's container, whose unrelated
+     * application/subscription scenarios then hang {@code ON_HOLD} with nothing pointing back here. Scope, measured
+     * rather than assumed: under the {@code default} profile the databases are in-container H2, so the state dies
+     * with the container and does NOT reach a later run; under {@code migration}, which points at an external
+     * MySQL, it does persist across runs. A discarded SOAP result is not enough to detect either — the service
+     * answers 200 with a body of {@code false} — so the write's return is checked AND the content is re-read and
+     * compared, mirroring {@link ResourceCleanup#deleteSignedUpUsers()}'s read-after-delete. Failure is logged as
+     * an ERROR naming the tenant rather than thrown: this runs in teardown, where an exception would mask the
+     * scenarios' own results.
      */
     public static void restoreWorkflowExecutors() {
         Map<String, String> originalsByTenant = originalWorkflowExtensions.remove(Utils.getBaseUrl());
@@ -212,16 +223,30 @@ public class WorkflowAdminSteps {
         }
         for (Map.Entry<String, String> entry : originalsByTenant.entrySet()) {
             String tenant = entry.getKey();
+            String original = entry.getValue();
             try {
                 String actorRef = Constants.SUPER_TENANT_DOMAIN.equals(tenant) ? Constants.ADMIN_USER_KEY
                         : "admin@" + tenant;
                 User admin = Identity.resolveActor(actorRef);
-                String envelope = updateEnvelope(WF_EXTENSIONS_REGISTRY_PATH, entry.getValue());
-                Requests.soap(Utils.getResourceAdminServiceURL(Utils.getBaseUrl()), envelope,
+                String envelope = updateEnvelope(WF_EXTENSIONS_REGISTRY_PATH, original);
+                HttpResponse response = Requests.soap(Utils.getResourceAdminServiceURL(Utils.getBaseUrl()), envelope,
                         "urn:updateTextContent", admin.getUserName(), admin.getPassword());
-            } catch (IOException | RuntimeException e) {
-                logger.warn("WorkflowAdminSteps: failed to restore workflow-extensions.xml for tenant " + tenant
-                        + ": " + e.getMessage());
+                boolean written = response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && "true".equalsIgnoreCase(extractSoapReturn(response.getData()));
+                String readBack = getRegistryTextContentAs(WF_EXTENSIONS_REGISTRY_PATH, admin);
+                if (!written || !original.equals(readBack)) {
+                    logger.error("WorkflowAdminSteps: FAILED to restore workflow-extensions.xml for tenant " + tenant
+                            + " — updateTextContent returned " + written + " and the registry content "
+                            + (original.equals(readBack) ? "matches" : "DOES NOT match") + " the captured original. "
+                            + "This state is server-global, so the Approval executors may still be active for any "
+                            + "other runner sharing this container — its application/subscription scenarios will "
+                            + "hang ON_HOLD. On the default profile the DB is in-container H2 so it dies with the "
+                            + "container; against an external DB (migration profile) it also poisons the next run.");
+                }
+            } catch (IOException | RuntimeException | AssertionError e) {
+                logger.error("WorkflowAdminSteps: FAILED to restore workflow-extensions.xml for tenant " + tenant
+                        + " (" + e.getMessage() + "). This state is server-global — the Approval executors may still "
+                        + "be active for any other runner sharing this container.", e);
             }
         }
     }
@@ -615,7 +640,15 @@ public class WorkflowAdminSteps {
 
     /** Reads a registry text resource via {@code ResourceAdminService.getTextContent} as the acting admin. */
     private String getRegistryTextContent(String path) throws IOException {
-        User actor = Identity.actingActor();
+        return getRegistryTextContentAs(path, Identity.actingActor());
+    }
+
+    /**
+     * Actor-explicit read, for callers that cannot rely on the acting actor — notably the static
+     * {@link #restoreWorkflowExecutors()}, which runs from the runner's teardown and must read each tenant's copy
+     * as that tenant's admin.
+     */
+    private static String getRegistryTextContentAs(String path, User actor) throws IOException {
         String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:ser=\"" + RESOURCE_ADMIN_NS + "\"><soapenv:Header/><soapenv:Body>"
                 + "<ser:getTextContent><ser:path>" + Utils.escapeXml(path) + "</ser:path></ser:getTextContent>"
