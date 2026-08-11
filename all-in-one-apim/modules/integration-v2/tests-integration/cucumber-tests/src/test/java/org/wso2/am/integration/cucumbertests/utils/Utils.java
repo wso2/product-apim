@@ -156,7 +156,8 @@ public class Utils {
      * from {@code pollStart} and returns the first non-null attempt outcome, or {@code null} when the window
      * closes. Holds NO policy of its own — the accept condition, exception tolerance and failure verdict all
      * belong to the caller, which is exactly what lets the two very different public contracts built on it
-     * ({@link #awaitWithRetry} for PREREQUISITE state, {@link #retryUntil} for a scenario's ASSERTION TARGET)
+     * ({@link #retryUntil} for a scenario's ASSERTION TARGET; {@code HealGate} for prerequisite state that
+     * may need re-triggering)
      * share one implementation of the loop instead of forking it. Keep it that way: a policy flag here would
      * collapse the two contracts into one ambiguous method.
      */
@@ -191,7 +192,7 @@ public class Utils {
      * itself (§7/§12). The deadline is {@code max(timeoutMillis, RUNTIME_PROPAGATION_TIMEOUT)} — the one ceiling,
      * so no call site can drift below it (one hand-rolled loop had, silently capping itself at 150s).
      *
-     * <p>Contrast {@link #awaitWithRetry}, and pick deliberately — the choice states the intent:
+     * <p>Contrast {@link HealGate#awaitOrHeal}, and pick deliberately — the choice states the intent:
      * <ul>
      *   <li>this returns the last result / that returns nothing (boolean probe);</li>
      *   <li>this retries ONLY {@link IOException} — a bad context key must fail FAST rather than be masked as a
@@ -349,80 +350,6 @@ public class Utils {
         } catch (RuntimeException notAJwt) {
             return "credential=" + masked + " (opaque or unparseable — no jti to correlate)";
         }
-    }
-
-    /** A readiness probe for {@link #awaitWithRetry}: true once the awaited state is observable. */
-    @FunctionalInterface
-    public interface ReadinessProbe {
-        boolean isReady() throws Exception;
-    }
-
-    /** The re-trigger for {@link #awaitWithRetry}: re-fires the action whose propagation event was lost. */
-    @FunctionalInterface
-    public interface ReadinessAction {
-        void trigger() throws Exception;
-    }
-
-    /**
-     * SELF-HEALING readiness gate for PREREQUISITE state (never for a scenario's assertion target): polls
-     * {@code probe} with the {@link #pollPause} tiers for a full {@code RUNTIME_PROPAGATION_TIMEOUT} window,
-     * and on exhaustion fires {@code reTrigger} and waits again (shorter 60s windows — a re-emitted event
-     * lands fast or not at all), up to {@code maxAttempts} total attempts. Exists because the product's
-     * runtime-propagation events are delivered at-most-once: a gateway that consumes a deploy event and then
-     * fails its artifact fetch NEVER retries ("Storage returned null"), so no amount of waiting can succeed —
-     * only re-firing the action re-emits the event. Every heal logs a grep-able WARN ("self-heal: ...") so
-     * occurrences stay countable across runs — this compensates for a product robustness gap and must not
-     * silently hide its frequency. A probe exception counts as not-ready (indistinguishable during warm-up).
-     */
-    public static void awaitWithRetry(String what, ReadinessProbe probe, ReadinessAction reTrigger, int maxAttempts)
-            throws InterruptedException {
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            long start = System.currentTimeMillis();
-            long deadline = start + (attempt == 1 ? Constants.RUNTIME_PROPAGATION_TIMEOUT : 60_000L);
-            Boolean ready = pollWithin(start, deadline, () -> {
-                try {
-                    return probe.isReady() ? Boolean.TRUE : null;
-                } catch (InterruptedException interrupted) {
-                    // Cancellation is NOT a transient probe failure. Throwing InterruptedException already CLEARED
-                    // the interrupt flag, so swallowing it here would let this method keep polling — and even fire
-                    // MUTATING re-triggers (e.g. re-deploying an API) — after the thread was asked to stop.
-                    Thread.currentThread().interrupt();
-                    throw interrupted;
-                } catch (Exception transientProbeFailure) {
-                    // not-ready and probe-failed look identical during warm-up — keep polling within the window
-                    return null;
-                }
-            });
-            if (ready != null) {
-                long waitedSeconds = (System.currentTimeMillis() - start) / 1000;
-                if (attempt > 1) {
-                    log.warn("self-heal: " + what + " became ready after re-trigger (attempt "
-                            + attempt + "/" + maxAttempts + ", " + waitedSeconds + "s into the window)");
-                } else if (waitedSeconds >= 60) {
-                    // Slow-pass watch: the delayed-but-not-dropped population creeping toward the window
-                    // edge — the early-warning signal a silent pass would hide.
-                    log.warn("self-heal-watch: " + what + " became ready only after " + waitedSeconds
-                            + "s (no re-trigger needed — delayed, not dropped)");
-                }
-                return;
-            }
-            if (attempt < maxAttempts) {
-                log.warn("self-heal: re-triggering " + what + " (attempt " + (attempt + 1) + "/" + maxAttempts
-                        + ") — runtime-propagation event presumed dropped after an exhausted wait window");
-                try {
-                    reTrigger.trigger();
-                } catch (InterruptedException interrupted) {
-                    // Same rule as the probe: propagate cancellation instead of reporting it as a re-trigger
-                    // failure (which would fail the test with a misleading message and hide the interruption).
-                    Thread.currentThread().interrupt();
-                    throw interrupted;
-                } catch (Exception reTriggerFailure) {
-                    Assert.fail("self-heal re-trigger for " + what + " failed: " + reTriggerFailure);
-                }
-            }
-        }
-        Assert.fail(what + " did not become ready within " + maxAttempts
-                + " attempt(s) including self-heal re-triggers (runtime-propagation event presumed dropped)");
     }
 
     /**
