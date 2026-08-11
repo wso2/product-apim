@@ -881,41 +881,21 @@ Feature: Gateway WebSub API Invocation
       | admin             |
       | admin@tenant1.com |
 
-  # Event-count throttling: an EVENTCOUNTLIMIT plan of 2 events/min must make the hub DROP 4 of the 6 events
-  # published inside the window, so exactly 2 reach the callback. Ports ThrottlingTestCase#testEventsThrottling
-  # (which only asserted "fewer than sent", noting the count could not be guaranteed).
-  # The count assertion is DETERMINISTIC, not a sampled one: the delivery-count step settles the count (waits until
-  # it has stopped changing — Utils.awaitSettledCount) before asserting the exact value, so an unthrottled run
-  # cannot pass by being observed at the instant the count passes 2. The barrier pattern used elsewhere in this file
-  # cannot serve here (a second subscriber would share the same throttled plan), which is why settling was needed.
-  # PARKED - and the reason has now NARROWED to the fan-out alone. It was written as a probe of whether the
-  # all-in-one profile enforces an async event quota at all. THAT QUESTION IS SETTLED, AND THE ANSWER IS YES: the
-  # sibling SSE and raw-WebSocket event-quota scenarios (gateway/sse_invocation "SSE events beyond the subscription
-  # plan's event quota are not delivered" and gateway/websocket_invocation "A WS API is throttled once its frames
-  # exceed the subscription plan's event quota") both PASS on this single-container profile with a subscription-level
-  # EVENTCOUNTLIMIT plan. So the throttle publish/decide/enforce loop for STREAMING event counts is live here and a
-  # separate wso2am-tm is NOT what this row is waiting for.
-  # What it is still waiting for is the fan-out: this quota's only observable is a DELIVERED count, and with the
-  # hub delivering nothing the observed 0 satisfies "fewer than published" for the wrong reason, so an unenforced
-  # quota and a dead fan-out remain indistinguishable HERE specifically. Per the docs the WebSub throttle also posts
-  # a throttled-out message to the callback URL, which is likewise a delivery. Re-enable as soon as the delivery leg
-  # works; no new glue is needed. See the shared note above.
-  # EVENT-COUNT QUOTA. Rewritten 2026-08-07 after the original asserted an EXACT count it could not reliably hit.
-  # Two things were measured and both shape this scenario:
-  #  1. The quota OVERSHOOTS. The gateway counts locally and reconciles with the traffic manager asynchronously, so
-  #     a burst slips past the limit before enforcement engages — a 9/month plan delivered 12 on a live server, and
-  #     a 2-event plan delivered 6 here. Asserting "exactly 2" was asserting the overshoot, not the quota.
-  #  2. The quota is INVISIBLE to the publisher: publishing past an exhausted quota still answers 200 with an empty
-  #     body. So there is no status to assert on — only the absence of further deliveries. (The subscriber-COUNT
-  #     cap is different: the hub rejects THAT on subscribe with 429/900808 — see the cap scenario.)
-  # Hence: publish far past the limit and assert delivery STOPPED, with an UNLIMITED-plan control proving the
-  # shortfall is the quota rather than delivery being broken — the failure that had this file's delivery scenarios
-  # parked for days and which "fewer than N" alone would silently pass.
+  # EVENT-COUNT QUOTA. A subscriber on an EVENTCOUNTLIMIT plan stops receiving once its quota is spent, while a
+  # control subscriber on the unlimited plan keeps receiving every event — so the shortfall is attributable to the
+  # quota rather than to a broken fan-out.
+  # The quota is invisible to the publisher (a publish past it still answers 200); the observable is the hub's own
+  # 900808 "Message throttled out" POST to the callback, which is what this asserts. A delivery count alone cannot
+  # tell a throttled event from a lost one.
+  # Events are paced rather than bursted, because the gateway counts locally and reconciles with the traffic
+  # manager asynchronously — a burst is delivered in full before the verdict lands. The window is an hour so the
+  # quota cannot replenish mid-run ("2 events per 60 min", not 1 "hours": an unrecognised timeUnit is accepted
+  # unvalidated and yields a plan that never trips).
   @cap:gateway @feat:streaming-invocation @rule:event-count-throttling @type:regression @dep:admin @dep:publisher @legacy:ThrottlingTestCase
   Scenario Outline: An event-count quota stops delivery while an unlimited subscriber keeps receiving as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create a subscription throttling policy "${UNIQUE:wsubEvQuota}" allowing 2 events per minute
+    When I create a subscription throttling policy "${UNIQUE:wsubEvQuota}" allowing 2 events per 60 "min" and at most 1000 webhook subscriptions
     Then The response status code should be 201
     When I put JSON payload from file "artifacts/payloads/create_apim_websub_invoke_api.json" in context as "websubApiPayload"
     And I generate a unique alphanumeric value and store it as "websubApiSecret"
@@ -940,6 +920,11 @@ Feature: Gateway WebSub API Invocation
     # overwrites generatedAccessToken, so the order here is load-bearing.
     When I have set up application with keys, subscribed to API "websubApiId" with plan "{{subThrottlePolicyName}}", and obtained access token for "websubQuotaSubId"
     Then The response status code should be 200
+    # PRECONDITION, not ceremony: a subscription silently landing on another plan delivers every event, which is
+    # indistinguishable from an unenforced quota. Pin it here so that failure is named where it happens.
+    When I get the subscription with id "websubQuotaSubId"
+    Then The value of response field "status" should be "UNBLOCKED"
+    And The value of response field "throttlingPolicy" should be "{{subThrottlePolicyName}}"
     When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubQuotaCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
     # The CONTROL subscriber, on the unlimited plan.
     When I have set up application with keys, subscribed to API "websubApiId" with plan "AsyncWHUnlimited", and obtained access token for "websubControlSubId"
@@ -948,21 +933,11 @@ Feature: Gateway WebSub API Invocation
     # BARRIER: a form-data subscribe answers 202 from FORCE_SC_ACCEPTED BEFORE the persist mediator runs, so
     # publishing straight after it races the registration and fans out to nobody.
     Then The internal webhooks subscription list should hold exactly 2 subscriptions for API "websubApiId" within 60 seconds
-    # TWO BATCHES, and the split is the whole point. APIM counts throttle events on the gateway and reconciles
-    # with the traffic manager ASYNCHRONOUSLY, so a single burst can finish before the counter is ever consulted —
-    # measured: 20 rapid publishes against a 2/min quota were ALL delivered. Enforcement is only observable once
-    # the first batch has been counted, which is exactly how it behaves on a standalone server (batch 1 delivered,
-    # batch 2 withheld). So batch 1 primes the counter, the settle below waits for reconciliation, and batch 2 is
-    # the one whose fate is asserted.
-    When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" 10 times expecting status 200
-    Then The WebSub receiver "websubControl" should have received 10 events within 90 seconds
-    # Batch 2, published after the first has settled at both receivers.
-    When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" 10 times expecting status 200
-    # The control proves the fan-out, the publishes and the topic are all healthy for BOTH batches...
-    Then The WebSub receiver "websubControl" should have received 20 events within 90 seconds
-    # ...so the quota subscriber's shortfall can only be the quota. It must have received SOMETHING (else this is
-    # broken delivery, not throttling) and must have STOPPED short of the full 20.
-    And The WebSub receiver "websubQuota" should have settled below 20 events within 90 seconds
+    # Publish on a paced cadence until the hub's throttled-out notice reaches the quota subscriber. The step also
+    # asserts the control took EVERY event published (fan-out healthy throughout) and that the quota subscriber
+    # received some before it was cut off (its callback genuinely worked), so neither a dead callback nor a broken
+    # fan-out can satisfy this.
+    When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" until receiver "websubQuota" is throttled out while control receiver "websubControl" keeps receiving, within 120 seconds
 
     Examples:
       | actor             |

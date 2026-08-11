@@ -38,6 +38,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Gateway WebSub-API runtime glue — the port of WebSubAPITestCase / SecretValidationTestCase. Drives the THREE
@@ -157,6 +158,20 @@ public class WebSubInvocationSteps {
 
     /** Header the internal API requires to select the tenant whose subscriptions are listed. */
     private static final String TENANT_HEADER = "xWSO2Tenant";
+
+    /**
+     * The error code the hub POSTs TO THE CALLBACK once that subscription's event quota is exhausted — measured,
+     * body {@code {"code":"900808","message":"Message throttled out","description":"You have exceeded your quota"}}.
+     *
+     * <p>This is the POSITIVE signal an event-count quota assertion must key on, and the reason this family does not
+     * assert "the delivered count stopped rising". Absence is ambiguous: a dropped delivery, a receiver blip or a
+     * lapsed registration all leave the count static while an unlimited control keeps receiving, so an
+     * absence-based assertion passes for the wrong reason. A throttled-out POST cannot be manufactured by a lost
+     * event, so keying on it makes the assertion loss-proof — the same shape as the WebSocket sibling's
+     * throttled-out FRAME. (The subscriber-COUNT cap reuses this code on the subscribe leg as a 429; here it
+     * arrives as a delivery to the callback.)
+     */
+    private static final String THROTTLED_OUT_CODE = "900808";
 
     /**
      * Quiet window for the PERSISTED-subscription count. Far shorter than {@link #DELIVERY_SETTLE_QUIET_MILLIS}
@@ -316,6 +331,104 @@ public class WebSubInvocationSteps {
             Assert.assertEquals(response.getResponseCode(), 200, "WebSub event " + i + " of " + times
                     + " was not accepted by the event receiver; response: " + response.getData());
         }
+    }
+
+    /**
+     * Publishes the event repeatedly, PACED rather than bursted, until the quota subscriber is throttled out —
+     * the event-count-quota arc, and the WebSub counterpart of the WebSocket family's "expecting a throttled-out
+     * frame" and the SSE family's "until its event quota throttles the stream to zero".
+     *
+     * <p>WHY PACED, measured rather than assumed: the gateway counts locally and reconciles with the traffic
+     * manager ASYNCHRONOUSLY, so the overshoot is a LATENCY, not a count. A burst published inside that window is
+     * delivered in full — a 2-events/minute plan delivered 11 of 20 locally and ALL 20 on a slower CI runner, which
+     * is precisely how the previous "settled below 20" form failed: its ceiling was the number published, so it
+     * only passed when the overshoot happened to be smaller than the burst. Publishing on
+     * {@link Utils#retryUntil}'s cadence instead lets the verdict land while few events are in flight, so the
+     * outcome no longer depends on the overshoot's size.
+     *
+     * <p>WHY THE MARKER AND NOT A COUNT: see {@link #THROTTLED_OUT_CODE} — absence of deliveries cannot distinguish
+     * throttling from loss. Note the throttled-out POST is itself a delivery, so a raw delivery COUNT mixes events
+     * and notices; this step counts only bodies identical to what was published.
+     *
+     * <p>The CONTROL subscriber (unlimited plan) is what makes the quota subscriber's shortfall attributable: it
+     * must receive every event published, proving the hub's fan-out, the publishes and the topic were healthy
+     * throughout. The quota subscriber must also have received SOMETHING, else a callback that never worked at all
+     * would satisfy "stopped".
+     */
+    @When("I publish the WebSub event {string} to the event receiver at gateway context {string} topic {string} "
+            + "signed with secret {string} until receiver {string} is throttled out while control receiver {string} "
+            + "keeps receiving, within {int} seconds")
+    public void publishUntilThrottledOut(String eventBody, String context, String topic, String secret,
+                                         String quotaReceiverKey, String controlReceiverKey, int timeoutSeconds)
+            throws Exception {
+
+        String body = TestContext.resolve(eventBody).toString();
+        String quotaName = TestContext.resolve(quotaReceiverKey).toString();
+        String controlName = TestContext.resolve(controlReceiverKey).toString();
+        String receiverUrl = eventReceiverUrl(context, Utils.resolveContextPlaceholders(topic));
+        String signature = HmacTestUtils.hubSignature("SHA1", body, Utils.resolveContextPlaceholders(secret));
+
+        AtomicInteger published = new AtomicInteger();
+        Boolean throttled = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> {
+                    HttpResponse response = Requests.post(receiverUrl, signatureHeaders(signature), body,
+                            Constants.CONTENT_TYPES.APPLICATION_JSON);
+                    // A publish that is not accepted is a broken arc, not a slow verdict: fail on it immediately
+                    // rather than burning the deadline republishing into a receiver that is rejecting.
+                    Assert.assertEquals(response.getResponseCode(), 200, "WebSub event "
+                            + (published.get() + 1) + " was not accepted by the event receiver at " + receiverUrl
+                            + "; response: " + response.getData());
+                    published.incrementAndGet();
+                    return hasThrottledOutDelivery(quotaName);
+                },
+                reached -> reached);
+
+        int quotaEvents = countEventDeliveries(quotaName, body);
+        int controlEvents = countEventDeliveries(controlName, body);
+        Assert.assertTrue(throttled != null && throttled, "The event quota never throttled receiver '" + quotaName
+                + "' within " + timeoutSeconds + "s: " + published.get() + " event(s) were published and it received "
+                + quotaEvents + " of them (control '" + controlName + "' received " + controlEvents + "), with no "
+                + THROTTLED_OUT_CODE + " throttled-out delivery. A quota that never trips over this many paced "
+                + "events is the product failing to enforce it, not the test publishing too fast.");
+
+        Assert.assertTrue(quotaEvents > 0, "Receiver '" + quotaName + "' was throttled out without ever receiving an "
+                + "event, so its callback was never working and the throttle proves nothing about delivery.");
+        Integer delivered = Utils.retryUntil(timeoutSeconds * 1000L, () -> countEventDeliveries(controlName, body),
+                count -> count >= published.get());
+        Assert.assertNotNull(delivered, "The control receiver '" + controlName + "' never observed the fan-out.");
+        Assert.assertEquals(delivered.intValue(), published.get(), "The UNLIMITED-plan control receiver '"
+                + controlName + "' received " + delivered + " of the " + published.get() + " events published, so the "
+                + "fan-out was not healthy throughout and receiver '" + quotaName + "' stopping cannot be attributed "
+                + "to its quota.");
+        log.info("WebSub event quota measured: " + published.get() + " event(s) published, quota receiver '"
+                + quotaName + "' took " + quotaEvents + " before its " + THROTTLED_OUT_CODE + " throttled-out "
+                + "notice, control receiver '" + controlName + "' took all " + delivered + ".");
+    }
+
+    /** True once the named receiver has recorded a delivery carrying the hub's throttled-out notice. */
+    private static boolean hasThrottledOutDelivery(String name) throws IOException {
+        JSONArray events = readReceiver(name).getJSONArray("events");
+        for (int i = 0; i < events.length(); i++) {
+            if (events.getJSONObject(i).optString("body", "").contains(THROTTLED_OUT_CODE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Deliveries at the named receiver whose body is EXACTLY the published event — deliberately not the raw
+     * delivery count, which also includes the hub's throttled-out notice (see {@link #THROTTLED_OUT_CODE}).
+     */
+    private static int countEventDeliveries(String name, String body) throws IOException {
+        JSONArray events = readReceiver(name).getJSONArray("events");
+        int matches = 0;
+        for (int i = 0; i < events.length(); i++) {
+            if (body.equals(events.getJSONObject(i).optString("body", null))) {
+                matches++;
+            }
+        }
+        return matches;
     }
 
     private static Map<String, String> signatureHeaders(String signature) {

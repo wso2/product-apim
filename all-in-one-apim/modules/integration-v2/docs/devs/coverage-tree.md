@@ -325,7 +325,7 @@ integration-v2 product tests
 │   │   ├── [missing-parameters] The hub rejects a WebSub registration missing <missing> as <actor>  (gateway/websub_invocation.feature:757)
 │   │   ├── [security-negative] The hub rejects a WebSub registration carrying an invalid token as <actor>  (gateway/websub_invocation.feature:799)
 │   │   ├── [subscription-count-throttling] A third WebSub registration is rejected once the plan's subscription cap is reached as <actor>  (gateway/websub_invocation.feature:838)
-│   │   └── [event-count-throttling] An event-count quota stops delivery while an unlimited subscriber keeps receiving as <actor>  (gateway/websub_invocation.feature:915)
+│   │   └── [event-count-throttling] An event-count quota stops delivery while an unlimited subscriber keeps receiving as <actor>  (gateway/websub_invocation.feature:895)
 │   ├── solace  — Solace broker publish with an APIM-issued OAuth token  (2)
 │   │   ├── [solace-invoke] An application publishes and subscribes on the Solace broker within its granted topics as <actor>  (publisher/solace_event_api.feature:265)
 │   │   └── [solace-invoke] The Solace broker rejects a publish with an invalid token  (publisher/solace_event_api.feature:345)
