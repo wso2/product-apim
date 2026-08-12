@@ -164,37 +164,30 @@ public class PublisherBaseSteps {
         // Retry the POST until it returns 201 (the artifact settles), catching only transient IOException; a
         // genuinely bad payload still fails after the deadline. The final 201 is published as httpResponse.
         String url = Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, actualResourceId);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
-        HttpResponse createRevisionResponse = null;
-        while (true) {
-            try {
-                createRevisionResponse = Requests.post(url, headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-                if (createRevisionResponse.getResponseCode() == 201) {
-                    break;
-                }
-            } catch (IOException transientDuringIndexing) {
-                // Transient connectivity during warm-up — retry. Revision-create is NOT idempotent, so a lost
-                // response could leave a phantom revision and this re-POST would produce a second one. That is
-                // accepted deliberately rather than reconciled: the API is scenario-owned, and a revision is a
-                // child resource that dies with it (§5), so nothing leaks; and no scenario creates more than 2
-                // revisions against APIM's cap of 5, so a phantom cannot exhaust the quota. Reconciling would
-                // mean adopting "the newest revision" heuristically (the payload description is a fixed string,
-                // not a unique key), and DELETING a discovered revision would be worse still — a deployed
-                // revision must be undeployed first. The documented failure mode here is a 500 (API artifact not
-                // yet indexed), which creates no revision and is safe to re-POST.
-            }
-            if (System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, Constants.RETRY_INTERVAL_TIME);
-        }
+        // Retry the POST until it returns 201 (the artifact settles), catching only transient IOException; a
+        // genuinely bad payload still fails after the deadline. Revision-create is NOT idempotent, so a lost
+        // response could leave a phantom revision and a re-POST would produce a second one. That is accepted
+        // deliberately rather than reconciled: the API is scenario-owned, and a revision is a child resource
+        // that dies with it (§5), so nothing leaks; and no scenario creates more than 2 revisions against
+        // APIM's cap of 5, so a phantom cannot exhaust the quota. Reconciling would mean adopting "the newest
+        // revision" heuristically (the payload description is a fixed string, not a unique key), and DELETING a
+        // discovered revision would be worse still — a deployed revision must be undeployed first. The
+        // documented failure mode here is a 500 (API artifact not yet indexed), which creates no revision and
+        // is safe to re-POST. Requests.post publishes the final response as httpResponse.
+        HttpResponse createRevisionResponse = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.post(url, headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON),
+                response -> response.getResponseCode() == 201);
 
         Assert.assertNotNull(createRevisionResponse,
                 "Revision creation never returned a response for " + resourceType + " " + actualResourceId);
         Assert.assertEquals(createRevisionResponse.getResponseCode(), 201, createRevisionResponse.getData());
         TestContext.set("revisionId", Utils.extractValueFromPayload(createRevisionResponse.getData(), "id"));
+        // Fixed post-settle pause: the revision is created but downstream deploy steps race the async
+        // registry write-back; there is no pollable signal here (the deploy step owns readiness), so a
+        // short fixed delay is retained deliberately.
+        // CHECKSTYLE:OFF threadSleep - fixed post-create settle delay, no pollable condition available here
         Thread.sleep(3000);
+        // CHECKSTYLE:ON
     }
 
     /**
@@ -447,22 +440,15 @@ public class PublisherBaseSteps {
         String expected = Utils.resolveContextPlaceholders(marker);
         Map<String, String> headers = Identity.publisherHeaders();
         String url = Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId);
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        boolean found = false;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(url, headers);
-                if (last.getResponseCode() == 200 && last.getData() != null && last.getData().contains(expected)) {
-                    found = true;
-                    break;
-                }
-            } catch (IOException transientFailure) {
-                // transient — keep polling; the deadline bounds a persistent failure
-            }
-            Utils.pollPause(deadlineStart, 2000);
-        }
+        // Poll the resource GET (intermediate read via SimpleHTTPClient) until its body contains the marker; the
+        // envelope floors the wait at RUNTIME_PROPAGATION_TIMEOUT and retries only transient IOException, and
+        // returns the LAST response so it can be published as httpResponse and asserted below (§7).
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance().doGet(url, headers),
+                response -> response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(expected));
+        boolean found = last != null && last.getResponseCode() == 200 && last.getData() != null
+                && last.getData().contains(expected);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No publisher response received for " + resourceType + " " + actualResourceId);
         Assert.assertTrue(found, resourceType + " " + actualResourceId + " did not contain '" + expected
@@ -773,7 +759,8 @@ public class PublisherBaseSteps {
      * @param resourceId Context key containing the resource ID
      */
     @Then("I wait until {string} {string} revision is deployed in the gateway")
-    public void waitUntilRevisionIsDeployed(String resourceType, String resourceId) throws IOException {
+    public void waitUntilRevisionIsDeployed(String resourceType, String resourceId)
+            throws IOException, InterruptedException {
 
         String actualResourceId = TestContext.resolve(resourceId).toString();
         String revisionId = TestContext.resolve("revisionId").toString();
@@ -784,54 +771,44 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
-        boolean deployed = false;
-
-        while (System.currentTimeMillis() < endTime) {
-
-            try {
-                HttpResponse response = Requests.get(url, headers);
-
-                if (response != null && response.getResponseCode() == 200) {
-                    JSONObject responseJson = new JSONObject(response.getData());
-                    JSONArray revisions = responseJson.getJSONArray("list");
-
-                    for (int i = 0; i < revisions.length(); i++) {
-                        JSONObject revision = revisions.getJSONObject(i);
-                        String deployedRevisionId =
-                                revision.optString("id");
-
-                        if (revisionId.equals(deployedRevisionId)) {
-                            deployed = true;
-                            logger.info("Revision {} is deployed for API {}", revisionId, actualResourceId);
-                            try {
-                                Thread.sleep(10000);
-                            } catch (InterruptedException ignored) {
-                                Thread.currentThread().interrupt();
+        // Poll the deployed-revisions list until it advertises this revision. The envelope retries only
+        // transient IOException; a not-yet-well-formed body is caught here as "not ready" (return null) so the
+        // poll continues, matching the former IOException|JSONException tolerance. Requests.get publishes each
+        // response as httpResponse.
+        Boolean deployedResult = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> {
+                    HttpResponse response = Requests.get(url, headers);
+                    if (response != null && response.getResponseCode() == 200) {
+                        try {
+                            JSONArray revisions = new JSONObject(response.getData()).getJSONArray("list");
+                            for (int i = 0; i < revisions.length(); i++) {
+                                if (revisionId.equals(revisions.getJSONObject(i).optString("id"))) {
+                                    logger.info("Revision {} is deployed for API {}", revisionId,
+                                            actualResourceId);
+                                    return Boolean.TRUE;
+                                }
                             }
-                            break;
+                        } catch (JSONException notYetWellFormed) {
+                            logger.debug("Revision {} not deployed yet – retrying", revisionId);
                         }
                     }
-                }
-
-                if (deployed) {
-                    break;
-                }
-
-            } catch (IOException | JSONException e) {
-                logger.debug("Revision {} not deployed yet – retrying", revisionId
-                );
-            }
-
+                    return null;
+                },
+                found -> Boolean.TRUE.equals(found));
+        boolean deployed = Boolean.TRUE.equals(deployedResult);
+        Assert.assertTrue(deployed, "Revision " + revisionId + " was not deployed within the timeout");
+        if (deployed) {
+            // Fixed post-deploy settle pause (was inline on the positive branch of the former loop): the
+            // revision is live but the synapse artifact behind it needs a moment before invocation; no
+            // finer-grained pollable signal exists in this step.
+            // CHECKSTYLE:OFF threadSleep - fixed post-deploy settle delay, no pollable condition available here
             try {
-                Utils.pollPause(endTimeStart, 1000);
+                Thread.sleep(10000);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
-                break;
             }
+            // CHECKSTYLE:ON
         }
-        Assert.assertTrue(deployed, "Revision " + revisionId + " was not deployed within the timeout");
     }
 
     /**
@@ -1097,7 +1074,9 @@ public class PublisherBaseSteps {
             } else if (value.startsWith("[")) {
                 return new JSONArray(value);
             }
-        } catch (Exception ignored) {}
+        } catch (JSONException ignored) {
+            // not valid JSON — fall through to boolean/int/string handling
+        }
 
         if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
             return Boolean.parseBoolean(value);
@@ -1145,7 +1124,11 @@ public class PublisherBaseSteps {
         TestContext.set(Utils.normalizeContextKey("<apiConfigUpdate>"), updatedJsonPayload);
 
         iUpdateResourceWithJsonPayloadFromContext(resourceType, resourceID, "<apiConfigUpdate>");
+        // Fixed post-update settle pause: the PUT response is the assertion target and there is no separate
+        // pollable readiness signal for the config change in this step, so a short fixed delay is retained.
+        // CHECKSTYLE:OFF threadSleep - fixed post-update settle delay, no pollable condition available here
         Thread.sleep(3000);
+        // CHECKSTYLE:ON
     }
 
     /**
@@ -1769,7 +1752,7 @@ public class PublisherBaseSteps {
                             ResourceCleanup.register(Constants.CREATED_OPERATION_POLICY_IDS, createdId);
                         }
                     }
-                } catch (Exception e) {
+                } catch (JSONException e) {
                     // Ignore if policy ID extraction fails
                 }
             }

@@ -159,12 +159,16 @@ public class SimpleHTTPClient {
             }
             logger.warn("Transient " + GENERAL_ERROR_CODE + " General Error on attempt " + attempt + "/"
                     + GENERAL_ERROR_RETRIES + "; retrying in " + GENERAL_ERROR_RETRY_WAIT_MS + "ms");
+            // CHECKSTYLE:OFF threadSleep - fixed backoff between attempts of the client's OWN transient-900967 retry.
+            // SimpleHTTPClient is the raw-HTTP chokepoint every higher-level poll (Utils.retryUntil/pollPause) is
+            // built on, so this pause cannot funnel through them; there is no pollable condition here, just the pace.
             try {
                 Thread.sleep(GENERAL_ERROR_RETRY_WAIT_MS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
+            // CHECKSTYLE:ON
         }
         return response;
     }
@@ -247,12 +251,16 @@ public class SimpleHTTPClient {
             }
             logger.warn("Transient " + GENERAL_ERROR_CODE + " General Error on download attempt " + attempt + "/"
                     + GENERAL_ERROR_RETRIES + "; retrying in " + GENERAL_ERROR_RETRY_WAIT_MS + "ms");
+            // CHECKSTYLE:OFF threadSleep - fixed backoff between attempts of the client's OWN transient-900967 retry
+            // for binary downloads (mirrors withGeneralErrorRetry). This raw-HTTP chokepoint underlies every
+            // higher-level poll, so the pause cannot funnel through them; there is no pollable condition, just pacing.
             try {
                 Thread.sleep(GENERAL_ERROR_RETRY_WAIT_MS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
+            // CHECKSTYLE:ON
         }
         return result;
     }

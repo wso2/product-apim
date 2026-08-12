@@ -194,6 +194,8 @@ execs don't re-fire):
 mvn test -pl tests-integration/cucumber-tests -am -Dsurefire.suite.xml=<suite>.xml
 ```
 (from `all-in-one-apim/modules/integration-v2`). Confirm your new scenario passes before committing.
+**`mvn test` runs only the tests + the Gherkin lint — it does NOT run the Checkstyle/PMD/SpotBugs gates (those
+are bound to `verify`). Run those separately before committing; see §16 for how and when each gate fires.**
 
 **After editing the shared `tests-common/integration-test-utils` module** (e.g. new `Constants`/`Utils`
 symbols), re-install it first — the bare `mvn test` resolves that module from the local `.m2` jar, not from
@@ -487,6 +489,59 @@ of forking it locally. (The §7 context/funnel primitives — `TestContext.resol
 `TenantUserProvisioner` (block provisioning + runtime actors), `ApplicationBaseSteps.queryIs7Role`
 (asserted IS SCIM2 role query).
 
+## 16. Static analysis & linting (the build gates)
+Four gates run on the V2 module and **fail the build** in error mode. Their config lives under
+`build-config/` (Java gates) and `docs/devs/` (the Gherkin linter); the plan/rationale is
+`docs/devs/static-analysis-plan.md`. You do **not** need to read the pom or the tool configs to work with
+them — everything you need is here.
+
+- **When each fires automatically** — the three Java gates are bound to the Maven **`verify`** phase; the
+  Gherkin lint to **`validate`**. Consequence you must know: **a plain `mvn test` runs ONLY the Gherkin lint**
+  (`validate` < `test`); Checkstyle/PMD/SpotBugs do **not** run under `mvn test` (they sit at `verify`, after
+  `test`). So the §8 suite run does not tell you whether the Java gates pass — run them explicitly (below) or
+  run `mvn verify`.
+- **How to run each manually** (from the integration-v2 module root; add `-pl tests-integration/cucumber-tests
+  -am` to scope, or run at root to sweep every module — the gates are inherited by all child modules and
+  analyse **both** `src/main/java` and `src/test/java`):
+
+  | Gate | Manual command | Config | Auto-fires at |
+  |------|----------------|--------|---------------|
+  | Gherkin feature lint | `python3 docs/devs/lint_features.py [--all]` | `docs/devs/lint_features.py` + `capability-map.yml` | `validate` (exec-maven-plugin, in cucumber-tests/pom.xml) |
+  | Checkstyle | `mvn checkstyle:check` | `build-config/checkstyle.xml` (+ `checkstyle-suppressions.xml`) | `verify` |
+  | PMD | `mvn pmd:check` | `build-config/pmd-ruleset.xml` | `verify` |
+  | SpotBugs + FindSecBugs | `mvn -DskipTests spotbugs:check` | `build-config/spotbugs-include.xml` (+ `spotbugs-exclude.xml`) | `verify` |
+
+  SpotBugs analyses **bytecode**, so it needs a compile first — `spotbugs:check` on already-compiled classes
+  is fine; otherwise prefix `test-compile` (`mvn -DskipTests test-compile spotbugs:check`). The Gherkin lint
+  prints per-rule **counts only**; pass `--all` to see individual file:line locations.
+
+- **The Gherkin lint** (§3/§6 enforce the same taxonomy) has **HARD** rules that gate — G-1 (tag vocabulary +
+  `@cap`/`@feat` cardinality vs `capability-map.yml`), G-2 (`@cap` vs folder, `@dep` exception), G-3 (unique
+  `Feature:` titles), G-4 (`_setup_*` ↔ `@setup`), G-9 (whitespace/EOF), G-10 (no prose-as-tag) — and
+  **ADVISORY** rules that are reported but never gate (G-5 Background-dedup, G-8 assert-the-effect, G-11
+  duplicate-scenario, G-12 parameterize-`_setup_`-literals). Advisory rules are heuristic and FP-prone by
+  design (e.g. G-5 fires on `<actor>`-parameterized Scenario Outlines that *cannot* move into a `Background`,
+  G-12 on canonical actor refs like `admin@tenant1.com`) — do **not** refactor to silence an advisory hit
+  unless it is a genuine improvement.
+
+- **Making a gate pass — refactor first; suppress only a genuine false-positive or an intentional-and-correct
+  pattern, always with an inline reason.** Never relax a gate or add a blanket suppression. Suppression
+  mechanisms per tool:
+  - **Checkstyle, TreeWalker checks** (IllegalCatch, UnusedImports, …): `@SuppressWarnings("checkstyle:<Check>")`
+    on the method/class. Note `IllegalCatch` excludes `RuntimeException`, so `catch (RuntimeException e)` is
+    already compliant — prefer narrowing the catch over suppressing.
+  - **Checkstyle, Checker/Regexp checks** (Thread.sleep, deadline-loop, System.out, trailing-whitespace):
+    `// CHECKSTYLE:OFF <id>` … `// CHECKSTYLE:ON` around the lines (the `SuppressWithPlainTextCommentFilter`
+    matches by rule **id**, not check name).
+  - **PMD**: `@SuppressWarnings("PMD.<RuleName>")` on the method/class (or a trailing `// NOPMD` on the line).
+  - **SpotBugs / FindSecBugs**: add a scoped `<Match>` to `build-config/spotbugs-exclude.xml` (class + `<Bug
+    pattern>`), with a justification comment. FindBugs attributes a finding to the **anonymous inner class**
+    (`Foo$1`), so match those with a `~`-prefixed regex class name (`~.*\.Foo(\$.*)?`), not the bare class.
+  - **Harden, don't suppress, when the finding is real and cheap to fix** — e.g. XXE is fixed in code
+    (disable DOCTYPE + external entities on the parser / `ACCESS_EXTERNAL_DTD`/`STYLESHEET=""` on the
+    transformer), never excluded. Suppression is only for a spec-mandated legacy digest (`x5t` SHA-1), a
+    trust-all manager against a self-signed testcontainer, or a demonstrable tool false-positive.
+
 ## Anti-patterns (don't)
 Fixed ports · hardcoded resource names · `Thread.sleep` · depending on another scenario's order or
 artifacts · shared mutable static state · cleanup in inline scenarios instead of hooks · duplicate
@@ -497,4 +552,6 @@ that catch bare `Exception`, silently retry an unexpected 401, or don't assert t
 loop ·
 product operations in listeners/provisioners or token-minting side-channel utils (provision infra, act
 through actors — §14) · private re-implementations of the shared glue utilities (§15 — reuse or extend
-the shared one).
+the shared one) · relaxing or blanket-suppressing a static-analysis gate to make it pass, or suppressing a
+real+hardenable finding instead of fixing it (§16 — refactor first; suppress only a FP or an
+intentional-and-correct pattern, with an inline reason).

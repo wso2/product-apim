@@ -126,6 +126,33 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <!--
+                        Gherkin feature-linter (docs/devs/lint_features.py): enforces the .feature rules that
+                        Checkstyle/PMD structurally cannot see (tag vocabulary vs capability-map.yml, @cap/folder
+                        placement, unique titles, _setup_/@setup, whitespace/EOF, no prose-as-tag). Runs at
+                        `validate` (fails fast) and FAILS the build on any hard violation. Requires python3
+                        (as render_coverage_tree.py already does).
+                    -->
+                    <execution>
+                        <id>gherkin-feature-lint</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>python3</executable>
+                            <arguments>
+                                <argument>${maven.multiModuleProjectDirectory}/docs/devs/lint_features.py</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>

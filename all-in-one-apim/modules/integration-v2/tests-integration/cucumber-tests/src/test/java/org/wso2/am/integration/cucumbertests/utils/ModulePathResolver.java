@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.utils;
 
 import java.io.File;
+import java.net.URISyntaxException;
 
 public class ModulePathResolver {
 
@@ -40,7 +41,9 @@ public class ModulePathResolver {
             File targetDir = location.getParentFile(); // /module-x/target
             File moduleDir = targetDir.getParentFile(); // /module-x
             return moduleDir.getAbsolutePath();
-        } catch (Exception e) {
+        } catch (URISyntaxException | NullPointerException e) {
+            // URISyntaxException: the code-source location is not a valid URI. NullPointerException: the class was
+            // loaded without a code source (e.g. the bootstrap classloader), so getCodeSource() returns null.
             throw new RuntimeException("Unable to determine module path for class: " + clazz.getName(), e);
         }
     }

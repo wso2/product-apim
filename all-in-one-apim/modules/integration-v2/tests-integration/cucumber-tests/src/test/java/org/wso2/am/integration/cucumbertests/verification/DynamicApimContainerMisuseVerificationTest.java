@@ -28,11 +28,9 @@ import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicApimContainer;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -109,7 +107,7 @@ public class DynamicApimContainerMisuseVerificationTest {
             if (docker != null && containerId != null) {
                 try {
                     docker.removeContainerCmd(containerId).withForce(true).exec();
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     logger.warn("Error force-removing killed verify-1.4 container " + containerId, e);
                 }
             }
@@ -122,27 +120,20 @@ public class DynamicApimContainerMisuseVerificationTest {
         return Utils.resolveDefaultToml(moduleDir);
     }
 
-    private boolean pollUntilPortReleased(String host, int port) {
-        long deadline = System.currentTimeMillis() + 30_000L;
-        while (System.currentTimeMillis() < deadline) {
-            if (!isPortOpen(host, port)) {
-                return true;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-        }
-        return false;
+    private boolean pollUntilPortReleased(String host, int port) throws InterruptedException {
+        // Poll the boolean "still open" condition through the shared deadline/pacing loop; isPortOpen never
+        // throws, so no attempt exception is possible. Deadline is floored at RUNTIME_PROPAGATION_TIMEOUT.
+        Boolean released = Utils.retryUntil(30_000L,
+                () -> !isPortOpen(host, port),
+                Boolean::booleanValue);
+        return Boolean.TRUE.equals(released);
     }
 
     private boolean isPortOpen(String host, int port) {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), 2000);
             return true;
-        } catch (Exception e) {
+        } catch (IOException e) {
             return false;
         }
     }

@@ -80,6 +80,9 @@ public class TestContextConcurrencyStressTest {
     private static final Path MARKER = Paths.get("target", "fv-c2-stress.txt");
 
     @Test
+    @SuppressWarnings("checkstyle:IllegalCatch") // the broad catch IS the test: every worker throwable (an
+    // AssertionError from a lost/garbled write or isolation breach, or an unexpected ConcurrentModification/
+    // ClassCast the stress is meant to catch) must be collected and surfaced as a test failure, not narrowed away.
     public void concurrentSharedScopeWritesAreIsolatedAndLossless() throws Exception {
 
         final int totalThreads = SCOPES * THREADS_PER_SCOPE;

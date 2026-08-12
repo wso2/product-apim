@@ -41,6 +41,10 @@ public class CoverageAggregationListener implements ISuiteListener {
 
     private static final Log logger = LogFactory.getLog(CoverageAggregationListener.class);
 
+    // Broad catch REQUIRED: clearing the stale exec dir is best-effort — coverage reporting must never turn a
+    // green suite red, so ANY failure (IO, or an unchecked error resolving the module dir) is logged and
+    // swallowed and the run proceeds. Narrowing could let an unexpected runtime failure fail the suite start.
+    @SuppressWarnings("checkstyle:IllegalCatch")
     @Override
     public void onStart(ISuite suite) {
         if (!CoverageSupport.enabled()) {
@@ -58,6 +62,10 @@ public class CoverageAggregationListener implements ISuiteListener {
         }
     }
 
+    // Broad catch REQUIRED: suite-level coverage aggregation is best-effort — coverage reporting must never turn
+    // a green suite red, so ANY failure (IO, parse, or unchecked) is logged and swallowed with the suite result
+    // left unaffected. Narrowing could let an unexpected runtime failure fail an otherwise-passing suite.
+    @SuppressWarnings("checkstyle:IllegalCatch")
     @Override
     public void onFinish(ISuite suite) {
         if (!CoverageSupport.enabled()) {

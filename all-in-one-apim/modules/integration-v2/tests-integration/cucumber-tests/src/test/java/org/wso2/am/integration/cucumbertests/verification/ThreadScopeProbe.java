@@ -71,7 +71,11 @@ public class ThreadScopeProbe {
 
         // Cross-block guard: write own id, give siblings a window to interfere, then read own back.
         TestContext.setShared(SENTINEL_KEY, blockId);
+        // CHECKSTYLE:OFF threadSleep - this fixed pause IS the probe: it deliberately gives sibling worker
+        // threads a window to interfere with the shared scope between our write and read-back, so a cross-block
+        // leak becomes observable. There is nothing pollable to await here.
         Thread.sleep(150);
+        // CHECKSTYLE:ON
         Object post = TestContext.get(SENTINEL_KEY);
         if (!blockId.equals(post)) {
             failures.add("block " + blockId + " row " + row + " read '" + post

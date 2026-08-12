@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    SpotBugs + FindSecBugs EXCLUDE filter for the V2 module. The include filter (spotbugs-include.xml) surfaces
+    the high-signal security patterns; this file carves out the specific, reviewed instances where that pattern is
+    an INTENTIONAL and unavoidable test-only construct, not a real vulnerability. Every exclusion below is scoped to
+    an exact class + bug pattern and carries the justification inline — so a NEW occurrence of the same pattern in a
+    different class still fails the build (the carve-out is per-site, not blanket).
+
+    Rule: only add here for a pattern that genuinely cannot be refactored to comply (a trust-all manager against a
+    self-signed test container, a spec-mandated legacy digest). Anything hardenable (e.g. XXE) is fixed in code, not
+    excluded — see the disable-DOCTYPE/external-entity hardening in ApplicationBaseSteps#buildSignedSamlAssertion.
+-->
+<FindBugsFilter>
+    <!--
+        Trust-all X509TrustManager for the test HTTPS clients that talk to self-signed testcontainer endpoints
+        (APIM/IS gateway certs are self-signed per boot; a real trust store cannot pin an ephemeral cert). Confined
+        to these three client-builder helpers; any trust-all manager elsewhere is still flagged. The `~`-prefixed
+        regex names match the anonymous inner classes ($1/$8) FindBugs actually attributes the finding to.
+    -->
+    <Match>
+        <Class name="~.*\.ApplicationBaseSteps(\$.*)?"/>
+        <Bug pattern="WEAK_TRUST_MANAGER"/>
+    </Match>
+    <Match>
+        <Class name="~.*\.MCPInvocationSteps(\$.*)?"/>
+        <Bug pattern="WEAK_TRUST_MANAGER"/>
+    </Match>
+    <Match>
+        <Class name="~.*\.WebSocketInvocationSteps(\$.*)?"/>
+        <Bug pattern="WEAK_TRUST_MANAGER"/>
+    </Match>
+    <!--
+        SHA-1 in JwtGrantSteps computes the JWS `x5t` (X.509 certificate SHA-1 thumbprint) header parameter, whose
+        algorithm is FIXED to SHA-1 by RFC 7515 §4.1.7 (the SHA-256 variant is the separate `x5t#S256` parameter).
+        This is protocol-mandated identifier computation, not a security-sensitive digest.
+    -->
+    <Match>
+        <Class name="org.wso2.am.integration.cucumbertests.stepdefinitions.JwtGrantSteps"/>
+        <Bug pattern="WEAK_MESSAGE_DIGEST_SHA1"/>
+    </Match>
+</FindBugsFilter>

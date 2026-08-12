@@ -34,11 +34,9 @@ import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,16 +197,9 @@ public class RemoteLoggingSteps {
      */
     @Then("the {string} log appender should become {string} within {int} seconds")
     public void appenderShouldBecome(String appenderName, String expectedType, int timeoutSeconds) throws Exception {
-        long endStart = System.currentTimeMillis();
-        long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
-        String actual = null;
-        while (System.currentTimeMillis() < end) {
-            actual = appenderType(log4j2Content(), appenderName);
-            if (expectedType.equals(actual)) {
-                return;
-            }
-            Utils.pollPause(endStart, 2000);
-        }
+        String actual = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> appenderType(log4j2Content(), appenderName),
+                expectedType::equals);
         Assert.assertEquals(actual, expectedType,
                 appenderName + " appender type did not become " + expectedType + " within the deadline");
     }
@@ -235,25 +226,33 @@ public class RemoteLoggingSteps {
      */
     @Then("the {string} log appender type should remain {string} for {int} seconds")
     public void appenderTypeShouldRemain(String appenderName, String expectedType, int seconds) throws Exception {
-        long end = System.currentTimeMillis() + seconds * 1000L;
+        long start = System.currentTimeMillis();
+        long end = start + seconds * 1000L;
+        // CHECKSTYLE:OFF deadlineLoop - fixed-span NEGATIVE-observation window: there is no pollable success
+        // condition to funnel through retryUntil; the invariant is asserted on every iteration for the whole span.
         do {
             Assert.assertEquals(appenderType(log4j2Content(), appenderName), expectedType,
                     appenderName + " appender type changed during the settle window — the server rewrote an "
                             + "appender it was not asked to touch");
-            Thread.sleep(POLL_INTERVAL_MILLIS);
+            Utils.pollPause(start, POLL_INTERVAL_MILLIS);
         } while (System.currentTimeMillis() < end);
+        // CHECKSTYLE:ON
     }
 
     /** The absence counterpart of the settle-window assertion above. */
     @Then("the {string} log appender block should remain absent for {int} seconds")
     public void appenderBlockShouldRemainAbsent(String appenderName, int seconds) throws Exception {
-        long end = System.currentTimeMillis() + seconds * 1000L;
+        long start = System.currentTimeMillis();
+        long end = start + seconds * 1000L;
+        // CHECKSTYLE:OFF deadlineLoop - fixed-span NEGATIVE-observation window: there is no pollable success
+        // condition to funnel through retryUntil; the invariant is asserted on every iteration for the whole span.
         do {
             Assert.assertNull(appenderType(log4j2Content(), appenderName),
                     appenderName + " appender block was created during the settle window — the server wrote an "
                             + "appender for a log type that has no remote logging configured");
-            Thread.sleep(POLL_INTERVAL_MILLIS);
+            Utils.pollPause(start, POLL_INTERVAL_MILLIS);
         } while (System.currentTimeMillis() < end);
+        // CHECKSTYLE:ON
     }
 
     /**
@@ -344,20 +343,13 @@ public class RemoteLoggingSteps {
     /** Asserts the mock sink receives at least one payload within the deadline, re-triggering audit actions. */
     @Then("the mock log sink should receive a log payload within {int} seconds")
     public void sinkShouldReceivePayload(int timeoutSeconds) throws Exception {
-        long endStart = System.currentTimeMillis();
-        long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
-        while (System.currentTimeMillis() < end) {
-            if (!sinkPayloads.isEmpty()) {
-                return;
-            }
-            try {
-                triggerAuditLogEntry();
-            } catch (IOException transientFailure) {
-                // transient — the sink check above is the assertion; keep polling within the deadline
-            }
-            Utils.pollPause(endStart, 2000);
-        }
-        Assert.assertFalse(sinkPayloads.isEmpty(), "Mock log sink received no log payload within the deadline");
+        // Self-healing readiness wait: an audit action's log entry may be dropped before the remote appender is
+        // fully live, so re-fire the audit action between exhausted windows until a payload lands (awaitWithRetry
+        // fails the test itself on exhaustion, exactly as the prior assertFalse-after-loop did).
+        Utils.awaitWithRetry("mock log sink to receive a log payload",
+                () -> !sinkPayloads.isEmpty(),
+                this::triggerAuditLogEntry,
+                2);
     }
 
     /**
@@ -372,6 +364,9 @@ public class RemoteLoggingSteps {
         long end = endStart + Math.max(timeoutSeconds * 1000L, 20000L);
         int last = -1;
         int stableRounds = 0;
+        // CHECKSTYLE:OFF deadlineLoop - quiescence detection with a cross-poll state machine (stable-round
+        // counter): the "ready" signal is the count holding steady across rounds, not a pure single-attempt
+        // predicate, so it cannot be expressed as a retryUntil accept without distorting the mechanism.
         while (System.currentTimeMillis() < end) {
             int now = sinkPayloads.size();
             if (now == last) {
@@ -384,6 +379,7 @@ public class RemoteLoggingSteps {
             }
             Utils.pollPause(endStart, 2000);
         }
+        // CHECKSTYLE:ON
         // The stream has quiesced — a fresh audit action must now NOT reach the sink (appender is local again).
         int before = sinkPayloads.size();
         triggerAuditLogEntry();
@@ -392,9 +388,12 @@ public class RemoteLoggingSteps {
         // immediately instead of after the whole window. The passing path still observes the full span.
         long watchStart = System.currentTimeMillis();
         long watchEnd = watchStart + 5000L;
+        // CHECKSTYLE:OFF deadlineLoop - fixed-span NEGATIVE-observation window: the absence of a payload cannot
+        // be polled for a success signal; exit early only if one arrives. No retryUntil accept condition exists.
         while (System.currentTimeMillis() < watchEnd && sinkPayloads.size() == before) {
             Utils.pollPause(watchStart, 500L);
         }
+        // CHECKSTYLE:ON
         Assert.assertEquals(sinkPayloads.size(), before,
                 "Mock sink still received a payload after remote logging was disabled and the stream quiesced");
     }
@@ -415,6 +414,9 @@ public class RemoteLoggingSteps {
     }
 
     /** Stops the host mock sink and undoes the scenario's server-config mutations (idempotent). */
+    // Broad catch is required: failure-safe teardown must swallow ANY reset failure and record it as unconfirmed,
+    // so the loop continues resetting every remaining log type (a leak here would mutate the shared container).
+    @SuppressWarnings("checkstyle:IllegalCatch")
     @After("@remote-logging")
     public void stopMockSink() {
         // Failure-safe teardown: if a scenario failed before its inline "disable remote logging" step, the server
@@ -460,7 +462,7 @@ public class RemoteLoggingSteps {
         }
         try {
             container().writeContainerFile(container().getContainerLog4j2Path(), pristine.toString());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.warn("Teardown: failed to restore log4j2.properties: " + e.getMessage());
         }
     }
@@ -491,13 +493,18 @@ public class RemoteLoggingSteps {
      *         still remote
      */
     private boolean waitForResetToLand(String appenderName) throws InterruptedException {
-        long end = System.currentTimeMillis() + RESET_LANDING_TIMEOUT_MILLIS;
+        long start = System.currentTimeMillis();
+        long end = start + RESET_LANDING_TIMEOUT_MILLIS;
+        // CHECKSTYLE:OFF deadlineLoop - deliberately best-effort with a SHORT sub-ceiling timeout
+        // (RESET_LANDING_TIMEOUT_MILLIS): called from teardown, which must never block on a slow server, so it
+        // must NOT be funnelled through retryUntil (whose floor is RUNTIME_PROPAGATION_TIMEOUT). Warns, never throws.
         while (System.currentTimeMillis() < end) {
             if (!REMOTE_APPENDER_TYPE.equals(appenderType(log4j2Content(), appenderName))) {
                 return true;
             }
-            Thread.sleep(POLL_INTERVAL_MILLIS);
+            Utils.pollPause(start, POLL_INTERVAL_MILLIS);
         }
+        // CHECKSTYLE:ON
         log.warn(appenderName + " was still a " + REMOTE_APPENDER_TYPE + " appender after the reset deadline");
         return false;
     }

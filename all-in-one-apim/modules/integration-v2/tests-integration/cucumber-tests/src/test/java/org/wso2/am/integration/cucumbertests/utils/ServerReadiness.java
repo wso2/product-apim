@@ -63,6 +63,10 @@ public final class ServerReadiness {
         long deadlineStart = System.currentTimeMillis();
         long deadline = deadlineStart + timeoutMillis;
 
+        // CHECKSTYLE:OFF deadlineLoop - ServerReadiness is itself a sanctioned low-level readiness poll primitive
+        // (named as such in checkstyle.xml alongside Utils.retryUntil). Its bespoke boolean return-on-timeout and
+        // interrupt-returns-false semantics, its caller-supplied window (not floored at RUNTIME_PROPAGATION_TIMEOUT)
+        // and its 1s base pacing are not what retryUntil/awaitWithRetry provide, so it keeps the hand-rolled loop.
         while (System.currentTimeMillis() < deadline) {
             HttpResponse response = null;
             try {
@@ -81,6 +85,7 @@ public final class ServerReadiness {
                 return false;
             }
         }
+        // CHECKSTYLE:ON
         return false;
     }
 
@@ -100,6 +105,9 @@ public final class ServerReadiness {
         long deadlineStart = System.currentTimeMillis();
         long deadline = deadlineStart + Constants.SERVER_STARTUP_WAIT_TIME;
 
+        // CHECKSTYLE:OFF deadlineLoop - ServerReadiness is a sanctioned low-level readiness poll primitive (see
+        // awaitReady); the same bespoke boolean return-on-timeout / interrupt-returns-false / 1s-pacing poll,
+        // here against IS's OIDC discovery document rather than the APIM gateway health-check.
         while (System.currentTimeMillis() < deadline) {
             HttpResponse response = null;
             try {
@@ -118,6 +126,7 @@ public final class ServerReadiness {
                 return false;
             }
         }
+        // CHECKSTYLE:ON
         return false;
     }
 
@@ -146,14 +155,17 @@ public final class ServerReadiness {
         String url = Utils.getGatewayHealthCheckURL(baseUrl);
         long deadlineStart = System.currentTimeMillis();
         long deadline = deadlineStart + timeoutMillis;
+        // CHECKSTYLE:OFF deadlineLoop - ServerReadiness is a sanctioned low-level readiness poll primitive (see
+        // awaitReady); this bespoke down-transition poll returns true on the FIRST not-200/refused response, a
+        // semantics no retryUntil/awaitWithRetry contract offers.
         while (System.currentTimeMillis() < deadline) {
             try {
                 HttpResponse response = SimpleHTTPClient.getInstance().doGet(url, null);
                 if (response == null || response.getResponseCode() != 200) {
                     return true;
                 }
-            } catch (Exception e) {
-                // Connection refused / reset — the server is down.
+            } catch (IOException e) {
+                // Connection refused / reset (doGet's only checked failure) — the server is down.
                 return true;
             }
             try {
@@ -163,6 +175,7 @@ public final class ServerReadiness {
                 return false;
             }
         }
+        // CHECKSTYLE:ON
         return false;
     }
 }

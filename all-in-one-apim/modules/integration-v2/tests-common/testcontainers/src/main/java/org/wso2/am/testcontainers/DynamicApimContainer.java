@@ -340,7 +340,9 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         try {
             return copyFileFromContainer(containerPath,
                     is -> new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            // copyFileFromContainer wraps any read/interrupt failure from the transfer function in a
+            // RuntimeException, so a narrow RuntimeException catch is both sufficient and Checkstyle-compliant.
             throw new IllegalStateException("Failed to read container file: " + containerPath, e);
         }
     }

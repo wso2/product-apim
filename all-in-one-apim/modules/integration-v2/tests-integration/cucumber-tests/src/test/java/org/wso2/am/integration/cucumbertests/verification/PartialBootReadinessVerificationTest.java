@@ -106,6 +106,9 @@ public class PartialBootReadinessVerificationTest {
         }
     }
 
+    @SuppressWarnings("checkstyle:IllegalCatch") // best-effort port probe: ANY failure (IOException on a refused
+    // connection, or a runtime failure resolving the host) means "not open", so it must swallow everything and
+    // return false rather than propagate — this is a precondition check, not the assertion under test.
     private boolean isPortOpen(String host, int port) {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), 2000);

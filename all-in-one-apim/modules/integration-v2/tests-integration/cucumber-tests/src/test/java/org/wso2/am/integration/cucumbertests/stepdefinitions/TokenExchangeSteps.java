@@ -311,9 +311,14 @@ public class TokenExchangeSteps {
         long expEpochMs = jwtExpEpochMillis(token);
         long deadlineStart = System.currentTimeMillis();
         long deadline = deadlineStart + 30_000;
+        // CHECKSTYLE:OFF deadlineLoop - this waits on a KNOWN imminent CLOCK event (the token's own exp claim, a
+        // few seconds out), not on a pollable HTTP condition, so Utils.retryUntil does not fit: it needs a request
+        // attempt to retry and floors its deadline at RUNTIME_PROPAGATION_TIMEOUT (180s), which would both lack a
+        // request to make and overrun this 30s expiry cap. The pacing itself still funnels through Utils.pollPause.
         while (System.currentTimeMillis() <= expEpochMs + 1000 && System.currentTimeMillis() < deadline) {
             Utils.pollPause(deadlineStart, 500);
         }
+        // CHECKSTYLE:ON
         TestContext.set("subjectToken", token);
     }
 

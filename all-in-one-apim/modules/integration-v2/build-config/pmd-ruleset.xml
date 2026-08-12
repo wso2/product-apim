@@ -1,0 +1,393 @@
+<?xml version="1.0"?>
+<ruleset name="v2-integration-tests"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    <description>
+        V2 integration-test framework PMD ruleset. Ratchet phase: the maven-pmd-plugin runs with
+        failOnViolation=false so violations are REPORTED but do not fail the build; a later sweep PR flips it.
+        Escape hatch: @SuppressWarnings("PMD.&lt;Rule&gt;") on the element, or // NOPMD - &lt;reason&gt; on the line.
+
+        This first increment carries only high-confidence, low-noise, AST-based rules that do NOT overlap the
+        Checkstyle config (empty-catch, unused locals, unclosed resources). The V2-specific custom XPath rules
+        from docs/devs/static-analysis-plan.md (guard-before-parse, escapeXml/urlEncode, funnel detection,
+        InterruptedException handling, etc.) land in the next increment after per-rule AST testing.
+    </description>
+
+    <!-- [T1-3][P] Empty catch blocks hide the real failure. A commented catch is allowed (deliberate ignore). -->
+    <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+        <properties>
+            <property name="allowCommentedBlocks" value="true"/>
+            <property name="allowExceptionNameRegex" value="^(ignored|expected)$"/>
+        </properties>
+    </rule>
+
+    <!-- [T1-7][P] Locals assigned but never read (e.g. `HttpResponse r = Requests.x()` — Requests already
+         publishes httpResponse). PMD 6's UnusedLocalVariable only catches declared-never-touched locals; the
+         assigned-then-never-read case (the actual T1-7 smell) needs UnusedAssignment. Both are kept. -->
+    <rule ref="category/java/bestpractices.xml/UnusedLocalVariable"/>
+    <rule ref="category/java/bestpractices.xml/UnusedAssignment"/>
+
+    <!-- [T1-9][P] Resources allocated in a try must be closed on every path (try-with-resources / finally). -->
+    <rule ref="category/java/errorprone.xml/CloseResource"/>
+
+    <!-- ============================ Tier-2 custom XPath rules (V2/CLAUDE.md-specific) ============================
+         Written against the PMD 6.55 Java AST. Each targets a bad practice reviewers flagged on the V2 PRs. -->
+
+    <!-- [T2-3][P] A catch of InterruptedException must restore the interrupt flag
+         (Thread.currentThread().interrupt()) or rethrow; otherwise an interrupted poll loop busy-spins. -->
+    <rule name="InterruptedExceptionMustRestoreFlagOrRethrow"
+          language="java"
+          message="[T2-3] catch(InterruptedException) must restore the interrupt flag (Thread.currentThread().interrupt()) or rethrow; do not swallow it."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//CatchStatement
+  [.//ClassOrInterfaceType[@Image='InterruptedException']]
+  [not(.//PrimarySuffix[@Image='interrupt']) and not(.//Name[ends-with(@Image,'interrupt')])
+   and not(.//ThrowStatement)]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [T2-14][P] CompletableFuture.supplyAsync/runAsync with a single argument runs blocking work on the common
+         ForkJoinPool (parallelism = CPUs-1); a concurrency/flood test must pass an explicit Executor. -->
+    <rule name="AsyncOnCommonPoolNeedsExecutor"
+          language="java"
+          message="[T2-14] CompletableFuture.supplyAsync/runAsync without an explicit Executor runs on the common ForkJoinPool; pass a dedicated Executor for blocking/concurrency work."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//PrimaryExpression
+  [PrimaryPrefix/Name[ends-with(@Image,'supplyAsync') or ends-with(@Image,'runAsync')]]
+  [PrimarySuffix/Arguments[@ArgumentCount=1]]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [T2-5][P] A manual TestContext.remove("httpResponse") is redundant when the very next statement is a
+         Requests.* call (the funnel already clears httpResponse first). -->
+    <rule name="RedundantHttpResponseRemoveBeforeRequests"
+          language="java"
+          message="[T2-5] Redundant TestContext.remove(httpResponse) before a Requests.* call; the funnel already clears it."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>4</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//BlockStatement
+  [Statement/StatementExpression/PrimaryExpression
+     [PrimaryPrefix/Name[@Image='TestContext.remove']]
+     [PrimarySuffix/Arguments//Literal[@Image='"httpResponse"']]]
+  [following-sibling::BlockStatement[1]//Name[starts-with(@Image,'Requests.')]]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [T2-9][P] A replaceAll/Pattern regex literal that matches across an XML element body must enable DOTALL
+         ((?s)); otherwise '.' stops at newlines and the block is silently left unmodified. Heuristic: a regex
+         literal containing an XML tag and '.*' but no (?s). -->
+    <rule name="MultilineXmlRegexNeedsDotall"
+          language="java"
+          message="[T2-9] Regex over a multi-line XML block needs DOTALL ((?s)); without it '.' won't cross newlines and the replace silently no-ops."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//PrimaryExpression
+  [PrimarySuffix[@Image='replaceAll' or @Image='compile']
+   or PrimaryPrefix/Name[ends-with(@Image,'.replaceAll') or ends-with(@Image,'.compile')]]
+  [.//Literal[contains(@Image,'<') and contains(@Image,'.*') and not(contains(@Image,'(?s)'))]]
+  [not(.//Name[contains(@Image,'DOTALL')])]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [T2-6][C§7][P] Guard a response (non-null, 2xx status, non-blank body) before parsing getData() as JSON.
+         Heuristic: a `new JSONObject/JSONArray(...getData())` whose enclosing method never calls getResponseCode()
+         (i.e. no status guard anywhere in the method). May false-positive when the guard is in a helper. -->
+    <rule name="GuardResponseBeforeJsonParse"
+          language="java"
+          message="[T2-6] Guard the response (non-null + 2xx + non-blank body) before parsing getData() as JSON; an error/empty body throws an opaque JSONException."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//AllocationExpression
+  [ClassOrInterfaceType[ends-with(@Image,'JSONObject') or ends-with(@Image,'JSONArray')]]
+  [.//PrimarySuffix[@Image='getData'] or .//Name[ends-with(@Image,'.getData')]]
+  [not(ancestor::MethodDeclaration[1]//PrimarySuffix[@Image='getResponseCode'])
+   and not(ancestor::MethodDeclaration[1]//Name[ends-with(@Image,'getResponseCode')])]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [T2-7][C§15][P] XML-escape dynamic values interpolated into a hand-built SOAP/XML body. Heuristic: a string
+         concatenation that has an XML-tag literal operand AND a bare-variable operand (a Name with no method call
+         — so NOT wrapped in escapeXml(...)). -->
+    <rule name="EscapeXmlDynamicValueInXmlBody"
+          language="java"
+          message="[T2-7] XML-escape dynamic values concatenated into a SOAP/XML body (Utils.escapeXml); an unescaped &amp;/&lt;/&gt; corrupts the envelope."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//AdditiveExpression
+  [PrimaryExpression/PrimaryPrefix/Literal[contains(@Image,'<') or contains(@Image,'>')]]
+  [PrimaryExpression[PrimaryPrefix/Name][not(PrimarySuffix)]]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [T2-8][C§15][P] URL-encode dynamic values interpolated into a form/query body. Heuristic: a concatenation
+         whose literal operand ends in `="` (a form field like "token=") AND has a bare-variable operand (no
+         method call — so NOT wrapped in urlEncode(...)). -->
+    <rule name="UrlEncodeDynamicFormFieldValue"
+          language="java"
+          message="[T2-8] URL-encode dynamic form/query field values (Utils.urlEncode); a raw +/=// corrupts the request."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//AdditiveExpression
+  [PrimaryExpression/PrimaryPrefix/Literal[ends-with(@Image,'="')]]
+  [PrimaryExpression[PrimaryPrefix/Name][not(PrimarySuffix)]]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [T2-13][C§5][P] Deregister a resource from cleanup tracking only after the delete succeeds (2xx/404); an
+         UNCONDITIONAL *ResourceCleanup.deregister(...) (no enclosing if-guard) leaks the resource on a failed
+         delete (401/409/500). Heuristic: a deregister call with no ancestor IfStatement. -->
+    <rule name="DeregisterOnlyAfterSuccessfulDelete"
+          language="java"
+          message="[T2-13] Deregister from cleanup tracking only after a 2xx/404 delete; an unconditional deregister leaks the resource on a failed delete."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//PrimaryExpression
+  [PrimaryPrefix/Name[contains(@Image,'ResourceCleanup') and contains(@Image,'deregister')]]
+  [not(ancestor::IfStatement)]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-7][C§15][P] A NON-IDEMPOTENT HTTP method (POST / PATCH / postMultipart) inside a retry funnel
+         (Utils.retryUntil / Utils.awaitWithRetry) can duplicate the resource: retryUntil re-invokes the probe on
+         IOException, and an I/O failure can't prove the POST wasn't applied server-side. HTTP method idempotency is
+         static (RFC 7231: GET/PUT/DELETE/HEAD idempotent; POST/PATCH not). Advisory: a legitimately-idempotent
+         POST (e.g. an existence-checked create, or retrying only the idempotent token-grant half) suppresses with
+         a reason. -->
+    <rule name="NonIdempotentPostInRetryFunnel"
+          language="java"
+          message="[D-7] Non-idempotent POST/PATCH inside a retry funnel (retryUntil/awaitWithRetry) can duplicate the resource on an IOException retry; retry only the idempotent follow-up, or adopt-the-survivor, or suppress with a reason."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//PrimaryExpression
+  [PrimarySuffix[@Image='post' or @Image='postMultipart' or @Image='doPost' or @Image='patch' or @Image='doPatch']
+   or PrimaryPrefix/Name[ends-with(@Image,'.post') or ends-with(@Image,'.postMultipart')
+       or ends-with(@Image,'.doPost') or ends-with(@Image,'.patch') or ends-with(@Image,'.doPatch')]]
+  [ancestor::PrimaryExpression
+     [PrimaryPrefix/Name[ends-with(@Image,'retryUntil') or ends-with(@Image,'awaitWithRetry')]]]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-8][C§7][P] A caller-supplied context key (a VARIABLE, not a literal framework key like "baseUrl") should
+         be read via TestContext.resolve (fail-fast, strips {{}}), not raw TestContext.get (returns null on a
+         {{placeholder}} -> the step silently no-ops). Heuristic: TestContext.get with a non-literal argument. -->
+    <rule name="ResolveCallerKeyNotRawGet"
+          language="java"
+          message="[D-8] Resolve a caller-supplied context key via TestContext.resolve (fail-fast), not raw TestContext.get(variable) which returns null on a missing/placeholder key and silently no-ops."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>4</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//PrimaryExpression
+  [PrimaryPrefix/Name[@Image='TestContext.get']]
+  [PrimarySuffix/Arguments/ArgumentList/Expression/PrimaryExpression/PrimaryPrefix/Name]
+  [not(PrimarySuffix/Arguments/ArgumentList/Expression/PrimaryExpression/PrimaryPrefix/Literal)]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-19][C§12][P] Don't select/compare a structured object via .toString().contains(...) — a value inside
+         another field can match the wrong object; match the explicit field. (FP on StringBuilder.toString() —
+         suppress with a reason there.) -->
+    <rule name="MatchByFieldNotWholeObjectToString"
+          language="java"
+          message="[D-19] Don't select/compare a structured object via .toString().contains(...); a substring in another field can match the wrong object — match the explicit field."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>4</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//PrimaryExpression
+  [PrimarySuffix[@Image='toString'] or PrimaryPrefix/Name[ends-with(@Image,'.toString')]]
+  [PrimarySuffix[@Image='contains']]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-12][C§4][P] A NON-FINAL static field is shared mutable state; under parallel block execution it races.
+         Make it final (+ an immutable/thread-safe value), confine it to a block, or guard it — or suppress with a
+         reason (deliberately-shared, externally-synchronized). Static final constants are exempt (@Final). -->
+    <rule name="MutableSharedStaticState"
+          language="java"
+          message="[D-12] Non-final static field is shared mutable state — races under parallel block execution. Make it final, confine it, or guard it (or suppress with a reason)."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//FieldDeclaration[@Static=true() and @Final=false()]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-13][C§14][P] execInContainer(...) invoked as a bare statement discards the ExecResult — a non-zero exit
+         code (the command failed inside the container) passes silently and the test proceeds on a false premise.
+         Capture the result and assert getExitCode()==0 (or check stderr). -->
+    <rule name="CheckContainerExecResult"
+          language="java"
+          message="[D-13] execInContainer(...) result is discarded — a failed in-container command (non-zero exit) passes silently. Capture the ExecResult and assert getExitCode()."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//StatementExpression
+  [not(AssignmentOperator)]
+  [PrimaryExpression
+     [PrimarySuffix[@Image='execInContainer']
+      or PrimaryPrefix/Name[ends-with(@Image,'.execInContainer')]]]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-14][C§13][P] Don't log secrets: a logging call that references a password / secret / privateKey
+         identifier will leak the credential into CI logs. Redact, or log a non-sensitive correlator instead. -->
+    <rule name="NoSecretsInLogs"
+          language="java"
+          message="[D-14] Logging call references a password/secret/privateKey identifier — leaks the credential into CI logs. Redact or drop it."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//PrimaryExpression
+  [PrimaryPrefix/Name[ends-with(@Image,'.info') or ends-with(@Image,'.debug')
+      or ends-with(@Image,'.warn') or ends-with(@Image,'.error') or ends-with(@Image,'.trace')]]
+  [PrimarySuffix/Arguments//Name[contains(@Image,'assword') or contains(@Image,'Secret')
+      or contains(@Image,'secret') or contains(@Image,'PrivateKey') or contains(@Image,'privateKey')]]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-2][C§15][P][BEST-EFFORT] Utils.retryUntil(...) returns the LAST result on timeout WITHOUT throwing — the
+         caller must assert it. Invoked as a bare statement, the result is discarded, so a timed-out (still-failing)
+         condition passes silently. Capture and assert the result. (Advisory: noisy where retryUntil is used purely
+         for its wait side-effect and the caller re-fetches.) -->
+    <rule name="AssertRetryResult"
+          language="java"
+          message="[D-2] retryUntil(...) result discarded — on timeout it returns the last (failing) value without throwing, so the retry passes silently. Capture and assert it."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>4</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//StatementExpression
+  [not(AssignmentOperator)]
+  [PrimaryExpression[PrimaryPrefix/Name[ends-with(@Image,'retryUntil')]]]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-5][C§14][P][BEST-EFFORT] A resource-creating call (addAPI/addApplication/addSubscription/addRole/
+         addUser/createTenant/createApiProduct) in a method that never references ResourceCleanup leaks the created
+         resource if a later step fails. Register every created id for failure-safe, owner-scoped teardown.
+         (Advisory: FP where creation goes through a provisioner that registers centrally — suppress with a reason.) -->
+    <rule name="RegisterCreatedResourceForCleanup"
+          language="java"
+          message="[D-5] Resource-creating call in a method with no ResourceCleanup registration — the created resource leaks if a later step fails. Register its id for failure-safe teardown (or suppress if a provisioner registers it)."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>4</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//PrimaryExpression
+  [PrimaryPrefix/Name[ends-with(@Image,'.addAPI') or ends-with(@Image,'.addApplication')
+      or ends-with(@Image,'.addSubscription') or ends-with(@Image,'.addRole')
+      or ends-with(@Image,'.addUser') or ends-with(@Image,'.createTenant')
+      or ends-with(@Image,'.createApiProduct')]]
+  [not(ancestor::MethodDeclaration//Name[contains(@Image,'ResourceCleanup')])]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- [D-9][C§15][P][BEST-EFFORT, LIKELY MOOT] A poll loop that only checks for the success status (== 200) with
+         no 4xx short-circuit spins until timeout on a permanent client error. (Largely subsumed by the ban on
+         hand-rolled deadline loops (T2-2) + retryUntil's internal status handling — expected ~0 real hits.) -->
+    <rule name="PollLoopMustShortCircuitOn4xx"
+          language="java"
+          message="[D-9] Poll loop checks only for == 200 with no 4xx short-circuit — spins until timeout on a permanent client error. Break early on 4xx (or use retryUntil)."
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <priority>4</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value><![CDATA[
+//*[self::WhileStatement or self::ForStatement or self::DoStatement]
+  [.//EqualityExpression//Literal[@Image='200']]
+  [not(.//Literal[@Image='400' or @Image='401' or @Image='403' or @Image='404' or @Image='409'])]
+                ]]></value>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

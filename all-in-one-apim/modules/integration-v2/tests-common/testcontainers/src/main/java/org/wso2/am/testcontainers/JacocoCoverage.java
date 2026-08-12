@@ -93,6 +93,9 @@ public final class JacocoCoverage {
      * {@code address=*} is required so the dump client can reach it over the mapped port (the classic
      * "connection refused" cause is binding to loopback only).
      */
+    // PMD.UrlEncodeDynamicFormFieldValue false-positive: this is a JVM `-javaagent` argument string
+    // (agent options are comma-separated key=value pairs), not a URL query string, so URL-encoding is wrong here.
+    @SuppressWarnings("PMD.UrlEncodeDynamicFormFieldValue")
     public static String containerAgentVmArg() {
         return "-javaagent:" + CONTAINER_AGENT_PATH + "=output=tcpserver,address=*,port=" + TCP_PORT
                 + ",includes=" + DEFAULT_INCLUDES
@@ -110,6 +113,10 @@ public final class JacocoCoverage {
      * Connects to the agent's tcpserver over {@code host:port}, dumps the current execution data, and writes
      * it to {@code destExec}. Must be called while the container is still running (before {@code stop()}).
      */
+    // PMD.CloseResource false-positive: the ExecutorService is released via shutdownNow() in the finally block
+    // below. We deliberately do NOT use AutoCloseable close() (which PMD wants) — close() blocks until running
+    // tasks finish, which would defeat the daemon-thread hard-deadline that lets a silent agent not stall teardown.
+    @SuppressWarnings("PMD.CloseResource")
     public static void dump(String host, int port, File destExec) throws IOException {
         logger.info("Dumping JaCoCo coverage from {}:{} -> {}", host, port, destExec);
         ExecDumpClient client = new ExecDumpClient();
@@ -382,6 +389,9 @@ public final class JacocoCoverage {
      *  shapes {@link #extractApimgtClassfiles} produces); an unexpected shape is skipped loudly (see below).
      *  @return the number of classes skipped due to a read/parse <em>failure</em> (NOT the intentional exclude
      *  skips), so {@link #report} can surface a systemic analysis loss as a single summary line. */
+    @SuppressWarnings("checkstyle:IllegalCatch") // best-effort per-class analysis: a single malformed class (an
+    // IOException OR an unchecked ASM bytecode-parse failure) is counted and skipped so one bad class never sinks
+    // the whole report; catching broadly is deliberate here (the class is tallied, not propagated).
     private static int analyzeFiltered(Analyzer analyzer, File root, List<Pattern> excludes) throws IOException {
         int failed = 0;
         if (root.isDirectory()) {
@@ -424,6 +434,9 @@ public final class JacocoCoverage {
 
     /** Analyzes the {@code .class} entries of a jar, skipping any whose FQN matches {@code excludes}.
      *  @return the number of classes skipped due to a read/parse failure (for the {@link #report} summary). */
+    @SuppressWarnings("checkstyle:IllegalCatch") // best-effort per-class analysis inside a jar: a single malformed
+    // class (an IOException OR an unchecked ASM bytecode-parse failure) is counted and skipped so one bad class
+    // never sinks the whole report; catching broadly is deliberate here (the class is tallied, not propagated).
     private static int analyzeJarFiltered(Analyzer analyzer, File jar, List<Pattern> excludes) throws IOException {
         int failed = 0;
         try (ZipFile zf = new ZipFile(jar)) {
@@ -493,6 +506,9 @@ public final class JacocoCoverage {
      *
      * @return total <b>line</b> coverage percentage over the analyzed (APIM) classes.
      */
+    // best-effort per-root analysis: a hiccup in one classfile root (an IOException OR an unchecked failure, e.g.
+    // a duplicate class) is logged and skipped so it can't sink the whole report; catching broadly is deliberate.
+    @SuppressWarnings("checkstyle:IllegalCatch")
     public static double report(List<File> execFiles, List<File> classfiles, List<File> sourceRoots,
                                 File xmlOut, File htmlDir, String title) throws IOException {
         ExecFileLoader loader = new ExecFileLoader();

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<!--
+    File-level Checkstyle suppressions for the V2 module. Prefer inline `// CHECKSTYLE:OFF <Rule> - <reason>`
+    or `@SuppressWarnings("checkstyle:<Rule>")` at the point of a deliberate violation; use this file only for
+    whole-file exemptions (e.g. generated code) that carry a reason here.
+-->
+<suppressions>
+    <!-- Example (kept as documentation of the mechanism; remove when a real generated dir exists):
+    <suppress files="[\\/]generated[\\/]" checks=".*"/>
+    -->
+</suppressions>

@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+    V2 integration-test framework Checkstyle config.
+
+    Ratchet phase: severity is `warning` (see the `severity` property) so violations are REPORTED but do not
+    fail the build. A later sweep PR flips the whole ruleset to `error` all-at-once (maven-checkstyle-plugin
+    <failOnViolation> stays false until then).
+
+    Escape hatch (deliberate, documented violations):
+      - inline:  // CHECKSTYLE:OFF <Rule> - <reason>   ...code...   // CHECKSTYLE:ON
+      - element: @SuppressWarnings("checkstyle:<Rule>")  (via SuppressWarningsHolder/Filter)
+      - file:    build-config/checkstyle-suppressions.xml
+
+    Rules are tagged [Tn-x] / [C§n] / [P] to trace back to docs/devs/static-analysis-plan.md.
+    Scope: this config is applied to BOTH main and test sources (includeTestSourceDirectory=true in the pom),
+    because the cucumber-tests code lives under src/test/java.
+-->
+<module name="Checker">
+    <property name="severity" value="warning"/>
+    <property name="charset" value="UTF-8"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- Global escape hatch: honour @SuppressWarnings("checkstyle:Rule"). -->
+    <module name="SuppressWarningsFilter"/>
+    <!-- File-level suppressions (generated code, deliberate exceptions). -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${checkstyle.suppressions.file}"/>
+        <property name="optional" value="true"/>
+    </module>
+    <!--
+        Checker-level comment suppression for the Regexp* checks below (System.out, Thread.sleep, deadline-loop):
+        the TreeWalker's SuppressionCommentFilter does NOT cover Checker-level checks, so those need this
+        plain-text filter. Target a specific check by its id, e.g.:
+            // CHECKSTYLE:OFF deadlineLoop - <reason>
+            ... one sanctioned line ...
+            // CHECKSTYLE:ON
+    -->
+    <module name="SuppressWithPlainTextCommentFilter">
+        <property name="offCommentFormat" value="CHECKSTYLE:OFF ([\w\|]+)"/>
+        <property name="onCommentFormat" value="CHECKSTYLE:ON"/>
+        <!-- Match the captured token against each Regexp check's `id` (below), not the module name — so a
+             specific check (e.g. deadlineLoop) can be suppressed without silencing the other Regexp checks. -->
+        <property name="idFormat" value="$1"/>
+    </module>
+
+    <!-- [T1-16] Every file ends with exactly one newline. -->
+    <module name="NewlineAtEndOfFile">
+        <property name="lineSeparator" value="lf_cr_crlf"/>
+    </module>
+
+    <!-- [T1-17] No trailing whitespace. -->
+    <module name="RegexpSingleline">
+        <property name="id" value="trailingWhitespace"/>
+        <property name="format" value="\s+$"/>
+        <property name="message" value="[T1-17] Trailing whitespace."/>
+    </module>
+
+    <!-- [T1-8][P] No System.out/System.err in framework code; use a logger. -->
+    <module name="RegexpSingleline">
+        <property name="id" value="systemOut"/>
+        <property name="format" value="System\.(out|err)\."/>
+        <property name="message"
+                  value="[T1-8] No System.out/System.err in framework code; use a logger (slf4j/commons-logging)."/>
+    </module>
+
+    <!-- [T2-1][C§4][P] No Thread.sleep for synchronization; poll to a deadline instead. -->
+    <module name="RegexpSingleline">
+        <property name="id" value="threadSleep"/>
+        <property name="format" value="Thread\.sleep\s*\("/>
+        <property name="message"
+                  value="[T2-1/C§4] No Thread.sleep for synchronization; poll with a deadline (Utils.retryUntil / awaitWithRetry / pollPause)."/>
+    </module>
+
+    <!-- [T2-2][C§7][P] No hand-rolled deadline loop; funnel through Utils.retryUntil / awaitWithRetry. The
+         sanctioned poll primitives (Utils.retryUntil, ServerReadiness) and non-HTTP browser polls suppress this
+         with `// CHECKSTYLE:OFF deadlineLoop - <reason>`. -->
+    <module name="RegexpMultiline">
+        <property name="id" value="deadlineLoop"/>
+        <property name="format" value="while\s*\(\s*System\.currentTimeMillis\(\)"/>
+        <property name="message"
+                  value="[T2-2/C§7] No hand-rolled deadline/retry loop; funnel through Utils.retryUntil / awaitWithRetry."/>
+    </module>
+
+    <module name="TreeWalker">
+        <!-- Enable inline and annotation escape hatches inside the AST walker. -->
+        <module name="SuppressWarningsHolder"/>
+        <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CHECKSTYLE:OFF ([\w\|]+)"/>
+            <property name="onCommentFormat" value="CHECKSTYLE:ON"/>
+            <property name="checkFormat" value="$1"/>
+        </module>
+
+        <!-- [T1-6][C§8][P] No unused / redundant imports. -->
+        <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
+
+        <!-- [T1-4][P] switch must have a default. -->
+        <module name="MissingSwitchDefault"/>
+
+        <!-- [T1-2][C§7,§15][P] Don't catch the broad supertypes (masks programming/config errors as transient).
+             RuntimeException is intentionally NOT listed here yet: best-effort UI/cleanup code legitimately
+             catches it — that calibration is decided from the ratchet counts, not assumed. -->
+        <module name="IllegalCatch">
+            <property name="illegalClassNames"
+                      value="java.lang.Exception, java.lang.Throwable, Exception, Throwable"/>
+        </module>
+    </module>
+</module>
