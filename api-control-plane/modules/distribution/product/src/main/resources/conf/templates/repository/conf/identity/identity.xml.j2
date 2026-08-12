@@ -982,6 +982,22 @@
             </RenewTokenWithoutRevokingExisting>
         </JWT>
         {% endif %}
+
+        {% if oauth.opaque.renew_token_without_revoking_existing is defined %}
+        <Opaque>
+            <RenewTokenWithoutRevokingExisting>
+                <Enable>{{oauth.opaque.renew_token_without_revoking_existing.enable}}</Enable>
+                {% if oauth.opaque.renew_token_without_revoking_existing.allowed_grant_types is defined %}
+                <AllowedGrantTypes>
+                    {% for allowed_grant_type in oauth.opaque.renew_token_without_revoking_existing.allowed_grant_types %}
+                    <AllowedGrantType>{{allowed_grant_type}}</AllowedGrantType>
+                    {% endfor %}
+                </AllowedGrantTypes>
+                {% endif %}
+            </RenewTokenWithoutRevokingExisting>
+        </Opaque>
+        {% endif %}
+        
         <!--
             Disable this property to use the updated session-bound token behavior for OAuth tokens.
             Default value : true
