@@ -351,3 +351,130 @@ Feature: Publisher API Runtime & Common Configuration
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # Publisher-plane contract for BACKEND endpoint security (the management-plane half of the endpoint-security
+  # legacy suite — the gateway-injection half lives in gateway/security_enforcement). Ports the publisher-observable
+  # assertions of AddEndPointSecurityPerTypeTestCase (create-path) + ChangeEndPointSecurityPerTypeTestCase
+  # (update-path): on create/update the Publisher API stores per-type (production/sandbox) endpoint_security, echoes
+  # back the non-secret fields (type, username / clientId, tokenUrl, enabled) and REDACTS the secret — the stored
+  # password / clientSecret is returned as "" and never in plaintext. Pure publisher-plane: no deploy, no gateway
+  # invocation. Runs in both tenants (×2).
+
+  # BASIC, both production and sandbox with DISTINCT credentials: on create the response preserves both usernames
+  # and the BASIC type and redacts both passwords (prodPass / sandPass never echoed).
+  @cap:publisher @feat:api-config @rule:endpoint-security @type:regression @legacy:AddEndPointSecurityPerTypeTestCase
+  Scenario Outline: Creating an API with per-type BASIC endpoint security redacts the stored passwords as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_endpoint_sec_both.json" in context as "epcbPayload"
+    And I create an "apis" resource with payload "epcbPayload" as "epcbApiId"
+    Then The response status code should be 201
+    # Non-secret fields round-trip on the create response.
+    And The response should contain "prodUser"
+    And The response should contain "sandUser"
+    And The response should contain "BASIC"
+    # Secrets are redacted — never returned in plaintext.
+    And The response should not contain "prodPass"
+    And The response should not contain "sandPass"
+    # Re-fetch confirms the persisted API also redacts the secrets.
+    When I retrieve the "apis" resource with id "epcbApiId"
+    Then The response status code should be 200
+    And The response should contain "prodUser"
+    And The response should contain "sandUser"
+    And The response should not contain "prodPass"
+    And The response should not contain "sandPass"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # BASIC update path: change the production credential via GET-mutate-PUT of endpointConfig; the update response
+  # reflects the NEW username, keeps redacting the password, and the old credential is gone. Publisher-plane only.
+  @cap:publisher @feat:api-config @rule:endpoint-security @type:regression @legacy:ChangeEndPointSecurityPerTypeTestCase
+  Scenario Outline: Updating an API's BASIC endpoint-security credential reflects the change and keeps the secret redacted as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_endpoint_sec_change.json" in context as "epubPayload"
+    And I create an "apis" resource with payload "epubPayload" as "epubApiId"
+    Then The response status code should be 201
+    And The response should contain "prodInit"
+    And The response should not contain "prodInitPass"
+    # Update the production endpoint_security to a NEW credential (GET-mutate-PUT).
+    When I retrieve the "apis" resource with id "epubApiId"
+    And I put the response payload in context as "epubFull"
+    When I put the following JSON payload in context as "epubNewEndpoint"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"BASIC","username":"prodChanged","password":"prodChangedPass"},"sandbox":{"enabled":true,"type":"BASIC","username":"sandInit","password":"sandInitPass"}}}
+    """
+    When I update the "apis" resource "epubApiId" and "epubFull" with configuration type "endpointConfig" and value:
+    """
+    epubNewEndpoint
+    """
+    Then The response status code should be 200
+    # The update response reflects the NEW username, still redacts the password, and no longer carries the old one.
+    And The response should contain "prodChanged"
+    And The response should not contain "prodChangedPass"
+    And The response should not contain "prodInit"
+    # Re-fetch confirms persistence.
+    When I retrieve the "apis" resource with id "epubApiId"
+    Then The response status code should be 200
+    And The response should contain "prodChanged"
+    And The response should not contain "prodChangedPass"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # OAUTH (client_credentials), both production and sandbox: on create the response round-trips type=OAUTH, the
+  # tokenUrl and the clientId, and REDACTS the clientSecret. Ports the publisher-observable assertions of
+  # AddEndPointSecurityPerTypeTestCase#testAddEndpointSecurityForOauthForClientCredentialsGrantType (the clientId
+  # is preserved, clientSecret comes back ""). Publisher-plane only — the gateway token-fetch/injection is proven
+  # separately in gateway/security_enforcement.
+  @cap:publisher @feat:api-config @rule:endpoint-security @type:regression @legacy:AddEndPointSecurityPerTypeTestCase
+  Scenario Outline: Creating an API with per-type OAUTH endpoint security round-trips the config and redacts the client secret as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_endpoint_sec_oauth.json" in context as "epoauthPayload"
+    And I create an "apis" resource with payload "epoauthPayload" as "epoauthApiId"
+    Then The response status code should be 201
+    And The response should contain "OAUTH"
+    And The response should contain "epProdClientId0001"
+    And The response should contain "epSandClientId0002"
+    And The response should contain "https://localhost:9443/oauth2/token"
+    # The client secrets are redacted — never returned in plaintext.
+    And The response should not contain "epProdClientSecret0001"
+    And The response should not contain "epSandClientSecret0002"
+    When I retrieve the "apis" resource with id "epoauthApiId"
+    Then The response status code should be 200
+    And The response should contain "epProdClientId0001"
+    And The response should not contain "epProdClientSecret0001"
+    And The response should not contain "epSandClientSecret0002"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # DIGEST endpoint security: the Publisher DTO accepts a DIGEST type (basic or digest) in addition to BASIC/OAUTH.
+  # On create the response round-trips type=DIGEST and the usernames and REDACTS the passwords. Publisher-plane
+  # contract only (there is no digest backend in the harness, so gateway injection is out of scope here).
+  @cap:publisher @feat:api-config @rule:endpoint-security @type:regression
+  Scenario Outline: Creating an API with per-type DIGEST endpoint security round-trips the type and redacts the passwords as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_endpoint_sec_digest.json" in context as "epdigestPayload"
+    And I create an "apis" resource with payload "epdigestPayload" as "epdigestApiId"
+    Then The response status code should be 201
+    And The response should contain "DIGEST"
+    And The response should contain "digestProdUser"
+    And The response should contain "digestSandUser"
+    And The response should not contain "digestProdPass"
+    And The response should not contain "digestSandPass"
+    When I retrieve the "apis" resource with id "epdigestApiId"
+    Then The response status code should be 200
+    And The response should contain "DIGEST"
+    And The response should not contain "digestProdPass"
+    And The response should not contain "digestSandPass"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |

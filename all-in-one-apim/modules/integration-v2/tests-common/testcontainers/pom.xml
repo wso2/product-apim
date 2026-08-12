@@ -126,6 +126,42 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <!-- The Solace connector double (control plane) that DynamicSolaceBroker starts beside
+                             the real broker. Built here for the same reason as the node app image: nothing else
+                             produces it, so without this exec the Solace block fails at container start on any
+                             machine where the image was not built by hand. Zero-dependency Dockerfile (no npm
+                             install), so it builds offline in about a second and costs nothing when unused. -->
+                        <id>build-solace-shim-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>-t</argument>
+                                <argument>${solace.shim.docker.image.name}</argument>
+                                <argument>${project.basedir}/src/main/resources/solaceshim</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Pull the public Solace broker image before the test blocks start. -->
+                    <execution>
+                        <id>pull-solace-broker-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${solace.broker.docker.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>build-apim-docker-image</id>
                         <phase>pre-integration-test</phase>
                         <goals>

@@ -1,0 +1,11 @@
+{
+  "name": "${UNIQUE:WfApp}",
+  "throttlingPolicy": "Unlimited",
+  "description": "Application for the approval-workflow suite carrying the three custom attributes",
+  "tokenType": "OAUTH",
+  "attributes": {
+    "Department Name": "Finance",
+    "External Reference ID": "10",
+    "Technical Contact": "bob@example.com"
+  }
+}

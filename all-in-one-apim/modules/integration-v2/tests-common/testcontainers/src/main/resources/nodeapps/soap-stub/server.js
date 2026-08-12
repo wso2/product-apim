@@ -22,7 +22,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const app = express();
-const port = 3019;
+const port = process.env.PORT || 3019;
 
 app.use(bodyParser.text({ type: ['text/xml', 'application/soap+xml', 'application/xml'] }));
 

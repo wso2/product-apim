@@ -59,9 +59,13 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // Expose canonical ports; Docker assigns ephemeral host ports resolved via getMappedPort.
         // GATEWAY_WS_PORT (9099) is the gateway WebSocket inbound; GATEWAY_WSS_PORT (8099) is the SECURE WebSocket
         // inbound — both needed by WebSocket-API invocation tests (ws:// and wss://).
+        // WEBSUB_EVENT_RECEIVER_PORT (9021) is the WebSub event-receiver inbound (synapse WebhookServer) an event
+        // source POSTs content to — needed by WebSub-API invocation tests, which publish from the test JVM.
+        // Note every port listed here also joins the startup liveness set (Wait.forListeningPort waits on ALL
+        // exposed ports), so only list ports the server always binds — 9021 does, unconditionally, at boot.
         withExposedPorts(Constants.HTTPS_PORT, Constants.HTTP_PORT,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
-                Constants.GATEWAY_WSS_PORT);
+                Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
 
         // Env vars for APIMGT_DB
         withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
@@ -218,6 +222,31 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return this;
     }
 
+    /**
+     * Binds the alias the SOLACE BROKER resolves to reach this APIM, so it can fetch APIM's JWKS and validate
+     * an APIM-issued access token itself. Without it the broker has no host to resolve and every publish is
+     * rejected 403 — with the reason visible ONLY inside the broker's own event.log, which is exactly how it
+     * cost a whole suite run to find.
+     *
+     * <p>APIM has NO network alias by default (nothing normally calls IN to it), and this deliberately does not
+     * reuse the {@code wso2am} notification alias: that one is baked into the IS toml and the wso2am.p12 cert,
+     * so it is SINGLE-HOLDER and permit-guarded ({@link #withExternalIsNotificationAlias}) — binding it here
+     * would make a Solace block contend with, and be able to steal notifications from, an external-IS block.
+     * A separate name avoids that contention, but it is NOT unguarded: this alias is bound by EACH block that
+     * opts into Solace, so it is single-holder too, and for a reason on the broker side rather than the cert's.
+     * {@code DynamicSolaceBroker} is a shared singleton whose OAuth profile carries a SINGLE {@code endpointJwks},
+     * configured once per JVM — so exactly one live APIM may answer this name, or Docker round-robins the broker's
+     * key fetch between containers. The listener enforces that with its own permit
+     * ({@code SOLACE_JWKS_ALIAS_PERMIT}), queueing Solace blocks among themselves exactly as the {@code wso2am}
+     * holders queue. Do not bind this without taking that permit.
+     */
+    public DynamicApimContainer withSolaceJwksAlias() {
+        withNetworkAliases(DynamicSolaceBroker.APIM_JWKS_ALIAS);
+        logger.info("APIM network alias set to '{}' (Solace broker -> APIM JWKS)",
+                DynamicSolaceBroker.APIM_JWKS_ALIAS);
+        return this;
+    }
+
     /** Host for dumping coverage (valid after start). */
     public String getCoverageDumpHost() {
         return getHost();
@@ -252,6 +281,15 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     /** Gateway SECURE WebSocket base URL (wss://host:mappedWssPort/) for wss:// WebSocket-API invocation. */
     public String getGatewayWssUrl() {
         return String.format("wss://%s:%d/", getHost(), getMappedPort(Constants.GATEWAY_WSS_PORT));
+    }
+
+    /**
+     * WebSub event-receiver base URL (http://host:mappedWebhookPort/) — where an event source POSTs content for a
+     * WebSub API's hub to fan out. Append the API context/version and
+     * {@link Constants#WEBSUB_EVENT_RECEIVER_RESOURCE}.
+     */
+    public String getWebSubEventReceiverUrl() {
+        return String.format("http://%s:%d/", getHost(), getMappedPort(Constants.WEBSUB_EVENT_RECEIVER_PORT));
     }
 
     /**

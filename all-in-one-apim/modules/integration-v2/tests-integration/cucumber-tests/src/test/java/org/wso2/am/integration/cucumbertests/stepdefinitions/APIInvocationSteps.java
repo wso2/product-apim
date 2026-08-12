@@ -18,7 +18,12 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.core.options.CurlOption;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -35,15 +40,38 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Gateway runtime-invocation steps. Invokes deployed APIs through the block's gateway (REST/SOAP, by access
+ * Gateway runtime-invocation steps. Invokes deployed APIs through the block's gateway (REST/SOAP/SSE, by access
  * token or API key, with optional retry-until-status for eventual consistency), plus the OpenID userinfo
  * endpoint. The tenant context segment of the invocation URL is derived from the scenario's acting actor
  * ({@link Identity#actingActor()}) rather than the retired {@code currentTenant} pointer.
  */
 public class APIInvocationSteps {
 
+    private static final Log log = LogFactory.getLog(APIInvocationSteps.class);
+
     /** Context key under which every invocation publishes its response for the following assertion step. */
     private static final String HTTP_RESPONSE_KEY = "httpResponse";
+    /** Container port of the node {@code sse-emitter} backend (published to the host — see {@code NodeAppServer}). */
+    private static final int SSE_EMITTER_PORT = 3021;
+    /** The SSE media type — what an SSE client asks for and what the emitter streams back. */
+    private static final String SSE_CONTENT_TYPE = "text/event-stream";
+    /**
+     * Sub-path appended to an SSE API's gateway context. The API's single operation is {@code /*}, and synapse
+     * renders that as {@code url-mapping="/*"} — which needs a non-empty sub-path to match, so the bare context
+     * would 404. The emitter serves the stream on every non-reserved path, so the segment itself is arbitrary
+     * (legacy used its servlet's {@code /memory} mapping).
+     */
+    private static final String SSE_TOPIC_PATH = "/events";
+    /** Context key holding the number of SSE events the last SSE invocation received through the gateway. */
+    private static final String SSE_EVENTS_RECEIVED_KEY = "sseEventsReceived";
+
+    /**
+     * Inter-frame cadence the emitter is asked for on a QUOTA arc ({@code delayMs}). One second per event, so a
+     * handful of events already spans several seconds — long enough for the gateway's event-quota decision to take
+     * effect mid-stream. The emitter's own default (50ms) would finish the whole stream inside the decision's
+     * propagation window, which would read as "not throttled" for a timing reason rather than a product one.
+     */
+    private static final int THROTTLED_SSE_DELAY_MILLIS = 1000;
 
     /**
      * The single low-level invocation primitive every step funnels through. It CLEARS any prior
@@ -725,7 +753,12 @@ public class APIInvocationSteps {
         headers.put("Authorization", "Bearer " + actualAccessToken);
         headers.put("accept", "application/json");
 
-        execute(CurlOption.HttpMethod.GET, Utils.getUserInfoEndpointURL(baseUrl), headers, null);
+        // Tenant-aware by design: a tenant token must be presented at t/<tenant>/oauth2/userinfo. The acting
+        // actor's @domain does NOT re-route the un-prefixed path, so resolving the tenant here is what makes the
+        // tenant row of an actor Scenario Outline genuinely exercise the tenant route rather than repeat the
+        // super-tenant one (ports the legacy OpenIDTokenAPITestCase tenant branch).
+        execute(CurlOption.HttpMethod.GET,
+                Utils.getUserInfoEndpointURL(baseUrl, Identity.actingTenantDomain()), headers, null);
     }
 
     /**
@@ -778,5 +811,219 @@ public class APIInvocationSteps {
         }
 
         execute(CurlOption.HttpMethod.POST, endpointUrl, headers, actualPayload, Constants.CONTENT_TYPES.TEXT_XML);
+    }
+
+    /**
+     * Invokes a published SSE API through the gateway and counts the events that arrive, addressing it by its full
+     * gateway context (which already carries {@code /t/<tenant>} for a tenant API — see the REST context variant).
+     *
+     * <p>SSE is NOT a WebSocket protocol: {@code SseApiHandler} rewrites the verb to SUBSCRIBE for authentication
+     * and the API is otherwise an ordinary synapse resource bound to the default (HTTP passthrough) transport, so
+     * this is a plain authenticated GET on the gateway and funnels through {@link #execute} like every other
+     * invocation. The stream is BOUNDED by construction — the emitter sends exactly {@code events} frames (the
+     * {@code count} query parameter) and then closes — so the client reads it to completion as a normal response
+     * body instead of needing a streaming receiver plus a race-prone "how long shall I listen" window. That is
+     * what makes the received count exact rather than "whatever arrived before teardown", which the legacy
+     * unbounded Jetty {@code EventSourceServlet} could not offer.
+     *
+     * <p>Events are counted as {@code data:} lines, one per frame (the emitter writes a single data line per
+     * event). {@code tag} scopes the emitter's own diagnostic record of this stream so the following backend
+     * cross-check reads THIS stream and not a sibling scenario's — pass a unique value.
+     */
+    @When("I invoke the SSE API at gateway context {string} using access token {string} requesting {int} events tagged {string} within {int} seconds")
+    public void invokeSseApiByGatewayContext(String context, String accessToken, int events, String tag,
+                                             int timeoutSeconds) throws Exception {
+        invokeSse(context, accessToken, events, tag, timeoutSeconds, events, null);
+    }
+
+    /**
+     * The event-quota arc: opens the stream repeatedly until the plan's quota has been consumed and the gateway
+     * delivers ZERO events, which is the one exactly-determined state a streaming quota produces. Ports the
+     * event-quota half of ServerSentEventsAPITestCase#testSseApiThrottling.
+     *
+     * <p>WHY ZERO AND NOT "EXACTLY N". The obvious shape — request 20 events against a 2-events/min plan and assert
+     * exactly 2 arrive — is NOT a property of the product, and asserting it would be a guess wearing an exact
+     * assertion. {@code SseResponseStreamInterceptor.targetResponse} counts the {@code "\n\n"}-delimited events in
+     * each buffer and then does two INDEPENDENT things: it READS the throttle verdict out of the shared throttle-data
+     * holder ({@code SseUtils.isThrottled} over the resource-, subscription- and application-level keys) and it
+     * PUBLISHES the event count to the traffic manager on a separate executor
+     * ({@code SseUtils.publishNonThrottledEvent}). The verdict therefore lags the traffic that caused it by one
+     * decision round-trip, so a handful of events past the quota are still forwarded before the holder flips.
+     * MEASURED: with a 2-events/min plan and a 1s emitter cadence the gateway delivered 4 of 20 — genuinely
+     * truncated, but not at the quota. "Fewer than requested" would be the §12-forbidden widened form (and vacuous
+     * at zero, the defect that let legacy ThrottlingTestCase pass with a dead fan-out), so neither shape is used.
+     * Once the verdict HAS landed the quota is absolute for the rest of the window, and that end state is exact: a
+     * fresh stream yields exactly 0 events. This is also the legacy's own second observable — it reconnected after
+     * the throttle and expected the reconnect to be refused.
+     *
+     * <p>VACUITY IS KILLED BY THE FIRST ATTEMPT, which must deliver at least one event: an API that never routed
+     * would answer 0 immediately and otherwise satisfy this step. So the assertion is a pair — the stream worked,
+     * then the quota silenced it — and the step fails naming which half did not hold.
+     *
+     * <p>{@link Utils#retryUntil} and not {@link Utils#awaitSettledCount} (§15): the target is not a monotonic
+     * counter converging on a total, it is a per-stream outcome that must reach one specific value. The accept
+     * condition here is {@code == 0}, not {@code >= 0}, so the "accept on reached, assert exact" hazard that makes
+     * {@code retryUntil} unsound for a final COUNT does not arise — there is no over-count below zero to miss.
+     *
+     * <p>Per the docs an SSE event is counted server→client ONLY (unlike WebSocket's both-direction aggregate), so
+     * no halving applies. The caller attaches the quota as the API's SUBSCRIPTION TIER; an earlier revision used an
+     * API-level {@code apiThrottlingPolicy}, which is not a streaming lever at all, so its "20/20 delivered"
+     * measurement was uninterpretable.
+     *
+     * <p>REQUIRES A QUOTA WINDOW LONGER THAN THIS STEP'S DEADLINE, and the caller must supply one (the scenarios
+     * use an hour). "A fresh stream delivers exactly 0" is only sound while the quota STAYS exhausted: on a
+     * per-minute plan the window can replenish inside the retry loop, the next stream then legitimately delivers
+     * events again, and the step times out reporting an unenforced quota when nothing is wrong. Do not "simplify"
+     * the plan back to per-minute.
+     */
+    @When("I invoke the SSE API at gateway context {string} using access token {string} requesting {int} events tagged {string} until its event quota throttles the stream to zero within {int} seconds")
+    public void invokeSseUntilThrottledToZero(String context, String accessToken, int events, String tag,
+                                              int timeoutSeconds) throws Exception {
+
+        // The FIRST stream doubles as the routability gate: it retries the status while the freshly published API
+        // becomes routable, so a non-zero count here means the arc really worked before the quota bit.
+        int first = invokeSse(context, accessToken, events, tag, timeoutSeconds, THROTTLED_SSE_DELAY_MILLIS);
+        Assert.assertTrue(first > 0, "The FIRST SSE stream on the quota-limited API delivered " + first + " events, "
+                + "so the API never routed and the zero-delivery assertion below would be satisfied for the wrong "
+                + "reason.");
+
+        // Then re-open the stream until the traffic manager's verdict has landed and silences it. A plain execute
+        // here, NOT the status-retry envelope: the route is already proven above, so retrying a non-200 would only
+        // mask a regression.
+        Integer settled = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> openSseStream(context, accessToken, events, tag, THROTTLED_SSE_DELAY_MILLIS),
+                received -> received == 0);
+
+        Assert.assertNotNull(settled, "The SSE quota arc never completed a follow-up invocation within the deadline "
+                + "(the first stream delivered " + first + " events).");
+        Assert.assertEquals(settled.intValue(), 0, "The event quota never silenced the SSE stream: the last "
+                + "invocation still delivered " + settled + " of " + events + " requested events (the first "
+                + "delivered " + first + "). Once the traffic manager's verdict has landed a fresh stream on an "
+                + "exhausted quota must deliver exactly 0.");
+        // The measured trajectory, not just the verdict: a green run otherwise records nothing about WHERE the quota
+        // bit, and that number is what tells an enforced quota apart from a stream that happened to be short.
+        log.info("SSE event quota measured: first stream delivered " + first + " of " + events + " requested events, "
+                + "a fresh stream after the verdict landed delivered " + settled);
+    }
+
+    /**
+     * Opens ONE SSE stream through the gateway, publishes the response and returns the number of events that
+     * arrived. {@code delayMillis} is the emitter's inter-frame cadence ({@code null} leaves the emitter's own fast
+     * default): the smoke arc wants the whole stream to finish in well under a second, while a quota arc MUST
+     * outlive the throttle decision's propagation — the quota is evaluated against Traffic-Manager state, so a
+     * stream that completes in 50ms×N would finish before any decision could take effect and would look unthrottled
+     * for a purely timing reason.
+     */
+    private int openSseStream(String context, String accessToken, int events, String tag, Integer delayMillis)
+            throws IOException {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + TestContext.resolve(accessToken).toString());
+        headers.put("Accept", SSE_CONTENT_TYPE);
+
+        HttpResponse streamed = execute(CurlOption.HttpMethod.GET,
+                sseStreamUrl(resolvedContext, events, tag, delayMillis), headers, null);
+        int received = countSseEvents(streamed.getData());
+        TestContext.set(SSE_EVENTS_RECEIVED_KEY, received);
+        return received;
+    }
+
+    /** {@code <gateway><context><SSE_TOPIC_PATH>?count=&tag=[&delayMs=]} — the emitter-bounded stream URL. */
+    private String sseStreamUrl(String resolvedContext, int events, String tag, Integer delayMillis) {
+        return Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext
+                + SSE_TOPIC_PATH + "?count=" + events + "&tag="
+                + Utils.urlEncode(Utils.resolveContextPlaceholders(tag))
+                + (delayMillis == null ? "" : "&delayMs=" + delayMillis);
+    }
+
+    /**
+     * Opens one SSE stream RETRYING THE STATUS while the freshly published API becomes routable (§11), and returns
+     * the number of events that arrived.
+     */
+    private int invokeSse(String context, String accessToken, int events, String tag, int timeoutSeconds,
+                          Integer delayMillis) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = sseStreamUrl(resolvedContext, events, tag, delayMillis);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + TestContext.resolve(accessToken).toString());
+        headers.put("Accept", SSE_CONTENT_TYPE);
+
+        invokeUntilStatus(resolvedContext + SSE_TOPIC_PATH, accessToken, 200, timeoutSeconds,
+                () -> execute(CurlOption.HttpMethod.GET, endpointUrl, headers, null));
+
+        // The funnel published the accepted response; read it back rather than re-invoking (a second call would
+        // open a second stream and desynchronise the backend cross-check).
+        HttpResponse streamed = (HttpResponse) TestContext.get(HTTP_RESPONSE_KEY);
+        int received = countSseEvents(streamed.getData());
+        TestContext.set(SSE_EVENTS_RECEIVED_KEY, received);
+        return received;
+    }
+
+    /** The smoke arc's exact claim: every event the emitter was asked for arrived through the gateway. */
+    private void invokeSse(String context, String accessToken, int events, String tag, int timeoutSeconds,
+                           int expectedDelivered, Integer delayMillis) throws Exception {
+
+        int received = invokeSse(context, accessToken, events, tag, timeoutSeconds, delayMillis);
+        HttpResponse streamed = (HttpResponse) TestContext.get(HTTP_RESPONSE_KEY);
+        Assert.assertEquals(received, expectedDelivered, "The gateway delivered " + received + " SSE events but "
+                + expectedDelivered + " were expected (" + events + " requested from the backend); stream body: "
+                + streamed.getData());
+    }
+
+    /**
+     * The legacy {@code eventsSent == eventsReceived} assertion, sourced from BOTH ends: the emitter's own record
+     * of the stream it served (its {@code /streams} diagnostic, scoped by {@code tag}) versus what the preceding
+     * step counted arriving through the gateway. Without this the received count alone could not distinguish "the
+     * gateway forwarded every event" from "the backend only ever sent that many" — which is the whole point of
+     * the legacy pairing. Also asserts the backend ran the stream to completion, so a stream cut short mid-flight
+     * (a dropped connection that happened to leave a matching count) is not read as success.
+     */
+    @Then("The SSE backend should have sent every event the gateway delivered for tag {string}")
+    public void sseBackendSentEveryDeliveredEvent(String tag) throws IOException {
+
+        String resolvedTag = Utils.resolveContextPlaceholders(tag);
+        int received = (int) TestContext.resolve(SSE_EVENTS_RECEIVED_KEY);
+        String streamsUrl = Utils.getNodeBackendUrl(SSE_EMITTER_PORT) + "/streams?tag="
+                + Utils.urlEncode(resolvedTag);
+        // Intermediate read: consumed locally, so it must NOT overwrite the invocation's httpResponse (§7).
+        HttpResponse diagnostic = SimpleHTTPClient.getInstance().doGet(streamsUrl, new HashMap<>());
+        Assert.assertTrue(diagnostic != null && diagnostic.getResponseCode() == 200
+                        && diagnostic.getData() != null && !diagnostic.getData().isBlank(),
+                "Could not read the sse-emitter's stream diagnostic at " + streamsUrl + "; got="
+                        + (diagnostic == null ? "null" : diagnostic.getResponseCode() + "/" + diagnostic.getData()));
+
+        JSONObject diagnosticJson = new JSONObject(diagnostic.getData());
+        JSONArray streams = diagnosticJson.getJSONArray("streams");
+        Assert.assertEquals(streams.length(), 1, "Expected exactly one sse-emitter stream tagged '" + resolvedTag
+                + "' (the tag must be unique per invocation); got: " + diagnostic.getData());
+        JSONObject stream = streams.getJSONObject(0);
+        int sent = stream.getInt("sent");
+        Assert.assertNotEquals(sent, 0, "The sse-emitter backend served the stream but sent no events: "
+                + diagnostic.getData());
+        Assert.assertTrue(stream.getBoolean("completed"), "The sse-emitter did not run the stream to completion "
+                + "(the connection was cut mid-stream): " + diagnostic.getData());
+        Assert.assertEquals(received, sent, "The gateway delivered " + received + " of the " + sent
+                + " SSE events the backend sent: " + diagnostic.getData());
+    }
+
+    /**
+     * Events in a {@code text/event-stream} body: one per {@code data:} line. Counts lines rather than the
+     * {@code \n\n} frame delimiter the gateway's own interceptor counts, so a trailing/duplicated blank line
+     * cannot inflate the total.
+     */
+    private static int countSseEvents(String body) {
+
+        if (body == null) {
+            return 0;
+        }
+        int events = 0;
+        for (String line : body.split("\n")) {
+            if (line.startsWith("data:")) {
+                events++;
+            }
+        }
+        return events;
     }
 }

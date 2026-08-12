@@ -6,22 +6,29 @@ Feature: Gateway Throttling Enforcement
   never delivered (its API-level throttle tests used unthrottled built-in tiers with unreachable/commented 429
   assertions, and its burst test was commented out of the suite). We create bespoke low policies via the admin
   API (built-in tiers are thousands/min — far too high to trip in a test) and drive invocations past the limit
-  until the gateway returns 429, covering six dimensions:
-    1. APPLICATION request-count (the application is bound to a low application policy);
-    2. SUBSCRIPTION request-count (the subscription is on a low subscription tier);
+  until the gateway returns 429, covering seven dimensions:
+    1. APPLICATION request-count (the application is bound to a low application policy) — code 900803;
+    2. SUBSCRIPTION request-count (the subscription is on a low subscription tier) — code 900804;
     3. SUBSCRIPTION burst control (a low burst/rate limit on top of a high quota, so the early 429 is
-       unambiguously the burst limit, not the quota);
+       unambiguously the burst limit, not the quota) — code 900807;
     4. API-LEVEL (advanced) request-count (a low advanced policy set as the API's apiThrottlingPolicy, enforced
-       across every subscription to the API regardless of the app/subscription tier);
-    5. APPLICATION BANDWIDTH (the BANDWIDTHLIMIT policy type — a 1 KB/min data quota rather than a request
-       count; small GETs accumulate past it and the gateway 429s, then stays throttled for the window). This was
-       verified deterministic by direct observation before committing (a 1 KB/min quota trips at ~the 16th small
-       GET and stays 429), so the standard until-429 retry trips it within the window;
+       across every subscription to the API regardless of the app/subscription tier) — code 900800;
+    5. APPLICATION BANDWIDTH (the BANDWIDTHLIMIT policy type — a 1 KB/min DATA quota rather than a request count)
+       — code 900803. A single 4 KB POST spends four times the whole quota, so the refusal follows immediately and
+       needs no accumulation across the quota's minute window (which resets every minute, faster than a poll loop
+       pacing itself over the propagation deadline can accumulate);
     6. CUSTOM (Siddhi) rule — a global custom throttling rule whose Siddhi eligibility is keyed on this test's
        UNIQUE apiContext (keyTemplate $apiContext), so it throttles only this test's own API after N/min and
-       stays isolation-safe in the shared container. Verified deterministic by observation before committing
-       (trips at the 5th request, sticky). NOTE: custom rules are an admin-global feature — a tenant admin gets
-       403 creating one (verified) — so this dimension runs SUPER-TENANT ONLY, not ×2 like the other five.
+       stays isolation-safe in the shared container — code 900806. Verified deterministic by observation before
+       committing (trips at the 5th request, sticky). NOTE: custom rules are an admin-global feature — a tenant
+       admin gets 403 creating one (verified) — so this dimension runs SUPER-TENANT ONLY, not ×2 like the others.
+    7. OPERATION-LEVEL (advanced) request-count (the advanced policy is set on one operation rather than on the
+       whole API) — code 900802.
+  Every 429 additionally asserts the throttle `code` in the fault body, so a scenario cannot pass on a 429 raised
+  by a DIFFERENT limit than the one it configures — the status alone cannot tell the seven dimensions apart.
+  900803 is shared by application request-count and application bandwidth, so the code does NOT prove which of the
+  two fired; the FIXTURE does — the bandwidth rows leave the subscription on Unlimited and set no
+  apiThrottlingPolicy, making the bandwidth policy the only binding limit.
   Each runs in BOTH the super tenant and tenant1.com to prove enforcement is tenant-agnostic (every row creates
   its own uniquely-named policy/app/API in its tenant, so the time-sensitive throttle windows never overlap).
   Teardown via the per-scenario cleanup hook (API, application, and admin throttling policies are all
@@ -68,11 +75,13 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Once routable, drive past the 3/min application limit — the gateway must refuse with 429.
+    # Once routable, drive past the 3/min application limit — the gateway must refuse with 429 code 900803
+    # (APPLICATION-level throttling), not a 429 from any other dimension.
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
 
     Examples:
       | actor             |
@@ -122,11 +131,13 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Drive past the 3/min SUBSCRIPTION limit — the gateway must refuse with 429.
+    # Drive past the 3/min SUBSCRIPTION limit — the gateway must refuse with 429 code 900804 (SUBSCRIPTION-level
+    # throttling), distinguishing it from the application-level 900803.
     And I invoke the API at gateway context "{{subApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{subApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900804"
 
     Examples:
       | actor             |
@@ -175,11 +186,13 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Drive past the 5/min burst limit (well under the 1000/min quota) — the gateway must refuse with 429.
+    # Drive past the 5/min burst limit (well under the 1000/min quota) — the gateway must refuse with 429 code
+    # 900807 (BURST control), which is what proves the burst limit fired rather than the subscription quota (900804).
     And I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900807"
 
     Examples:
       | actor             |
@@ -230,11 +243,13 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Drive past the API-level 3/min limit — the gateway must refuse with 429 (applies across the whole API).
+    # Drive past the API-level 3/min limit — the gateway must refuse with 429 code 900800 (API-level throttling,
+    # applied across the whole API), not the app/subscription codes.
     And I invoke the API at gateway context "{{advApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{advApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900800"
 
     Examples:
       | actor             |
@@ -246,12 +261,13 @@ Feature: Gateway Throttling Enforcement
     Given The system is ready
     And I have valid access tokens as "<actor>"
 
-    # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type). Small GET responses accumulate
-    # past the quota in ~16 calls (verified by observation), so the until-429 retry trips it within the window.
+    # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) — a BYTE quota, not a request count.
     When I create an application throttling policy "${UNIQUE:bw1KBperMin}" allowing 1 KB per minute
     Then The response status code should be 201
 
-    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "bwApiId" and deployed it
+    # An API exposing POST /reflect-body, whose backend echoes the request body: a single oversized POST spends the
+    # whole byte quota, which a ~24-byte GET can never do without accumulating across the quota's minute window.
+    And I have created an api from "artifacts/payloads/create_apim_postbody_api.json" as "bwApiId" and deployed it
     When I publish the "apis" resource with id "bwApiId"
     Then The lifecycle status of API "bwApiId" should be "Published"
     When I retrieve the "apis" resource with id "bwApiId"
@@ -275,11 +291,15 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Drive small GETs until the 1 KB/min bandwidth quota is exceeded — the gateway must refuse with 429.
-    And I invoke the API at gateway context "{{bwApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    # Warm up the POST resource with an empty body, then spend 4x the 1 KB/min quota in ONE request — the gateway
+    # refuses with 429 code 900803 (the application-level code, shared with application request-count; here the
+    # bandwidth policy is the only binding limit, since the subscription is Unlimited and no API policy is set).
+    When I put a 4 KB text payload in context as "bwLargePayload"
+    And I invoke the API at gateway context "{{bwApiContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{bwApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    When I invoke the API at gateway context "{{bwApiContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "bwLargePayload" with content type "text/plain" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
 
     Examples:
       | actor             |
@@ -309,11 +329,13 @@ Feature: Gateway Throttling Enforcement
     When I have set up application with keys, subscribed to API "custApiId", and obtained access token for "custSubscriptionId"
     Then The response status code should be 200
 
-    # Drive past the 5/min custom rule — the gateway must refuse with 429.
+    # Drive past the 5/min custom rule — the gateway must refuse with 429 code 900806 (CUSTOM rule), proving the
+    # Siddhi rule fired and not one of the policy-tier dimensions.
     And I invoke the API at gateway context "{{custApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{custApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 90 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900806"
 
   # OPERATION-LEVEL (advanced) request-count: the advanced policy is set on a specific operation (not the whole
   # API via apiThrottlingPolicy), so exceeding it on that operation → 429. Complements the API-LEVEL scenario
@@ -361,11 +383,13 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Drive past the operation's 3/min limit — the gateway must refuse with 429 on that operation.
+    # Drive past the operation's 3/min limit — the gateway must refuse with 429 code 900802 (RESOURCE/operation-level
+    # throttling), distinct from the whole-API 900800 above.
     And I invoke the API at gateway context "{{opApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{opApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900802"
 
     Examples:
       | actor             |
@@ -407,19 +431,21 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Drive past the 3/min limit -> 429.
+    # Drive past the 3/min limit -> 429 code 900803 (APPLICATION-level), the limit this reset then clears.
     When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
 
     # Reset the application's throttle counter -> invocation succeeds again.
     When I reset the application throttle policy for "createdAppId" owned by "<actor>"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    # Re-drive past the limit again -> 429: proves the reset CLEARED the counter (not disabled throttling) — it
-    # re-accumulates and trips the 3/min limit once more.
+    # Re-drive past the limit again -> 429 with the same application code: proves the reset CLEARED the counter (not
+    # disabled throttling) — it re-accumulates and trips the 3/min limit once more.
     When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
 
     Examples:
       | actor             |
@@ -435,11 +461,11 @@ Feature: Gateway Throttling Enforcement
     Given The system is ready
     And I have valid access tokens as "<actor>"
 
-    # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type). Small GET responses accumulate
-    # past the quota within the window, so the until-429 retry trips it.
+    # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) — a BYTE quota, tripped by one
+    # oversized POST to the body-echoing /reflect-body resource.
     When I create an application throttling policy "${UNIQUE:resetBw1KB}" allowing 1 KB per minute
     Then The response status code should be 201
-    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "resetBwApiId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_postbody_api.json" as "resetBwApiId" and deployed it
     When I publish the "apis" resource with id "resetBwApiId"
     Then The lifecycle status of API "resetBwApiId" should be "Published"
     When I retrieve the "apis" resource with id "resetBwApiId"
@@ -463,19 +489,25 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Drive small GETs until the 1 KB/min bandwidth quota is exceeded -> 429.
-    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    # Warm up the POST resource, then spend 4x the 1 KB/min quota in ONE request -> 429 code 900803.
+    When I put a 4 KB text payload in context as "resetBwLargePayload"
+    And I invoke the API at gateway context "{{resetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "resetBwLargePayload" with content type "text/plain" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
 
-    # Reset the application's throttle counter -> invocation succeeds again.
+    # Reset the application's throttle counter -> an empty-body invocation succeeds again (0 bytes, so this call
+    # does not itself re-spend the quota).
     When I reset the application throttle policy for "createdAppId" owned by "<actor>"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    # Re-drive small GETs past the 1 KB/min quota again -> 429: proves the reset cleared the bandwidth accumulator
-    # (throttling still enforced afterwards).
-    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    # Re-spend the 1 KB/min quota again -> 429: proves the reset cleared the bandwidth accumulator (throttling still
+    # enforced afterwards).
+    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "resetBwLargePayload" with content type "text/plain" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
 
     Examples:
       | actor             |

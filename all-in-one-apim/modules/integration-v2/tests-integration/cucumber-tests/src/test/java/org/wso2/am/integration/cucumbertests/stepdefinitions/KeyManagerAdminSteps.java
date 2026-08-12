@@ -65,15 +65,23 @@ public class KeyManagerAdminSteps {
      * Introspects an OAuth2 access token (resolved from a context key holding the token) at the
      * {@code /oauth2/introspect} endpoint, authenticating with the acting actor's carbon credentials. Publishes
      * the introspection response for assertion (the feature checks {@code active} and {@code client_id}).
+     * <p>
+     * The context value may be either a bare token or a whole {@code Authorization} header VALUE
+     * ({@code Bearer <token>}) — the {@code Bearer } prefix is stripped. That lets the endpoint-security
+     * scenarios introspect the backend token the gateway MINTED and injected, which reaches the test only as the
+     * Authorization header echoed verbatim by the {@code /sec} backend route.
      */
     @When("I introspect the access token {string}")
     public void iIntrospectTheAccessToken(String tokenKey) throws IOException {
-        String token = TestContext.resolve(tokenKey).toString();
+        String token = TestContext.resolve(tokenKey).toString().trim();
+        if (token.regionMatches(true, 0, "Bearer ", 0, "Bearer ".length())) {
+            token = token.substring("Bearer ".length()).trim();
+        }
         // Acting actor's own carbon credentials: introspection is a Basic-auth (not bearer) endpoint.
         Map<String, String> headers = Identity.actingBasicAuthHeaders();
         // A tenant token must be introspected at the tenant-qualified path; the super path 401s a tenant caller.
         Requests.post(Utils.getIntrospectEndpointURL(Utils.getBaseUrl(), Identity.actingTenantDomain()), headers,
-                "token=" + token, "application/x-www-form-urlencoded");
+                "token=" + Utils.urlEncode(token), "application/x-www-form-urlencoded");
     }
 
     /**

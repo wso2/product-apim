@@ -19,7 +19,7 @@
 const etcdRoutes = require('./routes/etcdRoutes');
 
 const app = express();
-const port = 3006;
+const port = process.env.PORT || 3006;
 
 app.use('/v2/keys/jti', etcdRoutes);
 

@@ -26,7 +26,7 @@ Selection rule (cost-aware, coverage-first):
 
 ## 1a. Two artifacts, two distinct roles (corrected)
 
-- **Capability tree (`capability-map.yml` + `coverage-tree.md` / `v2-public-feature-coverage-map.md`) — the
+- **Capability tree (`capability-map.yml` + the generated `coverage-tree.md`) — the
   ORGANIZATION & COMPREHENSION map.** It exists so any human *or AI* can understand what product capability
   coverage exists today and **decide where a new flow belongs** in the hierarchy. It is **not** a gap oracle.
   **Every skill run keeps it current**: newly-implemented extended flows are added and marked covered, and the

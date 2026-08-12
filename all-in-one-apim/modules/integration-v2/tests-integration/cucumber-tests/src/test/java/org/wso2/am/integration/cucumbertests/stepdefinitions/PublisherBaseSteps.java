@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
@@ -391,6 +392,117 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Publishes the resource and then waits until the lifecycle state has actually reached {@code Published},
+     * re-firing the Publish action if the transition was lost. The opt-in variant of
+     * {@code I publish the "apis" resource with id}, which asserts only the POST's status.
+     *
+     * <p>A 200 from the lifecycle-change POST means no exception was thrown, not that the state moved, so this
+     * gates on a read-back. It distinguishes four outcomes: the target state (done); the source state (lost —
+     * re-POST); a pending {@code AM_API_STATE} approval task (fails, naming the task, since the state is waiting
+     * on approval rather than on propagation); and an unexpected state, 401/403 or a rejected re-POST (fails
+     * immediately). Every re-fire is logged.
+     */
+    @When("I publish the {string} resource with id {string}, healing if the transition is lost")
+    public void iPublishTheResourceHealingLostTransition(String resourceType, String resourceId) throws Exception {
+
+        String actualResourceId = TestContext.resolve(resourceId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String url = Utils.getChangeLifecycleURL(Utils.getBaseUrl(), resourceType, actualResourceId, "Publish", null);
+
+        // Fire once up front so the healthy path is a single POST, exactly like the plain step.
+        HttpResponse first = Requests.post(url, headers, null, null);
+        if (first != null && (first.getResponseCode() == 401 || first.getResponseCode() == 403)) {
+            Assert.fail("Publish of " + actualResourceId + " was rejected with " + first.getResponseCode()
+                    + " — credentials/scope, not propagation: " + first.getData());
+        }
+
+        HealGate.awaitOrHeal("Published state of " + resourceType + " " + actualResourceId,
+                () -> {
+                    HttpResponse lc = SimpleHTTPClient.getInstance()
+                            .doGet(Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), actualResourceId), headers);
+                    if (lc == null) {
+                        return new HealGate.NotReady("no response from lifecycle-state");
+                    }
+                    int code = lc.getResponseCode();
+                    if (code == 401 || code == 403) {
+                        return new HealGate.Fatal("lifecycle-state read returned " + code
+                                + " — credentials/scope, not propagation");
+                    }
+                    if (code >= 500) {
+                        return new HealGate.Fatal("lifecycle-state read returned " + code
+                                + " (already past the client's transient 900967 retry): " + lc.getData());
+                    }
+                    if (code != 200 || lc.getData() == null || lc.getData().isEmpty()) {
+                        return new HealGate.NotReady("HTTP " + code + " from lifecycle-state");
+                    }
+                    String state = new JSONObject(lc.getData()).optString("state", null);
+                    if (APIConstants_PUBLISHED.equalsIgnoreCase(state)) {
+                        return new HealGate.Ready();
+                    }
+                    if (!"Created".equalsIgnoreCase(state)) {
+                        return new HealGate.Fatal("lifecycle state is '" + state + "', neither the source state "
+                                + "nor Published — something else moved this API, so re-publishing is wrong");
+                    }
+                    String pending = pendingApiStateWorkflowReference(actualResourceId);
+                    if (pending != null) {
+                        return new HealGate.Fatal("a PENDING AM_API_STATE workflow task (" + pending + ") is "
+                                + "blocking the transition: APIProviderImpl only changes the lifecycle once the "
+                                + "workflow is APPROVED, so the 200 was a silent no-op. Not a lost event — approve "
+                                + "or clear the task.");
+                    }
+                    return new HealGate.NotReady("state=Created");
+                },
+                attempt -> {
+                    logger.warn("self-heal: re-POSTing Publish for {} {} — the previous 200 did not persist",
+                            resourceType, actualResourceId);
+                    HttpResponse again = SimpleHTTPClient.getInstance().doPost(url, headers, "",
+                            Constants.CONTENT_TYPES.APPLICATION_JSON);
+                    if (again != null && again.getResponseCode() == 400) {
+                        return new HealGate.Fatal("re-POST of Publish returned 400 (action not allowed from the "
+                                + "current state): " + again.getData());
+                    }
+                    return new HealGate.Ready();
+                },
+                3);
+    }
+
+    /** {@code Published} — inlined so this file needs no product-constant dependency. */
+    private static final String APIConstants_PUBLISHED = "Published";
+
+    /**
+     * The {@code externalWorkflowReference} of a PENDING API-state workflow task for this API, or null. Read as
+     * the acting actor's admin token; a non-200 (e.g. no admin scope) yields null so the caller keeps treating the
+     * state as merely unpropagated rather than inventing a diagnosis.
+     */
+    private String pendingApiStateWorkflowReference(String apiId) {
+        try {
+            Object adminToken = TestContext.get(Identity.adminTokenKey(Identity.actingActor()));
+            if (adminToken == null) {
+                return null;
+            }
+            HttpResponse list = SimpleHTTPClient.getInstance().doGet(
+                    Utils.getWorkflowsByTypeURL(Utils.getBaseUrl(), "AM_API_STATE"),
+                    Identity.bearerHeaders(adminToken.toString()));
+            if (list == null || list.getResponseCode() != 200 || list.getData() == null) {
+                return null;
+            }
+            JSONArray tasks = new JSONObject(list.getData()).optJSONArray("list");
+            for (int i = 0; tasks != null && i < tasks.length(); i++) {
+                JSONObject task = tasks.getJSONObject(i);
+                if (apiId.equals(task.optJSONObject("properties") == null ? null
+                        : task.getJSONObject("properties").optString("apiId", null))
+                        || (task.optString("description", "").contains(apiId))) {
+                    return task.optString("externalWorkflowReference", "unknown-reference");
+                }
+            }
+        } catch (Exception ignored) {
+            // Diagnosis is best-effort: never turn a failed lookup into a misleading verdict.
+        }
+        return null;
+    }
+
+    /**
      * Reads an API's current lifecycle state (e.g. {@code Created}/{@code Published}) via a direct GET that is
      * NOT published as {@code httpResponse} — an intermediate read consumed locally by the publish retry loop.
      * Returns {@code null} on any non-2xx/empty/transient response so the caller keeps polling.
@@ -470,13 +582,71 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * SELF-HEALING deploy-readiness gate (fixture readiness, never an assertion target — see
-     * Utils.awaitWithRetry): polls the gateway's own artifact endpoint until the resource's synapse artifact is
-     * live, and if a full propagation window passes with nothing mounted, RE-DEPLOYS the current revision
-     * (re-emitting the at-most-once JMS deploy event the gateway is presumed to have dropped) and waits again.
-     * Requires the {@code revisionId} context key from the deploy step; re-deploys with the standard
-     * gateway-environment payload (a custom-vhost deployment would need its own gate variant). All calls go
-     * through the raw client so the step's published {@code httpResponse} is never clobbered.
+     * Reconciles and re-deploys for the gate above: reaps the previously attempted revision (undeploy, then
+     * delete) and deploys a freshly created one, returning {@link HealGate.Fatal} if the product rejects either
+     * step outright.
+     *
+     * <p>A fresh revision rather than a re-POST of the same one, because a revision already recorded as deployed
+     * accepts the re-POST without emitting a new deployment event. The stale one must go first: the product caps
+     * revisions per API ({@code MAXIMUM_REVISIONS_REACHED}), so accumulating them would convert a propagation
+     * flake into a hard failure. The new id replaces {@code revisionId} in context so a later heal reaps it.
+     */
+    private HealGate.Verdict reconcileAndRedeployRevision(String resourceType, String resourceId) {
+        try {
+            String staleRevision = TestContext.contains("revisionId")
+                    ? TestContext.resolve("revisionId").toString() : null;
+            Map<String, String> publisherHeaders = Identity.publisherHeaders();
+            String deploymentPayload = "[{\"name\":\"" + System.getenv(Constants.GATEWAY_ENVIRONMENT)
+                    + "\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]";
+
+            if (staleRevision != null) {
+                // Undeploy first: a deployed revision cannot be deleted. Both are best-effort.
+                HttpResponse undeploy = SimpleHTTPClient.getInstance().doPost(
+                        Utils.getRevisionUnDeploymentURL(Utils.getBaseUrl(), resourceType, resourceId,
+                                staleRevision), publisherHeaders, deploymentPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+                HttpResponse delete = SimpleHTTPClient.getInstance().doDelete(
+                        Utils.getRevisionByID(Utils.getBaseUrl(), resourceType, resourceId, staleRevision),
+                        publisherHeaders);
+                logger.warn("self-heal: reaped stale revision {} of {} (undeploy={}, delete={})", staleRevision,
+                        resourceId, undeploy == null ? "no response" : undeploy.getResponseCode(),
+                        delete == null ? "no response" : delete.getResponseCode());
+            }
+
+            HttpResponse created = SimpleHTTPClient.getInstance().doPost(
+                    Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, resourceId), publisherHeaders,
+                    "{\"description\":\"self-heal revision\"}", Constants.CONTENT_TYPES.APPLICATION_JSON);
+            if (created == null || created.getResponseCode() < 200 || created.getResponseCode() >= 300) {
+                return new HealGate.Fatal("could not create a fresh revision to re-deploy: got="
+                        + (created == null ? "null" : created.getResponseCode() + "/" + created.getData()));
+            }
+            String freshRevision = new JSONObject(created.getData()).getString("id");
+            // No cleanup registration: a revision vanishes with its API (CLAUDE.md 5).
+            TestContext.set("revisionId", freshRevision);
+
+            HttpResponse deployed = SimpleHTTPClient.getInstance().doPost(
+                    Utils.getRevisionDeploymentURL(Utils.getBaseUrl(), resourceType, resourceId, freshRevision),
+                    publisherHeaders, deploymentPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+            if (deployed == null || deployed.getResponseCode() < 200 || deployed.getResponseCode() >= 300) {
+                return new HealGate.Fatal("could not deploy the fresh revision " + freshRevision + ": got="
+                        + (deployed == null ? "null" : deployed.getResponseCode() + "/" + deployed.getData()));
+            }
+            logger.warn("self-heal: re-deployed {} {} as fresh revision {}", resourceType, resourceId,
+                    freshRevision);
+            return new HealGate.Ready();
+        } catch (Exception e) {
+            return new HealGate.Fatal("revision reconcile/redeploy threw: " + e);
+        }
+    }
+
+    /**
+     * Waits until the resource's synapse artifact is live on the gateway, re-deploying it if the deploy event was
+     * lost. Fixture readiness, never an assertion target.
+     *
+     * <p>Classifies what it sees so a permanent condition is not mistaken for a slow one: a 404 or empty body is
+     * "not deployed yet", while 401/403 and any 5xx fail immediately. On an exhausted window it reconciles and
+     * re-deploys (see {@link #reconcileAndRedeployRevision}). All reads go through the raw client so the step's
+     * published {@code httpResponse} is never clobbered.
      */
     @Then("the {string} resource {string} should be live on the gateway, redeploying if propagation is lost")
     public void resourceShouldBeLiveOnGateway(String resourceType, String resourceId) throws Exception {
@@ -503,28 +673,29 @@ public class PublisherBaseSteps {
         String redeployPayload = "[{\"name\":\"" + System.getenv(Constants.GATEWAY_ENVIRONMENT)
                 + "\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]";
 
-        Utils.awaitWithRetry("gateway deployment of " + resourceType + " " + name + " v" + version,
+        HealGate.awaitOrHeal("gateway deployment of " + resourceType + " " + name + " v" + version,
                 () -> {
                     HttpResponse r = SimpleHTTPClient.getInstance().doGet(artifactUrl, gatewayAuth);
-                    return r != null && r.getResponseCode() == 200 && r.getData() != null && !r.getData().isEmpty();
-                },
-                () -> {
-                    HttpResponse redeploy = SimpleHTTPClient.getInstance().doPost(
-                            Utils.getRevisionDeploymentURL(Utils.getBaseUrl(), resourceType, actualResourceId,
-                                    revisionId),
-                            Identity.publisherHeaders(), redeployPayload,
-                            Constants.CONTENT_TYPES.APPLICATION_JSON);
-                    // Logged, deliberately NOT asserted: the re-POST's status for an already-deployed revision
-                    // is not a pinned contract, and this heal path cannot be exercised on a healthy run — a
-                    // wrong expectation would turn a working heal into a hard failure. The probe stays the
-                    // arbiter of readiness, and awaitWithRetry fails loudly if it never converges.
-                    if (redeploy == null || redeploy.getResponseCode() < 200
-                            || redeploy.getResponseCode() >= 300) {
-                        logger.warn("self-heal re-deploy of {} {} returned {} — readiness still decided by the "
-                                        + "gateway-artifact probe", resourceType, actualResourceId,
-                                redeploy == null ? "no response" : redeploy.getResponseCode());
+                    if (r == null) {
+                        return new HealGate.NotReady("no response from the gateway artifact endpoint");
                     }
+                    int code = r.getResponseCode();
+                    if (code == 200 && r.getData() != null && !r.getData().isEmpty()) {
+                        return new HealGate.Ready();
+                    }
+                    // 401/403 can never become a 200, and any 5xx here already survived the client's
+                    // transient 900967 retry, so neither is worth waiting out.
+                    if (code == 401 || code == 403) {
+                        return new HealGate.Fatal("gateway artifact endpoint returned " + code
+                                + " for " + tenantAdmin.getUserName() + " — credentials/config, not propagation");
+                    }
+                    if (code >= 500) {
+                        return new HealGate.Fatal("gateway artifact endpoint returned " + code
+                                + " (not the transient 900967 the client already retries): " + r.getData());
+                    }
+                    return new HealGate.NotReady("HTTP " + code);
                 },
+                attempt -> reconcileAndRedeployRevision(resourceType, actualResourceId),
                 3);
     }
 
@@ -563,23 +734,70 @@ public class PublisherBaseSteps {
     /**
      * Verifies that a specific API ID exists in the list of all APIs.
      *
+     * <p>The publisher listing is served from the search index, which is NOT read-your-writes: a 201 from
+     * {@code POST /apis} does not guarantee the API is indexed yet, so asserting on a single listing read is a
+     * race (§7). It only looked stable because its one existing caller (api_lifecycle) reaches this step after
+     * an update + publish + lifecycle poll, i.e. behind an incidental delay. So the assertion is funnelled
+     * through a retry that RE-ISSUES the listing — retrying the parse of the response an earlier step already
+     * fetched could never change its verdict.
+     *
+     * <p>The response already in context is checked FIRST and short-circuits on a hit, so a caller that is
+     * already indexed by the time it gets here pays no added latency and its behaviour is unchanged; only the
+     * previously-failing path polls. The assertion itself is untouched: still presence-by-id, still exact.
+     *
      * @param apiId Context key containing the API ID to verify
      */
     @Then("The API with id {string} should be in the list of all APIS")
-    public void theApiShouldBeInTheListOfAllApis(String apiId) {
+    public void theApiShouldBeInTheListOfAllApis(String apiId) throws IOException, InterruptedException {
 
         String actualApiId = TestContext.resolve(apiId).toString();
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         // Guard before parsing — a cleared/failed list retrieval must fail clearly, not as an NPE/JSONException.
+        // Deliberately NOT retried: an absent response means the feature never ran the retrieve step, which is an
+        // authoring error that must fail fast rather than be reported as a propagation timeout (§7).
         Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
                 "No API-list response with a body captured to search for API '" + actualApiId + "' in");
-        JSONArray apisList = new JSONObject(response.getData()).getJSONArray("list");
 
-        boolean found = IntStream.range(0, apisList.length())
-                .mapToObj(apisList::getJSONObject)
-                .anyMatch(subJson -> actualApiId.equals(subJson.optString("id", null)));
+        if (listContainsApiId(response, actualApiId)) {
+            return;
+        }
 
-        Assert.assertTrue(found, "API with id " + actualApiId + " not found in the list.");
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String listUrl = Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), null, null, null);
+        HttpResponse lastResponse = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(listUrl, headers),
+                listResponse -> listContainsApiId(listResponse, actualApiId));
+
+        // Carry the last body into the failure text: without it, diagnosing "not found" costs another full run.
+        Assert.assertTrue(listContainsApiId(lastResponse, actualApiId),
+                "API with id " + actualApiId + " not found in the list within the retry window; last response: "
+                        + (lastResponse == null ? "none (requests failed)"
+                        : lastResponse.getResponseCode() + " / " + lastResponse.getData()));
+    }
+
+    /**
+     * True when the given publisher-listing response carries an entry whose {@code id} is {@code apiId}. Tolerates
+     * a null/empty/non-2xx response by reporting "not present", so a listing read during warm-up keeps the poll in
+     * {@link #theApiShouldBeInTheListOfAllApis} going instead of throwing out of the accept condition.
+     */
+    private static boolean listContainsApiId(HttpResponse response, String apiId) {
+        if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
+                || response.getData() == null || response.getData().isEmpty()) {
+            return false;
+        }
+        try {
+            JSONObject payload = new JSONObject(response.getData());
+            if (!payload.has("list")) {
+                return false;
+            }
+            JSONArray apisList = payload.getJSONArray("list");
+            return IntStream.range(0, apisList.length())
+                    .mapToObj(apisList::getJSONObject)
+                    .anyMatch(subJson -> apiId.equals(subJson.optString("id", null)));
+        } catch (JSONException e) {
+            return false;
+        }
     }
 
     /**
@@ -1131,7 +1349,10 @@ public class PublisherBaseSteps {
                 : new JSONObject(ctxValue.toString());
 
         if ("endpointConfig".equals(configType)){
-            configValue = TestContext.resolve(configValue).toString();
+            // The value is a context key whose stored endpointConfig JSON may itself embed {{contextKey}}
+            // references to runtime-captured values (e.g. a DCR-registered clientId/clientSecret for OAUTH
+            // endpoint security), so resolve those after fetching the stored payload.
+            configValue = Utils.resolveContextPlaceholders(TestContext.resolve(configValue).toString());
         } else {
             // Resolve any {{contextKey}} placeholders in the value (e.g. a custom throttle-tier name captured
             // into context, when setting an API's business-plan "policies"). No-op when the value has none.
@@ -2668,7 +2889,7 @@ public class PublisherBaseSteps {
         files.put("file", openapiFile);
         files.put("additionalProperties", additionalPropertiesFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files, null);
+        HttpResponse response = Requests.postMultipart(Utils.getImportOpenAPIURL(Utils.getBaseUrl()), headers, files, null);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(resourceId, createdId);
@@ -2710,7 +2931,7 @@ public class PublisherBaseSteps {
         files.put("file", archiveFile);
         files.put("additionalProperties", additionalPropertiesFile);
 
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getImportOpenAPIURL(Utils.getBaseUrl()), headers, files,
                 null);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -2845,6 +3066,47 @@ public class PublisherBaseSteps {
         Requests.get(Utils.getLinterCustomRulesURL(Utils.getBaseUrl()), headers);
     }
 
+    /**
+     * Retrieves the publisher settings document (GET /settings), which advertises the tenant's resolved default
+     * throttling policies ({@code defaultAdvancePolicy} / {@code defaultSubscriptionPolicy}) alongside the
+     * environments and other publisher-UI settings. Non-asserting — the feature asserts the status and the fields.
+     */
+    @When("I retrieve the publisher settings")
+    public void iRetrievePublisherSettings() throws IOException {
+
+        Requests.get(Utils.getPublisherSettingsURL(Utils.getBaseUrl()), Identity.publisherHeaders());
+    }
+
+    /**
+     * Asserts that EVERY operation of the API in the last (2xx) response carries exactly the given throttling
+     * policy. The all-operations form matters for the default-tier substitution tests: the product applies the
+     * resolved default to each tier-less resource, so an assertion on one operation would miss a partial
+     * substitution. Reads back the shared {@code httpResponse}, so it follows a retrieve step.
+     *
+     * @param expectedPolicy the exact throttling policy name every operation must carry
+     */
+    @Then("Every operation in the response should have throttling policy {string}")
+    public void everyOperationShouldHaveThrottlingPolicy(String expectedPolicy) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx API response with a body to read operations from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONArray operations = new JSONObject(response.getData()).optJSONArray("operations");
+        Assert.assertTrue(operations != null && !operations.isEmpty(),
+                "The API response carries no operations to assert a throttling policy on: " + response.getData());
+
+        String expected = Utils.resolveContextPlaceholders(expectedPolicy);
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject operation = operations.getJSONObject(i);
+            Assert.assertEquals(operation.optString("throttlingPolicy", null), expected,
+                    "Operation " + operation.optString("verb") + " " + operation.optString("target")
+                            + " carries the wrong throttling policy; all operations: " + operations);
+        }
+    }
+
     /** Retrieves the available publisher throttling policies for a policy level (subscription / api / application). */
     @When("I retrieve the publisher {string} throttling policies")
     public void iRetrievePublisherThrottlingPolicies(String policyLevel) throws IOException {
@@ -2930,7 +3192,7 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", openapiFile);
         files.put("additionalProperties", additionalPropertiesFile);
-        HttpResponse response = Requests.postMultipart(Utils.getAPIDefinitionURL(Utils.getBaseUrl()), headers, files,
+        HttpResponse response = Requests.postMultipart(Utils.getImportOpenAPIURL(Utils.getBaseUrl()), headers, files,
                 null);
         if (resourceId != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");

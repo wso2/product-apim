@@ -1,0 +1,41 @@
+# Feature-specific TOML overlay for the IntegrationV2-EmailUserName block.
+#
+# Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the extra keys this feature
+# needs live here; everything else (DB, ports, gateway wiring) is inherited.
+#
+# Ports the config of the legacy EmailUserNameLoginTestCase (configFiles/emailusernametest), reduced to the
+# ONE key that is actually load-bearing on this build. Must be paired with the block's `emailUserMode=true`
+# parameter, which is what makes the framework provision email-form usernames (see
+# BlockLifecycleListener.PARAM_EMAIL_USER_MODE for the @-counting mechanic that forces the pairing).
+#
+#   - [tenant_mgt] enable_email_domain = true : renders <EnableEmailUserName>true</EnableEmailUserName> into
+#     carbon.xml. THE knob for email-as-username. Two consumers matter here:
+#       * MultitenantUtils.getTenantDomain/getTenantAwareUsername (carbon.utils) — with it ON, a username is
+#         split on its LAST '@' only when it carries TWO OR MORE '@' (one '@' is read as a super-tenant login
+#         whose username happens to contain '@'); with it OFF, ANY '@' is a tenant separator, so the
+#         tenant-qualified email form `emailuser@email.com@tenant1.com` would resolve to tenant "com".
+#       * OAuthJwtAuthenticatorImpl / OAuthOpaqueAuthenticatorImpl (apimgt.rest.api.util) — the Publisher /
+#         DevPortal / Admin REST authenticators. With it OFF they only strip the suffix when the token subject
+#         ends in "@carbon.super" AND holds at most one '@', so an email-form subject is passed to the user
+#         store verbatim and the REST call is rejected 401. This is exactly what the block's three-plane
+#         scenario proves, so it is the key that makes the test meaningful rather than incidental.
+#
+# Keys from the legacy overlay deliberately DROPPED (verified against this 4.7.0 build's config defaults —
+# see repository/resources/conf/{infer,default}.json inside the distribution):
+#   - [user_store] username_java_regex / username_java_script_regex : NOT needed. The `database_unique_id`
+#     store type already infers UsernameJavaRegEx = UsernameJavaScriptRegEx = "^[\S]{3,30}$" — any non-
+#     whitespace 3..30 chars — which admits '@', so both the plain and the email username forms validate.
+#     Restating them would only narrow what the store accepts and would risk rejecting the plain super-tenant
+#     admin the block keeps.
+#   - [tenant_mgt] disable_email_domain_validation : NOT needed — default.json already ships it as `true`.
+#   - [user_store] user_store.properties.IsEmailUserName : NOT needed, and dead on this build. Its only
+#     reader is UserCoreUtil.getIsEmailUserName(), whose backing field no plugin in the distribution ever
+#     assigns, so the property has no effect.
+#   - [super_admin] username : deliberately left as the plain `admin`. The super-tenant admin is NOT converted
+#     to an email address; it carries zero '@' and therefore resolves correctly with the flag either way,
+#     whereas converting it would also force the throttling usernames (and the JMS one, where '@' must be
+#     written '!') to change and would ripple through every SOAP admin call the framework makes.
+
+[tenant_mgt]
+enable_email_domain = true

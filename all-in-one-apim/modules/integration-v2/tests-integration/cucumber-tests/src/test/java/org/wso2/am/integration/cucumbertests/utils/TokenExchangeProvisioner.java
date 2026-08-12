@@ -53,6 +53,22 @@ public final class TokenExchangeProvisioner {
     /** Metadata-property name the token-exchange handler matches against the subject token's {@code iss}. */
     private static final String IDP_ISSUER_NAME = "idpIssuerName";
     private static final String JWKS_URI = "jwksUri";
+
+    /**
+     * Issuer / audience of the hand-signed multi-value-claim subject token (see
+     * {@code TokenExchangeSteps#iObtainMultiValueSubjectJwt}). The subject token here is NOT minted by IS (an IS
+     * client-credentials token carries no user claims); it is assembled and RS256-signed by the test with the
+     * committed {@link #TRUSTED_IDP_CERT_RESOURCE} key pair, so its {@code iss}/{@code aud} are ours to pin. The
+     * trusted IdP registered for it validates against that committed certificate (not IS's live JWKS).
+     */
+    public static final String MULTI_VALUE_IDP_ISSUER = "https://external-idp.apim.integration";
+    public static final String MULTI_VALUE_IDP_ALIAS = "external-api";
+    /** Local claim URIs the subject token's {@code groups} / {@code preferred_username} are mapped to (as legacy). */
+    private static final String GROUPS_CLAIM_URI = "http://wso2.org/claims/groups";
+    private static final String DISPLAY_NAME_CLAIM_URI = "http://wso2.org/claims/displayName";
+    /** X.509 cert (and its PKCS#8 key) whose key pair signs the hand-crafted multi-value subject token. */
+    private static final String TRUSTED_IDP_CERT_RESOURCE = "artifacts/certs/is7trustedidp/idp-cert.pem";
+    public static final String TRUSTED_IDP_KEY_RESOURCE = "artifacts/certs/is7trustedidp/idp-key.pem";
     private static final String SOAP_ENV_OPEN =
             "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">";
     private static final String SOAP_ENV_CLOSE = "</soapenv:Envelope>";
@@ -194,19 +210,11 @@ public final class TokenExchangeProvisioner {
         return idpExists(scope, idpName);
     }
 
-    /** Committed different-key-pair certificate (CN=is7-jwt-bearer-test-idp), as base64 DER, for the stale pin. */
-    private static final String STALE_CERT_RESOURCE = "artifacts/certs/is7trustedidp/idp-cert.pem";
-
     private static String staleCertBase64Der() throws IOException {
-        try (java.io.InputStream in = TokenExchangeProvisioner.class.getClassLoader()
-                .getResourceAsStream(STALE_CERT_RESOURCE)) {
-            if (in == null) {
-                throw new java.io.FileNotFoundException("Stale-cert resource not found: " + STALE_CERT_RESOURCE);
-            }
-            String pem = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            return pem.replace("-----BEGIN CERTIFICATE-----", "")
-                    .replace("-----END CERTIFICATE-----", "").replaceAll("\\s", "");
-        }
+        // The committed CN=is7-jwt-bearer-test-idp certificate: a DIFFERENT key pair than IS's live signer, so
+        // it models the stale-pin canary; it is the SAME cert whose key signs the hand-crafted multi-value
+        // subject token, so registerMultiValueClaimIdp validates against it (see TRUSTED_IDP_CERT_RESOURCE).
+        return certBase64Der(TRUSTED_IDP_CERT_RESOURCE);
     }
 
     /**
@@ -220,6 +228,133 @@ public final class TokenExchangeProvisioner {
                 + idpProperty(JWKS_URI, "https://"
                         + org.wso2.am.testcontainers.IdentityServerContainer.NETWORK_ALIAS + ":9443/oauth2/jwks");
         addOrReplaceIdp(scope, idpName, isAppClientId, body);
+    }
+
+    /**
+     * Registers the trusted IdP for the hand-signed multi-value-claim subject token: validates against the
+     * committed {@link #TRUSTED_IDP_CERT_RESOURCE} certificate (whose key signs that token), pins
+     * {@code idpIssuerName} = {@link #MULTI_VALUE_IDP_ISSUER} (the subject token's {@code iss}) and {@code alias}
+     * = {@link #MULTI_VALUE_IDP_ALIAS} (present in its {@code aud}), and declares IdP claim mappings so the
+     * federated {@code groups} / {@code preferred_username} remote claims are recognised and carried through.
+     */
+    public static void registerMultiValueClaimIdp(IdpScope scope, String idpName) throws IOException {
+        String cert = certBase64Der(TRUSTED_IDP_CERT_RESOURCE);
+        String claimConfig = "<m:claimConfig>"
+                + idpClaimMapping("groups", GROUPS_CLAIM_URI)
+                + idpClaimMapping("preferred_username", DISPLAY_NAME_CLAIM_URI)
+                + "<m:idpClaims><m:claimUri>groups</m:claimUri></m:idpClaims>"
+                + "<m:idpClaims><m:claimUri>preferred_username</m:claimUri></m:idpClaims>"
+                + "<m:localClaimDialect>false</m:localClaimDialect>"
+                + "</m:claimConfig>";
+        String body = "<m:certificate>" + cert + "</m:certificate>"
+                + idpProperty(IDP_ISSUER_NAME, MULTI_VALUE_IDP_ISSUER)
+                + claimConfig;
+        addOrReplaceIdp(scope, idpName, MULTI_VALUE_IDP_ALIAS, body);
+    }
+
+    private static String idpClaimMapping(String remoteClaim, String localClaimUri) {
+        return "<m:claimMappings><m:localClaim><m:claimUri>" + Utils.escapeXml(localClaimUri) + "</m:claimUri>"
+                + "</m:localClaim><m:remoteClaim><m:claimUri>" + Utils.escapeXml(remoteClaim) + "</m:claimUri>"
+                + "</m:remoteClaim></m:claimMappings>";
+    }
+
+    /**
+     * Configures the exchanging application's service provider (resolved from its Resident-KM consumer key) to
+     * REQUEST and MANDATE the multi-value {@code groups} and single-valued {@code displayName} local claims, so
+     * the token issued for that SP carries them - the v2 equivalent of the legacy
+     * {@code applicationManagementClient.updateApplication} claim-config step (SOAP {@code
+     * IdentityApplicationManagementService}; APIM exposes no REST for SP claim config).
+     *
+     * <p>Reads the SP's numeric applicationID and its existing OAuth inbound-auth key, then re-sends an {@code
+     * updateApplication} carrying only those plus the claim config - preserving the inbound OAuth wiring the
+     * exchange depends on (clobbering it would break the exchange) rather than round-tripping the whole SP XML
+     * (whose axis2 namespace prefixes are unstable across payloads).
+     */
+    public static void requestSubjectClaimsOnApp(IdpScope scope, String consumerKey) throws IOException {
+        String appName = oauthAppName(scope, consumerKey);
+        String appXml = getApplicationXml(scope, appName);
+        String appId = between(appXml, "applicationID>", "</");
+        Assert.assertNotNull(appId, "Could not read applicationID for SP '" + appName + "': " + appXml);
+        String updateBody = SOAP_ENV_OPEN
+                + "<soapenv:Body><axis2:updateApplication xmlns:axis2=\"http://org.apache.axis2/xsd\">"
+                + "<axis2:serviceProvider "
+                + "xmlns:m=\"http://model.common.application.identity.carbon.wso2.org/xsd\">"
+                + "<m:applicationID>" + Utils.escapeXml(appId) + "</m:applicationID>"
+                + "<m:applicationName>" + Utils.escapeXml(appName) + "</m:applicationName>"
+                + "<m:claimConfig>"
+                + "<m:localClaimDialect>true</m:localClaimDialect>"
+                + spRequestedClaim(GROUPS_CLAIM_URI)
+                + spRequestedClaim(DISPLAY_NAME_CLAIM_URI)
+                + "</m:claimConfig>"
+                + "<m:inboundAuthenticationConfig><m:inboundAuthenticationRequestConfigs>"
+                + "<m:inboundAuthKey>" + Utils.escapeXml(consumerKey) + "</m:inboundAuthKey>"
+                + "<m:inboundAuthType>oauth2</m:inboundAuthType>"
+                + "</m:inboundAuthenticationRequestConfigs></m:inboundAuthenticationConfig>"
+                + "</axis2:serviceProvider></axis2:updateApplication></soapenv:Body>" + SOAP_ENV_CLOSE;
+        HttpResponse r = appSoap(scope, "urn:updateApplication", updateBody);
+        Assert.assertTrue(r != null && r.getResponseCode() >= 200 && r.getResponseCode() < 300
+                        && r.getData() != null && !r.getData().contains("faultstring"),
+                "Configuring requested claims on SP '" + appName + "' failed: got="
+                        + (r == null ? "null" : r.getResponseCode() + "/" + r.getData()));
+    }
+
+    private static String spRequestedClaim(String uri) {
+        return "<m:claimMappings>"
+                + "<m:localClaim><m:claimUri>" + Utils.escapeXml(uri) + "</m:claimUri></m:localClaim>"
+                + "<m:remoteClaim><m:claimUri>" + Utils.escapeXml(uri) + "</m:claimUri></m:remoteClaim>"
+                + "<m:requested>true</m:requested><m:mandatory>true</m:mandatory>"
+                + "</m:claimMappings>";
+    }
+
+    /** Reads the OAuth app (SP) name for a consumer key via the {@code OAuthAdminService}. */
+    private static String oauthAppName(IdpScope scope, String consumerKey) throws IOException {
+        String body = SOAP_ENV_OPEN
+                + "<soapenv:Body><ns:getOAuthApplicationData xmlns:ns=\"http://org.apache.axis2/xsd\">"
+                + "<ns:consumerKey>" + Utils.escapeXml(consumerKey) + "</ns:consumerKey>"
+                + "</ns:getOAuthApplicationData></soapenv:Body>" + SOAP_ENV_CLOSE;
+        HttpResponse r = SimpleHTTPClient.getInstance().sendSoapRequest(
+                apimBase() + scope.pathSegment + "services/OAuthAdminService", body,
+                "urn:getOAuthApplicationData", scope.adminUser, scope.adminPass);
+        Assert.assertTrue(r != null && r.getData() != null && !r.getData().isBlank(),
+                "OAuthAdminService getOAuthApplicationData failed for key " + consumerKey);
+        String name = between(r.getData(), "applicationName>", "</");
+        Assert.assertNotNull(name, "Could not read SP name for consumer key " + consumerKey + ": " + r.getData());
+        return name;
+    }
+
+    /** Fetches the full SP XML via {@code IdentityApplicationManagementService.getApplication(name)}. */
+    private static String getApplicationXml(IdpScope scope, String appName) throws IOException {
+        String body = SOAP_ENV_OPEN
+                + "<soapenv:Body><ns1:getApplication xmlns:ns1=\"http://org.apache.axis2/xsd\">"
+                + "<ns1:applicationName>" + Utils.escapeXml(appName) + "</ns1:applicationName>"
+                + "</ns1:getApplication></soapenv:Body>" + SOAP_ENV_CLOSE;
+        HttpResponse r = appSoap(scope, "urn:getApplication", body);
+        Assert.assertTrue(r != null && r.getData() != null && r.getData().contains("getApplicationResponse"),
+                "IdentityApplicationManagementService getApplication failed for '" + appName + "': got="
+                        + (r == null ? "null" : r.getResponseCode() + "/" + r.getData()));
+        return r.getData();
+    }
+
+    private static HttpResponse appSoap(IdpScope scope, String action, String body) throws IOException {
+        return SimpleHTTPClient.getInstance().sendSoapRequest(
+                apimBase() + scope.pathSegment + "services/IdentityApplicationManagementService", body, action,
+                scope.adminUser, scope.adminPass);
+    }
+
+    private static String between(String s, String start, String end) {
+        int i = s.indexOf(start);
+        if (i < 0) {
+            return null;
+        }
+        i += start.length();
+        int j = s.indexOf(end, i);
+        return j < 0 ? null : s.substring(i, j);
+    }
+
+    private static String certBase64Der(String resource) throws IOException {
+        String pem = Utils.readClasspathResource(resource);
+        return pem.replace("-----BEGIN CERTIFICATE-----", "")
+                .replace("-----END CERTIFICATE-----", "").replaceAll("\\s", "");
     }
 
     /** Deletes the named IdP if present, then creates it (so PEM/JWKS scenarios never collide on idpIssuerName). */

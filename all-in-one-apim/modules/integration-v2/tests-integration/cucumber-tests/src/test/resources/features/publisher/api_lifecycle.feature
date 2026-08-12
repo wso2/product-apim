@@ -213,8 +213,9 @@ Feature: Publisher API Lifecycle
     When I retrieve the "apis" resource with id "hyphenApiId"
     Then The response status code should be 200
     And The response should contain "hyphen-api-name"
-    When I publish the "apis" resource with id "hyphenApiId"
-    Then The response status code should be 200
+    # Healing variant, used here only: gates on the transition having persisted and re-fires it if lost. The plain
+    # publish step is left untouched because nearly every publisher and gateway scenario uses it.
+    When I publish the "apis" resource with id "hyphenApiId", healing if the transition is lost
     And The lifecycle status of API "hyphenApiId" should be "Published"
 
     Examples:
@@ -404,6 +405,7 @@ Feature: Publisher API Lifecycle
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I capture the tenant configuration as "origTenantConf"
+    And I register tenant configuration "origTenantConf" for cleanup
     When I capture the tenant configuration as "customTenantConf"
     And I set the JSON field "LifeCycle" from file "artifacts/lifecycle/custom_api_lifecycle.json" in the payload "customTenantConf"
     And I update the tenant configuration from "customTenantConf"

@@ -219,6 +219,67 @@ Feature: Admin Key Manager Configuration
       | admin             |
       | admin@tenant1.com |
 
+  # The third tokenType, BOTH (direct AND exchanged on one key manager), must round-trip - and so must a CHANGE of
+  # tokenType, which is not a cosmetic field: EXCHANGED/BOTH are backed by a trusted IdP that the admin API creates
+  # on the way in and DELETES when the type moves to DIRECT, so every transition has to persist correctly. The full
+  # walk BOTH -> EXCHANGED -> DIRECT is asserted here on the control plane; what each value DOES at runtime is
+  # admin/external_idp_jwt.feature.
+  @cap:admin @feat:key-manager-config @type:regression @legacy:ExternalIDPJWTTestCase
+  Scenario Outline: A WSO2-IS-7 key manager persists the BOTH invocation method and every tokenType transition as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-config-token-type-both.json" as "bothKmId"
+    Then The response status code should be 201
+    And The value of response field "tokenType" should be "BOTH"
+    When I retrieve the key manager "bothKmId"
+    Then The response status code should be 200
+    And The value of response field "tokenType" should be "BOTH"
+    When I update the key manager "bothKmId" setting its token type to "EXCHANGED"
+    Then The response status code should be 200
+    When I retrieve the key manager "bothKmId"
+    Then The response status code should be 200
+    And The value of response field "tokenType" should be "EXCHANGED"
+    When I update the key manager "bothKmId" setting its token type to "DIRECT"
+    Then The response status code should be 200
+    When I retrieve the key manager "bothKmId"
+    Then The response status code should be 200
+    And The value of response field "tokenType" should be "DIRECT"
+    When I delete the key manager "bothKmId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Display endpoints: the Developer Portal key-manager listing does NOT echo the stored token/revoke endpoints
+  # verbatim. It advertises displayTokenEndpoint / displayRevokeEndpoint when they are present and non-blank, and
+  # falls back to the real tokenEndpoint / revokeEndpoint otherwise - the contract an operator relies on to show
+  # consumers a public URL while the key manager is configured with an internal one. Both branches are covered: one
+  # key manager carries display endpoints, a second leaves them BLANK. Asserted on each key manager's OWN entry in
+  # the listing (matched by name), never on the whole list, which also carries the Resident Key Manager.
+  @cap:admin @feat:key-manager-config @type:regression @dep:devportal @legacy:ExternalIDPJWTTestCase
+  Scenario Outline: The devportal key-manager listing advertises display endpoints and falls back when they are blank as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-config-display-endpoints.json" as "displayKmId"
+    Then The response status code should be 201
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-config-display-endpoints-blank.json" as "noDisplayKmId"
+    Then The response status code should be 201
+    When I list DevPortal key managers in tenant "<tenant>"
+    Then The response status code should be 200
+    And the devportal key manager "{{displayKmIdName}}" should advertise token endpoint "https://display.is7.example.com:9444/oauth2/token" and revoke endpoint "https://display.is7.example.com:9444/oauth2/revoke"
+    And the devportal key manager "{{noDisplayKmIdName}}" should advertise token endpoint "https://is7.example.com:9444/oauth2/token" and revoke endpoint "https://is7.example.com:9444/oauth2/revoke"
+    When I delete the key manager "displayKmId"
+    Then The response status code should be 200
+    When I delete the key manager "noDisplayKmId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             | tenant       |
+      | admin             | carbon.super |
+      | admin@tenant1.com | tenant1.com  |
+
   # Signature-validation config is NOT enforced at create time for a Token-Exchange (EXCHANGED) key manager:
   # selecting EXCHANGED with neither a PEM certificate nor a JWKS endpoint is accepted and the config persists
   # (201). The missing signer surfaces only at runtime, when a subject token cannot be verified - so this pins

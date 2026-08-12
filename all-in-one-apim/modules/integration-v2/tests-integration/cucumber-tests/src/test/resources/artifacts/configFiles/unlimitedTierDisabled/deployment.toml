@@ -1,0 +1,23 @@
+# Feature-specific TOML overlay for the IntegrationV2-UnlimitedTierDisabled block.
+#
+# Merged ON TOP of the shared `basic` overlay (base + basic + this) via tomlExtraOverlayPath — only the extra
+# key these features need lives here. Ports the config of the legacy `unlimitedTier/deployment.toml` used by
+# UnlimitedTierDisabledTestCase + ConfigurableDefaultPolicyTestCase (both in the legacy
+# `throttling.unlimitedDisable` package, both driven by this ONE key).
+#
+# The key reaches the product as <ThrottlingConfigurations><EnableUnlimitedTier> in api-manager.xml
+# (api-manager.xml.j2 renders `{{apim.throttling.enable_unlimited_tier}}` there) and is read back by
+# ThrottleProperties.isEnableUnlimitedTier(). With it false:
+#   * APIUtil.getTiersFromPolicies no longer injects the synthetic "Unlimited" tier, so naming Unlimited as an
+#     API subscription policy or an application tier fails tier validation → 400 / TIER_NAME_INVALID (900305);
+#   * APIUtil.getDefault{APILevel,Subscription,Application}Policy stop returning "Unlimited" and fall through
+#     to the first key of a TreeMap of the tenant's policies at that level (API level → "10KPerMin");
+#   * APIAdminImpl.getPolicies / getPolicyByNameAndType filter Unlimited out of the admin listings.
+#
+# ConfigurableDefaultPolicy shares this block deliberately: the tenant-config DefaultAPILevelTier /
+# DefaultSubscriptionLevelTier / DefaultApplicationLevelTier overrides are only observable as distinct from
+# BOTH "Unlimited" and the fall-through when Unlimited is disabled, and its "an Unlimited subscription policy
+# is refused" leg needs exactly this key. See testng-v2.xml for why the two features co-exist safely.
+
+[apim.throttling]
+enable_unlimited_tier = false

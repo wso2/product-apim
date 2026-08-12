@@ -28,9 +28,13 @@ Feature: Key Manager Token Issuance
       | admin             |
       | admin@tenant1.com |
 
-  # Also covers OpenIDTokenAPITestCase (openid-scoped password-grant token → scope contains openid; userinfo →
-  # 200; the tenant-path userinfo variant is covered by the admin@tenant1.com row, whose @domain routes userinfo
-  # through /t/<tenant>/).
+  # Also covers OpenIDTokenAPITestCase (openid-scoped password-grant token → scope contains openid; userinfo → 200).
+  # TENANT-PATH VARIANT: the admin@tenant1.com row does exercise t/<tenant>/oauth2/userinfo — but NOT because the
+  # actor's @domain re-routes the request; it does not. The userinfo step resolves the ACTING actor's tenant and
+  # builds the tenant-qualified path explicitly (Utils.getUserInfoEndpointURL(baseUrl, tenantDomain), mirroring the
+  # introspect helper and the legacy tenant branch). Until that was wired, this comment asserted tenant coverage the
+  # suite did not have and BOTH rows hit the super-tenant endpoint — so do not "simplify" the step back to the
+  # no-arg overload without deleting this claim as well.
   @cap:key-manager @feat:token-issuance @type:smoke @rule:openid @legacy:OpenIDTokenTestCase @legacy:OpenIDTokenAPITestCase
   Scenario Outline: Generate an OpenID-scoped token and call userinfo as <actor>
     Given The system is ready

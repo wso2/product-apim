@@ -1,0 +1,39 @@
+{
+  "name": "${UNIQUE:APIMTestSse}",
+  "context": "${UNIQUE:apimSseContext}",
+  "version": "1.0.0",
+  "type": "SSE",
+  "enableSchemaValidation": false,
+  "transport": [],
+  "tags": ["sse"],
+  "policies": ["AsyncUnlimited"],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": "Authorization",
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": ["oauth2"],
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "accessControl": "NONE",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3021"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3021"
+    }
+  },
+  "endpointImplementationType": "ENDPOINT",
+  "operations": [
+    {
+      "target": "/*",
+      "verb": "SUBSCRIBE",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+<!--
+  Governance-registry workflow-extensions.xml for the cross-tenant subscription block.
+
+  IDENTICAL to the product's shipped default-workflow-extensions.xml except for ONE line: SubscriptionUpdate
+  runs the APPROVAL executor instead of the Simple one. Everything else stays Simple deliberately — the
+  cross-tenant block's other scenarios create applications, subscriptions and APIs, and flipping those to
+  Approval would park them pending and break flows whose subject is not the workflow at all. A subscription
+  UPDATE is performed by exactly one scenario in the block, so the blast radius of this single flip is that
+  scenario.
+
+  Why the flip is needed at all: the Simple executor persists NO workflow entry (it sets APPROVED and completes
+  in-process), and GET admin/v4/workflows returns only CREATED-status entries. So the tenantDomain a
+  cross-tenant subscription update is recorded against — the observable ported from
+  CrossTenantSubscriptionUpdateTestCase#verifyTenantDomainInWorkflowsTable — is only visible while the task is
+  parked awaiting approval.
+-->
+<WorkFlowExtensions>
+    <APIRevisionDeployment executor="org.wso2.carbon.apimgt.impl.workflow.APIRevisionDeploymentSimpleWorkflowExecutor"/>
+    <ApplicationCreation executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationCreationSimpleWorkflowExecutor"/>
+    <ApplicationUpdate executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationUpdateSimpleWorkflowExecutor"/>
+    <ProductionApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationSimpleWorkflowExecutor"/>
+    <SandboxApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationSimpleWorkflowExecutor"/>
+    <SubscriptionCreation executor="org.wso2.carbon.apimgt.impl.workflow.SubscriptionCreationSimpleWorkflowExecutor"/>
+    <SubscriptionUpdate executor="org.wso2.carbon.apimgt.impl.workflow.SubscriptionUpdateApprovalWorkflowExecutor"/>
+    <UserSignUp executor="org.wso2.carbon.apimgt.impl.workflow.UserSignUpSimpleWorkflowExecutor"/>
+    <SubscriptionDeletion executor="org.wso2.carbon.apimgt.impl.workflow.SubscriptionDeletionSimpleWorkflowExecutor"/>
+    <ApplicationDeletion executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationDeletionSimpleWorkflowExecutor"/>
+    <APIStateChange executor="org.wso2.carbon.apimgt.impl.workflow.APIStateChangeSimpleWorkflowExecutor"/>
+    <APIProductStateChange executor="org.wso2.carbon.apimgt.impl.workflow.APIProductStateChangeSimpleWorkflowExecutor"/>
+</WorkFlowExtensions>

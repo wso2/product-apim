@@ -1,0 +1,33 @@
+{
+  "name": "${UNIQUE:DefaultTierGraphQL}",
+  "context": "${UNIQUE:defaultTierGraphQL}",
+  "version": "1.0.0",
+  "type": "GRAPHQL",
+  "lifeCycleStatus": "CREATED",
+  "transport": [
+    "http",
+    "https"
+  ],
+  "policies": [
+    "Silver",
+    "Gold"
+  ],
+  "apiThrottlingPolicy": null,
+  "securityScheme": [
+    "oauth_basic_auth_api_key_mandatory",
+    "oauth2"
+  ],
+  "visibility": "PUBLIC",
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3003/graphql"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3003/graphql"
+    }
+  },
+  "gatewayVendor": "wso2",
+  "gatewayType": "wso2/synapse"
+}

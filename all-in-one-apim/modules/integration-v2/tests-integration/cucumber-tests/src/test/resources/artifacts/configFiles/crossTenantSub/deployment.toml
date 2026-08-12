@@ -1,0 +1,13 @@
+# Feature-specific TOML overlay for the IntegrationV2-CrossTenantSubscription block.
+#
+# Merged ON TOP of the shared `basic` overlay (itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the ONE extra key
+# cross-tenant subscription needs lives here; everything else is inherited.
+#
+# enable_cross_tenant_subscriptions lets a subscriber in one tenant subscribe to (and get a token
+# for / invoke) an API published in another tenant with subscriptionAvailability=ALL_TENANTS. It is
+# OFF by default in the distribution, so the cross-tenant subscribe would otherwise be refused.
+# (Ported from the legacy CrossTenantSubscriptionTestSuite overlay's one load-bearing key.)
+
+[apim.devportal]
+enable_cross_tenant_subscriptions = true

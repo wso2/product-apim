@@ -1,0 +1,19 @@
+{
+  "name": "${UNIQUE:DefaultTierAPI}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:defaultTier}",
+  "gatewayType": "wso2/synapse",
+  "policies": [
+    "Silver",
+    "Gold"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  }
+}
