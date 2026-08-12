@@ -20,8 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for publisher/streaming-design — WebSocket API create, deploy and publish (design-plane only;
- * invocation lives in gateway invocation). Self-contained {@code @cleanup} scenario. Extends
+ * Runner for publisher/streaming-design — WebSocket, SSE, WebSub and Async API design (invocation lives in
+ * gateway invocation). Self-contained {@code @cleanup} scenario. Extends
  * {@link BaseBlockRunner} for the block boot-failure guard and runner-scoped cleanup safety net.
  */
 @CucumberOptions(

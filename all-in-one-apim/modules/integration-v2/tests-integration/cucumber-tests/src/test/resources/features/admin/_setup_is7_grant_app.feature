@@ -1,15 +1,15 @@
 @setup
 Feature: Setup - WSO2 IS 7.x runtime app for grant-type tests
 
-  Creates and deploys an API to the node backend, publishes it, creates an application, generates keys against
+  Creates and deploys an API to the node backend in each tenant, publishes it, creates an application, generates keys against
   the runner-registered WSO2-IS-7 external key manager (so APIM does DCR into IS and returns IS client credentials), and
   subscribes. Asserts only create success; the created ids are registered for the runner's AfterClass cleanup.
   Later grant-type scenarios in the same runner reuse this app's IS credentials and the API context, so this
   runs once (listed first by the _setup_ prefix) and is not torn down per-scenario.
 
-  Scenario: Provision the IS7-bound API, application and keys
+  Scenario Outline: Provision the IS7-bound API, application and keys as <actor>
     Given The system is ready
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "<actor>"
     # Register the external key manager first - the runner-shared KM fixture every later keygen/token step uses.
     When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "grantKm"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
@@ -32,3 +32,9 @@ Feature: Setup - WSO2 IS 7.x runtime app for grant-type tests
     """
     And I subscribe to API "createdApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "subscriptionId"
     Then The response status code should be 201
+    And I stash the token-exchange fixture for the acting tenant
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

@@ -41,6 +41,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -83,6 +84,30 @@ public class Utils {
     /** The block's gateway {@code wss://} base URL from the shared context; throws if not booted yet. */
     public static String getBaseGatewayWssUrl() {
         return requiredContextUrl("baseGatewayWssUrl");
+    }
+
+    /**
+     * The block's WebSub EVENT-RECEIVER base URL (the synapse {@code WebhookServer} inbound,
+     * {@code Constants.WEBSUB_EVENT_RECEIVER_PORT}) from the shared context; throws if not booted yet. This is
+     * where an event SOURCE posts content for a WebSub API's hub to fan out — a DIFFERENT listener from the
+     * gateway passthrough, so it is not derivable from {@link #getBaseGatewayUrl()}. Append the API's
+     * {@code context}/version, {@code Constants.WEBSUB_EVENT_RECEIVER_RESOURCE} and {@code ?topic=<topic>}.
+     */
+    public static String getBaseWebSubEventReceiverUrl() {
+        return requiredContextUrl("baseWebSubEventReceiverUrl");
+    }
+
+    /**
+     * HOST-reachable base URL of the node backend app listening on {@code containerPort} — for reading a backend's
+     * own state back from the test JVM (the sse-emitter's stream diagnostics, the websub-receiver's delivery log).
+     * An API's ENDPOINT must instead point at {@code http://nodebackend:<containerPort>}, the in-network alias.
+     *
+     * <p>Only valid in a block that declares {@code initBackend=true} — {@code BlockLifecycleListener} has then
+     * already started the singleton, so this resolves the running container's published port. In a block without
+     * it this would boot the backend mid-scenario, which is why it is not a general-purpose helper.
+     */
+    public static String getNodeBackendUrl(int containerPort) {
+        return NodeAppServer.getInstance().getBaseUrl(containerPort);
     }
 
     private static String requiredContextUrl(String key) {
@@ -131,7 +156,8 @@ public class Utils {
      * from {@code pollStart} and returns the first non-null attempt outcome, or {@code null} when the window
      * closes. Holds NO policy of its own — the accept condition, exception tolerance and failure verdict all
      * belong to the caller, which is exactly what lets the two very different public contracts built on it
-     * ({@link #awaitWithRetry} for PREREQUISITE state, {@link #retryUntil} for a scenario's ASSERTION TARGET)
+     * ({@link #retryUntil} for a scenario's ASSERTION TARGET; {@code HealGate} for prerequisite state that
+     * may need re-triggering)
      * share one implementation of the loop instead of forking it. Keep it that way: a policy flag here would
      * collapse the two contracts into one ambiguous method.
      */
@@ -166,7 +192,7 @@ public class Utils {
      * itself (§7/§12). The deadline is {@code max(timeoutMillis, RUNTIME_PROPAGATION_TIMEOUT)} — the one ceiling,
      * so no call site can drift below it (one hand-rolled loop had, silently capping itself at 150s).
      *
-     * <p>Contrast {@link #awaitWithRetry}, and pick deliberately — the choice states the intent:
+     * <p>Contrast {@link HealGate#awaitOrHeal}, and pick deliberately — the choice states the intent:
      * <ul>
      *   <li>this returns the last result / that returns nothing (boolean probe);</li>
      *   <li>this retries ONLY {@link IOException} — a bad context key must fail FAST rather than be masked as a
@@ -196,6 +222,73 @@ public class Utils {
             }
         });
         return accepted != null ? accepted : lastResult.get();
+    }
+
+    /** One sample for {@link #awaitSettledCount}: reads the counter under test. Only {@link IOException} is retried. */
+    @FunctionalInterface
+    public interface CountProbe {
+        int sample() throws IOException;
+    }
+
+    /**
+     * Outcome of {@link #awaitSettledCount}: the last value observed, whether it had STOPPED CHANGING, and how
+     * many samples were taken (a diagnostic — one sample means the quiet window was never actually observed).
+     * {@code value} is -1 when the probe never returned at all.
+     */
+    public record SettledCount(int value, boolean settled, int samples) { }
+
+    /**
+     * THE retry envelope for a step asserting a MONOTONIC COUNTER's final value: polls {@code probe} until the
+     * value has been unchanged for {@code quietMillis}, and reports whether it settled so the caller can assert
+     * both that it did and the EXACT value (§12).
+     *
+     * <p>Exists because {@link #retryUntil} CANNOT express this assertion safely. Its accept condition can only
+     * say "has it reached N yet", so the natural spelling is accept on {@code count >= N} then assert
+     * {@code == N} — which passes the instant the counter touches N, while more arrivals are still in flight. That
+     * is the §12-forbidden widened form wearing an exact assertion: an OVER-delivery lands after the step already
+     * passed, so a duplicate or an unthrottled extra is INVISIBLE. Waiting a fixed period instead would be a
+     * {@code Thread.sleep} (§4) and would still only move the race. Settling is the only formulation that both
+     * bounds the wait and can observe an over-count, and it is what makes "exactly N were delivered" a real
+     * assertion rather than "at least N had been delivered at some sampling instant".
+     *
+     * <p>Sound ONLY for a counter that stops changing once the system is quiescent (deliveries for a fixed set of
+     * published events). Never use it for a counter something keeps incrementing — that can never settle. Pick
+     * {@code quietMillis} comfortably above the observed gap BETWEEN two arrivals, not above the total fan-out
+     * time: a gap longer than the quiet window would settle early and under-count.
+     *
+     * <p>{@code timeoutMillis} is a FLOOR, not a bound: like {@link #retryUntil} this deadline is
+     * {@code max(timeoutMillis, RUNTIME_PROPAGATION_TIMEOUT)}, so a call site CANNOT ask for a shorter wait than
+     * the shared propagation ceiling. Passing a small value to cap the pathological case does nothing — a counter
+     * that never goes quiet still polls for the full ceiling. What actually bounds the normal case is
+     * {@code quietMillis}: the call returns as soon as the value holds still for that long, so a settled counter
+     * costs one quiet window regardless of what is passed here.
+     */
+    public static SettledCount awaitSettledCount(long quietMillis, long timeoutMillis, CountProbe probe)
+            throws InterruptedException {
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        AtomicReference<Integer> lastValue = new AtomicReference<>();
+        AtomicReference<Long> lastChange = new AtomicReference<>(pollStart);
+        AtomicReference<Integer> samples = new AtomicReference<>(0);
+        SettledCount settled = pollWithin(pollStart, deadline, () -> {
+            int value;
+            try {
+                value = probe.sample();
+            } catch (IOException transientDuringWarmup) {
+                // Same tolerance as retryUntil: only connectivity is retried, anything else fails fast.
+                return null;
+            }
+            samples.set(samples.get() + 1);
+            long now = System.currentTimeMillis();
+            if (!Integer.valueOf(value).equals(lastValue.getAndSet(value))) {
+                // Changed (this includes the very first sample) — restart the quiet window.
+                lastChange.set(now);
+                return null;
+            }
+            return now - lastChange.get() >= quietMillis ? new SettledCount(value, true, samples.get()) : null;
+        });
+        return settled != null ? settled
+                : new SettledCount(lastValue.get() == null ? -1 : lastValue.get(), false, samples.get());
     }
 
     /**
@@ -257,80 +350,6 @@ public class Utils {
         } catch (RuntimeException notAJwt) {
             return "credential=" + masked + " (opaque or unparseable — no jti to correlate)";
         }
-    }
-
-    /** A readiness probe for {@link #awaitWithRetry}: true once the awaited state is observable. */
-    @FunctionalInterface
-    public interface ReadinessProbe {
-        boolean isReady() throws Exception;
-    }
-
-    /** The re-trigger for {@link #awaitWithRetry}: re-fires the action whose propagation event was lost. */
-    @FunctionalInterface
-    public interface ReadinessAction {
-        void trigger() throws Exception;
-    }
-
-    /**
-     * SELF-HEALING readiness gate for PREREQUISITE state (never for a scenario's assertion target): polls
-     * {@code probe} with the {@link #pollPause} tiers for a full {@code RUNTIME_PROPAGATION_TIMEOUT} window,
-     * and on exhaustion fires {@code reTrigger} and waits again (shorter 60s windows — a re-emitted event
-     * lands fast or not at all), up to {@code maxAttempts} total attempts. Exists because the product's
-     * runtime-propagation events are delivered at-most-once: a gateway that consumes a deploy event and then
-     * fails its artifact fetch NEVER retries ("Storage returned null"), so no amount of waiting can succeed —
-     * only re-firing the action re-emits the event. Every heal logs a grep-able WARN ("self-heal: ...") so
-     * occurrences stay countable across runs — this compensates for a product robustness gap and must not
-     * silently hide its frequency. A probe exception counts as not-ready (indistinguishable during warm-up).
-     */
-    public static void awaitWithRetry(String what, ReadinessProbe probe, ReadinessAction reTrigger, int maxAttempts)
-            throws InterruptedException {
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            long start = System.currentTimeMillis();
-            long deadline = start + (attempt == 1 ? Constants.RUNTIME_PROPAGATION_TIMEOUT : 60_000L);
-            Boolean ready = pollWithin(start, deadline, () -> {
-                try {
-                    return probe.isReady() ? Boolean.TRUE : null;
-                } catch (InterruptedException interrupted) {
-                    // Cancellation is NOT a transient probe failure. Throwing InterruptedException already CLEARED
-                    // the interrupt flag, so swallowing it here would let this method keep polling — and even fire
-                    // MUTATING re-triggers (e.g. re-deploying an API) — after the thread was asked to stop.
-                    Thread.currentThread().interrupt();
-                    throw interrupted;
-                } catch (Exception transientProbeFailure) {
-                    // not-ready and probe-failed look identical during warm-up — keep polling within the window
-                    return null;
-                }
-            });
-            if (ready != null) {
-                long waitedSeconds = (System.currentTimeMillis() - start) / 1000;
-                if (attempt > 1) {
-                    log.warn("self-heal: " + what + " became ready after re-trigger (attempt "
-                            + attempt + "/" + maxAttempts + ", " + waitedSeconds + "s into the window)");
-                } else if (waitedSeconds >= 60) {
-                    // Slow-pass watch: the delayed-but-not-dropped population creeping toward the window
-                    // edge — the early-warning signal a silent pass would hide.
-                    log.warn("self-heal-watch: " + what + " became ready only after " + waitedSeconds
-                            + "s (no re-trigger needed — delayed, not dropped)");
-                }
-                return;
-            }
-            if (attempt < maxAttempts) {
-                log.warn("self-heal: re-triggering " + what + " (attempt " + (attempt + 1) + "/" + maxAttempts
-                        + ") — runtime-propagation event presumed dropped after an exhausted wait window");
-                try {
-                    reTrigger.trigger();
-                } catch (InterruptedException interrupted) {
-                    // Same rule as the probe: propagate cancellation instead of reporting it as a re-trigger
-                    // failure (which would fail the test with a misleading message and hide the interruption).
-                    Thread.currentThread().interrupt();
-                    throw interrupted;
-                } catch (Exception reTriggerFailure) {
-                    Assert.fail("self-heal re-trigger for " + what + " failed: " + reTriggerFailure);
-                }
-            }
-        }
-        Assert.fail(what + " did not become ready within " + maxAttempts
-                + " attempt(s) including self-heal re-triggers (runtime-propagation event presumed dropped)");
     }
 
     /**
@@ -407,6 +426,21 @@ public class Utils {
     public static String getUserInfoEndpointURL(String baseUrl) {
 
         return baseUrl + Constants.DEFAULT_APIM_USERINFO_EP;
+    }
+
+    /**
+     * Tenant-aware OIDC userinfo endpoint. A super-tenant token uses {@code oauth2/userinfo}; a TENANT token must
+     * be presented at the tenant-qualified {@code t/<tenant>/oauth2/userinfo} path — the actor's {@code @domain}
+     * does NOT re-route the super path by itself, so calling the un-prefixed endpoint with a tenant token exercises
+     * the super-tenant route instead (which is what the no-arg overload above does). Mirrors
+     * {@link #getIntrospectEndpointURL(String, String)} and the legacy
+     * {@code OpenIDTokenAPITestCase#testCallUserInfoApiWithOpenIdJWTAccessToken}, which prefixes
+     * {@code t/<tenant>/} for any non-super tenant.
+     */
+    public static String getUserInfoEndpointURL(String baseUrl, String tenantDomain) {
+        return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? baseUrl + Constants.DEFAULT_APIM_USERINFO_EP
+                : baseUrl + "t/" + tenantDomain + "/" + Constants.DEFAULT_APIM_USERINFO_EP;
     }
 
     /** OAuth2 token introspection endpoint: {@code oauth2/introspect} (POST {@code token=…} with Basic admin auth). */
@@ -771,6 +805,34 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId;
     }
 
+    /** DevPortal — the topics a streaming (async) API exposes: {@code /apis/{apiId}/topics} (GET). One entry per
+     *  async operation, so an SSE/WebSub API declaring a single {@code /*} SUBSCRIBE operation reports count 1. */
+    public static String getDevportalApiTopicsURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/topics";
+    }
+
+    /** DevPortal — list all visible APIs: {@code /apis} (GET). Combined with the {@code X-WSO2-Tenant} header this
+     *  is the cross-tenant discovery listing (an ALL_TENANTS API published in another tenant is visible here). */
+    public static String getDevportalApisURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis";
+    }
+
+    /** DevPortal — list the key managers of a tenant: {@code /key-managers} (GET). With the {@code X-WSO2-Tenant}
+     *  header this returns another tenant's key managers (the cross-tenant KM-listing facet). Distinct from the
+     *  admin-plane {@link #getKeyManagersURL(String)} used for KM registration CRUD. */
+    public static String getDevportalKeyManagersURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "key-managers";
+    }
+
+    /** DevPortal — list the throttling policies of a level: {@code /throttling-policies/{application|subscription}}
+     *  (GET). This is the CONSUMER-facing policy listing (the plans an application create may choose from),
+     *  distinct from the publisher-plane {@link #getThrottlingPoliciesByTypeURL(String, String)} and the admin-plane
+     *  CRUD URLs. With the {@code X-WSO2-Tenant} header it returns ANOTHER tenant's policies — the cross-tenant
+     *  policy-visibility facet, which must never leak the calling tenant's own policies. */
+    public static String getDevportalThrottlingPoliciesURL(String baseUrl, String policyLevel) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "throttling-policies/" + policyLevel;
+    }
+
     /** DevPortal — an API's document metadata: {@code /apis/{apiId}/documents/{docId}} (GET). Visibility-gated. */
     public static String getDevportalApiDocumentURL(String baseUrl, String apiId, String documentId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/documents/" + documentId;
@@ -879,7 +941,16 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION";
     }
 
-    public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
+    /**
+     * DevPortal — one application key mapping ({@code applications/{id}/oauth-keys/{keyMappingId}}). The same
+     * resource serves PUT (update) and DELETE (remove the keys), so both callers share this builder rather
+     * than each assembling the path.
+     *
+     * <p>Not to be confused with {@link #getCleanupRegistrationURL}: {@code clean-up} discards APIM's
+     * key-mapping record for a partial/failed registration, whereas DELETE here is the real "delete keys"
+     * operation the DevPortal UI performs.
+     */
+    public static String getOAuthKeyURL(String baseUrl, String applicationId, String keyMappingId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" + keyMappingId;
     }
 
@@ -934,6 +1005,37 @@ public class Utils {
     /** Carbon admin SOAP service — identity application management (service-provider get/update). */
     public static String getIdentityApplicationManagementServiceURL(String baseUrl) {
         return baseUrl + "services/IdentityApplicationManagementService";
+    }
+
+    /**
+     * Carbon admin SOAP service — registry resource admin. The only interface for reading/writing the
+     * governance-registry {@code workflow-extensions.xml} that selects the workflow executors (Simple = auto,
+     * Approval = manual). Used by the approval-workflow setup/teardown to flip executors and restore them.
+     */
+    public static String getResourceAdminServiceURL(String baseUrl) {
+        return baseUrl + "services/ResourceAdminService";
+    }
+
+    /**
+     * Admin workflows list endpoint filtered by workflow type (e.g. {@code AM_APPLICATION_CREATION},
+     * {@code AM_SUBSCRIPTION_CREATION}, {@code AM_API_STATE}). Returns the pending tasks of that type,
+     * each carrying a {@code referenceId} and a {@code properties} map (applicationName/apiName/...).
+     */
+    public static String getWorkflowsByTypeURL(String baseUrl, String workflowType) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows?workflowType="
+                + URLEncoder.encode(workflowType, StandardCharsets.UTF_8);
+    }
+
+    /** Admin single-workflow-by-external-reference endpoint (GET returns 404 once the task is cleaned up). */
+    public static String getWorkflowByReferenceURL(String baseUrl, String externalWorkflowReference) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows/"
+                + URLEncoder.encode(externalWorkflowReference, StandardCharsets.UTF_8);
+    }
+
+    /** Admin approve/reject endpoint — POST {@code {"status":"APPROVED"|"REJECTED","description":"..."}}. */
+    public static String getUpdateWorkflowStatusURL(String baseUrl, String workflowReferenceId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows/update-workflow-status?workflowReferenceId="
+                + URLEncoder.encode(workflowReferenceId, StandardCharsets.UTF_8);
     }
 
     public static String getNewAPIVersionURL(String baseUrl, String resourceType, String newVersion, Boolean defaultVersion, String apiId) {
@@ -1271,16 +1373,6 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "organizations/" + organizationId;
     }
 
-    /** SOAP admin service — claim-metadata management (register local claims). */
-    public static String getClaimMetadataMgtServiceURL(String baseUrl) {
-        return baseUrl + "services/ClaimMetadataManagementService";
-    }
-
-    /** DevPortal REST API — key managers visible to the calling user's organization. */
-    public static String getDevportalKeyManagersURL(String baseUrl) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "key-managers";
-    }
-
     /** Admin REST API — tenant configuration (get/update). */
     public static String getTenantConfigURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "tenant-config";
@@ -1381,10 +1473,6 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/swagger";
     }
 
-    public static String getAPIDefinitionURL(String baseUrl) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-openapi";
-    }
-
     /** Publisher REST API — AsyncAPI definition import (multipart {@code file} + {@code additionalProperties}). */
     public static String getImportAsyncApiURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-asyncapi";
@@ -1403,6 +1491,15 @@ public class Utils {
     /** Publisher REST API — available throttling policies for a policy level (subscription / api / application). */
     public static String getPublisherThrottlingPoliciesURL(String baseUrl, String policyLevel) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "throttling-policies/" + policyLevel;
+    }
+
+    /**
+     * Publisher REST API — the publisher settings document, which advertises (among other things) the tenant's
+     * resolved default advanced/subscription throttling policies (SettingsMappingUtil reads them through
+     * APIUtil.getDefaultAPILevelPolicy / getDefaultSubscriptionPolicy).
+     */
+    public static String getPublisherSettingsURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "settings";
     }
 
 

@@ -164,7 +164,7 @@ Feature: Admin Organization Visibility (B2B)
     Then The response status code should be 201
     When I put the following JSON payload in context as "polSubBronze"
     """
-    {"applicationId": "{{polAppId}}", "apiId": "{{polApiId}}", "throttlingPolicy": "Bronze"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Bronze"}
     """
     And I subscribe to API "polApiId" using application "polAppId" with payload "polSubBronze" as "polSubId"
     Then The response status code should be 201

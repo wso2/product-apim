@@ -1,0 +1,46 @@
+{
+  "name": "${UNIQUE:EndpointSecDigest}",
+  "context": "${UNIQUE:endpointSecDigest}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "DIGEST",
+        "username": "digestProdUser",
+        "password": "digestProdPass"
+      },
+      "sandbox": {
+        "enabled": true,
+        "type": "DIGEST",
+        "username": "digestSandUser",
+        "password": "digestSandPass"
+      }
+    }
+  },
+  "description": "Publisher-plane contract: an API with DIGEST endpoint security on both production and sandbox. Asserts the Publisher API round-trips the DIGEST type and username and redacts the password. No gateway invocation (no digest backend in the harness).",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/sec",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

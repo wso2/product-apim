@@ -456,6 +456,30 @@ public final class TenantUserProvisioner {
         TestContext.setShared(tenantDomain, tenant);
     }
 
+    /**
+     * Registers an ALREADY-EXISTING runtime user as a resolvable ACTOR in the tenant bean, WITHOUT creating it
+     * (CLAUDE.md §14: a principal a scenario brings into being through a product API must become a runtime actor
+     * so the standard auth composites, {@link Identity} token getters and {@code ResourceCleanup} all apply).
+     * The sibling {@link #addUser} / {@link #addStoreUserAsActor} both CREATE the user over SOAP first; this one
+     * is for a user the PRODUCT created on the scenario's behalf — today the DevPortal self-sign-up user, whose
+     * creation is the behaviour under test and therefore must not be duplicated by a provisioning call.
+     *
+     * @param tenantDomain tenant the user lives in (and whose actor set it joins)
+     * @param userKey      the actor key used to resolve it (e.g. {@code signupUser})
+     * @param username     the tenant-aware (unqualified) username the product created
+     * @param password     the user's password, for DCR + password-grant token minting
+     */
+    public static void registerRuntimeUserAsActor(String tenantDomain, String userKey, String username,
+                                                  String password) {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User actor = new User();
+        actor.setUserName(username + Constants.CHAR_AT + tenantDomain);
+        actor.setPassword(password);
+        actor.setKey(userKey);
+        tenant.addTenantUsers(actor);
+        TestContext.setShared(tenantDomain, tenant);
+    }
+
     private static String storeProp(String name, String value) {
         return "<xsd:properties><xsd:name>" + Utils.escapeXml(name) + "</xsd:name><xsd:value>"
                 + Utils.escapeXml(value) + "</xsd:value></xsd:properties>";
@@ -572,8 +596,13 @@ public final class TenantUserProvisioner {
                 payload, "urn:deleteRole", tenantAdmin.getUserName(), tenantAdmin.getPassword());
     }
 
-    /** Deletes a user (RemoteUserStoreManagerService {@code deleteUser}). Best-effort cleanup. */
-    public static void deleteUser(String tenantDomain, String userName) throws IOException {
+    /**
+     * Deletes a user (RemoteUserStoreManagerService {@code deleteUser}) as the tenant's admin — a user delete is
+     * an admin operation, so the deleting principal is always the tenant admin, never the user itself. Returns
+     * the raw response so a caller that must SEE the outcome (the {@code ResourceCleanup} sweep, which warns on a
+     * non-2xx so a leaked user is visible) can inspect it; the best-effort inline callers ignore it.
+     */
+    public static HttpResponse deleteUser(String tenantDomain, String userName) throws IOException {
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
         User tenantAdmin = tenant.getTenantAdmin();
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
@@ -581,8 +610,9 @@ public final class TenantUserProvisioner {
                 + "<soapenv:Header/><soapenv:Body>"
                 + "<ser:deleteUser><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName></ser:deleteUser>"
                 + "</soapenv:Body></soapenv:Envelope>";
-        SimpleHTTPClient.getInstance().sendSoapRequest(Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()),
-                payload, "urn:deleteUser", tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        return SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()), payload, "urn:deleteUser",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
     }
 
     /**

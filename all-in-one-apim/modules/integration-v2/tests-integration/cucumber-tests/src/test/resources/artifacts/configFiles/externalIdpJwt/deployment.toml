@@ -1,0 +1,57 @@
+# Feature-specific TOML overlay for the IntegrationV2-ExternalIdpJwt block.
+#
+# Merged ON TOP of the shared `basic` overlay (itself merged onto the product distribution deployment.toml) via
+# the block's `tomlExtraOverlayPath`, so only the keys this feature needs live here.
+#
+# This is the v2 equivalent of the legacy `configFiles/idpjwt/deployment.toml` harness applied by
+# ExternalIDPJWTTestSuite's @BeforeTest. That legacy file was a WHOLE server config (14 KB: DB, keystore, gateway
+# environments, CORS, resource.access_control, an analytics/Solace stanza, a token-persistence issuer, a gateway
+# artifact skip-list) of which almost everything is either a distribution default today or irrelevant to the test.
+# Only the keys that actually change the behaviour under test are carried over, and each is load-bearing:
+#
+#   [apim.jwt] enable = true
+#       Turns on backend-JWT generation. WITHOUT it the gateway injects no X-JWT-Assertion header and the whole
+#       point of the key manager's claimMapping - that a remote claim is translated into the local dialect on the
+#       way to the backend - is unobservable. (Legacy idpjwt set exactly this.)
+#   encoding = "base64" / header = "X-JWT-Assertion" / claim_dialect = "http://wso2.org/claims"
+#       The reflected-assertion decode step reads THAT header and base64-decodes it, and the local claim URIs the
+#       key manager maps onto (http://wso2.org/claims/givenname, ...) are the dialect ones. Stated explicitly
+#       rather than relied on as a default so the assertion and the config cannot drift apart. (Legacy set
+#       enable/encoding/claim_dialect; the same trio the ApplicationAttributes overlay states.)
+#   [apim.jwt.gateway_generator] excluded_claims = ["http://idp.org/claims/mobileno"]
+#       LOAD-BEARING, and the reason it is here rather than assumed: the gateway JWT generator
+#       (APIMgtGatewayJWTGeneratorImpl#populateCustomClaims) copies EVERY claim of the validated token into the
+#       backend JWT except a hard-coded restricted set and this configured list, and the claim TRANSFORMER
+#       (DefaultJWTTransformer#transform) renames only the MAPPED claims and passes unmapped ones through
+#       VERBATIM. So an unmapped remote claim reaches the backend unless it is excluded here. That makes two
+#       distinct, separately-asserted rules out of what the legacy test conflated into one "claim not in jwt"
+#       check: an unmapped-and-NOT-excluded remote claim passes through under its original name, while
+#       http://idp.org/claims/mobileno - unmapped AND excluded - is absent. (Legacy idpjwt excluded exactly this
+#       claim.)
+#
+# Deliberately NOT carried over from the legacy file:
+#   - [oauth.grant_type.token_exchange] enable/allow_refresh_tokens/iat_validity_period : already the
+#     distribution default (verified in distribution/product/src/main/conf/deployment.toml), so the exchange half
+#     of the tokenType lifecycle works without an overlay key.
+#   - [apim.jwt_authenitcation] subscription_validation_via_km : the gateway JWT validator now always validates
+#     the subscription through the key manager (JWTValidator#validateSubscriptionUsingKeyManager is
+#     unconditional), so the switch no longer gates the behaviour under test.
+#   - client-truststore.jks : legacy needed extra trust because its second key manager validated against a JWKS
+#     endpoint served over TLS by a test backend. Both key managers here pin a committed PEM certificate, so no
+#     outbound TLS trust is involved. (JWKS-endpoint self-validation for an external KM is already covered by the
+#     IS7 blocks, whose wso2is7*.json use certificates.type=JWKS.)
+#   - the thirdparty "custom" key-manager connector jar : the WSO2-IS-7 connector that ships in the pack is used
+#     instead, with its management endpoints never contacted.
+#   - signing_algorithm : left unset so it takes its default, SHA256withRSA — the backend JWT is signed and its
+#     header carries alg RS256. The scenarios assert that algorithm, so stating the key here would only restate a
+#     value the product already supplies. The key is not inert, though: setting it to NONE disables signing
+#     entirely, which is exactly why the algorithm is asserted rather than assumed.
+
+[apim.jwt]
+enable = true
+encoding = "base64"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+
+[apim.jwt.gateway_generator]
+excluded_claims = ["http://idp.org/claims/mobileno"]

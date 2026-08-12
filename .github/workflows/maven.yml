@@ -112,7 +112,7 @@ jobs:
   # produced by the same pre-integration-test execs), and the Maven repo (run-scoped cache) with the
   # integration-v2 matrix. The execs bind to pre-integration-test, which `mvn install` runs but `mvn test`
   # does not - so matrix entries `docker load` the images and unpack the staging, and never rebuild either.
-  # The public wso2/wso2is image is NOT shipped: the matrix pulls it from Docker Hub on demand.
+  # Public IS and Solace broker images are not shipped; Testcontainers pulls them on demand.
   v2-build-images:
     runs-on: ubuntu-latest
     # Least privilege for GITHUB_TOKEN: this job only checks out sources (cache and artifact upload use the
@@ -143,23 +143,22 @@ jobs:
         run: >
           mvn clean install -f all-in-one-apim/pom.xml
           -Dmaven.test.skip=true -DskipBenchMarkTest=true -DskipRestartTests=true
-      - name: Build APIM + node Docker images (no suite)
+      - name: Build integration Docker images (no suite)
         working-directory: all-in-one-apim/modules/integration-v2
         run: >
           mvn install -pl tests-integration/cucumber-tests -am -DskipTests
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
-      # Derive the APIM image name from the same pom property the build uses, so a version bump needs no workflow
-      # edit (single source of truth: apim.docker.image.name = wso2am:${apim.server.version}-jdk21).
-      - name: Resolve APIM artifact names
+      # Resolve image names from the same pom properties used by the build.
+      - name: Resolve Docker image names
         working-directory: all-in-one-apim/modules/integration-v2
         run: |
           echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
-      # Only the NON-PUBLIC images travel by tar (the APIM image is built here, not published anywhere);
-      # the public wso2/wso2is image is pulled from Docker Hub on demand by the matrix's testcontainers.
+          echo "SOLACE_SHIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=solace.shim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
+      # Only locally built images travel by tar; public images are pulled by the matrix.
       - name: Save Docker images and IS staging
         run: |
           mkdir -p /tmp/v2-images
-          docker save "$APIM_IMAGE" node-app-server:latest | gzip > /tmp/v2-images/images.tar.gz
+          docker save "$APIM_IMAGE" node-app-server:latest "$SOLACE_SHIM_IMAGE" | gzip > /tmp/v2-images/images.tar.gz
           # The external-KM blocks read these staged files at runtime (see BlockLifecycleListener /
           # DynamicApimContainer#withExternalKmTrust); they exist only where pre-integration-test ran.
           tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -czf \

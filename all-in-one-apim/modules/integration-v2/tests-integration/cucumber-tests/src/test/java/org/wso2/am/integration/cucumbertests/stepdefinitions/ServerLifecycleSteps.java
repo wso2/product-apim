@@ -67,8 +67,11 @@ public class ServerLifecycleSteps {
 
         Assert.assertEquals(response.getResponseCode(), 200,
                 "ServerAdmin restartGracefully call failed: " + response.getData());
-        Assert.assertTrue(response.getData().contains("true"),
-                "ServerAdmin restartGracefully did not return true: " + response.getData());
+        // Pin the RETURN ELEMENT, not the bare word: the envelope carries several namespaces and any fault text, so
+        // contains("true") is satisfiable without restartGracefully having returned true. Same form as the
+        // isExistingUser assertions in SecondaryUserStoreSteps.
+        Assert.assertTrue(response.getData().contains("<ns:return>true</ns:return>"),
+                "ServerAdmin restartGracefully did not return true; response: " + response.getData());
 
         boolean restarted = ServerReadiness.awaitRestart(baseUrl);
         Assert.assertTrue(restarted, "APIM server did not come back ready within "

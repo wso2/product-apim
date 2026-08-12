@@ -1,0 +1,23 @@
+# Extra TOML overlay for the approval-workflow block (merged on top of the shared `basic` overlay).
+# Declares the three custom devportal application attributes the legacy WorkflowApprovalExecutorTest
+# sets on its applications. The Approval executors' `applicationAttributesVisibility=true` Property
+# (in workflow-extensions.xml, written to the registry by the _setup_ feature) then surfaces these
+# attributes inside the pending workflow's `properties.applicationAttributes`, which the
+# application-creation / update / deletion scenarios assert on.
+[[apim.devportal.application_attributes]]
+name = "External Reference ID"
+description = "Used for internal billing tracking"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Technical Contact"
+description = "Email address of the primary developer or lead"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Department Name"
+description = "The department owning this app"
+required = false
+hidden = false

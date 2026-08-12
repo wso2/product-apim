@@ -1,0 +1,52 @@
+{
+  "name": "${UNIQUE:ExternalIdp2Km}",
+  "displayName": "External IdP 2 (self-validated JWT, second claim namespace)",
+  "type": "WSO2-IS-7",
+  "description": "Second self-validating external IdP key manager: a different issuer, a different signing key pair (certs/externalidp2) and a different remote claim namespace (http://idp2.org/claims/*) mapped onto the same local claims.",
+  "issuer": "https://external-idp-2.apim.integration",
+  "alias": "external-idp-2-audience",
+  "tokenEndpoint": "https://external-idp-2.apim.integration/oauth2/token",
+  "introspectionEndpoint": "https://external-idp-2.apim.integration/oauth2/introspect",
+  "revokeEndpoint": "https://external-idp-2.apim.integration/oauth2/revoke",
+  "authorizeEndpoint": "https://external-idp-2.apim.integration/oauth2/authorize",
+  "userInfoEndpoint": "https://external-idp-2.apim.integration/scim2/Me",
+  "scopeManagementEndpoint": "https://external-idp-2.apim.integration/api/identity/oauth2/v1.0/scopes",
+  "clientRegistrationEndpoint": "https://external-idp-2.apim.integration/api/identity/oauth2/dcr/v1.1/register",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": false,
+  "enableOAuthAppCreation": false,
+  "enableMapOAuthConsumerApps": true,
+  "enableProvisionedAppValidation": false,
+  "enableSelfValidationJWT": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "refresh_token"
+  ],
+  "claimMapping": [
+    {
+      "remoteClaim": "http://idp2.org/claims/givenname",
+      "localClaim": "http://wso2.org/claims/givenname"
+    },
+    {
+      "remoteClaim": "http://idp2.org/claims/firstname",
+      "localClaim": "http://wso2.org/claims/firstname"
+    },
+    {
+      "remoteClaim": "http://idp2.org/claims/email",
+      "localClaim": "http://wso2.org/claims/email"
+    }
+  ],
+  "tokenType": "BOTH",
+  "additionalProperties": {
+    "Authentication": "BasicAuth",
+    "api_resource_management_endpoint": "https://external-idp-2.apim.integration/api/server/v1/api-resources",
+    "is7_roles_endpoint": "https://external-idp-2.apim.integration/scim2/v2/Roles",
+    "Username": "admin",
+    "Password": "admin",
+    "self_validate_jwt": true,
+    "enable_roles_creation": false
+  }
+}

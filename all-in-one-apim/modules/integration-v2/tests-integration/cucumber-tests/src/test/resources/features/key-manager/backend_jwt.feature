@@ -46,16 +46,20 @@ Feature: Backend JWT Claims
     Then The response status code should be 200
 
     # Invoke; the reflecting backend returns the headers it received, including the gateway-injected
-    # X-JWT-Assertion. Decode it and assert the standard backend-JWT claims (substring match, so the short
-    # claim suffix suffices for the dialect-prefixed names). subscriber "admin" is a substring of both the
-    # super-tenant "admin" and the tenant "admin@tenant1.com" subscriber values.
+    # X-JWT-Assertion. Decode it and assert the standard backend-JWT claims. A short claim suffix is resolved to
+    # its dialect-qualified key (http://wso2.org/claims/<suffix>) and compared exactly, so each Examples row
+    # asserts ITS OWN subscriber via <actor> rather than a value that is merely a substring of both.
     When I invoke the API at gateway context "{{jwtApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
     And The reflected backend JWT should contain claim "applicationname" with value "{{jwtAppName}}"
     And The reflected backend JWT should contain claim "apiname" with value "{{jwtApiName}}"
     And The reflected backend JWT should contain claim "version" with value "1.0.0"
-    And The reflected backend JWT should contain claim "subscriber" with value "admin"
+    And The reflected backend JWT should contain claim "subscriber" with value "<actor>"
+    # The assertion is SIGNED, not merely present: [apim.jwt] signing_algorithm defaults to SHA256withRSA, and
+    # setting it to NONE disables signing. Every claim assertion above reads the payload, which is identical
+    # either way, so without this the gateway could stop signing and the suite would stay green.
+    And The reflected backend JWT should be signed with algorithm "RS256"
 
     Examples:
       | actor             |

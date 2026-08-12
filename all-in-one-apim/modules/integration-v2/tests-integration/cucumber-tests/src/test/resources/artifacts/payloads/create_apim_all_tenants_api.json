@@ -1,0 +1,50 @@
+{
+  "name": "${UNIQUE:APIMAllTenants}",
+  "context": "${UNIQUE:apiAllTenantsContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "ALL_TENANTS API for cross-tenant subscription tests",
+  "tags": [
+    "cross-tenant"
+  ],
+  "policies": [
+    "Bronze",
+    "Unlimited"
+  ],
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "subscriptionAvailability": "ALL_TENANTS",
+  "businessInformation": {
+    "businessOwner": "ctOwner",
+    "businessOwnerEmail": "ctowner@ee.com",
+    "technicalOwner": "ctTech",
+    "technicalOwnerEmail": "cttech@ww.com"
+  },
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": []
+    },
+    {
+      "verb": "DELETE",
+      "target": "/customers/{id}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

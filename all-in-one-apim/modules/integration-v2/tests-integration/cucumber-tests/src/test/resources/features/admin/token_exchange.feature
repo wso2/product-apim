@@ -78,6 +78,28 @@ Feature: External Key Manager Token Exchange
       | admin             |
       | admin@tenant1.com |
 
+  @type:regression @legacy:TokenExchangeMultiValueClaimTestCase
+  Scenario Outline: A multi-value groups claim survives the exchange as a JSON array as <actor>
+    # A subject JWT carrying a MULTI-VALUE groups claim (engineering/support/analytics) and a single-valued
+    # preferred_username is exchanged; the exchanged at+jwt access token must preserve groups as a 3-element
+    # JSON array (not comma-joined, not first-only) and keep the single-valued claim. Legacy parity:
+    # TokenExchangeMultiValueClaimTestCase. The subject token is hand-signed with a committed key pair (an IS
+    # client-credentials token carries no user claims), and the trusted IdP validates against that key's cert
+    # and maps the groups/preferred_username remote claims, with the exchanging app's SP requesting them.
+    Given I act as "<actor>"
+    And I use the token-exchange fixture for the acting tenant
+    When I register the token-exchange trusted identity provider "TxTrustedIdp" for multi-value custom claims
+    And I obtain a subject JWT carrying multi-value custom claims from the identity provider
+    And I exchange the subject token at the API Manager token endpoint requesting the OIDC claim scopes
+    Then The response status code should be 200
+    And the generated access token should have the "at+jwt" type header
+    And the exchanged access token should preserve the multi-value groups claim and the single-valued claim
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   @type:negative
   Scenario Outline: An expired subject token is rejected as <actor>
     Given I act as "<actor>"

@@ -20,7 +20,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);

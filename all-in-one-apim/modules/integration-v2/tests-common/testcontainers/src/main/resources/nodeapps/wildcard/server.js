@@ -19,7 +19,7 @@
 const wildcardRoutes = require('./routes/wildcardRoutes');
 
 const app = express();
-const port = 3017;
+const port = process.env.PORT || 3017;
 
 app.use('/', wildcardRoutes);
 

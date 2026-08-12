@@ -1,0 +1,53 @@
+# AsyncAPI for a Solace event API, shaped like what Solace Event Portal RETURNS rather than the minimum
+# APIM will accept. Mirrors the shim's fixture (tests-common/testcontainers/.../solaceshim/server.js) --
+# keep the two in step, and keep the x-ep ids equal to the shim's PRODUCT_ID / EVENT_API_ID.
+#
+# THE x-ep-* EXTENSIONS UNDER `info` ARE LOAD-BEARING. Without them, IMPORT STILL SUCCEEDS and the
+# failure appears later, in another plane: subscribing dies with
+#   NullPointerException: Cannot invoke "JsonElement.getAsString()" because the return value of
+#   "JsonObject.get(String)" is null
+#     at SolaceSubscriptionsNotifier.createAccessRequest(SolaceSubscriptionsNotifier.java:89)
+# and the devportal shows a bare 500. The notifier reads them off the API's STORED definition
+# (INFO_OBJECT_KEY = "info") to map the subscription to its Event API Product:
+#   x-ep-event-api-product-id       -> the product to raise the access request against
+#   x-ep-application-domain-id      -> the domain the app registration is created in
+#   x-ep-event-api-product-name/-version -> carried on the access request
+# Nothing in the import path validates their presence, so an API imported without them looks healthy
+# until a CONSUMER tries to subscribe. Do not "tidy" them away.
+asyncapi: 2.2.0
+info:
+  title: SolaceEventApi
+  version: '1.0.0'
+  description: Order events exposed as a Solace Event API Product
+  # Read by APIM (SolaceSubscriptionsNotifier):
+  x-ep-event-api-product-id: 8xk2p9qz1a
+  x-ep-event-api-product-name: SolaceEventApi-1.0.0
+  x-ep-event-api-product-version: '1.0.0'
+  x-ep-application-domain-id: 3mfd8k2l9c
+  # Emitted by real Event Portal but NOT read by APIM; present so the fixture resembles a genuine
+  # response instead of the minimum the consumer happens to require.
+  x-ep-event-api-id: api5t8w2rk
+  x-ep-event-api-version: '1.0.0'
+  x-ep-state-name: RELEASED
+  x-ep-shared: 'true'
+channels:
+  orders/created:
+    subscribe:
+      operationId: onOrderCreated
+      message:
+        payload:
+          type: object
+          properties:
+            orderId:
+              type: string
+            amount:
+              type: number
+servers:
+  production:
+    url: 'solacebroker:55555'
+    protocol: smf
+    description: Solace PubSub+ SMF endpoint
+    bindings:
+      solace:
+        bindingVersion: '0.3.0'
+        msgVpn: default

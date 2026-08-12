@@ -22,7 +22,7 @@ const headerRoutes = require('./routes/headerRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
-const port = 3007;
+const port = process.env.PORT || 3007;
 
 app.use(bodyParser.json());
 app.use(bodyParser.text({ type: 'text/plain' }));
