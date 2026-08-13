@@ -111,12 +111,25 @@ Feature: Per-API Logging Configuration
     And The server log file "api.log" should gain a line containing "INFO {API_LOG} {{resourceLogApiName}}" within 60 seconds
     And The server log file "api.log" should gain a line containing "correlationId" within 60 seconds
 
-    # Setting it back to off stops the logging for that resource.
+    # Setting it back to off stops the logging for that resource. The listing proves the CONFIGURATION changed;
+    # the gateway leg below proves the EFFECT — without it this half would pass on a server that accepted the
+    # off and kept writing API_LOG lines regardless, which is the only regression worth guarding here.
     When I set the log level of API "resourceLogApiId" to "off" for resource "GET" "/customers/{id}" in tenant "<tenantDomain>"
     Then The response status code should be 200
     When I retrieve the per-API log levels for tenant "<tenantDomain>" filtered to level "full"
     Then The response status code should be 200
     And The per-API log listing should not contain API "resourceLogApiId"
+
+    # The wait is load-bearing, not defensive: the sibling correlation_logging.feature records that without it the
+    # next invocation still produced the full set of lines despite a 200 from the disable. Re-marking the log
+    # after the wait means the assertion only ever reads lines written by the invocation below.
+    When I wait 15 seconds for the per-API logging configuration to reach the gateway
+    And I mark the current end of the server log file "api.log"
+    # The 200 is what makes the negative meaningful: traffic demonstrably reached the API, so an absent log line
+    # is the logging being off rather than the call never happening.
+    And I invoke the API at gateway context "{{resourceLogApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The server log file "api.log" should gain no line containing "INFO {API_LOG} {{resourceLogApiName}}" within 20 seconds
 
     Examples:
       | actor             | loggingActor | tenantDomain |

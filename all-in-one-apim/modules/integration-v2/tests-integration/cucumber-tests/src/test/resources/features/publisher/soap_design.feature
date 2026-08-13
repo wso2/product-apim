@@ -46,8 +46,8 @@ Feature: Publisher SOAP API Design
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "wsdlApiId"
     Then The response status code should be 200
-    And The response should contain "{{wsdlApiName}}"
-    And The response should contain "SOAP"
+    And The value of response field "name" should be "{{wsdlApiName}}"
+    And The value of response field "type" should be "SOAP"
 
     Examples:
       | actor                     |
@@ -90,8 +90,8 @@ Feature: Publisher SOAP API Design
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "wsdlZipId"
     Then The response status code should be 200
-    And The response should contain "{{wsdlZipName}}"
-    And The response should contain "SOAP"
+    And The value of response field "name" should be "{{wsdlZipName}}"
+    And The value of response field "type" should be "SOAP"
     When I retrieve the WSDL definition of API "wsdlZipId"
     Then The response status code should be 200
 
@@ -142,7 +142,7 @@ Feature: Publisher SOAP API Design
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "s2rApiId"
     Then The response status code should be 200
-    And The response should contain "{{s2rApiName}}"
+    And The value of response field "name" should be "{{s2rApiName}}"
     And The response should contain "sayHello"
 
     Examples:

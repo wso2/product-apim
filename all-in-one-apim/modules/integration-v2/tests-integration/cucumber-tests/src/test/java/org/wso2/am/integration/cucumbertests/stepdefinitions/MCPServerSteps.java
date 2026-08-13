@@ -498,26 +498,16 @@ public class MCPServerSteps {
         devportalHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
         String listUrl = Utils.getDevportalMcpServerListURL(Utils.getBaseUrl(), DEVPORTAL_LIST_PAGE_SIZE);
-        Integer matches = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
-            HttpResponse resp = SimpleHTTPClient.getInstance().doGet(listUrl, devportalHeaders);
-            if (resp == null || resp.getResponseCode() != 200 || resp.getData() == null || resp.getData().isBlank()) {
-                return null;
-            }
-            JSONArray list = new JSONObject(resp.getData()).optJSONArray("list");
-            if (list == null) {
-                return null;
-            }
-            int count = 0;
-            for (int i = 0; i < list.length(); i++) {
-                if (id.equals(list.getJSONObject(i).optString("id"))) {
-                    count++;
-                }
-            }
-            return count == 1 ? Integer.valueOf(count) : null;
-        }, result -> true);
+        // EVERY page: a single-page read reports 0 for a server sitting past the first page, and the retry then
+        // burns its whole window before failing as though the server were never published.
+        Integer matches = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> countMcpServerAcrossAllPages(devportalHeaders, id), count -> count != null && count == 1);
         Assert.assertNotNull(matches, "MCP server " + id + " (" + publisherDto.optString("name")
-                + ") never appeared exactly once in the devportal MCP-server listing " + listUrl
+                + ") could not be read from the devportal MCP-server listing " + listUrl
                 + " within " + timeoutSeconds + "s");
+        Assert.assertEquals(matches.intValue(), 1, "MCP server " + id + " (" + publisherDto.optString("name")
+                + ") should appear exactly once across the whole devportal MCP-server listing, but was found "
+                + matches + " time(s)");
 
         HttpResponse detail = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getDevportalMcpServerDetailURL(Utils.getBaseUrl(), id), devportalHeaders);
@@ -527,14 +517,10 @@ public class MCPServerSteps {
                         + (detail == null ? "null" : detail.getResponseCode() + "/" + detail.getData()));
         JSONObject portal = new JSONObject(detail.getData());
 
-        Assert.assertEquals(portal.optString("id"), publisherDto.optString("id"),
-                "Devportal MCP server id does not match the publisher DTO: " + portal);
-        Assert.assertEquals(portal.optString("name"), publisherDto.optString("name"),
-                "Devportal MCP server name does not match the publisher DTO: " + portal);
-        Assert.assertEquals(portal.optString("version"), publisherDto.optString("version"),
-                "Devportal MCP server version does not match the publisher DTO: " + portal);
-        Assert.assertEquals(portal.optString("lifeCycleStatus"), publisherDto.optString("lifeCycleStatus"),
-                "Devportal lifeCycleStatus does not match the publisher DTO for MCP server " + id);
+        assertSameNonBlankField(portal, publisherDto, "id", id);
+        assertSameNonBlankField(portal, publisherDto, "name", id);
+        assertSameNonBlankField(portal, publisherDto, "version", id);
+        assertSameNonBlankField(portal, publisherDto, "lifeCycleStatus", id);
         // The devportal context carries the version: /<context>/<version> (or {version} substituted in place).
         String context = publisherDto.getString("context");
         String version = publisherDto.getString("version");
@@ -542,6 +528,62 @@ public class MCPServerSteps {
                 ? context.replace("{version}", version) : context + "/" + version;
         Assert.assertEquals(portal.optString("context"), expectedContext,
                 "Devportal context does not carry the version for MCP server " + id);
+    }
+
+    /**
+     * Walks the whole devportal MCP-server listing and totals the entries carrying {@code id}. Returns null when a
+     * page is unreadable or malformed so the caller's retry keeps waiting rather than throwing mid-loop. Paging
+     * stops on a short/empty page or once {@code pagination.total} is consumed.
+     */
+    private static Integer countMcpServerAcrossAllPages(Map<String, String> headers, String id) throws IOException {
+        int found = 0;
+        int offset = 0;
+        while (true) {
+            String pageUrl = Utils.getDevportalMcpServerListURL(Utils.getBaseUrl(), DEVPORTAL_LIST_PAGE_SIZE, offset);
+            HttpResponse page = SimpleHTTPClient.getInstance().doGet(pageUrl, headers);
+            if (page == null || page.getResponseCode() != 200
+                    || page.getData() == null || page.getData().isBlank()) {
+                return null;
+            }
+            int onThisPage;
+            int total;
+            try {
+                JSONObject body = new JSONObject(page.getData());
+                JSONArray list = body.optJSONArray("list");
+                if (list == null) {
+                    return null;
+                }
+                for (int i = 0; i < list.length(); i++) {
+                    if (id.equals(list.getJSONObject(i).optString("id"))) {
+                        found++;
+                    }
+                }
+                onThisPage = list.length();
+                JSONObject pagination = body.optJSONObject("pagination");
+                total = pagination == null ? -1 : pagination.optInt("total", -1);
+            } catch (org.json.JSONException malformedDuringWarmup) {
+                return null;
+            }
+            offset += onThisPage;
+            if (onThisPage == 0 || onThisPage < DEVPORTAL_LIST_PAGE_SIZE || (total >= 0 && offset >= total)) {
+                return found;
+            }
+        }
+    }
+
+    /**
+     * Asserts a field holds the same NON-BLANK value on both planes. optString returns "" when absent, so a bare
+     * compare would pass vacuously if both responses dropped the field.
+     */
+    private void assertSameNonBlankField(JSONObject portal, JSONObject publisherDto, String field, String id) {
+        String publisherValue = publisherDto.optString(field);
+        String portalValue = portal.optString(field);
+        Assert.assertFalse(publisherValue.isBlank(),
+                "Publisher DTO carries no '" + field + "' for MCP server " + id + ": " + publisherDto);
+        Assert.assertFalse(portalValue.isBlank(),
+                "Devportal DTO carries no '" + field + "' for MCP server " + id + ": " + portal);
+        Assert.assertEquals(portalValue, publisherValue,
+                "Devportal '" + field + "' does not match the publisher DTO for MCP server " + id);
     }
 
     /**
@@ -565,7 +607,7 @@ public class MCPServerSteps {
         HttpResponse dtoResp = SimpleHTTPClient.getInstance().doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id),
                 headers);
         Assert.assertTrue(dtoResp != null && dtoResp.getResponseCode() >= 200 && dtoResp.getResponseCode() < 300
-                        && dtoResp.getData() != null && !dtoResp.getData().isEmpty(),
+                        && dtoResp.getData() != null && !dtoResp.getData().isBlank(),
                 "Could not read MCP server " + id + " before replacing its tools; got="
                         + (dtoResp == null ? "null" : dtoResp.getResponseCode() + "/" + dtoResp.getData()));
         JSONObject dto = new JSONObject(dtoResp.getData());
@@ -625,7 +667,7 @@ public class MCPServerSteps {
     public void mcpOperationsShouldBeExactlyInOrder(String csvTargets) {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "No successful MCP server response to read operations from; got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
 
@@ -660,11 +702,6 @@ public class MCPServerSteps {
     // (they proxy an existing API), so this resource applies only to the proxy and from-OpenAPI subtypes.
 
     /**
-     * Guarded GET of an MCP server's DTO: asserts a 2xx response carrying a non-blank body BEFORE parsing, so an
-     * error body is never silently parsed as the DTO and PUT back (which would corrupt the update), and a null
-     * response fails with a clear message rather than an NPE. {@code purpose} is folded into that message.
-     */
-    /**
      * Guarded GET of an MCP server plus the lookup of ONE of its operations by tool name — the single read the
      * per-tool fidelity assertions (schemaDefinition / description) share, so neither re-implements the guard or
      * the target match. Fails clearly when the tool is absent rather than returning null into an opaque NPE.
@@ -682,6 +719,11 @@ public class MCPServerSteps {
         return null;
     }
 
+    /**
+     * Guarded GET of an MCP server's DTO: asserts a 2xx response carrying a non-blank body BEFORE parsing, so an
+     * error body is never silently parsed as the DTO and PUT back (which would corrupt the update), and a null
+     * response fails with a clear message rather than an NPE. {@code purpose} is folded into that message.
+     */
     private JSONObject fetchMcpServerDto(String id, Map<String, String> headers, String purpose) throws IOException {
         HttpResponse resp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers);

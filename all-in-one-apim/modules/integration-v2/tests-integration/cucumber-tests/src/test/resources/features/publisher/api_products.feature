@@ -191,6 +191,8 @@ Feature: Publisher API Products
     # A restored product must still list its member APIs (the working copy is rebuilt from the revision).
     When I retrieve the "api-products" resource with id "revProductId"
     Then The response status code should be 200
+    # The product has exactly one member API; the count stops a restore that dropped or duplicated it passing.
+    And The response array field "apis[*].apiId" should have exactly 1 entries
     And The response field "apis[*].apiId" should be exactly the list "{{revApiId}}"
     When I delete revision "prodRevId" of "api-products" resource "revProductId"
     Then The response status code should be 200
@@ -367,6 +369,8 @@ Feature: Publisher API Products
     And The value of response field "workflowStatus" should be "APPROVED"
     And The value of response field "lifecycleState.state" should be "Published"
     And The response array field "lifecycleState.availableTransitions" should have exactly 4 entries
+    # WHICH four, not just how many — a count alone is satisfied by any four transitions.
+    And The response field "lifecycleState.availableTransitions[*].event" should be exactly the list "Block,Deploy as a Prototype,Demote to Created,Deprecate"
     # Block, then Re-Publish — the publisher-plane half of the blocked-state arc.
     When I change the lifecycle of "api-products" resource "storeProductId" with action "Block"
     Then The response status code should be 200

@@ -67,8 +67,10 @@ public class ApiCategorySteps {
     @When("I attempt to create an API category with payload {string}")
     public void iAttemptToCreateApiCategory(String payload) throws IOException {
         String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payload).toString());
-        Requests.post(Utils.getApiCategoriesURL(Utils.getBaseUrl()), adminHeaders(), jsonPayload,
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_API_CATEGORY_IDS,
+                Requests.post(Utils.getApiCategoriesURL(Utils.getBaseUrl()), adminHeaders(), jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
     }
 
     /** Updates an API category by id (admin). Non-asserting; the feature confirms the status and reflected body. */

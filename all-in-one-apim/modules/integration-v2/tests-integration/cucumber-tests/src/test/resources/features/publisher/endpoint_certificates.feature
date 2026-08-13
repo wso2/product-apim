@@ -26,7 +26,7 @@ Feature: Publisher Endpoint Certificates
     # Upload two distinct certificates for the same backend endpoint URL.
     When I upload endpoint certificate "artifacts/certs/endpoint/endpoint.cer" with alias "{{certAlias1}}" for endpoint "https://certfixed.example.com/{{certEndpoint}}"
     Then The response status code should be 201
-    And The response should contain "{{certAlias1}}"
+    And The value of response field "alias" should be "{{certAlias1}}"
     When I upload endpoint certificate "artifacts/certs/endpoint/endpoint2.cer" with alias "{{certAlias2}}" for endpoint "https://certfixed.example.com/{{certEndpoint}}"
     Then The response status code should be 201
 

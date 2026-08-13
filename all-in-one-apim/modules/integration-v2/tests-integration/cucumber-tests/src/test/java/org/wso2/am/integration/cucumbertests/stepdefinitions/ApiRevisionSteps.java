@@ -96,7 +96,7 @@ public class ApiRevisionSteps {
         HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
                 () -> Requests.get(url, headers),
                 r -> r != null && r.getResponseCode() == 200 && r.getData() != null
-                        && acknowledged(r.getData(), revisionId));
+                        && !r.getData().isBlank() && acknowledged(r.getData(), revisionId));
 
         Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
                         && !response.getData().isBlank(),
@@ -175,6 +175,10 @@ public class ApiRevisionSteps {
         Assert.assertEquals(response.getResponseCode(), 500,
                 "Reading the registry path of the DELETED API " + apiId + " should fault, but got "
                         + response.getResponseCode() + "/" + response.getData());
+        // Body presence first: a 500 with no body would otherwise NPE inside contains() and report nothing useful.
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "The fault for the deleted API " + apiId + " carried no body to match the registry's not-found "
+                        + "message against");
         Assert.assertTrue(response.getData().contains("Resource does not exist at path"),
                 "The fault for the deleted API " + apiId + " is not the registry's not-found fault: "
                         + response.getData());
@@ -240,7 +244,14 @@ public class ApiRevisionSteps {
     /** The revision entry with the given id from a {@code {"list":[...]}} revisions response, or null. */
     private JSONObject findRevision(String revisionsBody, String revisionId) {
 
-        JSONArray list = new JSONObject(revisionsBody).optJSONArray("list");
+        JSONArray list;
+        try {
+            // A malformed body is "not found yet", not fatal: this runs inside a retry predicate, and a
+            // JSONException would escape the loop (only IOException is retried) as an opaque parse error.
+            list = new JSONObject(revisionsBody).optJSONArray("list");
+        } catch (org.json.JSONException malformedDuringWarmup) {
+            return null;
+        }
         if (list == null) {
             return null;
         }

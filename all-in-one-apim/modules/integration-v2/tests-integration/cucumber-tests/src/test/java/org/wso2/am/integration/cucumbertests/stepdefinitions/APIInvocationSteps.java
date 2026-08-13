@@ -537,7 +537,7 @@ public class APIInvocationSteps {
                                             String payload, String authHeaderName) throws IOException {
 
         String actualAccessToken = TestContext.resolve(accessToken).toString();
-        String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
+        String actualPayload = (payload == null || payload.isBlank()) ? "" : TestContext.resolve(payload).toString();
         // The context already carries any /t/<tenant> prefix, so append it directly to the gateway base URL.
         String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
@@ -562,7 +562,7 @@ public class APIInvocationSteps {
             throws IOException {
 
         String actualAccessToken = TestContext.resolve(accessToken).toString();
-        String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
+        String actualPayload = (payload == null || payload.isBlank()) ? "" : TestContext.resolve(payload).toString();
         // Resolve {{contextKey}} placeholders in the path so the invocation can target a uniquely-generated
         // API context (names/contexts are randomized by ${UNIQUE:...}), e.g. "{{apiContext}}/1.0.0/...".
         String resolvedPath = Utils.resolveContextPlaceholders(path);
@@ -851,7 +851,7 @@ public class APIInvocationSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualAccessToken);
         headers.put("Content-Type", Constants.CONTENT_TYPES.TEXT_XML);
-        if (soapAction != null && !soapAction.isEmpty()) {
+        if (soapAction != null && !soapAction.isBlank()) {
             headers.put("SOAPAction", soapAction);
         }
 
@@ -875,7 +875,7 @@ public class APIInvocationSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualAccessToken);
         headers.put("Content-Type", Constants.CONTENT_TYPES.TEXT_XML);
-        if (soapAction != null && !soapAction.isEmpty()) {
+        if (soapAction != null && !soapAction.isBlank()) {
             headers.put("SOAPAction", soapAction);
         }
 

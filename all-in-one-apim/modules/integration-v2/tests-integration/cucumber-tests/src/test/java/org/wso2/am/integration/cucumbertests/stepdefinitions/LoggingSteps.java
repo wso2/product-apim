@@ -289,18 +289,12 @@ public class LoggingSteps {
     @Then("The server log file {string} should gain a line containing {string} within {int} seconds")
     public void logFileShouldGainLine(String fileName, String marker, int seconds) throws InterruptedException {
         String expected = Utils.resolveContextPlaceholders(marker);
-        long deadline = System.currentTimeMillis() + seconds * 1000L;
-        String appended;
-        do {
-            appended = appendedSinceMark(fileName);
-            if (containsMarker(appended, expected)) {
-                return;
-            }
-            Thread.sleep(1000L);
-        } while (System.currentTimeMillis() < deadline);
-
-        Assert.fail("No line containing '" + expected + "' was appended to " + fileName + " within " + seconds
-                + "s. Appended since the mark:\n" + appended);
+        String appended = Utils.retryUntil(seconds * 1000L,
+                () -> appendedSinceMark(fileName),
+                text -> containsMarker(text, expected));
+        Assert.assertTrue(appended != null && containsMarker(appended, expected),
+                "No line containing '" + expected + "' was appended to " + fileName + " within " + seconds
+                        + "s. Appended since the mark:\n" + appended);
     }
 
     /**
@@ -339,7 +333,7 @@ public class LoggingSteps {
         Set<String> parsed = new LinkedHashSet<>();
         for (String raw : componentsCsv.split(",")) {
             String name = raw.trim();
-            if (name.isEmpty()) {
+            if (name.isBlank()) {
                 continue;
             }
             if (!CORRELATION_COMPONENTS.contains(name)) {
@@ -410,11 +404,22 @@ public class LoggingSteps {
         return (DynamicApimContainer) candidate;
     }
 
+    /**
+     * The body of the response under assertion, guaranteed 2xx and non-blank (§7). Callers parse it as JSON, so a
+     * failed or empty response must fail HERE naming the status — otherwise it surfaces as an opaque
+     * JSONException/NPE that says nothing about what actually came back.
+     */
     private static String responseBody() {
         Object response = TestContext.get("httpResponse");
         if (response == null) {
             throw new IllegalStateException("No response is in the context to assert against.");
         }
-        return ((org.wso2.carbon.automation.test.utils.http.client.HttpResponse) response).getData();
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse =
+                (org.wso2.carbon.automation.test.utils.http.client.HttpResponse) response;
+        Assert.assertTrue(httpResponse.getResponseCode() >= 200 && httpResponse.getResponseCode() < 300
+                        && httpResponse.getData() != null && !httpResponse.getData().isBlank(),
+                "Expected a 2xx response with a body to assert against, but got: "
+                        + httpResponse.getResponseCode() + " / " + httpResponse.getData());
+        return httpResponse.getData();
     }
 }

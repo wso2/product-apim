@@ -236,7 +236,13 @@ public class MCPInvocationSteps {
                 // Parse the advertised names from result.tools[].name — never substring-match the raw body
                 // (a tool name appearing inside another tool's description would false-positive).
                 java.util.Set<String> names = new java.util.HashSet<>();
-                JSONArray tools = new JSONObject(listBody).getJSONObject("result").getJSONArray("tools");
+                // A JSON-RPC error response carries "error" and NO "result". Hard-getting it would throw an
+                // opaque "result not found" that escapes this retry; treat it as not-ready and keep polling.
+                JSONObject listResult = new JSONObject(listBody).optJSONObject("result");
+                JSONArray tools = listResult == null ? null : listResult.optJSONArray("tools");
+                if (tools == null) {
+                    return null;
+                }
                 for (int i = 0; i < tools.length(); i++) {
                     names.add(tools.getJSONObject(i).getString("name"));
                 }
@@ -567,17 +573,25 @@ public class MCPInvocationSteps {
         Boolean clean = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
                 List<Integer> observed = new ArrayList<>();
+                // ONE handshake for the whole burst, reused across every call — the same session-reuse pattern
+                // as invokeMcpMultiCall. Handshaking per iteration made a burst of N cost 3N requests to /mcp
+                // (initialize + initialized + tools/call), and the handshake counts toward throttling just as a
+                // tools/call does (see the 429-expectation step above). That inflation cannot cause a false
+                // PASS — this step asserts the ABSENCE of throttling — but it can cause a false FAILURE against
+                // an ambient limit the reverted policy never set, and every retry re-spent it.
+                // The check stays just as discriminating: the burst still issues far more requests than the
+                // reverted policy's former limit, so a policy still in force would still throttle it.
+                HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
+                lastStatus.set(initResp.statusCode());
+                if (initResp.statusCode() != 200) {
+                    observed.add(initResp.statusCode());
+                    lastError.set("burst aborted before call 1/" + calls + ": initialize status="
+                            + initResp.statusCode() + " (statuses so far " + observed + ")");
+                    return null;
+                }
+                String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
+                post(client, mcpUrl, token, sessionId, INITIALIZED);
                 for (int i = 0; i < calls; i++) {
-                    HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
-                    lastStatus.set(initResp.statusCode());
-                    if (initResp.statusCode() != 200) {
-                        observed.add(initResp.statusCode());
-                        lastError.set("burst aborted at call " + (i + 1) + "/" + calls + ": initialize status="
-                                + initResp.statusCode() + " (statuses so far " + observed + ")");
-                        return null;
-                    }
-                    String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
-                    post(client, mcpUrl, token, sessionId, INITIALIZED);
                     HttpResponse<String> callResp = post(client, mcpUrl, token, sessionId, callPayload);
                     lastStatus.set(callResp.statusCode());
                     observed.add(callResp.statusCode());
@@ -681,7 +695,13 @@ public class MCPInvocationSteps {
     /** Tool names from a {@code tools/list} JSON-RPC result, in the order the gateway advertised them. */
     private List<String> toolNames(String listBody) {
         List<String> names = new ArrayList<>();
-        JSONArray tools = new JSONObject(listBody).getJSONObject("result").getJSONArray("tools");
+        // Null-safe for the same reason: callers run this inside a retry, so an error response must yield an
+        // empty list (poll again) rather than an opaque "result not found" that escapes the loop.
+        JSONObject result = new JSONObject(listBody).optJSONObject("result");
+        JSONArray tools = result == null ? null : result.optJSONArray("tools");
+        if (tools == null) {
+            return names;
+        }
         for (int i = 0; i < tools.length(); i++) {
             names.add(tools.getJSONObject(i).optString("name"));
         }

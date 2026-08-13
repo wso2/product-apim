@@ -155,7 +155,7 @@ public class OasDefinitionSteps {
         HttpResponse response = Requests.postMultipart(Utils.getValidateOpenAPIURL(Utils.getBaseUrl()), headers,
                 files, new HashMap<>());
         assertSuccessfulWithBody(response, "validate the definition stored as '" + definitionKey + "'");
-        JSONObject body = new JSONObject(response.getData());
+        JSONObject body = Utils.requireJsonBody(response, "Validating the OpenAPI definition");
         Assert.assertTrue(body.has("isValid"), "Validation response carries no isValid flag: " + response.getData());
         Assert.assertTrue(body.getBoolean("isValid"),
                 "The definition stored as '" + definitionKey + "' was rejected by the publisher's own OpenAPI "
@@ -509,6 +509,17 @@ public class OasDefinitionSteps {
     }
 
     /**
+     * Asserts two stored definitions are IDENTICAL, not merely operation-compatible — a semantic (canonicalised)
+     * comparison via {@code JSONObject.similar}, so a re-serialisation that reorders keys is not a difference.
+     *
+     * <p>The operation-level check alone cannot see a rejected update that still corrupted the document on the way
+     * out: descriptions, {@code x-} extensions, endpoint config and {@code servers} all live outside {@code paths}.
+     * On failure the differing top-level sections are named, because a raw dump of two OpenAPI documents is
+     * unreadable.</p>
+     */
+    @Then("The definitions stored as {string} and {string} should be identical")
+
+    /**
      * Asserts two definitions declare the SAME resource surface: the same set of paths, and per path the same
      * set of verbs. Ports legacy's {@code validateUpdatedDefinition} — used both to confirm a submitted
      * definition survived the round trip into a plane's stored copy, and to confirm a REJECTED update left the
@@ -525,6 +536,39 @@ public class OasDefinitionSteps {
      * @param firstKey  context key holding the first definition
      * @param secondKey context key holding the second definition
      */
+    public void definitionsShouldBeIdentical(String firstKey, String secondKey) {
+
+        JSONObject first = definitionFromContext(firstKey);
+        JSONObject second = definitionFromContext(secondKey);
+        if (first.similar(second)) {
+            return;
+        }
+        Set<String> sections = new TreeSet<>(first.keySet());
+        sections.addAll(second.keySet());
+        List<String> differing = new ArrayList<>();
+        for (String section : sections) {
+            Object a = first.opt(section);
+            Object b = second.opt(section);
+            boolean same;
+            if (a == null || b == null) {
+                same = a == null && b == null;
+            } else if (a instanceof JSONObject && b instanceof JSONObject) {
+                same = ((JSONObject) a).similar(b);
+            } else if (a instanceof JSONArray && b instanceof JSONArray) {
+                same = ((JSONArray) a).similar(b);
+            } else {
+                same = a.equals(b);
+            }
+            if (!same) {
+                differing.add(section);
+            }
+        }
+        Assert.fail("The stored definition changed across the rejected update: section(s) " + differing
+                + " differ between '" + firstKey + "' and '" + secondKey + "'."
+                + " before=" + first.optString(differing.isEmpty() ? "info" : differing.get(0))
+                + " after=" + second.optString(differing.isEmpty() ? "info" : differing.get(0)));
+    }
+
     @Then("The definitions stored as {string} and {string} should declare the same operations")
     public void definitionsShouldDeclareTheSameOperations(String firstKey, String secondKey) {
 
@@ -570,7 +614,7 @@ public class OasDefinitionSteps {
         HttpResponse response = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
         assertSuccessfulWithBody(response, "read the DTO of API " + apiId);
-        return new JSONObject(response.getData());
+        return Utils.requireJsonBody(response, "Retrieving the API DTO");
     }
 
     /** Guards a response before its body is parsed (§7). */

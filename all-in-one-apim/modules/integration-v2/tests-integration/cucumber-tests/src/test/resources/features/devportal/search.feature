@@ -165,7 +165,6 @@ Feature: DevPortal Search & Discovery
     When I retrieve the "apis" resource with id "api2"
     And I extract response field "name" and store it as "api2Name"
 
-    # Common tag → both APIs. Poll until the later-published api2 is indexed, then assert both are present.
     # Common tag -> both APIs, and only those two. Waiting on the COUNT rather than on api2's name: Solr indexing is
     # asynchronous and not order-preserving, so waiting for the later-published api2 can exit while api1 is still
     # unindexed, failing the next line against a one-API response. The count admits neither until both are indexed.
@@ -325,7 +324,7 @@ Feature: DevPortal Search & Discovery
     When I retrieve the "apis" resource with id "ssApi2"
     And I extract response field "name" and store it as "ssApi2Name"
 
-    # Multi-tag OR: both distinct tags in one query returns both APIs. Poll until the later-published api2 indexes.
+    # Multi-tag OR: both distinct tags in one query returns both APIs.
     # WAIT ON THE COUNT, NOT ON ONE NAME. An earlier revision polled "until it contains <api2>" on the theory that
     # api2 publishing last meant api1 was already indexed. Solr indexing is asynchronous and NOT order-preserving,
     # so api2 can land first; the wait then exits with api1 still unindexed and the next line fails on a response

@@ -705,6 +705,12 @@ public class BaseSteps {
     public void putResponsePayloadInContext(String key) throws InterruptedException {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // Capturing a null/empty payload is never useful — later steps mutate it and PUT it back, so the failure
+        // would surface far away with nothing pointing here. Fail now, naming the status.
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "No response payload to store under '" + key + "': got "
+                        + (response == null ? "no response at all" : "status " + response.getResponseCode()
+                        + " with an empty body"));
         TestContext.set(Utils.normalizeContextKey(key), response.getData());
         Thread.sleep(Constants.WAIT_TIME);
     }
@@ -734,6 +740,12 @@ public class BaseSteps {
         // (e.g. a ${UNIQUE:...} API name captured into context). Literals without {{}} pass through unchanged.
         expectedValue = Utils.resolveContextPlaceholders(expectedValue);
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // A body is a precondition of asserting on its content: without this a missing/empty response NPEs here
+        // and reports nothing about what actually came back.
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "No response body to search for '" + expectedValue + "' — got "
+                        + (response == null ? "no response at all" : "status " + response.getResponseCode()
+                        + " with an empty body"));
         Assert.assertTrue(response.getData().contains(expectedValue),
                 "Expected response to contain '" + expectedValue + "' but it did not: " + response.getData());
     }
@@ -888,6 +900,9 @@ public class BaseSteps {
                 "Expected a 2xx response with a body to read array field '" + fieldName + "' from, but got: "
                         + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
 
+        // SET semantics, deliberately — not a multiset. Call sites assert universal claims ("every policy's limit
+        // type is EVENTCOUNTLIMIT") where the array legitimately repeats one value N times; comparing as a multiset
+        // would fail those. The count a set cannot see is pinned separately by "should have exactly N entries".
         Set<String> expected = new HashSet<>();
         for (String element : Utils.resolveContextPlaceholders(expectedCsv).split(",")) {
             if (!element.isBlank()) {
@@ -1082,8 +1097,13 @@ public class BaseSteps {
         // a deleted tier's name — is matched literally, not as the placeholder text (which would falsely pass).
         String resolved = Utils.resolveContextPlaceholders(unexpectedValue);
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertFalse(response.getData().contains(resolved),
-                "Response unexpectedly contains \"" + resolved + "\"");
+        // A missing RESPONSE is framework misuse (no request was made) and must fail. An empty BODY is not: a
+        // 200 with no payload genuinely does not contain the value, which is exactly what this step asserts —
+        // requiring a body here failed 8 correct endpoint-security scenarios whose backend answers 200 empty.
+        Assert.assertNotNull(response, "No response in the context to check for the absence of '" + resolved + "'");
+        String body = response.getData();
+        Assert.assertFalse(body != null && body.contains(resolved),
+                "Response unexpectedly contains \"" + resolved + "\": " + body);
     }
 
     /**
@@ -1181,7 +1201,7 @@ public class BaseSteps {
         // response, and an empty body would throw an opaque JSONException instead of a clear failure).
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(updateResponse != null && updateResponse.getData() != null
-                        && !updateResponse.getData().isEmpty(),
+                        && !updateResponse.getData().isBlank(),
                 "No update response with a body captured to verify the '" + config + "' update against");
         JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
         String resourceId = updateResponseJson.optString("id", null);
@@ -1203,7 +1223,7 @@ public class BaseSteps {
             }
         }
 
-        if (resourceId == null || resourceId.isEmpty()) {
+        if (resourceId == null || resourceId.isBlank()) {
             verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
             return;
         }
@@ -1269,7 +1289,7 @@ public class BaseSteps {
      * @param configValue The expected configuration value
      */
     private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
-        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
                 "No response with a body to verify configuration '" + config + "' in; got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONObject json = new JSONObject(response.getData());

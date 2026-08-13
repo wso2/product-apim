@@ -403,6 +403,8 @@ Feature: Admin Throttling Policy CRUD
     # Read the stored policy back so the assertions prove persistence, not just the create echo.
     When I retrieve the "advanced" throttling policy with id "advThrottlePolicyId"
     Then The response status code should be 200
+    # Count pinned alongside the value: the set comparison alone would pass if only ONE group survived.
+    And The response array field "conditionalGroups[*].description" should have exactly 1 entries
     And The response field "conditionalGroups[*].description" should be exactly the list "conditional group"
     And The response field "conditionalGroups[0].conditions[*].type" should be exactly the list "IPCONDITION,HEADERCONDITION,QUERYPARAMETERCONDITION,JWTCLAIMSCONDITION"
     And The value of response field "conditionalGroups[0].limit.type" should be "REQUESTCOUNTLIMIT"
@@ -415,6 +417,8 @@ Feature: Admin Throttling Policy CRUD
     And The response field "conditionalGroups[0].conditions[?(@.type=='QUERYPARAMETERCONDITION')].queryParameterCondition.parameterValue" should be exactly the list "claimAttribute"
     And The response field "conditionalGroups[0].conditions[?(@.type=='JWTCLAIMSCONDITION')].jwtClaimsCondition.claimUrl" should be exactly the list "name"
     And The response field "conditionalGroups[0].conditions[?(@.type=='JWTCLAIMSCONDITION')].jwtClaimsCondition.attribute" should be exactly the list "admin"
+    # One per condition — without the count this passes if only one condition kept its invertCondition.
+    And The response array field "conditionalGroups[0].conditions[*].invertCondition" should have exactly 4 entries
     And The response field "conditionalGroups[0].conditions[*].invertCondition" should be exactly the list "false"
 
     Examples:
@@ -428,7 +432,9 @@ Feature: Admin Throttling Policy CRUD
     And I have valid access tokens as "<actor>"
     When I retrieve all "subscription" throttling policies
     Then The response status code should be 200
-    And The response should contain "Unlimited"
+    # Name-filtered, for the same reason as the type:all assertions below — and because "Unlimited" is a SUBSTRING
+    # of AsyncUnlimited/AsyncWHUnlimited, so a containment check passes even when the built-in Unlimited is gone.
+    And The response field "list[?(@.policyName=='Unlimited')].policyName" should be exactly the list "Unlimited"
     # The type:all search spans every policy type at once; assert one built-in default per type by an exact
     # name-filtered path (exactly one hit each), rather than a substring match that a similarly-named policy
     # created by a concurrent scenario could satisfy.
@@ -470,7 +476,11 @@ Feature: Admin Throttling Policy CRUD
     And The value of response field "billingPlan" should be "COMMERCIAL"
     And The value of response field "subscriberCount" should be "0"
     And The value of response field "monetization.monetizationPlan" should be "DYNAMICRATE"
+    # One attribute is created, and name/value are counted separately: an attribute that kept its name but lost
+    # its value would leave the value path empty, which the set comparison alone reads as a match.
+    And The response array field "customAttributes[*].name" should have exactly 1 entries
     And The response field "customAttributes[*].name" should be exactly the list "testAttribute"
+    And The response array field "customAttributes[*].value" should have exactly 1 entries
     And The response field "customAttributes[*].value" should be exactly the list "testValue"
     And The value of response field "permissions.permissionType" should be "ALLOW"
     And The response field "permissions.roles" should be exactly the list "Internal/creator"
@@ -549,6 +559,8 @@ Feature: Admin Throttling Policy CRUD
     [{"verb":"GET","target":"/customers/{id}","authType":"Application & Application User","throttlingPolicy":"{{advThrottlePolicyName}}","scopes":[]}]
     """
     Then The response status code should be 200
+    # The update above replaced the operation set with exactly one GET, so one entry is the whole array.
+    And The response array field "operations[*].throttlingPolicy" should have exactly 1 entries
     And The response field "operations[*].throttlingPolicy" should be exactly the list "{{advThrottlePolicyName}}"
     And I have valid access tokens as "<admin2>"
     When I delete the "advanced" throttling policy with id "advThrottlePolicyId"

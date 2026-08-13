@@ -630,6 +630,15 @@
          log4j2.properties, so nothing else is needed. initBackend is load-bearing: the synapse and
          method-calls components are only exercised by real gateway traffic (the http component, by contrast,
          is the Tomcat valve and only sees management-plane requests). -->
+    <!-- thread-count=1 is REQUIRED here, not a tuning choice.
+         AnalyticsCorrelationLoggingRunner mutates the server-wide correlation logging configuration (the devops
+         /correlation config): ONE object per server, listing the five declared components (http, jdbc, ldap,
+         synapse, method-calls) and their enabled flags. Its scenarios enable a specific component set, invoke,
+         then assert the EXACT enabled set — so a class running concurrently that toggles the same config flips a
+         flag mid-scenario and the assertion fails against state it did not set.
+         Unlike a policy listing, this cannot be scoped or filtered per scenario: there is exactly one config
+         object and no tenant/resource dimension to isolate on. Serialising the block's classes is therefore the
+         only available isolation. Adding a class here that touches correlation config has the same problem. -->
     <test name="IntegrationV2-Logging" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="logging"/>
         <parameter name="initTenantUsers" value="true"/>

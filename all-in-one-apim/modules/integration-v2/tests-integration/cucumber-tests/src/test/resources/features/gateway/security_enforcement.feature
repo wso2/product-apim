@@ -16,6 +16,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
 
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I put the following JSON payload in context as "invalidAccessToken"
     """
     abcdefgh
@@ -39,6 +40,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
 
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     # Create an application + keys + token, but DO NOT subscribe it to the API
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
     And I create an application with payload "createAppPayload"
@@ -75,6 +77,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
 
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     # Subscribe an application and obtain a token
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
     And I create an application with payload "createAppPayload"
@@ -133,6 +136,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
 
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     # The hyphenated OWNER, onboarded through the product's own self-registration path
     When I self-sign-up a DevPortal user with a hyphenated username and password "Signup#12345" as actor "<ownerActor>" storing the username as "blockHyphenOwnerName"
     Then The response status code should be 201
@@ -213,6 +217,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
     When I deploy the API with id "createdApiId"
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 201
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
     When I publish the "apis" resource with id "createdApiId"
@@ -277,6 +282,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "lpApiId"
     And I extract response field "context" and store it as "lpContext"
 
+    And the "apis" resource "lpApiId" should be live on the gateway, redeploying if propagation is lost
     When I put the following JSON payload in context as "lpInvalidToken"
     """
     abcdefgh
@@ -313,6 +319,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "mfApiId"
     And I extract response field "context" and store it as "mfContext"
     When I have set up application with keys, subscribed to API "mfApiId", and obtained access token for "mfSubId"
+    And the "apis" resource "mfApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
     When I put the following JSON payload in context as "mfBody"
     """
@@ -346,6 +353,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "erApiId"
     And I extract response field "context" and store it as "erContext"
     When I have set up application with keys, subscribed to API "erApiId", and obtained access token for "erSubId"
+    And the "apis" resource "erApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
 
     # A non-existent context → 404 that does NOT echo the requested path segment.
@@ -416,6 +424,7 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     When I deploy the API with id "atApiId"
     Then The response status code should be 201
+    And the "apis" resource "atApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Security DISABLED: every operation now declares "None", and the regenerated definition's x-auth-type
     # followed it (the extension is present and equal, not silently dropped).
@@ -462,6 +471,9 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "swApiId" should be "Published"
     When I retrieve the "apis" resource with id "swApiId"
     And I extract response field "context" and store it as "swContext"
+    # Deploy propagation is at-most-once, so a dropped event can only be fixed by re-emitting it — the same gate
+    # the sibling scenarios use. Without it BOTH token-less calls below just burn their retry window.
+    And the "apis" resource "swApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Baseline: the operation is secured, so a token-less call is refused.
     Then Every operation of API "swApiId" should declare authType "Application & Application User"
@@ -479,6 +491,10 @@ Feature: Gateway Security Enforcement
     And The "DELETE" operation on "/customers/{id}" of API "swApiId" should declare authType "Application & Application User"
     When I deploy the API with id "swApiId"
     Then The response status code should be 201
+    # The RE-deploy propagates at-most-once as well: a 201 only means the publisher accepted it. Without this the
+    # invocation below would poll against the pre-update artifact (authType still Application & Application User)
+    # until the window expired.
+    And the "apis" resource "swApiId" should be live on the gateway, redeploying if propagation is lost
 
     # The resource is now invocable with NO Authorization header, and the backend really served it.
     When I invoke the API at gateway context "{{swContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 200 within 60 seconds
@@ -567,6 +583,7 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     When I deploy the API with id "epsymApiId"
     Then The response status code should be 201
+    And the "apis" resource "epsymApiId" should be live on the gateway, redeploying if propagation is lost
 
     # The backend now receives exactly base64(user:abcd!@#$%^&*()_efghijk), and no longer the create-path credential.
     When I invoke the API at gateway context "{{epsymCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "dXNlcjphYmNkIUAjJCVeJiooKV9lZmdoaWpr" within 60 seconds
@@ -684,6 +701,7 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     When I deploy the API with id "epcApiId"
     Then The response status code should be 201
+    And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Production key on the SAME token → backend now receives the UPDATED production Basic credential.
     When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "cHJvZE5ldzpwcm9kTmV3UGFzcw==" within 60 seconds
@@ -755,6 +773,7 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     When I deploy the API with id "epcApiId"
     Then The response status code should be 201
+    And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Sandbox key on the SAME token → backend now receives the UPDATED sandbox Basic credential.
     When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "c2FuZE5ldzpzYW5kTmV3UGFzcw==" within 60 seconds
@@ -803,6 +822,7 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     When I deploy the API with id "epcApiId"
     Then The response status code should be 201
+    And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Production key → backend receives the UPDATED production Basic credential.
     When I invoke the API at gateway context "{{epcCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "cHJvZE5ldzpwcm9kTmV3UGFzcw==" within 60 seconds
@@ -1008,6 +1028,7 @@ Feature: Gateway Security Enforcement
     And The response should not contain "{{epoSandBeClientSecret}}"
     When I deploy the API with id "epoApiId"
     Then The response status code should be 201
+    And the "apis" resource "epoApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Consumer half: the application, keys, subscription and token belong to <consumer>.
     When I act as "<consumer>"
@@ -1134,6 +1155,7 @@ Feature: Gateway Security Enforcement
     And The response should not contain "{{eppSandBeClientSecret}}"
     When I deploy the API with id "eppApiId"
     Then The response status code should be 201
+    And the "apis" resource "eppApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Consumer half: the application, keys, subscription and token belong to <consumer>.
     When I act as "<consumer>"
@@ -1190,7 +1212,7 @@ Feature: Gateway Security Enforcement
       | publisherUser@tenant1.com | admin@tenant1.com |
 
   # Cross-credential confusion: a credential that is perfectly VALID of its own kind must not be accepted when it
-  # is presented in the header belonging to a DIFFERENT kind. Ports the five cross-credential negatives of
+  # is presented in the header belonging to a DIFFERENT kind. Ports the six cross-credential negatives of
   # APISecurityTestCase (testInvokeApiKeyAsJWTNegative, testInvokeJWTAsAPIKeyNegative,
   # testInvokeInternalKeyAsAPIKeyNegative, testInvokeInternalKeyAsJWTNegative, testInvokeJWTasInternalKeyNegative,
   # testInvokeAPIKeyAsInternalKeyNegative) against an API that permits BOTH oauth2 and api_key — so every
@@ -1208,6 +1230,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "xcApiId"
     And I extract response field "context" and store it as "xcContext"
     When I have set up application with keys, subscribed to API "xcApiId", and obtained access token for "xcSubId"
+    And the "apis" resource "xcApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
     When I put the following JSON payload in context as "xcApiKeyGenPayload"
     """
@@ -1235,6 +1258,11 @@ Feature: Gateway Security Enforcement
     And The response should contain "900901"
     # The publisher internal key in the api-key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "xcInternalKey" verbatim in header "apikey" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900901"
+    # The devportal api key as an Authorization bearer -> refused (testInvokeApiKeyAsJWTNegative). Uses the same
+    # bearer step as the token control above, so the ONLY difference from that passing case is the credential kind.
+    When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" using access token "apiKey" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
     And The response should contain "900901"
     # The publisher internal key as an Authorization bearer -> refused.
@@ -1283,6 +1311,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "boApiId"
     And I extract response field "context" and store it as "boContext"
     When I have set up application with keys, subscribed to API "boApiId", and obtained access token for "boSubId"
+    And the "apis" resource "boApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
 
     # POSITIVE CONTROL: the API is routable and its permitted scheme (oauth2) works, all the way to the backend.
@@ -1321,6 +1350,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "baApiId"
     And I extract response field "context" and store it as "baContext"
     When I have set up application with keys, subscribed to API "baApiId", and obtained access token for "baSubId"
+    And the "apis" resource "baApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
     When I put the following JSON payload in context as "baApiKeyGenPayload"
     """
@@ -1373,6 +1403,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "wwApiId"
     And I extract response field "context" and store it as "wwContext"
 
+    And the "apis" resource "wwApiId" should be live on the gateway, redeploying if propagation is lost
     When I invoke the API at gateway context "{{wwContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
     And The response header "WWW-Authenticate" should contain "API Key realm=\"WSO2 API Manager\""
@@ -1397,6 +1428,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "srApiId"
     And I extract response field "context" and store it as "srContext"
     When I have set up application with keys, subscribed to API "srApiId", and obtained access token for "srSubId"
+    And the "apis" resource "srApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
     When I put the following JSON payload in context as "srApiKeyGenPayload"
     """
@@ -1442,6 +1474,7 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "pcApiId"
     And I extract response field "context" and store it as "pcContext"
 
+    And the "apis" resource "pcApiId" should be live on the gateway, redeploying if propagation is lost
     # A scenario-owned user whose password this scenario is free to change.
     When I provision a user with name prefix "pcUser" password "Password@123" and roles "Internal/subscriber" storing the username as "pcUsername"
 

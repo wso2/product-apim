@@ -1219,8 +1219,14 @@ public class WebSocketInvocationSteps {
         CompletableFuture<String> data = new CompletableFuture<>();
         WebSocket ws;
         try {
-            ws = client.newWebSocketBuilder()
-                .header("Authorization", "Bearer " + token)
+            java.net.http.WebSocket.Builder builder = client.newWebSocketBuilder();
+            // Query-param mode passes a NULL token on purpose (the credential rides on the URL). Setting the header
+            // unconditionally sent the literal "Bearer null", which the gateway rejects as an invalid JWT — the
+            // query parameter was never consulted, so the whole AUTH_IN.QUERY arc was testing nothing.
+            if (token != null) {
+                builder = builder.header("Authorization", "Bearer " + token);
+            }
+            ws = builder
                 .subprotocols("graphql-ws")
                 .connectTimeout(java.time.Duration.ofSeconds(15))
                 .buildAsync(URI.create(wsUrl), new WebSocket.Listener() {

@@ -106,8 +106,8 @@ Feature: Gateway SOAP API Invocation
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "wsdlUrlId"
     Then The response status code should be 200
-    And The response should contain "{{wsdlUrlName}}"
-    And The response should contain "SOAP"
+    And The value of response field "name" should be "{{wsdlUrlName}}"
+    And The value of response field "type" should be "SOAP"
 
     Examples:
       | actor             |

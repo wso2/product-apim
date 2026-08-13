@@ -83,7 +83,7 @@ public class PublisherBaseSteps {
         Object createdId = Utils.extractValueFromPayload(apiCreateResponse.getData(), "id");
         TestContext.set(resourceID, createdId);
         // Register for scenario teardown so a shared-server suite does not accumulate APIs across scenarios.
-        ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        ResourceCleanup.register(cleanupListFor(resourceType), createdId);
     }
 
     /**
@@ -102,8 +102,27 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(cleanupListFor(resourceType),
+                Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
+    }
+
+    /**
+     * The teardown list for a publisher resourceType. Registering an api-product under the API list would make the
+     * sweep DELETE it via the APIs endpoint — a 404 WARN, and the product leaks. Unknown types fail loudly rather
+     * than silently registering to the wrong list.
+     */
+    private static String cleanupListFor(String resourceType) {
+        switch (resourceType) {
+            case "apis":
+                return Constants.CREATED_API_IDS;
+            case "api-products":
+                return Constants.CREATED_API_PRODUCT_IDS;
+            default:
+                throw new IllegalArgumentException("No cleanup list is wired for resource type '" + resourceType
+                        + "' — add one before creating it here, or the resource will leak (CLAUDE.md §5).");
+        }
     }
 
     /**
@@ -135,7 +154,7 @@ public class PublisherBaseSteps {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             if (createdId != null) {
                 TestContext.set(resourceID, createdId);
-                ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+                ResourceCleanup.register(cleanupListFor(resourceType), createdId);
             }
         }
     }
@@ -548,7 +567,7 @@ public class PublisherBaseSteps {
                         return new HealGate.Fatal("lifecycle-state read returned " + code
                                 + " (already past the client's transient 900967 retry): " + lc.getData());
                     }
-                    if (code != 200 || lc.getData() == null || lc.getData().isEmpty()) {
+                    if (code != 200 || lc.getData() == null || lc.getData().isBlank()) {
                         return new HealGate.NotReady("HTTP " + code + " from lifecycle-state");
                     }
                     String state = new JSONObject(lc.getData()).optString("state", null);
@@ -627,7 +646,7 @@ public class PublisherBaseSteps {
             HttpResponse response = SimpleHTTPClient.getInstance()
                     .doGet(Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), apiId), headers);
             if (response != null && response.getResponseCode() == 200
-                    && response.getData() != null && !response.getData().isEmpty()) {
+                    && response.getData() != null && !response.getData().isBlank()) {
                 return new JSONObject(response.getData()).optString("state", null);
             }
         } catch (IOException ignored) {
@@ -772,7 +791,7 @@ public class PublisherBaseSteps {
                 Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId),
                 Identity.publisherHeaders());
         Assert.assertTrue(api != null && api.getResponseCode() == 200 && api.getData() != null
-                        && !api.getData().isEmpty(),
+                        && !api.getData().isBlank(),
                 "Could not read " + resourceType + " " + actualResourceId + " to resolve its gateway artifact: got="
                         + (api == null ? "null" : api.getResponseCode() + "/" + api.getData()));
         JSONObject dto = new JSONObject(api.getData());
@@ -795,7 +814,7 @@ public class PublisherBaseSteps {
                         return new HealGate.NotReady("no response from the gateway artifact endpoint");
                     }
                     int code = r.getResponseCode();
-                    if (code == 200 && r.getData() != null && !r.getData().isEmpty()) {
+                    if (code == 200 && r.getData() != null && !r.getData().isBlank()) {
                         return new HealGate.Ready();
                     }
                     // 401/403 can never become a 200, and any 5xx here already survived the client's
@@ -870,7 +889,7 @@ public class PublisherBaseSteps {
         // Guard before parsing — a cleared/failed list retrieval must fail clearly, not as an NPE/JSONException.
         // Deliberately NOT retried: an absent response means the feature never ran the retrieve step, which is an
         // authoring error that must fail fast rather than be reported as a propagation timeout (§7).
-        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
                 "No API-list response with a body captured to search for API '" + actualApiId + "' in");
 
         if (listContainsApiId(response, actualApiId)) {
@@ -898,7 +917,7 @@ public class PublisherBaseSteps {
      */
     private static boolean listContainsApiId(HttpResponse response, String apiId) {
         if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
-                || response.getData() == null || response.getData().isEmpty()) {
+                || response.getData() == null || response.getData().isBlank()) {
             return false;
         }
         try {
@@ -986,7 +1005,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.get(Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "lifecycle-state fetch failed for api=" + actualApiId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONArray transitions = new JSONObject(response.getData()).optJSONArray("availableTransitions");
@@ -1018,7 +1037,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.get(Utils.getAPILifecycleHistoryURL(Utils.getBaseUrl(), actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "lifecycle-history fetch failed for api=" + actualApiId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
@@ -1193,7 +1212,7 @@ public class PublisherBaseSteps {
         Object newVersionId = Utils.extractValueFromPayload(apiNewVersionResponse.getData(), "id");
         TestContext.set(newVersionID, newVersionId);
         // Register for scenario teardown so the version copy is cleaned up alongside the base API.
-        ResourceCleanup.register(Constants.CREATED_API_IDS, newVersionId);
+        ResourceCleanup.register(cleanupListFor(resourceType), newVersionId);
     }
 
     /**
@@ -1207,7 +1226,7 @@ public class PublisherBaseSteps {
                                                  String isDefault) throws IOException {
 
         String actualResourceID = TestContext.resolve(resourceID).toString();
-        boolean defaultVersion = isDefault != null && !isDefault.isEmpty() && Boolean.parseBoolean(isDefault);
+        boolean defaultVersion = isDefault != null && !isDefault.isBlank() && Boolean.parseBoolean(isDefault);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
@@ -1752,8 +1771,10 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_SHARED_SCOPE_IDS,
+                Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
     }
 
     /**
@@ -1795,7 +1816,7 @@ public class PublisherBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing/mutating — otherwise new JSONObject(null/"") throws
         // an opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch shared scope '" + scopeId + "' before update: expected a 2xx response with a body, got "
                         + (current == null ? "no response" : current.getResponseCode() + " / body="
                         + current.getData()));
@@ -1824,7 +1845,7 @@ public class PublisherBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Failed to list shared scopes while searching for '" + scopeName + "': expected a 2xx response with a "
                         + "body, got " + (response == null ? "no response" : response.getResponseCode() + " / body="
                         + response.getData()));
@@ -1897,8 +1918,11 @@ public class PublisherBaseSteps {
      * NON-ASSERTING counterpart of {@link #iCreateAGraphQLAPIWithSchemaFileAndAdditionalPropertiesAs} — imports a
      * GraphQL schema and publishes the raw response so the FEATURE asserts the status. The positive step above
      * asserts 201 internally and so cannot express a rejection (§12); this is the {@code I attempt to …} variant
-     * the GraphQL schema-import negatives need (e.g. a malformed context, which must be refused BEFORE any API is
-     * created — hence nothing is registered for cleanup here).
+     * the GraphQL schema-import negatives need (e.g. a malformed context, or a subscriber lacking the scope).
+     *
+     * <p>Callers expect a refusal, but an UNEXPECTED success still creates a real API, so the id is registered for
+     * teardown (§5). Without it a regression that started accepting these payloads would leak one API per run into
+     * the shared container, where the residue collides on duplicate names and fails unrelated scenarios.</p>
      *
      * @param schemaFilePath          classpath path of the GraphQL schema to import
      * @param additionalPropertiesKey context key holding the additionalProperties JSON
@@ -1920,7 +1944,9 @@ public class PublisherBaseSteps {
         Map<String, File> files = new HashMap<>();
         files.put("file", schemaFile);
 
-        Requests.postMultipart(Utils.getGraphQLSchema(Utils.getBaseUrl()), headers, files, formFields);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_API_IDS,
+                Requests.postMultipart(Utils.getGraphQLSchema(Utils.getBaseUrl()), headers, files, formFields), "id");
     }
 
     /**
@@ -1976,7 +2002,7 @@ public class PublisherBaseSteps {
         // Confirm the validate call succeeded with a body BEFORE parsing — otherwise the graphQLInfo drill-down
         // throws an opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Failed to validate the GraphQL schema from '" + url + "': expected a 2xx response with a body, got "
                         + (response == null ? "no response" : response.getResponseCode() + " / body=" + response.getData()));
         String sdl = new JSONObject(response.getData())
@@ -2034,26 +2060,67 @@ public class PublisherBaseSteps {
     public void theListingShouldReportApiExactlyOnce(String plane, String apiIdKey) throws Exception {
 
         String apiId = TestContext.resolve(apiIdKey).toString();
-        String url;
         Map<String, String> headers = new HashMap<>();
-        if ("publisher".equalsIgnoreCase(plane)) {
-            url = Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), null, API_LISTING_PAGE_SIZE, 0);
+        boolean publisherPlane = "publisher".equalsIgnoreCase(plane);
+        if (publisherPlane) {
             headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         } else if ("devportal".equalsIgnoreCase(plane)) {
-            url = Utils.getDevportalApiListURL(Utils.getBaseUrl(), API_LISTING_PAGE_SIZE);
             headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         } else {
             throw new IllegalArgumentException("Unknown listing plane '" + plane
                     + "'; expected \"publisher\" or \"devportal\"");
         }
 
-        HttpResponse last = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
-                () -> Requests.get(url, headers),
-                response -> countApiOccurrences(response, apiId) == 1);
-        Assert.assertNotNull(last, "The " + plane + " API listing returned no response at all (" + url + ")");
-        Assert.assertEquals(countApiOccurrences(last, apiId), 1,
-                "API " + apiId + " should appear exactly once in the " + plane + " listing but did not; last "
-                        + "response: " + last.getResponseCode() + " / " + last.getData());
+        // EVERY page, not just the first: with more APIs in the tenant than one page holds, a single-page read
+        // reports 0 for an API sitting later in the collection and the retry then times out as a false failure.
+        // The count is only meaningful across the whole collection, which is also what "exactly once" claims.
+        Integer occurrences = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> countAcrossAllPages(publisherPlane, headers, apiId),
+                total -> total != null && total == 1);
+        Assert.assertNotNull(occurrences, "The " + plane + " API listing could not be read at all");
+        Assert.assertEquals(occurrences.intValue(), 1,
+                "API " + apiId + " should appear exactly once across the whole " + plane + " listing, but was "
+                        + "found " + occurrences + " time(s)");
+    }
+
+    /**
+     * Walks the whole listing, page by page, and totals the entries carrying {@code apiId}. Returns null when a page
+     * is unreadable so the caller's retry keeps waiting. Paging stops when a page returns fewer entries than the page
+     * size, or once {@code pagination.total} has been consumed — the shape the listing actually returns
+     * ({@code "pagination":{"offset":N,"limit":N,"total":N,...}}), verified against a captured body.
+     */
+    private static Integer countAcrossAllPages(boolean publisherPlane, Map<String, String> headers, String apiId)
+            throws IOException {
+        int found = 0;
+        int offset = 0;
+        while (true) {
+            String pageUrl = publisherPlane
+                    ? Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), null, API_LISTING_PAGE_SIZE, offset)
+                    : Utils.getDevportalApiListURL(Utils.getBaseUrl(), API_LISTING_PAGE_SIZE, offset);
+            HttpResponse page = Requests.get(pageUrl, headers);
+            if (page == null || page.getResponseCode() != 200
+                    || page.getData() == null || page.getData().isBlank()) {
+                return null;
+            }
+            found += countApiOccurrences(page, apiId);
+            int onThisPage;
+            int total;
+            try {
+                JSONObject body = new JSONObject(page.getData());
+                JSONArray list = body.optJSONArray("list");
+                onThisPage = list == null ? 0 : list.length();
+                JSONObject pagination = body.optJSONObject("pagination");
+                total = pagination == null ? -1 : pagination.optInt("total", -1);
+            } catch (org.json.JSONException malformedDuringWarmup) {
+                return null;
+            }
+            offset += onThisPage;
+            // Last page: short page, an empty page, or the reported total consumed. The offset guard also stops a
+            // listing whose total never shrinks from spinning forever.
+            if (onThisPage == 0 || onThisPage < API_LISTING_PAGE_SIZE || (total >= 0 && offset >= total)) {
+                return found;
+            }
+        }
     }
 
     /** Page size for the unfiltered API listings read by {@link #theListingShouldReportApiExactlyOnce}. */
@@ -2131,9 +2198,8 @@ public class PublisherBaseSteps {
      * a {@code The response should contain "languages"} substring check cannot make: a substring passes even if the
      * server truncated, reordered or dropped every other type in the schema.
      *
-     * <p>Comparison normalises whitespace runs to a single space and trims, because the server round-trips the SDL
-     * through its GraphQL parser and may re-indent it. Normalising whitespace is NOT a weakening: every type,
-     * field and directive must still be present, in the same order, with the same spelling.</p>
+     * <p>Compared EXACTLY — measured: the server stores and returns the SDL byte-for-byte, so it does not
+     * re-indent. A whitespace-normalising compare would additionally accept a schema collapsed onto one line.</p>
      *
      * @param schemaFilePath classpath path of the schema that was uploaded
      */
@@ -2147,15 +2213,8 @@ public class PublisherBaseSteps {
                         + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
         Object retrieved = Utils.extractValueFromPayload(response.getData(), "schemaDefinition");
         Assert.assertNotNull(retrieved, "Response carries no 'schemaDefinition' field: " + response.getData());
-        String expected = normalizeSchemaWhitespace(Utils.readClasspathResource(schemaFilePath));
-        String actual = normalizeSchemaWhitespace(String.valueOf(retrieved));
-        Assert.assertEquals(actual, expected,
+        Assert.assertEquals(String.valueOf(retrieved), Utils.readClasspathResource(schemaFilePath),
                 "The retrieved GraphQL schema does not equal the uploaded definition '" + schemaFilePath + "'.");
-    }
-
-    /** Collapses whitespace runs to a single space and trims — see {@link #theGraphQLSchemaShouldEqualFile}. */
-    private static String normalizeSchemaWhitespace(String schema) {
-        return schema.replaceAll("\\s+", " ").trim();
     }
 
     /**
@@ -2261,7 +2320,7 @@ public class PublisherBaseSteps {
         // Extract and store the policy ID from response if available
         if (policyId != null && policyCreateResponse.getResponseCode() == 201) {
             String responseData = policyCreateResponse.getData();
-            if (responseData != null && !responseData.isEmpty()) {
+            if (responseData != null && !responseData.isBlank()) {
                 try {
                     JSONObject responseJson = new JSONObject(responseData);
                     if (responseJson.has("id")) {
@@ -2361,7 +2420,7 @@ public class PublisherBaseSteps {
         // A successful import (201) returns the recreated policy JSON carrying its new id; store and register it so
         // the re-imported policy is swept by teardown.
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                && response.getData() != null && !response.getData().isEmpty()) {
+                && response.getData() != null && !response.getData().isBlank()) {
             Object id = Utils.extractValueFromPayload(response.getData(), "id");
             if (id != null) {
                 if (policyIdKey != null) {
@@ -2531,7 +2590,7 @@ public class PublisherBaseSteps {
         HttpResponse response = Requests.get(
                 Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 resourceType + " fetch failed for id=" + actualApiId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         String actualProvider = new JSONObject(response.getData()).getString("provider");
@@ -2562,9 +2621,9 @@ public class PublisherBaseSteps {
         String sandboxPassword = endpointSecurity.getJSONObject("sandbox").optString("password", "");
         // Assert the password was stripped WITHOUT echoing the value — a non-empty value here is a real backend
         // credential and must not be printed into CI output (the very leak this test guards against).
-        Assert.assertTrue(productionPassword.isEmpty(),
+        Assert.assertTrue(productionPassword.isBlank(),
                 "Production endpoint password was exported in plain text (expected empty)");
-        Assert.assertTrue(sandboxPassword.isEmpty(),
+        Assert.assertTrue(sandboxPassword.isBlank(),
                 "Sandbox endpoint password was exported in plain text (expected empty)");
     }
 
@@ -2816,7 +2875,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.get(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "API fetch failed for api=" + actualApiId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONObject api = new JSONObject(response.getData());
@@ -2864,7 +2923,7 @@ public class PublisherBaseSteps {
     private JSONObject resolveCommonPolicyByName(String policyName, Map<String, String> headers) throws IOException {
         HttpResponse listResp = SimpleHTTPClient.getInstance().doGet(Utils.getCommonPolicy(Utils.getBaseUrl()), headers);
         Assert.assertTrue(listResp != null && listResp.getResponseCode() >= 200 && listResp.getResponseCode() < 300
-                        && listResp.getData() != null && !listResp.getData().isEmpty(),
+                        && listResp.getData() != null && !listResp.getData().isBlank(),
                 "Failed to list common policies while resolving '" + policyName + "': got "
                         + (listResp == null ? "no response" : listResp.getResponseCode() + " / " + listResp.getData()));
         JSONArray policies = new JSONObject(listResp.getData()).optJSONArray("list");
@@ -2905,7 +2964,7 @@ public class PublisherBaseSteps {
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' before attaching operation policy: got "
                         + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
@@ -2948,7 +3007,7 @@ public class PublisherBaseSteps {
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() == 200
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' for clone md5 check: got "
                         + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
@@ -2961,13 +3020,13 @@ public class PublisherBaseSteps {
         HttpResponse commonResp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getCommonPolicyById(Utils.getBaseUrl(), commonPolicyId), headers);
         Assert.assertTrue(commonResp != null && commonResp.getResponseCode() == 200
-                        && commonResp.getData() != null && !commonResp.getData().isEmpty(),
+                        && commonResp.getData() != null && !commonResp.getData().isBlank(),
                 "Failed to fetch common policy '" + commonPolicyId + "': got "
                         + (commonResp == null ? "no response" : commonResp.getResponseCode() + " / " + commonResp.getData()));
         HttpResponse clonedResp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getAPISpecificPolicyById(Utils.getBaseUrl(), actualApiId, clonedPolicyId), headers);
         Assert.assertTrue(clonedResp != null && clonedResp.getResponseCode() == 200
-                        && clonedResp.getData() != null && !clonedResp.getData().isEmpty(),
+                        && clonedResp.getData() != null && !clonedResp.getData().isBlank(),
                 "Failed to fetch API-specific clone '" + clonedPolicyId + "': got "
                         + (clonedResp == null ? "no response" : clonedResp.getResponseCode() + " / " + clonedResp.getData()));
         String commonMd5 = new JSONObject(commonResp.getData()).getString("md5");
@@ -3058,7 +3117,7 @@ public class PublisherBaseSteps {
                 "Malformed common operation policy import status mismatch (body=" + response.getData() + ")");
         // If the server unexpectedly created a policy, register it so teardown removes it (defensive).
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                && response.getData() != null && !response.getData().isEmpty()) {
+                && response.getData() != null && !response.getData().isBlank()) {
             Object id = Utils.extractValueFromPayload(response.getData(), "id");
             if (id != null) {
                 ResourceCleanup.register(Constants.CREATED_OPERATION_POLICY_IDS, id);
@@ -3088,7 +3147,7 @@ public class PublisherBaseSteps {
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' before updating operation policy parameters: got "
                         + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
@@ -3125,7 +3184,7 @@ public class PublisherBaseSteps {
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() == 200
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' for secret-preservation check: got "
                         + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
         JSONObject parameters = new JSONObject(getApi.getData()).getJSONArray("operations").getJSONObject(opIndex)
@@ -3749,7 +3808,7 @@ public class PublisherBaseSteps {
             // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
             // opaque JSONException/NPE instead of a clear failure.
             Assert.assertTrue(apiResp != null && apiResp.getResponseCode() >= 200 && apiResp.getResponseCode() < 300
-                            && apiResp.getData() != null && !apiResp.getData().isEmpty(),
+                            && apiResp.getData() != null && !apiResp.getData().isBlank(),
                     "Failed to fetch API '" + apiId + "' while building the API-product payload: expected a 2xx response "
                             + "with a body, got " + (apiResp == null ? "no response" : apiResp.getResponseCode()
                             + " / body=" + apiResp.getData()));

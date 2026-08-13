@@ -153,8 +153,13 @@ public class MutualSslSteps {
     public void iInvokeWithForwardedCertHeader(String context, String certPath, String accessToken,
                                                int expectedStatus, int timeoutSeconds) throws Exception {
         Map<String, String> headers = bearer(accessToken);
+        // STANDARD base64, not base64url: the gateway constant is BASE64_ENCODED_CLIENT_CERTIFICATE_HEADER and
+        // decodes accordingly. Encoding url-safe made the header UNREADABLE, so the expected 401 was satisfied by
+        // a decode failure and proved nothing about the rule under test — that a forwarded-cert header must not
+        // substitute for the handshake certificate. Readable cert => the 401 can only mean the rule was enforced.
         headers.put("X-WSO2-CLIENT-CERTIFICATE",
-                JwtTestUtils.base64Url(Utils.readClasspathResource(certPath)));
+                java.util.Base64.getEncoder().encodeToString(
+                        Utils.readClasspathResource(certPath).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         invokeMtlsUntilStatus(context, null, headers, expectedStatus, timeoutSeconds);
     }
 

@@ -190,8 +190,11 @@ Feature: Publisher API Runtime & Common Configuration
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the publisher "subscription" throttling policies
     Then The response status code should be 200
-    And The value of response field "count" should be "5"
-    And The response field "list[*].name" should be exactly the list "Bronze,DefaultSubscriptionless,Gold,Silver,Unlimited"
+    # Scoped to the default tier names. The listing is tenant-global and any scenario on this container may add a
+    # policy to it, so an unfiltered count or name-set would race; a policy the product did not ship cannot match
+    # this filter, which makes the assertion race-free by construction rather than by the block's thread-count.
+    And The response array field "list[?(@.name in ['Bronze','DefaultSubscriptionless','Gold','Silver','Unlimited'])].name" should have exactly 5 entries
+    And The response field "list[?(@.name in ['Bronze','DefaultSubscriptionless','Gold','Silver','Unlimited'])].name" should be exactly the list "Bronze,DefaultSubscriptionless,Gold,Silver,Unlimited"
     And The response field "list[?(@.name=='Bronze')].displayName" should be exactly the list "Bronze"
     And The response field "list[?(@.name=='Bronze')].description" should be exactly the list "Allows 1000 requests per minute"
     And The response field "list[?(@.name=='Gold')].displayName" should be exactly the list "Gold"
@@ -218,11 +221,16 @@ Feature: Publisher API Runtime & Common Configuration
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the publisher streaming subscription throttling policies
     Then The response status code should be 200
-    And The value of response field "count" should be "9"
     # NOTE the field name: this endpoint returns SubscriptionPolicyDTOs keyed on "policyName", NOT the
     # ThrottlingPolicyDTO "name" of the scenario above. Confirmed live — filtering on "name" here matches nothing.
-    And The response field "list[*].policyName" should be exactly the list "AsyncBronze,AsyncGold,AsyncSilver,AsyncUnlimited,AsyncDefaultSubscriptionless,AsyncWHBronze,AsyncWHGold,AsyncWHSilver,AsyncWHUnlimited"
-    And The response field "list[*].defaultLimit.type" should be exactly the list "EVENTCOUNTLIMIT"
+    # Scoped to the shipped streaming policy names for the same reason as the scenario above: the listing is
+    # tenant-global, so only a name-filtered view is race-free by construction.
+    And The response array field "list[?(@.policyName in ['AsyncBronze','AsyncGold','AsyncSilver','AsyncUnlimited','AsyncDefaultSubscriptionless','AsyncWHBronze','AsyncWHGold','AsyncWHSilver','AsyncWHUnlimited'])].policyName" should have exactly 9 entries
+    And The response field "list[?(@.policyName in ['AsyncBronze','AsyncGold','AsyncSilver','AsyncUnlimited','AsyncDefaultSubscriptionless','AsyncWHBronze','AsyncWHGold','AsyncWHSilver','AsyncWHUnlimited'])].policyName" should be exactly the list "AsyncBronze,AsyncGold,AsyncSilver,AsyncUnlimited,AsyncDefaultSubscriptionless,AsyncWHBronze,AsyncWHGold,AsyncWHSilver,AsyncWHUnlimited"
+    # Same filter, so the count still pins all nine: an unfiltered [*] here would collapse a sibling's
+    # EVENTCOUNTLIMIT policy into the same set value and hide it.
+    And The response array field "list[?(@.policyName in ['AsyncBronze','AsyncGold','AsyncSilver','AsyncUnlimited','AsyncDefaultSubscriptionless','AsyncWHBronze','AsyncWHGold','AsyncWHSilver','AsyncWHUnlimited'])].defaultLimit.type" should have exactly 9 entries
+    And The response field "list[?(@.policyName in ['AsyncBronze','AsyncGold','AsyncSilver','AsyncUnlimited','AsyncDefaultSubscriptionless','AsyncWHBronze','AsyncWHGold','AsyncWHSilver','AsyncWHUnlimited'])].defaultLimit.type" should be exactly the list "EVENTCOUNTLIMIT"
     And The response field "list[?(@.policyName=='AsyncBronze')].displayName" should be exactly the list "AsyncBronze"
     And The response field "list[?(@.policyName=='AsyncBronze')].description" should be exactly the list "Allows 5000 events per day"
     And The response field "list[?(@.policyName=='AsyncBronze')].defaultLimit.eventCount.eventCount" should be exactly the list "5000"
@@ -493,7 +501,7 @@ Feature: Publisher API Runtime & Common Configuration
     And I put JSON payload from file "artifacts/payloads/create_apim_endpoint_sec_change.json" in context as "epubPayload"
     And I create an "apis" resource with payload "epubPayload" as "epubApiId"
     Then The response status code should be 201
-    And The response should contain "prodInit"
+    And The value of response field "endpointConfig.endpoint_security.production.username" should be "prodInit"
     And The response should not contain "prodInitPass"
     # Update the production endpoint_security to a NEW credential (GET-mutate-PUT).
     When I retrieve the "apis" resource with id "epubApiId"
@@ -508,13 +516,13 @@ Feature: Publisher API Runtime & Common Configuration
     """
     Then The response status code should be 200
     # The update response reflects the NEW username, still redacts the password, and no longer carries the old one.
-    And The response should contain "prodChanged"
+    And The value of response field "endpointConfig.endpoint_security.production.username" should be "prodChanged"
     And The response should not contain "prodChangedPass"
     And The response should not contain "prodInit"
     # Re-fetch confirms persistence.
     When I retrieve the "apis" resource with id "epubApiId"
     Then The response status code should be 200
-    And The response should contain "prodChanged"
+    And The value of response field "endpointConfig.endpoint_security.production.username" should be "prodChanged"
     And The response should not contain "prodChangedPass"
 
     Examples:

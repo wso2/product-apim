@@ -168,6 +168,33 @@ public final class ResourceCleanup {
         TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), Identity.actingActorRef()));
     }
 
+    /**
+     * Registers the id from a create response ONLY if it actually succeeded — the companion to {@code register} for
+     * non-asserting {@code I attempt to …} steps (§12), whose callers expect a refusal but must not leak the
+     * resource when the server unexpectedly accepts. A rejected response is a no-op, so the step's non-asserting
+     * contract is unchanged and the FEATURE still owns the status assertion.
+     *
+     * @param listKey  the {@code CREATED_*_IDS} list the resource is swept from
+     * @param response the raw create response (may be null / non-2xx)
+     * @param idField  the response field holding the new id (e.g. "id", "applicationId", "conditionId")
+     */
+    public static void registerIfCreated(String listKey, HttpResponse response, String idField) {
+        if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
+                || response.getData() == null || response.getData().isBlank()) {
+            return;
+        }
+        try {
+            Object id = Utils.extractValueFromPayload(response.getData(), idField);
+            if (id != null && !String.valueOf(id).isBlank()) {
+                register(listKey, id);
+            }
+        } catch (IOException unexpectedShape) {
+            // A 2xx whose body carries no id is itself odd; log it rather than masking a leak as success.
+            logger.warn("Created resource for '" + listKey + "' but could not read '" + idField
+                    + "' from the response; it may leak. Body: " + response.getData(), unexpectedShape);
+        }
+    }
+
     /** Registers a tenant configuration snapshot for failure-safe restoration by the cleanup hook. */
     public static void registerTenantConfiguration(Object payload) {
         TestContext.addToList(ORIGINAL_TENANT_CONFIGURATIONS,
@@ -206,7 +233,13 @@ public final class ResourceCleanup {
         // External-system resources first (independent of the APIM lists and of APIM actor/token resolution):
         // IS-side resources are swept as the IS integration actor via IS's own management APIs — an APIM actor
         // token cannot address them. See ISResourceCleanup / CLAUDE.md §14.
-        ISResourceCleanup.sweep();
+        // Isolated: a Throwable escaping the IS sweep would skip every APIM delete below. Logged, not swallowed (§5).
+        try {
+            ISResourceCleanup.sweep();
+        } catch (Throwable t) {
+            logger.warn("External IS sweep failed; IS-side resources may have leaked. Continuing with the APIM sweep "
+                    + "so APIM resources are still removed.", t);
+        }
 
         Object baseUrlObj = TestContext.get("baseUrl");
         if (baseUrlObj == null) {
@@ -575,9 +608,25 @@ public final class ResourceCleanup {
         }
     }
 
-    /** {@code isExistingUser} as a boolean — the only correct existence check (see SecondaryUserStoreSteps). */
+    /**
+     * {@code isExistingUser} as a boolean — the only correct existence check (see SecondaryUserStoreSteps).
+     *
+     * <p>Both outcomes must be recognised EXPLICITLY. Treating "not true" as "absent" would read a SOAP fault or a
+     * truncated body as "the user is already gone", silently skip the delete, and log a clean teardown for a user
+     * that actually leaked — the exact failure the sweep exists to prevent (§5). A body that says neither is
+     * therefore surfaced; {@code sweepUsers} catches it per user, so one bad response cannot abort the rest.</p>
+     */
     private static boolean userExists(String tenantDomain, String username) throws IOException {
-        return TenantUserProvisioner.isExistingUser(tenantDomain, username).contains("<ns:return>true</ns:return>");
+        String body = TenantUserProvisioner.isExistingUser(tenantDomain, username);
+        if (body != null && body.contains("<ns:return>true</ns:return>")) {
+            return true;
+        }
+        if (body != null && body.contains("<ns:return>false</ns:return>")) {
+            return false;
+        }
+        throw new IOException("isExistingUser for '" + username + "' in tenant '" + tenantDomain + "' returned"
+                + " neither <ns:return>true</ns:return> nor <ns:return>false</ns:return> — refusing to read that as"
+                + " 'already absent', which would skip the delete and leak the user. Body: " + trunc(body));
     }
 
     /**

@@ -212,7 +212,7 @@ Feature: Key Manager Token Issuance
     # The authorization_code token is a real gateway credential, not just a well-formed JWT.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "John"
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             | spOwner              |
@@ -255,7 +255,7 @@ Feature: Key Manager Token Issuance
       """
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "John"
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |

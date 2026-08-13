@@ -25,7 +25,7 @@ Feature: MCP Server authoring (publisher plane)
     # UPDATE (ADD) — expand the exposed set to add get_pets; the persisted operations reflect it
     When I update the MCP server "mcpId" to expose tools "echo,add,get_pets"
     Then The response status code should be 200
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     # The exposed set is now the backend's FULL advertised tool set — exactly echo, add and get_pets and nothing
     # else. So exposing only two of them (above, and in the invocation feature's throttle/scope scenarios) is this
     # suite's deliberate least-privilege choice, NOT a product limit on how many discovered tools can be imported.
@@ -35,7 +35,7 @@ Feature: MCP Server authoring (publisher plane)
     And the MCP server operations should be exactly "add,echo,get_pets" in that order
     # READ-BACK — the add persisted
     When I retrieve the "mcp-servers" resource with id "mcpId"
-    Then The response should contain "get_pets"
+    Then The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     # Tool FIDELITY for a PROXIED tool: the discovered schema and description must be stored VERBATIM from the
     # upstream MCP server's tools/list (nothing re-derived, nothing dropped) — a proxy that mangled a tool's input
     # schema would advertise a contract its own backend rejects, and the presence checks above would not notice.
@@ -105,20 +105,20 @@ Feature: MCP Server authoring (publisher plane)
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create an MCP server from openapi "artifacts/payloads/OAS/mcp_petstore_oas3.json" with backend "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice" as "mcpId"
     Then The response status code should be 201
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
     # The generated tools come back in the order their operations were submitted (/pets then /pets/{petId}),
     # and ONLY those — the OAS also defines DELETE /oldpets, which was not selected.
     And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
     # UPDATE (REMOVE) — narrow the exposed tools to just get_pets (docs "select tools to import" / least-privilege).
     When I update the MCP server "mcpId" removing tool "get_pets_by_petId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
-    Then The response should contain "get_pets"
+    Then The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should not contain "get_pets_by_petId"
     # UPDATE (ADD) — re-add the removed tool (inverse of remove); it comes back
     When I re-add the removed tool to the MCP server "mcpId"
@@ -182,19 +182,19 @@ Feature: MCP Server authoring (publisher plane)
     When I deploy the "apis" resource with id "backingApiId"
     When I create an MCP server from api "backingApiId" exposing paths "/pets,/pets/{petId}" as "mcpId"
     Then The response status code should be 201
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
     # Same submission-order guarantee as the OpenAPI flow, over the API's resources this time.
     And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
     # UPDATE (REMOVE) — narrow the exposed tools (least-privilege).
     When I update the MCP server "mcpId" removing tool "get_pets_by_petId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
-    Then The response should contain "get_pets"
+    Then The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should not contain "get_pets_by_petId"
     # UPDATE (ADD) — re-add the removed tool (inverse of remove); it comes back
     When I re-add the removed tool to the MCP server "mcpId"

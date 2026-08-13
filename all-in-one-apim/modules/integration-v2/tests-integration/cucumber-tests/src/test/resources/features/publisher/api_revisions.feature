@@ -160,9 +160,9 @@ Feature: Publisher API Revisions
   # APIRevisionTestCase (create / delete / deploy / restore / undeploy x invalid API UUID / invalid revision
   # UUID), one scenario per operation so each pins its OWN exact status and error body — a grouped scenario
   # would stop at the first mismatch and leave the rest unpinned. The non-existent ids are minted as random
-  # UUIDs (well-formed, so nothing can be rejected on id FORMAT before the lookup happens). These run once, as
-  # a least-privilege publisher in the super tenant: the subject is how the management API answers a caller-
-  # supplied dangling id in both organizations.
+  # UUIDs (well-formed, so nothing can be rejected on id FORMAT before the lookup happens). Each runs in BOTH
+  # tenants as a least-privilege publisher (publisherUser and publisherUser@tenant1.com): the subject is how the
+  # management API answers a caller-supplied dangling id in either organization.
   #
   # A PRODUCT ASYMMETRY IS PINNED HERE DELIBERATELY, NOT NORMALISED: revision CREATE against a non-existent API
   # answers 500, while delete / deploy / restore / undeploy against a non-existent API all answer 404. One verb

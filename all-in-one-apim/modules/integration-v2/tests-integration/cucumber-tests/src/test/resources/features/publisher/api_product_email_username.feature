@@ -60,6 +60,9 @@ Feature: API Product Lifecycle Under an Email-Form Username Provider
     And The value of response field "workflowStatus" should be "APPROVED"
     And The value of response field "lifecycleState.state" should be "Published"
     And The response array field "lifecycleState.availableTransitions" should have exactly 4 entries
+    # WHICH four — the transition set is a property of the api-products lifecycle, so it is identical to the
+    # plain-username scenario's; an email-form provider must not change it.
+    And The response field "lifecycleState.availableTransitions[*].event" should be exactly the list "Block,Deploy as a Prototype,Demote to Created,Deprecate"
     When I retrieve the "api-products" resource with id "emailLcProductId"
     Then The response should contain "PUBLISHED"
     # A published product reaches the devportal plane under the same email-form provider.
@@ -121,7 +124,7 @@ Feature: API Product Lifecycle Under an Email-Form Username Provider
     Then The response status code should be 201
     When I put the following JSON payload in context as "emailProductSubPayload"
     """
-    {"applicationId": "{{applicationId}}", "apiId": "{{emailSubProductId}}", "throttlingPolicy": "Unlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
     """
     And I subscribe to API "emailSubProductId" using application "createdAppId" with payload "emailProductSubPayload" as "emailProductSubId"
     Then The response status code should be 201

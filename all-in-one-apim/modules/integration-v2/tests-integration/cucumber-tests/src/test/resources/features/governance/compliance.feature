@@ -80,7 +80,12 @@ Feature: API Governance Artifact Compliance
     And The value of response field "info.name" should be "{{govMcpName}}"
     And The value of response field "info.version" should be "1.0.0"
     # The evaluation actually ran against a policy — a PENDING/unevaluated artifact reports no governed policies.
-    And The response field "governedPolicies[*].status" should be exactly the list "VIOLATED"
+    # Scoped to the shipped default policy by name. governedPolicies lists every policy the org applies, so a
+    # sibling scenario's uniquely-named policy would otherwise add an entry here; filtering makes this race-free
+    # by construction rather than by the block's thread-count. The count pins that the default was evaluated
+    # exactly once — the status set alone cannot tell "evaluated and violated" from "not evaluated at all".
+    And The response array field "governedPolicies[?(@.name=='WSO2 API Management Best Practices')].status" should have exactly 1 entries
+    And The response field "governedPolicies[?(@.name=='WSO2 API Management Best Practices')].status" should be exactly the list "VIOLATED"
 
     Examples:
       | actor            |

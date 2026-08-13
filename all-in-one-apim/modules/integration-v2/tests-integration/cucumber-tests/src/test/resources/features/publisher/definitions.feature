@@ -308,6 +308,10 @@ Feature: Publisher API Definition Import
     Then The response status code should be 200
     And I put the response payload in context as "invUpdDefAfter"
     And The definitions stored as "invUpdDefBefore" and "invUpdDefAfter" should declare the same operations
+    # The WHOLE document, not just its operations: a rejected update that corrupted descriptions, x- extensions,
+    # endpoint config or servers would satisfy the operation checks above while still having mutated the stored
+    # definition — which is exactly the no-op this scenario exists to prove.
+    And The definitions stored as "invUpdDefBefore" and "invUpdDefAfter" should be identical
     And The definition stored as "invUpdDefAfter" should declare exactly the operations of API "invUpdApiId"
 
     Examples:
@@ -443,8 +447,7 @@ Feature: Publisher API Definition Import
     And The response should contain "Gold"
     And The response should contain "Bronze"
     And The response should contain "Unlimited"
-    And The response should contain "http"
-    And The response should contain "https"
+    And The response field "transport[*]" should be exactly the list "http,https"
     And The response should contain "\"visibility\":\"PUBLIC\""
     And The response should contain "\"verb\":\"GET\""
     And The response should contain "\"verb\":\"DELETE\""

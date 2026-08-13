@@ -61,11 +61,11 @@ Feature: Gateway Mutual-SSL Certificate Chain Validation
 
     # Baseline: the uploaded certificate itself still authenticates with chain validation on, so a failure
     # below is about the CHAIN and not about the certificate having failed to reach the gateway at all.
-    When I invoke the API at gateway context "{{chainContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" until response status code becomes 200 within 150 seconds
+    When I invoke the API at gateway context "{{chainContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" until response status code becomes 200 within 150 seconds
     Then The response status code should be 200
 
     # The leaf, presented WITH its full chain: authorised via the uploaded root.
-    When I invoke the API at gateway context "{{chainContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_client.jks" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{chainContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_client.p12" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
     # The SAME leaf exported ALONE (head-only) — the sharper case: the intermediate is neither presented nor
@@ -76,13 +76,13 @@ Feature: Gateway Mutual-SSL Certificate Chain Validation
 
     # The DEFAULT-VERSION (versionless) context dispatches through a different gateway routing path, so it gets
     # its own chance to skip the check — asserted for the chain case too.
-    When I invoke the API at gateway context "{{chainContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_client.jks" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{chainContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_client.p12" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
     # Chain validation must not degrade into "any certificate is accepted": an unrelated self-signed
     # certificate, whose issuer path terminates at itself and never reaches the uploaded root, is still
     # refused. Without this the positives above would also pass on a gateway that had stopped checking.
-    When I invoke the API at gateway context "{{chainContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.jks" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{chainContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.p12" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
     # And no certificate at all is still refused on a mutualssl_mandatory API.
     When I invoke the API at gateway context "{{chainContext}}/1.0.0/customers/123" with no client certificate until response status code becomes 401 within 60 seconds

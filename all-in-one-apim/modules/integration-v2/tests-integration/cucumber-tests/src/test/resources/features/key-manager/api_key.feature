@@ -21,7 +21,7 @@ Feature: Key Manager API Key
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
-    Then The response should contain "api_key"
+    Then The response field "securityScheme[*]" should be exactly the list "api_key,oauth_basic_auth_api_key_mandatory,oauth2"
     And I extract response field "context" and store it as "apiContext"
 
     When I deploy the API with id "createdApiId"
@@ -459,7 +459,7 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "John"
+    And The response should contain "\"name\":\"John\""
 
     # A SANDBOX api key on the SAME application also invokes it (routed to the sandbox endpoint), same body.
     When I put the following JSON payload in context as "koSandboxKeyGenPayload"
@@ -470,7 +470,7 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "John"
+    And The response should contain "\"name\":\"John\""
 
     # A WELL-FORMED Basic credential for a real user, on an API that does not permit basic_auth → refused (401).
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds

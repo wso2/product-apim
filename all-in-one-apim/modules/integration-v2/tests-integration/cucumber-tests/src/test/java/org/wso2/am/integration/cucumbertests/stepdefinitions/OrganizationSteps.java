@@ -311,7 +311,7 @@ public class OrganizationSteps {
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200
                         && current.getResponseCode() < 300 && current.getData() != null
-                        && !current.getData().isEmpty(),
+                        && !current.getData().isBlank(),
                 "Failed to fetch API '" + apiId + "' before setting its visible organizations: expected a 2xx "
                         + "response with a body, got " + (current == null ? "no response"
                         : current.getResponseCode() + " / body=" + current.getData()));
@@ -342,7 +342,7 @@ public class OrganizationSteps {
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200
                         && current.getResponseCode() < 300 && current.getData() != null
-                        && !current.getData().isEmpty(),
+                        && !current.getData().isBlank(),
                 "Failed to fetch API '" + apiId + "' before setting its organization policies: expected a 2xx "
                         + "response with a body, got " + (current == null ? "no response"
                         : current.getResponseCode() + " / body=" + current.getData()));
@@ -414,7 +414,10 @@ public class OrganizationSteps {
                 "No devportal API response to read tiers from: got " + (response == null ? "no response"
                         : response.getResponseCode() + " / body=" + response.getData()));
 
-        JSONArray tiers = new JSONObject(response.getData()).getJSONArray("tiers");
+        JSONArray tiers = new JSONObject(response.getData()).optJSONArray("tiers");
+        Assert.assertNotNull(tiers, "The devportal API carries no tiers field at all — an org whose policy left it "
+                + "with no offered tier is a real outcome here, so it must fail as that, not as a JSON parse error. "
+                + "Body: " + response.getData());
         List<String> actual = new ArrayList<>();
         for (int i = 0; i < tiers.length(); i++) {
             actual.add(tiers.getJSONObject(i).getString("tierName"));

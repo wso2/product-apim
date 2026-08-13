@@ -5,8 +5,8 @@ Feature: Key Manager Token Revocation
   token is rejected (eventually 401). Runs as admin in both the super tenant and tenant1.com. Also covers
   ONE-TIME tokens — the shipped revokeOneTimeToken common operation policy, which revokes a token carrying a
   configured scope as it passes through the request flow — including the no-scope control that proves the
-  revocation is driven by the scope. Those run in the super tenant only, as legacy did. Teardown via the
-  per-scenario cleanup hook.
+  revocation is driven by the scope. Those run in BOTH tenants too (admin and admin@tenant1.com), unlike
+  legacy, which gated them to the super tenant. Teardown via the per-scenario cleanup hook.
 
   @cap:key-manager @feat:token-revocation @type:regression @dep:gateway @legacy:RevokeTokenTestCase
   Scenario Outline: Revoke an access token and verify invocation is blocked as <actor>
@@ -100,11 +100,11 @@ Feature: Key Manager Token Revocation
     # Both tokens are accepted on their first use.
     When I invoke the API at gateway context "{{ottApiContext}}/1.0.0/customers/123/" with method "GET" using access token "oneTimeToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "John"
+    And The response should contain "\"name\":\"John\""
 
     When I invoke the API at gateway context "{{ottApiContext}}/1.0.0/customers/123/" with method "GET" using access token "plainToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "John"
+    And The response should contain "\"name\":\"John\""
 
     # The one-time token revoked ITSELF on that first use.
     When I invoke the API at gateway context "{{ottApiContext}}/1.0.0/customers/123/" with method "GET" using access token "oneTimeToken" and payload "" until response status code becomes 401 within 60 seconds
@@ -113,7 +113,7 @@ Feature: Key Manager Token Revocation
     # CONTROL, strictly after the revocation above was observed: the token WITHOUT the scope is still accepted.
     When I invoke the API at gateway context "{{ottApiContext}}/1.0.0/customers/123/" with method "GET" using access token "plainToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "John"
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
@@ -162,7 +162,7 @@ Feature: Key Manager Token Revocation
 
     When I invoke the API at gateway context "{{ottOutApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "John"
+    And The response should contain "\"name\":\"John\""
     When I invoke the API at gateway context "{{ottOutApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 

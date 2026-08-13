@@ -694,7 +694,7 @@ Feature: Gateway WebSocket API Invocation
   #     frames were indistinguishable from ten echoes. The step now matches the 4003 error frame explicitly.
   # The policy is attached BEFORE the API's first and only revision is deployed, so the assertion cannot depend on
   # a second deploy event propagating.
-  @cap:gateway @feat:throttling-enforcement @rule:ws-request-count @type:regression @dep:admin @legacy:WebSocketAPITestCase
+  @cap:gateway @feat:throttling-enforcement @rule:ws-request-count @type:regression @dep:admin @dep:publisher @legacy:WebSocketAPITestCase
   Scenario Outline: A WS API is throttled once it exceeds its API-level request-count limit as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -717,7 +717,7 @@ Feature: Gateway WebSocket API Invocation
     Then The value of response field "apiThrottlingPolicy" should be "{{advThrottlePolicyName}}"
     When I have set up application with keys, subscribed to API "wsThrApiId" with plan "AsyncUnlimited", and obtained access token for "wsThrSubId"
     Then The response status code should be 200
-    When I invoke the WebSocket API at gateway ws context "{{wsThrContext}}/1.0.0" sending 10 messages using access token "generatedAccessToken" expecting a throttled-out frame within 120 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsThrContext}}/1.0.0" using access token "generatedAccessToken" expecting a throttled-out frame within 120 seconds
 
     Examples:
       | actor             |

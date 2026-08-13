@@ -98,7 +98,7 @@ public class CommentRatingSteps {
     /** Guards a 2xx response with a body before parsing, then extracts the {@code id} and stores it. */
     private void storeCommentId(HttpResponse response, String key) throws IOException {
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Failed to add comment: expected a 2xx response with a body, got "
                         + (response == null ? "no response" : response.getResponseCode() + " / body=" + response.getData()));
         TestContext.set(key, Utils.extractValueFromPayload(response.getData(), "id").toString());

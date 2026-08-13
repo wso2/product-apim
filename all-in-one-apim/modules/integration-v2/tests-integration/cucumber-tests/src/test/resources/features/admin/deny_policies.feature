@@ -177,6 +177,7 @@ Feature: Admin Deny (Blocking Condition) Policies
     # Searching the DEEPER context excludes the shallower one — exactly one hit, and it is the deeper condition.
     When I search deny policies of type "API" with value "{{nestCtx2}}"
     Then The response status code should be 200
+    And The response array field "list[*].conditionValue" should have exactly 1 entries
     And The response field "list[*].conditionValue" should be exactly the list "{{nestCtx2}}/1.0.0"
     # A mid-value substring that is not a path prefix at all still matches both — the match is a plain substring
     # test on the stored value, not a path-prefix test.
@@ -223,9 +224,11 @@ Feature: Admin Deny (Blocking Condition) Policies
     # The same values UNQUOTED and complete → exactly one hit each, carrying that exact condition value.
     When I search deny policies of type "API" with value "{{exactCtx1}}/1.0.0"
     Then The response status code should be 200
+    And The response array field "list[*].conditionValue" should have exactly 1 entries
     And The response field "list[*].conditionValue" should be exactly the list "{{exactCtx1}}/1.0.0"
     When I search deny policies of type "API" with value "{{exactCtx2}}/1.0.0"
     Then The response status code should be 200
+    And The response array field "list[*].conditionValue" should have exactly 1 entries
     And The response field "list[*].conditionValue" should be exactly the list "{{exactCtx2}}/1.0.0"
 
     Examples:

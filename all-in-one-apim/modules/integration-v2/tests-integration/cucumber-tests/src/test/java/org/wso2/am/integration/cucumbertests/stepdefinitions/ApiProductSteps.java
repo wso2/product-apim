@@ -284,7 +284,15 @@ public class ApiProductSteps {
         assertSameField(portalProduct, product, "name", productId);
         assertSameField(portalProduct, product, "description", productId);
         assertSameField(portalProduct, product, "provider", productId);
-        Assert.assertEquals(portalProduct.optString("lifeCycleStatus"), product.optString("state"),
+        // Publisher calls this "state", devportal "lifeCycleStatus". optString returns "" when absent, so an
+        // unguarded compare passes vacuously if both drop it. Pin non-blank first.
+        String portalLifeCycleStatus = portalProduct.optString("lifeCycleStatus");
+        String productState = product.optString("state");
+        Assert.assertFalse(productState.isBlank(),
+                "Publisher DTO carries no state for API product " + productId + ": " + product);
+        Assert.assertFalse(portalLifeCycleStatus.isBlank(),
+                "Devportal DTO carries no lifeCycleStatus for API product " + productId + ": " + portalProduct);
+        Assert.assertEquals(portalLifeCycleStatus, productState,
                 "Devportal lifeCycleStatus does not match the product's state for " + productId);
         // The devportal context carries the version: /<context>/<version> (or {version} substituted in place).
         String context = product.getString("context");
@@ -366,6 +374,19 @@ public class ApiProductSteps {
     }
 
     /**
+     * Applies {@code accept} to the parsed body, treating a MALFORMED body as not-ready rather than fatal. A
+     * JSONException is not retried by {@link Utils#retryUntil} (only IOException is), so parsing inline would let a
+     * truncated 2xx during warm-up escape the loop as an opaque parse error instead of polling on.
+     */
+    private static boolean acceptsParsedBody(String body, java.util.function.Predicate<JSONObject> accept) {
+        try {
+            return accept.test(new JSONObject(body));
+        } catch (org.json.JSONException malformedDuringWarmup) {
+            return false;
+        }
+    }
+
+    /**
      * As {@link #readJson} but waits (within the shared propagation window) for the resource to become readable —
      * for a devportal read of a just-published product, whose visibility is eventually consistent.
      */
@@ -383,7 +404,7 @@ public class ApiProductSteps {
                 () -> SimpleHTTPClient.getInstance().doGet(url, headers),
                 response -> response.getResponseCode() >= 200 && response.getResponseCode() < 300
                         && response.getData() != null && !response.getData().isBlank()
-                        && accept.test(new JSONObject(response.getData())));
+                        && acceptsParsedBody(response.getData(), accept));
         Assert.assertTrue(last != null && last.getResponseCode() >= 200 && last.getResponseCode() < 300
                         && last.getData() != null && !last.getData().isBlank(),
                 "Failed to read " + what + " within the propagation window: got "
@@ -425,9 +446,18 @@ public class ApiProductSteps {
         return match;
     }
 
-    /** Asserts a field holds the same value in a listing entry and in the resource's own representation. */
+    /**
+     * Asserts a field holds the same NON-BLANK value in a listing entry and in the resource's own representation.
+     * optString yields null when absent, so a bare compare would pass vacuously if both representations dropped it.
+     */
     private void assertSameField(JSONObject actual, JSONObject expected, String field, String id) {
-        Assert.assertEquals(actual.optString(field, null), expected.optString(field, null),
+        // PRESENCE, not non-blankness: an empty description is a legitimate value, so requiring non-blank fails
+        // correct products. Requiring the key to EXIST still kills the vacuous case this guard exists for —
+        // optString(field, null) returning null on BOTH sides, where null == null passed while testing nothing.
+        Assert.assertTrue(expected.has(field),
+                "Field '" + field + "' is absent from the reference representation of " + id + ": " + expected);
+        String expectedValue = expected.optString(field, null);
+        Assert.assertEquals(actual.optString(field, null), expectedValue,
                 "Field '" + field + "' differs between the two representations of " + id
                         + ". actual=" + actual + " expected=" + expected);
     }

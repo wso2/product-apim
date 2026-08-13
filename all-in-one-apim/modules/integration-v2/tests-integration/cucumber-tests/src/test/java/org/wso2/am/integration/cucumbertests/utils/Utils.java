@@ -540,7 +540,7 @@ public class Utils {
         if (endpoint != null && !endpoint.isEmpty()) {
             params.add("endpoint=" + URLEncoder.encode(endpoint, StandardCharsets.UTF_8));
         }
-        if (alias != null && !alias.isEmpty()) {
+        if (alias != null && !alias.isBlank()) {
             params.add("alias=" + URLEncoder.encode(alias, StandardCharsets.UTF_8));
         }
         if (!params.isEmpty()) {
@@ -720,7 +720,7 @@ public class Utils {
                 .append(URLEncoder.encode(action, StandardCharsets.UTF_8));
 
         // Append the lifecycleChecklist if provided
-        if (lifecycleChecklist != null && !lifecycleChecklist.trim().isEmpty()) {
+        if (lifecycleChecklist != null && !lifecycleChecklist.trim().isBlank()) {
             String encodedChecklist = URLEncoder.encode(lifecycleChecklist, StandardCharsets.UTF_8);
             urlBuilder.append("&lifecycleChecklist=").append(encodedChecklist);
         }
@@ -1214,7 +1214,7 @@ public class Utils {
         try {
             HttpResponse resp = SimpleHTTPClient.getInstance().doGet(listUrl, headers);
             if (resp != null && resp.getResponseCode() == 200 && resp.getData() != null
-                    && !resp.getData().isEmpty()) {
+                    && !resp.getData().isBlank()) {
                 JSONArray list = new JSONObject(resp.getData()).optJSONArray("list");
                 for (int i = 0; list != null && i < list.length(); i++) {
                     JSONObject entry = list.getJSONObject(i);
@@ -1263,7 +1263,12 @@ public class Utils {
 
     /** DevPortal — the UNFILTERED API listing with an explicit page-size {@code limit} ({@code /apis?limit=}). */
     public static String getDevportalApiListURL(String baseUrl, int limit) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?limit=" + limit;
+        return getDevportalApiListURL(baseUrl, limit, 0);
+    }
+
+    /** As above, at an explicit {@code offset} — so a caller can walk every page of a listing, not just the first. */
+    public static String getDevportalApiListURL(String baseUrl, int limit, int offset) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?limit=" + limit + "&offset=" + offset;
     }
 
     public static String getCommonPolicy(String baseUrl) {
@@ -1363,7 +1368,12 @@ public class Utils {
      * consumer discovers a published MCP server only here.
      */
     public static String getDevportalMcpServerListURL(String baseUrl, int limit) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "mcp-servers?limit=" + limit;
+        return getDevportalMcpServerListURL(baseUrl, limit, 0);
+    }
+
+    /** As above, at an explicit {@code offset} — so a caller can walk every page of a listing, not just the first. */
+    public static String getDevportalMcpServerListURL(String baseUrl, int limit, int offset) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "mcp-servers?limit=" + limit + "&offset=" + offset;
     }
 
     /** DevPortal — a single MCP server by id ({@code /mcp-servers/{id}}). */
@@ -1718,6 +1728,22 @@ public class Utils {
         } catch (Exception e) {
             throw new IOException("Failed to locate id for name '" + name + "' in list payload.", e);
         }
+    }
+
+    /**
+     * Parses a response body as JSON after asserting the call SUCCEEDED with a body (§7). Without the guard a
+     * failed or empty response throws an opaque {@code JSONException}/NPE that names neither the status nor the
+     * body, so the real failure is invisible in CI.
+     *
+     * @param response the response to parse
+     * @param what     what was being read, for the failure message (include the id where there is one)
+     */
+    public static JSONObject requireJsonBody(HttpResponse response, String what) {
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                what + " — expected a 2xx response with a JSON body, got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        return new JSONObject(response.getData());
     }
 
     /**

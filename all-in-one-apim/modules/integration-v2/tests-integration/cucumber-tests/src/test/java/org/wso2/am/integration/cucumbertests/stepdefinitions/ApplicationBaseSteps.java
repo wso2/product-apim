@@ -744,7 +744,7 @@ public class ApplicationBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch " + policyType + " throttling policy '" + policyId + "' before updating it: expected a "
                         + "2xx response with a body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
                         + " / body=" + getResp.getData()));
@@ -812,7 +812,7 @@ public class ApplicationBaseSteps {
         String url = Utils.getThrottlingPolicyByTypeURL(Utils.getBaseUrl(), policyType, policyId);
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch " + policyType + " throttling policy '" + policyId + "' before changing its "
                         + "permission: expected a 2xx response with a body, got "
                         + (getResp == null ? "no response" : getResp.getResponseCode() + " / body=" + getResp.getData()));
@@ -946,7 +946,7 @@ public class ApplicationBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch gateway environment '" + id + "' before updating it: expected a 2xx response with a "
                         + "body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
                         + " / body=" + getResp.getData()));
@@ -971,7 +971,7 @@ public class ApplicationBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch gateway environment '" + id + "' before updating it: expected a 2xx response with a "
                         + "body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
                         + " / body=" + getResp.getData()));
@@ -997,7 +997,7 @@ public class ApplicationBaseSteps {
         String url = Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), "Default");
         HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch the built-in Default gateway environment before attempting to update it: expected a "
                         + "2xx response with a body, got " + (getResp == null ? "no response"
                         : getResp.getResponseCode() + " / body=" + getResp.getData()));
@@ -1223,7 +1223,7 @@ public class ApplicationBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch gateway environment '" + id + "' before updating its vhost: expected a 2xx response "
                         + "with a body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
                         + " / body=" + getResp.getData()));
@@ -1401,8 +1401,10 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_APPLICATION_IDS,
+                Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "applicationId");
     }
 
     /**
@@ -1477,7 +1479,7 @@ public class ApplicationBaseSteps {
 
         HttpResponse response = Requests.get(Utils.getApplicationSearchURL(Utils.getBaseUrl(), applicationName), headers);
 
-        JSONObject responseJson = new JSONObject(response.getData());
+        JSONObject responseJson = Utils.requireJsonBody(response, "Fetching the application");
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
             String applicationId = responseJson
                     .getJSONArray("list")
@@ -1788,7 +1790,7 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), actualApiId, actualAppId, null, null,
                         null), headers);
 
-        JSONObject responseJson = new JSONObject(response.getData());
+        JSONObject responseJson = Utils.requireJsonBody(response, "Retrieving the subscription");
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
             String subscriptionId = responseJson
                     .getJSONArray("list")
@@ -1816,7 +1818,7 @@ public class ApplicationBaseSteps {
 
         HttpResponse response = Requests.get(Utils.getApplicationAllKeys(Utils.getBaseUrl(), actualAppId), headers);
 
-        JSONObject responseJson = new JSONObject(response.getData());
+        JSONObject responseJson = Utils.requireJsonBody(response, "Retrieving the application keys");
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
             JSONObject firstKey = responseJson
                     .getJSONArray("list")
@@ -2161,7 +2163,7 @@ public class ApplicationBaseSteps {
     @Then("The reflected backend JWT applicationAttributes claim should contain {string} with an empty value")
     public void theReflectedBackendJwtAttributeIsEmpty(String attributeName) {
         JSONObject attrs = reflectedApplicationAttributes();
-        Assert.assertTrue(attrs.has(attributeName) && attrs.optString(attributeName).isEmpty(),
+        Assert.assertTrue(attrs.has(attributeName) && attrs.optString(attributeName).isBlank(),
                 "Decoded backend JWT applicationAttributes claim does not carry '" + attributeName
                         + "' with an empty value: " + attrs);
     }
@@ -2351,7 +2353,7 @@ public class ApplicationBaseSteps {
         StringBuilder body = new StringBuilder("grant_type=password")
                 .append("&username=").append(Utils.urlEncode(currentUser.getUserName()))
                 .append("&password=").append(Utils.urlEncode(currentUser.getPassword()));
-        if (resolvedScope != null && !resolvedScope.isEmpty()) {
+        if (resolvedScope != null && !resolvedScope.isBlank()) {
             body.append("&scope=").append(Utils.urlEncode(resolvedScope));
         }
 
@@ -2398,7 +2400,7 @@ public class ApplicationBaseSteps {
         StringBuilder body = new StringBuilder("grant_type=password")
                 .append("&username=").append(Utils.urlEncode(resolvedUser))
                 .append("&password=").append(Utils.urlEncode(Utils.resolveContextPlaceholders(password)));
-        if (scope != null && !scope.isEmpty()) {
+        if (scope != null && !scope.isBlank()) {
             body.append("&scope=").append(Utils.urlEncode(Utils.resolveContextPlaceholders(scope)));
         }
         HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
@@ -2487,16 +2489,16 @@ public class ApplicationBaseSteps {
         ISResourceCleanup.registerUser(userId);
 
         // Empty key => create the user with NO role (the "without the mapped role" actor).
-        if (isRoleKey == null || isRoleKey.trim().isEmpty()) {
+        if (isRoleKey == null || isRoleKey.trim().isBlank()) {
             return;
         }
         String isRole = TestContext.resolve(isRoleKey).toString();
-        if (isRole.isEmpty()) {
+        if (isRole.isBlank()) {
             return;
         }
         // Find the role id (SCIM2 v2 Roles, via the shared asserted-query primitive), then add the user as a member.
         HttpResponse rolesResp = queryIs7Role(isRole);
-        JSONObject rolesBody = new JSONObject(rolesResp.getData());
+        JSONObject rolesBody = Utils.requireJsonBody(rolesResp, "Querying IS roles to create the user");
         Assert.assertTrue(rolesBody.optInt("totalResults", 0) >= 1,
                 "IS role '" + isRole + "' not found to assign to user '" + username + "': " + rolesResp.getData());
         String roleId = rolesBody.getJSONArray("Resources").getJSONObject(0).getString("id");
@@ -3130,7 +3132,7 @@ public class ApplicationBaseSteps {
 
         String roleName = TestContext.resolve(isRoleKey).toString();
         HttpResponse resp = queryIs7Role(roleName);
-        int total = new JSONObject(resp.getData()).optInt("totalResults", 0);
+        int total = Utils.requireJsonBody(resp, "Querying the external KM role").optInt("totalResults", 0);
         Assert.assertTrue(total >= 1, "Expected the IS7 connector to have created role '" + roleName
                 + "' in IS, but SCIM2 Roles filter returned totalResults=" + total + ": " + resp.getData());
     }
@@ -3392,6 +3394,9 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.get(Utils.getListAPIKeysURL(Utils.getBaseUrl(), actualAppId), headers);
         // The endpoint returns either a bare array [{...}] or a {"count":n,"list":[...]} wrapper depending on
         // the pack — handle both. Each scenario's app has a single key, so the first entry is the one to revoke.
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "Listing the API keys returned no body to read the key from; got "
+                        + (response == null ? "no response" : String.valueOf(response.getResponseCode())));
         String data = response.getData().trim();
         JSONArray list = data.startsWith("[")
                 ? new JSONArray(data)
@@ -3635,7 +3640,7 @@ public class ApplicationBaseSteps {
         String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         // Guard before parsing — a cleared/failed list retrieval must fail clearly, not as an NPE/JSONException.
-        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
                 "No subscription-list response with a body captured to search for subscription '"
                         + actualSubscriptionId + "' in");
         JSONArray subscriptionsList= new JSONObject(response.getData()).getJSONArray("list");
@@ -3775,7 +3780,7 @@ public class ApplicationBaseSteps {
 
         // generate access token
         String tokenPayload;
-        if (scope != null && !scope.isEmpty()) {
+        if (scope != null && !scope.isBlank()) {
             tokenPayload = "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
                     "\"validityPeriod\": 3600," +
                     "\"scopes\": [\"" + scope + "\"]}";
@@ -3819,7 +3824,7 @@ public class ApplicationBaseSteps {
             try {
                 response = SimpleHTTPClient.getInstance().doGet(url, headers);
                 boolean pending = response.getResponseCode() != 200
-                        || response.getData() == null || response.getData().isEmpty()
+                        || response.getData() == null || response.getData().isBlank()
                         || new JSONObject(response.getData()).optInt("count", 0) == 0;
                 if (!pending) {
                     break;
@@ -4085,7 +4090,8 @@ public class ApplicationBaseSteps {
 
         JSONObject payload = loadKeyManagerPayload(resourcePath);
         payload.put("name", Utils.resolveContextPlaceholders(name));
-        postKeyManager(payload);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_KEY_MANAGER_IDS, postKeyManager(payload), "id");
     }
 
     /**
@@ -4096,7 +4102,8 @@ public class ApplicationBaseSteps {
     @When("I attempt to create a key manager from payload {string}")
     public void iAttemptToCreateKeyManager(String resourcePath) throws IOException {
 
-        postKeyManager(loadKeyManagerPayload(resourcePath));
+        ResourceCleanup.registerIfCreated(Constants.CREATED_KEY_MANAGER_IDS,
+                postKeyManager(loadKeyManagerPayload(resourcePath)), "id");
     }
 
     /**
@@ -4141,7 +4148,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch key manager '" + kmId + "' before updating its description: expected a 2xx response "
                         + "with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));
@@ -4379,7 +4386,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch key manager '" + kmId + "' before updating its allowed organizations: expected a 2xx "
                         + "response with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));
@@ -4438,7 +4445,8 @@ public class ApplicationBaseSteps {
     @When("I attempt to create a deny policy of type {string} with value {string}")
     public void iAttemptToCreateDenyPolicy(String conditionType, String conditionValue) throws IOException {
 
-        postDenyPolicy(conditionType, resolveDenyConditionValue(conditionValue));
+        ResourceCleanup.registerIfCreated(Constants.CREATED_DENY_POLICY_IDS,
+                postDenyPolicy(conditionType, resolveDenyConditionValue(conditionValue)), "conditionId");
     }
 
     /**
@@ -4471,7 +4479,8 @@ public class ApplicationBaseSteps {
     @When("I attempt to create an IP deny policy for fixed IP {string}")
     public void iAttemptToCreateIpDenyPolicy(String fixedIp) throws IOException {
 
-        postDenyPolicy("IP", ipConditionValue(fixedIp));
+        ResourceCleanup.registerIfCreated(Constants.CREATED_DENY_POLICY_IDS,
+                postDenyPolicy("IP", ipConditionValue(fixedIp)), "conditionId");
     }
 
     private JSONObject ipRangeConditionValue(String startingIp, String endingIp) {
@@ -4496,7 +4505,8 @@ public class ApplicationBaseSteps {
     @When("I attempt to create an IP range deny policy from {string} to {string}")
     public void iAttemptToCreateIpRangeDenyPolicy(String startingIp, String endingIp) throws IOException {
 
-        postDenyPolicy("IPRANGE", ipRangeConditionValue(startingIp, endingIp));
+        ResourceCleanup.registerIfCreated(Constants.CREATED_DENY_POLICY_IDS,
+                postDenyPolicy("IPRANGE", ipRangeConditionValue(startingIp, endingIp)), "conditionId");
     }
 
     /** Retrieves a single deny policy by the condition id held under {@code idKey}. */
@@ -4704,7 +4714,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch application '" + appId + "' before updating its visibility: expected a 2xx response "
                         + "with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));

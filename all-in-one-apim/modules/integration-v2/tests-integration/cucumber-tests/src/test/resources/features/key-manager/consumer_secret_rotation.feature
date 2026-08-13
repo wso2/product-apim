@@ -45,7 +45,7 @@ Feature: Consumer Secret Rotation (single-secret model)
     And I extract response field "consumerSecret" and store it as "rotOldSecret"
     When I put the following JSON payload in context as "rotSubPayload"
     """
-    {"applicationId": "{{applicationId}}", "apiId": "{{rotApiId}}", "throttlingPolicy": "Unlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
     """
     And I subscribe to API "rotApiId" using application "createdAppId" with payload "rotSubPayload" as "rotSubId"
     Then The response status code should be 201

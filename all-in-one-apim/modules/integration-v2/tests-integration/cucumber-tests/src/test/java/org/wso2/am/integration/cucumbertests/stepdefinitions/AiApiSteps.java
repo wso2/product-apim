@@ -372,7 +372,7 @@ public class AiApiSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(listResp != null && listResp.getResponseCode() >= 200 && listResp.getResponseCode() < 300
-                        && listResp.getData() != null && !listResp.getData().isEmpty(),
+                        && listResp.getData() != null && !listResp.getData().isBlank(),
                 "Failed to list common policies while resolving '" + policyName + "': expected a 2xx response with a "
                         + "body, got " + (listResp == null ? "no response" : listResp.getResponseCode()
                         + " / body=" + listResp.getData()));
@@ -395,7 +395,7 @@ public class AiApiSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' before applying the AI mediation policy: expected a 2xx "
                         + "response with a body, got " + (getApi == null ? "no response" : getApi.getResponseCode()
                         + " / body=" + getApi.getData()));
@@ -431,7 +431,7 @@ public class AiApiSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' before setting its primary production endpoint: expected a "
                         + "2xx response with a body, got " + (getApi == null ? "no response" : getApi.getResponseCode()
                         + " / body=" + getApi.getData()));

@@ -146,6 +146,9 @@ Feature: Publisher API Lifecycle
     # Observable state: what resource set an empty operations array actually yields.
     When I retrieve the "apis" resource with id "noResApiId"
     Then The response status code should be 200
+    # An empty operations array yields the default resource set: /* under 5 verbs (measured, not assumed). The
+    # count is the load-bearing half — the value set alone passes if only one verb survives.
+    And The response array field "operations[*].target" should have exactly 5 entries
     And The response field "operations[*].target" should be exactly the list "/*"
 
     Examples:
@@ -526,6 +529,9 @@ Feature: Publisher API Lifecycle
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I capture the tenant configuration as "lcrOriginalConf"
+    # Registered as well as restored below: tenant-config is container-wide, so a failure between the seed and the
+    # explicit restore would otherwise leave it modified for every later scenario on this container.
+    And I register tenant configuration "lcrOriginalConf" for cleanup
     And I capture the tenant configuration as "lcrSeededConf"
     And I set the JSON field "LinterCustomRules" from file "artifacts/payloads/linter_custom_rules.json" in the payload "lcrSeededConf"
     And I update the tenant configuration from "lcrSeededConf"

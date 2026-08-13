@@ -188,7 +188,7 @@ Feature: Key Manager Multiple Client Secrets
     And I extract response field "consumerSecret" and store it as "mcsPrimarySecret"
     When I put the following JSON payload in context as "mcsSubPayload"
     """
-    {"applicationId": "{{applicationId}}", "apiId": "{{mcsApiId}}", "throttlingPolicy": "Unlimited"}
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
     """
     And I subscribe to API "mcsApiId" using application "createdAppId" with payload "mcsSubPayload" as "mcsSubId"
     Then The response status code should be 201

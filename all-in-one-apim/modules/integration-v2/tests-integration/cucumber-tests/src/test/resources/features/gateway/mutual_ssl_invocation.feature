@@ -25,13 +25,13 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     Then The lifecycle status of API "mtlsApiId" should be "Published"
     # Presenting the matching client certificate authenticates → 200 (the uploaded cert becomes active once the
     # gateway's SSL-profile read interval — shrunk to 10s by the overlay — picks it up)
-    When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" until response status code becomes 200 within 150 seconds
+    When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" until response status code becomes 200 within 150 seconds
     Then The response status code should be 200
     # No client certificate on a mutualssl_mandatory API → rejected with 401
     When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" with no client certificate until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
     # A NON-matching client certificate (not the one uploaded to the API) → rejected with 401
-    When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.jks" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.p12" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     # The DEFAULT-VERSION (versionless) context enforces mutual SSL identically. The API is created with
@@ -39,9 +39,9 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     # gateway's default-version dispatcher, which is a DIFFERENT routing path from the versioned one and therefore
     # has its own chance to skip the client-certificate check. Legacy asserted both contexts on every mutual-SSL
     # case (testAPIInvocationWithMutualSSLOnlyAPI / ...Negative); v2 previously asserted only the versioned one.
-    When I invoke the API at gateway context "{{mtlsContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{mtlsContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{mtlsContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.jks" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{mtlsContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.p12" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     # A leaf certificate merely SIGNED BY the uploaded root is refused here (401) — certificate-chain validation
@@ -49,7 +49,7 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     # serial+subjectDN against the API's uploaded list and a chain-signed leaf never matches. The chain feature
     # is covered in gateway/mutual_ssl_chain_validation.feature, which runs in a block that enables it; this
     # row pins the DEFAULT-configuration behaviour, which that block can no longer observe.
-    When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_client.jks" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_client.p12" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     Examples:
@@ -135,13 +135,13 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     Then The response status code should be 200
 
     # BOTH credentials → 200, on the versioned and the default-version context.
-    When I invoke the API at gateway context "{{mmContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" and access token "generatedAccessToken" until response status code becomes 200 within 150 seconds
+    When I invoke the API at gateway context "{{mmContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "generatedAccessToken" until response status code becomes 200 within 150 seconds
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{mmContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" and access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{mmContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
     # The accepted certificate but NO application credential → 401 (a cert alone is not enough).
-    When I invoke the API at gateway context "{{mmContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{mmContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     # A VALID OAuth token but NO client certificate → 401, on both contexts (the token does not substitute).
@@ -190,21 +190,21 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     Then The response status code should be 200
 
     # The ACCEPTED certificate plus a valid token → 200 on both contexts (both credentials good).
-    When I invoke the API at gateway context "{{mfContext2}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" and access token "generatedAccessToken" until response status code becomes 200 within 150 seconds
+    When I invoke the API at gateway context "{{mfContext2}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "generatedAccessToken" until response status code becomes 200 within 150 seconds
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{mfContext2}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" and access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{mfContext2}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
     # A NON-uploaded certificate plus a valid token → 200 on both contexts: because mutual SSL is OPTIONAL the
     # failed certificate is not fatal, and the request is authorised on the OAuth token instead.
-    When I invoke the API at gateway context "{{mfContext2}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.jks" and access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{mfContext2}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.p12" and access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{mfContext2}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.jks" and access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{mfContext2}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.p12" and access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
     # The ACCEPTED certificate but NO application-security header → 401: application security is MANDATORY, so a
     # successful client certificate does not exempt the request from presenting an application credential.
-    When I invoke the API at gateway context "{{mfContext2}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{mfContext2}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     # The ACCEPTED certificate plus an INVALID bearer token → 401 on both contexts: a valid certificate does not
@@ -213,9 +213,9 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     """
     b0a3f9c1-4e2d-4c7a-9f11-not-a-real-token
     """
-    And I invoke the API at gateway context "{{mfContext2}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" and access token "mfBadToken" until response status code becomes 401 within 60 seconds
+    And I invoke the API at gateway context "{{mfContext2}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "mfBadToken" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    When I invoke the API at gateway context "{{mfContext2}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.jks" and access token "mfBadToken" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{mfContext2}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "mfBadToken" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     Examples:
