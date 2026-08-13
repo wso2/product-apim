@@ -246,38 +246,83 @@ Feature: Gateway WebSocket API Invocation
       | admin             |
       | admin@tenant1.com |
 
-  # Throttling: PARKED (raw-WS) — re-probed with BOTH mechanisms and neither enforces on the all-in-one profile:
-  #   * subscription EVENT-COUNT plan (EVENTCOUNTLIMIT) — relies on the async Traffic-Manager event loop → no-op.
-  #   * API-level advanced REQUEST-COUNT policy (the legacy WebSocketAPITestCase mechanism) — RE-PROBED after the
-  #     GraphQL finding: 10 frames on a 4/min limit still ALL echoed (0 throttled).
-  # Contrast: GraphQL SUBSCRIPTION throttling (graphql-ws) with the SAME request-count policy DOES enforce (4003 at
-  # frame 4 — see gateway/graphql_subscription_throttling). The difference is operation-awareness: the gateway
-  # parses each graphql-ws `start` as a countable request and throttles locally, whereas RAW-WS frames are opaque
-  # passthrough whose frame throttling depends on the TM binary-event flow that is inactive in the single-container
-  # profile. So this park is genuine (confirmed with the correct mechanism), not a mechanism mismatch. Re-enable
-  # only with a real Traffic Manager (wso2am-tm). Glue kept: the WS multi-frame throttle-detection step.
+  # Frame-quota enforcement on a raw WebSocket, on the lever the docs prescribe for streaming APIs: a
+  # SUBSCRIPTION-level EVENTCOUNTLIMIT plan of 4 events/min is the API's tier and the application subscribes on it.
+  # Per docs-apim api-gateway/rate-limiting/enforce-streaming-api-limits, "each WebSocket frame (in either
+  # direction) counts as one event", so this is a per-frame quota rather than a per-request one.
   #
-  # @cap:gateway @feat:throttling-enforcement @rule:ws-request-count @type:regression @dep:admin @legacy:WebSocketAPITestCase
-  # Scenario: A WS API is throttled once it exceeds its API-level request-count limit
-  #   Given The system is ready
-  #   And I have valid access tokens as "admin"
-  #   When I create an advanced throttling policy "${UNIQUE:wsReq4perMin}" allowing 4 requests per minute
-  #   Then The response status code should be 201
-  #   And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
-  #   When I retrieve the "apis" resource with id "wsApiId"
-  #   And I put the response payload in context as "wsThrPayload"
-  #   And I extract response field "context" and store it as "wsContext"
-  #   When I update the "apis" resource "wsApiId" and "wsThrPayload" with configuration type "apiThrottlingPolicy" and value:
-  #   """
-  #   {{advThrottlePolicyName}}
-  #   """
-  #   Then The response status code should be 200
-  #   When I deploy the API with id "wsApiId"
-  #   When I publish the "apis" resource with id "wsApiId"
-  #   Then The lifecycle status of API "wsApiId" should be "Published"
-  #   When I have set up application with keys, subscribed to API "wsApiId" with plan "AsyncUnlimited", and obtained access token for "wsThrSubId"
-  #   Then The response status code should be 200
-  #   When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" sending 10 messages using access token "generatedAccessToken" expecting throttling within 120 seconds
+  # BOTH-DIRECTION ARITHMETIC, and why the trip index is NOT asserted. The both-direction claim is confirmed in the
+  # gateway source, not just the docs: InboundWebSocketProcessor dispatches a client->server frame to
+  # RequestProcessor.handleRequest and a server->client frame to ResponseProcessor.handleResponse, and BOTH call the
+  # same InboundWebsocketProcessorUtil.doThrottle, which publishes one event per frame to
+  # org.wso2.throttle.request.stream:1.0.0. Against the UPPERCASING ECHO backend every client send therefore costs
+  # TWO units of the quota (the send plus its echo), so a 4-events/min quota is consumed after only TWO sends — half
+  # what a send-only reading would predict. But doThrottle CHECKS the local ThrottleDataHolder BEFORE it publishes,
+  # and the holder is filled asynchronously by the traffic manager, so whether the third send or the fourth is the
+  # one refused is a function of decision latency and not of the product. Asserting "exactly 2 echoes" would
+  # therefore be a guess wearing an exact assertion. The step asserts the three things that ARE exact: the first
+  # message echoed (so a never-routed API cannot pass — the vacuity that let legacy
+  # ThrottlingTestCase.testEventsThrottling's `assertTrue(received < 10)` pass at 0), a frame carrying the product's
+  # own literal "Error code: 4003 reason: Websocket frame throttled out" arrived, and no frame carried a DIFFERENT
+  # error code. 12 messages are offered so the quota is comfortably exceeded whichever send trips.
+  #
+  # WHY THIS IS NO LONGER PARKED. The previous park recorded "10 frames on a 4/min limit still ALL echoed (0
+  # throttled)" and attributed it to raw-WS frames being "opaque passthrough whose frame throttling depends on the TM
+  # binary-event flow". BOTH halves of that are now refuted:
+  #   * The mechanism claim is wrong — raw WS and graphql-ws share the SAME doThrottle (see above); the only
+  #     difference is that GraphQL passes a VerbInfoDTO, which changes which key is consulted, not whether the
+  #     throttle runs. So there is no separate "binary-event flow" for raw WS to depend on.
+  #   * The measurement could not have detected a throttle AT ALL, on any lever. The old step counted EVERY inbound
+  #     text frame as an echo and asserted `received < messageCount`. A raw-WS throttle does not go quiet and does not
+  #     close: doThrottle leaves closeConnection false, so the handler writes a TEXT frame reading
+  #     "Error code: 4003 ..." — which the old step tallied as an echo. A fully throttled 10-message run therefore
+  #     reported 10 "echoes" and failed as "no throttling observed", which is verbatim what the park note recorded.
+  #     The step now classifies the frame by that literal prefix.
+  # TWO THINGS CHANGED TOGETHER (the lever AND the step), so this scenario passing does NOT by itself attribute the
+  # earlier reading to one or the other; what IS established is that the previous park's stated reason was wrong on
+  # the mechanism and unmeasurable in its evidence. MEASURED on the current shape: the echo backend logged
+  # throttle-msg-0/1/2 and the 4th send came back as the 4003 frame — three sends is six frames, which is past a
+  # 4-event quota, so the both-direction arithmetic is confirmed end to end.
+  # THE TRIP INDEX IS A RANGE, NOT A NUMBER — MEASURED, and this is the one thing not to "tighten". A later run on the
+  # SAME build tripped one send later: frames were [THROTTLE-MSG-0, -1, -2, -3, "Error code: 4003 ..."], i.e. four
+  # echoes before the throttle instead of three. That is an OVERSHOOT past the 4-event quota, and the sibling SSE
+  # scenario overshoots the same way and varies MORE: across three runs its first stream delivered 4, 4, then 7
+  # events against a 2-events/min quota. Because the variance is measured INDEPENDENTLY ON BOTH LANES it is async
+  # decision propagation through the embedded traffic manager, not a WS-specific defect: the gateway keeps serving
+  # while the verdict is still in flight.
+  # GENERAL RULE for every event-count-throttling row: the quota trips within a RANGE, never at a deterministic
+  # index. The assertion is therefore "a 4003 frame appears WITHIN the message budget", never "on the Nth send".
+  # Do not convert it to an exact index or an exact echo count — it would flake on this build.
+  # This scenario is consequently re-enabled as a real measurement rather than kept as a park.
+  @cap:gateway @feat:throttling-enforcement @rule:ws-event-count @type:regression @dep:admin @dep:publisher @legacy:WebSocketAPITestCase
+  Scenario Outline: A WS API is throttled once its frames exceed the subscription plan's event quota as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create a subscription throttling policy "${UNIQUE:wsEv4perHour}" allowing 4 events per 60 "min"
+    Then The response status code should be 201
+    When I put JSON payload from file "artifacts/payloads/create_apim_ws_echo_api.json" in context as "wsThrPayload"
+    And I replace "AsyncUnlimited" with "{{subThrottlePolicyName}}" in the payload "wsThrPayload"
+    And I create an "apis" resource with payload "wsThrPayload" as "wsApiId"
+    And I deploy the API with id "wsApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "wsApiId"
+    Then The lifecycle status of API "wsApiId" should be "Published"
+    When I retrieve the "apis" resource with id "wsApiId"
+    # The API must actually OFFER the quota plan — an ignored tier would make the throttle assertion fail for the
+    # wrong reason. Exact array element, not a "should contain".
+    Then The value of response field "policies[0]" should be "{{subThrottlePolicyName}}"
+    And I extract response field "context" and store it as "wsContext"
+    When I have set up application with keys, subscribed to API "wsApiId" with plan "{{subThrottlePolicyName}}", and obtained access token for "wsThrSubId"
+    Then The response status code should be 200
+    When I get the subscription with id "wsThrSubId"
+    Then The value of response field "status" should be "UNBLOCKED"
+    And The value of response field "throttlingPolicy" should be "{{subThrottlePolicyName}}"
+    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" using access token "generatedAccessToken" expecting a throttled-out frame within 120 seconds
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
 
   # Secure WebSocket (wss://): invoke a WS API over the gateway's SECURE WS inbound (apim.wss.port 8099) with both
   # a token and an API key. NEW vs legacy (which only tested ws://); docs-apim documents wss://host:8099 as a

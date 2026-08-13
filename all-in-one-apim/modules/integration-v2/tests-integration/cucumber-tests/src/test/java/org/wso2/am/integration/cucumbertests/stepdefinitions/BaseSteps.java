@@ -27,11 +27,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
-import org.wso2.am.integration.cucumbertests.utils.RequestAction;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.test.utils.Constants;
@@ -40,7 +40,6 @@ import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,12 +53,7 @@ public class BaseSteps {
     private static final Log log = LogFactory.getLog(BaseSteps.class);
 
     protected String getBaseUrl() {
-
-        Object baseUrlObj = TestContext.get("baseUrl");
-        if (baseUrlObj == null) {
-            throw new IllegalStateException("baseUrl is not available in the test context yet");
-        }
-        return baseUrlObj.toString();
+        return Utils.getBaseUrl();
     }
 
     /**
@@ -104,15 +98,20 @@ public class BaseSteps {
 
     private void createDcrApplication(User actor) throws IOException {
 
-        //Create json payload for DCR endpoint
+        //Create json payload for DCR endpoint. The DCR client name must adhere to ^[\sa-zA-Z0-9._-]*$ — a
+        // secondary-store actor's username carries the store-domain separator (e.g. SECONDARY.COM/secondaryAdmin1),
+        // whose '/' is outside that set, so sanitize any disallowed char to '_' when DERIVING the name. This is
+        // cosmetic only: the actual OAuth identity is the untouched `owner` (actor.getUserName()) below.
+        String clientNameSafe = ("integration_test_app_" + actor.getUserNameWithoutDomain() + "_"
+                + actor.getUserDomain()).replaceAll("[^\\sa-zA-Z0-9._-]", "_");
         JsonObject json = new JsonObject();
         json.addProperty("callbackUrl", "test.com");
-        json.addProperty("clientName", "integration_test_app_" + actor.getUserNameWithoutDomain() + "_" + actor.getUserDomain());
+        json.addProperty("clientName", clientNameSafe);
         json.addProperty("grantType", "client_credentials password refresh_token");
         json.addProperty("saasApp", true);
         json.addProperty("owner", actor.getUserName());
 
-        String encodedCredentials = DatatypeConverter.printBase64Binary(
+        String encodedCredentials = Base64.getEncoder().encodeToString(
                     (actor.getUserName() + ':' + actor.getPassword()).getBytes(StandardCharsets.UTF_8));
 
         Map<String, String> headers = new HashMap<>();
@@ -120,25 +119,42 @@ public class BaseSteps {
 
         // The gateway health-check can pass before the client-registration webapp finishes deploying, so a
         // DCR POST fired immediately after boot can hit a transient 500 "Dynamic Client Registration Service
-        // not available" — a race that parallel runners sharing one freshly-booted container widen. Retry the
-        // registration (the failed call creates nothing, so retrying is safe) until it succeeds or the startup
-        // window elapses, mirroring TenantUserProvisioner.awaitTenantMgtServiceReady for the admin services.
+        // not available" — a race that parallel runners sharing one freshly-booted container widen. Retrying
+        // the POST blindly is safe for THIS endpoint: DCR is an idempotent upsert keyed on clientName (which
+        // is deterministic per actor above — every token acquisition re-POSTs it and receives the existing
+        // client back), so even a create that committed server-side with a lost response just returns the
+        // same client on the retry. Retry until 200 or the startup window elapses, mirroring
+        // TenantUserProvisioner.awaitTenantMgtServiceReady for the admin services.
         String dcrUrl = Utils.getDCREndpointURL(getBaseUrl());
-        long deadline = System.currentTimeMillis() + Constants.SERVER_STARTUP_WAIT_TIME;
-        HttpResponse dcrResponse = SimpleHTTPClient.getInstance().doPost(dcrUrl, headers, json.toString(),
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
-        while (dcrResponse.getResponseCode() != 200 && System.currentTimeMillis() < deadline) {
-            log.info("DCR endpoint not ready yet (status " + dcrResponse.getResponseCode()
-                    + "); retrying registration...");
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Constants.SERVER_STARTUP_WAIT_TIME;
+        HttpResponse dcrResponse = null;
+        while (true) {
             try {
-                Thread.sleep(500);
+                dcrResponse = SimpleHTTPClient.getInstance().doPost(dcrUrl, headers, json.toString(),
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+                if (dcrResponse.getResponseCode() == 200) {
+                    break;
+                }
+            } catch (IOException transientFailure) {
+                // Connection-level failure during the same warm-up window the 500-retry exists for — keep
+                // retrying within the startup deadline instead of letting one refused connection kill the step.
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                break;
+            }
+            log.info("DCR endpoint not ready yet"
+                    + (dcrResponse == null ? "" : " (status " + dcrResponse.getResponseCode() + ")")
+                    + "; retrying registration...");
+            try {
+                Utils.pollPause(deadlineStart, 500);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
                 break;
             }
-            dcrResponse = SimpleHTTPClient.getInstance().doPost(dcrUrl, headers, json.toString(),
-                    Constants.CONTENT_TYPES.APPLICATION_JSON);
         }
+        Assert.assertNotNull(dcrResponse,
+                "DCR registration got no response within the startup window (requests failed)");
         Assert.assertEquals(dcrResponse.getResponseCode(), 200, dcrResponse.getData());
 
         String clientId = Utils.extractValueFromPayload(dcrResponse.getData(), "clientId").toString();
@@ -380,12 +396,6 @@ public class BaseSteps {
     }
 
     /**
-     * Stores a generic string value or a value from a different context key into the test context.
-     *
-     * @param value The raw string value or a context key to resolve
-     * @param contextKey The key under which the value should be stored in TestContext
-     */
-    /**
      * Replaces a literal substring in a stored context value and writes it back. Used to resolve a server-side
      * template placeholder that the publisher API returns verbatim — e.g. a version-first API's context is
      * stored as {@code /{version}/ctx}, and the gateway invocation needs {@code /1.0.0/ctx}.
@@ -400,6 +410,12 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(key), resolved);
     }
 
+    /**
+     * Stores a generic string value or a value from a different context key into the test context.
+     *
+     * @param value The raw string value or a context key to resolve
+     * @param contextKey The key under which the value should be stored in TestContext
+     */
     @When("I put value {string} in context as {string}")
     public void iPutValueInContextAs(String value, String contextKey) {
         // Resolve value if it's a reference to another context key
@@ -463,6 +479,50 @@ public class BaseSteps {
     }
 
     /**
+     * Stores a filler text payload of exactly {@code sizeKb} KB in the context, for a request whose BYTE COUNT is
+     * the point rather than its content — a bandwidth (BANDWIDTHLIMIT) throttle quota is spent by bytes, so one
+     * body larger than the whole quota trips it in a single call. Generated rather than held as a fixture so the
+     * size is stated at the call site and no multi-KB literal lands in a feature file.
+     *
+     * @param sizeKb size of the payload in KB
+     * @param key    context key to store the payload under
+     */
+    @When("I put a {int} KB text payload in context as {string}")
+    public void putSizedTextPayloadInContext(int sizeKb, String key) {
+
+        TestContext.set(Utils.normalizeContextKey(key), "A".repeat(sizeKb * 1024));
+    }
+
+    /**
+     * Sets a top-level field to a JSON VALUE (array or object) rather than a string — e.g. giving an API two
+     * subscription policies, {@code ["QuotaPlan","AsyncWHUnlimited"]}, which a scenario needs when it compares a
+     * limited subscriber against an unlimited control on the SAME API.
+     *
+     * <p>Deliberately a separate step from {@link #iSetFieldInPayload}, not a smart-parsing upgrade of it: that one
+     * sets a STRING and callers depend on it doing exactly that (a value that merely looks like JSON must stay a
+     * string there). Picking the step IS the statement of intent, like TestContext.resolve/get/contains. Fails
+     * loudly if the value is not parseable JSON, so a typo cannot silently land as a string.
+     *
+     * @param field      the top-level JSON field to set
+     * @param json       a JSON array or object literal
+     * @param contextKey the context key holding the JSON payload
+     */
+    @When("I set the field {string} to the JSON value {string} in the payload {string}")
+    public void iSetFieldToJsonValueInPayload(String field, String json, String contextKey) {
+
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        String resolved = Utils.resolveContextPlaceholders(json).trim();
+        Object value;
+        try {
+            value = resolved.startsWith("[") ? new org.json.JSONArray(resolved) : new JSONObject(resolved);
+        } catch (org.json.JSONException e) {
+            throw new IllegalArgumentException("Value for field '" + field + "' is not valid JSON: " + resolved, e);
+        }
+        payload.put(field, value);
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
+    /**
      * Sets a top-level field of a JSON payload already in context to the given value, writing it back under the
      * same key. Used to build create-validation negatives from a valid base payload (e.g. blank name/context/
      * version, or an invalid context) without a separate fixture per case. An empty {@code value} sets the
@@ -475,7 +535,7 @@ public class BaseSteps {
     @When("I set the field {string} to {string} in the payload {string}")
     public void iSetFieldInPayload(String field, String value, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         // Resolve any {{contextKey}} placeholders in the value (e.g. reusing an existing API's context to build a
         // duplicate-context negative). Values with no placeholders pass through unchanged; an unknown key throws.
         payload.put(field, Utils.resolveContextPlaceholders(value));
@@ -511,7 +571,7 @@ public class BaseSteps {
     @When("I remove the field {string} from the payload {string}")
     public void iRemoveFieldFromPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         payload.remove(field);
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -571,8 +631,22 @@ public class BaseSteps {
     @When("I set the field {string} to an empty array in the payload {string}")
     public void iSetFieldToEmptyArrayInPayload(String field, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
-        payload.put(field, new org.json.JSONArray());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, new JSONArray());
+        TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
+    }
+
+    /**
+     * Sets a top-level field of a JSON payload in context to JSON {@code null}, writing it back under the key. Used
+     * to prove the publisher accepts an API update that nulls an optional field (e.g. {@code securityScheme} or
+     * {@code endpointConfig}) — a past NullPointerException regression (UpdateAPINullPointerTestCase). Uses
+     * {@link JSONObject#NULL} so the field is serialized as {@code null}, not the string {@code "null"}.
+     */
+    @When("I set the field {string} to null in the payload {string}")
+    public void iSetFieldToNullInPayload(String field, String contextKey) {
+
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
+        payload.put(field, JSONObject.NULL);
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
 
@@ -580,7 +654,7 @@ public class BaseSteps {
     @When("I set the boolean field {string} to {string} in the payload {string}")
     public void iSetBooleanFieldInPayload(String field, String value, String contextKey) {
 
-        org.json.JSONObject payload = new org.json.JSONObject(TestContext.resolve(contextKey).toString());
+        JSONObject payload = new JSONObject(TestContext.resolve(contextKey).toString());
         payload.put(field, Boolean.parseBoolean(value));
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -625,80 +699,6 @@ public class BaseSteps {
 
 
     /**
-     * Retrieves a previously prepared request and executes it until
-     * the desired HTTP status code is received or the maximum retry limit is reached.
-     *
-     * @param expectedCode The expected HTTP status code
-     * @throws InterruptedException ]
-     */
-    @And("I wait until the response status code is {int}")
-    public void iWaitUntilStatus(int expectedCode) throws InterruptedException {
-
-        // Retrieve prepared request logic from context
-        RequestAction requestAction = Utils.getPendingHttpRequest();
-
-        try {
-            // Execute with retry loop until expected status is met
-            HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode, res -> true);
-            TestContext.set(Constants.HTTP_RESPONSE, finalResponse);
-
-            Assert.assertEquals(finalResponse.getResponseCode(), expectedCode,
-                    "The request failed to return the expected status code after retries." +
-                            finalResponse.getData());
-
-            String httpMethod = (String) TestContext.get(Constants.HTTP_METHOD);
-
-            // Check if the HTTP method is DELETE
-            if (Constants.HTTP_METHODS.DELETE.equalsIgnoreCase(httpMethod)) {
-                Thread.sleep(2000);
-            }
-
-        } finally {
-            TestContext.remove(Constants.HTTP_METHOD);
-        }
-    }
-
-    /**
-     * Waits until the pending HTTP request returns the expected response status code
-     * and the specified JSON response field contains the expected value.
-     *
-     * @param expectedCode  the expected HTTP response status code
-     * @param fieldName     the JSON response field to validate
-     * @param expectedValue the expected value of the specified JSON field
-     * @throws InterruptedException if the retry wait is interrupted
-     * @throws IOException          if an error occurs while extracting the field value
-     *                              from the response payload
-     */
-    @Then("I wait until the response status code is {int} and the value of response field {string} is {string}")
-    public void iWaitUntilStatusAndFieldValue(int expectedCode, String fieldName, String expectedValue) throws InterruptedException, IOException {
-
-        RequestAction requestAction = Utils.getPendingHttpRequest();
-
-        HttpResponse finalResponse = Utils.executeWithRetry(requestAction, expectedCode,
-                response -> {
-                    // Extract value from JSON
-                    Object actualValue;
-                    try {
-                        actualValue = Utils.extractValueFromPayload(response.getData(), fieldName);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    // Return true if value matches
-                    return actualValue != null && String.valueOf(actualValue).equalsIgnoreCase(expectedValue);
-                }
-        );
-
-        TestContext.set("httpResponse", finalResponse);
-
-        Assert.assertEquals(finalResponse.getResponseCode(), expectedCode, "HTTP Status Code mismatch.");
-
-        Object actualFieldVal = Utils.extractValueFromPayload(finalResponse.getData(), fieldName);
-        Assert.assertTrue(expectedValue.equalsIgnoreCase(String.valueOf(actualFieldVal)),
-                String.format("Field '%s' was [%s] but expected [%s]. Data: %s",
-                        fieldName, actualFieldVal, expectedValue, finalResponse.getData()));
-    }
-
-    /**
      * Verifies that the HTTP response body contains the specified string value.
      *
      * @param expectedValue The string value that should be present in the response body
@@ -712,6 +712,72 @@ public class BaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response.getData().contains(expectedValue),
                 "Expected response to contain '" + expectedValue + "' but it did not: " + response.getData());
+    }
+
+    /**
+     * Asserts that a field in the stored JSON response equals an exact expected value (not a substring — use this
+     * where {@code The response should contain} would be ambiguous, e.g. a boolean flag whose literal could match
+     * another field). {@code fieldName} is a field name / JSONPath resolved by {@link Utils#extractValueFromPayload};
+     * {@code {{contextKey}}} placeholders in the expected value are resolved. Comparison is on string form so
+     * {@code "true"}/{@code "false"}/numbers work without type ceremony.
+     *
+     * @param fieldName     field name or JSONPath to read from the response body
+     * @param expectedValue the exact expected value (string form)
+     */
+    @Then("The value of response field {string} should be {string}")
+    public void theValueOfResponseFieldShouldBe(String fieldName, String expectedValue) throws IOException {
+
+        assertResponseFieldValue(fieldName, expectedValue, true);
+    }
+
+    /**
+     * Asserts a field's exact value in an ERROR (non-2xx) response body — the counterpart of
+     * {@link #theValueOfResponseFieldShouldBe} for a fault payload that names WHY the call was refused, where the
+     * status alone is ambiguous. Example: a gateway 429 carries a {@code code} identifying which throttle limit
+     * fired (application vs subscription vs burst vs API-level vs operation-level vs custom rule), so the status
+     * by itself cannot tell those dimensions apart.
+     *
+     * <p>Its status guard is the MIRROR IMAGE of the 2xx twin's, not an absence of one: the response must be
+     * non-2xx with a body, so a success payload carrying a same-named field can never satisfy this step either.
+     * Assert the status itself in its own step; this one pins the diagnosis in the body.
+     *
+     * @param fieldName     field name or JSONPath to read from the error response body
+     * @param expectedValue the exact expected value (string form)
+     */
+    @Then("The value of error response field {string} should be {string}")
+    public void theValueOfErrorResponseFieldShouldBe(String fieldName, String expectedValue) throws IOException {
+
+        assertResponseFieldValue(fieldName, expectedValue, false);
+    }
+
+    /**
+     * Shared body of the two field-value assertions: requires a body on the expected side of the 2xx boundary,
+     * then compares the field's string form to the expected value exactly.
+     *
+     * @param expectSuccess whether the response under assertion must be 2xx ({@code false} = must be non-2xx)
+     */
+    private void assertResponseFieldValue(String fieldName, String expectedValue, boolean expectSuccess)
+            throws IOException {
+
+        expectedValue = Utils.resolveContextPlaceholders(expectedValue);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // Pin the response to the expected side of the 2xx boundary: an error body (401/500 JSON) can carry a
+        // same-named field and must never satisfy a field assertion written against the success payload, nor
+        // vice versa.
+        boolean successful = response != null && response.getResponseCode() >= 200
+                && response.getResponseCode() < 300;
+        Assert.assertTrue(response != null && successful == expectSuccess
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a " + (expectSuccess ? "2xx" : "non-2xx") + " response with a body to read field '"
+                        + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        // Distinguish a MISSING field from a field literally equal to "null": without this a missing field
+        // would compare String.valueOf(null) -> "null" and could silently satisfy an expected "null".
+        Assert.assertNotNull(actual, "Field '" + fieldName + "' not present in response: " + response.getData());
+        Assert.assertEquals(String.valueOf(actual), expectedValue,
+                String.format("Field '%s' was [%s] but expected [%s]. Data: %s",
+                        fieldName, actual, expectedValue, response.getData()));
     }
 
     /**
@@ -765,6 +831,31 @@ public class BaseSteps {
     }
 
     /**
+     * Captures the {@code id} of the entry called {@code name} in the last response's {@code {"list":[...]}}
+     * payload — the generic counterpart of {@link #iExtractResponseFieldAndStoreItAs} for the common "reference
+     * a resource whose id cannot be known ahead of time, by its name" need. It reads the response the PRECEDING
+     * list step already published, so no second HTTP call is made (and it works for any {@code {"list":[...]}}
+     * endpoint). Fails clearly when the response is missing/unsuccessful or holds no entry with that name.
+     *
+     * @param name       the exact {@code name} of the list entry to find
+     * @param contextKey context key under which the entry's id is stored
+     */
+    @Then("I capture the id of the list entry named {string} as {string}")
+    public void iCaptureListEntryIdByName(String name, String contextKey) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200
+                        && response.getResponseCode() < 300 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "No successful list response with a body captured to look up entry '" + name + "'; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        String entryName = Utils.resolveContextPlaceholders(name);
+        String id = Utils.extractIdByName(response.getData(), entryName);
+        Assert.assertNotNull(id, "No entry named '" + entryName + "' in the list response: " + response.getData());
+        TestContext.set(Utils.normalizeContextKey(contextKey), id);
+    }
+
+    /**
      * Extracts a field or JSONPath value from a JSON payload stored in TestContext
      * and stores the extracted value back in TestContext.
      *
@@ -794,13 +885,6 @@ public class BaseSteps {
     }
 
     /**
-     * Extracts a field value from a JSONObject stored in TestContext and stores it under another key.
-     *
-     * @param sourceKey TestContext key containing the JSONObject
-     * @param fieldName JSON field name to extract
-     * @param targetKey TestContext key to store the extracted value
-     */
-    /**
      * Copies a context value from one key to another. Useful when a later composite step overwrites a shared key
      * (e.g. {@code generatedAccessToken}) but an earlier value must be preserved — e.g. keeping a REST, GraphQL and
      * WebSocket token side-by-side to invoke all three across a single server restart.
@@ -811,6 +895,13 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(toKey), value);
     }
 
+    /**
+     * Extracts a field value from a JSONObject stored in TestContext and stores it under another key.
+     *
+     * @param fieldName JSON field name to extract
+     * @param sourceKey TestContext key containing the JSONObject
+     * @param targetKey TestContext key to store the extracted value
+     */
     @And("I extract field {string} from {string} and store it as {string}")
     public void iExtractFieldFromAndStoreItAs(String fieldName, String sourceKey, String targetKey) {
 
@@ -900,6 +991,19 @@ public class BaseSteps {
                 "Response header '" + headerName + "' (" + actual + ") unexpectedly contains '" + resolved + "'");
     }
 
+    /**
+     * Asserts a response header is entirely ABSENT (case-insensitive lookup) — distinct from
+     * {@code should not contain the header X with value Y} (which pins a specific value). Needed for the CORS
+     * negative case: a pre-flight-only header (e.g. {@code Access-Control-Allow-Methods}) must not appear on a
+     * normal, non-pre-flight response.
+     */
+    @Then("The response should not contain the header {string}")
+    public void responseShouldNotContainHeader(String headerName) {
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNull(actual,
+                "Response header '" + headerName + "' unexpectedly present with value '" + actual + "'");
+    }
+
     /** Case-insensitive lookup of a response header value from the stored httpResponse (null if absent). */
     private String responseHeaderValue(String headerName) {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
@@ -924,8 +1028,12 @@ public class BaseSteps {
      */
     @And("The {string} resource should reflect the updated {string} as:")
     public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String expectedConfigValue) throws IOException, InterruptedException {
-        // Get the API ID from the update response
+        // Get the API ID from the update response — guard before parsing (a cleared/failed update leaves no
+        // response, and an empty body would throw an opaque JSONException instead of a clear failure).
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(updateResponse != null && updateResponse.getData() != null
+                        && !updateResponse.getData().isEmpty(),
+                "No update response with a body captured to verify the '" + config + "' update against");
         JSONObject updateResponseJson = new JSONObject(updateResponse.getData());
         String resourceId = updateResponseJson.optString("id", null);
         User actor = Identity.actingActor();
@@ -1012,6 +1120,9 @@ public class BaseSteps {
      * @param configValue The expected configuration value
      */
     private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+                "No response with a body to verify configuration '" + config + "' in; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONObject json = new JSONObject(response.getData());
         Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
 
@@ -1051,8 +1162,10 @@ public class BaseSteps {
     public void waitForAPIMServerToBeReady() {
 
         boolean isServerReady = ServerReadiness.awaitReady(getBaseUrl());
-        Assert.assertTrue(isServerReady, "APIM server is not ready even after waiting for " +
-                Constants.DEPLOYMENT_WAIT_TIME /60000 + " minutes");
+        // Report the window awaitReady ACTUALLY used (its no-arg overload passes SERVER_STARTUP_WAIT_TIME);
+        // quoting the propagation timeout here understated the real wait and misled triage.
+        Assert.assertTrue(isServerReady, "APIM server is not ready even after waiting for "
+                + Constants.SERVER_STARTUP_WAIT_TIME / 60000 + " minutes");
     }
 
     /**
@@ -1067,89 +1180,71 @@ public class BaseSteps {
 
         String apiName  = Utils.extractValueFromPayload(actualApiDetailsPayload, "name").toString();
         String apiVersion = Utils.extractValueFromPayload(actualApiDetailsPayload, "version").toString();
+        // The deployed-revisions list is the publisher-plane distinguishing state — it flips as soon as the
+        // revision is deployed, so it is available to the same actor that owns the API.
+        String apiId = Utils.extractValueFromPayload(actualApiDetailsPayload, "id").toString();
         // Use the tenant ADMIN (not the acting actor) — the gateway-artifact admin endpoint requires admin
         // credentials, which a least-privilege publisher actor does not have.
         User tenantAdmin = Identity.actingTenantAdmin();
         String tenantDomain = tenantAdmin.getUserDomain();
 
-        String url = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
+        String artifactUrl = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
 
-        String encodedCredentials = DatatypeConverter.printBase64Binary(
+        String encodedCredentials = Base64.getEncoder().encodeToString(
                 (tenantAdmin.getUserName() + ':' + tenantAdmin.getPassword()).getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
+        Map<String, String> artifactHeaders = new HashMap<>();
+        artifactHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
 
-        long currentTime = System.currentTimeMillis();
-        long waitTime = currentTime + Constants.DEPLOYMENT_WAIT_TIME;
+        String revisionsUrl = Utils.getRevisionDeployments(getBaseUrl(), "apis", apiId);
+        Map<String, String> revisionsHeaders = new HashMap<>();
+        revisionsHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        // De-flake (load-induced eventual-consistency, same class as the saml2-bearer clock-skew fix):
+        // when many freshly-imported APIs pile up in one serially-loaded block, the synapse ARTIFACT
+        // materialization behind the gateway api-artifact endpoint lags well past the standard
+        // RUNTIME_PROPAGATION_TIMEOUT window,
+        // even though the revision IS deployed. So we (1) poll the correct distinguishing signal — the
+        // deployed-revisions list, which flips on publisher-plane deployment — as the primary readiness gate,
+        // accepting the gateway-artifact 200 only as a secondary confirmation, (2) catch the transient set on
+        // either probe — IOException (gateway warm-up) and JSONException (a not-yet-well-formed body) — so a
+        // programming error (bad context key, NPE) still fails fast instead of being masked as a deploy
+        // timeout, and (3) lengthen the window to a freshly-imported-under-load budget. Fast cases still
+        // exit early on the first positive poll.
+        long waitTimeStart = System.currentTimeMillis();
+        long waitTime = waitTimeStart + (2 * Constants.RUNTIME_PROPAGATION_TIMEOUT);
         boolean isApiDeployed = false;
 
         while (System.currentTimeMillis() < waitTime) {
-            HttpResponse response = null;
             try {
-                response = SimpleHTTPClient.getInstance().doGet(url, headers);
-            } catch (IOException ignored) {
-                log.warn("API :" + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
-                        tenantDomain);
-            }
-            if (response != null && response.getResponseCode() == 200) {
+                HttpResponse revisionsResponse = SimpleHTTPClient.getInstance().doGet(revisionsUrl, revisionsHeaders);
+                if (revisionsResponse != null && revisionsResponse.getResponseCode() == 200
+                        && new JSONObject(revisionsResponse.getData()).getJSONArray("list").length() > 0) {
                     isApiDeployed = true;
                     break;
+                }
+                HttpResponse artifactResponse = SimpleHTTPClient.getInstance().doGet(artifactUrl, artifactHeaders);
+                if (artifactResponse != null && artifactResponse.getResponseCode() == 200) {
+                    isApiDeployed = true;
+                    break;
+                }
+            } catch (IOException | JSONException e) {
+                log.warn("API: " + apiName + " with version: " + apiVersion + " not yet deployed in tenant: " +
+                        tenantDomain + " – retrying");
             }
             try {
                 log.info("Wait for availability of API: " + apiName + " with version: " + apiVersion +
                         " in tenant " + tenantDomain);
-                Thread.sleep(500);
+                Utils.pollPause(waitTimeStart, 500);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
-        Assert.assertTrue(isApiDeployed);
+        Assert.assertTrue(isApiDeployed, "API " + apiName + " v" + apiVersion +
+                " was not deployed within the timeout");
         Thread.sleep(10000);
     }
 
-    /**
-     * Waits for a previous API revision to be undeployed from the gateway.
-     *
-     * @param apiDetailsPayload Context key containing the API details JSON payload
-     */
-    @Then("I wait for undeployment of the previous API revision in {string}")
-    public void waitForPreviousAPIRevisionUndeployment(String apiDetailsPayload) throws IOException {
-
-        String actualApiDetailsPayload = TestContext.resolve(apiDetailsPayload).toString();
-
-        String apiName  = Utils.extractValueFromPayload(actualApiDetailsPayload, "name").toString();
-        String apiVersion = Utils.extractValueFromPayload(actualApiDetailsPayload, "version").toString();
-        // Use the tenant ADMIN (not the acting actor) — the gateway-artifact admin endpoint requires admin
-        // credentials, which a least-privilege publisher actor does not have.
-        User tenantAdmin = Identity.actingTenantAdmin();
-        String tenantDomain = tenantAdmin.getUserDomain();
-
-        String url = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
-
-        String encodedCredentials = DatatypeConverter.printBase64Binary(
-                (tenantAdmin.getUserName() + ':' + tenantAdmin.getPassword()).getBytes(StandardCharsets.UTF_8));
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
-
-        long currentTime = System.currentTimeMillis();
-        long waitTime = currentTime + Constants.UNDEPLOYMENT_WAIT_TIME;
-
-        while (System.currentTimeMillis() < waitTime) {
-            HttpResponse response = null;
-            try {
-                response = SimpleHTTPClient.getInstance().doGet(url, headers);
-            } catch (IOException ignored) {}
-            if (response != null && response.getResponseCode() == 404) {
-                log.info("Previous API revision is undeployed successfully");
-                break;
-            }
-            try {
-                log.info("Wait for undeployment of API: " + apiName + " with version: " + apiVersion +
-                        " in tenant " + tenantDomain);
-                Thread.sleep(500);
-            } catch (InterruptedException ignored) {
-            }
-        }
-    }
 
     /**
      * Extracts a value from a JSON payload using the given path and stores it in the test context.

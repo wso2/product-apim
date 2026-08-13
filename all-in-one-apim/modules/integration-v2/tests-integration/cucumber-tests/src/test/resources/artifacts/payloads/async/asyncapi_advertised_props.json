@@ -1,0 +1,15 @@
+{
+  "name": "${UNIQUE:AsyncStreamApi}",
+  "context": "/${UNIQUE:asyncstream}",
+  "version": "1.0.0",
+  "type": "ASYNC",
+  "policies": ["AsyncWHUnlimited"],
+  "advertiseInfo": {
+    "advertised": true,
+    "apiExternalProductionEndpoint": "https://test.com",
+    "apiExternalSandboxEndpoint": "https://test.com",
+    "originalDevPortalUrl": "https://test.com",
+    "vendor": "WSO2",
+    "apiOwner": "admin"
+  }
+}

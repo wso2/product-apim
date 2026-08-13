@@ -60,7 +60,7 @@ Follow `references/gap-analysis.md`.
 - **Unit track:** find existing `*Test` classes for the touched classes; list changed methods/branches with no
   assertions.
 - **Integration track:** place each candidate flow in the **capability tree** (`docs/devs/capability-map.yml` +
-  `docs/devs/v2-public-feature-coverage-map.md`) for ORGANIZATION/placement, then read the owning feature
+  `docs/devs/coverage-tree.md`, the generated tree) for ORGANIZATION/placement, then read the owning feature
   file(s)/scenarios to judge covered / partial / absent. The tree tells you *where a test belongs*; the actual
   feature files tell you *what's already covered* — do not trust tag names alone.
 Output: a gap report (unit gaps + integration gaps, each with a covered/partial/absent verdict + file pointers).

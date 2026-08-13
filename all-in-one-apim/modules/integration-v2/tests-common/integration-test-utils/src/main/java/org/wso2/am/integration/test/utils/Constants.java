@@ -33,17 +33,21 @@ public class Constants {
     public static final String HTTP_SCHEME = "http";
     public static final String HTTPS_SCHEME = "https";
     public static final String HTTP_RESPONSE = "httpResponse";
-    public static final String PENDING_HTTP_REQUEST = "pendingRequest";
-    public static final String HTTP_METHOD = "HTTP_METHOD";
 
     public static final String BASE_URL = "baseUrl";
 
-    public static final long DEPLOYMENT_WAIT_TIME = 120 * 1000;
-    public static final long UNDEPLOYMENT_WAIT_TIME = 30 * 1000;
+    // THE single ceiling for async runtime-propagation polls (lifecycle state, gateway routability/artifact
+    // undeploy, org visibility, search indexing, saved-state reads — one pipeline, one ceiling). Sized from
+    // observed worst cases, not taste: starved CI runners have shown pipelines ~90-100s behind a 2xx write, and
+    // one loaded local full-suite run saw a fresh route take >120s to become routable — 180s buys real margin
+    // over the measured tail. Passing polls return on first success, so green runs don't slow; only genuine
+    // failures wait the full window. Don't widen further without a new measured tail — each bump makes the
+    // suite a worse canary for product-side propagation-latency regressions. Pair with Utils.pollPause for
+    // the tiered inter-poll cadence.
+    public static final long RUNTIME_PROPAGATION_TIMEOUT = 180 * 1000;
     public static final long SERVER_STARTUP_WAIT_TIME = 300 * 1000;
 
     public static final long INITIAL_INDEXING_TIME = 120 * 1000;
-    public static final int MAX_RETRIES = 30;
     public static final long RETRY_INTERVAL_TIME = 2000;
     public static final long WAIT_TIME = 2000;
 
@@ -56,6 +60,26 @@ public class Constants {
     public static final int GATEWAY_WS_PORT = 9099;
     /** Gateway SECURE WebSocket inbound port (apim.wss.port, enabled by default). Used by wss:// invocation tests. */
     public static final int GATEWAY_WSS_PORT = 8099;
+    /**
+     * WebSub event-receiver inbound port — the synapse {@code WebhookServer} HTTP inbound endpoint a WebSub API
+     * binds to, where an event source POSTs content for the hub to fan out to its subscribers.
+     * <p>
+     * Verified, not inherited from the legacy constant: the distribution ships
+     * {@code conf/synapse-configs/default/inbound-endpoints/WebhookServer.xml} with
+     * {@code inbound.http.port=9021} and {@code suspend="false"}, and unlike its HTTPS twin it has NO {@code .j2}
+     * template — so it is unconditionally on and there is no deployment.toml key to enable. Confirmed at runtime on
+     * a stock container with no WebSub API deployed: {@code PassThroughListeningIOReactorManager Pass-through
+     * WebhookServer Listener started on 0.0.0.0:9021}. The legacy tests' 9521 is this port plus their portOffset of
+     * 500; this lane runs portOffset=0. The HTTPS twin is {@code SecureWebhookServer} on 8021
+     * ({@code apim.webhooks.https.port}, enabled by default).
+     */
+    public static final int WEBSUB_EVENT_RECEIVER_PORT = 9021;
+    /**
+     * Resource the WebSub API template binds on the event-receiver inbound (see
+     * {@code distribution/resources/api_templates/websub_api_template.xml}); an event source POSTs content to
+     * {@code <apiContext>/<version>} + this + {@code ?topic=<topic>}.
+     */
+    public static final String WEBSUB_EVENT_RECEIVER_RESOURCE = "/webhooks_events_receiver_resource";
 
     public static final String MIGRATION_PROFILE = "migration";
     public  static final String DEFAULT_PROFILE = "default";
@@ -119,6 +143,8 @@ public class Constants {
     // publisher to take it through lifecycle) — deliberately NOT admin (no apim:admin scope).
     public static final String PUBLISHER_USER_KEY = "publisherUser";
     public static final String SUBSCRIBER_USER_KEY = "subscriberUser";
+    /** Admin-role actor provisioned in email-username blocks so the admin login arc can run in both tenants. */
+    public static final String EMAIL_ADMIN_USER_KEY = "emailAdmin";
 
     public static final String ADPSAMPLE_TENANT_DOMAIN = "adpsample.com";
     public static final String ADPSAMPLE_TENANT_ADMIN_USERNAME = "admin@adpsample.com";

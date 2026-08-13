@@ -23,7 +23,8 @@ capabilities:
       revisions:         { name: API revisions }
       visibility:        { name: Publisher-side visibility & access control }
       graphql-design:    { name: GraphQL API design & schema }
-      streaming-design:  { name: Streaming (WebSocket/WebSub/Async) API design }
+      streaming-design:  { name: Streaming (WebSocket/SSE/WebSub/Async) API design }
+      solace:            { name: Solace event-API integration (discovery, import, subscription/key propagation, broker publish) }
       soap-design:       { name: SOAP (passthrough) API design }
       service-catalog:   { name: Service catalog }
       mcp-servers:       { name: MCP server authoring (create proxy/from-OpenAPI/from-API, CRUD, backends) }
@@ -32,11 +33,14 @@ capabilities:
     name: DevPortal — discovery & consumption
     features:
       discovery:               { name: Search & browse }
+      visibility:              { name: Store-side role-based API visibility }
       applications:            { name: Application CRUD }
       application-attributes:  { name: Custom application attributes (store + JWT claim) }
       sdk-generation:          { name: Client SDK generation (per-language download) }
       subscribe:               { name: Subscribe / unsubscribe }
       subscription-management: { name: Subscription update / blocking }
+      solace:                  { name: Solace event-API subscription & key propagation to Solace }
+      streaming-design:        { name: Streaming API consumption (advertise-only ASYNC subscription) }
       comments:                { name: Comments }
       ratings:                 { name: Ratings }
       try-out:                 { name: Try-out console }
@@ -47,7 +51,8 @@ capabilities:
       rest-invocation:        { name: REST API invocation }
       soap-invocation:        { name: SOAP API invocation }
       graphql-invocation:     { name: GraphQL invocation (query/mutation/subscription) }
-      streaming-invocation:   { name: WebSocket / WebSub invocation }
+      streaming-invocation:   { name: WebSocket / SSE / WebSub / GraphQL subscription invocation }
+      solace:                 { name: Solace broker publish with an APIM-issued OAuth token }
       ai-invocation:          { name: AI API invocation }
       mediation-policies:     { name: Mediation / message transformation }
       header-transformation:  { name: Header handling & rewriting }
@@ -66,6 +71,11 @@ capabilities:
       throttling-policies: { name: Throttling policy CRUD }
       workflows:           { name: Approval workflows }
       key-manager-config:  { name: Key manager registration & config }
+      # Runtime integration of a third-party key manager (WSO2 IS 7.x connector): end-to-end token flows,
+      # grant types, introspection/PEM validation modes, IS-side role creation & enforcement, revocation,
+      # RFC 8693 token exchange, and tenant-sharing KM auto-configuration. Distinct from key-manager-config
+      # (the admin REST CRUD of KM entries) — this is whether a registered external KM actually works.
+      external-key-manager: { name: External key manager integration (WSO2 IS 7.x) }
       environments:        { name: Gateway environments }
       tenants-orgs:        { name: Tenants & organizations }
       application-management: { name: Admin application search & management }

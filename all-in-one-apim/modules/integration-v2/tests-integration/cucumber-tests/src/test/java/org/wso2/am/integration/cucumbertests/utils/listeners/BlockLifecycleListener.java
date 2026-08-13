@@ -24,19 +24,24 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
+import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
+import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.IdentityServerContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
+import org.wso2.am.testcontainers.DynamicSolaceBroker;
 import org.wso2.am.testcontainers.NodeAppServer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.Semaphore;
 
 /**
  * Per-block lifecycle for the parallel-on-shared-container lane. Fires once per TestNG {@code <test>}
@@ -63,6 +68,7 @@ public class BlockLifecycleListener implements ITestListener {
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
     static final String BASE_GATEWAY_WS_URL_KEY = "baseGatewayWsUrl";
     static final String BASE_GATEWAY_WSS_URL_KEY = "baseGatewayWssUrl";
+    static final String BASE_WEBSUB_EVENT_RECEIVER_URL_KEY = "baseWebSubEventReceiverUrl";
     static final String GATEWAY_CLIENT_IP_KEY = "gatewayClientIp";
 
     /** Optional {@code <parameter>} names read from the block's {@code <test>}. */
@@ -81,10 +87,158 @@ public class BlockLifecycleListener implements ITestListener {
     static final String PARAM_TENANT_SET = "tenantSet";
     static final String TENANT_SET_ADPSAMPLE = "adpsample";
     /**
+     * When {@code true}, every user provisioned by {@link #PARAM_INIT_TENANT_USERS} (except the super-tenant
+     * {@code admin}) gets an EMAIL-FORM physical username — {@code <base>@email.com} instead of {@code <base>} —
+     * making "email as username" a first-class block mode. Pair it with the
+     * {@code artifacts/configFiles/emailUserName} extra overlay, which turns on {@code [tenant_mgt]
+     * enable_email_domain}; the two must be set together (see that file for why).
+     *
+     * <p><b>Actor references are unaffected.</b> Only the PHYSICAL username changes;
+     * {@code Identity.resolveActor} still resolves {@code publisherUser@tenant1.com} / {@code admin}, because it
+     * splits a ref on its FIRST {@code @} into {@code <userKey>@<domain>} — an email address must therefore never
+     * appear in an actor ref. So every existing {@code Scenario Outline} actor column keeps working verbatim.
+     *
+     * <p><b>Why the mode has to change the provisioned usernames at all</b> (this is the "the flag breaks
+     * provisioning" failure the mode exists to solve). With {@code enable_email_domain = true},
+     * {@code MultitenantUtils} resolves a username by counting {@code @}: for exactly ONE {@code @} it assumes a
+     * SUPER-TENANT login and keeps the whole string as the username; only with TWO or more does it split the
+     * tenant off the LAST {@code @}. The framework's plain tenant actors carry exactly one {@code @}
+     * ({@code admin@tenant1.com}), so with the flag on they resolve to a non-existent super-tenant user named
+     * "admin@tenant1.com" and every tenant SOAP/REST call as that principal is refused — provisioning dies on the
+     * first {@code addUser} into {@code tenant1.com}. Giving the user an email-form name restores the second
+     * {@code @} ({@code admin@email.com@tenant1.com}), which is exactly the tenant-qualified email form the
+     * product expects (the same {@code <email>@<tenantDomain>} shape the legacy EmailUserNameLoginTestCase
+     * builds). The super-tenant {@code admin} stays plain {@code admin} (zero {@code @}), which resolves
+     * correctly either way — converting it would destabilise every SOAP admin call in the block.
+     *
+     * <p>The username regexes are deliberately NOT touched: this build's {@code database_unique_id} defaults are
+     * {@code UsernameJavaRegEx}/{@code UsernameJavaScriptRegEx} = {@code ^[\S]{3,30}$}, which already admit
+     * {@code @}, so both the plain and the email form validate. Applies to the {@code default} tenant set only —
+     * the {@code adpsample} set's users ship fixed inside the migration dataset.
+     */
+    static final String PARAM_EMAIL_USER_MODE = "emailUserMode";
+    /**
+     * The mail domain appended to a provisioned user's base name in a {@link #PARAM_EMAIL_USER_MODE} block.
+     * A mail domain, NOT a tenant domain — it is the local part of the tenant-qualified username
+     * ({@code publisherUser11@email.com@tenant1.com}), mirroring the legacy {@code emailuser@email.com}.
+     * Keep it SHORT: the store's {@code UsernameJavaRegEx} caps the (tenant-unqualified) username at 30 chars,
+     * and the longest base name here is {@code subscriberUser11}, so this leaves 14 characters of headroom.
+     */
+    private static final String EMAIL_USERNAME_MAIL_DOMAIN = "@email.com";
+    /**
      * When {@code true}, onStart ensures the shared NodeAppServer backend (network alias {@code nodebackend})
      * is running before APIM boots, so gateway-invocation tests have a reachable backend for deployed APIs.
      */
     static final String PARAM_INIT_BACKEND = "initBackend";
+    /**
+     * When {@code true}, onStart boots {@link DynamicSolaceBroker} — a faked Solace connector control plane
+     * (network alias {@code solaceshim}) plus a REAL PubSub+ broker (alias {@code solacebroker}) — BEFORE APIM,
+     * because the block's toml declares a gateway environment whose {@code service_url} is
+     * {@code http://solaceshim:8081}. Ordering follows {@link #PARAM_INIT_BACKEND} (before APIM) rather than
+     * {@link #PARAM_BOOT_EXTERNAL_IS} (after APIM): nothing in the Solace arc needs APIM's certificate, and an
+     * environment pointing at an absent host is a needless race.
+     *
+     * <p>The broker and shim are a shared singleton, so SEVERAL blocks may set this — but they SERIALIZE on
+     * {@link #SOLACE_JWKS_ALIAS_PERMIT}, because each such block's APIM must bind the {@code apimforsolace} alias
+     * and the shared broker resolves a single {@code endpointJwks} through it. Holder blocks queue for that permit
+     * before booting and release it after their container stops, exactly as the {@code wso2am} holders do
+     * ({@link #PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS}); every other block stays concurrent. So a second Solace
+     * block is supported but costs wall-clock, and each one boots a full event broker — worth weighing before
+     * adding one.
+     *
+     * <p>Infrastructure ONLY (CLAUDE.md 14). Registering the Solace environment is toml; importing, deploying,
+     * subscribing and key generation are feature steps run as an {@code Identity} actor. Do not add product
+     * calls here — that is what got {@code KeyManagerRegistration} removed.
+     */
+    static final String PARAM_INIT_SOLACE_BROKER = "initSolaceBroker";
+    /**
+     * Optional comma-separated list of {@code <hostPath>::<serverRelativePath>} pairs copied into the block's
+     * server directory tree BEFORE boot (host paths relative to the module working dir). For fixtures the
+     * server only reads at startup — e.g. a secondary user-store XML under
+     * {@code repository/deployment/server/userstores/}: Carbon's User Store Configuration Deployer processes
+     * that directory at boot. (NOTE: a JDBC secondary user store CAN be added at runtime via
+     * UserStoreConfigAdminService — it hot-deploys asynchronously — which is what {@link #PARAM_INIT_SECONDARY_USER_STORE}
+     * uses; serverFilesToCopy remains for genuinely boot-only fixtures.)
+     */
+    static final String PARAM_SERVER_FILES_TO_COPY = "serverFilesToCopy";
+
+    /**
+     * When {@code true}, onStart stands up a JDBC {@code SECONDARY.COM} user store at runtime (schema via the
+     * product's own dbscripts + addUserStore SOAP + poll-until-active) after tenant provisioning — the framework
+     * facility that replaces the seeded {@code .mv.db} fixture. See {@link SecondaryUserStoreProvisioner}.
+     */
+    static final String PARAM_INIT_SECONDARY_USER_STORE = "initSecondaryUserStore";
+    /**
+     * When {@code true}, provisions the external-Identity-Server INFRASTRUCTURE for this block: APIM's
+     * client-truststore is augmented with the IS TLS cert BEFORE APIM boots (via
+     * {@link DynamicApimContainer#withExternalKmTrust}), so APIM trusts {@code https://wso2is:9443}; and after
+     * APIM is ready and tenants/users are provisioned, the {@code IdentityServerContainer} is started, its OIDC
+     * discovery is awaited, and the host-mapped IS base URL is published to the block's shared scope under
+     * {@link #IS_BASE_URL_KEY}. This is deliberately infrastructure ONLY — registering IS as a key manager is
+     * ADMIN PRODUCT BEHAVIOUR and is done by the features themselves ({@code I create a key manager from
+     * payload …}, typically in a {@code _setup_*} fixture or inline where registration is the subject). The IS
+     * toml can be extended per block via {@link #PARAM_IS_TOML_EXTRA_OVERLAY}.
+     */
+    static final String PARAM_BOOT_EXTERNAL_IS = "bootExternalIdentityServer";
+    /**
+     * When {@code true}, this block's APIM binds the fixed {@code wso2am} shared-network alias and becomes the
+     * receiver of the external IS's reverse-channel notifications (token-revocation / tenant-sync POSTs to
+     * {@code https://wso2am:9443/internal/data/v1/notify}). The alias is fixed — baked into the IS toml and the
+     * wso2am.p12 cert — so at most one LIVE container may hold it (duplicate holders make Docker DNS route
+     * notifications to an arbitrary APIM). The listener enforces this with a JVM-wide permit
+     * ({@link #IS_NOTIFY_ALIAS_PERMIT}): holder blocks queue for the permit before booting and release it after
+     * their container stops, serializing ONLY among themselves — alias-free external-KM blocks (which make
+     * APIM→IS calls only) keep running fully concurrently under {@code parallel="tests"}. Set this on every
+     * block whose tests assert on a delivered notification (e.g. the self-validate revoke→401 walk); leave it
+     * off everywhere else. See {@link DynamicApimContainer#withExternalIsNotificationAlias}.
+     */
+    static final String PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS = "receiveExternalIsNotifications";
+    /**
+     * JVM-wide permit backing {@link #PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS}: at most one live container may
+     * hold the {@code wso2am} alias, so holder blocks serialize on this while all other blocks run free. A
+     * {@link Semaphore} (not a lock) because acquire happens on the block's onStart thread and release on its
+     * onFinish thread. Release is guarded by {@link #ALIAS_PERMIT_HELD_ATTRIBUTE} so the boot-failure path and
+     * onFinish can't double-release.
+     */
+    private static final Semaphore IS_NOTIFY_ALIAS_PERMIT = new Semaphore(1);
+    /** Test-context attribute marking that this block holds {@link #IS_NOTIFY_ALIAS_PERMIT} (single-release guard). */
+    private static final String ALIAS_PERMIT_HELD_ATTRIBUTE = "isNotifyAliasPermitHeld";
+
+    /**
+     * JVM-wide permit for the {@code apimforsolace} alias, the Solace counterpart of
+     * {@link #IS_NOTIFY_ALIAS_PERMIT} — same reason for existing, different reason for mattering.
+     *
+     * <p>{@link DynamicSolaceBroker} is a shared singleton (like {@code NodeAppServer}), so several blocks MAY opt
+     * in via {@code initSolaceBroker}. But the alias it depends on is not on the shared container: unlike
+     * {@code nodebackend}, which the one node container owns, {@code apimforsolace} is bound by EACH block's own
+     * APIM ({@link DynamicApimContainer#withSolaceJwksAlias}), so N such blocks would put N containers behind one
+     * name and Docker would round-robin between them.
+     *
+     * <p>What makes that unsafe is on the broker side: its OAuth profile carries a SINGLE {@code endpointJwks},
+     * configured once per JVM, so exactly one APIM can be its key provider. Two holders happen to work today only
+     * because every APIM container is a clone of one image and serves an identical JWKS (verified: wso2carbon.jks
+     * is baked at image build, not generated per boot) — an image-level fact that nothing here enforces. A
+     * per-tenant signing keystore or a second APIM image would make it fail as intermittent 403s whose reason
+     * lives only in the broker's event.log. This permit makes "one live APIM answers the broker's endpointJwks"
+     * true by construction instead.
+     *
+     * <p>Queues rather than failing, so the several-blocks contract the singleton inherits is preserved: a second
+     * Solace block runs, just not concurrently. Serializing two full event brokers is desirable regardless.
+     */
+    private static final Semaphore SOLACE_JWKS_ALIAS_PERMIT = new Semaphore(1);
+    /** Test-context attribute marking that this block holds {@link #SOLACE_JWKS_ALIAS_PERMIT}. */
+    private static final String SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE = "solaceJwksAliasPermitHeld";
+    /**
+     * Optional block param: module-relative path of an IS deployment.toml EXTRA overlay, appended AFTER the
+     * built-in external-key-manager overlay (additive, mirroring the APIM {@code tomlExtraOverlayPath}
+     * semantics) so a block can boot IS with block-specific config (e.g. the tenant-sync listener). Distinct
+     * extra overlays map to distinct IS containers ({@link IdentityServerContainer#getInstance(String, String)});
+     * note distinct overlays cannot run in parallel within one JVM (see that method) - they belong in separate
+     * suites.
+     */
+    static final String PARAM_IS_TOML_EXTRA_OVERLAY = "isTomlExtraOverlayPath";
+    /** Shared-scope key holding the host-mapped external IS base URL (for scenarios requesting a token from IS). */
+    static final String IS_BASE_URL_KEY = "isBaseUrl";
 
     @Override
     public void onStart(ITestContext context) {
@@ -112,11 +266,66 @@ public class BlockLifecycleListener implements ITestListener {
                 logger.info("Block '" + label + "' ensured NodeAppServer backend is running");
             }
 
+            // Solace: faked connector + real broker, up BEFORE APIM so the toml-declared solaceEnv
+            // (service_url = http://solaceshim:8081, by network alias) resolves the moment APIM needs it.
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_SOLACE_BROKER))) {
+                DynamicSolaceBroker solace = DynamicSolaceBroker.getInstance();
+                logger.info("Block '" + label + "' ensured Solace is running; connector="
+                        + solace.getConnectorBaseUrl() + " SEMP=" + solace.getSempUrl());
+            }
+
+            // IS infrastructure only. Registering IS as a key manager is admin product behaviour and lives in
+            // the features (see PARAM_BOOT_EXTERNAL_IS javadoc).
+            boolean bootExternalIs = Boolean.parseBoolean(param(context, PARAM_BOOT_EXTERNAL_IS));
+
             container = new DynamicApimContainer(label, resolveTomlContent(context));
             container.withLabel("block", label);
+            // Boot-time server files (see PARAM_SERVER_FILES_TO_COPY): copied before start so boot-only
+            // deployers (e.g. the user-store config deployer) pick them up.
+            String filesToCopy = param(context, PARAM_SERVER_FILES_TO_COPY);
+            if (filesToCopy != null && !filesToCopy.isBlank()) {
+                for (String pair : filesToCopy.split(",")) {
+                    String[] parts = pair.trim().split("::", 2);
+                    if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
+                        throw new IllegalArgumentException("Malformed " + PARAM_SERVER_FILES_TO_COPY
+                                + " entry '" + pair + "' — expected <hostPath>::<serverRelativePath>");
+                    }
+                    container.withServerFile(parts[0].trim(), parts[1].trim());
+                    logger.info("Block '" + label + "' will copy server file " + parts[0].trim()
+                            + " -> <server-home>/" + parts[1].trim());
+                }
+            }
             // Opt-in integration coverage: attach the JaCoCo agent before boot (see CoverageSupport).
             if (CoverageSupport.enabled()) {
                 container.withCoverage();
+            }
+            // External IS: augment APIM's truststore with the IS TLS cert BEFORE boot (the JVM reads the
+            // truststore once at start), so APIM trusts https://wso2is:9443 for the federated OIDC/JWKS/
+            // introspection calls. Needed whenever IS is booted, independent of KM registration.
+            if (bootExternalIs) {
+                container.withExternalKmTrust();
+            }
+            // Reverse-channel receiver (opt-in): queue for the JVM-wide alias permit, then bind the fixed
+            // wso2am alias so IS's notification POSTs reach THIS container. Holder blocks serialize among
+            // themselves here; alias-free external-KM blocks never touch the permit and stay concurrent.
+            if (Boolean.parseBoolean(param(context, PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS))) {
+                logger.info("Block '" + label + "' waiting for the wso2am notification-alias permit"
+                        + (IS_NOTIFY_ALIAS_PERMIT.availablePermits() == 0 ? " (held by another block)" : ""));
+                IS_NOTIFY_ALIAS_PERMIT.acquireUninterruptibly();
+                context.setAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
+                container.withExternalIsNotificationAlias();
+            }
+            // Solace: the BROKER validates APIM-issued tokens by fetching APIM's JWKS itself, so APIM needs an
+            // alias the broker can resolve. APIM has none by default; without this every publish is rejected
+            // 403 with the reason only inside the broker's event.log. Queue for the permit first: the broker's
+            // profile has ONE endpointJwks, so only one live APIM may answer that name (see
+            // SOLACE_JWKS_ALIAS_PERMIT).
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_SOLACE_BROKER))) {
+                logger.info("Block '" + label + "' waiting for the apimforsolace JWKS-alias permit"
+                        + (SOLACE_JWKS_ALIAS_PERMIT.availablePermits() == 0 ? " (held by another block)" : ""));
+                SOLACE_JWKS_ALIAS_PERMIT.acquireUninterruptibly();
+                context.setAttribute(SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
+                container.withSolaceJwksAlias();
             }
             container.start();
 
@@ -132,12 +341,27 @@ public class BlockLifecycleListener implements ITestListener {
             TestContext.setShared(BASE_GATEWAY_URL_KEY, gatewayUrl);
             TestContext.setShared(BASE_GATEWAY_WS_URL_KEY, container.getGatewayWsUrl());
             TestContext.setShared(BASE_GATEWAY_WSS_URL_KEY, container.getGatewayWssUrl());
+            TestContext.setShared(BASE_WEBSUB_EVENT_RECEIVER_URL_KEY, container.getWebSubEventReceiverUrl());
             TestContext.setShared(GATEWAY_CLIENT_IP_KEY, container.getGatewayClientIp());
             logger.info("Block '" + label + "' booted and ready: baseUrl=" + baseUrl
                     + " baseGatewayUrl=" + gatewayUrl);
 
             if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
-                provisionTenantUsers(label, param(context, PARAM_TENANT_SET));
+                provisionTenantUsers(label, param(context, PARAM_TENANT_SET),
+                        Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE)));
+            }
+            // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
+            // tenant admin SOAP credentials exist. Registered + seeded for BOTH tenants — one shared H2 DB,
+            // isolated by UM_TENANT_ID — so scenarios exercise the ×4 matrix (2 tenants × 2 store-user actors).
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_SECONDARY_USER_STORE))) {
+                SecondaryUserStoreProvisioner.provision(container, Constants.SUPER_TENANT_DOMAIN, "tenant1.com");
+            }
+
+            // External IS: start IS on the shared network and publish its host-mapped base URL. Done AFTER
+            // provisioning so a super-admin token exists for any subsequent admin REST call. APIM's truststore
+            // was already augmented above (before boot), so federated OIDC / JWKS / introspection calls trust IS.
+            if (bootExternalIs) {
+                bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY));
             }
         } catch (Throwable t) {
             context.setAttribute(BOOT_ERROR_ATTRIBUTE, t);
@@ -154,6 +378,9 @@ public class BlockLifecycleListener implements ITestListener {
                     logger.warn("Block '" + label + "' failed-container stop() also failed", stopErr);
                 }
             }
+            // A boot failure after the alias permit was acquired must free it here — onFinish also releases,
+            // but only-if-held, so the two paths can't double-release (see releaseAliasPermitIfHeld).
+            releaseAliasPermitIfHeld(context);
         } finally {
             // Defensive hygiene: never leave this block's scope bound to the (pooled) thread that ran
             // onStart. Per-invocation scoping in BlockScopeListener already resets scope before any body
@@ -193,8 +420,30 @@ public class BlockLifecycleListener implements ITestListener {
                         + "' container stopped; dynamic host ports released by Docker");
             }
         } finally {
+            // AFTER the container is stopped (its wso2am alias is gone from the network only then), hand the
+            // notification-alias permit to the next queued holder block. No-op if this block never held it or
+            // the boot-failure path already released it.
+            releaseAliasPermitIfHeld(context);
             TestContext.clear();
             TestContext.clearScope();
+        }
+    }
+
+    /**
+     * Releases every alias permit this block holds, exactly once each: the held-marker attribute is flipped before
+     * releasing, so whichever of the two callers (boot-failure catch, onFinish) runs second finds it cleared and
+     * no-ops — a double release would let two holders of the same alias run live simultaneously.
+     */
+    private static void releaseAliasPermitIfHeld(ITestContext context) {
+        releaseIfHeld(context, ALIAS_PERMIT_HELD_ATTRIBUTE, IS_NOTIFY_ALIAS_PERMIT);
+        releaseIfHeld(context, SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE, SOLACE_JWKS_ALIAS_PERMIT);
+    }
+
+    /** One permit's flip-then-release, so a block holding both cannot leak either on the boot-failure path. */
+    private static void releaseIfHeld(ITestContext context, String heldAttribute, Semaphore permit) {
+        if (Boolean.TRUE.equals(context.getAttribute(heldAttribute))) {
+            context.setAttribute(heldAttribute, Boolean.FALSE);
+            permit.release();
         }
     }
 
@@ -205,8 +454,12 @@ public class BlockLifecycleListener implements ITestListener {
      * matches {@code tenant_users_initialisation.feature}; {@code adpsample} matches
      * {@code migrated_tenant_user_initialization.feature}. Called inside onStart's try, so a provisioning
      * failure becomes {@code bootError} and the block is skipped cleanly rather than NPE-ing mid-scenario.
+     *
+     * @param emailUserMode see {@link #PARAM_EMAIL_USER_MODE} — provisions every user of the {@code default} set
+     *                      (bar the super-tenant admin) with an email-form physical username
      */
-    private void provisionTenantUsers(String label, String tenantSet) throws java.io.IOException, JaxenException {
+    private void provisionTenantUsers(String label, String tenantSet, boolean emailUserMode)
+            throws java.io.IOException, JaxenException {
 
         // Gateway readiness can pass before the SOAP admin services finish deploying; gate on the Tenant Mgt
         // service being live so provisioning never fires into a transient 404 (a race parallel boots widen).
@@ -221,25 +474,82 @@ public class BlockLifecycleListener implements ITestListener {
             String publisherRoles = "Internal/creator, Internal/publisher";
             String subscriberRoles = "Internal/subscriber";
             TenantUserProvisioner.addSuperTenant();
-            TenantUserProvisioner.addTenant("tenant1.com", "admin", "admin", "First", "Tenant",
-                    "admin@tenant1.com");
+            // Only the USERNAME takes the email form; the password stays the plain base name, so an
+            // emailUserMode block differs from a default one in exactly one dimension.
+            TenantUserProvisioner.addTenant("tenant1.com", physicalUserName("admin", emailUserMode), "admin",
+                    "First", "Tenant", "admin@tenant1.com");
+            // The configured super-tenant admin must remain the plain `admin` because SOAP provisioning depends
+            // on it. Give both organizations a separate admin-role actor in email mode so the email-login admin
+            // arc is still a genuine Tenant ×2 outline rather than a tenant-only special case.
+            if (emailUserMode) {
+                TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.EMAIL_ADMIN_USER_KEY,
+                        physicalUserName("emailAdmin", true), "emailAdmin", "admin");
+                TenantUserProvisioner.addUser("tenant1.com", Constants.EMAIL_ADMIN_USER_KEY,
+                        physicalUserName("emailAdmin", true), "emailAdmin", "admin");
+            }
             // Keep the original all-roles user (back-compat for any actor that needs creator+publisher+subscriber).
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.USER_KEY,
-                    "testUser1", "testUser1", allRoles);
-            TenantUserProvisioner.addUser("tenant1.com", Constants.USER_KEY, "testUser11", "testUser11", allRoles);
+                    physicalUserName("testUser1", emailUserMode), "testUser1", allRoles);
+            TenantUserProvisioner.addUser("tenant1.com", Constants.USER_KEY,
+                    physicalUserName("testUser11", emailUserMode), "testUser11", allRoles);
             // Least-privilege publisher (creator+publisher, NOT admin) — the default actor for publisher tests.
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.PUBLISHER_USER_KEY,
-                    "publisherUser1", "publisherUser1", publisherRoles);
+                    physicalUserName("publisherUser1", emailUserMode), "publisherUser1", publisherRoles);
             TenantUserProvisioner.addUser("tenant1.com", Constants.PUBLISHER_USER_KEY,
-                    "publisherUser11", "publisherUser11", publisherRoles);
+                    physicalUserName("publisherUser11", emailUserMode), "publisherUser11", publisherRoles);
             // Subscriber-only (self-signup-equivalent) — for access-control negatives (publisher ops -> 403).
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.SUBSCRIBER_USER_KEY,
-                    "subscriberUser1", "subscriberUser1", subscriberRoles);
+                    physicalUserName("subscriberUser1", emailUserMode), "subscriberUser1", subscriberRoles);
             TenantUserProvisioner.addUser("tenant1.com", Constants.SUBSCRIBER_USER_KEY,
-                    "subscriberUser11", "subscriberUser11", subscriberRoles);
+                    physicalUserName("subscriberUser11", emailUserMode), "subscriberUser11", subscriberRoles);
         }
         logger.info("Block '" + label + "' provisioned tenant set '"
-                + (tenantSet == null || tenantSet.isBlank() ? "default" : tenantSet) + "'");
+                + (tenantSet == null || tenantSet.isBlank() ? "default" : tenantSet) + "'"
+                + (emailUserMode ? " with email-form usernames (" + EMAIL_USERNAME_MAIL_DOMAIN + ")" : ""));
+    }
+
+    /**
+     * The physical username to provision for a base actor name: the base name itself by default, or its
+     * email form in a {@link #PARAM_EMAIL_USER_MODE} block. Returning the base name UNCHANGED when the mode is
+     * off is what keeps every existing block byte-for-byte identical to before the mode existed.
+     */
+    private static String physicalUserName(String baseName, boolean emailUserMode) {
+        return emailUserMode ? baseName + EMAIL_USERNAME_MAIL_DOMAIN : baseName;
+    }
+
+    /**
+     * Starts (or reuses) the external WSO2 IS container for this block's IS toml overlay, waits for its OIDC
+     * discovery to serve 200, and publishes its host-mapped base URL under {@link #IS_BASE_URL_KEY}. Does NOT
+     * register a key manager. The IS singleton(s) are reaped by Ryuk at JVM exit (not per block), like
+     * {@code NodeAppServer} - stopping one per block would break sibling blocks sharing it.
+     *
+     * @param isTomlExtraOverlayPath module-relative path of an IS EXTRA overlay toml appended after the built-in
+     *                               overlay, or {@code null}/blank for none
+     */
+    private void bootExternalIdentityServer(String label, String isTomlExtraOverlayPath) throws java.io.IOException {
+
+        IdentityServerContainer is;
+        if (isTomlExtraOverlayPath != null && !isTomlExtraOverlayPath.isBlank()) {
+            String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
+            String extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
+            is = IdentityServerContainer.getInstance(isTomlExtraOverlayPath, extraContent);
+        } else {
+            is = IdentityServerContainer.getInstance();
+        }
+        String isBaseUrl = is.getBaseHttpsUrl();
+        if (!ServerReadiness.awaitIdentityServerReady(isBaseUrl)) {
+            throw new IllegalStateException("External Identity Server for block '" + label
+                    + "' did not become ready within " + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
+        }
+        TestContext.setShared(IS_BASE_URL_KEY, isBaseUrl);
+        // Seed the IS integration actor (CLAUDE.md §14: actor-registry seeding is provisioner-legitimate) so
+        // steps operating on IS's management plane authenticate through IntegrationActors instead of
+        // hand-building credentials, and ISResourceCleanup can sweep their resources as this principal.
+        IntegrationActors.register(new IntegrationActors.IntegrationActor(IntegrationActors.IS,
+                Constants.SUPER_TENANT_ADMIN_USERNAME, Constants.SUPER_TENANT_ADMIN_PASSWORD, isBaseUrl));
+        logger.info("Block '" + label + "' booted external Identity Server (extra overlay='"
+                + (isTomlExtraOverlayPath == null || isTomlExtraOverlayPath.isBlank() ? "none"
+                        : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl);
     }
 
     private String resolveTomlContent(ITestContext context) throws java.io.IOException {

@@ -1,0 +1,39 @@
+{
+  "name": "${UNIQUE:SimilarResourcesAPI}",
+  "context": "${UNIQUE:similarResourcesContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3017/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3017/"
+    }
+  },
+  "description": "API with two overlapping resource paths distinguished only by HTTP verb (wildcard backend).",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/comp/cartes/*",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    },
+    {
+      "verb": "POST",
+      "target": "/comp/cartes/op/*",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

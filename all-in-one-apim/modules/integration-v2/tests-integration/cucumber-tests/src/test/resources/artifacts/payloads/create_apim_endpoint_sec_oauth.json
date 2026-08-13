@@ -1,0 +1,52 @@
+{
+  "name": "${UNIQUE:EndpointSecOauth}",
+  "context": "${UNIQUE:endpointSecOauth}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "endpoint_security": {
+      "production": {
+        "enabled": true,
+        "type": "OAUTH",
+        "grantType": "CLIENT_CREDENTIALS",
+        "tokenUrl": "https://localhost:9443/oauth2/token",
+        "clientId": "epProdClientId0001",
+        "clientSecret": "epProdClientSecret0001",
+        "customParameters": {}
+      },
+      "sandbox": {
+        "enabled": true,
+        "type": "OAUTH",
+        "grantType": "CLIENT_CREDENTIALS",
+        "tokenUrl": "https://localhost:9443/oauth2/token",
+        "clientId": "epSandClientId0002",
+        "clientSecret": "epSandClientSecret0002",
+        "customParameters": {}
+      }
+    }
+  },
+  "description": "Publisher-plane contract: an API with OAUTH (client_credentials) endpoint security on both production and sandbox. Asserts the Publisher API round-trips type/tokenUrl/clientId and redacts clientSecret. No gateway invocation.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/sec",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

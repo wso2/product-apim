@@ -24,6 +24,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -80,6 +81,45 @@ public final class ResourceCleanup {
      */
     public static final String CREATED_DCR_CLIENT_IDS = "createdDcrClientIds";
 
+    /**
+     * Teardown list for endpoint certificates uploaded via the Publisher {@code /endpoint-certificates} REST API,
+     * holding each certificate's ALIAS (the delete path segment). An endpoint certificate is tenant-global config
+     * (not owned by an API) that nothing else removes, so it must be swept explicitly or it leaks across scenarios.
+     * Deleted via the generic bearer-token {@link #deleteResources} with the owner's publisher token.
+     */
+    public static final String CREATED_ENDPOINT_CERTIFICATE_ALIASES = "createdEndpointCertificateAliases";
+
+    /**
+     * Teardown list for Service Catalog entries created via {@code /api/am/service-catalog/v1/services}, holding
+     * each service's id. A catalog service is admin-plane tenant config that nothing else removes; a service still
+     * referenced by an API 409s on delete, so it is swept AFTER the APIs. Deleted via the generic bearer-token
+     * {@link #deleteResources} with the owner's admin token.
+     */
+    public static final String CREATED_SERVICE_CATALOG_IDS = "createdServiceCatalogIds";
+
+    /**
+     * Teardown list for users the PRODUCT created at runtime on a scenario's behalf — today the DevPortal
+     * self-sign-up user ({@code AM_USER_SIGNUP} workflow), holding each user's tenant-aware username. A signed-up
+     * user is a top-level user-store principal: nothing else removes it (the DevPortal has no delete-me endpoint
+     * and it is not tied to an API/application), so it would survive every other sweep and leak into the shared
+     * user store. Swept by {@link #deleteSignedUpUsers()} — a bespoke sweep, because a user delete is not a
+     * bearer-token REST call but the {@code RemoteUserStoreManagerService} SOAP {@code deleteUser} performed by
+     * the tenant ADMIN (a user cannot delete itself).
+     */
+    public static final String CREATED_SIGNUP_USERNAMES = "createdSignupUsernames";
+
+    /** Generated application key mappings, swept before their owning applications. */
+    public static final String CREATED_APPLICATION_KEY_MAPPINGS = "createdApplicationKeyMappings";
+
+    /** DevPortal subscriptions, swept before their owning applications. */
+    public static final String CREATED_SUBSCRIPTION_IDS = "createdSubscriptionIds";
+
+    /** Original tenant-configuration payloads that must be restored before tenant-scoped policy deletion. */
+    public static final String ORIGINAL_TENANT_CONFIGURATIONS = "originalTenantConfigurations";
+
+    /** Fixture key mappings whose original payload must be restored after a mutating scenario. */
+    public static final String ORIGINAL_KEY_MAPPINGS = "originalKeyMappings";
+
     private ResourceCleanup() {
     }
 
@@ -90,6 +130,24 @@ public final class ResourceCleanup {
     public record OwnedResource(String id, String actorRef) {
     }
 
+    private record KeyMappingRestore(String applicationId, String keyMappingId, String payload, String actorRef) {
+    }
+
+    /**
+     * A tenant-configuration SNAPSHOT to PUT back on teardown. A dedicated record rather than
+     * {@link OwnedResource}: the value is the whole tenant-config document, and storing a request BODY in a field
+     * named {@code id} misreads at both ends — the register call looks like it is tagging a resource id, and the
+     * restore reads {@code id()} where a payload is meant.
+     */
+    private record TenantConfigRestore(String payload, String actorRef) {
+    }
+
+    private record ApplicationKeyMapping(String applicationId, String keyMappingId, String actorRef) {
+    }
+
+    private record Subscription(String id, String actorRef, String providerTenant) {
+    }
+
     /**
      * Registers a created resource for teardown under the given {@code CREATED_*} list, tagged with the actor
      * currently acting (so cleanup deletes it as its owner). Use this instead of
@@ -97,6 +155,27 @@ public final class ResourceCleanup {
      */
     public static void register(String listKey, Object id) {
         TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), Identity.actingActorRef()));
+    }
+
+    /** Registers a tenant configuration snapshot for failure-safe restoration by the cleanup hook. */
+    public static void registerTenantConfiguration(Object payload) {
+        TestContext.addToList(ORIGINAL_TENANT_CONFIGURATIONS,
+                new TenantConfigRestore(String.valueOf(payload), Identity.actingActorRef()));
+    }
+
+    public static void registerKeyMapping(String applicationId, String keyMappingId, String payload) {
+        TestContext.addToList(ORIGINAL_KEY_MAPPINGS,
+                new KeyMappingRestore(applicationId, keyMappingId, payload, Identity.actingActorRef()));
+    }
+
+    public static void registerApplicationKeyMapping(String applicationId, Object keyMappingId) {
+        TestContext.addToList(CREATED_APPLICATION_KEY_MAPPINGS, new ApplicationKeyMapping(applicationId,
+                String.valueOf(keyMappingId), Identity.actingActorRef()));
+    }
+
+    public static void registerSubscription(Object subscriptionId, String providerTenant) {
+        TestContext.addToList(CREATED_SUBSCRIPTION_IDS, new Subscription(String.valueOf(subscriptionId),
+                Identity.actingActorRef(), providerTenant));
     }
 
     /**
@@ -112,6 +191,11 @@ public final class ResourceCleanup {
 
     /** Deletes all registered applications then APIs from the context's current scope. No-op if no baseUrl. */
     public static void deleteRegisteredResources() {
+
+        // External-system resources first (independent of the APIM lists and of APIM actor/token resolution):
+        // IS-side resources are swept as the IS integration actor via IS's own management APIs — an APIM actor
+        // token cannot address them. See ISResourceCleanup / CLAUDE.md §14.
+        ISResourceCleanup.sweep();
 
         Object baseUrlObj = TestContext.get("baseUrl");
         if (baseUrlObj == null) {
@@ -139,12 +223,22 @@ public final class ResourceCleanup {
                 && TestContext.getList(Constants.CREATED_API_CATEGORY_IDS).isEmpty()
                 && TestContext.getList(CREATED_AI_PROVIDER_IDS).isEmpty()
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
-                && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()) {
+                && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()
+                && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
+                && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()
+                && TestContext.getList(CREATED_SIGNUP_USERNAMES).isEmpty()
+                && TestContext.getList(CREATED_APPLICATION_KEY_MAPPINGS).isEmpty()
+                && TestContext.getList(CREATED_SUBSCRIPTION_IDS).isEmpty()
+                && TestContext.getList(ORIGINAL_TENANT_CONFIGURATIONS).isEmpty()
+                && TestContext.getList(ORIGINAL_KEY_MAPPINGS).isEmpty()) {
             return;
         }
         String baseUrl = baseUrlObj.toString();
 
         try {
+            restoreKeyMappings();
+            deleteApplicationKeyMappings(baseUrl);
+            deleteSubscriptions(baseUrl);
             deleteResources(Constants.CREATED_APPLICATION_IDS, Identity::devportalTokenKey,
                     id -> Utils.getApplicationEndpointURL(baseUrl, id));
             // MCP servers AFTER applications (whose removal clears any MCP subscriptions) but BEFORE the APIs they
@@ -170,6 +264,9 @@ public final class ResourceCleanup {
             // Shared scopes last: an API that references a scope must be deleted before the scope itself.
             deleteResources(Constants.CREATED_SHARED_SCOPE_IDS, Identity::publisherTokenKey,
                     id -> Utils.getAPIScopesById(baseUrl, id));
+            // Restore tenant configuration before deleting policies: a policy configured as a default cannot be
+            // deleted. Happy-path feature restores are repeated safely here as a failure-proof backstop.
+            restoreTenantConfigurations(baseUrl);
             // Application throttling policies (admin, tenant-global) after the applications that reference
             // them are gone — else the policy delete is rejected as in-use. Deleted with the admin token.
             deleteResources(Constants.CREATED_APPLICATION_POLICY_IDS, Identity::adminTokenKey,
@@ -215,9 +312,22 @@ public final class ResourceCleanup {
             // failure-safe backstop and idempotently 404s on the already-deleted ones.
             deleteResources(Constants.CREATED_API_CATEGORY_IDS, Identity::adminTokenKey,
                     id -> Utils.getApiCategoryByIdURL(baseUrl, id));
+            // Endpoint certificates (publisher, tenant-global) AFTER the APIs — deleting a certificate an API's
+            // endpoint still references is not FK-blocked, but sweeping after the APIs keeps ordering consistent.
+            // Deleted by alias with the owner's publisher token.
+            deleteResources(CREATED_ENDPOINT_CERTIFICATE_ALIASES, Identity::publisherTokenKey,
+                    alias -> Utils.getEndpointCertificateByAliasURL(baseUrl, alias));
+            // Service Catalog entries (admin) AFTER the APIs — a service still referenced by an API 409s on
+            // delete, so the APIs (swept above) must go first. Deleted by id with the owner's admin token.
+            deleteResources(CREATED_SERVICE_CATALOG_IDS, Identity::adminTokenKey,
+                    id -> Utils.getServiceCatalogByIdURL(baseUrl, id));
             // BYO OAuth clients registered via DCR: swept separately because they authenticate with the owner's
             // Basic credentials (not a bearer token) and are not removed by the DevPortal application's deletion.
             deleteDcrClients(baseUrl);
+            // Runtime-created users LAST: every resource a signed-up user owns (its applications, and the DCR
+            // client above) is swept as that user with its own credentials first — deleting the principal before
+            // its resources would strand them with no owner to delete them as.
+            deleteSignedUpUsers();
         } finally {
             TestContext.remove(Constants.CREATED_API_PRODUCT_IDS);
             TestContext.remove(Constants.CREATED_API_IDS);
@@ -238,7 +348,193 @@ public final class ResourceCleanup {
             TestContext.remove(CREATED_AI_PROVIDER_IDS);
             TestContext.remove(CREATED_MCP_SERVER_IDS);
             TestContext.remove(CREATED_DCR_CLIENT_IDS);
+            TestContext.remove(CREATED_ENDPOINT_CERTIFICATE_ALIASES);
+            TestContext.remove(CREATED_SERVICE_CATALOG_IDS);
+            TestContext.remove(CREATED_SIGNUP_USERNAMES);
+            TestContext.remove(CREATED_APPLICATION_KEY_MAPPINGS);
+            TestContext.remove(CREATED_SUBSCRIPTION_IDS);
+            TestContext.remove(ORIGINAL_TENANT_CONFIGURATIONS);
+            TestContext.remove(ORIGINAL_KEY_MAPPINGS);
         }
+    }
+
+    private static void deleteApplicationKeyMappings(String baseUrl) {
+        for (Object o : TestContext.getList(CREATED_APPLICATION_KEY_MAPPINGS)) {
+            if (!(o instanceof ApplicationKeyMapping mapping)) {
+                continue;
+            }
+            try {
+                User owner = Identity.resolveActor(mapping.actorRef());
+                Object tokenObj = TestContext.get(Identity.devportalTokenKey(owner));
+                if (tokenObj == null) {
+                    logger.warn("Cleanup: no DevPortal token for key-mapping owner '" + mapping.actorRef()
+                            + "'; cannot delete " + mapping.keyMappingId());
+                    continue;
+                }
+                HttpResponse resp = SimpleHTTPClient.getInstance().doDelete(
+                        Utils.getOAuthKeyURL(baseUrl, mapping.applicationId(), mapping.keyMappingId()),
+                        Identity.bearerHeaders(tokenObj.toString()));
+                int code = resp.getResponseCode();
+                if ((code < 200 || code >= 300) && code != 404) {
+                    logger.warn("Cleanup: delete of application key mapping " + mapping.keyMappingId()
+                            + " returned HTTP " + code + " — resource may leak: " + resp.getData());
+                }
+            } catch (Exception | AssertionError e) {
+                logger.warn("Cleanup failed to delete application key mapping " + mapping.keyMappingId()
+                        + " for actor '" + mapping.actorRef() + "': " + e);
+            }
+        }
+    }
+
+    private static void deleteSubscriptions(String baseUrl) {
+        for (Object o : TestContext.getList(CREATED_SUBSCRIPTION_IDS)) {
+            if (!(o instanceof Subscription subscription)) {
+                continue;
+            }
+            try {
+                User owner = Identity.resolveActor(subscription.actorRef());
+                Object tokenObj = TestContext.get(Identity.devportalTokenKey(owner));
+                if (tokenObj == null) {
+                    logger.warn("Cleanup: no DevPortal token for subscription owner '" + subscription.actorRef()
+                            + "'; cannot delete " + subscription.id());
+                    continue;
+                }
+                Map<String, String> headers = Identity.bearerHeaders(tokenObj.toString());
+                if (subscription.providerTenant() != null) {
+                    headers.put("X-WSO2-Tenant", subscription.providerTenant());
+                }
+                HttpResponse resp = SimpleHTTPClient.getInstance().doDelete(
+                        Utils.getSubscriptionURL(baseUrl, subscription.id()), headers);
+                int code = resp.getResponseCode();
+                if ((code < 200 || code >= 300) && code != 404) {
+                    logger.warn("Cleanup: delete of subscription " + subscription.id() + " returned HTTP "
+                            + code + " — resource may leak: " + resp.getData());
+                }
+            } catch (Exception | AssertionError e) {
+                logger.warn("Cleanup failed to delete subscription " + subscription.id() + " for actor '"
+                        + subscription.actorRef() + "': " + e);
+            }
+        }
+    }
+
+    public static void restoreKeyMappings() {
+        Object baseUrlObj = TestContext.get("baseUrl");
+        if (baseUrlObj == null) {
+            return;
+        }
+        for (Object o : TestContext.getList(ORIGINAL_KEY_MAPPINGS)) {
+            if (!(o instanceof KeyMappingRestore restore)) {
+                continue;
+            }
+            try {
+                User owner = Identity.resolveActor(restore.actorRef());
+                Object token = TestContext.get(Identity.devportalTokenKey(owner));
+                if (token == null) {
+                    logger.warn("Cleanup: no DevPortal token for key-mapping owner '" + restore.actorRef()
+                            + "'; cannot restore mapping " + restore.keyMappingId());
+                    continue;
+                }
+                HttpResponse resp = SimpleHTTPClient.getInstance().doPut(
+                        Utils.getOAuthKeyURL(baseUrlObj.toString(), restore.applicationId(), restore.keyMappingId()),
+                        Identity.bearerHeaders(token.toString()), restore.payload(),
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+                int code = resp == null ? -1 : resp.getResponseCode();
+                if (code < 200 || code >= 300) {
+                    logger.warn("Cleanup: key mapping " + restore.keyMappingId() + " restore for actor '"
+                            + restore.actorRef() + "' returned HTTP " + code + ": "
+                            + trunc(resp == null ? null : resp.getData()));
+                }
+            } catch (Exception | AssertionError e) {
+                logger.warn("Cleanup failed to restore key mapping " + restore.keyMappingId() + " for actor '"
+                        + restore.actorRef() + "': " + e);
+            }
+        }
+        TestContext.remove(ORIGINAL_KEY_MAPPINGS);
+    }
+
+    private static void restoreTenantConfigurations(String baseUrl) {
+        for (Object o : TestContext.getList(ORIGINAL_TENANT_CONFIGURATIONS)) {
+            if (!(o instanceof TenantConfigRestore res) || res.payload() == null) {
+                continue;
+            }
+            try {
+                User owner = Identity.resolveActor(res.actorRef());
+                Object token = TestContext.get(Identity.adminTokenKey(owner));
+                if (token == null) {
+                    logger.warn("Cleanup: no admin token for tenant configuration owner '" + res.actorRef()
+                            + "'; cannot restore.");
+                    continue;
+                }
+                Map<String, String> headers = Identity.bearerHeaders(token.toString());
+                HttpResponse resp = SimpleHTTPClient.getInstance().doPut(Utils.getTenantConfigURL(baseUrl),
+                        headers, res.payload(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+                int code = resp == null ? -1 : resp.getResponseCode();
+                if (code < 200 || code >= 300) {
+                    logger.warn("Cleanup: tenant configuration restore for actor '" + res.actorRef()
+                            + "' returned HTTP " + code + ": " + trunc(resp == null ? null : resp.getData()));
+                }
+            } catch (Exception | AssertionError e) {
+                logger.warn("Cleanup failed to restore tenant configuration for actor '" + res.actorRef()
+                        + "': " + e);
+            }
+        }
+    }
+
+    /**
+     * Deletes users the product created at runtime for a scenario (the DevPortal self-sign-up users registered
+     * under {@link #CREATED_SIGNUP_USERNAMES}). Bespoke, not {@link #deleteResources}, for two reasons: there is
+     * no bearer-token REST delete for a user, and the deleting principal is not the resource's owner — a user
+     * cannot delete itself, so the recorded owner is used only to resolve WHICH TENANT's admin performs the
+     * {@code RemoteUserStoreManagerService.deleteUser} SOAP call.
+     *
+     * <p>Self-verifying: the outcome is confirmed with {@code isExistingUser} AFTER the delete, so a SOAP fault or
+     * a silently ignored delete cannot look green while leaking. Three outcomes are logged distinctly —
+     * already-absent (the reject arc: the product itself deletes a rejected sign-up), deleted, and STILL PRESENT
+     * (a WARN naming the leak).
+     */
+    private static void deleteSignedUpUsers() {
+
+        for (Object o : TestContext.getList(CREATED_SIGNUP_USERNAMES)) {
+            if (!(o instanceof OwnedResource res) || res.id() == null) {
+                continue;
+            }
+            String username = res.id();
+            try {
+                String tenantDomain = Identity.resolveActor(res.actorRef()).getUserDomain();
+                if (!userExists(tenantDomain, username)) {
+                    // Expected on the rejection arc: UserSignUpApprovalWorkflowExecutor deletes a REJECTED
+                    // sign-up itself, so there is nothing left to sweep.
+                    logger.info("Cleanup: signed-up user '" + username + "' in tenant '" + tenantDomain
+                            + "' is already absent — nothing to delete.");
+                    continue;
+                }
+                HttpResponse resp = TenantUserProvisioner.deleteUser(tenantDomain, username);
+                int code = resp == null ? -1 : resp.getResponseCode();
+                if (code < 200 || code >= 300) {
+                    logger.warn("Cleanup: deleteUser for signed-up user '" + username + "' in tenant '"
+                            + tenantDomain + "' returned HTTP " + code + ": "
+                            + trunc(resp == null ? null : resp.getData()));
+                }
+                if (userExists(tenantDomain, username)) {
+                    logger.warn("Cleanup: signed-up user '" + username + "' STILL EXISTS in tenant '" + tenantDomain
+                            + "' after deleteUser (HTTP " + code + ") — it leaks into the shared user store.");
+                } else {
+                    logger.info("Cleanup: deleted signed-up user '" + username + "' from tenant '" + tenantDomain
+                            + "' (HTTP " + code + ", verified absent).");
+                }
+            } catch (IOException | RuntimeException | AssertionError e) {
+                // Best-effort per user: one unreachable/faulting delete must not abort the sweep for the rest.
+                // IOException covers the SOAP transport, RuntimeException an unresolvable actor ref, and
+                // AssertionError a failed existence probe.
+                logger.warn("Cleanup failed to delete signed-up user '" + username + "' for actor '"
+                        + res.actorRef() + "': " + e);
+            }
+        }
+    }
+
+    /** {@code isExistingUser} as a boolean — the only correct existence check (see SecondaryUserStoreSteps). */
+    private static boolean userExists(String tenantDomain, String username) throws IOException {
+        return TenantUserProvisioner.isExistingUser(tenantDomain, username).contains("<ns:return>true</ns:return>");
     }
 
     /**
@@ -255,12 +551,12 @@ public final class ResourceCleanup {
             if (!(o instanceof OwnedResource res) || res.id() == null) {
                 continue;
             }
-            User owner = Identity.resolveActor(res.actorRef());
-            String removeEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-                    + "xmlns:xsd=\"" + ns + "\"><soapenv:Header/><soapenv:Body>"
-                    + "<xsd:removeOAuthApplicationData><xsd:consumerKey>" + res.id() + "</xsd:consumerKey>"
-                    + "</xsd:removeOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
             try {
+                User owner = Identity.resolveActor(res.actorRef());
+                String removeEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                        + "xmlns:xsd=\"" + ns + "\"><soapenv:Header/><soapenv:Body>"
+                        + "<xsd:removeOAuthApplicationData><xsd:consumerKey>" + Utils.escapeXml(res.id())
+                        + "</xsd:consumerKey></xsd:removeOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
                 HttpResponse resp = SimpleHTTPClient.getInstance().sendSoapRequest(serviceUrl, removeEnvelope,
                         "urn:removeOAuthApplicationData", owner.getUserName(), owner.getPassword());
                 int code = resp.getResponseCode();
@@ -270,8 +566,9 @@ public final class ResourceCleanup {
                     logger.warn("Cleanup: deregister of DCR client " + res.id() + " returned HTTP " + code
                             + " — it may leak: " + trunc(resp.getData()));
                 }
-            } catch (Exception e) {
-                logger.warn("Cleanup failed to deregister DCR client " + res.id() + ": " + e.getMessage());
+            } catch (Exception | AssertionError e) {
+                logger.warn("Cleanup failed to deregister DCR client " + res.id() + " for actor '"
+                        + res.actorRef() + "': " + e);
             }
         }
     }
@@ -297,16 +594,16 @@ public final class ResourceCleanup {
             if (!(o instanceof OwnedResource res) || res.id() == null) {
                 continue;
             }
-            User owner = Identity.resolveActor(res.actorRef());
-            Object tokenObj = TestContext.get(tokenKeyFor.apply(owner));
-            if (tokenObj == null) {
-                logger.warn("Cleanup: no token for the owner (actor '" + res.actorRef() + "') of " + contextKey
-                        + " " + res.id() + "; cannot delete — it may leak.");
-                continue;
-            }
-            Map<String, String> headers = new HashMap<>();
-            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + tokenObj);
             try {
+                User owner = Identity.resolveActor(res.actorRef());
+                Object tokenObj = TestContext.get(tokenKeyFor.apply(owner));
+                if (tokenObj == null) {
+                    logger.warn("Cleanup: no token for the owner (actor '" + res.actorRef() + "') of " + contextKey
+                            + " " + res.id() + "; cannot delete — it may leak.");
+                    continue;
+                }
+                Map<String, String> headers = new HashMap<>();
+                headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + tokenObj);
                 HttpResponse resp = SimpleHTTPClient.getInstance().doDelete(urlBuilder.apply(res.id()), headers);
                 int code = resp.getResponseCode();
                 if (code >= 200 && code < 300) {
@@ -323,10 +620,10 @@ public final class ResourceCleanup {
                 // container. With per-owner tokens this should not be a permission denial — surface it loudly.
                 logger.warn("Cleanup: delete of " + contextKey + " " + res.id() + " returned HTTP " + code
                         + " — resource NOT deleted; it may leak: " + resp.getData());
-            } catch (Exception e) {
+            } catch (Exception | AssertionError e) {
                 // Transient/connectivity failure during teardown.
-                logger.warn("Cleanup failed to delete resource " + res.id() + " (" + contextKey + "): "
-                        + e.getMessage());
+                logger.warn("Cleanup failed to delete resource " + res.id() + " (" + contextKey + ") for actor '"
+                        + res.actorRef() + "': " + e);
             }
         }
     }

@@ -1,0 +1,38 @@
+# Feature-specific TOML overlay for the IntegrationV2-Solace block.
+#
+# Merged ON TOP of the shared `basic` overlay (itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath`.
+#
+# THIS IS THE WHOLE OVERLAY. Two keys. That is deliberate, and it replaced something much larger --
+# read the next paragraph before adding anything back.
+#
+# WHY THERE IS NO `[[apim.gateway.environment]] provider = "solace"` BLOCK HERE.
+# An earlier revision declared a Solace gateway environment and deployed API revisions to it, mirroring
+# legacy SolaceTestCase. That mechanism does not exist on this product any more:
+#   - deploying a revision to it fails 207 / 902060 "Error while deploying API to Gateway", with only
+#     WARN "ExternalGatewayNotifier No gateway deployer found for environment: solaceEnv";
+#   - the cause is an SPI migration. ExternalGatewayNotifier resolves deployers through
+#     GatewayAgentConfiguration -> GatewayHolder -> org.wso2.carbon.apimgt.api.model.GatewayDeployer,
+#     for which the distribution ships aws/azure/envoy/kong agents -- and NO solace agent;
+#   - SolaceBrokerDeployer implements only the retired
+#     org.wso2.carbon.apimgt.impl.deployer.ExternalGatewayDeployer, which is referenced by exactly TWO
+#     classes across all 772 plugin jars: the interface itself and SolaceBrokerDeployer. Nothing binds
+#     it -- neither ServiceReferenceHolder nor APIManagerComponent mentions it.
+# Solace is integrated through NOTIFIERS on the v2 Event-Portal API instead (SolaceSubscriptionsNotifier,
+# SolaceKeyGenNotifier, SolaceApplicationNotifier), registered by SolaceManagerComponent as OSGi
+# `Notifier` services -- an SPI that IS bound (ServiceReferenceHolder.notifiersMap, APIManagerComponent
+# .addNotifier). Those notifiers read only the config below. So a gateway environment buys nothing here,
+# and restating the distribution's `Default` environment (needed previously because Utils.mergeTomls
+# REPLACES arrays wholesale) is no longer necessary either.
+#
+# apim_api_endpoint is the shim's NETWORK ALIAS, not localhost: APIM calls it from inside the container,
+# so a host-mapped port would be unreachable. DynamicSolaceBroker publishes the alias `solaceshim` and
+# the block starts it BEFORE APIM.
+#
+# The real service lives at https://apim-devportal-api.solace-labs.io/api/v2/apim; the shim serves the
+# same routes at the root AND tolerates that prefix, so either form of this URL works.
+[apim.solace_config]
+apim_api_endpoint = "http://solaceshim:8081"
+# Any non-empty value. The shim LOGS the bearer token but never rejects it -- a 401 from the double
+# would masquerade as an APIM misconfiguration. Scenarios assert on APIM's behaviour, not on this token.
+token = "integration-v2-solace-token"

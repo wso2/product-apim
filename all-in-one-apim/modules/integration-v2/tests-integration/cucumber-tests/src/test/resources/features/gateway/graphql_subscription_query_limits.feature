@@ -29,6 +29,9 @@ Feature: Gateway GraphQL Subscription Query Limits
     And I deploy the API with id "gqlSubApiId"
     When I publish the "apis" resource with id "gqlSubApiId"
     Then The lifecycle status of API "gqlSubApiId" should be "Published"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "gqlSubApiId" should be live on the gateway, redeploying if propagation is lost
     When I have set up application with keys, subscribed to API "gqlSubApiId" with plan "{{subThrottlePolicyName}}", and obtained access token for "gqlComplexSubId"
     Then The response status code should be 200
     # 6 fields at complexity 1 each exceeds max complexity 3 → QUERY TOO COMPLEX (4021)
@@ -53,6 +56,9 @@ Feature: Gateway GraphQL Subscription Query Limits
     And I deploy the API with id "gqlSubApiId2"
     When I publish the "apis" resource with id "gqlSubApiId2"
     Then The lifecycle status of API "gqlSubApiId2" should be "Published"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "gqlSubApiId2" should be live on the gateway, redeploying if propagation is lost
     When I have set up application with keys, subscribed to API "gqlSubApiId2" with plan "{{subThrottlePolicyName}}", and obtained access token for "gqlDepthSubId"
     Then The response status code should be 200
     # liftStatusChange { name } is depth 2, exceeds max depth 1 → QUERY TOO DEEP (4020)

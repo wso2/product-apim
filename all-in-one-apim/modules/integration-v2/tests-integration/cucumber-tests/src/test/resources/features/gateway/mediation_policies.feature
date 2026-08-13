@@ -362,3 +362,39 @@ Feature: Gateway Mediation Policies
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Content-aware json-eval mediation: a request-flow operation policy that reads the JSON body must not produce a
+  # "Could not write JSON stream" gateway error when invoked with Content-Type: application/json and an empty
+  # request body (no entity) on GET, POST, PUT, PATCH, and DELETE. The /reflect-body backend echoes the request
+  # body so a gateway-side failure is observable in the response. Ports ContentAwareMediationPolicyEmptyBodyTestCase.
+  @cap:gateway @feat:mediation-policies @rule:content-aware-empty-body @type:regression @dep:publisher @legacy:ContentAwareMediationPolicyEmptyBodyTestCase
+  Scenario Outline: A content-aware json-eval policy does not error on empty-body <method> as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I create a new common policy with spec "artifacts/payloads/policySpecFiles/content_aware_property_policy.j2" and "artifacts/payloads/policySpecFiles/content_aware_property_policy.yaml" as "caPolicyId"
+    And I have created an api from "artifacts/payloads/create_content_aware_empty_body_api.json" as "caApiId" and deployed it
+    When I publish the "apis" resource with id "caApiId"
+    Then The lifecycle status of API "caApiId" should be "Published"
+    When I retrieve the "apis" resource with id "caApiId"
+    And I extract response field "context" and store it as "caContext"
+    When I have set up application with keys, subscribed to API "caApiId", and obtained access token for "caSubId"
+    Then The response status code should be 200
+
+    # Content-Type: application/json + empty body (no entity) — matches ContentAwareMediationPolicyEmptyBodyTestCase
+    When I invoke the API at gateway context "{{caContext}}/1.0.0/reflect-body" with method "<method>" using access token "generatedAccessToken" and payload "" with request header "Content-Type" set to "application/json" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain "Could not write JSON stream"
+    And The response should not contain "Runtime Error"
+
+    Examples:
+      | actor             | method |
+      | admin             | GET    |
+      | admin             | POST   |
+      | admin             | PUT    |
+      | admin             | PATCH  |
+      | admin             | DELETE |
+      | admin@tenant1.com | GET    |
+      | admin@tenant1.com | POST   |
+      | admin@tenant1.com | PUT    |
+      | admin@tenant1.com | PATCH  |
+      | admin@tenant1.com | DELETE |

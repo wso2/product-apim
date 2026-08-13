@@ -19,6 +19,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import com.sun.net.httpserver.HttpServer;
 import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
@@ -33,6 +34,7 @@ import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -52,6 +54,13 @@ import java.util.regex.Pattern;
  * type (RollingFile ⇄ SecuredHttp), read straight from the running container; (2) end-to-end, an audit action's
  * log entry is delivered to a host mock sink the container reaches via {@code host.docker.internal}.
  *
+ * <p>It also covers how the service MANAGES the appender blocks in that file: a scenario seeds a
+ * {@code log4j2.properties} fixture (one of {@code artifacts/configFiles/remoteLogging/*}, e.g. with the
+ * AUDIT_LOGFILE block stripped out) into the running container, drives the service, and asserts what the
+ * server wrote back — a missing block is created as a remote appender and registered in the top-level
+ * {@code appenders} list, an existing block is not duplicated, and appenders for log types WITHOUT remote
+ * logging are left alone.</p>
+ *
  * <p>Remote logging is a super-tenant, server-global setting (not per-tenant), so these scenarios run once as
  * the super-tenant admin, in a dedicated thread-count=1 block (they mutate the shared server's log config).</p>
  */
@@ -62,6 +71,12 @@ public class RemoteLoggingSteps {
     private static final String DATA_NS = "http://data.service.logging.carbon.wso2.org/xsd";
     private static final String SERVICE_PATH = "services/RemoteLoggingConfig";
 
+    /** Classpath directory holding the log4j2.properties fixtures the appender-management scenarios seed. */
+    private static final String LOG4J2_FIXTURE_DIR = "artifacts/configFiles/remoteLogging/";
+
+    /** Granularity for every poll/settle loop below — the server's log4j2 rewrite is asynchronous. */
+    private static final long POLL_INTERVAL_MILLIS = 2000L;
+
     private static final Log log = LogFactory.getLog(RemoteLoggingSteps.class);
 
     /* Mock HTTP sink shared across steps + the teardown hook. */
@@ -71,6 +86,23 @@ public class RemoteLoggingSteps {
     /* Log types enabled via addRemoteServerConfig, reset in teardown — failure-safe, since the inline "disable"
        step is skipped if a scenario fails after enabling. */
     private static final List<String> enabledLogTypes = new CopyOnWriteArrayList<>();
+
+    /* Runner-local context key under which the block container's untouched log4j2.properties is captured before
+       the first scenario, then written back after every one, so a scenario that seeds a stripped fixture cannot
+       leak that config into the next. Held in TestContext rather than a static field: local scope is keyed by
+       runner instance, so the baseline belongs to the runner whose container it was read from. */
+    private static final String PRISTINE_LOG4J2_KEY = "pristineLog4j2";
+
+    /* Context key, cleared per scenario: set when a reset could not be confirmed as landed (inline or in
+       teardown). Teardown then SKIPS the restore — writing the pristine file while the server still has a rewrite
+       pending would just be clobbered, leaving a config that looks restored but is not. */
+    private static final String UNCONFIRMED_RESET_KEY = "remoteLoggingUnconfirmedReset";
+
+    /* The remote appender type the config service writes when a log type is enabled. */
+    private static final String REMOTE_APPENDER_TYPE = "SecuredHttp";
+
+    /* Bound on how long teardown waits for a reset to land before restoring anyway (never blocks cleanup). */
+    private static final long RESET_LANDING_TIMEOUT_MILLIS = 15000L;
 
     private String baseUrl() {
         return TestContext.get("baseUrl").toString();
@@ -87,59 +119,197 @@ public class RemoteLoggingSteps {
     /** Enables remote logging for a log type (AUDIT/CARBON/API) by pointing its appender at {@code url}. */
     @When("I enable remote logging for log type {string} pointing at URL {string}")
     public void enableRemoteLogging(String logType, String url) throws Exception {
-        sendConfigOp("addRemoteServerConfig", "urn:addRemoteServerConfig", logType,
-                Utils.resolveContextPlaceholders(url));
+        sendConfigOp("addRemoteServerConfig", logType, Utils.resolveContextPlaceholders(url));
         if (!enabledLogTypes.contains(logType)) {
             enabledLogTypes.add(logType);
         }
     }
 
-    /** Resets (disables) remote logging for a log type — its appender reverts to the local RollingFile. */
+    /**
+     * Resets (disables) remote logging for a log type — its appender reverts to the local RollingFile.
+     *
+     * <p>Drains the reset before dropping the type from {@code enabledLogTypes}: once it is dropped, teardown no
+     * longer knows to wait for it, so an unconfirmed rewrite would still be in flight when the pristine file is
+     * written back and could land on top of it. Waiting here keeps that guarantee with the step, wherever a
+     * scenario chooses to disable.</p>
+     */
     @When("I disable remote logging for log type {string}")
     public void disableRemoteLogging(String logType) throws Exception {
-        sendConfigOp("resetRemoteServerConfig", "urn:resetRemoteServerConfig", logType, "");
+        sendConfigOp("resetRemoteServerConfig", logType, "");
+        recordResetOutcome(waitForResetToLand(appenderNameOf(logType)));
         enabledLogTypes.remove(logType);
     }
 
-    private void sendConfigOp(String op, String soapAction, String logType, String url) throws Exception {
-        StringBuilder data = new StringBuilder()
-                .append("<ax2:connectTimeoutMillis>2000</ax2:connectTimeoutMillis>")
-                .append("<ax2:logType>").append(logType).append("</ax2:logType>")
-                .append("<ax2:url>").append(url == null ? "" : url).append("</ax2:url>")
-                .append("<ax2:verifyHostname>false</ax2:verifyHostname>");
+    /**
+     * Runs the startup-time reconciliation ({@code syncRemoteServerConfigs}): the server re-reads every
+     * persisted remote-logging config and re-applies it to {@code log4j2.properties}. This is the path that
+     * repairs an appender block someone removed from the file while the log type is still configured — and
+     * that must leave log types WITHOUT a remote URL untouched.
+     */
+    @When("I sync the remote logging configurations")
+    public void syncRemoteLoggingConfigurations() throws Exception {
+        sendSoapOp("syncRemoteServerConfigs", "");
+    }
+
+    private void sendConfigOp(String op, String logType, String url) throws Exception {
+        String data = "<ax2:connectTimeoutMillis>2000</ax2:connectTimeoutMillis>"
+                + "<ax2:logType>" + Utils.escapeXml(logType) + "</ax2:logType>"
+                + "<ax2:url>" + Utils.escapeXml(url == null ? "" : url) + "</ax2:url>"
+                + "<ax2:verifyHostname>false</ax2:verifyHostname>";
+        sendSoapOp(op, "<ns:data>" + data + "</ns:data><ns:args1>false</ns:args1>");
+    }
+
+    /** Posts a RemoteLoggingConfig operation as the super-tenant admin and asserts Axis2 accepted it. */
+    private void sendSoapOp(String op, String innerXml) throws Exception {
         String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:ns=\"" + OP_NS + "\" xmlns:ax2=\"" + DATA_NS + "\">"
                 + "<soapenv:Header/><soapenv:Body>"
-                + "<ns:" + op + "><ns:data>" + data + "</ns:data><ns:args1>false</ns:args1></ns:" + op + ">"
+                + "<ns:" + op + ">" + innerXml + "</ns:" + op + ">"
                 + "</soapenv:Body></soapenv:Envelope>";
 
         User admin = Identity.resolveActor("admin");
         HttpResponse response = Requests.soap(baseUrl() + SERVICE_PATH, envelope,
-                soapAction, admin.getUserName(), admin.getPassword());
+                "urn:" + op, admin.getUserName(), admin.getPassword());
         // These are one-way (Robust In-Only) SOAP ops — Axis2 acknowledges with 202 Accepted (no response body),
         // not 200. A SOAP fault would surface as 500, so 202 confirms the config was accepted.
         Assert.assertEquals(response.getResponseCode(), 202, op + " SOAP call failed: " + response.getData());
     }
 
     /**
+     * Seeds one of the {@code artifacts/configFiles/remoteLogging/} fixtures as the running server's
+     * {@code log4j2.properties}, so a scenario can start from a known appender layout — typically one with a
+     * target appender block stripped out. The service only reads this file when an operation is invoked, so
+     * writing it changes nothing on its own; the following enable/disable/sync step is what acts on it.
+     * The untouched file is restored after every scenario by the teardown hook.
+     */
+    @When("I apply the log4j2 fixture {string} to the server")
+    public void applyLog4j2Fixture(String fixtureName) throws Exception {
+        String resource = LOG4J2_FIXTURE_DIR + fixtureName;
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(resource)) {
+            Assert.assertNotNull(in, "log4j2 fixture not found on the test classpath: " + resource);
+            container().writeContainerFile(container().getContainerLog4j2Path(),
+                    new String(in.readAllBytes(), StandardCharsets.UTF_8));
+        }
+    }
+
+    /**
      * Polls the running container's {@code log4j2.properties} until the named appender's {@code type} equals the
      * expected value (the OSGi log reconfig after the SOAP call is asynchronous, so this waits, never sleeps blind).
+     * Also the wait for an appender block that was ABSENT to be CREATED, since a missing block reads as a null type.
      */
     @Then("the {string} log appender should become {string} within {int} seconds")
     public void appenderShouldBecome(String appenderName, String expectedType, int timeoutSeconds) throws Exception {
-        Pattern p = Pattern.compile("(?m)^appender\\." + Pattern.quote(appenderName) + "\\.type\\s*=\\s*(\\S+)");
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 10000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
         String actual = null;
         while (System.currentTimeMillis() < end) {
-            Matcher m = p.matcher(container().readContainerFile(container().getContainerLog4j2Path()));
-            actual = m.find() ? m.group(1).trim() : null;
+            actual = appenderType(log4j2Content(), appenderName);
             if (expectedType.equals(actual)) {
                 return;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endStart, 2000);
         }
         Assert.assertEquals(actual, expectedType,
                 appenderName + " appender type did not become " + expectedType + " within the deadline");
+    }
+
+    /** Asserts the named appender's current type, with no wait — for an appender the scenario did NOT target. */
+    @Then("the {string} log appender type should be {string}")
+    public void appenderTypeShouldBe(String appenderName, String expectedType) {
+        Assert.assertEquals(appenderType(log4j2Content(), appenderName), expectedType,
+                appenderName + " appender has an unexpected type in log4j2.properties");
+    }
+
+    /** Asserts the named appender block is not in log4j2.properties at all. */
+    @Then("the {string} log appender block should be absent")
+    public void appenderBlockShouldBeAbsent(String appenderName) {
+        Assert.assertNull(appenderType(log4j2Content(), appenderName),
+                appenderName + " appender block must not be present in log4j2.properties");
+    }
+
+    /**
+     * Asserts the named appender KEEPS its type for the whole window. A "the server left this alone" claim has no
+     * positive signal to wait for, so it needs a settle window: asserting once, immediately, would pass before a
+     * wrong write had a chance to land. This re-reads throughout and fails on the first deviation — unlike a blind
+     * sleep-then-check, it also pins down when the change happened.
+     */
+    @Then("the {string} log appender type should remain {string} for {int} seconds")
+    public void appenderTypeShouldRemain(String appenderName, String expectedType, int seconds) throws Exception {
+        long end = System.currentTimeMillis() + seconds * 1000L;
+        do {
+            Assert.assertEquals(appenderType(log4j2Content(), appenderName), expectedType,
+                    appenderName + " appender type changed during the settle window — the server rewrote an "
+                            + "appender it was not asked to touch");
+            Thread.sleep(POLL_INTERVAL_MILLIS);
+        } while (System.currentTimeMillis() < end);
+    }
+
+    /** The absence counterpart of the settle-window assertion above. */
+    @Then("the {string} log appender block should remain absent for {int} seconds")
+    public void appenderBlockShouldRemainAbsent(String appenderName, int seconds) throws Exception {
+        long end = System.currentTimeMillis() + seconds * 1000L;
+        do {
+            Assert.assertNull(appenderType(log4j2Content(), appenderName),
+                    appenderName + " appender block was created during the settle window — the server wrote an "
+                            + "appender for a log type that has no remote logging configured");
+            Thread.sleep(POLL_INTERVAL_MILLIS);
+        } while (System.currentTimeMillis() < end);
+    }
+
+    /**
+     * Asserts how many times the appender is named in the top-level {@code appenders = ...} list. Expect 1 for an
+     * appender the server wrote (an appender missing from the list is a dangling appender log4j2 never
+     * instantiates — and writing it twice is the duplication bug this pins), and 0 for one it must not touch.
+     */
+    @Then("the {string} log appender should be listed in the appenders list exactly {int} time(s)")
+    public void appenderShouldBeListedTimes(String appenderName, int expectedCount) {
+        Assert.assertEquals(countInAppendersList(log4j2Content(), appenderName), expectedCount,
+                appenderName + " appears an unexpected number of times in the 'appenders' list: "
+                        + appendersLine(log4j2Content()));
+    }
+
+    /** Asserts the appender block defines a property, e.g. the {@code url} a remote appender publishes to. */
+    @Then("the {string} log appender block should define property {string}")
+    public void appenderBlockShouldDefineProperty(String appenderName, String property) {
+        Assert.assertTrue(Pattern.compile("(?m)^appender\\." + Pattern.quote(appenderName) + "\\."
+                        + Pattern.quote(property) + "\\s*=").matcher(log4j2Content()).find(),
+                "appender." + appenderName + "." + property + " is missing from log4j2.properties");
+    }
+
+    private String log4j2Content() {
+        return container().readContainerFile(container().getContainerLog4j2Path());
+    }
+
+    /** The {@code type} of the named appender, or {@code null} when the block is absent. */
+    private static String appenderType(String content, String appenderName) {
+        Matcher m = Pattern.compile("(?m)^appender\\." + Pattern.quote(appenderName) + "\\.type\\s*=\\s*(\\S+)")
+                .matcher(content);
+        return m.find() ? m.group(1).trim() : null;
+    }
+
+    /** The raw top-level {@code appenders = ...} line (NOT an {@code appender.<name>.*} property), or null. */
+    private static String appendersLine(String content) {
+        for (String line : content.split("\\r?\\n")) {
+            String trimmed = line.trim();
+            if (trimmed.startsWith("appenders") && trimmed.contains("=") && !trimmed.startsWith("appender.")) {
+                return trimmed;
+            }
+        }
+        return null;
+    }
+
+    private static int countInAppendersList(String content, String appenderName) {
+        String line = appendersLine(content);
+        if (line == null) {
+            return 0;
+        }
+        int count = 0;
+        for (String token : line.substring(line.indexOf('=') + 1).split(",")) {
+            if (token.trim().equals(appenderName)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -174,13 +344,18 @@ public class RemoteLoggingSteps {
     /** Asserts the mock sink receives at least one payload within the deadline, re-triggering audit actions. */
     @Then("the mock log sink should receive a log payload within {int} seconds")
     public void sinkShouldReceivePayload(int timeoutSeconds) throws Exception {
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 10000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
         while (System.currentTimeMillis() < end) {
             if (!sinkPayloads.isEmpty()) {
                 return;
             }
-            triggerAuditLogEntry();
-            Thread.sleep(2000);
+            try {
+                triggerAuditLogEntry();
+            } catch (IOException transientFailure) {
+                // transient — the sink check above is the assertion; keep polling within the deadline
+            }
+            Utils.pollPause(endStart, 2000);
         }
         Assert.assertFalse(sinkPayloads.isEmpty(), "Mock log sink received no log payload within the deadline");
     }
@@ -193,7 +368,8 @@ public class RemoteLoggingSteps {
      */
     @Then("the mock log sink should stop receiving payloads within {int} seconds")
     public void sinkShouldStopReceiving(int timeoutSeconds) throws Exception {
-        long end = System.currentTimeMillis() + Math.max(timeoutSeconds * 1000L, 20000L);
+        long endStart = System.currentTimeMillis();
+        long end = endStart + Math.max(timeoutSeconds * 1000L, 20000L);
         int last = -1;
         int stableRounds = 0;
         while (System.currentTimeMillis() < end) {
@@ -206,34 +382,123 @@ public class RemoteLoggingSteps {
                 stableRounds = 0;
                 last = now;
             }
-            Thread.sleep(2000);
+            Utils.pollPause(endStart, 2000);
         }
         // The stream has quiesced — a fresh audit action must now NOT reach the sink (appender is local again).
         int before = sinkPayloads.size();
         triggerAuditLogEntry();
-        Thread.sleep(5000);
+        // Bounded NEGATIVE-observation window: absence of a payload cannot be polled for, so we watch for a
+        // fixed span and assert nothing arrived — but exit as soon as one does, so a genuine failure surfaces
+        // immediately instead of after the whole window. The passing path still observes the full span.
+        long watchStart = System.currentTimeMillis();
+        long watchEnd = watchStart + 5000L;
+        while (System.currentTimeMillis() < watchEnd && sinkPayloads.size() == before) {
+            Utils.pollPause(watchStart, 500L);
+        }
         Assert.assertEquals(sinkPayloads.size(), before,
                 "Mock sink still received a payload after remote logging was disabled and the stream quiesced");
     }
 
-    /** Stops the host mock sink after the remote-logging scenarios (idempotent). */
+    /**
+     * Captures the block container's untouched {@code log4j2.properties} once, before the first remote-logging
+     * scenario, so {@link #restoreLog4j2Configuration()} can put it back after each one. Taken here rather than
+     * lazily at the first fixture write, so the baseline is the pristine distribution config and not whatever an
+     * earlier scenario's service call happened to leave behind.
+     */
+    @Before("@remote-logging")
+    public void snapshotLog4j2Configuration() {
+        if (!TestContext.contains(PRISTINE_LOG4J2_KEY)) {
+            TestContext.set(PRISTINE_LOG4J2_KEY, log4j2Content());
+        }
+        // Per-scenario: a previous scenario's unconfirmed reset must not suppress this one's restore.
+        TestContext.set(UNCONFIRMED_RESET_KEY, false);
+    }
+
+    /** Stops the host mock sink and undoes the scenario's server-config mutations (idempotent). */
     @After("@remote-logging")
     public void stopMockSink() {
         // Failure-safe teardown: if a scenario failed before its inline "disable remote logging" step, the server
         // is still redirecting logs — reset every type we enabled (idempotent) so this block's container isn't
-        // left mutated. On the happy path the disable step already cleared enabledLogTypes, so this no-ops.
+        // left mutated. On the happy path the disable step already drained and cleared enabledLogTypes, so this
+        // no-ops. A reset that throws counts as unconfirmed, exactly like one that never lands.
         for (String logType : enabledLogTypes) {
             try {
-                sendConfigOp("resetRemoteServerConfig", "urn:resetRemoteServerConfig", logType, "");
+                sendConfigOp("resetRemoteServerConfig", logType, "");
+                recordResetOutcome(waitForResetToLand(appenderNameOf(logType)));
             } catch (Exception e) {
+                recordResetOutcome(false);
                 log.warn("Teardown: failed to reset remote logging for type '" + logType + "': " + e.getMessage());
             }
         }
         enabledLogTypes.clear();
+        restoreLog4j2Configuration();
         if (sinkServer != null) {
             sinkServer.stop(0);
             sinkServer = null;
         }
         sinkPayloads.clear();
+    }
+
+    /**
+     * Writes the pristine {@code log4j2.properties} back, so the next scenario in this block starts from the
+     * distribution config instead of the stripped fixture this one seeded. Every reset — inline or in teardown —
+     * has been drained by {@link #waitForResetToLand} first, so no server rewrite is in flight that could land on
+     * top of this write.
+     *
+     * <p>Skipped when any reset went unconfirmed: restoring into a pending rewrite would be clobbered, and a file
+     * that LOOKS restored but is not is worse than an obviously untouched one — the warning is the signal.</p>
+     */
+    private void restoreLog4j2Configuration() {
+        Object pristine = TestContext.get(PRISTINE_LOG4J2_KEY);
+        if (pristine == null) {
+            return;
+        }
+        if (Boolean.TRUE.equals(TestContext.get(UNCONFIRMED_RESET_KEY))) {
+            log.warn("Teardown: a remote-logging reset was not confirmed as landed, so log4j2.properties is left "
+                    + "as-is rather than restored into a pending rewrite. The next scenario seeds its own fixture.");
+            return;
+        }
+        try {
+            container().writeContainerFile(container().getContainerLog4j2Path(), pristine.toString());
+        } catch (Exception e) {
+            log.warn("Teardown: failed to restore log4j2.properties: " + e.getMessage());
+        }
+    }
+
+    /** Records whether a reset was confirmed as landed; one unconfirmed reset suppresses the scenario's restore. */
+    private void recordResetOutcome(boolean landed) {
+        if (!landed) {
+            TestContext.set(UNCONFIRMED_RESET_KEY, true);
+        }
+    }
+
+    /** The appender the config service rewrites for a log type (AUDIT → AUDIT_LOGFILE, CARBON, API alike). */
+    private static String appenderNameOf(String logType) {
+        return logType + "_LOGFILE";
+    }
+
+    /**
+     * Waits (bounded) for a reset to actually LAND: the appender must no longer carry the remote
+     * {@code SecuredHttp} type — it reverts to RollingFile, or stays absent when the seeded fixture had no such
+     * block. That is the reset's observable terminal state, and unlike "the file stopped changing" it cannot be
+     * satisfied by a rewrite that has not begun yet: two identical reads taken before the server started writing
+     * would let the restore be overwritten moments later.
+     *
+     * <p>Best-effort by design — a timeout warns and never throws, so neither a step nor teardown is blocked by a
+     * slow server; the caller decides what an unconfirmed reset means (teardown skips the restore).</p>
+     *
+     * @return {@code true} once the reset is observable, {@code false} if the deadline passed with the appender
+     *         still remote
+     */
+    private boolean waitForResetToLand(String appenderName) throws InterruptedException {
+        long end = System.currentTimeMillis() + RESET_LANDING_TIMEOUT_MILLIS;
+        while (System.currentTimeMillis() < end) {
+            if (!REMOTE_APPENDER_TYPE.equals(appenderType(log4j2Content(), appenderName))) {
+                return true;
+            }
+            Thread.sleep(POLL_INTERVAL_MILLIS);
+        }
+        log.warn(appenderName + " was still a " + REMOTE_APPENDER_TYPE + " appender after the reset deadline");
+        return false;
     }
 }

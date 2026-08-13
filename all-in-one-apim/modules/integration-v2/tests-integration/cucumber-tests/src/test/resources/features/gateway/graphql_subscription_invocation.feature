@@ -18,6 +18,9 @@ Feature: Gateway GraphQL Subscription Invocation
     And I deploy the API with id "gqlSubApiId"
     When I publish the "apis" resource with id "gqlSubApiId"
     Then The lifecycle status of API "gqlSubApiId" should be "Published"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "gqlSubApiId" should be live on the gateway, redeploying if propagation is lost
 
     # Capture the API's full gateway context (already carries /t/<tenant> for tenant APIs)
     When I retrieve the "apis" resource with id "gqlSubApiId"

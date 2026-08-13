@@ -69,6 +69,19 @@
         <apim.docker.image.name>wso2am:${apim.server.version}-jdk21</apim.docker.image.name>
         <!--Node app servers docker image-->
         <node.docker.image.name>node-app-server:latest</node.docker.image.name>
+        <!-- Solace: a REAL event broker (data plane) plus a mock of the Solace Cloud Event-Portal API that
+             APIM's v2 Solace client calls (control plane). The broker image is PULLED; the shim is BUILT from
+             src/main/resources/solaceshim by the build-solace-shim-docker-image exec, so a fresh clone can run
+             the Solace block without building an image by hand. Both names are passed to surefire below, since
+             DynamicSolaceBroker reads them as system properties at container-create time. -->
+        <solace.broker.docker.image.name>solace/solace-pubsub-standard:latest</solace.broker.docker.image.name>
+        <solace.shim.docker.image.name>solace-apim-shim:latest</solace.shim.docker.image.name>
+        <!-- WSO2 Identity Server image used as an external Key Manager (integration-v2 external-KM block). -->
+        <!-- WSO2 IS version used as the external key manager. 7.3.0 is multi-arch (native linux/arm64 and
+             linux/amd64), so it boots natively on Apple-silicon dev machines and amd64 CI alike (7.1.0 was
+             amd64-only, i.e. emulated/slow on arm64). Drives both the image tag and the in-container IS_HOME. -->
+        <is.server.version>7.3.0</is.server.version>
+        <is.docker.image.name>wso2/wso2is:${is.server.version}</is.docker.image.name>
 
         <!-- Debug API Manager instance-->
         <apim.debug.enabled>False</apim.debug.enabled>
@@ -177,6 +190,10 @@
                                 <apim.server.name>${apim.server.name}</apim.server.name>
                                 <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
+                                <solace.broker.docker.image.name>${solace.broker.docker.image.name}</solace.broker.docker.image.name>
+                                <solace.shim.docker.image.name>${solace.shim.docker.image.name}</solace.shim.docker.image.name>
+                                <is.docker.image.name>${is.docker.image.name}</is.docker.image.name>
+                                <is.server.version>${is.server.version}</is.server.version>
                                 <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>
@@ -242,6 +259,10 @@
                                 <apim.server.name>${apim.server.name}</apim.server.name>
                                 <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
+                                <solace.broker.docker.image.name>${solace.broker.docker.image.name}</solace.broker.docker.image.name>
+                                <solace.shim.docker.image.name>${solace.shim.docker.image.name}</solace.shim.docker.image.name>
+                                <is.docker.image.name>${is.docker.image.name}</is.docker.image.name>
+                                <is.server.version>${is.server.version}</is.server.version>
                                 <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>

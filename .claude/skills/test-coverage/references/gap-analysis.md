@@ -14,8 +14,9 @@ The capability tree is the **organization/comprehension map**, not a coverage or
 flow belongs*; use the actual feature files to decide *what's already covered*.
 
 1. **Place the flow in the tree.** Open `docs/devs/capability-map.yml` (closed `@cap`/`@feat` vocabulary) and
-   `docs/devs/v2-public-feature-coverage-map.md`. Find the `@cap`/`@feat` the flow belongs under. If nothing fits
-   → a NEW `@cap`/`@feat` is needed (Phase 4 lead-approval gate).
+   `docs/devs/coverage-tree.md` (generated from that map + the actual `.feature` tags by
+   `render_coverage_tree.py`; regenerate it rather than editing by hand). Find the `@cap`/`@feat` the flow
+   belongs under. If nothing fits → a NEW `@cap`/`@feat` is needed (Phase 4 lead-approval gate).
 2. **Read the owning feature file(s).** Grep `features/**` for the capability + related steps. Read the scenarios
    — do NOT judge coverage from tag names. Decide per flow:
    - **covered** — an existing scenario already asserts this exact behavior (incl. ×2 tenant). Nothing to add;

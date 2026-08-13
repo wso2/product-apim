@@ -28,6 +28,9 @@ Feature: Gateway GraphQL API Invocation
     And I deploy revision "revisionId" of "apis" resource "graphqlApiId"
     Then The response status code should be 201
     And I wait for deployment of the resource in "graphqlRetrievedPayload"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "graphqlApiId" should be live on the gateway, redeploying if propagation is lost
     And I publish the "apis" resource with id "graphqlApiId"
     Then The lifecycle status of API "graphqlApiId" should be "Published"
 
@@ -68,6 +71,9 @@ Feature: Gateway GraphQL API Invocation
     And I deploy revision "revisionId" of "apis" resource "graphqlApiId"
     Then The response status code should be 201
     And I wait for deployment of the resource in "graphqlRetrievedPayload"
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "graphqlApiId" should be live on the gateway, redeploying if propagation is lost
     And I publish the "apis" resource with id "graphqlApiId"
     Then The lifecycle status of API "graphqlApiId" should be "Published"
     When I have set up a "<tokenType>" token type application with keys, subscribed to API "graphqlApiId" with plan "Unlimited", and obtained access token for "graphqlTokenTypeSubId"

@@ -32,13 +32,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.json.JSONTokener;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -50,7 +53,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -62,6 +65,348 @@ public class Utils {
     private static final Log log = LogFactory.getLog(Utils.class);
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Pattern UNIQUE_PLACEHOLDER = Pattern.compile("\\$\\{UNIQUE:([^}]+)\\}");
+
+    /** The block's APIM management base URL from the shared context; throws if the block has not booted yet. */
+    public static String getBaseUrl() {
+        return requiredContextUrl("baseUrl");
+    }
+
+    /** The block's gateway HTTPS base URL from the shared context; throws if the block has not booted yet. */
+    public static String getBaseGatewayUrl() {
+        return requiredContextUrl("baseGatewayUrl");
+    }
+
+    /** The block's gateway {@code ws://} base URL from the shared context; throws if not booted yet. */
+    public static String getBaseGatewayWsUrl() {
+        return requiredContextUrl("baseGatewayWsUrl");
+    }
+
+    /** The block's gateway {@code wss://} base URL from the shared context; throws if not booted yet. */
+    public static String getBaseGatewayWssUrl() {
+        return requiredContextUrl("baseGatewayWssUrl");
+    }
+
+    /**
+     * The block's WebSub EVENT-RECEIVER base URL (the synapse {@code WebhookServer} inbound,
+     * {@code Constants.WEBSUB_EVENT_RECEIVER_PORT}) from the shared context; throws if not booted yet. This is
+     * where an event SOURCE posts content for a WebSub API's hub to fan out — a DIFFERENT listener from the
+     * gateway passthrough, so it is not derivable from {@link #getBaseGatewayUrl()}. Append the API's
+     * {@code context}/version, {@code Constants.WEBSUB_EVENT_RECEIVER_RESOURCE} and {@code ?topic=<topic>}.
+     */
+    public static String getBaseWebSubEventReceiverUrl() {
+        return requiredContextUrl("baseWebSubEventReceiverUrl");
+    }
+
+    /**
+     * HOST-reachable base URL of the node backend app listening on {@code containerPort} — for reading a backend's
+     * own state back from the test JVM (the sse-emitter's stream diagnostics, the websub-receiver's delivery log).
+     * An API's ENDPOINT must instead point at {@code http://nodebackend:<containerPort>}, the in-network alias.
+     *
+     * <p>Only valid in a block that declares {@code initBackend=true} — {@code BlockLifecycleListener} has then
+     * already started the singleton, so this resolves the running container's published port. In a block without
+     * it this would boot the backend mid-scenario, which is why it is not a general-purpose helper.
+     */
+    public static String getNodeBackendUrl(int containerPort) {
+        return NodeAppServer.getInstance().getBaseUrl(containerPort);
+    }
+
+    private static String requiredContextUrl(String key) {
+        Object url = TestContext.get(key);
+        if (url == null) {
+            throw new IllegalStateException(key + " is not available in the test context yet");
+        }
+        return url.toString();
+    }
+
+    /** URL-encodes a value as UTF-8 — the one-liner formerly copied as {@code enc()}/{@code urlEncode()}. */
+    public static String urlEncode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Tiered inter-poll pause for deadline-bounded retry loops: the loop's own base cadence for the first
+     * minute (fast pass-detection, where nearly all polls succeed), then {@code max(base, 5s)} in the second
+     * minute and {@code max(base, 10s)} beyond — easing off the server exactly when a long tail says it is
+     * struggling (see {@code Constants.RUNTIME_PROPAGATION_TIMEOUT}: 180s window = one tier per minute). For a
+     * loop whose whole window is under a minute this is identical to {@code Thread.sleep(base)}. Propagates
+     * {@link InterruptedException} so cancellation stops at the loop's own interrupt handling. Pass the
+     * instant the POLL began (typically the value the loop's deadline was computed from).
+     */
+    public static void pollPause(long pollStartMillis, long baseIntervalMillis) throws InterruptedException {
+        long elapsed = System.currentTimeMillis() - pollStartMillis;
+        long interval = elapsed < 60_000L ? baseIntervalMillis
+                : elapsed < 120_000L ? Math.max(baseIntervalMillis, 5_000L)
+                : Math.max(baseIntervalMillis, 10_000L);
+        Thread.sleep(interval);
+    }
+
+    /**
+     * One attempt inside {@link #pollWithin}: returns the attempt's outcome, or {@code null} when this attempt
+     * did not satisfy the caller so polling should continue. Exception POLICY is deliberately the lambda's own
+     * (each public contract below tolerates different failures); only {@link InterruptedException} is reserved,
+     * and must always be propagated so cancellation is never mistaken for a failed attempt.
+     */
+    @FunctionalInterface
+    private interface PollAttempt<T> {
+        T attempt() throws InterruptedException;
+    }
+
+    /**
+     * THE inter-poll mechanics every deadline-bounded wait in this module shares: paces with {@link #pollPause}
+     * from {@code pollStart} and returns the first non-null attempt outcome, or {@code null} when the window
+     * closes. Holds NO policy of its own — the accept condition, exception tolerance and failure verdict all
+     * belong to the caller, which is exactly what lets the two very different public contracts built on it
+     * ({@link #retryUntil} for a scenario's ASSERTION TARGET; {@code HealGate} for prerequisite state that
+     * may need re-triggering)
+     * share one implementation of the loop instead of forking it. Keep it that way: a policy flag here would
+     * collapse the two contracts into one ambiguous method.
+     */
+    private static <T> T pollWithin(long pollStart, long deadline, PollAttempt<T> attempt)
+            throws InterruptedException {
+        while (System.currentTimeMillis() < deadline) {
+            T outcome = attempt.attempt();
+            if (outcome != null) {
+                return outcome;
+            }
+            pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
+        }
+        return null;
+    }
+
+    /** One attempt for {@link #retryUntil}: makes the call under test. Only {@link IOException} is retried. */
+    @FunctionalInterface
+    public interface RetryAttempt<T> {
+        T attempt() throws IOException;
+    }
+
+    /** The accept condition for {@link #retryUntil}: true once an attempt's result is what the step awaited. */
+    @FunctionalInterface
+    public interface RetryAccept<T> {
+        boolean isAcceptable(T result);
+    }
+
+    /**
+     * THE retry envelope for a step whose RESULT IS THE ASSERTION TARGET (an invocation retried while a freshly
+     * published API becomes routable): attempts until {@code accept} holds or the window closes, then returns
+     * the LAST result so the caller can publish it as {@code httpResponse} and assert the EXACT expected value
+     * itself (§7/§12). The deadline is {@code max(timeoutMillis, RUNTIME_PROPAGATION_TIMEOUT)} — the one ceiling,
+     * so no call site can drift below it (one hand-rolled loop had, silently capping itself at 150s).
+     *
+     * <p>Contrast {@link HealGate#awaitOrHeal}, and pick deliberately — the choice states the intent:
+     * <ul>
+     *   <li>this returns the last result / that returns nothing (boolean probe);</li>
+     *   <li>this retries ONLY {@link IOException} — a bad context key must fail FAST rather than be masked as a
+     *       timeout (§7) / that treats every exception as not-ready, since during warm-up "not ready" and
+     *       "probe threw" are indistinguishable;</li>
+     *   <li>this is SIDE-EFFECT-FREE / that fires a MUTATING re-trigger to re-emit a dropped event;</li>
+     *   <li>this leaves the verdict to the caller / that fails the test itself.</li>
+     * </ul>
+     * Using the readiness gate for an assertion target would both swallow fail-fast errors and rob the step of
+     * its exact-value assertion; using this one for prerequisite state would never self-heal a dropped event.
+     */
+    public static <T> T retryUntil(long timeoutMillis, RetryAttempt<T> attempt, RetryAccept<T> accept)
+            throws InterruptedException {
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        AtomicReference<T> lastResult = new AtomicReference<>();
+        T accepted = pollWithin(pollStart, deadline, () -> {
+            try {
+                T result = attempt.attempt();
+                lastResult.set(result);
+                return accept.isAcceptable(result) ? result : null;
+            } catch (IOException transientDuringWarmup) {
+                // Only transient connectivity is retried: a gateway still warming up refuses/severs the
+                // connection. Anything else (e.g. IllegalArgumentException from TestContext.resolve on a
+                // typo'd key) escapes to fail fast instead of being reported as a timeout.
+                return null;
+            }
+        });
+        return accepted != null ? accepted : lastResult.get();
+    }
+
+    /** One sample for {@link #awaitSettledCount}: reads the counter under test. Only {@link IOException} is retried. */
+    @FunctionalInterface
+    public interface CountProbe {
+        int sample() throws IOException;
+    }
+
+    /**
+     * Outcome of {@link #awaitSettledCount}: the last value observed, whether it had STOPPED CHANGING, and how
+     * many samples were taken (a diagnostic — one sample means the quiet window was never actually observed).
+     * {@code value} is -1 when the probe never returned at all.
+     */
+    public record SettledCount(int value, boolean settled, int samples) { }
+
+    /**
+     * THE retry envelope for a step asserting a MONOTONIC COUNTER's final value: polls {@code probe} until the
+     * value has been unchanged for {@code quietMillis}, and reports whether it settled so the caller can assert
+     * both that it did and the EXACT value (§12).
+     *
+     * <p>Exists because {@link #retryUntil} CANNOT express this assertion safely. Its accept condition can only
+     * say "has it reached N yet", so the natural spelling is accept on {@code count >= N} then assert
+     * {@code == N} — which passes the instant the counter touches N, while more arrivals are still in flight. That
+     * is the §12-forbidden widened form wearing an exact assertion: an OVER-delivery lands after the step already
+     * passed, so a duplicate or an unthrottled extra is INVISIBLE. Waiting a fixed period instead would be a
+     * {@code Thread.sleep} (§4) and would still only move the race. Settling is the only formulation that both
+     * bounds the wait and can observe an over-count, and it is what makes "exactly N were delivered" a real
+     * assertion rather than "at least N had been delivered at some sampling instant".
+     *
+     * <p>Sound ONLY for a counter that stops changing once the system is quiescent (deliveries for a fixed set of
+     * published events). Never use it for a counter something keeps incrementing — that can never settle. Pick
+     * {@code quietMillis} comfortably above the observed gap BETWEEN two arrivals, not above the total fan-out
+     * time: a gap longer than the quiet window would settle early and under-count.
+     *
+     * <p>{@code timeoutMillis} is a FLOOR, not a bound: like {@link #retryUntil} this deadline is
+     * {@code max(timeoutMillis, RUNTIME_PROPAGATION_TIMEOUT)}, so a call site CANNOT ask for a shorter wait than
+     * the shared propagation ceiling. Passing a small value to cap the pathological case does nothing — a counter
+     * that never goes quiet still polls for the full ceiling. What actually bounds the normal case is
+     * {@code quietMillis}: the call returns as soon as the value holds still for that long, so a settled counter
+     * costs one quiet window regardless of what is passed here.
+     */
+    public static SettledCount awaitSettledCount(long quietMillis, long timeoutMillis, CountProbe probe)
+            throws InterruptedException {
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        AtomicReference<Integer> lastValue = new AtomicReference<>();
+        AtomicReference<Long> lastChange = new AtomicReference<>(pollStart);
+        AtomicReference<Integer> samples = new AtomicReference<>(0);
+        SettledCount settled = pollWithin(pollStart, deadline, () -> {
+            int value;
+            try {
+                value = probe.sample();
+            } catch (IOException transientDuringWarmup) {
+                // Same tolerance as retryUntil: only connectivity is retried, anything else fails fast.
+                return null;
+            }
+            samples.set(samples.get() + 1);
+            long now = System.currentTimeMillis();
+            if (!Integer.valueOf(value).equals(lastValue.getAndSet(value))) {
+                // Changed (this includes the very first sample) — restart the quiet window.
+                lastChange.set(now);
+                return null;
+            }
+            return now - lastChange.get() >= quietMillis ? new SettledCount(value, true, samples.get()) : null;
+        });
+        return settled != null ? settled
+                : new SettledCount(lastValue.get() == null ? -1 : lastValue.get(), false, samples.get());
+    }
+
+    /**
+     * Emits THE single grep-able diagnostic ({@code "auth-reject:"}) for an auth rejection observed inside a
+     * {@link #retryUntil} loop that did NOT expect one, and returns the same text for the caller's assertion
+     * message. Exists because this failure mode is otherwise near-undiagnosable from CI: the gateway logs only
+     * a masked {@code Invalid JWT token}, while the step reports a generic status mismatch after burning the
+     * whole window — the two are hard to correlate across parallel blocks, which cost one full investigation.
+     *
+     * <p>Logs the token's {@code jti} deliberately: the gateway's revoked-JWT map and invalid-token cache are
+     * BOTH keyed by it, so a jti here can be matched straight against a gateway {@code
+     * RevokedJWTDataHolder}/invalid-token-cache hit. A token rejected on EVERY attempt is almost never a
+     * propagation delay — both those caches outlive any window we wait (revocation until the token's own
+     * expiry, the invalid-token cache 900s by default), so replaying one can NEVER recover, and re-minting on
+     * rejection would only mask it: a freshly issued token must not be rejected intermittently.
+     */
+    public static String logAuthRejection(String what, String tokenContextKey, String token, int statusCode,
+                                          String responseBody, long elapsedMillis) {
+        StringBuilder detail = new StringBuilder("auth-reject: ").append(what)
+                .append(" was rejected with status ").append(statusCode)
+                .append(" on every attempt over ").append(elapsedMillis / 1000).append("s");
+        if (tokenContextKey != null) {
+            detail.append("; credential context key='").append(tokenContextKey).append('\'');
+        }
+        detail.append("; ").append(describeCredential(token));
+        String body = responseBody == null ? "" : responseBody.trim();
+        if (!body.isBlank()) {
+            detail.append("; gateway said ").append(body.length() > 300 ? body.substring(0, 300) + "..." : body);
+        }
+        detail.append(". A credential rejected on EVERY attempt is a REVOKED/invalidated credential, not a "
+                + "propagation delay — match the jti above against the gateway log ('revoked jwt token map' / "
+                + "'invalid token cache' at DEBUG); replaying it cannot recover.");
+        String message = detail.toString();
+        log.warn(message);
+        return message;
+    }
+
+    /**
+     * Best-effort identification of a credential for {@link #logAuthRejection} — the JWT claims that pin WHICH
+     * token was rejected ({@code jti}, issuing client and expiry) without validating anything. Never throws:
+     * an opaque (non-JWT) token or an unparseable payload degrades to a masked form, because a diagnostic that
+     * can fail is worse than no diagnostic.
+     */
+    private static String describeCredential(String token) {
+        if (token == null || token.isBlank()) {
+            return "credential=<absent>";
+        }
+        String masked = token.length() <= 12 ? "***"
+                : token.substring(0, 6) + "..." + token.substring(token.length() - 4);
+        try {
+            JSONObject claims = new JSONObject(JwtTestUtils.decodePayload(token));
+            StringBuilder described = new StringBuilder("jti=").append(claims.optString("jti", "<none>"));
+            for (String claim : new String[] {"azp", "client_id", "sub", "exp"}) {
+                if (claims.has(claim)) {
+                    described.append(' ').append(claim).append('=').append(claims.opt(claim));
+                }
+            }
+            return described.append(" token=").append(masked).toString();
+        } catch (RuntimeException notAJwt) {
+            return "credential=" + masked + " (opaque or unparseable — no jti to correlate)";
+        }
+    }
+
+    /**
+     * Extracts a query parameter's decoded value from a URL, or {@code null} when absent. Splits on
+     * {@code &}/{@code =} rather than regex-matching the name, so a parameter whose name suffixes another's
+     * (e.g. {@code code} vs {@code session_code}) is never mismatched.
+     */
+    public static String queryParam(String url, String name) {
+        if (url == null) {
+            return null;
+        }
+        int q = url.indexOf('?');
+        if (q < 0) {
+            return null;
+        }
+        for (String pair : url.substring(q + 1).split("&")) {
+            int eq = pair.indexOf('=');
+            String k = eq < 0 ? pair : pair.substring(0, eq);
+            if (k.equals(name)) {
+                String v = eq < 0 ? "" : pair.substring(eq + 1);
+                return java.net.URLDecoder.decode(v, StandardCharsets.UTF_8);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Copies a classpath resource into a delete-on-exit temp file (for multipart uploads that need a
+     * {@link File}), failing clearly when the resource is missing.
+     */
+    public static File classpathToTempFile(String resourcePath, String tempPrefix, String tempSuffix)
+            throws IOException {
+        try (InputStream in = Utils.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new FileNotFoundException("Classpath resource not found: " + resourcePath);
+            }
+            // NIO's createTempFile creates the file with owner-only access ALREADY APPLIED (0600 on POSIX,
+            // owner-restricted ACLs elsewhere), unlike File.createTempFile whose mode is umask-dependent and
+            // typically world-readable (0644). The JDK owns that platform difference, so no manual
+            // PosixFilePermissions-with-fallback branching is needed — and the permissions are in place before
+            // any content is written, since the file is created restricted rather than tightened afterwards.
+            File temp = Files.createTempFile(tempPrefix, tempSuffix).toFile();
+            temp.deleteOnExit();
+            Files.copy(in, temp.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return temp;
+        }
+    }
+
+    /** Reads a classpath resource as a UTF-8 string, failing clearly when it is missing. */
+    public static String readClasspathResource(String resourcePath) throws IOException {
+        try (InputStream in = Utils.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new FileNotFoundException("Classpath resource not found: " + resourcePath);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
 
     public static String getDCREndpointURL(String baseUrl) {
 
@@ -83,8 +428,137 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_USERINFO_EP;
     }
 
+    /**
+     * Tenant-aware OIDC userinfo endpoint. A super-tenant token uses {@code oauth2/userinfo}; a TENANT token must
+     * be presented at the tenant-qualified {@code t/<tenant>/oauth2/userinfo} path — the actor's {@code @domain}
+     * does NOT re-route the super path by itself, so calling the un-prefixed endpoint with a tenant token exercises
+     * the super-tenant route instead (which is what the no-arg overload above does). Mirrors
+     * {@link #getIntrospectEndpointURL(String, String)} and the legacy
+     * {@code OpenIDTokenAPITestCase#testCallUserInfoApiWithOpenIdJWTAccessToken}, which prefixes
+     * {@code t/<tenant>/} for any non-super tenant.
+     */
+    public static String getUserInfoEndpointURL(String baseUrl, String tenantDomain) {
+        return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? baseUrl + Constants.DEFAULT_APIM_USERINFO_EP
+                : baseUrl + "t/" + tenantDomain + "/" + Constants.DEFAULT_APIM_USERINFO_EP;
+    }
+
+    /** OAuth2 token introspection endpoint: {@code oauth2/introspect} (POST {@code token=…} with Basic admin auth). */
+    public static String getIntrospectEndpointURL(String baseUrl) {
+        return baseUrl + "oauth2/introspect";
+    }
+
+    /**
+     * Tenant-aware OAuth2 introspection endpoint. A super-tenant token uses {@code oauth2/introspect}; a tenant
+     * token MUST be introspected at the tenant-qualified {@code t/<tenant>/oauth2/introspect} path (the super
+     * path returns 401 "Authorization failure" for a tenant-admin caller/token).
+     */
+    public static String getIntrospectEndpointURL(String baseUrl, String tenantDomain) {
+        return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? baseUrl + "oauth2/introspect"
+                : baseUrl + "t/" + tenantDomain + "/oauth2/introspect";
+    }
+
+    /** Carbon IdentityProviderMgtService SOAP endpoint (register/verify a trusted IdP for the JWT-bearer grant). */
+    public static String getIdentityProviderMgtServiceURL(String baseUrl) {
+        return baseUrl + "services/IdentityProviderMgtService";
+    }
+
+    /** Admin change-application-owner: {@code POST api/am/admin/v4/applications/{applicationId}/change-owner?owner=…}. */
+    public static String getChangeApplicationOwnerURL(String baseUrl, String applicationId, String owner) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "applications/"
+                + URLEncoder.encode(applicationId, StandardCharsets.UTF_8) + "/change-owner?owner="
+                + URLEncoder.encode(owner, StandardCharsets.UTF_8);
+    }
+
     public static String getAPICreateEndpointURL(String baseUrl, String resourceType) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType;
+    }
+
+    /** Service Catalog REST base: {@code api/am/service-catalog/v1/}. */
+    private static final String SERVICE_CATALOG_BASE = "api/am/service-catalog/v1/";
+
+    /** Service Catalog — services collection: {@code /services} (POST multipart create). */
+    public static String getServiceCatalogURL(String baseUrl) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services";
+    }
+
+    /** Service Catalog — import a services archive: {@code /services/import} (POST multipart zip + overwrite). */
+    public static String getServiceCatalogImportURL(String baseUrl, boolean overwrite) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/import?overwrite=" + overwrite;
+    }
+
+    /** Service Catalog — a single service by id: {@code /services/{id}} (GET/PUT/DELETE). */
+    public static String getServiceCatalogByIdURL(String baseUrl, String serviceId) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/" + serviceId;
+    }
+
+    /** Service Catalog — a service's definition: {@code /services/{id}/definition} (GET). */
+    public static String getServiceCatalogDefinitionURL(String baseUrl, String serviceId) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/" + serviceId + "/definition";
+    }
+
+    /** Service Catalog — a service's usage (APIs using it): {@code /services/{id}/usage} (GET). */
+    public static String getServiceCatalogUsageURL(String baseUrl, String serviceId) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/" + serviceId + "/usage";
+    }
+
+    /** Service Catalog — search services: {@code /services?name=&version=&definitionType=&key=&sortBy=&sortOrder=&limit=&offset=}. */
+    public static String getServiceCatalogSearchURL(String baseUrl, Map<String, String> params) {
+        StringBuilder url = new StringBuilder(baseUrl + SERVICE_CATALOG_BASE + "services");
+        List<String> qp = new ArrayList<>();
+        for (Map.Entry<String, String> e : params.entrySet()) {
+            if (e.getValue() != null && !e.getValue().isEmpty()) {
+                qp.add(e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8));
+            }
+        }
+        if (!qp.isEmpty()) {
+            url.append("?").append(String.join("&", qp));
+        }
+        return url.toString();
+    }
+
+    /** Gateway internal REST API artifact endpoints ({@code api/am/gateway/v2/}, Basic admin auth). {@code kind}
+     *  is one of {@code api-artifact} / {@code end-points} / {@code local-entry} / {@code sequence}. */
+    public static String getGatewayArtifactURL(String baseUrl, String kind, String apiName, String version,
+                                               String tenantDomain) {
+        return baseUrl + Constants.GATEWAY + kind
+                + "?apiName=" + URLEncoder.encode(apiName, StandardCharsets.UTF_8)
+                + "&version=" + URLEncoder.encode(version, StandardCharsets.UTF_8)
+                + "&tenantDomain=" + URLEncoder.encode(tenantDomain, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher — endpoint-certificate collection: {@code /endpoint-certificates} (POST multipart upload). */
+    public static String getEndpointCertificatesURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates";
+    }
+
+    /** Publisher — endpoint-certificate search by endpoint and/or alias: {@code /endpoint-certificates?alias=&endpoint=}. */
+    public static String getEndpointCertificatesSearchURL(String baseUrl, String endpoint, String alias) {
+        StringBuilder url = new StringBuilder(baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates");
+        java.util.List<String> params = new java.util.ArrayList<>();
+        if (endpoint != null && !endpoint.isEmpty()) {
+            params.add("endpoint=" + URLEncoder.encode(endpoint, StandardCharsets.UTF_8));
+        }
+        if (alias != null && !alias.isEmpty()) {
+            params.add("alias=" + URLEncoder.encode(alias, StandardCharsets.UTF_8));
+        }
+        if (!params.isEmpty()) {
+            url.append("?").append(String.join("&", params));
+        }
+        return url.toString();
+    }
+
+    /** Publisher — a single endpoint-certificate by alias: {@code /endpoint-certificates/{alias}} (DELETE). */
+    public static String getEndpointCertificateByAliasURL(String baseUrl, String alias) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates/"
+                + URLEncoder.encode(alias, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher — endpoint-certificate usage: {@code /endpoint-certificates/{alias}/usage?limit=&offset=} (GET). */
+    public static String getEndpointCertificateUsageURL(String baseUrl, String alias, int limit, int offset) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates/"
+                + URLEncoder.encode(alias, StandardCharsets.UTF_8) + "/usage?limit=" + limit + "&offset=" + offset;
     }
 
     public static String getResourceEndpointURL(String baseUrl, String resourceType, String resourceId) {
@@ -320,8 +794,58 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
     }
 
+    /** Publisher REST — content/attribute search over APIs: {@code /apis?query=} (the publisher-plane search that
+     *  respects access-control roles). Used for the description / document-content / access-control search cases. */
+    public static String getPublisherApiSearchURL(String baseUrl, String query) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis?query="
+                + URLEncoder.encode(query, StandardCharsets.UTF_8);
+    }
+
     public static String getDevportalApiDetailURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId;
+    }
+
+    /** DevPortal — the topics a streaming (async) API exposes: {@code /apis/{apiId}/topics} (GET). One entry per
+     *  async operation, so an SSE/WebSub API declaring a single {@code /*} SUBSCRIBE operation reports count 1. */
+    public static String getDevportalApiTopicsURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/topics";
+    }
+
+    /** DevPortal — list all visible APIs: {@code /apis} (GET). Combined with the {@code X-WSO2-Tenant} header this
+     *  is the cross-tenant discovery listing (an ALL_TENANTS API published in another tenant is visible here). */
+    public static String getDevportalApisURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis";
+    }
+
+    /** DevPortal — list the key managers of a tenant: {@code /key-managers} (GET). With the {@code X-WSO2-Tenant}
+     *  header this returns another tenant's key managers (the cross-tenant KM-listing facet). Distinct from the
+     *  admin-plane {@link #getKeyManagersURL(String)} used for KM registration CRUD. */
+    public static String getDevportalKeyManagersURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "key-managers";
+    }
+
+    /** DevPortal — list the throttling policies of a level: {@code /throttling-policies/{application|subscription}}
+     *  (GET). This is the CONSUMER-facing policy listing (the plans an application create may choose from),
+     *  distinct from the publisher-plane {@link #getThrottlingPoliciesByTypeURL(String, String)} and the admin-plane
+     *  CRUD URLs. With the {@code X-WSO2-Tenant} header it returns ANOTHER tenant's policies — the cross-tenant
+     *  policy-visibility facet, which must never leak the calling tenant's own policies. */
+    public static String getDevportalThrottlingPoliciesURL(String baseUrl, String policyLevel) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "throttling-policies/" + policyLevel;
+    }
+
+    /** DevPortal — an API's document metadata: {@code /apis/{apiId}/documents/{docId}} (GET). Visibility-gated. */
+    public static String getDevportalApiDocumentURL(String baseUrl, String apiId, String documentId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/documents/" + documentId;
+    }
+
+    /** DevPortal — an API document's content: {@code /apis/{apiId}/documents/{docId}/content} (GET). */
+    public static String getDevportalApiDocumentContentURL(String baseUrl, String apiId, String documentId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/documents/" + documentId + "/content";
+    }
+
+    /** DevPortal — an API's OpenAPI definition: {@code /apis/{apiId}/swagger} (GET). Visibility-gated. */
+    public static String getDevportalApiSwaggerURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/swagger";
     }
 
     public static String getApiDocumentsURL(String baseUrl, String resourceId) {
@@ -417,7 +941,16 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/api-keys/PRODUCTION";
     }
 
-    public static String getUpdateKey(String baseUrl, String applicationId, String keyMappingId) {
+    /**
+     * DevPortal — one application key mapping ({@code applications/{id}/oauth-keys/{keyMappingId}}). The same
+     * resource serves PUT (update) and DELETE (remove the keys), so both callers share this builder rather
+     * than each assembling the path.
+     *
+     * <p>Not to be confused with {@link #getCleanupRegistrationURL}: {@code clean-up} discards APIM's
+     * key-mapping record for a partial/failed registration, whereas DELETE here is the real "delete keys"
+     * operation the DevPortal UI performs.
+     */
+    public static String getOAuthKeyURL(String baseUrl, String applicationId, String keyMappingId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" + keyMappingId;
     }
 
@@ -454,6 +987,11 @@ public class Utils {
         return baseUrl + "services/RemoteUserStoreManagerService";
     }
 
+    /** Carbon UserStoreConfigAdminService SOAP endpoint (add/remove a secondary user store at runtime). */
+    public static String getUserStoreConfigAdminServiceURL(String baseUrl) {
+        return baseUrl + "services/UserStoreConfigAdminService";
+    }
+
     /** Carbon admin SOAP service — claim metadata management (OIDC external-claim mappings). */
     public static String getClaimMetadataManagementServiceURL(String baseUrl) {
         return baseUrl + "services/ClaimMetadataManagementService";
@@ -467,6 +1005,37 @@ public class Utils {
     /** Carbon admin SOAP service — identity application management (service-provider get/update). */
     public static String getIdentityApplicationManagementServiceURL(String baseUrl) {
         return baseUrl + "services/IdentityApplicationManagementService";
+    }
+
+    /**
+     * Carbon admin SOAP service — registry resource admin. The only interface for reading/writing the
+     * governance-registry {@code workflow-extensions.xml} that selects the workflow executors (Simple = auto,
+     * Approval = manual). Used by the approval-workflow setup/teardown to flip executors and restore them.
+     */
+    public static String getResourceAdminServiceURL(String baseUrl) {
+        return baseUrl + "services/ResourceAdminService";
+    }
+
+    /**
+     * Admin workflows list endpoint filtered by workflow type (e.g. {@code AM_APPLICATION_CREATION},
+     * {@code AM_SUBSCRIPTION_CREATION}, {@code AM_API_STATE}). Returns the pending tasks of that type,
+     * each carrying a {@code referenceId} and a {@code properties} map (applicationName/apiName/...).
+     */
+    public static String getWorkflowsByTypeURL(String baseUrl, String workflowType) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows?workflowType="
+                + URLEncoder.encode(workflowType, StandardCharsets.UTF_8);
+    }
+
+    /** Admin single-workflow-by-external-reference endpoint (GET returns 404 once the task is cleaned up). */
+    public static String getWorkflowByReferenceURL(String baseUrl, String externalWorkflowReference) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows/"
+                + URLEncoder.encode(externalWorkflowReference, StandardCharsets.UTF_8);
+    }
+
+    /** Admin approve/reject endpoint — POST {@code {"status":"APPROVED"|"REJECTED","description":"..."}}. */
+    public static String getUpdateWorkflowStatusURL(String baseUrl, String workflowReferenceId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "workflows/update-workflow-status?workflowReferenceId="
+                + URLEncoder.encode(workflowReferenceId, StandardCharsets.UTF_8);
     }
 
     public static String getNewAPIVersionURL(String baseUrl, String resourceType, String newVersion, Boolean defaultVersion, String apiId) {
@@ -501,6 +1070,54 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/documents/" + documentId + "/content";
     }
 
+    /**
+     * Resolves the REST-API base path for a plane: {@code "publisher"} → the publisher deployer path,
+     * {@code "devportal"} → the devportal path. Comments and (the read side of) ratings exist on BOTH planes, so
+     * the comment/rating URL builders take a plane so a scenario can exercise the same resource from either portal.
+     */
+    private static String planeBase(String plane) {
+        return "publisher".equals(plane) ? Constants.DEFAULT_APIM_API_DEPLOYER : Constants.DEFAULT_DEVPORTAL;
+    }
+
+    /** Comments collection for an API on the given plane: {@code /apis/{apiId}/comments} (GET list, POST add). */
+    public static String getAPIComments(String baseUrl, String plane, String apiId) {
+        return baseUrl + planeBase(plane) + "apis/" + apiId + "/comments";
+    }
+
+    /** Comments collection with pagination (limit/offset) for listing root comments. */
+    public static String getAPIComments(String baseUrl, String plane, String apiId, int limit, int offset) {
+        return getAPIComments(baseUrl, plane, apiId) + "?limit=" + limit + "&offset=" + offset;
+    }
+
+    /** Add-reply URL: POST {@code /apis/{apiId}/comments?replyTo={parentId}} (the reply param is named replyTo). */
+    public static String getAPIReplyToComment(String baseUrl, String plane, String apiId, String parentCommentId) {
+        return getAPIComments(baseUrl, plane, apiId) + "?replyTo="
+                + URLEncoder.encode(parentCommentId, StandardCharsets.UTF_8);
+    }
+
+    /** Single comment: {@code /apis/{apiId}/comments/{commentId}} (GET, PATCH edit, DELETE). */
+    public static String getAPIComment(String baseUrl, String plane, String apiId, String commentId) {
+        return getAPIComments(baseUrl, plane, apiId) + "/" + commentId;
+    }
+
+    /** Single comment with reply pagination: {@code ?replyLimit=&replyOffset=} (GET the comment plus its replies). */
+    public static String getAPIComment(String baseUrl, String plane, String apiId, String commentId, int replyLimit,
+                                       int replyOffset) {
+        return getAPIComment(baseUrl, plane, apiId, commentId) + "?replyLimit=" + replyLimit + "&replyOffset="
+                + replyOffset;
+    }
+
+    /** Replies collection of a comment with pagination: {@code /apis/{apiId}/comments/{commentId}/replies}. */
+    public static String getAPICommentReplies(String baseUrl, String plane, String apiId, String commentId, int limit,
+                                              int offset) {
+        return getAPIComment(baseUrl, plane, apiId, commentId) + "/replies?limit=" + limit + "&offset=" + offset;
+    }
+
+    /** DevPortal per-user rating for an API: {@code /apis/{apiId}/user-rating} (GET, PUT add/update, DELETE). */
+    public static String getAPIUserRating(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/user-rating";
+    }
+
     public static String getSubscriptionBlockingURL(String baseUrl, String subscriptionID) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "subscriptions/block-subscription?subscriptionId=" + subscriptionID + "&blockState=BLOCKED";
     }
@@ -521,6 +1138,36 @@ public class Utils {
 
     public static String getAPIScopesById(String baseUrl, String scopeId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "scopes/" + scopeId;
+    }
+
+    /**
+     * Fetches a list resource ({@code {"list":[...]}}) via the RAW client and returns the {@code idField} of
+     * the first entry whose {@code name} equals {@code name} — the shared primitive for resolving a create
+     * whose response was lost mid-flight, so the caller registers/adopts the survivor instead of blindly
+     * re-POSTing a non-idempotent create (or silently orphaning it when the retry uses fresh names). Raw
+     * client on purpose: this is an intermediate read that must not clobber the step's published
+     * {@code httpResponse}. Returns {@code null} when no entry matches, the response is not a 2xx-with-body,
+     * or the call/parse fails — callers treat every null as "not created" and retry or fail loudly on their
+     * own POST path.
+     */
+    public static String findIdByNameInListResponse(String listUrl, Map<String, String> headers,
+                                                    String name, String idField) {
+        try {
+            HttpResponse resp = SimpleHTTPClient.getInstance().doGet(listUrl, headers);
+            if (resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                    && !resp.getData().isEmpty()) {
+                JSONArray list = new JSONObject(resp.getData()).optJSONArray("list");
+                for (int i = 0; list != null && i < list.length(); i++) {
+                    JSONObject entry = list.getJSONObject(i);
+                    if (name.equals(entry.optString("name"))) {
+                        return entry.getString(idField);
+                    }
+                }
+            }
+        } catch (IOException | JSONException lookupFailure) {
+            // treated as not-found — the caller retries the create or fails loudly on its POST path
+        }
+        return null;
     }
 
     /** Publisher — retrieve (GET) or update (PUT multipart {@code schemaDefinition}) a GraphQL API's schema. */
@@ -726,16 +1373,6 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "organizations/" + organizationId;
     }
 
-    /** SOAP admin service — claim-metadata management (register local claims). */
-    public static String getClaimMetadataMgtServiceURL(String baseUrl) {
-        return baseUrl + "services/ClaimMetadataManagementService";
-    }
-
-    /** DevPortal REST API — key managers visible to the calling user's organization. */
-    public static String getDevportalKeyManagersURL(String baseUrl) {
-        return baseUrl + Constants.DEFAULT_DEVPORTAL + "key-managers";
-    }
-
     /** Admin REST API — tenant configuration (get/update). */
     public static String getTenantConfigURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "tenant-config";
@@ -754,7 +1391,7 @@ public class Utils {
     /** Admin REST API — export a throttling policy by name + type ({@code sub}/{@code app}/{@code api}/{@code global}). */
     public static String getThrottlePolicyExportURL(String baseUrl, String name, String type) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "throttling/policies/export?name="
-                + java.net.URLEncoder.encode(name, java.nio.charset.StandardCharsets.UTF_8) + "&type=" + type;
+                + URLEncoder.encode(name, StandardCharsets.UTF_8) + "&type=" + type;
     }
 
     /** Admin REST API — import a throttling policy (multipart file); {@code overwrite} controls update vs conflict. */
@@ -836,8 +1473,9 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId + "/swagger";
     }
 
-    public static String getAPIDefinitionURL(String baseUrl) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-openapi";
+    /** Publisher REST API — AsyncAPI definition import (multipart {@code file} + {@code additionalProperties}). */
+    public static String getImportAsyncApiURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-asyncapi";
     }
 
     /** Publisher REST API — OpenAPI definition validation (multipart file / url). */
@@ -853,6 +1491,15 @@ public class Utils {
     /** Publisher REST API — available throttling policies for a policy level (subscription / api / application). */
     public static String getPublisherThrottlingPoliciesURL(String baseUrl, String policyLevel) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "throttling-policies/" + policyLevel;
+    }
+
+    /**
+     * Publisher REST API — the publisher settings document, which advertises (among other things) the tenant's
+     * resolved default advanced/subscription throttling policies (SettingsMappingUtil reads them through
+     * APIUtil.getDefaultAPILevelPolicy / getDefaultSubscriptionPolicy).
+     */
+    public static String getPublisherSettingsURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "settings";
     }
 
 
@@ -1258,6 +1905,23 @@ public class Utils {
     }
 
     /**
+     * Escapes the XML metacharacters ({@code & < > " '}) in a value that is interpolated into a hand-built
+     * SOAP/XML envelope, so a value containing one of them (e.g. a password or role name with {@code &})
+     * cannot corrupt the envelope. {@code &} is replaced first so the other entities are not double-escaped.
+     * Safe for both element text and attribute values. A {@code null} value maps to an empty string.
+     */
+    public static String escapeXml(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+
+    /**
      * Returns the first JSON object in the given array that matches all provided key-value pairs.
      *
      * @param list     the JSON array containing objects to search
@@ -1339,56 +2003,28 @@ public class Utils {
     }
 
     /**
-     * Executes the given HTTP request repeatedly until the expected response status code
-     * is received and the provided custom validation condition is satisfied, or until the
-     * maximum number of retry attempts is reached.
-     *
-     *
-     * @param requestAction       the HTTP request action to execute
-     * @param expectedStatusCode  the expected HTTP response status code
-     * @param customValidation    an additional validation condition to apply to the response
-     * @return the first response that satisfies both the expected status code and custom
-     *         validation, or the last received response if the retry limit is reached
-     * @throws InterruptedException if the thread is interrupted while waiting between retries
+     * True if the zip has at least one entry whose base file name equals any of {@code fileNames} — a light
+     * membership check (no extraction) used to verify a downloaded export archive is COMPLETE before relying on
+     * it. A corrupt/truncated/unreadable archive reads as "missing" (returns false), so callers can re-export.
      */
-    public static HttpResponse executeWithRetry(RequestAction requestAction, int expectedStatusCode,
-            Predicate<HttpResponse> customValidation) throws InterruptedException {
-
-        HttpResponse response = null;
-
-        for (int attempt = 1; attempt <= Constants.MAX_RETRIES; attempt++) {
-            log.info("Attempt " + attempt + "/" + Constants.MAX_RETRIES + ": Executing request...");
-            response = requestAction.execute();
-
-            // Check if status code matches and custom validation passes
-            if (response != null) {
-                if ( response.getResponseCode() == expectedStatusCode && customValidation.test(response)) {
-                    return response;
-                } else {
-                    log.warn("Attempt " + attempt + ": Criteria not met. Received: [" + response.getResponseCode()
-                            + "]. Data: " + response.getData());
+    public static boolean zipContainsEntryNamed(File zipFile, String... fileNames) {
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                int slash = name.lastIndexOf('/');
+                String base = slash < 0 ? name : name.substring(slash + 1);
+                for (String fn : fileNames) {
+                    if (base.equals(fn)) {
+                        return true;
+                    }
                 }
+                zis.closeEntry();
             }
-
-            if (attempt < Constants.MAX_RETRIES) {
-                Thread.sleep(Constants.RETRY_INTERVAL_TIME);
-            }
+        } catch (IOException corruptOrUnreadable) {
+            return false;
         }
-        return response;
-    }
-
-
-    /**
-     * Retrieves the pending HTTP request stored in the current test context.
-     *
-     *
-     * @return the pending HTTP request action stored in the test context
-     */
-    public static RequestAction getPendingHttpRequest() {
-
-        RequestAction requestAction = (RequestAction) TestContext.get(Constants.PENDING_HTTP_REQUEST);
-        Assert.assertNotNull(requestAction, "No pending request found in TestContext");
-        return requestAction;
+        return false;
     }
 
     /**

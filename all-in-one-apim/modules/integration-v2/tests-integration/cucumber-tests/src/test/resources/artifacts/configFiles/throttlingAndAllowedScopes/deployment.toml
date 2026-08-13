@@ -1,0 +1,19 @@
+# Combined overlay for the IntegrationV2-ThrottlingAndAllowedScopes block — two orthogonal gateway-enforcement
+# features co-hosted at thread-count=1 (see testng-v2.xml). Merged on top of the shared `basic` overlay.
+# Verified mutually inert: the allowed-scopes whitelist does NOT reject token issuance (only the gateway's
+# per-resource scope check on AllowedScopes' own API), and the conditional-throttling flags never trip without a
+# matching advanced policy on AllowedScopes' APIs — so neither feature's config perturbs the other.
+
+# --- ConditionalThrottling: enable the non-IP conditional condition types (off by default) + backend JWT. ---
+[apim.throttling]
+enable_header_based_throttling = true
+enable_query_param_based_throttling = true
+enable_jwt_claim_based_throttling = true
+
+# JWT-claim conditional throttling evaluates the backend JWT's claims, so backend JWT generation must be on.
+[apim.jwt]
+enable = true
+
+# --- AllowedScopes: the allowed-scopes whitelist (scopes matching these skip per-resource scope validation). ---
+[oauth]
+allowed_scopes = ["^device_.*", "openid", "scope1", "scope2"]

@@ -1,0 +1,89 @@
+{
+  "name": "${UNIQUE:ScopeMatrixAPI}",
+  "context": "${UNIQUE:scopeMatrixContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "Per-resource scope binding with wildcard-precedence (ScopeA exact, ScopeC segment-wildcard, ScopeE global-wildcard) \u2014 ports the discriminating subset of AllowedScopesTestCase ExampleAPI. Resources route to the node backend /echo/* which 200s for any subpath, so only the gateway scope check distinguishes 200 from 403.",
+  "policies": [
+    "Unlimited"
+  ],
+  "scopes": [
+    {
+      "scope": {
+        "name": "ScopeA",
+        "displayName": "ScopeA",
+        "description": "exact-path scope",
+        "bindings": [
+          "admin"
+        ]
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "name": "ScopeC",
+        "displayName": "ScopeC",
+        "description": "segment-wildcard scope",
+        "bindings": [
+          "admin"
+        ]
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "name": "ScopeE",
+        "displayName": "ScopeE",
+        "description": "global-wildcard scope",
+        "bindings": [
+          "admin"
+        ]
+      },
+      "shared": false
+    }
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/echo/products/catalog/{categoryId}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeA"
+      ]
+    },
+    {
+      "verb": "GET",
+      "target": "/echo/products/*",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeC"
+      ]
+    },
+    {
+      "verb": "GET",
+      "target": "/echo/*",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeE"
+      ]
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

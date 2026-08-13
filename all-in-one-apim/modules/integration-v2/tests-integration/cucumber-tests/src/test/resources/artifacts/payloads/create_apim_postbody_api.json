@@ -5,13 +5,13 @@
   "endpointConfig": {
     "endpoint_type": "http",
     "production_endpoints": {
-      "url": "http://nodebackend:3001/"
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
     },
     "sandbox_endpoints": {
-      "url": "http://nodebackend:3001/"
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
     }
   },
-  "description": "API exposing a POST resource (/reflect-body), used by the large-payload invalid-token rejection test",
+  "description": "API exposing a POST resource (/reflect-body) whose backend echoes the request body, used by the large-payload invalid-token rejection and bandwidth-throttling tests. The endpoint is the node backend's MOUNT path for the customer routes, which is where /reflect-body lives - at the bare :3001/ root express does not route it and answers an HTML 404 page.",
   "policies": ["Gold", "Bronze", "Unlimited"],
   "operations": [
     {

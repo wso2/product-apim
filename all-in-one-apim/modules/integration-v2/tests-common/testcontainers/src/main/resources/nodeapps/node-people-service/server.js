@@ -19,7 +19,7 @@
 const peopleRoutes = require('./routes/peopleRoutes');
 
 const app = express();
-const PORT = 3018;
+const PORT = process.env.PORT || 3018;
 
 app.use('/api/people', peopleRoutes);
 

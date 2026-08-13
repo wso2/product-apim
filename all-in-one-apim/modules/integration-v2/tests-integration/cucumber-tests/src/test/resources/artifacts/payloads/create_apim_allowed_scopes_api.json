@@ -1,0 +1,56 @@
+{
+  "name": "${UNIQUE:AllowedScopesAPI}",
+  "context": "${UNIQUE:allowedScopesContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API whose GET /customers/{id} operation requires scope1 or scope2 (bound to the admin role) — ports AllowedScopesTestCase.",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "scopes": [
+    {
+      "scope": {
+        "name": "scope1",
+        "displayName": "scope1",
+        "description": "First operation scope bound to the admin role",
+        "bindings": ["admin"]
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "name": "scope2",
+        "displayName": "scope2",
+        "description": "Second operation scope bound to the admin role",
+        "bindings": ["admin"]
+      },
+      "shared": false
+    }
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["scope1", "scope2"]
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

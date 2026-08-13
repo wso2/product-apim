@@ -1,0 +1,45 @@
+{
+  "name": "${UNIQUE:APIMTestWebSub}",
+  "context": "${UNIQUE:apimWebSubContext}",
+  "version": "1.0.0",
+  "type": "WEBSUB",
+  "enableSchemaValidation": false,
+  "transport": [],
+  "tags": ["websub"],
+  "policies": ["AsyncWHUnlimited"],
+  "apiThrottlingPolicy": null,
+  "authorizationHeader": "Authorization",
+  "apiKeyHeader": "ApiKey",
+  "securityScheme": ["oauth2"],
+  "visibility": "PUBLIC",
+  "visibleRoles": [],
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "additionalProperties": [],
+  "additionalPropertiesMap": {},
+  "accessControl": "NONE",
+  "websubSubscriptionConfiguration": {
+    "enable": true,
+    "secret": "${UNIQUE:webSubSecret}",
+    "signingAlgorithm": "SHA1",
+    "signatureHeader": "x-hub-signature"
+  },
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001"
+    },
+    "production_endpoints": {
+      "url": "http://nodebackend:3001"
+    }
+  },
+  "endpointImplementationType": "ENDPOINT",
+  "operations": [
+    {
+      "target": "/*",
+      "verb": "SUBSCRIBE",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ]
+}

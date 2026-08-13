@@ -1,0 +1,37 @@
+{
+  "name": "${UNIQUE:Wso2Is7KM}",
+  "displayName": "Test Key Manager WSO2 IS 7 (malformed endpoints)",
+  "type": "WSO2-IS-7",
+  "description": "WSO2 IS 7 key manager whose OAuth endpoints are malformed (no scheme / not a valid URL)",
+  "issuer": "not-a-valid-url",
+  "tokenEndpoint": "is7.example.com:9444/oauth2/token",
+  "introspectionEndpoint": "is7.example.com:9444/oauth2/introspect",
+  "revokeEndpoint": "is7.example.com:9444/oauth2/revoke",
+  "authorizeEndpoint": "is7.example.com:9444/oauth2/authorize",
+  "userInfoEndpoint": "is7.example.com:9444/scim2/Me",
+  "scopeManagementEndpoint": "is7.example.com:9444/api/identity/oauth2/v1.0/scopes",
+  "clientRegistrationEndpoint": "is7.example.com:9444/api/identity/oauth2/dcr/v1.1/register",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableOAuthAppCreation": true,
+  "enableMapOAuthConsumerApps": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "refresh_token"
+  ],
+  "certificates": {
+    "type": "JWKS",
+    "value": "is7.example.com:9444/oauth2/jwks"
+  },
+  "additionalProperties": {
+    "api_resource_management_endpoint": "is7.example.com:9444/api/server/v1/api-resources",
+    "is7_roles_endpoint": "is7.example.com:9444/scim2/v2/Roles",
+    "Username": "admin",
+    "Password": "admin",
+    "self_validate_jwt": true,
+    "enable_roles_creation": false
+  }
+}

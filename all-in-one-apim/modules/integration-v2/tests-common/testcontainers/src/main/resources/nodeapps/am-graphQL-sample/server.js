@@ -23,7 +23,7 @@ const { makeExecutableSchema } = require('@graphql-tools/schema');
 const languageRoutes = require('./routes/languageRoutes');
 
 const app = express();
-const port = 3003;
+const port = process.env.PORT || 3003;
 
 app.use(express.json());
 

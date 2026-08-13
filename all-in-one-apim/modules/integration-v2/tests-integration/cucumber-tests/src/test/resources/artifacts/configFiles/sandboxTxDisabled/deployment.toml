@@ -1,0 +1,34 @@
+# Combined overlay for the IntegrationV2-SandboxAndTokenExchangeDisabled block — the sandbox-only gateway
+# environment co-hosted with the token-exchange-disabled negative at thread-count=2 (see testng-v2.xml; the
+# two runners touch disjoint planes — gateway data plane vs the token endpoint — validated 3x concurrent).
+# Merged on top of the shared `basic` overlay. Verified mutually inert: the sandbox env redefinition bites
+# only GATEWAY invocations with production tokens, and TokenExchangeDisabled never invokes the gateway (nor
+# creates/publishes an API — token-endpoint only); the disabled exchange grant bites only a token-exchange
+# request at /oauth2/token, which only txdisabled's scenarios (deliberately) make.
+# NOTE (empirical, 903015): MandatoryProperties was co-hosted here and REVERTED — its required-property
+# config rejects the lifecycle PUBLISH of any API lacking the property, which the sandbox runner's publish
+# tripped. Do not add API-publishing runners to a container carrying that overlay.
+
+# --- SandboxGateway: replace the default env with a sandbox-only environment (production tokens rejected). ---
+[[apim.gateway.environment]]
+name = "Default"
+type = "sandbox"
+gateway_type = "Regular"
+provider = "wso2"
+display_in_api_console = true
+description = "Sandbox-only gateway environment that rejects production tokens."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:${mgt.transport.https.port}/services/"
+username= "${admin.username}"
+password= "${admin.password}"
+ws_endpoint = "ws://localhost:9099"
+wss_endpoint = "wss://localhost:8099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
+websub_event_receiver_http_endpoint = "http://localhost:9021"
+websub_event_receiver_https_endpoint = "https://localhost:8021"
+
+# --- TokenExchangeDisabled: base+basic ships the grant enabled; override it off so the token endpoint
+# refuses the grant (the enabled state lives in IntegrationV2-Is7TokenExchange — they cannot coexist). ---
+[oauth.grant_type.token_exchange]
+enable = false

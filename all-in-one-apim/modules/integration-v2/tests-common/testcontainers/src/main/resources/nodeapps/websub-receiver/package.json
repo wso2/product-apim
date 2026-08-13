@@ -1,0 +1,12 @@
+{
+  "name": "websub-receiver",
+  "version": "1.0.0",
+  "description": "WebSub subscriber callback receiver (hub handshake + delivery recorder) for gateway WebSub-API tests",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

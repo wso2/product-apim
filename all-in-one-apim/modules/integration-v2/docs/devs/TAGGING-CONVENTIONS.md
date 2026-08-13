@@ -73,9 +73,15 @@ assumed, not annotated.
 
 ## `@legacy`
 
-The legacy class this scenario replaces, e.g. `@legacy:APIKeyTestCase`. Makes the parity cross-check
-against `legacy-feature-coverage-map.md` exact instead of estimated. Multiple allowed when one
-scenario replaces several legacy methods/classes.
+The legacy class this scenario replaces, e.g. `@legacy:APIKeyTestCase`. Points the parity cross-check at a
+named class in the legacy suite (`modules/integration/tests-integration/tests-backend`, driven by its
+`testng.xml`) instead of leaving it to be estimated. Multiple allowed when one scenario replaces several
+legacy methods/classes.
+
+**This tag is a POINTER, not evidence of coverage.** A parity audit found scenarios carrying a `@legacy:`
+tag whose behaviour was only partly ported — and in one case a feature comment asserting tenant coverage
+the step did not implement. Never score a legacy class as covered from the tag (or from a feature comment);
+read the legacy method and the v2 step implementation.
 
 ## Exclusion markers
 

@@ -20,6 +20,7 @@ package org.wso2.am.testcontainers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -42,6 +43,8 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicApimContainer.class);
     private static final String DEFAULT_APIM_IMAGE = "wso2am:4.7.0-SNAPSHOT-jdk21";
+    /** Fixed shared-network alias for the IS→APIM reverse channel; see {@link #withExternalIsNotificationAlias}. */
+    private static final String APIM_NETWORK_ALIAS = "wso2am";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
 
@@ -56,9 +59,13 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // Expose canonical ports; Docker assigns ephemeral host ports resolved via getMappedPort.
         // GATEWAY_WS_PORT (9099) is the gateway WebSocket inbound; GATEWAY_WSS_PORT (8099) is the SECURE WebSocket
         // inbound — both needed by WebSocket-API invocation tests (ws:// and wss://).
+        // WEBSUB_EVENT_RECEIVER_PORT (9021) is the WebSub event-receiver inbound (synapse WebhookServer) an event
+        // source POSTs content to — needed by WebSub-API invocation tests, which publish from the test JVM.
+        // Note every port listed here also joins the startup liveness set (Wait.forListeningPort waits on ALL
+        // exposed ports), so only list ports the server always binds — 9021 does, unconditionally, at boot.
         withExposedPorts(Constants.HTTPS_PORT, Constants.HTTP_PORT,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
-                Constants.GATEWAY_WSS_PORT);
+                Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
 
         // Env vars for APIMGT_DB
         withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
@@ -154,6 +161,92 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return this;
     }
 
+    /**
+     * Augments the container's client-truststore so APIM trusts the external Identity Server's TLS cert
+     * (CN=wso2is), enabling the KM HTTP client's JWKS fetch / introspection over {@code https://wso2is:9443}.
+     * Must be called before {@link #start()}: the truststore is read once when the Carbon JVM boots, so the
+     * augmented file must already be in place — the only pre-boot injection point is {@code withCopyToContainer},
+     * hence we copy a fully-augmented truststore over the default rather than importing into the running server.
+     *
+     * <p>The augmented truststore is produced at build time by the testcontainers module's
+     * {@code build-augmented-truststore} exec (base truststore extracted from the APIM image + the fixed
+     * {@code wso2is} public cert imported), staged at {@code <module.dir>/target/is7/client-truststore.jks};
+     * overridable via {@code -Dapim.km.truststore.path}. Only the external-KM block calls this, so the default
+     * lane's truststore is untouched.
+     */
+    public DynamicApimContainer withExternalKmTrust() {
+        String configured = System.getProperty("apim.km.truststore.path");
+        String path = (configured != null && !configured.isBlank())
+                ? configured
+                : System.getProperty("module.dir", ".") + "/target/is7/client-truststore.jks";
+        File truststore = new File(path);
+        if (!truststore.isFile()) {
+            throw new IllegalStateException("Augmented APIM client-truststore not found at '" + path
+                    + "'. It is built by the testcontainers pre-integration-test exec "
+                    + "(build-augmented-truststore); run the build so it is staged, or set "
+                    + "-Dapim.km.truststore.path to its location.");
+        }
+        withCopyToContainer(MountableFile.forHostPath(truststore.getAbsolutePath()),
+                Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+                        + "/repository/resources/security/client-truststore.jks");
+        // Present a TLS cert valid for the 'wso2am' network alias (fixed keystore, CN=wso2am,
+        // SAN dns:localhost,dns:wso2am) so IS's token-revocation notification POST to https://wso2am:9443
+        // passes strict hostname verification - no AllowAll workaround needed on IS. The block's toml overlay
+        // points [keystore.tls] at this file; the augmented client-truststore above also trusts it (loopback).
+        withCopyToContainer(MountableFile.forClasspathResource("is7/wso2am.p12"),
+                Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+                        + "/repository/resources/security/wso2am.p12");
+        logger.info("External-KM mode: APIM client-truststore augmented (wso2is + wso2am certs) from {}, "
+                + "TLS keystore set to wso2am.p12", truststore.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Binds the fixed {@code wso2am} shared-network alias so the external IS can reach this container on its
+     * reverse channel — IS's baked {@code notification_endpoint} POSTs to
+     * {@code https://wso2am:9443/internal/data/v1/notify} (token-revocation events in the default IS overlay,
+     * tenant-sync events in the SSO overlay). Without a live alias holder the IS EventSender fails with
+     * {@code UnknownHostException: wso2am} (harmless unless a test asserts on the delivered notification).
+     *
+     * <p>Deliberately separate from {@link #withExternalKmTrust()}: the alias is fixed (it is baked into the IS
+     * toml and the wso2am.p12 cert), so AT MOST ONE live container may hold it — duplicate holders make Docker
+     * DNS resolve {@code wso2am} arbitrarily and notifications land on the wrong APIM. Most external-KM blocks
+     * only make APIM→IS calls and never consume the reverse channel; they skip this and can therefore run
+     * concurrently. Only the block whose tests assert on IS→APIM notifications binds it (via the
+     * {@code receiveExternalIsNotifications} block param).
+     */
+    public DynamicApimContainer withExternalIsNotificationAlias() {
+        withNetworkAliases(APIM_NETWORK_ALIAS);
+        logger.info("APIM network alias set to '{}' (IS reverse-channel notification receiver)",
+                APIM_NETWORK_ALIAS);
+        return this;
+    }
+
+    /**
+     * Binds the alias the SOLACE BROKER resolves to reach this APIM, so it can fetch APIM's JWKS and validate
+     * an APIM-issued access token itself. Without it the broker has no host to resolve and every publish is
+     * rejected 403 — with the reason visible ONLY inside the broker's own event.log, which is exactly how it
+     * cost a whole suite run to find.
+     *
+     * <p>APIM has NO network alias by default (nothing normally calls IN to it), and this deliberately does not
+     * reuse the {@code wso2am} notification alias: that one is baked into the IS toml and the wso2am.p12 cert,
+     * so it is SINGLE-HOLDER and permit-guarded ({@link #withExternalIsNotificationAlias}) — binding it here
+     * would make a Solace block contend with, and be able to steal notifications from, an external-IS block.
+     * A separate name avoids that contention, but it is NOT unguarded: this alias is bound by EACH block that
+     * opts into Solace, so it is single-holder too, and for a reason on the broker side rather than the cert's.
+     * {@code DynamicSolaceBroker} is a shared singleton whose OAuth profile carries a SINGLE {@code endpointJwks},
+     * configured once per JVM — so exactly one live APIM may answer this name, or Docker round-robins the broker's
+     * key fetch between containers. The listener enforces that with its own permit
+     * ({@code SOLACE_JWKS_ALIAS_PERMIT}), queueing Solace blocks among themselves exactly as the {@code wso2am}
+     * holders queue. Do not bind this without taking that permit.
+     */
+    public DynamicApimContainer withSolaceJwksAlias() {
+        withNetworkAliases(DynamicSolaceBroker.APIM_JWKS_ALIAS);
+        logger.info("APIM network alias set to '{}' (Solace broker -> APIM JWKS)",
+                DynamicSolaceBroker.APIM_JWKS_ALIAS);
+        return this;
+    }
+
     /** Host for dumping coverage (valid after start). */
     public String getCoverageDumpHost() {
         return getHost();
@@ -191,6 +284,15 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     }
 
     /**
+     * WebSub event-receiver base URL (http://host:mappedWebhookPort/) — where an event source POSTs content for a
+     * WebSub API's hub to fan out. Append the API context/version and
+     * {@link Constants#WEBSUB_EVENT_RECEIVER_RESOURCE}.
+     */
+    public String getWebSubEventReceiverUrl() {
+        return String.format("http://%s:%d/", getHost(), getMappedPort(Constants.WEBSUB_EVENT_RECEIVER_PORT));
+    }
+
+    /**
      * The container's docker-network GATEWAY IP — the source IP the gateway observes for a host→published-port
      * connection (verified: a WS client on the host is seen by APIM as this address). Used to pin an api-key
      * {@code permittedIP} to the test client's effective IP so the api-key IP-restriction POSITIVE case can be
@@ -211,6 +313,57 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 Constants.DEPLOYMENT_TOML_PATH;
     }
 
+    /**
+     * Copies a host file into the server directory tree BEFORE the container starts, at
+     * {@code <server-home>/<serverRelativePath>}. For fixtures the server only picks up at BOOT — e.g. a
+     * secondary user-store definition under {@code repository/deployment/server/userstores/} (Carbon's
+     * User Store Configuration Deployer reads that directory at startup; a config written into a running
+     * container at runtime is not hot-deployed). Driven per test block via the {@code serverFilesToCopy}
+     * listener parameter. Must be called before {@link #start()}.
+     */
+    public DynamicApimContainer withServerFile(String hostPath, String serverRelativePath) {
+        String target = Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+                + "/" + serverRelativePath;
+        // Explicit 0666: files copied into the container are owned by root while the server runs as
+        // wso2carbon. A read-only file is fine for config the server only READS (a userstore XML), but a
+        // data file the server must WRITE (e.g. an embedded H2 .mv.db) silently degrades - H2 opens a
+        // non-writable file read-only, so store reads work while writes no-op with no server-side error.
+        withCopyToContainer(MountableFile.forHostPath(hostPath, 0666), target);
+        return this;
+    }
+
+    /**
+     * Creates the usermgt (UM_*) schema for a secondary JDBC user store in a fresh embedded H2 DB, at runtime,
+     * using the PRODUCT'S OWN shipped DDL ({@code dbscripts/h2.sql}) and the bundled H2 engine — the framework
+     * owns zero DDL. This replaces the copied pre-seeded {@code .mv.db} (and its 0666 hack): the DB is created
+     * live, then {@code chmod 0666} guarantees the {@code wso2carbon} server process can write it regardless of
+     * which user the exec ran as. Must run BEFORE the store is registered (addUserStore), while nothing holds the
+     * embedded-H2 file lock. {@code dbRelativePath} is the H2 url path, e.g. {@code repository/database/WSO2SEC_DB}.
+     */
+    public void createSecondaryUserStoreH2Schema(String dbRelativePath) throws IOException, InterruptedException {
+        String home = Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name");
+        String runScript = "cd " + home + " && java -cp \"$(ls repository/components/plugins/h2-engine_*.jar)\" "
+                + "org.h2.tools.RunScript -url 'jdbc:h2:./" + dbRelativePath + "' "
+                + "-user wso2carbon -password wso2carbon -script dbscripts/h2.sql";
+        Container.ExecResult r = execInContainer("bash", "-c", runScript);
+        if (r.getExitCode() != 0) {
+            throw new IOException("Secondary user-store H2 schema creation (RunScript) failed, exit "
+                    + r.getExitCode() + "\nstdout: " + r.getStdout() + "\nstderr: " + r.getStderr());
+        }
+        // execInContainer may create the file as root; the server runs as wso2carbon and must WRITE it. A failed
+        // chmod must FAIL here: H2 silently opens a non-writable file READ-ONLY, so store writes would return 2xx
+        // while no-opping (isExistingUser false after a successful-looking addUser) — a silent degradation far
+        // harder to diagnose than a boot failure.
+        Container.ExecResult chmod = execInContainer("bash", "-c",
+                "chmod 0666 " + home + "/" + dbRelativePath + ".mv.db");
+        if (chmod.getExitCode() != 0) {
+            throw new IOException("Secondary user-store H2 DB chmod failed (the .mv.db would be read-only for "
+                    + "wso2carbon and store writes would silently no-op), exit " + chmod.getExitCode()
+                    + "\nstdout: " + chmod.getStdout() + "\nstderr: " + chmod.getStderr());
+        }
+        logger.info("Created secondary user-store H2 schema at {} (via product dbscripts/h2.sql)", dbRelativePath);
+    }
+
     /** In-container path of the running server's {@code log4j2.properties} (for remote-logging appender checks). */
     public String getContainerLog4j2Path() {
         return Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name") +
@@ -228,5 +381,19 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read container file: " + containerPath, e);
         }
+    }
+
+    /**
+     * Overwrites a file inside the RUNNING container with {@code content} (UTF-8). Used by the remote-logging
+     * tests to seed a {@code log4j2.properties} fixture the server then rewrites (e.g. one whose AUDIT_LOGFILE
+     * block is missing, to assert the config service creates it).
+     *
+     * <p>The mode is an explicit 0666 for the same reason as {@link #withServerFile}: a file copied in is
+     * root-owned while the server runs as {@code wso2carbon}, so anything the server must WRITE — and the
+     * logging service rewrites this file in place — has to be world-writable or the rewrite fails.</p>
+     */
+    public void writeContainerFile(String containerPath, String content) {
+        copyFileToContainer(Transferable.of(content.getBytes(java.nio.charset.StandardCharsets.UTF_8), 0666),
+                containerPath);
     }
 }

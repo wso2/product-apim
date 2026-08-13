@@ -1,0 +1,37 @@
+{
+  "name": "${UNIQUE:APIMCorsSoap}",
+  "context": "${UNIQUE:apiCorsSoapContext}",
+  "version": "1.0.0",
+  "type": "SOAP",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3019/soap"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3019/soap",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "SOAP passthrough API with CORS enabled (incl. the X-BrowserSessionID allow-header) for the all-API-types CORS pre-flight test",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "corsConfiguration": {
+    "corsConfigurationEnabled": true,
+    "accessControlAllowOrigins": ["http://localhost"],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": ["authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction", "X-BrowserSessionID", "apikey"],
+    "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH"]
+  },
+  "operations": [
+    {
+      "verb": "POST",
+      "target": "/*"
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

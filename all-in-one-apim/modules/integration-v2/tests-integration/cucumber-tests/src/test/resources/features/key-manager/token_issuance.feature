@@ -28,7 +28,14 @@ Feature: Key Manager Token Issuance
       | admin             |
       | admin@tenant1.com |
 
-  @cap:key-manager @feat:token-issuance @type:smoke @rule:openid @legacy:OpenIDTokenTestCase
+  # Also covers OpenIDTokenAPITestCase (openid-scoped password-grant token → scope contains openid; userinfo → 200).
+  # TENANT-PATH VARIANT: the admin@tenant1.com row does exercise t/<tenant>/oauth2/userinfo — but NOT because the
+  # actor's @domain re-routes the request; it does not. The userinfo step resolves the ACTING actor's tenant and
+  # builds the tenant-qualified path explicitly (Utils.getUserInfoEndpointURL(baseUrl, tenantDomain), mirroring the
+  # introspect helper and the legacy tenant branch). Until that was wired, this comment asserted tenant coverage the
+  # suite did not have and BOTH rows hit the super-tenant endpoint — so do not "simplify" the step back to the
+  # no-arg overload without deleting this claim as well.
+  @cap:key-manager @feat:token-issuance @type:smoke @rule:openid @legacy:OpenIDTokenTestCase @legacy:OpenIDTokenAPITestCase
   Scenario Outline: Generate an OpenID-scoped token and call userinfo as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -43,6 +50,7 @@ Feature: Key Manager Token Issuance
     Then The response status code should be 200
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
+    And The response should contain "openid"
     When I invoke the OpenID userinfo endpoint using access token "generatedAccessToken"
     Then The response status code should be 200
 
@@ -87,7 +95,10 @@ Feature: Key Manager Token Issuance
       | admin             |
       | admin@tenant1.com |
 
-  @cap:key-manager @feat:token-issuance @type:regression @rule:sandbox @dep:gateway @legacy:SandboxTokenTestCase
+  # Also provides parity for TokenAPITestCase (sandbox-key token invokes the API → 200; the production-key
+  # password-grant and client-credential token invocations of TokenAPITestCase are covered by the smoke
+  # JWT-token scenario above + gateway/rest-invocation).
+  @cap:key-manager @feat:token-issuance @type:regression @rule:sandbox @dep:gateway @legacy:SandboxTokenTestCase @legacy:TokenAPITestCase
   Scenario Outline: Issue a sandbox-scoped token and invoke as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -115,6 +126,54 @@ Feature: Key Manager Token Issuance
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  @cap:key-manager @feat:token-issuance @rule:authcode @type:regression @legacy:GrantTypeTokenGenerateTestCase
+  Scenario Outline: Generate an access token via authorization code grant as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "authCodeKeysPayload"
+      """
+      {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password", "authorization_code"], "callbackUrl": "http://localhost:8490/callback", "scopes": ["openid", "am_application_scope", "default"]}
+      """
+    And I generate client credentials for application id "createdAppId" with payload "authCodeKeysPayload"
+    Then The response status code should be 200
+    When I request an OAuth access token via authorization code grant with scope "PRODUCTION"
+    Then The response status code should be 200
+    And The generated access token should be in JWT format
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  @cap:key-manager @feat:token-issuance @rule:authcode-default-scope @type:regression @legacy:JWTTestCase
+  Scenario Outline: Auth code grant without scope issues token with 'default' scope as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "authCodeKeysPayload"
+      """
+      {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password", "authorization_code"], "callbackUrl": "http://localhost:8490/callback", "scopes": ["default"]}
+      """
+    And I generate client credentials for application id "createdAppId" with payload "authCodeKeysPayload"
+    Then The response status code should be 200
+    When I request an OAuth access token via authorization code grant without requesting any scopes
+    Then The response status code should be 200
+    And I extract response field "scope" and store it as "tokenScope"
+    And the actual value of "tokenScope" should match the expected value:
+      """
+      default
+      """
 
     Examples:
       | actor             |
@@ -153,6 +212,7 @@ Feature: Key Manager Token Issuance
     [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "encApiId" with payload "encDeployPayload"
+    Then The response status code should be 201
     When I publish the "apis" resource with id "encApiId"
     Then The lifecycle status of API "encApiId" should be "Published"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "encAppPayload"

@@ -1,0 +1,15 @@
+type: operation_policy_specification
+version: v4.5.0
+data:
+  category: Mediation
+  name: contentAwarePropertyPolicy
+  version: v1
+  displayName: Content Aware Property Policy
+  description: Adds a content-aware property using json-eval. Verifies that empty JSON body requests do not cause gateway errors when a content-aware mediator is applied.
+  applicableFlows:
+    - request
+  supportedGateways:
+    - Synapse
+  supportedApiTypes:
+    - HTTP
+  policyAttributes: []

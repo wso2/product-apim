@@ -40,10 +40,6 @@ import java.util.Map;
  */
 public class ApiCategorySteps {
 
-    private String getBaseUrl() {
-        return TestContext.get("baseUrl").toString();
-    }
-
     private Map<String, String> adminHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
@@ -54,7 +50,7 @@ public class ApiCategorySteps {
     @When("I create an API category with payload {string} as {string}")
     public void iCreateApiCategory(String payload, String categoryIdKey) throws IOException {
         String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payload).toString());
-        HttpResponse response = Requests.post(Utils.getApiCategoriesURL(getBaseUrl()), adminHeaders(), jsonPayload,
+        HttpResponse response = Requests.post(Utils.getApiCategoriesURL(Utils.getBaseUrl()), adminHeaders(), jsonPayload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object categoryId = Utils.extractValueFromPayload(response.getData(), "id");
@@ -71,7 +67,7 @@ public class ApiCategorySteps {
     @When("I attempt to create an API category with payload {string}")
     public void iAttemptToCreateApiCategory(String payload) throws IOException {
         String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payload).toString());
-        Requests.post(Utils.getApiCategoriesURL(getBaseUrl()), adminHeaders(), jsonPayload,
+        Requests.post(Utils.getApiCategoriesURL(Utils.getBaseUrl()), adminHeaders(), jsonPayload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -80,20 +76,20 @@ public class ApiCategorySteps {
     public void iUpdateApiCategory(String categoryIdKey, String payload) throws IOException {
         String categoryId = TestContext.resolve(categoryIdKey).toString();
         String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payload).toString());
-        Requests.put(Utils.getApiCategoryByIdURL(getBaseUrl(), categoryId), adminHeaders(), jsonPayload,
+        Requests.put(Utils.getApiCategoryByIdURL(Utils.getBaseUrl(), categoryId), adminHeaders(), jsonPayload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Retrieves all API categories (admin). Non-asserting; the feature confirms the status and contents. */
     @When("I retrieve all API categories")
     public void iRetrieveAllApiCategories() throws IOException {
-        Requests.get(Utils.getApiCategoriesURL(getBaseUrl()), adminHeaders());
+        Requests.get(Utils.getApiCategoriesURL(Utils.getBaseUrl()), adminHeaders());
     }
 
     /** Deletes an API category by id (admin). Non-asserting; the feature confirms the status. */
     @When("I delete the API category {string}")
     public void iDeleteApiCategory(String categoryIdKey) throws IOException {
         String categoryId = TestContext.resolve(categoryIdKey).toString();
-        Requests.delete(Utils.getApiCategoryByIdURL(getBaseUrl(), categoryId), adminHeaders());
+        Requests.delete(Utils.getApiCategoryByIdURL(Utils.getBaseUrl(), categoryId), adminHeaders());
     }
 }

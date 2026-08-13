@@ -1,0 +1,7 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="set_default_endpoint_destination">
+   <!-- Ports the legacy sequence/default_endpoint.xml: a request-flow policy that sets the message DESTINATION
+        (the synapse "To" header) so an API whose endpoint_type=default resolves it from the message context.
+        Without this the native default endpoint has no target and suspends (303001). -->
+   <property name="service_ep" value="http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/customers/123"/>
+   <header name="To" expression="get-property('service_ep')"/>
+</sequence>
