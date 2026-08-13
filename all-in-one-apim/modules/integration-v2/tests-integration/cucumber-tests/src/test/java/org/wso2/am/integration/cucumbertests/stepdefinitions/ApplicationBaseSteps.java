@@ -1389,7 +1389,11 @@ public class ApplicationBaseSteps {
      * Attempts to create an application without asserting success, storing the raw response as
      * {@code httpResponse} for the feature to assert. For negative / access-control scenarios where the
      * create is expected to be rejected (e.g. a non-consumer actor lacking the app-management scope): unlike
-     * the positive step it neither extracts an id nor registers anything for cleanup.
+     * the positive step it asserts no status and stores no id under a caller-named key.
+     *
+     * <p>An unexpectedly-created application IS still registered — {@code registerIfCreated} enqueues the id only
+     * on a 2xx, so a refusal is a no-op while a create that unexpectedly succeeds is swept rather than leaked
+     * into the shared container (§5).</p>
      */
     @When("I attempt to create an application with payload {string}")
     public void iAttemptToCreateAnApplicationWithPayload(String payload) throws IOException {
@@ -4078,7 +4082,8 @@ public class ApplicationBaseSteps {
 
         JSONObject payload = loadKeyManagerPayload(resourcePath);
         payload.remove("additionalProperties");
-        postKeyManager(payload);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_KEY_MANAGER_IDS, postKeyManager(payload), "id");
     }
 
     /**
@@ -4108,16 +4113,18 @@ public class ApplicationBaseSteps {
 
     /**
      * Attempts to create a key manager using the acting actor's PUBLISHER token (which lacks {@code apim:admin}) —
-     * the non-admin-authorization negative. Non-asserting; the feature asserts the 401. On the expected rejection
-     * nothing is created, so no cleanup registration is needed.
+     * the non-admin-authorization negative. Non-asserting; the feature asserts the 401. An unexpectedly-created
+     * key manager IS registered for teardown (§5) — {@code registerIfCreated} is a no-op on the expected 401.
      */
     @When("I attempt to create a key manager from payload {string} using the publisher token")
     public void iAttemptToCreateKeyManagerAsPublisher(String resourcePath) throws IOException {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.post(Utils.getKeyManagersURL(Utils.getBaseUrl()), headers,
-                loadKeyManagerPayload(resourcePath).toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        ResourceCleanup.registerIfCreated(Constants.CREATED_KEY_MANAGER_IDS,
+                Requests.post(Utils.getKeyManagersURL(Utils.getBaseUrl()), headers,
+                        loadKeyManagerPayload(resourcePath).toString(),
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
     }
 
     /** Retrieves a single key manager by the id held under {@code idKey}. */

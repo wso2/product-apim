@@ -381,7 +381,9 @@ Feature: Publisher API Definition Import
     # The import must NOT succeed. Asserting the exact status (not merely "not 201") is what makes a future
     # change to a clean 4xx visible instead of silently passing.
     Then The response status code should be 500
-    And The response should contain "validating API Definition"
+    # The error text is pinned as the exact "description" field, not a fragment: the product builds this DTO with
+    # a generic message ("Internal server error") and the specific cause in "description" (§12).
+    And The value of error response field "description" should be "Error occurred while validating API Definition"
 
     Examples:
       | actor                     |

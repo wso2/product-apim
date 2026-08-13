@@ -89,9 +89,12 @@ public class PublisherBaseSteps {
     /**
      * Attempts to create an API without asserting success, storing the raw response as {@code httpResponse}
      * so the feature can assert the resulting status itself. Unlike {@code iCreateAnAPIWithPayloadAs} (which
-     * asserts 201 and registers the API for cleanup), this is for negative / access-control scenarios where
-     * the create is expected to be rejected (e.g. a subscriber-role user receiving 401/403) — so it neither
-     * asserts a status nor registers an id (nothing is created to clean up).
+     * asserts 201), this is for negative / access-control scenarios where the create is expected to be rejected
+     * (e.g. a subscriber-role user receiving 401/403), so it asserts no status.
+     *
+     * <p>It DOES register an unexpectedly-created resource: {@code registerIfCreated} enqueues the id only on a
+     * 2xx, so a refusal is a no-op while a create that unexpectedly succeeds is still swept (§5) instead of
+     * leaking into the shared container.</p>
      */
     @When("I attempt to create an {string} resource with payload {string}")
     public void iAttemptToCreateAnAPIWithPayload(String resourceType, String payload) throws IOException {
@@ -129,10 +132,9 @@ public class PublisherBaseSteps {
      * Attempts to create a resource WITHOUT asserting a status, but stores and registers the created id when the
      * create does succeed. This is the primitive for a create whose outcome is exactly what the scenario pins and
      * which may legitimately be a 201 — e.g. the APIM514 "missing mandatory field" cases where the product
-     * ACCEPTS an omitted endpoint configuration / empty operation list. Its sibling
-     * {@link #iAttemptToCreateAnAPIWithPayload} deliberately does not register, which is correct only when the
-     * create cannot succeed (a 401 negative); using it for a create that returns 201 LEAKS the API, because
-     * nothing ever enqueues the id for the teardown sweep (§5).
+     * ACCEPTS an omitted endpoint configuration / empty operation list. It differs from its sibling
+     * {@link #iAttemptToCreateAnAPIWithPayload} only in STORING the new id under a caller-named context key —
+     * both register an unexpectedly-created resource for the teardown sweep (§5).
      *
      * @param resourceType type of resource to create (e.g. {@code apis})
      * @param payload      context key holding the create payload
@@ -168,8 +170,11 @@ public class PublisherBaseSteps {
 
         String jsonPayload = TestContext.resolve(payload).toString();
 
-        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), new HashMap<>(), jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // An unauthenticated create MUST be refused; if the product ever accepted one, the resource is real and
+        // would leak, so it is swept (§5). registerIfCreated is a no-op on the expected 401.
+        ResourceCleanup.registerIfCreated(cleanupListFor(resourceType),
+                Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), new HashMap<>(),
+                        jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
     }
 
     /**
@@ -184,7 +189,9 @@ public class PublisherBaseSteps {
         String tenantPrefix = "carbon.super".equals(tenantDomain) ? "" : "t/" + tenantDomain + "/";
         String endpoint = Utils.getBaseUrl() + tenantPrefix + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType;
 
-        Requests.post(endpoint, new HashMap<>(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        ResourceCleanup.registerIfCreated(cleanupListFor(resourceType),
+                Requests.post(endpoint, new HashMap<>(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON),
+                "id");
     }
 
     /**
@@ -1219,7 +1226,8 @@ public class PublisherBaseSteps {
      * Attempts to create a new version without asserting success, storing the raw response as
      * {@code httpResponse} for the feature to assert. For negative / access-control scenarios where the
      * version-create is expected to be rejected (e.g. a subscriber-role token receiving 401): unlike the
-     * positive step it neither extracts an id (the error body has none) nor registers anything for cleanup.
+     * positive step it extracts no id (the error body has none), but a new version is a top-level resource, so
+     * an unexpectedly-created one IS registered for teardown (§5) — a no-op on the expected rejection.
      */
     @When("I attempt to create a new version {string} of {string} resource {string} with default version {string}")
     public void iAttemptToCreateANewVersionOfAPI(String newVersion, String resourceType, String resourceID,
@@ -1232,8 +1240,9 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getNewAPIVersionURL(Utils.getBaseUrl(), resourceType, newVersion, defaultVersion,
-                actualResourceID), headers, null, null);
+        ResourceCleanup.registerIfCreated(cleanupListFor(resourceType),
+                Requests.post(Utils.getNewAPIVersionURL(Utils.getBaseUrl(), resourceType, newVersion,
+                        defaultVersion, actualResourceID), headers, null, null), "id");
     }
 
     /**
@@ -1752,7 +1761,10 @@ public class PublisherBaseSteps {
      * Attempts to create a shared scope without asserting success, storing the raw response as
      * {@code httpResponse} for the feature to assert. For negative / access-control scenarios where the
      * create is expected to be rejected (e.g. a subscriber-role token receiving 401): unlike the positive
-     * step it neither extracts an id (the error body has none) nor registers anything for cleanup.
+     * step it asserts no status and stores no id under a caller-named key.
+     *
+     * <p>An unexpectedly-created scope IS still registered — {@code registerIfCreated} enqueues the id only on a
+     * 2xx, so a refusal is a no-op while a create that unexpectedly succeeds is swept rather than leaked (§5).</p>
      */
     @When("I attempt to create a shared scope as {string}")
     public void iAttemptToCreateASharedScopeAs(String scopeName) throws IOException {
@@ -3876,7 +3888,8 @@ public class PublisherBaseSteps {
 
     /**
      * Non-asserting API-Product create (for negatives such as a malformed context → 400): stores the raw
-     * response for the feature to assert; does not extract an id or register anything.
+     * response for the feature to assert and extracts no id, but an unexpectedly-created product IS registered
+     * for teardown (§5) — {@code registerIfCreated} is a no-op on the expected 4xx.
      */
     @When("I attempt to create an API product {string} with context {string} from API {string}")
     public void iAttemptToCreateApiProduct(String nameBase, String contextBase, String apiIdKey) throws IOException {
@@ -3886,8 +3899,9 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "api-products"), headers, payload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        ResourceCleanup.registerIfCreated(Constants.CREATED_API_PRODUCT_IDS,
+                Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "api-products"), headers,
+                        payload, Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
     }
 
     /** Creates a new version (copy) of an API Product; stores the new product's id and registers it for teardown. */

@@ -410,3 +410,37 @@ Feature: Key Manager Token Issuance
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # An UNREGISTERED scope is granted verbatim rather than dropped or replaced by "default". Pinned because ~20
+  # scenarios across the gateway and key-manager suites request "PRODUCTION"/"SANDBOX" — neither of which is a
+  # registered scope — and depend on getting a usable token back. If scope validation ever tightened, this names
+  # the cause instead of leaving those to fail as downstream 401/403s. Completes the granted-scope trio alongside
+  # authcode-default-scope (none requested -> "default") and scope-in-token (a registered scope).
+  @cap:key-manager @feat:token-issuance @rule:unregistered-scope @type:regression
+  Scenario Outline: A scope not registered on the application is still granted in the issued token as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "unregScopeAppPayload"
+    And I create an application with payload "unregScopeAppPayload"
+    Then The response status code should be 201
+    # No "scopes" key in this payload: the application registers NO scopes at all.
+    When I put the following JSON payload in context as "unregScopeKeysPayload"
+      """
+      {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+      """
+    And I generate client credentials for application id "createdAppId" with payload "unregScopeKeysPayload"
+    Then The response status code should be 200
+    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    Then The response status code should be 200
+    # Exact, not containment: the granted scope must be exactly what was requested — no silent substitution to
+    # "default" and nothing extra appended.
+    And I extract response field "scope" and store it as "unregTokenScope"
+    And the actual value of "unregTokenScope" should match the expected value:
+      """
+      PRODUCTION
+      """
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

@@ -217,8 +217,8 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
     When I deploy the API with id "createdApiId"
-    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 201
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
@@ -319,8 +319,8 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "mfApiId"
     And I extract response field "context" and store it as "mfContext"
     When I have set up application with keys, subscribed to API "mfApiId", and obtained access token for "mfSubId"
-    And the "apis" resource "mfApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
+    And the "apis" resource "mfApiId" should be live on the gateway, redeploying if propagation is lost
     When I put the following JSON payload in context as "mfBody"
     """
     <request>Request<request>
@@ -353,8 +353,8 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "erApiId"
     And I extract response field "context" and store it as "erContext"
     When I have set up application with keys, subscribed to API "erApiId", and obtained access token for "erSubId"
-    And the "apis" resource "erApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
+    And the "apis" resource "erApiId" should be live on the gateway, redeploying if propagation is lost
 
     # A non-existent context → 404 that does NOT echo the requested path segment.
     When I invoke the API at gateway context "erNoSuchContext/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
@@ -1230,8 +1230,8 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "xcApiId"
     And I extract response field "context" and store it as "xcContext"
     When I have set up application with keys, subscribed to API "xcApiId", and obtained access token for "xcSubId"
-    And the "apis" resource "xcApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
+    And the "apis" resource "xcApiId" should be live on the gateway, redeploying if propagation is lost
     When I put the following JSON payload in context as "xcApiKeyGenPayload"
     """
     {"keyName": "CrossCredentialKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
@@ -1311,8 +1311,8 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "boApiId"
     And I extract response field "context" and store it as "boContext"
     When I have set up application with keys, subscribed to API "boApiId", and obtained access token for "boSubId"
-    And the "apis" resource "boApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
+    And the "apis" resource "boApiId" should be live on the gateway, redeploying if propagation is lost
 
     # POSITIVE CONTROL: the API is routable and its permitted scheme (oauth2) works, all the way to the backend.
     When I invoke the API at gateway context "{{boContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
@@ -1350,8 +1350,8 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "baApiId"
     And I extract response field "context" and store it as "baContext"
     When I have set up application with keys, subscribed to API "baApiId", and obtained access token for "baSubId"
-    And the "apis" resource "baApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
+    And the "apis" resource "baApiId" should be live on the gateway, redeploying if propagation is lost
     When I put the following JSON payload in context as "baApiKeyGenPayload"
     """
     {"keyName": "BasicOnlyApiKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
@@ -1428,8 +1428,8 @@ Feature: Gateway Security Enforcement
     When I retrieve the "apis" resource with id "srApiId"
     And I extract response field "context" and store it as "srContext"
     When I have set up application with keys, subscribed to API "srApiId", and obtained access token for "srSubId"
-    And the "apis" resource "srApiId" should be live on the gateway, redeploying if propagation is lost
     Then The response status code should be 200
+    And the "apis" resource "srApiId" should be live on the gateway, redeploying if propagation is lost
     When I put the following JSON payload in context as "srApiKeyGenPayload"
     """
     {"keyName": "SubRemovalKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
@@ -1496,6 +1496,9 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 201
 
     # A password-grant token FOR THAT USER invokes the API (200) — the token is issued and works.
+    # No explicit scope on purpose: what is pinned below is credential-change revocation, which is
+    # scope-independent. The "PRODUCTION" scope on this file's other password grants is a key-type marker on the
+    # acting-actor step, not a scope under test.
     When I request an OAuth access token using password grant as user "{{pcUsernameLoginName}}" with password "Password@123"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
