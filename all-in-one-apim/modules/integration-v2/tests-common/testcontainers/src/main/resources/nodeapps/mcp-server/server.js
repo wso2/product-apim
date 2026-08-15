@@ -43,7 +43,17 @@ function buildServer() {
       { name: 'add', description: 'Adds two numbers',
         inputSchema: { type: 'object', properties: { a: { type: 'number' }, b: { type: 'number' } }, required: ['a', 'b'] } },
       { name: 'get_pets', description: 'Returns the list of pets',
-        inputSchema: { type: 'object', properties: {}, required: [] } }
+        inputSchema: { type: 'object', properties: {}, required: [] } },
+      // A tool that carries metadata BEYOND name/description/inputSchema (annotations, _meta, outputSchema,
+      // title): when APIM proxies this server, every one of these extra fields must survive into the gateway
+      // tools/list response.
+      // inputSchema is kept CLEAN (no $schema/additionalProperties) so the MCP feature-generator can still map
+      // it to URI templates — see the buildServer() note above.
+      { name: 'get_weather', title: 'Weather Lookup', description: 'Returns the weather for a city',
+        inputSchema: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] },
+        outputSchema: { type: 'object', properties: { tempC: { type: 'number' } }, required: ['tempC'] },
+        annotations: { title: 'Weather Lookup', readOnlyHint: true },
+        _meta: { category: 'weather' } }
     ]
   }));
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
@@ -57,6 +67,9 @@ function buildServer() {
     }
     if (name === 'get_pets') {
       return { content: [{ type: 'text', text: JSON.stringify([{ id: 1, name: 'max' }]) }] };
+    }
+    if (name === 'get_weather') {
+      return { content: [{ type: 'text', text: JSON.stringify({ tempC: 21 }) }] };
     }
     return { content: [{ type: 'text', text: 'unknown tool: ' + name }], isError: true };
   });
