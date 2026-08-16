@@ -163,27 +163,6 @@ public class ApiProductSteps {
     }
 
     /**
-     * Asserts a JSON ARRAY field of the last response holds exactly {@code expectedCount} entries. The count-only
-     * counterpart of the shared exact-list assertion, for a collection whose SIZE is the contract while its
-     * element shape is not a flat list of scalars — e.g. a lifecycle state's {@code availableTransitions}
-     * (objects), of which a PUBLISHED API product must offer exactly four.
-     */
-    @Then("The response array field {string} should have exactly {int} entries")
-    public void theResponseArrayFieldShouldHaveExactly(String fieldName, int expectedCount) throws IOException {
-
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isBlank(),
-                "Expected a 2xx response with a body to read array field '" + fieldName + "' from, but got: "
-                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
-        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
-        Assert.assertTrue(actual instanceof java.util.List,
-                "Response field '" + fieldName + "' is not an array: " + actual);
-        Assert.assertEquals(((java.util.List<?>) actual).size(), expectedCount,
-                "Array field '" + fieldName + "' size mismatch. Data: " + response.getData());
-    }
-
-    /**
      * Asserts the API product's entry for a member API carries the SAME NUMBER of operations as that API itself
      * (legacy testUpdateUnderlyingAPIofAPIProduct): after the underlying API is edited and the product re-saved,
      * the product's aggregated resource set must still mirror the API's. Both reads are intermediate (consumed

@@ -83,7 +83,9 @@ Feature: DevPortal Application Management
     And I set the field "name" to "{{dupAppName}}" in the payload "dupAppB"
     And I attempt to create an application with payload "dupAppB"
     Then The response status code should be 409
-    And The response should contain "An application already exists"
+    # Include the name: the product builds "An application already exists with name " + name, so pinning the
+    # name proves the conflict names the duplicated application rather than any pre-existing one.
+    And The response should contain "An application already exists with name {{dupAppName}}"
 
     Examples:
       | actor                       |

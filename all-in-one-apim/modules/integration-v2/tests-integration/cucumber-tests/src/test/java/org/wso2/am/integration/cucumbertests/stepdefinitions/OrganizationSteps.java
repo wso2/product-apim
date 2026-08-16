@@ -239,7 +239,11 @@ public class OrganizationSteps {
         TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName));
     }
 
-    /** Tenant variant of {@link #iProvisionRole}. */
+    /**
+     * Tenant variant of {@link #iProvisionRole}. A STORE-QUALIFIED name is accepted here too
+     * ({@code SECONDARY.COM/userrole1}): the SOAP addRole resolves the store from the name itself, so no
+     * separate "store role" step is needed — the qualification lives in the value, not the step text.
+     */
     @When("I provision role {string} in tenant {string}")
     public void iProvisionRoleInTenant(String roleName, String tenantDomain) throws Exception {
 
@@ -370,29 +374,23 @@ public class OrganizationSteps {
         String expected = Utils.resolveContextPlaceholders(marker);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        boolean found = false;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers);
-                // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
-                // IOException-only catch and killing the poll.
-                if (last.getResponseCode() == 200 && last.getData() != null && last.getData().contains(expected)) {
-                    found = true;
-                    break;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(deadlineStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil (CLAUDE.md §7/§15) — the envelope owns the deadline floor,
+        // the tiered pollPause pacing and the IOException-only retry policy.
+        // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance()
+                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                // A 200 with no body counts as still-pending, not a match.
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(expected));
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
-        Assert.assertTrue(found, "DevPortal API did not contain '" + expected + "' within "
-                + timeoutSeconds + "s; last: " + (last == null ? "null" : last.getData()));
+        Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
+                "DevPortal API " + apiId + " did not return a 200 with a body within " + timeoutSeconds
+                        + "s; got " + last.getResponseCode() + " / " + last.getData());
+        Assert.assertTrue(last.getData().contains(expected), "DevPortal API did not contain '" + expected
+                + "' within " + timeoutSeconds + "s; last: " + last.getData());
     }
 
     /**
@@ -529,29 +527,22 @@ public class OrganizationSteps {
     private void pollDevportalApiList(String apiId, Map<String, String> headers, boolean shouldContain,
                                       int timeoutSeconds) throws InterruptedException {
 
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        boolean present = !shouldContain;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApisURL(Utils.getBaseUrl()), headers);
-                // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
-                // IOException-only catch and killing the poll.
-                if (last.getResponseCode() == 200 && last.getData() != null) {
-                    present = last.getData().contains(apiId);
-                    if (present == shouldContain) {
-                        break;
-                    }
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(deadlineStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil (CLAUDE.md §7/§15) rather than a hand-rolled deadline loop: the
+        // envelope owns the deadline floor (RUNTIME_PROPAGATION_TIMEOUT), the tiered pollPause pacing and the
+        // IOException-only retry policy, so this cannot drift below the shared ceiling.
+        // Cleared first so a throw leaves httpResponse ABSENT rather than stale (the §7 stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApisURL(Utils.getBaseUrl()), headers),
+                // A 200 with no body counts as still-pending, not a match.
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(apiId) == shouldContain);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal API-list response received");
-        Assert.assertEquals(present, shouldContain,
+        Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
+                "DevPortal API listing did not return a 200 with a body within " + timeoutSeconds + "s; got "
+                        + last.getResponseCode() + " / " + last.getData());
+        Assert.assertEquals(last.getData().contains(apiId), shouldContain,
                 "DevPortal API " + apiId + (shouldContain ? " not listed" : " still listed") + " within "
                         + timeoutSeconds + "s; last: " + last.getData());
     }
@@ -622,29 +613,22 @@ public class OrganizationSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        boolean present = !shouldContain;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers);
-                // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
-                // IOException-only catch and killing the poll.
-                if (last.getResponseCode() == 200 && last.getData() != null) {
-                    present = last.getData().contains(kmId);
-                    if (present == shouldContain) {
-                        break;
-                    }
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(deadlineStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil (CLAUDE.md §7/§15) — the envelope owns the deadline floor,
+        // the tiered pollPause pacing and the IOException-only retry policy.
+        // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance()
+                        .doGet(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers),
+                // A 200 with no body counts as still-pending, not a match.
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(kmId) == shouldContain);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal key-manager response received");
-        Assert.assertEquals(present, shouldContain,
+        Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
+                "DevPortal key-manager listing did not return a 200 with a body within " + timeoutSeconds
+                        + "s; got " + last.getResponseCode() + " / " + last.getData());
+        Assert.assertEquals(last.getData().contains(kmId), shouldContain,
                 "DevPortal key-manager " + kmId + (shouldContain ? " not visible" : " still visible")
                         + " within " + timeoutSeconds + "s; last: " + last.getData());
     }
@@ -652,21 +636,14 @@ public class OrganizationSteps {
     private void pollDevportalApiUntil(String apiId, Map<String, String> headers, int expectedStatus,
                                        int timeoutSeconds) throws InterruptedException {
 
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId),
-                        headers);
-                if (last.getResponseCode() == expectedStatus) {
-                    break;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(deadlineStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil (CLAUDE.md §7/§15) — the envelope owns the deadline floor,
+        // the tiered pollPause pacing and the IOException-only retry policy.
+        // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance()
+                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                response -> response.getResponseCode() == expectedStatus);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
         Assert.assertEquals(last.getResponseCode(), expectedStatus,

@@ -720,7 +720,7 @@ public class Utils {
                 .append(URLEncoder.encode(action, StandardCharsets.UTF_8));
 
         // Append the lifecycleChecklist if provided
-        if (lifecycleChecklist != null && !lifecycleChecklist.trim().isBlank()) {
+        if (lifecycleChecklist != null && !lifecycleChecklist.isBlank()) {
             String encodedChecklist = URLEncoder.encode(lifecycleChecklist, StandardCharsets.UTF_8);
             urlBuilder.append("&lifecycleChecklist=").append(encodedChecklist);
         }

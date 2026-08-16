@@ -860,7 +860,12 @@ public class BaseSteps {
      * {@code client_secret} for Okta, {@code password} AND {@code client_secret} for PingFederate), all of
      * which must come back as exactly the {@code *****} sentinel.
      *
-     * @param fieldNamesCsv comma-separated field names / JSONPaths to read from the response body
+     * <p>FIELD NAMES ONLY. The list is split on "," so a JSONPath that CONTAINS a comma cannot be expressed
+     * here — {@code list[?(@.a=='x,y')]} or {@code paths['/a,b']} would be split mid-expression and fail as
+     * "field not found". Dotted paths are fine (every call site uses them); for a comma-bearing path use the
+     * singular {@link #theValueOfResponseFieldShouldBe} once per field.</p>
+     *
+     * @param fieldNamesCsv comma-separated field names or comma-free JSONPaths to read from the response body
      * @param expectedValue the exact expected value every one of them must equal (string form)
      */
     @Then("Each of the response fields {string} should be {string}")
@@ -886,7 +891,9 @@ public class BaseSteps {
      * nothing and reports an empty result against a correct response.</p>
      *
      * @param fieldName     field name or JSONPath of the array to read from the response body
-     * @param expectedCsv   comma-separated expected elements; empty means "the array must be empty"
+     * @param expectedCsv   comma-separated expected elements; empty means "the array must be empty". Split on
+     *                      "," for the same reason as {@link #eachOfTheResponseFieldsShouldBe}, so an expected
+     *                      element that itself contains a comma cannot be expressed here
      */
     @Then("The response field {string} should be exactly the list {string}")
     public void theResponseArrayFieldShouldBeExactly(String fieldName, String expectedCsv) throws IOException {
@@ -942,6 +949,27 @@ public class BaseSteps {
         Assert.assertEquals(actual, expected,
                 String.format("Response array field '%s' was %s but expected exactly %s. Data: %s",
                         fieldName, actual, expected, response.getData()));
+    }
+
+    /**
+     * Asserts a JSON ARRAY field of the last response holds exactly {@code expectedCount} entries. The count-only
+     * counterpart of {@link #theResponseArrayFieldShouldBeExactly} directly above: for a collection whose SIZE is
+     * the contract while its element shape is not a flat list of scalars — e.g. a lifecycle state's
+     * {@code availableTransitions} (objects), of which a PUBLISHED API product must offer exactly four.
+     */
+    @Then("The response array field {string} should have exactly {int} entries")
+    public void theResponseArrayFieldShouldHaveExactly(String fieldName, int expectedCount) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body to read array field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertTrue(actual instanceof java.util.List,
+                "Response field '" + fieldName + "' is not an array: " + actual);
+        Assert.assertEquals(((java.util.List<?>) actual).size(), expectedCount,
+                "Array field '" + fieldName + "' size mismatch. Data: " + response.getData());
     }
 
     /**

@@ -2167,7 +2167,11 @@ public class ApplicationBaseSteps {
     @Then("The reflected backend JWT applicationAttributes claim should contain {string} with an empty value")
     public void theReflectedBackendJwtAttributeIsEmpty(String attributeName) {
         JSONObject attrs = reflectedApplicationAttributes();
-        Assert.assertTrue(attrs.has(attributeName) && attrs.optString(attributeName).isBlank(),
+        // isEmpty, NOT isBlank: emptiness IS the contract here. The feature under test is that
+        // enable_empty_values_in_application_attributes surfaces an attribute whose value is "" — a
+        // whitespace-only value would be a DIFFERENT (and wrong) product behaviour, so it must not pass.
+        // Do not "sweep" this to isBlank; that reads correctly for body guards but weakens this assertion.
+        Assert.assertTrue(attrs.has(attributeName) && attrs.optString(attributeName).isEmpty(),
                 "Decoded backend JWT applicationAttributes claim does not carry '" + attributeName
                         + "' with an empty value: " + attrs);
     }
@@ -2455,12 +2459,17 @@ public class ApplicationBaseSteps {
     /**
      * Creates a user in the EXTERNAL key manager (IS) via SCIM2 and, when {@code isRoleKey} resolves to a
      * non-empty role name, assigns that IS role to the user (SCIM2 v2 Roles PATCH add-member). Authenticated as
-     * the IS super admin. Stores the created user id under {@code <username>UserId}. Used by the role-based
-     * authorization flow to mint a user that does (or does not) hold the scope-bound role.
+     * the IS super admin. Used by the role-based authorization flow to mint a user that does (or does not) hold
+     * the scope-bound role.
      *
-     * @param username  the IS user name to create (used verbatim; the ephemeral per-block IS makes it unique enough)
-     * @param password  the user's password (also used for the later password grant)
-     * @param isRoleKey context key holding the IS role to assign, or a literal empty string for no role
+     * <p>The name is NOT used verbatim: the external IS is a shared JVM-lifetime singleton and SCIM2 create 409s
+     * on a duplicate, so a unique name is derived from {@code usernameBase} (CLAUDE.md §4). That generated name is
+     * published under the BASE key, so features reference it as {@code {{<usernameBase>}}}, and the created user
+     * id is stored under {@code <generatedName>UserId} — not under the base.
+     *
+     * @param usernameBase base for the generated IS user name; also the context key the generated name is stored under
+     * @param password     the user's password (also used for the later password grant)
+     * @param isRoleKey    context key holding the IS role to assign, or a literal empty string for no role
      */
     @When("I create an IS user {string} with password {string} assigned the IS role stored as {string}")
     public void iCreateIsUserWithRole(String usernameBase, String password, String isRoleKey) throws Exception {
@@ -2493,7 +2502,7 @@ public class ApplicationBaseSteps {
         ISResourceCleanup.registerUser(userId);
 
         // Empty key => create the user with NO role (the "without the mapped role" actor).
-        if (isRoleKey == null || isRoleKey.trim().isBlank()) {
+        if (isRoleKey == null || isRoleKey.isBlank()) {
             return;
         }
         String isRole = TestContext.resolve(isRoleKey).toString();

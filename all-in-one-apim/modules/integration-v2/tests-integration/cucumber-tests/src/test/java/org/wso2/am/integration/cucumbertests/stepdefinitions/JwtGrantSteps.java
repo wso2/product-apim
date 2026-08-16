@@ -96,7 +96,7 @@ public class JwtGrantSteps {
                 .put("iss", issuer).put("sub", subject).put("aud", audience).put("azp", audience)
                 .put("iat", now / 1000).put("nbf", nbf / 1000).put("exp", (nbf + 15 * 60 * 1000) / 1000)
                 .put("jti", UUID.randomUUID().toString());
-        if (extraClaimsJson != null && !extraClaimsJson.trim().isBlank()) {
+        if (extraClaimsJson != null && !extraClaimsJson.isBlank()) {
             JSONObject extra = new JSONObject(extraClaimsJson);
             for (String k : extra.keySet()) {
                 body.put(k, extra.get(k));
@@ -172,7 +172,7 @@ public class JwtGrantSteps {
         StringBuilder body = new StringBuilder("grant_type=")
                 .append(URLEncoder.encode(JWT_BEARER_GRANT, StandardCharsets.UTF_8))
                 .append("&assertion=").append(URLEncoder.encode(jwt, StandardCharsets.UTF_8));
-        if (scope != null && !scope.trim().isBlank()) {
+        if (scope != null && !scope.isBlank()) {
             body.append("&scope=").append(URLEncoder.encode(scope, StandardCharsets.UTF_8));
         }
         Map<String, String> headers = new HashMap<>();

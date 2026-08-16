@@ -2633,9 +2633,12 @@ public class PublisherBaseSteps {
         String sandboxPassword = endpointSecurity.getJSONObject("sandbox").optString("password", "");
         // Assert the password was stripped WITHOUT echoing the value — a non-empty value here is a real backend
         // credential and must not be printed into CI output (the very leak this test guards against).
-        Assert.assertTrue(productionPassword.isBlank(),
+        // isEmpty, NOT isBlank: the claim is that the exporter STRIPPED the field, and stripping yields "".
+        // Any surviving content — including " " or "\n" — means it did not strip, so tolerating whitespace
+        // would tolerate the one outcome this assertion exists to catch. Do not sweep this to isBlank.
+        Assert.assertTrue(productionPassword.isEmpty(),
                 "Production endpoint password was exported in plain text (expected empty)");
-        Assert.assertTrue(sandboxPassword.isBlank(),
+        Assert.assertTrue(sandboxPassword.isEmpty(),
                 "Sandbox endpoint password was exported in plain text (expected empty)");
     }
 

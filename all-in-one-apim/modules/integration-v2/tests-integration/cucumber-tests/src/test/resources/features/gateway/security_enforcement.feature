@@ -230,18 +230,11 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
 
-    # NOT COVERED HERE — email-form usernames as a gateway Basic credential (legacy's users[] fan-out,
-    # apisecUser2@wso2.com / apisecUser2@abc.com). This belongs to the parked email-username ACTOR work, not skipped
-    # casually. Verified why: an email-form username requires the server-level carbon.xml setting
-    # `EnableEmailUserName`, which ships COMMENTED OUT (see carbon-apimgt's test carbon.xml:390) and is enabled by
-    # NO block overlay in this suite. Without it the store splits the tenant off the last "@", so
-    # `local@wso2.com` resolves as user `local` in a tenant `wso2.com` that does not exist and the gateway answers
-    # 401 / 900901 "Invalid Credentials". Attempting the doubly-qualified `<local>@<emailDomain>@<tenant>` form does
-    # not help, because the deficiency is the store's parsing, not the qualifier order — empirically confirmed
-    # (that variant also 401s).
-    # So this row needs exactly the same missing infrastructure as B9's SUPER_TENANT_EMAIL_USER factory mode, which
-    # the repo owner decided on 2026-08-05 is out of scope. It lands cheaply as extra rows once that
-    # infrastructure exists; nothing else in this scenario depends on it.
+    # Email-form usernames as a gateway Basic credential (legacy's users[] fan-out, apisecUser2@wso2.com /
+    # apisecUser2@abc.com) are COVERED in gateway/basic_auth_email_username.feature, not here: they need
+    # enable_email_domain=true, which only the IntegrationV2-EmailUserName block sets. That block's
+    # infrastructure landed with blocker B9 (CLOSED 2026-08-11), superseding the earlier note here that called
+    # the dimension out of scope.
 
     # The two REFUSAL paths. Both are 401 carrying 900901 "Invalid Credentials", and that identity is the point:
     # a known user with a wrong password and a user that does not exist at all take different paths through the user

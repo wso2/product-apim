@@ -41,7 +41,10 @@ Feature: Admin API Categories
     # the unique-constraint violation is not mapped to a 409) with a descriptive body, so we pin the real behaviour.
     When I attempt to create an API category with payload "catCreate"
     Then The response status code should be 500
-    And The response should contain "already exists"
+    # Exact composed message, not the bare "already exists" fragment: the REST layer wraps the cause as
+    # "Error while adding new API Category '<name>' - " + e.getMessage(). Naming the category proves the
+    # rejection is about THIS name, not some other collision.
+    And The response should contain "Error while adding new API Category '{{catName}}' - Category with name '{{catName}}' already exists"
 
     # Update the description
     When I put the following JSON payload in context as "catUpdate"

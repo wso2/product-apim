@@ -518,24 +518,6 @@ public class OasDefinitionSteps {
      * unreadable.</p>
      */
     @Then("The definitions stored as {string} and {string} should be identical")
-
-    /**
-     * Asserts two definitions declare the SAME resource surface: the same set of paths, and per path the same
-     * set of verbs. Ports legacy's {@code validateUpdatedDefinition} — used both to confirm a submitted
-     * definition survived the round trip into a plane's stored copy, and to confirm a REJECTED update left the
-     * previously stored definition untouched.
-     *
-     * <p>Legacy additionally compared parsed {@code Operation} objects with {@code equals}. That is not
-     * reproduced: the product legitimately augments an operation it stores (management extensions, generated
-     * responses), so model equality would only hold for a definition it had just emitted itself — the resource
-     * surface is the property that actually distinguishes "the update took" from "the update was lost". The
-     * per-plane extension expectations are asserted separately by
-     * {@link #definitionShouldCarryPublisherExtensions} and
-     * {@link #definitionShouldNotExposePublisherOnlyExtensions}.</p>
-     *
-     * @param firstKey  context key holding the first definition
-     * @param secondKey context key holding the second definition
-     */
     public void definitionsShouldBeIdentical(String firstKey, String secondKey) {
 
         JSONObject first = definitionFromContext(firstKey);
@@ -563,12 +545,35 @@ public class OasDefinitionSteps {
                 differing.add(section);
             }
         }
-        Assert.fail("The stored definition changed across the rejected update: section(s) " + differing
-                + " differ between '" + firstKey + "' and '" + secondKey + "'."
-                + " before=" + first.optString(differing.isEmpty() ? "info" : differing.get(0))
-                + " after=" + second.optString(differing.isEmpty() ? "info" : differing.get(0)));
+        // Caller-neutral wording: this step only compares two stored definitions, so it must not narrate one
+        // call site's story (a rejected update) for failures that may come from any other.
+        // opt(), not optString(): two org.json implementations are on the test classpath (org.json and
+        // android-json via jsonassert). The one that wins today renders a JSONObject fine, but android-json's
+        // optString yields "" for a non-String — and every section reported here is an object or array.
+        String section = differing.isEmpty() ? "info" : differing.get(0);
+        Assert.fail("The definitions stored as '" + firstKey + "' and '" + secondKey + "' are not identical:"
+                + " section(s) " + differing + " differ."
+                + " '" + section + "' before=" + String.valueOf(first.opt(section))
+                + " after=" + String.valueOf(second.opt(section)));
     }
 
+    /**
+     * Asserts two definitions declare the SAME resource surface: the same set of paths, and per path the same
+     * set of verbs. Ports legacy's {@code validateUpdatedDefinition} — used both to confirm a submitted
+     * definition survived the round trip into a plane's stored copy, and to confirm a REJECTED update left the
+     * previously stored definition untouched.
+     *
+     * <p>Legacy additionally compared parsed {@code Operation} objects with {@code equals}. That is not
+     * reproduced: the product legitimately augments an operation it stores (management extensions, generated
+     * responses), so model equality would only hold for a definition it had just emitted itself — the resource
+     * surface is the property that actually distinguishes "the update took" from "the update was lost". The
+     * per-plane extension expectations are asserted separately by
+     * {@link #definitionShouldCarryPublisherExtensions} and
+     * {@link #definitionShouldNotExposePublisherOnlyExtensions}.</p>
+     *
+     * @param firstKey  context key holding the first definition
+     * @param secondKey context key holding the second definition
+     */
     @Then("The definitions stored as {string} and {string} should declare the same operations")
     public void definitionsShouldDeclareTheSameOperations(String firstKey, String secondKey) {
 

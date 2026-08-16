@@ -76,6 +76,31 @@ public class UserAccountSteps {
     }
 
     /**
+     * Provisions a user with an EXACT store name (after {@code {{contextKey}}} resolution) rather than a generated
+     * one. Same contract and context keys as the prefix steps.
+     *
+     * <p>Needed where two principals must share a chosen substring, which a generated suffix cannot produce: the
+     * application-level throttle key is {@code applicationId + ":" + authorizedUser}, and the gateway only appends
+     * the tenant when {@code StringUtils.contains(authorizedUser, tenantDomain)} is false — a SUBSTRING test. So a
+     * user literally named {@code <local>@<tenantDomain>} and a plain user named {@code <local>} can compute the
+     * SAME key. Proving or disproving that needs both names built from one base.
+     *
+     * <p>The caller owns uniqueness (CLAUDE.md §4) — pass a {@code ${UNIQUE:...}} or a context-derived base;
+     * a hardcoded literal here would collide across parallel runners.
+     *
+     * @param exactName   the store name to create verbatim; {@code {{contextKey}}} placeholders are resolved
+     * @param password    the user's initial password
+     * @param roles       comma-separated Internal roles (e.g. {@code Internal/subscriber})
+     * @param usernameKey context key for the store name; the credential name goes to {@code <usernameKey>LoginName}
+     */
+    @When("I provision a user with exact name {string} password {string} and roles {string} storing the username as {string}")
+    public void iProvisionAScenarioUserWithExactName(String exactName, String password, String roles,
+                                                     String usernameKey) throws IOException {
+
+        provisionUser(Utils.resolveContextPlaceholders(exactName), password, roles, usernameKey);
+    }
+
+    /**
      * Provisions a scenario-owned user whose STORE NAME IS ITSELF AN EMAIL ADDRESS — {@code <unique>@<emailDomain>}
      * — rather than a bare name. Same contract and context keys as the step above; the only difference is the shape
      * of the generated name.
@@ -86,8 +111,15 @@ public class UserAccountSteps {
      * {@code MultitenantUtils.getTenantAwareUsername/getTenantDomain} and then REJECTS the call with
      * {@code 900908 Forbidden} unless that derived tenant equals the API publisher's tenant. So the credential must
      * be the doubly-qualified {@code user@emailDomain@tenantDomain} form, which is exactly what
-     * {@code <usernameKey>LoginName} carries here — and an email-form name presented WITHOUT the tenant suffix is a
-     * 403, not a 401. Legacy {@code APISecurityTestCase} exercised this with the hardcoded store names
+     * {@code <usernameKey>LoginName} carries here — and against a TENANT-deployed API an email-form name presented
+     * WITHOUT the tenant suffix is a 403, not a 401.
+     *
+     * <p>The rule is tenant-specific, verified on a live container: the doubly-qualified form is required only
+     * against a TENANT-deployed API. In the SUPER tenant a single {@code @} is already read as a super-tenant
+     * login, so the raw store name authenticates too (200). Both arcs are pinned in
+     * {@code gateway/basic_auth_email_username.feature}.
+     *
+     * <p>Legacy {@code APISecurityTestCase} exercised this with the hardcoded store names
      * {@code apisecUser2@wso2.com} / {@code apisecUser2@abc.com}; the email domain is a step parameter here so the
      * name stays uniquely generated (CLAUDE.md §4) instead of hardcoded.
      *

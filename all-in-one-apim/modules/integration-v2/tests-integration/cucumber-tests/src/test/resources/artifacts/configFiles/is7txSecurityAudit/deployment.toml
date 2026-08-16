@@ -46,7 +46,9 @@ enforce_type_header_validation = true
 # multipart field on the create call. The mock checks neither, but the product requires both to be
 # non-empty or it treats the feature as unconfigured and returns null.
 [security_audit]
-api_token = "b57973cf-b74c-4ade-921d-ece83251eceb"
-collection_id = "f73b8171-4f71-499b-891a-d34aa71f2d45"
+# Deliberately NOT UUID-shaped: a UUID-valued api_token beside a base_url is the canonical secret-scanner
+# signature, and these are inert mock values (see above — the mock validates neither).
+api_token = "mock-audit-api-token"
+collection_id = "mock-audit-collection-id"
 base_url = "http://nodebackend:3002/auditapi"
 global = true

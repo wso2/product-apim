@@ -233,10 +233,13 @@ public final class ResourceCleanup {
         // External-system resources first (independent of the APIM lists and of APIM actor/token resolution):
         // IS-side resources are swept as the IS integration actor via IS's own management APIs — an APIM actor
         // token cannot address them. See ISResourceCleanup / CLAUDE.md §14.
-        // Isolated: a Throwable escaping the IS sweep would skip every APIM delete below. Logged, not swallowed (§5).
+        // Isolated: a failure escaping the IS sweep would skip every APIM delete below. Logged, not swallowed (§5).
+        // Exception | AssertionError, NOT Throwable: that pair is what a sweep realistically throws (and is the
+        // idiom used by every other sweep in this class). Catching Throwable would also swallow an OutOfMemoryError
+        // or StackOverflowError, reporting a "successful" cleanup while the JVM is failing — those must propagate.
         try {
             ISResourceCleanup.sweep();
-        } catch (Throwable t) {
+        } catch (Exception | AssertionError t) {
             logger.warn("External IS sweep failed; IS-side resources may have leaked. Continuing with the APIM sweep "
                     + "so APIM resources are still removed.", t);
         }

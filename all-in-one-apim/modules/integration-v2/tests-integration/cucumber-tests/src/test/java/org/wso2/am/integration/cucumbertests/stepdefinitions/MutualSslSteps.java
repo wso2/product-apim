@@ -19,7 +19,6 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
-import org.wso2.am.integration.cucumbertests.utils.JwtTestUtils;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;

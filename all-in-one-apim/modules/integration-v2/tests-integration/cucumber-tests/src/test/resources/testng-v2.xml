@@ -66,6 +66,7 @@
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
         <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLInvocationRunner"/>
@@ -536,7 +537,14 @@
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="emailUserMode" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/emailUserName/deployment.toml"/>
+        <!-- Gateway invocation in this block needs the node backend; without it Basic auth reaches a SUSPENDED
+             endpoint (500) and a 200 would be unreachable (CLAUDE.md §11). -->
+        <parameter name="initBackend" value="true"/>
         <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthEmailUserNameRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationEmailUserNameRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottleEmailUserNameRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerEmailUserNameLoginRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductEmailUserNameRunner"/>
         </classes>

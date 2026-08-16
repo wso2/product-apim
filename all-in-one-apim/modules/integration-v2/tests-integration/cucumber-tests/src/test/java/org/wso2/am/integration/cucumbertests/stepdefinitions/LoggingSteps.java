@@ -26,6 +26,8 @@ import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicApimContainer;
 
@@ -80,6 +82,8 @@ import java.util.Set;
  * </ul>
  */
 public class LoggingSteps {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoggingSteps.class);
 
     /** The component list {@code api-manager.xml} declares, in the order the devops API returns them. */
     private static final List<String> CORRELATION_COMPONENTS =
@@ -161,10 +165,12 @@ public class LoggingSteps {
     }
 
     /**
-     * Waits for a correlation configuration change to reach the gateway.
+     * Waits for a configuration change to reach the gateway — correlation logging or per-API logging.
+     * Both are devops PUTs propagated the same way, so they share this step; {@code what} names which
+     * one for readability in the scenario and in the log line.
      *
      * <p>The devops PUT is acknowledged as soon as the row is written to {@code AM_CORRELATION_CONFIGS}; the
-     * running gateway is updated SEPARATELY and asynchronously, by a {@code CorrelationConfigEvent} published
+     * running gateway is updated SEPARATELY and asynchronously, by an event published
      * on the event hub. So a 200 from the PUT — and even a GET that reads the new state straight back — does
      * not yet mean the emitters have been switched.
      *
@@ -174,14 +180,12 @@ public class LoggingSteps {
      * the traffic that would produce the lines is driven ONCE, before the check — by the time a poll noticed,
      * the lines would already have been written.
      */
-    @When("I wait {int} seconds for the correlation configuration to reach the gateway")
-    public void iWaitForCorrelationConfigToPropagate(int seconds) throws InterruptedException {
-        Thread.sleep(seconds * 1000L);
-    }
+    @When("I wait {int} seconds for the {string} configuration to reach the gateway")
+    public void iWaitForConfigToPropagate(int seconds, String what) throws InterruptedException {
 
-    /** Waits for a per-API logging event to reach the gateway after the devops PUT is acknowledged. */
-    @When("I wait {int} seconds for the per-API logging configuration to reach the gateway")
-    public void iWaitForPerApiLoggingConfigToPropagate(int seconds) throws InterruptedException {
+        // Logged because this is an UNCONDITIONAL wait: without it a run sits silent for the whole window and
+        // reads as a hang in CI. The label also names WHICH propagation is being waited on.
+        logger.info("Waiting {}s for the {} configuration to reach the gateway", seconds, what);
         Thread.sleep(seconds * 1000L);
     }
 
@@ -392,8 +396,10 @@ public class LoggingSteps {
     }
 
     private String readLogFile(String fileName) {
-        return container().readContainerFile(Constants.APIM_CONTAINER_USER_HOME + "/"
-                + System.getProperty("apim.server.name") + "/repository/logs/" + fileName);
+        // Path shape owned by DynamicApimContainer alongside getContainerLog4j2Path(), so the in-container
+        // layout lives in one module; the accessor also validates apim.server.name instead of silently
+        // resolving a path containing "null".
+        return container().readContainerFile(container().getContainerLogFilePath(fileName));
     }
 
     private DynamicApimContainer container() {

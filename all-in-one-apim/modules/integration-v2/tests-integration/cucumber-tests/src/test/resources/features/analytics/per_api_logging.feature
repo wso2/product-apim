@@ -58,7 +58,7 @@ Feature: Per-API Logging Configuration
     Then The response status code should be 200
     # The API-wide entry is the one that flips; it carries no resource scoping.
     And The per-API log listing should contain API "loggingApiId" at level "FULL" for resource "null" "null"
-    When I wait 15 seconds for the per-API logging configuration to reach the gateway
+    When I wait 15 seconds for the "per-API logging" configuration to reach the gateway
 
     When I mark the current end of the server log file "api.log"
     And I invoke the API at gateway context "{{loggingApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
@@ -92,7 +92,7 @@ Feature: Per-API Logging Configuration
     # Scope FULL to GET /customers/{id} only, leaving GET /orders/{orderId} at OFF.
     When I set the log level of API "resourceLogApiId" to "full" for resource "GET" "/customers/{id}" in tenant "<tenantDomain>"
     Then The response status code should be 200
-    When I wait 15 seconds for the per-API logging configuration to reach the gateway
+    When I wait 15 seconds for the "per-API logging" configuration to reach the gateway
 
     When I retrieve the per-API log levels for tenant "<tenantDomain>" filtered to level "full"
     Then The response status code should be 200
@@ -123,7 +123,7 @@ Feature: Per-API Logging Configuration
     # The wait is load-bearing, not defensive: the sibling correlation_logging.feature records that without it the
     # next invocation still produced the full set of lines despite a 200 from the disable. Re-marking the log
     # after the wait means the assertion only ever reads lines written by the invocation below.
-    When I wait 15 seconds for the per-API logging configuration to reach the gateway
+    When I wait 15 seconds for the "per-API logging" configuration to reach the gateway
     And I mark the current end of the server log file "api.log"
     # The 200 is what makes the negative meaningful: traffic demonstrably reached the API, so an absent log line
     # is the logging being off rather than the call never happening.
