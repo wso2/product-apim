@@ -54,11 +54,7 @@
         #end
         #if($endpoint.authenticationType == "gcp" || $endpoint.authenticationType == "GCP")
 <class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2TokenInjector">
-#if($isSecureVaultEnabled)
-    <property name="serviceAccountKey" expression="wso2:vault-lookup('$endpoint.serviceAccountKey')" type="STRING"/>
-#else
     <property name="serviceAccountKey" value="$util.escapeXml($endpoint.serviceAccountKey)" type="STRING"/>
-#end
 </class>
 #if($endpoint.endpoint)
 #if($endpoint.endpoint.contains("publishers/anthropic"))
