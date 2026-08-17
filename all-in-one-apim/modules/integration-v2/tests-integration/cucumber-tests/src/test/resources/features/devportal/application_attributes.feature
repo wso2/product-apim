@@ -30,7 +30,7 @@ Feature: DevPortal Custom Application Attributes
     When I retrieve the application with id "createdAppId"
     Then The response status code should be 200
     And The response should contain "External Reference Id"
-    And The response should contain "c1237890"
+    And The value of response field "attributes['External Reference Id']" should be "c1237890"
 
     When I put the following JSON payload in context as "generateApplicationKeysPayload"
     """
@@ -84,7 +84,7 @@ Feature: DevPortal Custom Application Attributes
     Then The response status code should be 201
     And I extract response field "name" and store it as "attrAppName"
     When I retrieve the application with id "createdAppId"
-    Then The response should contain "c1237890"
+    Then The value of response field "attributes['External Reference Id']" should be "c1237890"
     When I put the following JSON payload in context as "attrUpdatePayload"
     """
     {"name":"{{attrAppName}}","throttlingPolicy":"Unlimited","description":"updated attributes","attributes":{"External Reference Id":"c1237890_updated"}}

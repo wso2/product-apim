@@ -1,0 +1,41 @@
+{
+  "name": "${UNIQUE:apisecMtlsOauth}",
+  "context": "${UNIQUE:apisecMtlsOauthCtx}",
+  "version": "1.0.0",
+  "transport": [
+    "https"
+  ],
+  "securityScheme": [
+    "mutualssl",
+    "oauth2",
+    "api_key",
+    "oauth_basic_auth_api_key_mandatory"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "description": "Mutual-SSL OPTIONAL plus application security MANDATORY - a client cert is accepted but never required, so a valid OAuth token alone authorises",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

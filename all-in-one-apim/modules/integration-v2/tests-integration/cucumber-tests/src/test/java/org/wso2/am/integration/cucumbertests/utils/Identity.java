@@ -184,6 +184,28 @@ public final class Identity {
     }
 
     /**
+     * The actor's username in the form the PRODUCT REST APIs use: a tenant user keeps its {@code user@tenant}
+     * qualification, while a SUPER-TENANT user is unqualified ({@code subscriberUser}, not
+     * {@code subscriberUser@carbon.super}). The actor beans always store the fully-qualified name (see
+     * {@code TenantUserProvisioner}), so this conversion is required whenever a username crosses into a product
+     * API as data — a username / owner query parameter, a body field, or the expected value of an assertion on a
+     * returned {@code owner}/{@code provider} field. Sending the {@code @carbon.super}-qualified form to a
+     * user-store lookup fails with "User … doesn't exist in user store" (HTTP 500), and comparing against it makes
+     * an owner assertion fail while the response is in fact correct.
+     *
+     * <p>Note this is about the username as DATA, not as a credential: token minting authenticates with the
+     * fully-qualified {@link User#getUserName()} and must keep doing so.</p>
+     */
+    public static String apiUsername(User actor) {
+        String username = actor.getUserName();
+        String superSuffix = Constants.CHAR_AT + Constants.SUPER_TENANT_DOMAIN;
+        if (username.endsWith(superSuffix)) {
+            return username.substring(0, username.length() - superSuffix.length());
+        }
+        return username;
+    }
+
+    /**
      * The acting actor's tenant domain — the actor bean's user domain, the same resolution {@link #tenantOf}
      * uses (NOT parsed from the username, which breaks for store-qualified or unqualified names).
      */

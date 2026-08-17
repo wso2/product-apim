@@ -5,12 +5,12 @@ Feature: Gateway GraphQL Subscription Query Limits
   a DIFFERENT mechanism from rate throttling: the gateway computes the query's complexity/depth score and rejects
   it if it exceeds the limit configured on the subscription policy (graphQLMaxComplexity / graphQLMaxDepth, plus
   per-field complexity values). Ports the complexity/depth cases of GraphqlSubscriptionTestCase. Each scenario
-  asserts the exact 4021/4020 error code. Single-tenant (super) — the limits are API/policy-scoped.
+  asserts the exact 4021/4020 error code. The limits are API/policy-scoped and run in both organizations.
 
   @cap:gateway @feat:graphql-invocation @rule:subscription-query-limits @type:regression @dep:admin @legacy:GraphqlSubscriptionTestCase
-  Scenario: Complexity limiting rejects an over-complex subscription (4021)
+  Scenario Outline: Complexity limiting rejects an over-complex subscription (4021) as <actor>
     Given The system is ready
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "<actor>"
     When I create a subscription throttling policy "${UNIQUE:gqlComplex3}" with max complexity 3 and max depth 8
     Then The response status code should be 201
     And I put JSON payload from file "artifacts/payloads/create_apim_graphql_subscription_api.json" in context as "gqlSubPayload"
@@ -34,13 +34,20 @@ Feature: Gateway GraphQL Subscription Query Limits
     And the "apis" resource "gqlSubApiId" should be live on the gateway, redeploying if propagation is lost
     When I have set up application with keys, subscribed to API "gqlSubApiId" with plan "{{subThrottlePolicyName}}", and obtained access token for "gqlComplexSubId"
     Then The response status code should be 200
-    # 6 fields at complexity 1 each exceeds max complexity 3 → QUERY TOO COMPLEX (4021)
-    When I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext}}/1.0.0" with query "subscription { liftStatusChange { name id status night capacity } }" using access token "generatedAccessToken" expecting error code 4021 within 90 seconds
+    # 6 fields at complexity 1 each exceeds max complexity 3 → QUERY TOO COMPLEX (4021). The frame's REASON is
+    # asserted alongside the code: the gateway multiplexes every frame rejection down one identically-shaped
+    # type:error frame, so code and message must agree (they are set from the same FrameErrorConstants pair).
+    When I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext}}/1.0.0" with query "subscription { liftStatusChange { name id status night capacity } }" using access token "generatedAccessToken" expecting error code 4021 and reason "QUERY TOO COMPLEX" within 90 seconds
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
 
   @cap:gateway @feat:graphql-invocation @rule:subscription-query-limits @type:regression @dep:admin @legacy:GraphqlSubscriptionTestCase
-  Scenario: Depth limiting rejects an over-deep subscription (4020)
+  Scenario Outline: Depth limiting rejects an over-deep subscription (4020) as <actor>
     Given The system is ready
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "<actor>"
     When I create a subscription throttling policy "${UNIQUE:gqlDepth1}" with max complexity 100 and max depth 1
     Then The response status code should be 201
     And I put JSON payload from file "artifacts/payloads/create_apim_graphql_subscription_api.json" in context as "gqlSubPayload2"
@@ -61,5 +68,11 @@ Feature: Gateway GraphQL Subscription Query Limits
     And the "apis" resource "gqlSubApiId2" should be live on the gateway, redeploying if propagation is lost
     When I have set up application with keys, subscribed to API "gqlSubApiId2" with plan "{{subThrottlePolicyName}}", and obtained access token for "gqlDepthSubId"
     Then The response status code should be 200
-    # liftStatusChange { name } is depth 2, exceeds max depth 1 → QUERY TOO DEEP (4020)
-    When I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext2}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token "generatedAccessToken" expecting error code 4020 within 90 seconds
+    # liftStatusChange { name } is depth 2, exceeds max depth 1 → QUERY TOO DEEP (4020). Reason asserted with the
+    # code for the reason given on the complexity scenario above.
+    When I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext2}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token "generatedAccessToken" expecting error code 4020 and reason "QUERY TOO DEEP" within 90 seconds
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

@@ -55,7 +55,7 @@ Feature: Publisher API Lifecycle
       | publisherUser@tenant1.com  |
 
   @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIMANAGERPublisherTestCase @legacy:APICreationForTenantsTestCase
-  Scenario Outline: A subscriber-role user cannot create an API as <actor>
+  Scenario Outline: A subscriber-role user cannot create a REST API as <actor>
     # A subscriber-only (self-signup-equivalent) user obtains a token, but it lacks the api_create scope, so
     # the Publisher API rejects the create as unauthenticated-for-this-resource (401). Proves publisher-plane
     # role enforcement in both tenants.
@@ -71,10 +71,10 @@ Feature: Publisher API Lifecycle
 
   # Create-validation matrix — ports APIM514 (missing mandatory fields), APIMANAGER5834 (invalid context) and
   # APIM519 (no auth). Built from the valid base payload with one field blanked/invalidated per row, so no
-  # per-case fixture is needed. Only the clean, deterministic rejections are ported: blank name/context/version
-  # and an invalid context all return 400; missing auth returns 401. The legacy tier/action cases are omitted
-  # (they assert a 500 server error, not a validation response) and endpoint/resources were already disabled in
-  # legacy.
+  # per-case fixture is needed. This outline carries the clean, deterministic rejections: blank name/context/version
+  # and an invalid context all return 400; missing auth returns 401. The remaining APIM514 cases — a missing
+  # endpoint configuration, no resources, and a blank tier list — are NOT clean 400s, so each gets its own
+  # scenario below that pins the product's actual answer (status AND body) rather than being omitted.
   @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase @legacy:APIMANAGER5834APICreationWithInvalidInputsTestCase @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase
   Scenario Outline: Creating an API with <case> is rejected as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
@@ -96,14 +96,102 @@ Feature: Publisher API Lifecycle
       | a malformed context | context | bad`ctx  | publisherUser               |
       | a malformed context | context | bad`ctx  | publisherUser@tenant1.com   |
 
-  # No-auth is auth-layer and tenant-agnostic (the tokenless request cannot resolve a tenant, so it always hits
-  # the super-tenant publisher endpoint) — ×1.
+  # No-auth is exercised through both publisher URL shapes. The standard endpoint reaches the authentication gate
+  # (401); the explicitly tenant-qualified path is not exposed by this management API and is therefore hidden (404).
   @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase
-  Scenario: Creating an API without authentication is rejected
-    Given The system is ready and I have valid publisher access tokens as "publisherUser"
+  Scenario Outline: Creating an API without authentication is rejected in <tenantDomain>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "noAuthApiPayload"
-    And I attempt to create an "apis" resource with payload "noAuthApiPayload" without authentication
-    Then The response status code should be 401
+    And I attempt to create an "apis" resource with payload "noAuthApiPayload" without authentication in tenant "<tenantDomain>"
+    Then The response status code should be <expectedStatus>
+
+    Examples:
+      | actor                     | tenantDomain | expectedStatus |
+      | publisherUser             | carbon.super | 401            |
+      | publisherUser@tenant1.com | tenant1.com  | 404            |
+
+  # APIM514, remaining cases (1/3) — an API created with NO endpoint configuration at all. Legacy
+  # (testCreateAnAPIThroughThePublisherRestWithoutEndpoint) had its @Test annotation and every assertion commented
+  # out, so it never ran and asserted nothing; the SCENARIO is nevertheless meaningful on the v4 REST surface, so
+  # it is implemented here and the product's actual answer is pinned, together with the resulting observable state.
+  @cap:publisher @feat:api-lifecycle @rule:create-validation @type:regression @legacy:APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase
+  Scenario Outline: Creating an API with no endpoint configuration as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "noEpApiPayload"
+    And I remove the field "endpointConfig" from the payload "noEpApiPayload"
+    And I attempt to create an "apis" resource with payload "noEpApiPayload" as "noEpApiId"
+    Then The response status code should be 201
+    # Observable state: the API exists and carries no endpoint configuration — neither endpoint is invented for it.
+    When I retrieve the "apis" resource with id "noEpApiId"
+    Then The response status code should be 200
+    And The response should not contain "production_endpoints"
+    And The response should not contain "sandbox_endpoints"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # APIM514, remaining cases (2/3) — an API created with an EMPTY resource/operation list. Legacy
+  # (testCreateAnAPIThroughThePublisherRestWithoutResources) was likewise dead code (no @Test, all assertions
+  # commented out) and drove the removed design-API surface with an empty swagger; on v4 the equivalent is an
+  # empty `operations` array. Pins the actual answer plus the resulting operation list.
+  @cap:publisher @feat:api-lifecycle @rule:create-validation @type:regression @legacy:APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase
+  Scenario Outline: Creating an API with no resources as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "noResApiPayload"
+    And I set the field "operations" to an empty array in the payload "noResApiPayload"
+    And I attempt to create an "apis" resource with payload "noResApiPayload" as "noResApiId"
+    Then The response status code should be 201
+    # Observable state: what resource set an empty operations array actually yields.
+    When I retrieve the "apis" resource with id "noResApiId"
+    Then The response status code should be 200
+    # An empty operations array yields the default resource set: /* under 5 verbs (measured, not assumed). The
+    # count is the load-bearing half — the value set alone passes if only one verb survives.
+    And The response array field "operations[*].target" should have exactly 5 entries
+    And The response field "operations[*].target" should be exactly the list "/*"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # APIM514, remaining cases (3/3) — a BLANK subscription-tier list. Legacy
+  # (testCreateAnAPIThroughThePublisherRestWithoutTierAvailability) blanked tiersCollection+tier and then asserted
+  # "either a non-empty id OR a 500", i.e. nothing, and the earlier v2 note omitted the case on the grounds that
+  # "legacy asserts a 500 rather than a validation response".
+  #
+  # VERIFIED LIVE ON 4.7.0: that premise is false today. The create is accepted and the PUBLISH is rejected with a
+  # clean 400 carrying a specific error code — 903224, "Failed to publish service to API store. No Tiers selected",
+  # naming the API's UUID. So no 500 needed enshrining here: the exact status, code and message are pinned instead,
+  # which fails in both directions — if the validation disappears the publish becomes a 200, and if the code or
+  # wording changes the assertion catches that too.
+  @cap:publisher @feat:api-lifecycle @rule:create-validation @type:negative @legacy:APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase
+  Scenario Outline: Publishing an API with a blank subscription tier list is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "noTierApiPayload"
+    And I set the field "policies" to an empty array in the payload "noTierApiPayload"
+    And I attempt to create an "apis" resource with payload "noTierApiPayload" as "noTierApiId"
+    # The CREATE is accepted — the tier list is only required to make the API subscribable.
+    Then The response status code should be 201
+    And The response field "policies[*]" should be exactly the list ""
+    # The PUBLISH is what fails, and it fails as a proper validation response naming the missing tiers.
+    When I attempt to change the lifecycle of API "noTierApiId" with action "Publish"
+    # The error body is asserted with `should contain`, not the field-value step: that step deliberately refuses
+    # to read fields off a non-2xx body (so a success-shaped assertion can never be satisfied by an error
+    # payload), which is exactly the guard that makes it unusable for pinning an error DTO. Same approach as the
+    # deny-policy negatives, which likewise pin the exact status and body the product returns.
+    Then The response status code should be 400
+    And The response should contain "\"code\":903224"
+    And The response should contain "\"message\":\"Failed to publish service to API store. No Tiers selected\""
+    And The response should contain "No Tiers selected for API with UUID"
+    # A rejected transition must not half-apply — the API stays in its pre-publish state.
+    And The lifecycle status of API "noTierApiId" should be "Created"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
 
   # Duplicate-context — creating a second API whose context matches an existing API is rejected (409). Ports the
   # same-context case of APIM18. The first API's resolved context is captured and reused for the second create,
@@ -418,6 +506,40 @@ Feature: Publisher API Lifecycle
     When I change the lifecycle of API "clcApiId" with action "Re-Publish"
     Then The lifecycle status of API "clcApiId" should be "Published"
     When I update the tenant configuration from "origTenantConf"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Linter custom rules ROUND TRIP. The publisher /linter-custom-rules read returns the tenant-config's
+  # LinterCustomRules block VERBATIM as the whole response body when no apiId/apiType is supplied
+  # (LinterCustomRulesApiServiceImpl#getLinterCustomRules). Seed the block, read it back, compare STRICTLY against
+  # the very fixture that seeded it, then restore the original tenant config. Ports
+  # GetLinterCustomRulesThroughThePublisherRestAPITestCase — whose v2 predecessor in publisher/api_config asserted
+  # only a 200 and so never exercised the behaviour under test at all.
+  #
+  # Deliberately co-located here even though it is @feat:api-config: tenant-config is a container-wide mutable
+  # resource, and the custom-lifecycle scenario above is this block's only other tenant-config mutation. A
+  # runner's scenarios run sequentially, so keeping both in this file removes the lost-update race that two
+  # concurrently-running capture/modify/restore cycles would otherwise have on the shared container.
+  @cap:publisher @feat:api-config @rule:linter-rules @type:regression @dep:admin @legacy:GetLinterCustomRulesThroughThePublisherRestAPITestCase
+  Scenario Outline: The linter custom rules returned are the ones seeded into tenant-config as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I capture the tenant configuration as "lcrOriginalConf"
+    # Registered as well as restored below: tenant-config is container-wide, so a failure between the seed and the
+    # explicit restore would otherwise leave it modified for every later scenario on this container.
+    And I register tenant configuration "lcrOriginalConf" for cleanup
+    And I capture the tenant configuration as "lcrSeededConf"
+    And I set the JSON field "LinterCustomRules" from file "artifacts/payloads/linter_custom_rules.json" in the payload "lcrSeededConf"
+    And I update the tenant configuration from "lcrSeededConf"
+    Then The response status code should be 200
+    When I retrieve the linter custom rules
+    Then The response status code should be 200
+    And The response body should equal the JSON file "artifacts/payloads/linter_custom_rules.json"
+    When I update the tenant configuration from "lcrOriginalConf"
     Then The response status code should be 200
 
     Examples:

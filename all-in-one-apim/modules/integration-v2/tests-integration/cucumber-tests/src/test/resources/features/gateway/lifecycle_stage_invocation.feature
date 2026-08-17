@@ -277,3 +277,48 @@ Feature: Gateway Lifecycle-Stage Invocation
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # The publisher INTERNAL KEY is scoped to the API it was minted for, and survives publication. Closes the
+  # untested half of APISecurityTestCase#testCreateAndDeployRevisionWithInternalKeyTesting: the lifecycle scenario
+  # above already proves an internal key invokes its own CREATED (deployed-but-unpublished) API with 200, but never
+  # that the key is API-SCOPED nor that it keeps working after the API is published. Both are asserted here on two
+  # APIs deployed side by side: A's key invokes A (200) but is REFUSED on B (403 — an authenticated-but-unauthorised
+  # credential, not a 401), B's own key invokes B (200), and after A is PUBLISHED its key still invokes it (200).
+  # Runs in both tenants (each API is addressed by its own full /t/<tenant> context).
+  @cap:gateway @feat:rest-invocation @rule:internal-key @type:regression @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: An internal API key is scoped to its own API and keeps working after publish as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ikApiA" and deployed it
+    When I retrieve the "apis" resource with id "ikApiA"
+    And I extract response field "context" and store it as "ikContextA"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ikApiB" and deployed it
+    When I retrieve the "apis" resource with id "ikApiB"
+    And I extract response field "context" and store it as "ikContextB"
+
+    When I generate an internal API key for API "ikApiA" and store it as "ikKeyA"
+    Then The response status code should be 200
+    When I generate an internal API key for API "ikApiB" and store it as "ikKeyB"
+    Then The response status code should be 200
+
+    # A's key on A (CREATED, unpublished) → 200; B's key on B → 200. Both are valid keys, which is what makes the
+    # cross-API refusal below a statement about SCOPE rather than about a bad key.
+    When I invoke the API at gateway context "{{ikContextA}}/1.0.0/customers/123/" with method "GET" using internal key "ikKeyA" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{ikContextB}}/1.0.0/customers/123/" with method "GET" using internal key "ikKeyB" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # A's key presented on B → refused with 403 (the key authenticates but is not authorised for this API).
+    When I invoke the API at gateway context "{{ikContextB}}/1.0.0/customers/123/" with method "GET" using internal key "ikKeyA" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+
+    # Publishing A does not invalidate its internal key — it still invokes A (200).
+    When I publish the "apis" resource with id "ikApiA"
+    Then The lifecycle status of API "ikApiA" should be "Published"
+    When I invoke the API at gateway context "{{ikContextA}}/1.0.0/customers/123/" with method "GET" using internal key "ikKeyA" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

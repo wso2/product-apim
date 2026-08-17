@@ -1,0 +1,53 @@
+{
+  "name": "${UNIQUE:APIMTestTwo}",
+  "context": "${UNIQUE:apiTestTwoContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3017/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3017/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "Second API aggregated into an API product (the legacy apiTwo/leasing-api analogue)",
+  "tags": [
+    "leasing"
+  ],
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "businessInformation": {
+    "businessOwner": "api18b",
+    "businessOwnerEmail": "api18b@ee.com",
+    "technicalOwner": "api18t",
+    "technicalOwnerEmail": "api18t@ww.com"
+  },
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/assets",
+      "scopes": []
+    },
+    {
+      "verb": "POST",
+      "target": "/assets",
+      "scopes": []
+    },
+    {
+      "verb": "GET",
+      "target": "/assets/{assetId}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

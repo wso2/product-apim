@@ -42,8 +42,10 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -81,15 +83,18 @@ public class PublisherBaseSteps {
         Object createdId = Utils.extractValueFromPayload(apiCreateResponse.getData(), "id");
         TestContext.set(resourceID, createdId);
         // Register for scenario teardown so a shared-server suite does not accumulate APIs across scenarios.
-        ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        ResourceCleanup.register(cleanupListFor(resourceType), createdId);
     }
 
     /**
      * Attempts to create an API without asserting success, storing the raw response as {@code httpResponse}
      * so the feature can assert the resulting status itself. Unlike {@code iCreateAnAPIWithPayloadAs} (which
-     * asserts 201 and registers the API for cleanup), this is for negative / access-control scenarios where
-     * the create is expected to be rejected (e.g. a subscriber-role user receiving 401/403) — so it neither
-     * asserts a status nor registers an id (nothing is created to clean up).
+     * asserts 201), this is for negative / access-control scenarios where the create is expected to be rejected
+     * (e.g. a subscriber-role user receiving 401/403), so it asserts no status.
+     *
+     * <p>It DOES register an unexpectedly-created resource: {@code registerIfCreated} enqueues the id only on a
+     * 2xx, so a refusal is a no-op while a create that unexpectedly succeeds is still swept (§5) instead of
+     * leaking into the shared container.</p>
      */
     @When("I attempt to create an {string} resource with payload {string}")
     public void iAttemptToCreateAnAPIWithPayload(String resourceType, String payload) throws IOException {
@@ -100,8 +105,60 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(cleanupListFor(resourceType),
+                Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
+    }
+
+    /**
+     * The teardown list for a publisher resourceType. Registering an api-product under the API list would make the
+     * sweep DELETE it via the APIs endpoint — a 404 WARN, and the product leaks. Unknown types fail loudly rather
+     * than silently registering to the wrong list.
+     */
+    private static String cleanupListFor(String resourceType) {
+        switch (resourceType) {
+            case "apis":
+                return Constants.CREATED_API_IDS;
+            case "api-products":
+                return Constants.CREATED_API_PRODUCT_IDS;
+            default:
+                throw new IllegalArgumentException("No cleanup list is wired for resource type '" + resourceType
+                        + "' — add one before creating it here, or the resource will leak (CLAUDE.md §5).");
+        }
+    }
+
+    /**
+     * Attempts to create a resource WITHOUT asserting a status, but stores and registers the created id when the
+     * create does succeed. This is the primitive for a create whose outcome is exactly what the scenario pins and
+     * which may legitimately be a 201 — e.g. the APIM514 "missing mandatory field" cases where the product
+     * ACCEPTS an omitted endpoint configuration / empty operation list. It differs from its sibling
+     * {@link #iAttemptToCreateAnAPIWithPayload} only in STORING the new id under a caller-named context key —
+     * both register an unexpectedly-created resource for the teardown sweep (§5).
+     *
+     * @param resourceType type of resource to create (e.g. {@code apis})
+     * @param payload      context key holding the create payload
+     * @param resourceID   context key to store the created id under (set only on a 2xx)
+     */
+    @When("I attempt to create an {string} resource with payload {string} as {string}")
+    public void iAttemptToCreateAnAPIWithPayloadAs(String resourceType, String payload, String resourceID)
+            throws IOException {
+
+        String jsonPayload = TestContext.resolve(payload).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType),
+                headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+            if (createdId != null) {
+                TestContext.set(resourceID, createdId);
+                ResourceCleanup.register(cleanupListFor(resourceType), createdId);
+            }
+        }
     }
 
     /**
@@ -113,8 +170,28 @@ public class PublisherBaseSteps {
 
         String jsonPayload = TestContext.resolve(payload).toString();
 
-        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), new HashMap<>(), jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // An unauthenticated create MUST be refused; if the product ever accepted one, the resource is real and
+        // would leak, so it is swept (§5). registerIfCreated is a no-op on the expected 401.
+        ResourceCleanup.registerIfCreated(cleanupListFor(resourceType),
+                Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), resourceType), new HashMap<>(),
+                        jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
+    }
+
+    /**
+     * Attempts the same unauthenticated create through an explicitly tenant-qualified publisher endpoint.
+     * The request has no token, so the {@code /t/{tenantDomain}} path is the only tenant-routing signal.
+     */
+    @When("I attempt to create an {string} resource with payload {string} without authentication in tenant {string}")
+    public void iAttemptToCreateAnAPIWithoutAuthInTenant(String resourceType, String payload, String tenantDomain)
+            throws IOException {
+
+        String jsonPayload = TestContext.resolve(payload).toString();
+        String tenantPrefix = "carbon.super".equals(tenantDomain) ? "" : "t/" + tenantDomain + "/";
+        String endpoint = Utils.getBaseUrl() + tenantPrefix + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType;
+
+        ResourceCleanup.registerIfCreated(cleanupListFor(resourceType),
+                Requests.post(endpoint, new HashMap<>(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON),
+                "id");
     }
 
     /**
@@ -324,14 +401,78 @@ public class PublisherBaseSteps {
      * Ports ChangeSubscriptionBusinessPlanForcefullyTestCase. Non-asserting.
      *
      * @param subId context key holding the subscription id
-     * @param plan  the throttling policy / business plan to set
+     * @param plan  the throttling policy / business plan to set; may be a {@code {{contextKey}}} reference to a
+     *              uniquely-named policy created by the scenario, as well as a built-in tier name
      */
     @When("I change the subscription business plan of {string} to {string}")
     public void iChangeSubscriptionBusinessPlan(String subId, String plan) throws IOException {
         String actualSubId = TestContext.resolve(subId).toString();
+        plan = Utils.resolveContextPlaceholders(plan);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Requests.post(Utils.getChangeSubscriptionBusinessPlanURL(Utils.getBaseUrl(), actualSubId, plan), headers, "", null);
+    }
+
+    /**
+     * As {@link #iChangeSubscriptionBusinessPlan}, but takes the subscription id LITERALLY instead of as a
+     * context key — the only way to exercise an id that no subscription has: an EMPTY string, or a syntactically
+     * valid but nonexistent one. The sibling step resolves its argument through {@code TestContext.resolve},
+     * which throws on an unknown key, so it cannot express these cases at all. Ports
+     * ChangeSubscriptionBusinessPlanForcefullyTestCase#testUpdateSubscriptionBusinessPlanWithInvalidSubscriptionId.
+     * Non-asserting.
+     *
+     * @param subscriptionId the literal subscription id to send (may be empty)
+     * @param plan           the throttling policy / business plan to set
+     */
+    @When("I change the subscription business plan of subscription id {string} to {string}")
+    public void iChangeSubscriptionBusinessPlanByLiteralId(String subscriptionId, String plan) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.post(Utils.getChangeSubscriptionBusinessPlanURL(Utils.getBaseUrl(), subscriptionId, plan),
+                headers, "", null);
+    }
+
+    /**
+     * Asserts that the PUBLISHER's view of a subscription carries the given business plan, by listing the API's
+     * subscriptions ({@code GET /subscriptions?apiId=}) and matching on the subscription id. This is the read
+     * that makes a successful force-change meaningful: the change-business-plan POST returning 200 says only
+     * that the request was accepted, not that the plan was written — and the publisher plane is where the
+     * legacy assertion looked. Ports the verification half of
+     * ChangeSubscriptionBusinessPlanForcefullyTestCase#testUpdateSubscriptionBusinessPlanWithValidTiers.
+     *
+     * @param subIdKey     context key holding the subscription id
+     * @param apiIdKey     context key holding the API id whose subscriptions are listed
+     * @param expectedPlan the business plan the subscription must now carry
+     */
+    @Then("The publisher subscription {string} of API {string} should have business plan {string}")
+    public void thePublisherSubscriptionShouldHaveBusinessPlan(String subIdKey, String apiIdKey,
+                                                               String expectedPlan) throws IOException {
+        String subscriptionId = TestContext.resolve(subIdKey).toString();
+        String apiId = TestContext.resolve(apiIdKey).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = Requests.get(Utils.getSubscriptions(Utils.getBaseUrl(), apiId), headers);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Failed to list publisher subscriptions of API '" + apiId + "': got "
+                        + (response == null ? "no response"
+                        : response.getResponseCode() + " / body=" + response.getData()));
+
+        JSONArray subscriptions = new JSONObject(response.getData()).getJSONArray("list");
+        String actualPlan = null;
+        for (int i = 0; i < subscriptions.length(); i++) {
+            JSONObject subscription = subscriptions.getJSONObject(i);
+            if (subscriptionId.equals(subscription.optString("subscriptionId"))) {
+                actualPlan = subscription.optString("throttlingPolicy");
+                break;
+            }
+        }
+        Assert.assertNotNull(actualPlan, "Subscription '" + subscriptionId + "' is not in the publisher's "
+                + "subscription list for API '" + apiId + "'. Body: " + response.getData());
+        Assert.assertEquals(actualPlan, expectedPlan,
+                "Publisher subscription '" + subscriptionId + "' business plan mismatch. Body: "
+                        + response.getData());
     }
 
     /**
@@ -433,7 +574,7 @@ public class PublisherBaseSteps {
                         return new HealGate.Fatal("lifecycle-state read returned " + code
                                 + " (already past the client's transient 900967 retry): " + lc.getData());
                     }
-                    if (code != 200 || lc.getData() == null || lc.getData().isEmpty()) {
+                    if (code != 200 || lc.getData() == null || lc.getData().isBlank()) {
                         return new HealGate.NotReady("HTTP " + code + " from lifecycle-state");
                     }
                     String state = new JSONObject(lc.getData()).optString("state", null);
@@ -512,7 +653,7 @@ public class PublisherBaseSteps {
             HttpResponse response = SimpleHTTPClient.getInstance()
                     .doGet(Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), apiId), headers);
             if (response != null && response.getResponseCode() == 200
-                    && response.getData() != null && !response.getData().isEmpty()) {
+                    && response.getData() != null && !response.getData().isBlank()) {
                 return new JSONObject(response.getData()).optString("state", null);
             }
         } catch (IOException ignored) {
@@ -657,7 +798,7 @@ public class PublisherBaseSteps {
                 Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId),
                 Identity.publisherHeaders());
         Assert.assertTrue(api != null && api.getResponseCode() == 200 && api.getData() != null
-                        && !api.getData().isEmpty(),
+                        && !api.getData().isBlank(),
                 "Could not read " + resourceType + " " + actualResourceId + " to resolve its gateway artifact: got="
                         + (api == null ? "null" : api.getResponseCode() + "/" + api.getData()));
         JSONObject dto = new JSONObject(api.getData());
@@ -680,7 +821,7 @@ public class PublisherBaseSteps {
                         return new HealGate.NotReady("no response from the gateway artifact endpoint");
                     }
                     int code = r.getResponseCode();
-                    if (code == 200 && r.getData() != null && !r.getData().isEmpty()) {
+                    if (code == 200 && r.getData() != null && !r.getData().isBlank()) {
                         return new HealGate.Ready();
                     }
                     // 401/403 can never become a 200, and any 5xx here already survived the client's
@@ -755,7 +896,7 @@ public class PublisherBaseSteps {
         // Guard before parsing — a cleared/failed list retrieval must fail clearly, not as an NPE/JSONException.
         // Deliberately NOT retried: an absent response means the feature never ran the retrieve step, which is an
         // authoring error that must fail fast rather than be reported as a propagation timeout (§7).
-        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
                 "No API-list response with a body captured to search for API '" + actualApiId + "' in");
 
         if (listContainsApiId(response, actualApiId)) {
@@ -783,7 +924,7 @@ public class PublisherBaseSteps {
      */
     private static boolean listContainsApiId(HttpResponse response, String apiId) {
         if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
-                || response.getData() == null || response.getData().isEmpty()) {
+                || response.getData() == null || response.getData().isBlank()) {
             return false;
         }
         try {
@@ -871,7 +1012,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.get(Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "lifecycle-state fetch failed for api=" + actualApiId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONArray transitions = new JSONObject(response.getData()).optJSONArray("availableTransitions");
@@ -903,7 +1044,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.get(Utils.getAPILifecycleHistoryURL(Utils.getBaseUrl(), actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "lifecycle-history fetch failed for api=" + actualApiId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
@@ -1078,28 +1219,30 @@ public class PublisherBaseSteps {
         Object newVersionId = Utils.extractValueFromPayload(apiNewVersionResponse.getData(), "id");
         TestContext.set(newVersionID, newVersionId);
         // Register for scenario teardown so the version copy is cleaned up alongside the base API.
-        ResourceCleanup.register(Constants.CREATED_API_IDS, newVersionId);
+        ResourceCleanup.register(cleanupListFor(resourceType), newVersionId);
     }
 
     /**
      * Attempts to create a new version without asserting success, storing the raw response as
      * {@code httpResponse} for the feature to assert. For negative / access-control scenarios where the
      * version-create is expected to be rejected (e.g. a subscriber-role token receiving 401): unlike the
-     * positive step it neither extracts an id (the error body has none) nor registers anything for cleanup.
+     * positive step it extracts no id (the error body has none), but a new version is a top-level resource, so
+     * an unexpectedly-created one IS registered for teardown (§5) — a no-op on the expected rejection.
      */
     @When("I attempt to create a new version {string} of {string} resource {string} with default version {string}")
     public void iAttemptToCreateANewVersionOfAPI(String newVersion, String resourceType, String resourceID,
                                                  String isDefault) throws IOException {
 
         String actualResourceID = TestContext.resolve(resourceID).toString();
-        boolean defaultVersion = isDefault != null && !isDefault.isEmpty() && Boolean.parseBoolean(isDefault);
+        boolean defaultVersion = isDefault != null && !isDefault.isBlank() && Boolean.parseBoolean(isDefault);
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getNewAPIVersionURL(Utils.getBaseUrl(), resourceType, newVersion, defaultVersion,
-                actualResourceID), headers, null, null);
+        ResourceCleanup.registerIfCreated(cleanupListFor(resourceType),
+                Requests.post(Utils.getNewAPIVersionURL(Utils.getBaseUrl(), resourceType, newVersion,
+                        defaultVersion, actualResourceID), headers, null, null), "id");
     }
 
     /**
@@ -1303,6 +1446,25 @@ public class PublisherBaseSteps {
 
         Requests.postMultipart(
                 Utils.getAPIDocumentContent(Utils.getBaseUrl(), actualApiId, docId), headers, files, new HashMap<>());
+    }
+
+    /**
+     * Requests publisher document content with the API id and document id taken as LITERALS — deliberately not
+     * resolved through {@link TestContext}, because the whole point is to send an injected/tampered value that is
+     * not a real id (e.g. {@code ;alert(1)}). Ports DocAPIParameterTamperingTest: the endpoint must reject the
+     * tampered path rather than reflecting it back or leaking a stack trace. Non-asserting; the feature pins the
+     * exact status and the absence of any stack trace in the body.
+     *
+     * @param tamperedApiId the literal value to place in the {@code apiId} path segment
+     * @param documentId    the literal value to place in the {@code documentId} path segment
+     */
+    @When("I attempt to retrieve publisher document content with tampered API id {string} and document id {string}")
+    public void iAttemptToRetrieveTamperedDocumentContent(String tamperedApiId, String documentId)
+            throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getAPIDocumentContent(Utils.getBaseUrl(), tamperedApiId, documentId), headers);
     }
 
     // Helper to parse the values correctly for update document steps
@@ -1599,7 +1761,10 @@ public class PublisherBaseSteps {
      * Attempts to create a shared scope without asserting success, storing the raw response as
      * {@code httpResponse} for the feature to assert. For negative / access-control scenarios where the
      * create is expected to be rejected (e.g. a subscriber-role token receiving 401): unlike the positive
-     * step it neither extracts an id (the error body has none) nor registers anything for cleanup.
+     * step it asserts no status and stores no id under a caller-named key.
+     *
+     * <p>An unexpectedly-created scope IS still registered — {@code registerIfCreated} enqueues the id only on a
+     * 2xx, so a refusal is a no-op while a create that unexpectedly succeeds is swept rather than leaked (§5).</p>
      */
     @When("I attempt to create a shared scope as {string}")
     public void iAttemptToCreateASharedScopeAs(String scopeName) throws IOException {
@@ -1618,8 +1783,10 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_SHARED_SCOPE_IDS,
+                Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
     }
 
     /**
@@ -1661,7 +1828,7 @@ public class PublisherBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing/mutating — otherwise new JSONObject(null/"") throws
         // an opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch shared scope '" + scopeId + "' before update: expected a 2xx response with a body, got "
                         + (current == null ? "no response" : current.getResponseCode() + " / body="
                         + current.getData()));
@@ -1690,7 +1857,7 @@ public class PublisherBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Failed to list shared scopes while searching for '" + scopeName + "': expected a 2xx response with a "
                         + "body, got " + (response == null ? "no response" : response.getResponseCode() + " / body="
                         + response.getData()));
@@ -1760,6 +1927,41 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * NON-ASSERTING counterpart of {@link #iCreateAGraphQLAPIWithSchemaFileAndAdditionalPropertiesAs} — imports a
+     * GraphQL schema and publishes the raw response so the FEATURE asserts the status. The positive step above
+     * asserts 201 internally and so cannot express a rejection (§12); this is the {@code I attempt to …} variant
+     * the GraphQL schema-import negatives need (e.g. a malformed context, or a subscriber lacking the scope).
+     *
+     * <p>Callers expect a refusal, but an UNEXPECTED success still creates a real API, so the id is registered for
+     * teardown (§5). Without it a regression that started accepting these payloads would leak one API per run into
+     * the shared container, where the residue collides on duplicate names and fails unrelated scenarios.</p>
+     *
+     * @param schemaFilePath          classpath path of the GraphQL schema to import
+     * @param additionalPropertiesKey context key holding the additionalProperties JSON
+     */
+    @When("I attempt to create a GraphQL API with schema file {string} and additional properties {string}")
+    public void iAttemptToCreateAGraphQLAPIWithSchemaFile(String schemaFilePath, String additionalPropertiesKey)
+            throws IOException {
+
+        File schemaFile = Utils.classpathToTempFile(schemaFilePath, "graphql-schema", ".graphql");
+        String additionalProperties = TestContext.resolve(additionalPropertiesKey).toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("type", "GRAPHQL");
+        formFields.put("additionalProperties", additionalProperties);
+
+        Map<String, File> files = new HashMap<>();
+        files.put("file", schemaFile);
+
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_API_IDS,
+                Requests.postMultipart(Utils.getGraphQLSchema(Utils.getBaseUrl()), headers, files, formFields), "id");
+    }
+
+    /**
      * Creates a GraphQL API from an ENDPOINT URL (import-graphql-schema with a {@code url} form field instead of a
      * schema file) — the gateway derives the schema from the URL (introspection of a live endpoint, or fetching an
      * SDL served at that URL). Ports GraphqlTestCase's "create using endpoint" / SDL-URL paths. Non-asserting on the
@@ -1812,7 +2014,7 @@ public class PublisherBaseSteps {
         // Confirm the validate call succeeded with a body BEFORE parsing — otherwise the graphQLInfo drill-down
         // throws an opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Failed to validate the GraphQL schema from '" + url + "': expected a 2xx response with a body, got "
                         + (response == null ? "no response" : response.getResponseCode() + " / body=" + response.getData()));
         String sdl = new JSONObject(response.getData())
@@ -1848,6 +2050,117 @@ public class PublisherBaseSteps {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             TestContext.set(apiID, createdId);
             ResourceCleanup.register(Constants.CREATED_API_IDS, createdId);
+        }
+    }
+
+    /**
+     * Asserts an API appears EXACTLY ONCE, by id, in the PUBLISHER or the DEVPORTAL listing — i.e. that publishing
+     * actually made the API discoverable on that plane, which a create/publish status code does not show. Written
+     * as ONE step over a {@code plane} argument rather than two near-duplicates: the only differences are the
+     * collection URL and which actor's token reads it.
+     *
+     * <p>Reads the UNFILTERED paged collection, not the {@code ?query=<name>} search: that search form goes through
+     * the artifact index and answers {@code total:0} for a just-published API, so a membership check written
+     * against it would assert nothing (the same trap {@code ApiProductSteps} documents for products). Visibility is
+     * eventually consistent, so the listing is polled to the shared propagation ceiling; the count is asserted
+     * AFTER the loop so a persistently missing (or DUPLICATED) API fails this step rather than a later one.</p>
+     *
+     * @param plane    {@code publisher} or {@code devportal}
+     * @param apiIdKey context key holding the API id
+     */
+    @Then("The {string} listing should report API {string} exactly once")
+    public void theListingShouldReportApiExactlyOnce(String plane, String apiIdKey) throws Exception {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        boolean publisherPlane = "publisher".equalsIgnoreCase(plane);
+        if (publisherPlane) {
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        } else if ("devportal".equalsIgnoreCase(plane)) {
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        } else {
+            throw new IllegalArgumentException("Unknown listing plane '" + plane
+                    + "'; expected \"publisher\" or \"devportal\"");
+        }
+
+        // EVERY page, not just the first: with more APIs in the tenant than one page holds, a single-page read
+        // reports 0 for an API sitting later in the collection and the retry then times out as a false failure.
+        // The count is only meaningful across the whole collection, which is also what "exactly once" claims.
+        Integer occurrences = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> countAcrossAllPages(publisherPlane, headers, apiId),
+                total -> total != null && total == 1);
+        Assert.assertNotNull(occurrences, "The " + plane + " API listing could not be read at all");
+        Assert.assertEquals(occurrences.intValue(), 1,
+                "API " + apiId + " should appear exactly once across the whole " + plane + " listing, but was "
+                        + "found " + occurrences + " time(s)");
+    }
+
+    /**
+     * Walks the whole listing, page by page, and totals the entries carrying {@code apiId}. Returns null when a page
+     * is unreadable so the caller's retry keeps waiting. Paging stops when a page returns fewer entries than the page
+     * size, or once {@code pagination.total} has been consumed — the shape the listing actually returns
+     * ({@code "pagination":{"offset":N,"limit":N,"total":N,...}}), verified against a captured body.
+     */
+    private static Integer countAcrossAllPages(boolean publisherPlane, Map<String, String> headers, String apiId)
+            throws IOException {
+        int found = 0;
+        int offset = 0;
+        while (true) {
+            String pageUrl = publisherPlane
+                    ? Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), null, API_LISTING_PAGE_SIZE, offset)
+                    : Utils.getDevportalApiListURL(Utils.getBaseUrl(), API_LISTING_PAGE_SIZE, offset);
+            HttpResponse page = Requests.get(pageUrl, headers);
+            if (page == null || page.getResponseCode() != 200
+                    || page.getData() == null || page.getData().isBlank()) {
+                return null;
+            }
+            found += countApiOccurrences(page, apiId);
+            int onThisPage;
+            int total;
+            try {
+                JSONObject body = new JSONObject(page.getData());
+                JSONArray list = body.optJSONArray("list");
+                onThisPage = list == null ? 0 : list.length();
+                JSONObject pagination = body.optJSONObject("pagination");
+                total = pagination == null ? -1 : pagination.optInt("total", -1);
+            } catch (org.json.JSONException malformedDuringWarmup) {
+                return null;
+            }
+            offset += onThisPage;
+            // Last page: short page, an empty page, or the reported total consumed. The offset guard also stops a
+            // listing whose total never shrinks from spinning forever.
+            if (onThisPage == 0 || onThisPage < API_LISTING_PAGE_SIZE || (total >= 0 && offset >= total)) {
+                return found;
+            }
+        }
+    }
+
+    /** Page size for the unfiltered API listings read by {@link #theListingShouldReportApiExactlyOnce}. */
+    private static final int API_LISTING_PAGE_SIZE = 200;
+
+    /**
+     * How many entries of a {@code {"list":[…]}} API listing carry {@code apiId} as their {@code id}. Returns 0 for
+     * a non-2xx/unparseable body so the caller's poll simply keeps waiting instead of throwing mid-loop.
+     */
+    private static int countApiOccurrences(HttpResponse response, String apiId) {
+        if (response == null || response.getResponseCode() != 200
+                || response.getData() == null || response.getData().isBlank()) {
+            return 0;
+        }
+        try {
+            JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+            if (list == null) {
+                return 0;
+            }
+            int found = 0;
+            for (int i = 0; i < list.length(); i++) {
+                if (apiId.equals(list.getJSONObject(i).optString("id"))) {
+                    found++;
+                }
+            }
+            return found;
+        } catch (JSONException notJsonYet) {
+            return 0;
         }
     }
 
@@ -1889,6 +2202,48 @@ public class PublisherBaseSteps {
 
         Requests.postMultipart(Utils.getValidateGraphQLSchemaURL(Utils.getBaseUrl()), headers,
                 files, new HashMap<>());
+    }
+
+    /**
+     * Asserts the {@code schemaDefinition} of the current response equals the WHOLE uploaded GraphQL schema file —
+     * the assertion legacy {@code GraphqlTestCase.testRetrieveSchemaDefinitionAtPublisher} actually made, and which
+     * a {@code The response should contain "languages"} substring check cannot make: a substring passes even if the
+     * server truncated, reordered or dropped every other type in the schema.
+     *
+     * <p>Compared EXACTLY — measured: the server stores and returns the SDL byte-for-byte, so it does not
+     * re-indent. A whitespace-normalising compare would additionally accept a schema collapsed onto one line.</p>
+     *
+     * @param schemaFilePath classpath path of the schema that was uploaded
+     */
+    @Then("The GraphQL schema definition in the response should equal the schema file {string}")
+    public void theGraphQLSchemaShouldEqualFile(String schemaFilePath) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body carrying the GraphQL schema, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object retrieved = Utils.extractValueFromPayload(response.getData(), "schemaDefinition");
+        Assert.assertNotNull(retrieved, "Response carries no 'schemaDefinition' field: " + response.getData());
+        Assert.assertEquals(String.valueOf(retrieved), Utils.readClasspathResource(schemaFilePath),
+                "The retrieved GraphQL schema does not equal the uploaded definition '" + schemaFilePath + "'.");
+    }
+
+    /**
+     * Retrieves a single shared scope by id (GET /scopes/{id}), so the feature can assert the scope's stored
+     * fields — name, displayName and the role {@code bindings}. The by-NAME step above publishes the scope LIST
+     * response, in which a bindings assertion could be satisfied by a DIFFERENT scope's bindings; this one puts
+     * exactly one scope's DTO under assertion.
+     *
+     * @param scopeIdKey context key holding the scope id
+     */
+    @When("I retrieve the shared scope with id {string}")
+    public void iRetrieveSharedScopeById(String scopeIdKey) throws IOException {
+
+        String scopeId = TestContext.resolve(scopeIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getAPIScopesById(Utils.getBaseUrl(), scopeId), headers);
     }
 
     /**
@@ -1977,7 +2332,7 @@ public class PublisherBaseSteps {
         // Extract and store the policy ID from response if available
         if (policyId != null && policyCreateResponse.getResponseCode() == 201) {
             String responseData = policyCreateResponse.getData();
-            if (responseData != null && !responseData.isEmpty()) {
+            if (responseData != null && !responseData.isBlank()) {
                 try {
                     JSONObject responseJson = new JSONObject(responseData);
                     if (responseJson.has("id")) {
@@ -2077,7 +2432,7 @@ public class PublisherBaseSteps {
         // A successful import (201) returns the recreated policy JSON carrying its new id; store and register it so
         // the re-imported policy is swept by teardown.
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                && response.getData() != null && !response.getData().isEmpty()) {
+                && response.getData() != null && !response.getData().isBlank()) {
             Object id = Utils.extractValueFromPayload(response.getData(), "id");
             if (id != null) {
                 if (policyIdKey != null) {
@@ -2100,19 +2455,16 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         String url = Utils.getApiExportURL(Utils.getBaseUrl(), actualApiId, "JSON");
 
-        // TEMPORARY MITIGATION for a known PRODUCT defect — remove this retry once the product is fixed.
-        // Root cause (carbon-apimgt, NOT the test): concurrent exports of the same API by the same user collide
+        // Retries the export until the archive is complete. Concurrent exports of the same API by the same user collide
         // in a shared, non-unique temp directory. ExportUtils/CommonUtil.archiveDirectory keys the working dir
         // only on <user>-<apiName>-<version> (not per-export) and deletes it after zipping, so when the Governance
         // compliance evaluator materialises a just-created API at the same time as this export, one empties the dir
         // while the other is still zipping. The export then returns a 200 zip MISSING its project definition
         // (api.yaml/api.json), which later fails at import with the confusing 900909 "cannot find the project
-        // definition". Same family as the WS tenant-flow leak and the RemoteServerLoggerData.getUsername() NPE —
-        // real product bugs the v2 suite surfaced; the durable fix is a unique-per-export temp dir in the product.
-        // Until that lands, re-export until the archive is COMPLETE so the intermittency self-heals and a genuine
-        // never-completes failure surfaces here (clear message) instead of downstream as the misleading 900909.
-        // TODO(remove-on-product-fix): delete this loop and go back to a single export once carbon-apimgt makes the
-        // export temp directory unique per export. Tracked in the export-race root-cause backlog item.
+        // definition". Re-exporting until the archive is COMPLETE makes the intermittency self-heal, so a
+        // genuine never-completes failure surfaces here with a clear message instead of downstream as 900909.
+        // TODO(cleanup): drop this retry and go back to a single export once concurrent exports of the same API
+        // no longer share a temp directory. The retry is a test-side accommodation, not the desired shape.
         long pollStart = System.currentTimeMillis();
         long deadline = pollStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         SimpleHTTPClient.DownloadResult result = null;
@@ -2218,7 +2570,26 @@ public class PublisherBaseSteps {
      */
     @Then("The provider of API {string} should match actor {string}")
     public void theProviderShouldMatchActor(String apiId, String actorRef) throws IOException {
-        String actualApiId = TestContext.resolve(apiId).toString();
+        theProviderOfResourceShouldMatchActor("apis", apiId, actorRef);
+    }
+
+    /**
+     * As {@link #theProviderShouldMatchActor}, but for ANY provider-owning publisher resource — today
+     * {@code apis} and {@code api-products}. An API PRODUCT carries the same {@code provider} field and the same
+     * super-tenant suffix rule, so the assertion is one body rather than two near-twins.
+     *
+     * <p>Load-bearing for the email-as-username dimension: it is the assertion that proves an email-form
+     * username round-trips as a stored PROVIDER, not merely that the create returned 201. A 201 alone would
+     * still pass if the product were attributed to a mangled or truncated principal.
+     *
+     * @param resourceType publisher resource collection ({@code apis} / {@code api-products})
+     * @param idKey        context key holding the resource id
+     * @param actorRef     actor whose full username the provider must equal
+     */
+    @Then("The provider of {string} resource {string} should match actor {string}")
+    public void theProviderOfResourceShouldMatchActor(String resourceType, String idKey, String actorRef)
+            throws IOException {
+        String actualApiId = TestContext.resolve(idKey).toString();
         // The publisher API's provider field carries a tenant user's full username (e.g. admin@tenant1.com) but
         // strips the carbon.super suffix for a super-tenant user (e.g. ppImporter, not ppImporter@carbon.super).
         String expectedProvider = Identity.resolveActor(actorRef).getUserName();
@@ -2228,14 +2599,15 @@ public class PublisherBaseSteps {
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse response = Requests.get(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
+        HttpResponse response = Requests.get(
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
-                "API fetch failed for api=" + actualApiId + " got="
+                        && response.getData() != null && !response.getData().isBlank(),
+                resourceType + " fetch failed for id=" + actualApiId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         String actualProvider = new JSONObject(response.getData()).getString("provider");
         Assert.assertEquals(actualProvider, expectedProvider,
-                "API provider mismatch for api=" + actualApiId);
+                resourceType + " provider mismatch for id=" + actualApiId);
     }
 
     /**
@@ -2261,6 +2633,9 @@ public class PublisherBaseSteps {
         String sandboxPassword = endpointSecurity.getJSONObject("sandbox").optString("password", "");
         // Assert the password was stripped WITHOUT echoing the value — a non-empty value here is a real backend
         // credential and must not be printed into CI output (the very leak this test guards against).
+        // isEmpty, NOT isBlank: the claim is that the exporter STRIPPED the field, and stripping yields "".
+        // Any surviving content — including " " or "\n" — means it did not strip, so tolerating whitespace
+        // would tolerate the one outcome this assertion exists to catch. Do not sweep this to isBlank.
         Assert.assertTrue(productionPassword.isEmpty(),
                 "Production endpoint password was exported in plain text (expected empty)");
         Assert.assertTrue(sandboxPassword.isEmpty(),
@@ -2515,7 +2890,7 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.get(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "API fetch failed for api=" + actualApiId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONObject api = new JSONObject(response.getData());
@@ -2563,7 +2938,7 @@ public class PublisherBaseSteps {
     private JSONObject resolveCommonPolicyByName(String policyName, Map<String, String> headers) throws IOException {
         HttpResponse listResp = SimpleHTTPClient.getInstance().doGet(Utils.getCommonPolicy(Utils.getBaseUrl()), headers);
         Assert.assertTrue(listResp != null && listResp.getResponseCode() >= 200 && listResp.getResponseCode() < 300
-                        && listResp.getData() != null && !listResp.getData().isEmpty(),
+                        && listResp.getData() != null && !listResp.getData().isBlank(),
                 "Failed to list common policies while resolving '" + policyName + "': got "
                         + (listResp == null ? "no response" : listResp.getResponseCode() + " / " + listResp.getData()));
         JSONArray policies = new JSONObject(listResp.getData()).optJSONArray("list");
@@ -2604,7 +2979,7 @@ public class PublisherBaseSteps {
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' before attaching operation policy: got "
                         + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
@@ -2647,7 +3022,7 @@ public class PublisherBaseSteps {
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() == 200
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' for clone md5 check: got "
                         + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
@@ -2660,13 +3035,13 @@ public class PublisherBaseSteps {
         HttpResponse commonResp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getCommonPolicyById(Utils.getBaseUrl(), commonPolicyId), headers);
         Assert.assertTrue(commonResp != null && commonResp.getResponseCode() == 200
-                        && commonResp.getData() != null && !commonResp.getData().isEmpty(),
+                        && commonResp.getData() != null && !commonResp.getData().isBlank(),
                 "Failed to fetch common policy '" + commonPolicyId + "': got "
                         + (commonResp == null ? "no response" : commonResp.getResponseCode() + " / " + commonResp.getData()));
         HttpResponse clonedResp = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getAPISpecificPolicyById(Utils.getBaseUrl(), actualApiId, clonedPolicyId), headers);
         Assert.assertTrue(clonedResp != null && clonedResp.getResponseCode() == 200
-                        && clonedResp.getData() != null && !clonedResp.getData().isEmpty(),
+                        && clonedResp.getData() != null && !clonedResp.getData().isBlank(),
                 "Failed to fetch API-specific clone '" + clonedPolicyId + "': got "
                         + (clonedResp == null ? "no response" : clonedResp.getResponseCode() + " / " + clonedResp.getData()));
         String commonMd5 = new JSONObject(commonResp.getData()).getString("md5");
@@ -2757,7 +3132,7 @@ public class PublisherBaseSteps {
                 "Malformed common operation policy import status mismatch (body=" + response.getData() + ")");
         // If the server unexpectedly created a policy, register it so teardown removes it (defensive).
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                && response.getData() != null && !response.getData().isEmpty()) {
+                && response.getData() != null && !response.getData().isBlank()) {
             Object id = Utils.extractValueFromPayload(response.getData(), "id");
             if (id != null) {
                 ResourceCleanup.register(Constants.CREATED_OPERATION_POLICY_IDS, id);
@@ -2787,7 +3162,7 @@ public class PublisherBaseSteps {
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' before updating operation policy parameters: got "
                         + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
         JSONObject api = new JSONObject(getApi.getData());
@@ -2824,7 +3199,7 @@ public class PublisherBaseSteps {
         HttpResponse getApi = SimpleHTTPClient.getInstance()
                 .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers);
         Assert.assertTrue(getApi != null && getApi.getResponseCode() == 200
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' for secret-preservation check: got "
                         + (getApi == null ? "no response" : getApi.getResponseCode() + " / " + getApi.getData()));
         JSONObject parameters = new JSONObject(getApi.getData()).getJSONArray("operations").getJSONObject(opIndex)
@@ -3057,6 +3432,57 @@ public class PublisherBaseSteps {
                 Utils.getSwaggerURL(Utils.getBaseUrl(), resourceType, actualId), headers, new HashMap<>(), formFields);
     }
 
+    /**
+     * Flips one operation's {@code x-auth-type} IN THE OPENAPI DEFINITION and PUTs the definition back
+     * (PUT /apis/{id}/swagger) — the SWAGGER route to changing a resource's authentication type, as opposed to
+     * setting {@code authType} on the API's {@code operations} array.
+     *
+     * <p>The two routes are different product surfaces and only this one proves the definition→operations
+     * direction: APIM re-derives the API's URI templates from the uploaded definition, so an {@code x-auth-type} of
+     * {@code None} here must land as {@code authType "None"} on the operation and then reach the gateway. Legacy
+     * {@code DisableSecurityAndTryOutRESTResourceWithElkAnalyticsEnabledTestCase#testTurnOffSecurityAndInvokeGETResource}
+     * drove exactly this by PUTting a whole hand-written swagger; this step instead reads the API's CURRENT
+     * definition and mutates the one extension, so it cannot silently overwrite unrelated parts of the definition
+     * (endpoints, security schemes, other paths) or drift when the generated definition changes shape.
+     *
+     * <p>The GET is an intermediate read consumed locally (CLAUDE.md §7) and is guarded before parsing; the PUT is
+     * the response under test, published through {@code Requests.putMultipart} for the feature to assert.
+     *
+     * @param authType    the {@code x-auth-type} value to set (e.g. {@code None})
+     * @param path        the OpenAPI path to mutate (e.g. {@code /customers/{id}})
+     * @param verb        the HTTP verb under that path (case-insensitive; lower-cased for the OAS key)
+     * @param resourceId  context key holding the API id
+     */
+    @When("I set x-auth-type {string} for path {string} verb {string} in the swagger of API {string}")
+    public void iSetSwaggerAuthType(String authType, String path, String verb, String resourceId) throws IOException {
+
+        String actualId = TestContext.resolve(resourceId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String swaggerUrl = Utils.getSwaggerURL(Utils.getBaseUrl(), "apis", actualId);
+
+        HttpResponse current = SimpleHTTPClient.getInstance().doGet(swaggerUrl, headers);
+        Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
+                        && current.getData() != null && !current.getData().isBlank(),
+                "could not read the swagger of API " + actualId + " before setting x-auth-type: got="
+                        + (current == null ? "null" : current.getResponseCode() + "/" + current.getData()));
+
+        JSONObject definition = new JSONObject(current.getData());
+        JSONObject paths = definition.optJSONObject("paths");
+        Assert.assertNotNull(paths, "swagger of API " + actualId + " has no 'paths' object: " + current.getData());
+        JSONObject pathItem = paths.optJSONObject(path);
+        Assert.assertNotNull(pathItem, "swagger of API " + actualId + " has no path '" + path + "'; paths present: "
+                + paths.keySet());
+        JSONObject operation = pathItem.optJSONObject(verb.toLowerCase());
+        Assert.assertNotNull(operation, "swagger of API " + actualId + " has no '" + verb + "' under path '" + path
+                + "'; verbs present: " + pathItem.keySet());
+        operation.put("x-auth-type", authType);
+
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("apiDefinition", definition.toString());
+        Requests.putMultipart(swaggerUrl, headers, new HashMap<>(), formFields);
+    }
+
     /** Retrieves the publisher linter custom rules. */
     @When("I retrieve the linter custom rules")
     public void iRetrieveLinterCustomRules() throws IOException {
@@ -3116,6 +3542,26 @@ public class PublisherBaseSteps {
         Requests.get(Utils.getPublisherThrottlingPoliciesURL(Utils.getBaseUrl(), policyLevel), headers);
     }
 
+    /**
+     * Retrieves the STREAMING subscription throttling policies (GET /throttling-policies/streaming/subscription).
+     *
+     * <p>This endpoint IS the event-count filter: {@code ThrottlingPoliciesApiServiceImpl
+     * #getSubscriptionThrottlingPolicies} lists the subscription-level policies and keeps only those whose default
+     * quota policy type is {@code eventCount}. It therefore cannot be reached through the
+     * {@code /throttling-policies/{policyLevel}} step above, whose path parameter accepts only
+     * {@code subscription}/{@code api} and applies no quota filtering. (Legacy reached it via
+     * {@code RestAPIPublisherImpl#getSubscriptionPolicies(tierQuotaTypes)}, which DISCARDS its argument and calls
+     * the same unparameterised operation — so the legacy "quotaType=eventCount" was never on the wire at all;
+     * the filtering has always been server-side.)</p>
+     */
+    @When("I retrieve the publisher streaming subscription throttling policies")
+    public void iRetrieveStreamingSubscriptionThrottlingPolicies() throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getPublisherThrottlingPoliciesURL(Utils.getBaseUrl(), "streaming/subscription"), headers);
+    }
+
     /** Retrieves an API's OpenAPI definition (GET /apis/{id}/swagger). */
     @When("I retrieve the swagger of {string} resource {string}")
     public void iRetrieveSwagger(String resourceType, String resourceId) throws IOException {
@@ -3170,23 +3616,47 @@ public class PublisherBaseSteps {
         importOpenApiDefinition(filepath, additionalData, resourceId);
     }
 
+    /**
+     * Imports an API from an OpenAPI definition already CAPTURED IN CONTEXT rather than read from a classpath
+     * fixture, sending it through the {@code inlineAPIDefinition} form field of {@code POST /apis/import-openapi}
+     * (the same wire shape the legacy {@code importOASDefinitionWithInlineContent} used). Non-asserting; on a 2xx
+     * the id is stored under {@code resourceId} and registered for teardown, exactly as the file-based variant.
+     *
+     * <p>This is a different wire shape, not a convenience wrapper: the file variant sends the definition as a
+     * binary {@code file} part, which cannot carry a definition the test only obtains at runtime. Its consumer is
+     * the AI-API arc, where the definition must be the one the shipped AI service provider serves from
+     * {@code /ai-service-providers/{id}/api-definition} — copying that 300 KB document into a fixture would make
+     * every assertion about it a property of the copy.</p>
+     *
+     * @param definitionKey  context key holding the OpenAPI definition text (JSON or YAML)
+     * @param additionalData classpath path to the additional-properties JSON ({@code ${UNIQUE}} resolved)
+     * @param resourceId     context key to store the created API id under (on success)
+     */
+    @When("I import openapi definition captured as {string} with additional properties {string} as {string}")
+    public void iImportOpenApiFromContextAsResource(String definitionKey, String additionalData, String resourceId)
+            throws IOException {
+
+        String definition = TestContext.resolve(definitionKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("inlineAPIDefinition", definition);
+        formFields.put("additionalProperties", loadAdditionalProperties(additionalData));
+        HttpResponse response = Requests.postMultipart(Utils.getImportOpenAPIURL(Utils.getBaseUrl()), headers, null,
+                formFields);
+        registerImportedApi(response, resourceId);
+    }
+
     /** Shared OpenAPI-definition import (multipart {@code file} + {@code additionalProperties}); when
      *  {@code resourceId} is non-null and the import succeeds, stores + registers the created API id. */
     private void importOpenApiDefinition(String filepath, String additionalData, String resourceId)
             throws IOException {
 
         File openapiFile = loadJsonResourceAsTempFile(filepath);
-        File additionalPropertiesFile;
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
-            if (inputStream == null) {
-                throw new FileNotFoundException("Additional properties file not found: " + additionalData);
-            }
-            String additionalProperties = Utils.resolvePayloadPlaceholders(
-                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
-            additionalPropertiesFile = File.createTempFile("data", ".json");
-            additionalPropertiesFile.deleteOnExit();
-            Files.write(additionalPropertiesFile.toPath(), additionalProperties.getBytes(StandardCharsets.UTF_8));
-        }
+        File additionalPropertiesFile = File.createTempFile("data", ".json");
+        additionalPropertiesFile.deleteOnExit();
+        Files.write(additionalPropertiesFile.toPath(),
+                loadAdditionalProperties(additionalData).getBytes(StandardCharsets.UTF_8));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
@@ -3194,6 +3664,23 @@ public class PublisherBaseSteps {
         files.put("additionalProperties", additionalPropertiesFile);
         HttpResponse response = Requests.postMultipart(Utils.getImportOpenAPIURL(Utils.getBaseUrl()), headers, files,
                 null);
+        registerImportedApi(response, resourceId);
+    }
+
+    /** Reads an additional-properties fixture off the classpath with {@code ${UNIQUE}} placeholders resolved. */
+    private String loadAdditionalProperties(String additionalData) throws IOException {
+
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Additional properties file not found: " + additionalData);
+            }
+            return Utils.resolvePayloadPlaceholders(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+        }
+    }
+
+    /** Stores + registers the id of an API created by an import, when the caller asked for one and it succeeded. */
+    private void registerImportedApi(HttpResponse response, String resourceId) throws IOException {
+
         if (resourceId != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
             TestContext.set(resourceId, createdId);
@@ -3231,6 +3718,23 @@ public class PublisherBaseSteps {
     public void iChangeTheLifecycleOfApiWithChecklist(String apiId, String action, String checklist)
             throws IOException {
         changeLifecycle("apis", apiId, action, checklist);
+    }
+
+    /**
+     * Issues a SINGLE lifecycle-change POST and publishes whatever comes back, without retrying and without
+     * asserting. Needed where the transition itself is the negative under test: {@link #iChangeTheLifecycleOfApi}
+     * retries until the API reaches the action's target state and fails the test otherwise, so it can never be
+     * used to pin a REJECTED transition. Ports the publish half of the APIM514 blank-tier case, where the
+     * Publish is refused.
+     */
+    @When("I attempt to change the lifecycle of API {string} with action {string}")
+    public void iAttemptToChangeTheLifecycleOfApi(String apiId, String action) throws IOException {
+
+        String actualId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.post(Utils.getChangeLifecycleURL(Utils.getBaseUrl(), "apis", actualId, action, null), headers,
+                null, null);
     }
 
     private void changeLifecycle(String resourceType, String resourceId, String action, String checklist)
@@ -3303,28 +3807,33 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Builds an API-Product create payload that aggregates an existing API's operations: retrieves the API,
-     * embeds its {@code operations} under a single {@code ProductAPIDTO}, and wraps it with the product's
-     * name/context/version/policies. (Products reference existing APIs + a selected set of their resources.)
+     * Builds an API-Product create payload that aggregates the operations of one or more existing APIs: for each
+     * API it retrieves the API and embeds its {@code operations} under its own {@code ProductAPIDTO}, then wraps
+     * them with the product's name/context/version/policies. (Products reference existing APIs + a selected set
+     * of their resources.) A product over SEVERAL APIs is what the legacy suite exercised — the member APIs must
+     * therefore carry DISJOINT resource paths, since a product cannot hold the same target/verb twice.
      */
-    private String buildApiProductPayload(String name, String context, String apiId) throws IOException {
+    private String buildApiProductPayload(String name, String context, List<String> apiIds) throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        HttpResponse apiResp = SimpleHTTPClient.getInstance()
-                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
-        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
-        // opaque JSONException/NPE instead of a clear failure.
-        Assert.assertTrue(apiResp != null && apiResp.getResponseCode() >= 200 && apiResp.getResponseCode() < 300
-                        && apiResp.getData() != null && !apiResp.getData().isEmpty(),
-                "Failed to fetch API '" + apiId + "' while building the API-product payload: expected a 2xx response "
-                        + "with a body, got " + (apiResp == null ? "no response" : apiResp.getResponseCode()
-                        + " / body=" + apiResp.getData()));
-        JSONObject api = new JSONObject(apiResp.getData());
-        JSONArray operations = api.optJSONArray("operations");
-        JSONObject productApi = new JSONObject()
-                .put("apiId", apiId)
-                .put("name", api.optString("name"))
-                .put("operations", operations == null ? new JSONArray() : operations);
+        JSONArray productApis = new JSONArray();
+        for (String apiId : apiIds) {
+            HttpResponse apiResp = SimpleHTTPClient.getInstance()
+                    .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
+            // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+            // opaque JSONException/NPE instead of a clear failure.
+            Assert.assertTrue(apiResp != null && apiResp.getResponseCode() >= 200 && apiResp.getResponseCode() < 300
+                            && apiResp.getData() != null && !apiResp.getData().isBlank(),
+                    "Failed to fetch API '" + apiId + "' while building the API-product payload: expected a 2xx response "
+                            + "with a body, got " + (apiResp == null ? "no response" : apiResp.getResponseCode()
+                            + " / body=" + apiResp.getData()));
+            JSONObject api = new JSONObject(apiResp.getData());
+            JSONArray operations = api.optJSONArray("operations");
+            productApis.put(new JSONObject()
+                    .put("apiId", apiId)
+                    .put("name", api.optString("name"))
+                    .put("operations", operations == null ? new JSONArray() : operations));
+        }
         return new JSONObject()
                 .put("name", name)
                 .put("context", context)
@@ -3332,8 +3841,20 @@ public class PublisherBaseSteps {
                 // Offer the standard business plans so the shared "set up application …" composite (which
                 // subscribes with Bronze) can subscribe to the product.
                 .put("policies", new JSONArray().put("Gold").put("Bronze").put("Unlimited"))
-                .put("apis", new JSONArray().put(productApi))
+                .put("apis", productApis)
                 .toString();
+    }
+
+    /** Resolves a comma-separated list of API-id context keys to the ids they hold, in order. */
+    private List<String> resolveApiIds(String apiIdKeysCsv) {
+        List<String> apiIds = new ArrayList<>();
+        for (String key : apiIdKeysCsv.split(",")) {
+            if (!key.isBlank()) {
+                apiIds.add(TestContext.resolve(key.trim()).toString());
+            }
+        }
+        Assert.assertFalse(apiIds.isEmpty(), "No API id context keys given for the API product: " + apiIdKeysCsv);
+        return apiIds;
     }
 
     /**
@@ -3343,10 +3864,20 @@ public class PublisherBaseSteps {
     @When("I create an API product {string} with context {string} from API {string} as {string}")
     public void iCreateApiProduct(String nameBase, String contextBase, String apiIdKey, String productIdKey)
             throws IOException {
+        iCreateApiProductFromApis(nameBase, contextBase, apiIdKey, productIdKey);
+    }
 
-        String apiId = TestContext.resolve(apiIdKey).toString();
+    /**
+     * Creates an API Product aggregating SEVERAL existing APIs (comma-separated API-id context keys) — the shape
+     * the legacy suite used throughout (a product over apiOne + apiTwo). The member APIs must expose disjoint
+     * resource paths. Asserts 201 and registers the product for owner-aware teardown.
+     */
+    @When("I create an API product {string} with context {string} from APIs {string} as {string}")
+    public void iCreateApiProductFromApis(String nameBase, String contextBase, String apiIdKeysCsv,
+                                          String productIdKey) throws IOException {
+
         String payload = buildApiProductPayload(Utils.resolvePayloadPlaceholders(nameBase),
-                Utils.resolvePayloadPlaceholders(contextBase), apiId);
+                Utils.resolvePayloadPlaceholders(contextBase), resolveApiIds(apiIdKeysCsv));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
@@ -3360,19 +3891,20 @@ public class PublisherBaseSteps {
 
     /**
      * Non-asserting API-Product create (for negatives such as a malformed context → 400): stores the raw
-     * response for the feature to assert; does not extract an id or register anything.
+     * response for the feature to assert and extracts no id, but an unexpectedly-created product IS registered
+     * for teardown (§5) — {@code registerIfCreated} is a no-op on the expected 4xx.
      */
     @When("I attempt to create an API product {string} with context {string} from API {string}")
     public void iAttemptToCreateApiProduct(String nameBase, String contextBase, String apiIdKey) throws IOException {
 
-        String apiId = TestContext.resolve(apiIdKey).toString();
         String payload = buildApiProductPayload(Utils.resolvePayloadPlaceholders(nameBase),
-                Utils.resolvePayloadPlaceholders(contextBase), apiId);
+                Utils.resolvePayloadPlaceholders(contextBase), resolveApiIds(apiIdKey));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "api-products"), headers, payload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        ResourceCleanup.registerIfCreated(Constants.CREATED_API_PRODUCT_IDS,
+                Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "api-products"), headers,
+                        payload, Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
     }
 
     /** Creates a new version (copy) of an API Product; stores the new product's id and registers it for teardown. */

@@ -35,9 +35,15 @@ Feature: Publisher API Documentation
     Then The response status code should be 200
     And The response should contain "SAMPLES"
 
-    # Delete the document
+    # Delete the document, then RE-LIST to confirm the deletion actually took effect — the documents list must be
+    # empty. Ports the second half of APIM627.testRemoveDocumentationOtherTheAPI; without this re-read a delete
+    # that answered 200 while leaving the document in place would pass unnoticed.
     When I delete the document with "documentID" for "docApiId"
     Then The response status code should be 200
+    When I retrieve all available documents for "docApiId"
+    Then The response status code should be 200
+    And The value of response field "count" should be "0"
+    And The response field "list[*].documentId" should be exactly the list ""
 
     Examples:
       | label     | payloadFile                                            | actor                     |
@@ -75,9 +81,33 @@ Feature: Publisher API Documentation
     Then The response status code should be 200
     And The response should contain "SAMPLES"
 
-    # Delete the document
+    # Delete the document, then re-list to confirm the documents list is empty (see the REST/SOAP/WS outline).
     When I delete the document with "documentID" for "docApiId"
     Then The response status code should be 200
+    When I retrieve all available documents for "docApiId"
+    Then The response status code should be 200
+    And The value of response field "count" should be "0"
+    And The response field "list[*].documentId" should be exactly the list ""
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Parameter tampering on the document-content path. Ports DocAPIParameterTamperingTest: a request for document
+  # content whose apiId path segment carries an injected value must be REJECTED, and must not echo the injected
+  # payload or leak a stack trace. The API/document ids here are deliberately literals, not context references —
+  # the point is that they are not real ids. The rejection is 401 because ';' opens a JAX-RS matrix parameter, so
+  # the apiId segment resolves to empty and the request matches no protected publisher resource, which the auth
+  # handler answers as an unauthenticated request rather than a 404.
+  @cap:publisher @feat:docs @rule:parameter-tampering @type:negative @legacy:DocAPIParameterTamperingTest
+  Scenario Outline: A tampered API id on the document-content path is rejected without leaking a stack trace as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I attempt to retrieve publisher document content with tampered API id ";alert(1)" and document id "daf732d3-bda2-46da-b381-2c39d901ea61"
+    Then The response status code should be 401
+    And The response should not contain "alert(1)"
+    And The response should not contain "java.lang."
+    And The response should not contain "org.wso2.carbon"
 
     Examples:
       | actor                     |

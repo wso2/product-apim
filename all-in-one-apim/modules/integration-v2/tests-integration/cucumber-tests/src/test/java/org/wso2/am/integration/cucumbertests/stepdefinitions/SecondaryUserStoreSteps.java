@@ -36,12 +36,6 @@ import org.wso2.am.integration.cucumbertests.utils.Utils;
  */
 public class SecondaryUserStoreSteps {
 
-    /** Adds a role directly in a user store domain (e.g. {@code SECONDARY/userrole1}) in the given tenant. */
-    @When("I provision store role {string} in tenant {string}")
-    public void iProvisionStoreRole(String roleName, String tenantDomain) throws Exception {
-        TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName));
-    }
-
     /**
      * Adds a user directly in a user store domain (e.g. {@code SECONDARY/testUser1}) with roles, in a tenant. Uses
      * the user-store-manager SOAP service (which resolves the {@code SECONDARY/} domain); retries on the transient

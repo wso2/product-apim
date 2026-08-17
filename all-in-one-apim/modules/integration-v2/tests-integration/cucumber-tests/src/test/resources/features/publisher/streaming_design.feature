@@ -218,10 +218,13 @@ Feature: Publisher Streaming API Design
       | publisherUser@tenant1.com |
 
   @cap:publisher @feat:streaming-design @type:negative @legacy:WebSocketAPITestCase
-  Scenario Outline: A subscriber-role user cannot create an API as <actor>
+  # Uses a WS-TYPED payload, so the refusal is asserted for a streaming API rather than a REST one. Previously
+  # this posted the plain REST payload, which made it byte-identical to the api-lifecycle copy — it proved
+  # nothing about streaming-API creation while counting as streaming-design coverage.
+  Scenario Outline: A subscriber-role user cannot create a WebSocket API as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "subscriberApiPayload"
-    And I attempt to create an "apis" resource with payload "subscriberApiPayload"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_websocket_api.json" in context as "subscriberWsPayload"
+    And I attempt to create an "apis" resource with payload "subscriberWsPayload"
     Then The response status code should be 401
 
     Examples:

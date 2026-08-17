@@ -398,3 +398,47 @@ Feature: Gateway Mediation Policies
       | admin@tenant1.com | PUT    |
       | admin@tenant1.com | PATCH  |
       | admin@tenant1.com | DELETE |
+
+  # THE CONTENT-TYPE HALF of a request-flow transformation — what legacy's APIInvocationWithMessageTypeProperty
+  # set out to prove and never asserted. Its point was that a messageType/content-type change in the in-sequence
+  # reaches the BACKEND: it started a WireMonitorServer to capture the backend-bound message, then asserted only
+  # that the HTTP reason phrase contained "Accepted". Delete the property from the sequence and that test still
+  # passes, so it protected nothing. Ported here as the assertion it should have made.
+  #
+  # The scenario above already pins that the converted BODY survives to the backend. This pins the other half:
+  # the backend receives it as application/xml, not as the JSON that was sent. /reflect-body-typed echoes the
+  # body back with the SAME Content-Type it received, so the RESPONSE Content-Type is a faithful readout of what
+  # the backend actually got — no wire-capture server needed.
+  #
+  # Without this, a policy that mangled the content type while still producing XML-shaped text would pass the
+  # body assertion above unnoticed.
+  @cap:gateway @feat:mediation-policies @rule:json-to-xml @type:regression @dep:publisher @legacy:APIInvocationWithMessageTypeProperty
+  Scenario Outline: The jsonToXML policy makes the backend receive the request as XML as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_jsontoxml_typed_api.json" as "mtApiId" and deployed it
+    When I publish the "apis" resource with id "mtApiId"
+    Then The lifecycle status of API "mtApiId" should be "Published"
+    When I retrieve the "apis" resource with id "mtApiId"
+    And I extract response field "context" and store it as "mtContext"
+    When I have set up application with keys, subscribed to API "mtApiId", and obtained access token for "mtSubId"
+    Then The response status code should be 200
+
+    # A JSON request. The request-flow policy must convert it before it leaves the gateway.
+    When I put the following JSON payload in context as "mtPayload"
+    """
+    { "name" : "messageTypeProbe" }
+    """
+    When I invoke the API at gateway context "{{mtContext}}/1.0.0/reflect-body-typed" with method "POST" using access token "generatedAccessToken" and payload "mtPayload" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # The echo carries back the Content-Type the BACKEND saw — the transformation is proven at the far end,
+    # not merely at the gateway. This is the assertion legacy's wire server existed for.
+    And The response header "Content-Type" should contain "xml"
+    # ...and the payload really is XML-serialised, not JSON that merely arrived under an XML content type.
+    And The response should contain "<name>messageTypeProbe</name>"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+

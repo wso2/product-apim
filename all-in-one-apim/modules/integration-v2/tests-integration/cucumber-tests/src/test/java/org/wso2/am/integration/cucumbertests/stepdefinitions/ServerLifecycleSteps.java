@@ -70,6 +70,9 @@ public class ServerLifecycleSteps {
         // Pin the RETURN ELEMENT, not the bare word: the envelope carries several namespaces and any fault text, so
         // contains("true") is satisfiable without restartGracefully having returned true. Same form as the
         // isExistingUser assertions in SecondaryUserStoreSteps.
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "ServerAdmin restartGracefully returned no SOAP body to inspect; got "
+                        + (response == null ? "no response" : String.valueOf(response.getResponseCode())));
         Assert.assertTrue(response.getData().contains("<ns:return>true</ns:return>"),
                 "ServerAdmin restartGracefully did not return true; response: " + response.getData());
 
