@@ -56,11 +56,6 @@
 <class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2TokenInjector">
     <property name="serviceAccountKey" value="$util.escapeXml($endpoint.serviceAccountKey)" type="STRING"/>
 </class>
-#if($endpoint.endpoint)
-#if($endpoint.endpoint.contains("publishers/anthropic"))
-<class name="org.wso2.carbon.apimgt.gateway.mediators.VertexAIAnthropicPayloadMediator"/>
-#end
-#end
         #end
         #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
