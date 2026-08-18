@@ -122,8 +122,11 @@ public class GovernanceBaseSteps {
     public void iAttemptToCreateGovernanceRuleset(String nameBase, String contentResourcePath)
             throws IOException {
 
-        postRuleset(Utils.resolvePayloadPlaceholders(nameBase), contentResourcePath,
-                "Ruleset created by integration test", "https://wso2.com");
+        // Callers expect a refusal; an unexpected success still creates a real ruleset, so it is swept (§5).
+        // Registered HERE, not inside postRuleset — the positive step shares that helper and registers already.
+        ResourceCleanup.registerIfCreated(Constants.CREATED_GOVERNANCE_RULESET_IDS,
+                postRuleset(Utils.resolvePayloadPlaceholders(nameBase), contentResourcePath,
+                        "Ruleset created by integration test", "https://wso2.com"), "id");
     }
 
     /**
@@ -239,7 +242,7 @@ public class GovernanceBaseSteps {
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200
                         && current.getResponseCode() < 300 && current.getData() != null
-                        && !current.getData().isEmpty(),
+                        && !current.getData().isBlank(),
                 "Failed to fetch governance policy '" + policyId + "' before updating its description: expected a 2xx "
                         + "response with a body, got " + (current == null ? "no response"
                         : current.getResponseCode() + " / body=" + current.getData()));

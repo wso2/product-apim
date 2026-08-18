@@ -187,14 +187,14 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                     + "-Dapim.km.truststore.path to its location.");
         }
         withCopyToContainer(MountableFile.forHostPath(truststore.getAbsolutePath()),
-                Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+                Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName()
                         + "/repository/resources/security/client-truststore.jks");
         // Present a TLS cert valid for the 'wso2am' network alias (fixed keystore, CN=wso2am,
         // SAN dns:localhost,dns:wso2am) so IS's token-revocation notification POST to https://wso2am:9443
         // passes strict hostname verification - no AllowAll workaround needed on IS. The block's toml overlay
         // points [keystore.tls] at this file; the augmented client-truststore above also trusts it (loopback).
         withCopyToContainer(MountableFile.forClasspathResource("is7/wso2am.p12"),
-                Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+                Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName()
                         + "/repository/resources/security/wso2am.p12");
         logger.info("External-KM mode: APIM client-truststore augmented (wso2is + wso2am certs) from {}, "
                 + "TLS keystore set to wso2am.p12", truststore.getAbsolutePath());
@@ -309,7 +309,7 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     }
 
     public String getContainerTomlPath() {
-        return Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name") +
+        return Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName() +
                 Constants.DEPLOYMENT_TOML_PATH;
     }
 
@@ -322,7 +322,7 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      * listener parameter. Must be called before {@link #start()}.
      */
     public DynamicApimContainer withServerFile(String hostPath, String serverRelativePath) {
-        String target = Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name")
+        String target = Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName()
                 + "/" + serverRelativePath;
         // Explicit 0666: files copied into the container are owned by root while the server runs as
         // wso2carbon. A read-only file is fine for config the server only READS (a userstore XML), but a
@@ -341,7 +341,7 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      * embedded-H2 file lock. {@code dbRelativePath} is the H2 url path, e.g. {@code repository/database/WSO2SEC_DB}.
      */
     public void createSecondaryUserStoreH2Schema(String dbRelativePath) throws IOException, InterruptedException {
-        String home = Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name");
+        String home = Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName();
         String runScript = "cd " + home + " && java -cp \"$(ls repository/components/plugins/h2-engine_*.jar)\" "
                 + "org.h2.tools.RunScript -url 'jdbc:h2:./" + dbRelativePath + "' "
                 + "-user wso2carbon -password wso2carbon -script dbscripts/h2.sql";
@@ -364,10 +364,36 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         logger.info("Created secondary user-store H2 schema at {} (via product dbscripts/h2.sql)", dbRelativePath);
     }
 
+    /**
+     * The running server's directory name, validated. Mirrors the fail-fast in
+     * {@code CoverageSupport#distributionZip}: an unset property otherwise resolves to a path containing
+     * {@code null}, which surfaces much later as a generic "file not found" that hides the real cause.
+     */
+    private static String requireServerName() {
+        String serverName = System.getProperty("apim.server.name"); // e.g. wso2am-4.7.0-SNAPSHOT
+        if (serverName == null || serverName.isBlank()) {
+            throw new IllegalStateException("apim.server.name is not set — required to resolve in-container "
+                    + "paths (normally passed via the surefire systemPropertyVariables; pass "
+                    + "-Dapim.server.name=<name> if running the suite outside the Maven config).");
+        }
+        return serverName;
+    }
+
     /** In-container path of the running server's {@code log4j2.properties} (for remote-logging appender checks). */
     public String getContainerLog4j2Path() {
-        return Constants.APIM_CONTAINER_USER_HOME + "/" + System.getProperty("apim.server.name") +
-                "/repository/conf/log4j2.properties";
+        return Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName()
+                + "/repository/conf/log4j2.properties";
+    }
+
+    /**
+     * In-container path of one of the running server's log files (for the logging assertions). Owned here with
+     * {@link #getContainerLog4j2Path()} so the in-container layout is encoded in ONE module, not restated by
+     * each caller.
+     *
+     * @param fileName log file name under {@code repository/logs}, e.g. {@code api.log}
+     */
+    public String getContainerLogFilePath(String fileName) {
+        return Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName() + "/repository/logs/" + fileName;
     }
 
     /**

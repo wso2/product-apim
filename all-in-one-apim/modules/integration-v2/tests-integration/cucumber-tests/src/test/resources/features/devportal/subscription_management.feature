@@ -165,6 +165,43 @@ Feature: DevPortal Subscription Management
     When I change the subscription business plan of "subscriptionId" to "Silver"
     Then The response status code should be 400
 
+    # The SUBSCRIPTION ID axis, which is orthogonal to the plan axis above: an empty id and a nonexistent one.
+    # Legacy asserted these, but vacuously — both calls sit in a try/catch whose ONLY assertion is inside the
+    # catch, with no Assert.fail() after the call, so if the endpoint had wrongly returned 2xx the catch would
+    # never have run and the test would still have passed. Asserted here on the response itself.
+    When I change the subscription business plan of subscription id "" to "Gold"
+    Then The response status code should be 400
+    When I change the subscription business plan of subscription id "INVALID_SUBSCRIPTION_ID" to "Gold"
+    Then The response status code should be 404
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The POSITIVE of the publisher force-change: only the rejections were covered, so nothing proved the
+  # endpoint can actually change a plan — every assertion would still hold if change-business-plan were a no-op
+  # that rejected bad input. Ports
+  # ChangeSubscriptionBusinessPlanForcefullyTestCase#testUpdateSubscriptionBusinessPlanWithValidTiers, which
+  # verifies the new plan through the PUBLISHER's subscription list rather than the devportal's.
+  @cap:devportal @feat:subscription-management @rule:force-change @type:regression @dep:publisher @legacy:ChangeSubscriptionBusinessPlanForcefullyTestCase
+  Scenario Outline: A publisher can force-change a subscription to an allowed business plan as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    When I publish the "apis" resource with id "createdApiId"
+    Then The lifecycle status of API "createdApiId" should be "Published"
+    When I have set up application with keys, subscribed to API "createdApiId", and obtained access token for "subscriptionId"
+    Then The response status code should be 200
+    # The starting plan (the setup composite subscribes on Bronze), so the change below is a change and not a
+    # restatement of what was already there.
+    And The publisher subscription "subscriptionId" of API "createdApiId" should have business plan "Bronze"
+
+    # Force-change to a plan the API DOES offer, and confirm the publisher's view reflects it.
+    When I change the subscription business plan of "subscriptionId" to "Gold"
+    Then The response status code should be 200
+    And The publisher subscription "subscriptionId" of API "createdApiId" should have business plan "Gold"
+
     Examples:
       | actor             |
       | admin             |

@@ -23,9 +23,13 @@ Feature: Gateway REST API Invocation
     When I have set up application with keys, subscribed to API "createdApiId", and obtained access token for "subscriptionId"
     Then The response status code should be 200
 
-    # Invoke through the gateway by full context path (retry while the gateway becomes eventually consistent)
+    # Invoke through the gateway by full context path (retry while the gateway becomes eventually consistent).
+    # The BACKEND payload is pinned, not just the status: the API also exposes DELETE /customers/{id}, which the
+    # backend answers 200 with an EMPTY body — so a status-only assertion cannot tell "GET reached
+    # node-customer-service" from "the gateway dispatched to the wrong operation".
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
@@ -49,11 +53,13 @@ Feature: Gateway REST API Invocation
     And I extract response field "name" and store it as "ieInvApiName"
     And I extract response field "context" and store it as "ieInvContext"
 
-    # INVOKE BEFORE export → 200 (the original API is functionally invocable).
+    # INVOKE BEFORE export → 200 carrying the BACKEND payload (the original API is functionally invocable, i.e.
+    # it actually reaches node-customer-service — a bare 200 would not distinguish that from a wrong dispatch).
     When I have set up application with keys, subscribed to API "ieInvApiId", and obtained access token for "ieInvSubId"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{ieInvContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     # Export → delete → re-import the archive. The subscription must be removed first — an API with an active
     # subscription cannot be deleted (409 "active subscriptions exist").
@@ -78,6 +84,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{ieInvImportedContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
@@ -134,8 +141,11 @@ Feature: Gateway REST API Invocation
     And I replace "{version}" with "1.0.0" in context "vfContext"
     When I have set up application with keys, subscribed to API "vfApiId", and obtained access token for "subscriptionId"
     Then The response status code should be 200
+    # The body pins that the version-first URL actually routed THROUGH to the backend: routing is the subject
+    # here, so a 200 that never reached node-customer-service would be a vacuous pass.
     When I invoke the API at gateway context "{{vfContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
@@ -160,8 +170,10 @@ Feature: Gateway REST API Invocation
     And I replace "{version}" with "1.0.0" in context "dcContext"
     When I have set up application with keys, subscribed to API "dcApiId", and obtained access token for "dcSub"
     Then The response status code should be 200
+    # As above: the mid-path {version} resolution is only proven if the call reaches the backend, so pin the body.
     When I invoke the API at gateway context "{{dcContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
@@ -181,12 +193,19 @@ Feature: Gateway REST API Invocation
     And I extract response field "context" and store it as "resContext"
     When I have set up application with keys, subscribed to API "resApiId", and obtained access token for "resSubId"
     Then The response status code should be 200
-    # Baseline: the existing GET resource is invocable.
+    # Baseline: the existing GET resource is invocable AND serves the backend payload. The API's other operation
+    # (DELETE /customers/{id}) answers 200 with an EMPTY body, so the body is what separates "GET matched" from
+    # "some other operation on the same template matched".
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
     # POST to an as-yet-undefined resource is refused (405 — path matches GET /customers/{id}, POST not allowed).
+    # Body pinned too: the gateway distinguishes "URI matched, verb did not" from "no URI matched" with two
+    # different messages, so status alone cannot tell the two dispatch outcomes apart (CORSRequestHandler
+    # #handleResourceNotFound → METHOD_NOT_FOUND_ERROR_MSG here, RESOURCE_NOT_FOUND_ERROR_MSG below).
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 405 within 60 seconds
     Then The response status code should be 405
+    And The response should contain "Method not allowed for given API resource"
     # Add a POST /customers/name operation and redeploy.
     When I retrieve the "apis" resource with id "resApiId"
     And I put the response payload in context as "resApiPayload"
@@ -201,9 +220,13 @@ Feature: Gateway REST API Invocation
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "Tom"
-    # An undefined path is refused by the gateway.
+    # An undefined path is refused by the gateway — status AND the gateway's own message (legacy's
+    # INVALID_RESOURCE_INVOCATION constant, which is APIMgtGatewayConstants.RESOURCE_NOT_FOUND_ERROR_MSG). A bare
+    # 404 would also be produced by the BACKEND for an unmapped upstream path, so the message is what proves the
+    # refusal came from the gateway's resource dispatcher rather than from node-customer-service.
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/123/invalid" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
     Then The response status code should be 404
+    And The response should contain "No matching resource found for given API Request"
 
     Examples:
       | actor             |
@@ -225,11 +248,20 @@ Feature: Gateway REST API Invocation
     When I have set up application with keys, subscribed to API "phApiId", and obtained access token for "phSubId"
     Then The response status code should be 200
 
-    # PATCH is forwarded to the backend echo route → 200 (empty body: the reflect-body route echoes any body)
-    When I invoke the API at gateway context "{{phContext}}/1.0.0/reflect-body" with method "PATCH" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    # PATCH is forwarded to the backend echo route → 200 whose body is the PATCH body echoed back. A marker body
+    # is sent (rather than the empty one a status-only check allowed) because that is what makes the echo
+    # observable: the API's other operations are GET/HEAD /hello, which answer 200 with "Hello World", so an empty
+    # PATCH could not distinguish "the PATCH operation matched and its body was forwarded" from a wrong dispatch.
+    When I put the following JSON payload in context as "phPatchBody"
+    """
+    {"patched":"by-gateway"}
+    """
+    When I invoke the API at gateway context "{{phContext}}/1.0.0/reflect-body" with method "PATCH" using access token "generatedAccessToken" and payload "phPatchBody" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"patched\":\"by-gateway\"}"
 
-    # HEAD on a GET-backed resource routes without the historical NPE
+    # HEAD on a GET-backed resource routes without the historical NPE. No body assertion is possible or wanted
+    # here — a HEAD response carries no entity body by definition, so the status IS the whole observable.
     When I invoke the API at gateway context "{{phContext}}/1.0.0/hello" with method "HEAD" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
@@ -277,6 +309,9 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{psContext}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/prod" within 60 seconds
     Then The response status code should be 200
+    # The invoke gated on "echo/prod"; also pin the OTHER endpoint's signature ABSENT, so this phase's pass is
+    # unreachable from the sandbox endpoint and the two phases cannot collapse into each other.
+    And The response should not contain "echo/sandbox"
 
     # SANDBOX token → sandbox endpoint (echo/sandbox)
     When I put the following JSON payload in context as "psSandboxKeys"
@@ -293,6 +328,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{psContext}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The response should not contain "echo/prod"
 
     Examples:
       | actor             |
@@ -376,6 +412,68 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 403
     And The response should contain "900901"
     And The response should contain "no production endpoint"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Swapping the endpoint URL of an ALREADY-DEPLOYED API repoints it at a DIFFERENT upstream. Ports
+  # ChangeAPIEndPointURLTestCase (testAPIInvocationBeforeChangeTheEndPointURL + testEditEndPointURL +
+  # testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL, which are one arc on one API).
+  #
+  # The API's context, resource set, revision lineage and subscription all stay put; only endpointConfig changes.
+  # That is what separates this from default_version_routing (which routes to a changed backend on a NEW version)
+  # and from the endpoint-security scenarios (which change credentials, not the upstream).
+  #
+  # Legacy observed the switch with a second Synapse API returning "HelloWSO2" from name-check1_SB/name. That
+  # backend exists here (nodebackend:3009) but serves ONLY GET /name, so it cannot answer this API's
+  # /customers/{id} resource. The switch is therefore observed between two EXISTING backends, the same way the
+  # API-product endpoint-change scenario does it (gateway/api_product_invocation.feature):
+  #   * node-customer-service (nodebackend:3001, /jaxrs_basic/services/customers/customerservice/) answers
+  #     GET /customers/123 with {"id":123,"name":"John"};
+  #   * wildcard            (nodebackend:3017) answers ANY path/method with the plain text "Hello World".
+  # Each phase asserts its OWN backend's signature present AND the other's absent — legacy's assertTrue(API2)
+  # + assertFalse(API1) pair — so neither phase can pass against the wrong upstream and the "after" state is
+  # unreachable from the "before" state. No new backend was added.
+  @cap:gateway @feat:rest-invocation @rule:endpoint-routing @type:regression @dep:publisher @legacy:ChangeAPIEndPointURLTestCase
+  Scenario Outline: Swapping a deployed API's endpoint URL repoints it to the new backend as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ceApiId" and deployed it
+    When I publish the "apis" resource with id "ceApiId"
+    Then The lifecycle status of API "ceApiId" should be "Published"
+    When I retrieve the "apis" resource with id "ceApiId"
+    And I extract response field "context" and store it as "ceContext"
+    When I have set up application with keys, subscribed to API "ceApiId", and obtained access token for "ceSubId"
+    Then The response status code should be 200
+
+    # BEFORE: the original upstream (node-customer-service) serves the call.
+    When I invoke the API at gateway context "{{ceContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+    And The response should not contain "Hello World"
+
+    # Change ONLY the endpoint URL (production and sandbox both) to the wildcard backend, then redeploy.
+    When I retrieve the "apis" resource with id "ceApiId"
+    And I put the response payload in context as "ceApiPayload"
+    When I put the following JSON payload in context as "ceNewEndpoint"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3017/"},"sandbox_endpoints":{"url":"http://nodebackend:3017/"}}
+    """
+    When I update the "apis" resource "ceApiId" and "ceApiPayload" with configuration type "endpointConfig" and value:
+      """
+      ceNewEndpoint
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "ceApiId"
+    Then The response status code should be 201
+
+    # AFTER: the SAME context, resource and token now reach the NEW upstream, and the old backend's body is gone.
+    When I invoke the API at gateway context "{{ceContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Hello World" within 120 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello World"
+    And The response should not contain "\"name\":\"John\""
 
     Examples:
       | actor             |
@@ -467,12 +565,16 @@ Feature: Gateway REST API Invocation
     And I extract response field "context" and store it as "tsContext"
     When I have set up application with keys, subscribed to API "tsApiId", and obtained access token for "tsSubId"
     Then The response status code should be 200
-    # WITHOUT a trailing slash → 200.
+    # WITHOUT a trailing slash → 200 carrying the backend payload.
     When I invoke the API at gateway context "{{tsContext}}/1.0.0/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    # WITH a trailing slash → routes to the SAME resource → 200.
+    And The response should contain "\"name\":\"John\""
+    # WITH a trailing slash → routes to the SAME resource → the SAME backend payload. Equivalence is the subject,
+    # so both forms must be shown to produce the same backend response; two bare 200s would not establish that
+    # (the API's DELETE /customers/{id} also answers 200, with an empty body).
     When I invoke the API at gateway context "{{tsContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |

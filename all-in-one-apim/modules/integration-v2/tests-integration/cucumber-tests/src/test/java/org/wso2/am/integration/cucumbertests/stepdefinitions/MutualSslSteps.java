@@ -27,7 +27,6 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +53,29 @@ public class MutualSslSteps {
      */
     @When("I upload client certificate {string} with alias {string} to API {string} for tier {string}")
     public void iUploadClientCertificate(String certPath, String alias, String apiId, String tier) throws Exception {
-        String actualApiId = TestContext.resolve(apiId).toString();
+        uploadClientCertificate(Utils.getClientCertificatesURL(Utils.getBaseUrl(),
+                TestContext.resolve(apiId).toString()), certPath, alias, tier);
+    }
+
+    /**
+     * Uploads a client certificate to an API for a specific KEY TYPE (multipart
+     * {@code POST /apis/{apiId}/client-certs/{keyType}}). The key type is part of the certificate's identity — a
+     * cert uploaded under SANDBOX authorises the sandbox key type — and this is the CURRENT endpoint: the un-typed
+     * {@code /client-certificates} POST the sibling step uses is marked {@code deprecated} in publisher-api.yaml.
+     * Ports the per-key-type certificate uploads of APISecurityTestCase#initialize, which uploads a SANDBOX and a
+     * PRODUCTION certificate to the same API. Non-asserting; the feature asserts the status.
+     *
+     * @param keyType PRODUCTION or SANDBOX
+     */
+    @When("I upload client certificate {string} with alias {string} and key type {string} to API {string} for tier {string}")
+    public void iUploadClientCertificateOfKeyType(String certPath, String alias, String keyType, String apiId,
+                                                  String tier) throws Exception {
+        uploadClientCertificate(Utils.getClientCertificatesByKeyTypeURL(Utils.getBaseUrl(),
+                TestContext.resolve(apiId).toString(), keyType), certPath, alias, tier);
+    }
+
+    /** Shared multipart client-certificate upload (certificate + alias + tier) as the acting publisher. */
+    private void uploadClientCertificate(String url, String certPath, String alias, String tier) throws Exception {
         File certFile = Utils.classpathToTempFile(certPath, "mtls", ".cer");
 
         Map<String, String> headers = new HashMap<>();
@@ -65,8 +86,7 @@ public class MutualSslSteps {
         formFields.put("alias", alias);
         formFields.put("tier", tier);
 
-        HttpResponse response = Requests.postMultipart(Utils.getClientCertificatesURL(Utils.getBaseUrl(), actualApiId),
-                headers, files, formFields);
+        Requests.postMultipart(url, headers, files, formFields);
     }
 
     /**
@@ -77,7 +97,7 @@ public class MutualSslSteps {
     @When("I invoke the API at gateway context {string} presenting client certificate {string} until response status code becomes {int} within {int} seconds")
     public void iInvokeWithClientCert(String context, String keystorePath, int expectedStatus, int timeoutSeconds)
             throws Exception {
-        invokeMtls(context, keystorePath, expectedStatus, timeoutSeconds);
+        invokeMtlsUntilStatus(context, keystorePath, new HashMap<>(), expectedStatus, timeoutSeconds);
     }
 
     /**
@@ -86,46 +106,94 @@ public class MutualSslSteps {
      */
     @When("I invoke the API at gateway context {string} with no client certificate until response status code becomes {int} within {int} seconds")
     public void iInvokeWithoutClientCert(String context, int expectedStatus, int timeoutSeconds) throws Exception {
-        String endpointUrl = buildUrl(context);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 1000L);
-        HttpResponse last = null;
-        do {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(endpointUrl, acceptXml());
-                if (last.getResponseCode() == expectedStatus) {
-                    TestContext.set("httpResponse", last);
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry
-            }
-            Utils.pollPause(endTimeStart, 3000);
-        } while (System.currentTimeMillis() < endTime);
-        finish(last, expectedStatus);
+        invokeMtlsUntilStatus(context, null, new HashMap<>(), expectedStatus, timeoutSeconds);
     }
 
-    private void invokeMtls(String context, String keystorePath, int expectedStatus, int timeoutSeconds)
-            throws Exception {
+    /**
+     * Invokes an API at the HTTPS gateway presenting BOTH a client certificate and an OAuth2 bearer token. The
+     * combination that distinguishes the mutual-SSL security modes and cannot be expressed by either single-axis
+     * step: on a {@code mutualssl_mandatory} + application-security-mandatory API both credentials are required
+     * (cert alone or token alone is refused), while on a mutualssl-OPTIONAL API the token alone suffices — so the
+     * cert-plus-token positive is the only case that proves both legs are accepted together.
+     *
+     * @param keystorePath classpath JKS whose client certificate is presented on the TLS handshake
+     * @param accessToken  context key holding the bearer token
+     */
+    @When("I invoke the API at gateway context {string} presenting client certificate {string} and access token {string} until response status code becomes {int} within {int} seconds")
+    public void iInvokeWithClientCertAndToken(String context, String keystorePath, String accessToken,
+                                              int expectedStatus, int timeoutSeconds) throws Exception {
+        invokeMtlsUntilStatus(context, keystorePath, bearer(accessToken), expectedStatus, timeoutSeconds);
+    }
+
+    /**
+     * Invokes an API at the HTTPS gateway with NO client certificate but WITH a bearer token. The strong form of
+     * the mandatory-mTLS negative: a VALID OAuth2 token must not substitute for the missing handshake
+     * certificate. (Sending no credential at all — the {@code with no client certificate} variant — cannot tell
+     * "the cert is mandatory" apart from "some credential is required".)
+     */
+    @When("I invoke the API at gateway context {string} with no client certificate and access token {string} until response status code becomes {int} within {int} seconds")
+    public void iInvokeWithoutClientCertWithToken(String context, String accessToken, int expectedStatus,
+                                                  int timeoutSeconds) throws Exception {
+        invokeMtlsUntilStatus(context, null, bearer(accessToken), expectedStatus, timeoutSeconds);
+    }
+
+    /**
+     * Invokes an API at the HTTPS gateway with NO handshake certificate but with the accepted certificate's PEM
+     * text base64url-encoded into the {@code X-WSO2-CLIENT-CERTIFICATE} header (alongside a bearer token). That
+     * header is the one the gateway reads when a TLS-terminating load balancer forwards the client certificate,
+     * so a client that can set it directly must NOT be able to pass mandatory mutual SSL with it — the header
+     * must never substitute for the handshake certificate. Ports
+     * APISecurityTestCase#testAPIInvocationWithMutualSSLHeader.
+     *
+     * @param certPath    classpath PEM certificate whose text is base64url-encoded into the header
+     * @param accessToken context key holding the bearer token
+     */
+    @When("I invoke the API at gateway context {string} with no client certificate but certificate {string} in the X-WSO2-CLIENT-CERTIFICATE header and access token {string} until response status code becomes {int} within {int} seconds")
+    public void iInvokeWithForwardedCertHeader(String context, String certPath, String accessToken,
+                                               int expectedStatus, int timeoutSeconds) throws Exception {
+        Map<String, String> headers = bearer(accessToken);
+        // STANDARD base64, not base64url: the gateway constant is BASE64_ENCODED_CLIENT_CERTIFICATE_HEADER and
+        // decodes accordingly. Encoding url-safe made the header UNREADABLE, so the expected 401 was satisfied by
+        // a decode failure and proved nothing about the rule under test — that a forwarded-cert header must not
+        // substitute for the handshake certificate. Readable cert => the 401 can only mean the rule was enforced.
+        headers.put("X-WSO2-CLIENT-CERTIFICATE",
+                java.util.Base64.getEncoder().encodeToString(
+                        Utils.readClasspathResource(certPath).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        invokeMtlsUntilStatus(context, null, headers, expectedStatus, timeoutSeconds);
+    }
+
+    /**
+     * THE retry-until-status envelope for every mutual-SSL invocation here, funnelled through
+     * {@link Utils#retryUntil} so the deadline (floored at the shared propagation ceiling), the poll pacing and
+     * the retry-only-on-{@code IOException} policy live in one place rather than in a loop per variant. A
+     * {@code null} keystore means "offer no client key material" (the plain HTTPS client).
+     *
+     * <p>This family cannot go through {@code APIInvocationSteps.execute}: that funnel's chokepoint is the plain
+     * {@code SimpleHTTPClient} verbs, and an mTLS call needs the keystore-bearing {@code doMutualSSLGet}
+     * variant. It keeps the same {@code httpResponse} contract — cleared before each attempt so a throwing
+     * attempt leaves NO stale response behind, and set only on a real one.
+     */
+    private void invokeMtlsUntilStatus(String context, String keystorePath, Map<String, String> extraHeaders,
+                                       int expectedStatus, int timeoutSeconds) throws Exception {
+
         String endpointUrl = buildUrl(context);
-        File keystore = Utils.classpathToTempFile(keystorePath, "mtls", ".jks");
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, 1000L);
-        HttpResponse last = null;
-        do {
-            try {
-                last = SimpleHTTPClient.getInstance()
-                        .doMutualSSLGet(keystore.getAbsolutePath(), KEYSTORE_PASSWORD, endpointUrl, acceptXml());
-                if (last.getResponseCode() == expectedStatus) {
-                    TestContext.set("httpResponse", last);
-                    return;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // TLS handshake / gateway warm-up — retry
-            }
-            Utils.pollPause(endTimeStart, 3000);
-        } while (System.currentTimeMillis() < endTime);
-        finish(last, expectedStatus);
+        File keystore = keystorePath == null ? null : Utils.classpathToTempFile(keystorePath, "mtls", ".jks");
+        Map<String, String> headers = acceptXml();
+        headers.putAll(extraHeaders);
+
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            TestContext.remove("httpResponse");
+            HttpResponse response = keystore == null
+                    ? SimpleHTTPClient.getInstance().doGet(endpointUrl, headers)
+                    : SimpleHTTPClient.getInstance().doMutualSSLGet(keystore.getAbsolutePath(), KEYSTORE_PASSWORD,
+                            endpointUrl, headers);
+            TestContext.set("httpResponse", response);
+            return response;
+        }, response -> response.getResponseCode() == expectedStatus);
+
+        assertNotNull(last, "No response received from the mutual-SSL gateway invocation within the timeout");
+        assertEquals(last.getResponseCode(), expectedStatus,
+                "Mutual-SSL invocation did not reach the expected status. Body: " + last.getData());
     }
 
     private String buildUrl(String context) {
@@ -139,10 +207,11 @@ public class MutualSslSteps {
         return headers;
     }
 
-    private void finish(HttpResponse last, int expectedStatus) {
-        assertNotNull(last, "No response received from the mutual-SSL gateway invocation within the timeout");
-        TestContext.set("httpResponse", last);
-        assertEquals(last.getResponseCode(), expectedStatus,
-                "Mutual-SSL invocation did not reach the expected status. Body: " + last.getData());
+    /** Bearer headers for a token held under the given context key. */
+    private Map<String, String> bearer(String accessTokenKey) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Bearer " + TestContext.resolve(accessTokenKey));
+        return headers;
     }
 }

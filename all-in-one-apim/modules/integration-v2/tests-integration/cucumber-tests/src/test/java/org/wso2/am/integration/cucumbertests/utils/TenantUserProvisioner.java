@@ -431,6 +431,39 @@ public final class TenantUserProvisioner {
     }
 
     /**
+     * Changes a user's password AS THE TENANT ADMIN via RemoteUserStoreManagerService
+     * {@code updateCredentialByAdmin} — the admin-side credential reset (no old password required), which is the
+     * operation legacy {@code APISecurityTestCase#testInvokeJWTUserToken} performs to prove that a credential
+     * change invalidates the tokens already issued to that user.
+     *
+     * <p>Called from a step, never from a listener (CLAUDE.md §14): the SOAP admin service is the only interface
+     * this pack exposes for an admin-side password reset, so the narrow SOAP-helper exception applies. It
+     * authenticates as the tenant admin — the same principal that created the user.</p>
+     *
+     * @param tenantDomain the tenant owning the user
+     * @param userName     the (unqualified) username whose credential is reset
+     * @param newPassword  the new password
+     */
+    public static void updateCredentialByAdmin(String tenantDomain, String userName, String newPassword)
+            throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\"><soapenv:Header/><soapenv:Body>"
+                + "<ser:updateCredentialByAdmin><ser:userName>" + Utils.escapeXml(userName) + "</ser:userName>"
+                + "<ser:newCredential>" + Utils.escapeXml(newPassword) + "</ser:newCredential>"
+                + "</ser:updateCredentialByAdmin></soapenv:Body></soapenv:Envelope>";
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()), payload, "urn:updateCredentialByAdmin",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        int code = response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException("updateCredentialByAdmin for '" + userName + "' in tenant '" + tenantDomain
+                    + "' failed with " + code + ": " + response.getData());
+        }
+    }
+
+    /**
      * Seeds a user into a secondary user store (via {@link #addUserInStore}) AND registers it as a resolvable
      * ACTOR in the tenant bean, so a {@code Scenario Outline} can act as e.g. {@code "secondaryUser@tenant1.com"}.
      * The store-local name (e.g. {@code SECONDARY.COM/secondaryUser1}) routes the credential to the secondary

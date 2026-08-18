@@ -43,6 +43,13 @@ Feature: Gateway GraphQL API Invocation
     """
     And I invoke the API at gateway context "{{graphqlApiContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "graphqlQuery" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    # A 200 alone proves almost NOTHING for GraphQL: the protocol answers 200 for a FAILED query too (an error is
+    # a {"errors":[...]} body at status 200), so a status-only assertion cannot tell a served query from a refused
+    # one. The relayed body is therefore pinned EXACTLY — every language, both fields, no extra members — which is
+    # the assertion legacy GraphqlTestCase made (assertEquals against its RESPONSE_DATA constant) and the earlier
+    # v2 port dropped. An error envelope, a truncated list or an empty body all fail this.
+    And The response body should equal the JSON file "artifacts/payloads/graphql_languages_expected_response.json"
+    And The response should not contain "errors"
 
     Examples:
       | actor             |
@@ -84,6 +91,28 @@ Feature: Gateway GraphQL API Invocation
     """
     And I invoke the API at gateway context "{{graphqlApiContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "graphqlQuery" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    # Body pinned exactly for BOTH token types — see the rationale on the smoke scenario above. This is what makes
+    # the token-type parity meaningful: a JWT-validated and an introspection-validated request must relay the SAME
+    # backend payload, not merely both answer 200.
+    And The response body should equal the JSON file "artifacts/payloads/graphql_languages_expected_response.json"
+    And The response should not contain "errors"
+
+    # A query the SCHEMA does not admit is refused by the GATEWAY, before the backend is reached: the
+    # GraphQLAPIHandler validates the payload against the API's schema (QueryValidator.validatePayload) and
+    # answers code 900422 / "INVALID QUERY". This is the HTTP counterpart of the graphql-ws 4022 frame, and it is
+    # why the "GraphQL hides errors behind 200" trap does NOT apply to this class of failure over APIM: the gateway
+    # converts it into a real HTTP error status. Observed status is 422, NOT 400 — the gateway derives the HTTP
+    # status from the last three digits of the error code here (900422 -> 422), whereas the query-limit codes
+    # 900821/900820 both surface as 400 (see graphql_query_limits.feature). Asserted per token type because the two
+    # validation paths reach this handler differently.
+    When I put the following JSON payload in context as "graphqlUndefinedFieldQuery"
+    """
+    {"query": "{languages{code name bogusUndefinedField}}"}
+    """
+    And I invoke the API at gateway context "{{graphqlApiContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "graphqlUndefinedFieldQuery" until response status code becomes 422 within 60 seconds
+    Then The response status code should be 422
+    And The response should contain "INVALID QUERY"
+    And The response should contain "900422"
 
     Examples:
       | tokenType |

@@ -413,14 +413,44 @@ public class APIInvocationSteps {
                                                               String headerName, int expectedStatus,
                                                               int timeoutSeconds) throws Exception {
 
+        invokeCredentialInHeaderUntilStatus(context, httpMethod, apiKey, headerName, expectedStatus, timeoutSeconds);
+    }
+
+    /**
+     * Invokes a deployed API presenting a credential VERBATIM (no {@code Bearer } prefix, no scheme) in a named
+     * request header, retrying until the expected status. This is the CROSS-CREDENTIAL step: it presents a
+     * credential of one kind in the header belonging to another kind — an OAuth2 access token in {@code apikey},
+     * an internal key in {@code apikey}, an api key in {@code Internal-Key}, and so on — which is exactly the
+     * confusion the gateway must refuse. It shares the api-key-in-header implementation (same wire shape: an
+     * opaque credential string in an arbitrary header); the separate phrasing exists so a feature line states
+     * WHICH credential kind is being misused rather than calling an OAuth token an "api key".
+     *
+     * <p>The expected status is stated per case by the caller and is NOT assumed uniform: these negatives differ
+     * by which authenticator claims the request (see CLAUDE.md §12) and each scenario pins its own exact value.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} presenting credential {string} verbatim in header {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextWithVerbatimCredentialUntilStatus(String context, String httpMethod,
+                                                                    String credential, String headerName,
+                                                                    int expectedStatus, int timeoutSeconds)
+            throws Exception {
+
+        invokeCredentialInHeaderUntilStatus(context, httpMethod, credential, headerName, expectedStatus,
+                timeoutSeconds);
+    }
+
+    /** Shared retry-until-status loop placing a credential verbatim in a named request header. */
+    private void invokeCredentialInHeaderUntilStatus(String context, String httpMethod, String credentialKey,
+                                                     String headerName, int expectedStatus, int timeoutSeconds)
+            throws Exception {
+
         String resolvedContext = Utils.resolveContextPlaceholders(context);
-        invokeUntilStatus(resolvedContext, apiKey, expectedStatus, timeoutSeconds, () -> {
-            String actualKey = TestContext.resolve(apiKey).toString();
+        invokeUntilStatus(resolvedContext, credentialKey, expectedStatus, timeoutSeconds, () -> {
+            String actualCredential = TestContext.resolve(credentialKey).toString();
             String endpointUrl = Utils.getBaseGatewayUrl()
                     + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
             Map<String, String> headers = new HashMap<>();
             headers.put("accept", "application/json");
-            headers.put(headerName, actualKey);
+            headers.put(headerName, actualCredential);
             return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, "");
         });
     }
@@ -457,6 +487,45 @@ public class APIInvocationSteps {
                         + body);
     }
 
+    /**
+     * Invokes a deployed API at its full gateway context with an EXPLICIT Content-Type, retrying until the
+     * response is a 200 whose body CONTAINS the given marker. The combination the two single-axis variants
+     * cannot express: a RESPONSE-flow transformation policy is only exercised when the request carries the
+     * right content type, and its effect shows up in the BODY while the status stays 200 throughout — so a
+     * status-based retry cannot wait for a redeployed policy to take effect.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with content type {string} until response body contains {string} within {int} seconds")
+    public void invokeApiByContextWithContentTypeUntilBodyContains(String context, String httpMethod,
+                                                                   String accessToken, String payload,
+                                                                   String contentType, String expectedBody,
+                                                                   int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String marker = Utils.resolveContextPlaceholders(expectedBody);
+        long started = System.currentTimeMillis();
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            String actualAccessToken = TestContext.resolve(accessToken).toString();
+            String actualPayload = (payload == null || payload.isEmpty())
+                    ? "" : TestContext.resolve(payload).toString();
+            String endpointUrl = Utils.getBaseGatewayUrl()
+                    + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer " + actualAccessToken);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                    actualPayload, contentType);
+        }, response -> response.getResponseCode() == 200 && response.getData() != null
+                && response.getData().contains(marker));
+        if (last != null && last.getResponseCode() == 401) {
+            Utils.logAuthRejection(resolvedContext, accessToken, credentialForDiagnostic(accessToken),
+                    last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);
+        }
+        assertReachedExpectedStatus(last, 200);
+        String body = last.getData();
+        Assert.assertTrue(body != null && body.contains(marker),
+                "Response body was missing/null or never contained '" + marker + "' within the deadline; last response: "
+                        + body);
+    }
+
     /** Single invocation addressing the API by its full gateway context path (no tenant prefixing). */
     private HttpResponse invokeApiByContext(String resolvedContext, String httpMethod, String accessToken,
                                             String payload) throws IOException {
@@ -468,7 +537,7 @@ public class APIInvocationSteps {
                                             String payload, String authHeaderName) throws IOException {
 
         String actualAccessToken = TestContext.resolve(accessToken).toString();
-        String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
+        String actualPayload = (payload == null || payload.isBlank()) ? "" : TestContext.resolve(payload).toString();
         // The context already carries any /t/<tenant> prefix, so append it directly to the gateway base URL.
         String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
 
@@ -493,7 +562,7 @@ public class APIInvocationSteps {
             throws IOException {
 
         String actualAccessToken = TestContext.resolve(accessToken).toString();
-        String actualPayload = (payload == null || payload.isEmpty()) ? "" : TestContext.resolve(payload).toString();
+        String actualPayload = (payload == null || payload.isBlank()) ? "" : TestContext.resolve(payload).toString();
         // Resolve {{contextKey}} placeholders in the path so the invocation can target a uniquely-generated
         // API context (names/contexts are randomized by ${UNIQUE:...}), e.g. "{{apiContext}}/1.0.0/...".
         String resolvedPath = Utils.resolveContextPlaceholders(path);
@@ -782,7 +851,7 @@ public class APIInvocationSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualAccessToken);
         headers.put("Content-Type", Constants.CONTENT_TYPES.TEXT_XML);
-        if (soapAction != null && !soapAction.isEmpty()) {
+        if (soapAction != null && !soapAction.isBlank()) {
             headers.put("SOAPAction", soapAction);
         }
 
@@ -806,7 +875,7 @@ public class APIInvocationSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + actualAccessToken);
         headers.put("Content-Type", Constants.CONTENT_TYPES.TEXT_XML);
-        if (soapAction != null && !soapAction.isEmpty()) {
+        if (soapAction != null && !soapAction.isBlank()) {
             headers.put("SOAPAction", soapAction);
         }
 

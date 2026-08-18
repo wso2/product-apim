@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,7 +33,10 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -235,7 +239,11 @@ public class OrganizationSteps {
         TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName));
     }
 
-    /** Tenant variant of {@link #iProvisionRole}. */
+    /**
+     * Tenant variant of {@link #iProvisionRole}. A STORE-QUALIFIED name is accepted here too
+     * ({@code SECONDARY.COM/userrole1}): the SOAP addRole resolves the store from the name itself, so no
+     * separate "store role" step is needed — the qualification lives in the value, not the step text.
+     */
     @When("I provision role {string} in tenant {string}")
     public void iProvisionRoleInTenant(String roleName, String tenantDomain) throws Exception {
 
@@ -307,7 +315,7 @@ public class OrganizationSteps {
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200
                         && current.getResponseCode() < 300 && current.getData() != null
-                        && !current.getData().isEmpty(),
+                        && !current.getData().isBlank(),
                 "Failed to fetch API '" + apiId + "' before setting its visible organizations: expected a 2xx "
                         + "response with a body, got " + (current == null ? "no response"
                         : current.getResponseCode() + " / body=" + current.getData()));
@@ -338,7 +346,7 @@ public class OrganizationSteps {
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200
                         && current.getResponseCode() < 300 && current.getData() != null
-                        && !current.getData().isEmpty(),
+                        && !current.getData().isBlank(),
                 "Failed to fetch API '" + apiId + "' before setting its organization policies: expected a 2xx "
                         + "response with a body, got " + (current == null ? "no response"
                         : current.getResponseCode() + " / body=" + current.getData()));
@@ -366,29 +374,177 @@ public class OrganizationSteps {
         String expected = Utils.resolveContextPlaceholders(marker);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        boolean found = false;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers);
-                // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
-                // IOException-only catch and killing the poll.
-                if (last.getResponseCode() == 200 && last.getData() != null && last.getData().contains(expected)) {
-                    found = true;
-                    break;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(deadlineStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil (CLAUDE.md §7/§15) — the envelope owns the deadline floor,
+        // the tiered pollPause pacing and the IOException-only retry policy.
+        // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance()
+                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                // A 200 with no body counts as still-pending, not a match.
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(expected));
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
-        Assert.assertTrue(found, "DevPortal API did not contain '" + expected + "' within "
-                + timeoutSeconds + "s; last: " + (last == null ? "null" : last.getData()));
+        Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
+                "DevPortal API " + apiId + " did not return a 200 with a body within " + timeoutSeconds
+                        + "s; got " + last.getResponseCode() + " / " + last.getData());
+        Assert.assertTrue(last.getData().contains(expected), "DevPortal API did not contain '" + expected
+                + "' within " + timeoutSeconds + "s; last: " + last.getData());
+    }
+
+    /**
+     * Asserts the EXACT set of subscription tiers the DevPortal offers for the API, read off the response the
+     * preceding devportal API-get published as {@code httpResponse}. The plain "should contain" check cannot
+     * distinguish "the org's policy was applied" from "the org's policy was added alongside the API's own
+     * tiers" — an org restricted to Bronze that is still offered Unlimited is a policy-enforcement failure that
+     * a containment check passes. Ports the {@code getTiers().size()} + tier-name assertions of
+     * ConsumerOrganizationVisibilityTestCase#testOrgSpecificSubscriptionPolicies.
+     *
+     * @param expectedTiers comma-separated tier names, in any order (e.g. {@code Bronze})
+     */
+    @Then("The devportal API tiers should be exactly {string}")
+    public void theDevportalApiTiersShouldBeExactly(String expectedTiers) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "No devportal API response to read tiers from: got " + (response == null ? "no response"
+                        : response.getResponseCode() + " / body=" + response.getData()));
+
+        JSONArray tiers = new JSONObject(response.getData()).optJSONArray("tiers");
+        Assert.assertNotNull(tiers, "The devportal API carries no tiers field at all — an org whose policy left it "
+                + "with no offered tier is a real outcome here, so it must fail as that, not as a JSON parse error. "
+                + "Body: " + response.getData());
+        List<String> actual = new ArrayList<>();
+        for (int i = 0; i < tiers.length(); i++) {
+            actual.add(tiers.getJSONObject(i).getString("tierName"));
+        }
+        List<String> expected = new ArrayList<>();
+        for (String tier : expectedTiers.split(",")) {
+            expected.add(tier.trim());
+        }
+        Collections.sort(actual);
+        Collections.sort(expected);
+        Assert.assertEquals(actual, expected,
+                "DevPortal subscription tiers mismatch. Body: " + response.getData());
+    }
+
+    /**
+     * Asserts an API's EXACT {@code visibleOrganizations} on the PUBLISHER plane (a fresh GET as the acting
+     * actor's publisher token). Used to pin the DEFAULT value of a newly created API — which no scenario
+     * asserted, because v2 always set the value explicitly first, so a change of default would have gone
+     * unnoticed. Ports the "Default visibility is not 'none'" assertion of
+     * ConsumerOrganizationVisibilityTestCase#testSetOrganizationVisibilityNoneToAPI.
+     *
+     * @param apiIdKey  context key holding the API id
+     * @param expected  comma-separated expected values, in any order (e.g. {@code none}, {@code all}, or a UUID
+     *                  reference like {@code {{subOrg1}}})
+     */
+    @Then("The visible organizations of API {string} should be exactly {string}")
+    public void theVisibleOrganizationsOfApiShouldBeExactly(String apiIdKey, String expected) throws IOException {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = Requests.get(
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Failed to fetch API '" + apiId + "' to read its visible organizations: got "
+                        + (response == null ? "no response"
+                        : response.getResponseCode() + " / body=" + response.getData()));
+
+        JSONArray visible = new JSONObject(response.getData()).optJSONArray("visibleOrganizations");
+        Assert.assertNotNull(visible, "API '" + apiId + "' carries no visibleOrganizations field at all. Body: "
+                + response.getData());
+        List<String> actual = new ArrayList<>();
+        for (int i = 0; i < visible.length(); i++) {
+            actual.add(visible.getString(i));
+        }
+        List<String> expectedValues = new ArrayList<>();
+        for (String value : Utils.resolveContextPlaceholders(expected).split(",")) {
+            expectedValues.add(value.trim());
+        }
+        Collections.sort(actual);
+        Collections.sort(expectedValues);
+        Assert.assertEquals(actual, expectedValues,
+                "visibleOrganizations mismatch for API '" + apiId + "'. Body: " + response.getData());
+    }
+
+    /**
+     * Polls the DevPortal API LIST as the acting actor until the API is / is not listed. The LIST is a SEPARATE
+     * visibility surface from the detail GET the sibling steps poll: the detail read is gated per API id, while
+     * the listing is filtered when the query is built — so an API can be refused at the detail view and still
+     * leak into the marketplace listing. Legacy asserted both on every organization-visibility case
+     * ({@code isAPIVisibleInMarketPlace} alongside {@code canViewAPIInDevPortal}); only the detail view was
+     * ported, leaving the leakier of the two surfaces unchecked.
+     */
+    @When("I retrieve the devportal API list until it contains {string} within {int} seconds")
+    public void iDevportalApiListUntilContains(String apiIdKey, int timeoutSeconds) throws InterruptedException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        pollDevportalApiList(TestContext.resolve(apiIdKey).toString(), headers, true, timeoutSeconds);
+    }
+
+    @When("I retrieve the devportal API list until it does not contain {string} within {int} seconds")
+    public void iDevportalApiListUntilAbsent(String apiIdKey, int timeoutSeconds) throws InterruptedException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        pollDevportalApiList(TestContext.resolve(apiIdKey).toString(), headers, false, timeoutSeconds);
+    }
+
+    /**
+     * As above, ANONYMOUSLY (no auth) with the DevPortal tenant context header, so a tenant API resolves for the
+     * anonymous caller — mirroring the anonymous detail-view step.
+     */
+    @When("I retrieve the devportal API list anonymously in tenant {string} until it contains {string} within {int} seconds")
+    public void iDevportalApiListAnonUntilContains(String tenantDomain, String apiIdKey, int timeoutSeconds)
+            throws InterruptedException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("X-WSO2-Tenant", tenantDomain);
+        pollDevportalApiList(TestContext.resolve(apiIdKey).toString(), headers, true, timeoutSeconds);
+    }
+
+    @When("I retrieve the devportal API list anonymously in tenant {string} until it does not contain {string} within {int} seconds")
+    public void iDevportalApiListAnonUntilAbsent(String tenantDomain, String apiIdKey, int timeoutSeconds)
+            throws InterruptedException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("X-WSO2-Tenant", tenantDomain);
+        pollDevportalApiList(TestContext.resolve(apiIdKey).toString(), headers, false, timeoutSeconds);
+    }
+
+    /**
+     * Shared poll for the DevPortal API listing, mirroring {@link #pollDevportalKeyManagers}: organization
+     * visibility is eventually consistent after a {@code visibleOrganizations} change, so a single GET can catch
+     * stale state. Matches on the API id, which appears in the listing only as an entry's {@code id}.
+     */
+    private void pollDevportalApiList(String apiId, Map<String, String> headers, boolean shouldContain,
+                                      int timeoutSeconds) throws InterruptedException {
+
+        // Funnelled through Utils.retryUntil (CLAUDE.md §7/§15) rather than a hand-rolled deadline loop: the
+        // envelope owns the deadline floor (RUNTIME_PROPAGATION_TIMEOUT), the tiered pollPause pacing and the
+        // IOException-only retry policy, so this cannot drift below the shared ceiling.
+        // Cleared first so a throw leaves httpResponse ABSENT rather than stale (the §7 stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApisURL(Utils.getBaseUrl()), headers),
+                // A 200 with no body counts as still-pending, not a match.
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(apiId) == shouldContain);
+        TestContext.set("httpResponse", last);
+        Assert.assertNotNull(last, "No devportal API-list response received");
+        Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
+                "DevPortal API listing did not return a 200 with a body within " + timeoutSeconds + "s; got "
+                        + last.getResponseCode() + " / " + last.getData());
+        Assert.assertEquals(last.getData().contains(apiId), shouldContain,
+                "DevPortal API " + apiId + (shouldContain ? " not listed" : " still listed") + " within "
+                        + timeoutSeconds + "s; last: " + last.getData());
     }
 
     /** Retrieves an API from the DevPortal as the acting actor (its devportal token) — 200 visible / 403 not. */
@@ -457,29 +613,22 @@ public class OrganizationSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        boolean present = !shouldContain;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers);
-                // Body null-guarded: a 200 with no body counts as still-pending rather than NPE-ing out of the
-                // IOException-only catch and killing the poll.
-                if (last.getResponseCode() == 200 && last.getData() != null) {
-                    present = last.getData().contains(kmId);
-                    if (present == shouldContain) {
-                        break;
-                    }
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(deadlineStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil (CLAUDE.md §7/§15) — the envelope owns the deadline floor,
+        // the tiered pollPause pacing and the IOException-only retry policy.
+        // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance()
+                        .doGet(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers),
+                // A 200 with no body counts as still-pending, not a match.
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(kmId) == shouldContain);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal key-manager response received");
-        Assert.assertEquals(present, shouldContain,
+        Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
+                "DevPortal key-manager listing did not return a 200 with a body within " + timeoutSeconds
+                        + "s; got " + last.getResponseCode() + " / " + last.getData());
+        Assert.assertEquals(last.getData().contains(kmId), shouldContain,
                 "DevPortal key-manager " + kmId + (shouldContain ? " not visible" : " still visible")
                         + " within " + timeoutSeconds + "s; last: " + last.getData());
     }
@@ -487,21 +636,14 @@ public class OrganizationSteps {
     private void pollDevportalApiUntil(String apiId, Map<String, String> headers, int expectedStatus,
                                        int timeoutSeconds) throws InterruptedException {
 
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
-        HttpResponse last = null;
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                last = SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId),
-                        headers);
-                if (last.getResponseCode() == expectedStatus) {
-                    break;
-                }
-            } catch (IOException transientDuringWarmup) {
-                // retry transient connectivity only
-            }
-            Utils.pollPause(deadlineStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil (CLAUDE.md §7/§15) — the envelope owns the deadline floor,
+        // the tiered pollPause pacing and the IOException-only retry policy.
+        // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> SimpleHTTPClient.getInstance()
+                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                response -> response.getResponseCode() == expectedStatus);
         TestContext.set("httpResponse", last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
         Assert.assertEquals(last.getResponseCode(), expectedStatus,

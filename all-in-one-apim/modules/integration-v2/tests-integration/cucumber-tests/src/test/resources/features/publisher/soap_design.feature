@@ -19,7 +19,7 @@ Feature: Publisher SOAP API Design
       | publisherUser@tenant1.com  |
 
   @cap:publisher @feat:soap-design @type:negative @legacy:APIMANAGERPublisherTestCase
-  Scenario Outline: A subscriber-role user cannot create an API as <actor>
+  Scenario Outline: A subscriber-role user cannot create a SOAP API as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_soap_api.json" in context as "subscriberApiPayload"
     And I attempt to create an "apis" resource with payload "subscriberApiPayload"
@@ -46,8 +46,8 @@ Feature: Publisher SOAP API Design
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "wsdlApiId"
     Then The response status code should be 200
-    And The response should contain "{{wsdlApiName}}"
-    And The response should contain "SOAP"
+    And The value of response field "name" should be "{{wsdlApiName}}"
+    And The value of response field "type" should be "SOAP"
 
     Examples:
       | actor                     |
@@ -90,8 +90,8 @@ Feature: Publisher SOAP API Design
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "wsdlZipId"
     Then The response status code should be 200
-    And The response should contain "{{wsdlZipName}}"
-    And The response should contain "SOAP"
+    And The value of response field "name" should be "{{wsdlZipName}}"
+    And The value of response field "type" should be "SOAP"
     When I retrieve the WSDL definition of API "wsdlZipId"
     Then The response status code should be 200
 
@@ -142,7 +142,7 @@ Feature: Publisher SOAP API Design
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "s2rApiId"
     Then The response status code should be 200
-    And The response should contain "{{s2rApiName}}"
+    And The value of response field "name" should be "{{s2rApiName}}"
     And The response should contain "sayHello"
 
     Examples:

@@ -1,0 +1,34 @@
+{
+  "name": "${UNIQUE:Auth0KMOpt}",
+  "displayName": "Test Key Manager Auth0",
+  "type": "Auth0",
+  "description": "This is a test key manager",
+  "issuer": "https://dev-ted144kt.us.auth0.com/",
+  "introspectionEndpoint": "none",
+  "clientRegistrationEndpoint": "https://dev-ted144kt.us.auth0.com/oidc/register",
+  "tokenEndpoint": "https://dev-ted144kt.us.auth0.com/oauth/token",
+  "revokeEndpoint": "https://dev-ted144kt.us.auth0.com/oauth/revoke",
+  "authorizeEndpoint": "https://dev-ted144kt.us.auth0.com/authorize",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableOAuthAppCreation": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "implicit",
+    "refresh_token"
+  ],
+  "certificates": {
+    "type": "JWKS",
+    "value": "https://dev-ted144kt.us.auth0.com/.well-known/jwks.json"
+  },
+  "additionalProperties": {
+    "client_id": "clientIdValue",
+    "client_secret": "clientSecretValue",
+    "audience": "audienceValue",
+    "self_validate_jwt": true
+  }
+}

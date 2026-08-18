@@ -62,3 +62,47 @@ Feature: Key Manager OAuth Application Keys
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Legacy GrantTypeTokenGenerateTestCase#testApplicationCreationWithoutCallBackURL asserted only that key
+  # generation with an empty callbackUrl fails. On its own that is vacuous — an empty callbackUrl could be
+  # rejected for any reason. The second leg here is the control that gives it meaning: the SAME empty callbackUrl
+  # is ACCEPTED (200) when only client_credentials/password are requested, so the rejection is provably about the
+  # redirect-based grant types and not about the empty string.
+  @cap:key-manager @feat:oauth-keys @rule:callback-url @type:negative @legacy:GrantTypeTokenGenerateTestCase
+  Scenario Outline: Key generation is refused without a callback URL only when a redirect-based grant is requested as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+
+    When I put the following JSON payload in context as "noCallbackRedirectGrantsPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password", "authorization_code", "implicit"], "callbackUrl": ""}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "noCallbackRedirectGrantsPayload"
+    Then The response status code should be 400
+    And The response should contain "The callback url must have at least one URI value when using Authorization code or implicit grant types."
+
+    When I put the following JSON payload in context as "noCallbackPlainGrantsPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"], "callbackUrl": ""}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "noCallbackPlainGrantsPayload"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # TODO(coverage): consumer-secret rotation (ports ApplicationRegenerateConsumerSecretTestCase) is not
+  # covered here.
+  # WHAT THE MISSING SCENARIO MUST ASSERT: POST /applications/{appId}/oauth-keys/{keyMappingId}/regenerate-secret
+  # returns 200 with a consumerSecret that DIFFERS from the previous one, and the rotation is then proven at the
+  # token endpoint — a client_credentials request with the OLD secret is refused, and one with the NEW secret
+  # succeeds. Asserting the 200 alone would not show the secret actually rotated.
+  # NOT the same thing as multiple_client_secrets.feature, which covers ADDITIONAL secrets on a key mapping
+  # (generate / list / revoke extras) — a different endpoint. The PRIMARY secret's rotation is uncovered.
+  # OBSERVED TODAY: the endpoint answers 500 (900967) on that happy path against the resident key manager, so
+  # there is nothing stable to pin. Settle the intended behaviour first rather than encoding today's response.

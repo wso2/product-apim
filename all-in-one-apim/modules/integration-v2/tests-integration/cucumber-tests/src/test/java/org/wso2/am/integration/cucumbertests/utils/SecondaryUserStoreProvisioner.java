@@ -55,7 +55,7 @@ public final class SecondaryUserStoreProvisioner {
      * {@code Examples} table is self-documenting — a reader sees the actor lives in the secondary store. It is
      * ALSO the store-local username, so the two never drift; the auth layer appends {@code @<tenant>} to form the
      * full login name. Resolvable per tenant via {@code Identity.resolveActor}, e.g.
-     * {@code "SECONDARY.COM/secondaryUser@tenant1.com"} (resolveActor splits on {@code @}, which follows the key)
+     * {@code "SECONDARY.COM/publisherUser1@tenant1.com"} (resolveActor splits on {@code @}, which follows the key)
      * — giving the ×4 matrix axis (2 tenants × 2 store users). The same store-local names are seeded into BOTH
      * tenants; the shared store DB keeps them distinct by UM_TENANT_ID.
      */

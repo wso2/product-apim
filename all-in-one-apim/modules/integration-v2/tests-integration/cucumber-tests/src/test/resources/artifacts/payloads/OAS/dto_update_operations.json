@@ -1,0 +1,23 @@
+[
+  {
+    "target": "/orders",
+    "verb": "GET",
+    "authType": "Application & Application User",
+    "throttlingPolicy": "Unlimited",
+    "scopes": []
+  },
+  {
+    "target": "/orders",
+    "verb": "POST",
+    "authType": "Application & Application User",
+    "throttlingPolicy": "Unlimited",
+    "scopes": []
+  },
+  {
+    "target": "/orders/{orderId}",
+    "verb": "GET",
+    "authType": "Application & Application User",
+    "throttlingPolicy": "Unlimited",
+    "scopes": []
+  }
+]

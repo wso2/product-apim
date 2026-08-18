@@ -27,8 +27,12 @@ Feature: Gateway Default Endpoint Invocation
     Then The response status code should be 200
 
     # With the To header set by the policy, the default endpoint resolves to the backend and the invocation succeeds.
+    # The body is pinned to the payload of the destination the policy set (…/customers/123): the whole subject is
+    # WHERE the destination-less default endpoint resolved to, and a bare 200 asserts only that it resolved
+    # somewhere.
     When I invoke the API at gateway context "{{deInvContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
