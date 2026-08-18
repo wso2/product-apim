@@ -1,0 +1,36 @@
+{
+  "name": "${UNIQUE:apisecApiKeyOnly}",
+  "context": "${UNIQUE:apisecApiKeyOnlyCtx}",
+  "version": "1.0.0",
+  "securityScheme": [
+    "api_key",
+    "oauth_basic_auth_api_key_mandatory"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "description": "API-KEY-ONLY secured API (no oauth2) - the target for the api-key positives and the Basic-scheme negative",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

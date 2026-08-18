@@ -312,14 +312,25 @@ tenants (`carbon.super` and `tenant1.com`) on boot — pick the one with the lea
     of who is acting at the end.)
 - **Tenant ×2.** Run a feature in both tenants with a `Scenario Outline` over an actor column
   (`| admin | admin@tenant1.com |`, etc.) — no per-step changes; the actor's `@domain` drives tenant routing.
-- **Secondary user store (opt-in seeder).** A block that sets `initSecondaryUserStore=true` gets a
-  `SECONDARY.COM` JDBC store stood up at boot (fresh in-container H2 → SOAP `addUserStore` → poll active),
-  seeding two extra actors **per tenant** on top of the primary ones: `SECONDARY.COM/publisherUser1`
-  (`Internal/creator,publisher`) and `SECONDARY.COM/subscriberUser1` (`Internal/subscriber`). Purely additive —
-  it touches no primary user/role/claim or global server config, so it is safe to enable on any block (the store
-  provisions once, before any runner). No true-admin store actor: the primary `admin` role poisons a store
-  account (it authenticates as 401). Reference a store actor by its store-qualified key. See
-  `utils/SecondaryUserStoreProvisioner`.
+- **Secondary user store — available to ANY block, by design.** A block that sets
+  `initSecondaryUserStore=true` gets a `SECONDARY.COM` JDBC store stood up at boot (fresh in-container H2 →
+  SOAP `addUserStore` → poll active), seeding two extra actors **per tenant** on top of the primary ones:
+  `SECONDARY.COM/publisherUser1` (`Internal/creator,publisher`) and `SECONDARY.COM/subscriberUser1`
+  (`Internal/subscriber`).
+  - **Enable it wherever a feature needs a store actor — no justification required.** The seeder was built to
+    be usable everywhere, not as an Admin-block special case. It is purely additive: it touches no primary
+    user/role/claim and no global server config, creates its own separate H2 database, and provisions once
+    before any runner. Adding the parameter to a `<test>` block is a routine, expected change; the only cost is
+    a few seconds of boot. That several blocks don't set it today reflects what they happened to need, **not** a
+    restriction.
+  - **Any feature may use the store actors** — a secondary-store user is a first-class actor, same as the
+    primary ones. Reference it by its store-qualified key (`resolveActor` splits on `@`, which follows the key,
+    so `SECONDARY.COM/publisherUser1@tenant1.com` resolves correctly).
+  - **The one real constraint: there is no true-admin store actor.** The primary `admin` role poisons a store
+    account — it authenticates as 401 — so store actors cover the publisher and subscriber planes only. An
+    admin-scoped step must act as a primary-store admin.
+  - Legacy's `SUPER_TENANT_USER_STORE_USER` factory mode maps onto these actors; that fan-out is real parity
+    coverage, so port it rather than treating it as unavailable. See `utils/SecondaryUserStoreProvisioner`.
 - **The acting actor leaks across scenarios — always set it explicitly.** There is no per-scenario reset:
   the acting actor persists from whatever ran last. A `Scenario Outline` leaves it set to its **last Examples
   row** — so an outline with `super` then `tenant1.com` rows leaves the actor on `admin@tenant1.com`. Any
@@ -342,6 +353,22 @@ tenants (`carbon.super` and `tenant1.com`) on boot — pick the one with the lea
   asserts 401, `gateway/mcp_openapi_invocation` asserts 403), each pinning its subtype's real behaviour — NOT a
   step that accepts either. When you discover such a per-case difference, record it (backlog/comment) and encode
   it as separate exact assertions.
+- **An exact assertion is only as sound as the state it reads.** Exactness is required (above); WHERE you point
+  it is what makes it valid. Blocks share one container and run classes in parallel, so:
+  - **Scenario-owned** (a GET by an id this scenario created) — assert exact values and exact counts freely.
+  - **A shared listing** (throttling policies, deny policies, key managers — anything tenant-global) — a sibling
+    class may add rows mid-scenario, so a raw `count` or an unfiltered `list[*]` is RACY. Scope it: filter to the
+    identifiers you expect (`list[?(@.name in ['Bronze','Gold'])]`) or scope the query itself (a search on a
+    `${UNIQUE:…}` value). The cost is that "no unexpected extra row exists" can no longer be asserted — that claim
+    is not race-free without a dedicated tenant. Scope by construction; never rely on the block's `thread-count`,
+    which anyone may raise.
+  - **A server singleton** (e.g. the devops correlation-logging config) — nothing to filter on; the block must stay
+    `thread-count="1"` and the suite XML must say why.
+  Never settle a flaky count by widening the assertion — that trades a regression detector for silence.
+- **Pin cardinality alongside an exact-set assertion.** JsonPath SKIPS entries whose leaf is missing, so
+  `list[*].type` over 9 rows where 8 lost `type` yields ONE value and the set still matches. Pair the set check
+  with `The response array field "…" should have exactly N entries`. Derive N from the fixture (or measure it) —
+  never guess: a wrong count fails a correct test.
 
 ## 13. Container config & TOML overlays
 Each block boots a container whose `deployment.toml` is resolved by `BlockLifecycleListener`. Most blocks need
@@ -513,7 +540,9 @@ Fixed ports · hardcoded resource names · `Thread.sleep` · depending on anothe
 artifacts · shared mutable static state · cleanup in inline scenarios instead of hooks · duplicate
 steps or duplicate tests · full-file `tomlOverlayPath` for product tests (use `tomlExtraOverlayPath`) ·
 leaving a **stale `httpResponse`** when a request step throws (clear it first / funnel through
-`execute`) · hand-rolling a deadline/retry loop instead of funnelling through `Utils.retryUntil` (§7/§15) · retry loops
+`execute`) · an exact `count`/`list[*]` assertion over a **shared listing** a sibling class can write to (scope it
+by filter or query — §12) · an exact-set assertion with **no cardinality pin** beside it (§12) ·
+hand-rolling a deadline/retry loop instead of funnelling through `Utils.retryUntil` (§7/§15) · retry loops
 that catch bare `Exception`, silently retry an unexpected 401, or don't assert the expected status after the
 loop ·
 product operations in listeners/provisioners or token-minting side-channel utils (provision infra, act

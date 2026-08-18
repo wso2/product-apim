@@ -25,10 +25,30 @@ Feature: MCP Server authoring (publisher plane)
     # UPDATE (ADD) — expand the exposed set to add get_pets; the persisted operations reflect it
     When I update the MCP server "mcpId" to expose tools "echo,add,get_pets"
     Then The response status code should be 200
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
+    # The exposed set is now the backend's FULL advertised tool set — exactly echo, add and get_pets and nothing
+    # else. So exposing only two of them (above, and in the invocation feature's throttle/scope scenarios) is this
+    # suite's deliberate least-privilege choice, NOT a product limit on how many discovered tools can be imported.
+    # Note the ORDER: the proxy subtype returns its operations sorted by tool name, not in the order submitted
+    # ("echo,add,get_pets" in → add,echo,get_pets out) — unlike the backend-mapped subtypes, which preserve
+    # submission order (see the two ordering scenarios below).
+    And the MCP server operations should be exactly "add,echo,get_pets" in that order
     # READ-BACK — the add persisted
     When I retrieve the "mcp-servers" resource with id "mcpId"
-    Then The response should contain "get_pets"
+    Then The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
+    # Tool FIDELITY for a PROXIED tool: the discovered schema and description must be stored VERBATIM from the
+    # upstream MCP server's tools/list (nothing re-derived, nothing dropped) — a proxy that mangled a tool's input
+    # schema would advertise a contract its own backend rejects, and the presence checks above would not notice.
+    Then the MCP server "mcpId" tool "echo" should have schema definition:
+      """
+      {"type":"object","properties":{"message":{"type":"string"}},"required":["message"]}
+      """
+    And the MCP server "mcpId" tool "echo" should have description "Echoes the provided message"
+    And the MCP server "mcpId" tool "add" should have schema definition:
+      """
+      {"type":"object","properties":{"a":{"type":"number"},"b":{"type":"number"}},"required":["a","b"]}
+      """
+    And the MCP server "mcpId" tool "add" should have description "Adds two numbers"
     # UPDATE (REMOVE) — narrow back to echo,add; get_pets is dropped
     When I update the MCP server "mcpId" to expose tools "echo,add"
     Then The response status code should be 200
@@ -85,20 +105,20 @@ Feature: MCP Server authoring (publisher plane)
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create an MCP server from openapi "artifacts/payloads/OAS/mcp_petstore_oas3.json" with backend "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice" as "mcpId"
     Then The response status code should be 201
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
     # The generated tools come back in the order their operations were submitted (/pets then /pets/{petId}),
     # and ONLY those — the OAS also defines DELETE /oldpets, which was not selected.
     And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
     # UPDATE (REMOVE) — narrow the exposed tools to just get_pets (docs "select tools to import" / least-privilege).
     When I update the MCP server "mcpId" removing tool "get_pets_by_petId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
-    Then The response should contain "get_pets"
+    Then The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should not contain "get_pets_by_petId"
     # UPDATE (ADD) — re-add the removed tool (inverse of remove); it comes back
     When I re-add the removed tool to the MCP server "mcpId"
@@ -162,25 +182,35 @@ Feature: MCP Server authoring (publisher plane)
     When I deploy the "apis" resource with id "backingApiId"
     When I create an MCP server from api "backingApiId" exposing paths "/pets,/pets/{petId}" as "mcpId"
     Then The response status code should be 201
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
     # Same submission-order guarantee as the OpenAPI flow, over the API's resources this time.
     And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
-    And The response should contain "get_pets"
+    And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
     # UPDATE (REMOVE) — narrow the exposed tools (least-privilege).
     When I update the MCP server "mcpId" removing tool "get_pets_by_petId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
-    Then The response should contain "get_pets"
+    Then The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should not contain "get_pets_by_petId"
     # UPDATE (ADD) — re-add the removed tool (inverse of remove); it comes back
     When I re-add the removed tool to the MCP server "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response should contain "get_pets_by_petId"
+    # Tool FIDELITY for the API-generated subtype (it was pinned only for the OpenAPI one): generating tools from an
+    # existing API's resources must derive the SAME schema and description as generating them from the OAS directly —
+    # same parameter-location prefix ("path_petId"), same bare object schema, same description off the OAS summary.
+    # Without this, a subtype that silently dropped the parameter or mislabelled the tool would still pass.
+    Then the MCP server "mcpId" tool "get_pets_by_petId" should have schema definition:
+      """
+      {"type":"object","properties":{"path_petId":{"type":"string","description":"The id of the pet to retrieve"}},"required":["path_petId"]}
+      """
+    And the MCP server "mcpId" tool "get_pets_by_petId" should have description "Get a pet by ID"
+    And the MCP server "mcpId" tool "get_pets" should have description "Get a list of pets"
     When I delete the MCP server "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
@@ -211,6 +241,17 @@ Feature: MCP Server authoring (publisher plane)
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
+    # A tool ADDED by an update is generated with the SAME fidelity as one generated at create: the new DELETE-verb
+    # tool gets the backend definition's own description and a parameterless object schema. The bare
+    # contains-"Delete all old pets" checks above cannot tell that description apart from one that landed on the
+    # WRONG operation, and say nothing at all about the generated schema.
+    Then the MCP server "mcpId" tool "delete_oldpets" should have schema definition:
+      """
+      {"type":"object","properties":{}}
+      """
+    And the MCP server "mcpId" tool "delete_oldpets" should have description "Delete all old pets"
+    # The kept tool carries the description the update SENT, not the one the OAS derived at create.
+    And the MCP server "mcpId" tool "get_pets" should have description "Return a list of pets"
     When I delete the MCP server "mcpId"
     Then The response status code should be 200
 

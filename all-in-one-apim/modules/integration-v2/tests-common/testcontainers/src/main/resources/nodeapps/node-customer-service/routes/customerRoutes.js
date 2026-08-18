@@ -143,6 +143,27 @@ router.all('/reflect-body', express.text({ type: () => true }), (req, res) => {
   res.status(200).send(body);
 });
 
+// POST /reflect-body-typed — like /reflect-body, but echoes the body back with the SAME Content-Type it
+// received, so an XML request body comes back as an XML RESPONSE. That is what a gateway RESPONSE-flow
+// transformation policy (xmlToJson) needs to act on: /reflect-body answers as text/html, which the gateway's
+// message builder does not treat as XML. Kept as a separate route so the existing /reflect-body consumers
+// (request-flow policies, post-body, patch/head) are unaffected.
+//
+// No existing backend was usable: this is the only XML-typed REST response in the tree. soap-stub (3019) does
+// return text/xml, but only a STATIC namespaced SOAP envelope — it cannot echo, so a response-flow assertion
+// against it could not tie the output to the input, and namespace-prefixed element-to-JSON key conversion is
+// not a behaviour worth pinning here. An echo that preserves Content-Type is a general fixture rather than a
+// single-test hack, so it lives here alongside /reflect-body.
+router.all('/reflect-body-typed', express.text({ type: () => true }), (req, res) => {
+  const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  const contentType = req.headers['content-type'];
+  console.log(`----invoking reflect-body-typed, content-type: ${contentType}`);
+  if (contentType) {
+    res.type(contentType);
+  }
+  res.status(200).send(body);
+});
+
 // --- Petstore routes for the gateway schema-validation tests (SchemaValidationTestCase) ---
 // The gateway validates requests/responses against the imported petstore OpenAPI when the API has
 // enableSchemaValidation=true. These routes return schema-shaped bodies so the SAME resources drive both
@@ -230,6 +251,36 @@ router.post('/with-auth/v1/chat/completions', securedChatCompletion);
 router.post('/failover-target/v1/chat/completions', (req, res) => {
   console.log('----failover-target route hit → returning 429 to trigger failover');
   res.status(429).json({ error: 'model endpoint rate-limited (failover target)' });
+});
+
+// --- Mock Gemini generateContent endpoint (GeminiAPIUnlimitedTierDisabledTestCase) ---
+// An AIAPI bound to the SHIPPED "Gemini" 1.1.0 provider is imported from that provider's own OpenAPI
+// definition, whose resource template is /v1beta/models/{model}:generateContent. Its backend points at
+// /gemini here, so the gateway-appended resource resolves to
+// /gemini/v1beta/models/gemini-1.5-flash:generateContent — hence a `:model` segment (express matches any
+// non-slash run, including the ":generateContent" suffix). The body is Gemini-shaped, not Mistral-shaped:
+// the Gemini 1.1.0 provider reads its token metadata from $.usageMetadata.{promptTokenCount,
+// candidatesTokenCount, totalTokenCount}, which the /v1/chat/completions mock's $.usage.* does not provide.
+// The response is a fixed document (no echoing of the request) because the test asserts the WHOLE body
+// against the same fixture, exactly as the legacy WireMock stub + gemini-response.json comparison did.
+router.post('/gemini/v1beta/models/:model', (req, res) => {
+  console.log('----invoking mock Gemini generateContent for model ' + req.params.model);
+  res.status(200).json({
+    candidates: [
+      {
+        content: {
+          parts: [
+            { text: 'Claude Monet is generally considered the most renowned French painter.' }
+          ],
+          role: 'model'
+        },
+        finishReason: 'STOP',
+        index: 0
+      }
+    ],
+    usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 89, totalTokenCount: 99 },
+    modelVersion: 'gemini-1.5-flash'
+  });
 });
 
 // GET /location-abs — responds with an ABSOLUTE Location header (host + /abc/domain). Verifies the gateway

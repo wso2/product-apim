@@ -1,0 +1,37 @@
+{
+  "name": "${UNIQUE:apisecOauthBasic}",
+  "context": "${UNIQUE:apisecOauthBasicCtx}",
+  "version": "1.0.0",
+  "securityScheme": [
+    "oauth2",
+    "basic_auth",
+    "oauth_basic_auth_api_key_mandatory"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "description": "OAuth2 AND basic_auth secured API (application security mandatory) - lets one fixture assert both credential kinds of the same user across an admin password reset",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

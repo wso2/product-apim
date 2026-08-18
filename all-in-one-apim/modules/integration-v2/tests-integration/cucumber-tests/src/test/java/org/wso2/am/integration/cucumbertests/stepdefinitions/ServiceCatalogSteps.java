@@ -186,7 +186,7 @@ public class ServiceCatalogSteps {
         // Guard status AND body before parsing — a 200 with an empty body would otherwise surface as an opaque
         // JSONException instead of a clear failure.
         Assert.assertTrue(response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Service catalog archive import did not return 200 with a body; got "
                         + response.getResponseCode() + " / body=" + response.getData());
         // The response is a ServiceInfoList; register every imported service id for teardown, store the first.
@@ -224,7 +224,7 @@ public class ServiceCatalogSteps {
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             // A 2xx import MUST carry the ServiceInfoList body — guard before parsing so a degenerate empty-body
             // success fails clearly instead of as a JSONException. (Non-2xx negatives skip this branch untouched.)
-            Assert.assertTrue(response.getData() != null && !response.getData().isEmpty(),
+            Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
                     "Service catalog archive import returned " + response.getResponseCode()
                             + " but carried no body to register imported service ids from");
             JSONArray list = new JSONObject(response.getData()).getJSONArray("list");
@@ -297,7 +297,7 @@ public class ServiceCatalogSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No service-catalog search response captured");
         Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Service-catalog search did not return a 2xx body: got " + response.getResponseCode()
                         + " / " + response.getData());
         JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
@@ -320,7 +320,7 @@ public class ServiceCatalogSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No service-catalog import response captured");
         Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Service-catalog import did not return a 2xx body: got " + response.getResponseCode()
                         + " / " + response.getData());
         JSONArray list = new JSONObject(response.getData()).optJSONArray("list");

@@ -1,0 +1,38 @@
+{
+  "name": "${UNIQUE:PingFederateKMOpt}",
+  "displayName": "Test Key Manager PingFederate",
+  "type": "PingFederate",
+  "description": "This is a test key manager",
+  "issuer": "https://localhost:9031",
+  "introspectionEndpoint": "https://localhost:9031/as/introspect.oauth2",
+  "clientRegistrationEndpoint": "https://localhost:9031/pf-ws/rest/oauth/clients",
+  "tokenEndpoint": "https://localhost:9031/as/token.oauth2",
+  "revokeEndpoint": "https://localhost:9031/as/revoke_token.oauth2",
+  "userInfoEndpoint": "https://localhost:9031/as/userinfo.oauth2",
+  "authorizeEndpoint": "https://localhost:9031/as/authorization.oauth2",
+  "scopeManagementEndpoint": "https://localhost:9031/as/scope.oauth2",
+  "consumerKeyClaim": "client_id_name",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableOAuthAppCreation": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "implicit",
+    "refresh_token",
+    "authorization_code"
+  ],
+  "certificates": {
+    "type": "JWKS",
+    "value": "https://localhost:9031/pf/JWKS"
+  },
+  "additionalProperties": {
+    "username": "admin",
+    "password": "admin",
+    "client_id": "clientIdValue",
+    "client_secret": "clientSecretValue",
+    "self_validate_jwt": true
+  }
+}

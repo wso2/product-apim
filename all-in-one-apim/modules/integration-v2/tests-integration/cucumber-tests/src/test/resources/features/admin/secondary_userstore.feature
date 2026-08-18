@@ -24,7 +24,7 @@ Feature: Admin Secondary User Store (case-insensitive)
     And I have valid access tokens as "admin@<tenant>"
     # The SECONDARY.COM store is stood up at block boot by the framework (runtime addUserStore + schema from the
     # product dbscripts). Add a role, then a user carrying that role.
-    When I provision store role "SECONDARY.COM/userrole1" in tenant "<tenant>"
+    When I provision role "SECONDARY.COM/userrole1" in tenant "<tenant>"
     And I provision store user "SECONDARY.COM/testUser1" with password "password123" and roles "Internal/subscriber,SECONDARY.COM/userrole1" in tenant "<tenant>"
     # Existence is asserted via isExistingUser — NOT via a non-empty role list. PIN: getRoleListOfUser returns
     # "Internal/everyone" for ANY username string (existing or not), so a non-empty role list is a FALSE POSITIVE
@@ -99,7 +99,7 @@ Feature: Admin Secondary User Store (case-insensitive)
   Scenario: The shared secondary-store DB isolates users by tenant (UM_TENANT_ID)
     Given The system is ready
     And I have valid access tokens as "admin"
-    When I provision store role "SECONDARY.COM/isoRole1" in tenant "carbon.super"
+    When I provision role "SECONDARY.COM/isoRole1" in tenant "carbon.super"
     And I provision store user "SECONDARY.COM/isoUser1" with password "password123" and roles "SECONDARY.COM/isoRole1" in tenant "carbon.super"
     Then the user "SECONDARY.COM/isoUser1" in tenant "carbon.super" should exist
     # Same store domain, same username, other tenant → absent (distinct UM_TENANT_ID on the shared DB).

@@ -154,3 +154,90 @@ Feature: Key Manager Multiple Client Secrets
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # THE MULTIPLE-SECRET MODEL'S GATEWAY BEHAVIOUR — the counterpart to consumer_secret_rotation.feature, which
+  # covers the SINGLE-secret model on its own block. The scenarios above prove additional secrets can be
+  # generated, listed and revoked on the management plane; none of them proves a secret actually AUTHENTICATES,
+  # which is the property an application depends on. A management-plane 200 would still pass if the extra secret
+  # were recorded but never accepted by the token endpoint.
+  #
+  # So this drives all three credentials through a real client_credentials token request and a real gateway
+  # invocation, then revokes ONE and shows that exactly that one stops working while the sibling keeps working.
+  # The surviving-secret leg is what makes the revocation meaningful: without it, a revoke that broke ALL the
+  # application's secrets would pass just as happily.
+  @cap:key-manager @feat:token-issuance @rule:multiple-secrets @type:regression @dep:devportal @legacy:ApplicationTestCase
+  Scenario Outline: Every consumer secret authenticates at the gateway and a revoked one stops as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "mcsApiId" and deployed it
+    When I publish the "apis" resource with id "mcsApiId"
+    Then The lifecycle status of API "mcsApiId" should be "Published"
+    When I retrieve the "apis" resource with id "mcsApiId"
+    And I extract response field "context" and store it as "mcsApiContext"
+
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "mcsAppPayload"
+    And I create an application with payload "mcsAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "mcsKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "mcsKeysPayload"
+    Then The response status code should be 200
+    And I extract response field "consumerKey" and store it as "mcsConsumerKey"
+    And I extract response field "consumerSecret" and store it as "mcsPrimarySecret"
+    When I put the following JSON payload in context as "mcsSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "mcsApiId" using application "createdAppId" with payload "mcsSubPayload" as "mcsSubId"
+    Then The response status code should be 201
+
+    # Two ADDITIONAL secrets alongside the primary.
+    When I generate a consumer secret with description "gateway secret A" for application "createdAppId" with key mapping "keyMappingId" as "mcsSecretAId"
+    Then The response status code should be 201
+    # The `as` parameter captures the secret ID (what revoke takes); the VALUE is a separate field and is what
+    # authenticates at the token endpoint. Both are needed, and confusing them yields a misleading invalid_client.
+    And I extract response field "secretValue" and store it as "mcsSecretAValue"
+    When I generate a consumer secret with description "gateway secret B" for application "createdAppId" with key mapping "keyMappingId" as "mcsSecretBId"
+    Then The response status code should be 201
+    # The `as` parameter captures the secret ID (what revoke takes); the VALUE is a separate field and is what
+    # authenticates at the token endpoint. Both are needed, and confusing them yields a misleading invalid_client.
+    And I extract response field "secretValue" and store it as "mcsSecretBValue"
+
+    # ALL THREE authenticate and reach the gateway.
+    When I request a client-credentials token using consumer key "mcsConsumerKey" and secret "mcsPrimarySecret"
+    Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
+    When I invoke the API at gateway context "{{mcsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I request a client-credentials token using consumer key "mcsConsumerKey" and secret "mcsSecretAValue"
+    Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
+    When I invoke the API at gateway context "{{mcsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I request a client-credentials token using consumer key "mcsConsumerKey" and secret "mcsSecretBValue"
+    Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
+    When I invoke the API at gateway context "{{mcsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # Revoke ONE of them.
+    When I revoke the consumer secret "mcsSecretAId" for application "createdAppId" with key mapping "keyMappingId"
+    Then The response status code should be 204
+
+    # Exactly that one is dead...
+    When I request a client-credentials token using consumer key "mcsConsumerKey" and secret "mcsSecretAValue"
+    Then The response status code should be 401
+    # ...and the sibling is untouched, which is what makes the revocation SELECTIVE rather than destructive.
+    When I request a client-credentials token using consumer key "mcsConsumerKey" and secret "mcsSecretBValue"
+    Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
+    When I invoke the API at gateway context "{{mcsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+

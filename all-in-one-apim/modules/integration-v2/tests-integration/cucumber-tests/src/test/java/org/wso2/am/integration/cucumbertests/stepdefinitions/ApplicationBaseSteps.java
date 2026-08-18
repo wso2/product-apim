@@ -20,6 +20,8 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +51,8 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 public class ApplicationBaseSteps {
+
+    private static final Log log = LogFactory.getLog(ApplicationBaseSteps.class);
 
     BaseSteps baseSteps = new BaseSteps();
 
@@ -487,6 +491,49 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Creates a SubscriptionThrottlePolicy carrying the COMPLETE business plan — GraphQL query-analysis limits, a
+     * custom attribute, a monetization plan, a COMMERCIAL billing plan, burst control disabled ({@code -1}/NA), a
+     * subscriber count and a role-scoped ALLOW permission — mirroring the DTO legacy
+     * SubscriptionThrottlingPolicyTestCase#testAddPolicyWithRequestCountLimit deep-verified. Deliberately a
+     * separate step from the low-limit enforcement create above: adding these fields there would change what the
+     * throttling-enforcement and GraphQL suites enforce. Only the admin-plane round trip is asserted (by the
+     * feature), so the values are fixed rather than parameterized.
+     */
+    @When("I create a subscription throttling policy {string} allowing {int} requests per minute with the full business plan configuration")
+    public void iCreateSubscriptionFullBusinessPlanPolicy(String policyBaseName, int requestsPerMinute)
+            throws IOException {
+        String policyName = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(policyBaseName));
+        String payload = new JSONObject()
+                .put("policyName", policyName)
+                .put("displayName", policyName)
+                .put("description", "Full business plan: " + requestsPerMinute + " req/min")
+                .put("type", "SubscriptionThrottlePolicy")
+                .put("defaultLimit", new JSONObject()
+                        .put("type", "REQUESTCOUNTLIMIT")
+                        .put("requestCount", new JSONObject()
+                                .put("timeUnit", "min").put("unitTime", 1).put("requestCount", requestsPerMinute)))
+                .put("graphQLMaxComplexity", 400)
+                .put("graphQLMaxDepth", 10)
+                .put("rateLimitCount", -1)
+                .put("rateLimitTimeUnit", "NA")
+                .put("stopOnQuotaReach", false)
+                .put("billingPlan", "COMMERCIAL")
+                .put("subscriberCount", 0)
+                // MonetizationInfo requires BOTH monetizationPlan and properties, so the (empty) map is sent too.
+                .put("monetization", new JSONObject()
+                        .put("monetizationPlan", "DYNAMICRATE")
+                        .put("properties", new JSONObject()))
+                .put("customAttributes", new JSONArray().put(new JSONObject()
+                        .put("name", "testAttribute").put("value", "testValue")))
+                .put("permissions", new JSONObject()
+                        .put("permissionType", "ALLOW")
+                        .put("roles", new JSONArray().put("Internal/creator")))
+                .toString();
+        postAdminPolicy(Utils.getSubscriptionThrottlingPoliciesURL(Utils.getBaseUrl()), payload, "subThrottlePolicyName",
+                policyName, "subThrottlePolicyId", Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
+    }
+
+    /**
      * Sets an API's per-field GraphQL complexity values (PUT /apis/{id}/graphql-policies/complexity). Ports
      * addGraphQLComplexityDetails — the per-field weights the gateway sums to compute a query's complexity.
      */
@@ -498,6 +545,62 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Requests.put(Utils.getGraphQLComplexityURL(Utils.getBaseUrl(), actualApiId), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Reads back an API's per-field GraphQL complexity config from the PUBLISHER
+     * (GET /apis/{id}/graphql-policies/complexity), publishing the response so the feature can assert the stored
+     * weights. Ports {@code getGraphQLComplexityResponse} — the read half of the complexity round trip, which the
+     * v2 port only ever wrote (the PUT above) and never verified.
+     */
+    @When("I retrieve the publisher GraphQL complexity of API {string}")
+    public void iRetrievePublisherGraphqlComplexity(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getGraphQLComplexityURL(Utils.getBaseUrl(), actualApiId), headers);
+    }
+
+    /**
+     * Reads an API's GraphQL schema TYPE LIST from the PUBLISHER
+     * (GET /apis/{id}/graphql-policies/complexity/types), publishing the response for assertion. This is the
+     * per-type/per-field inventory a complexity config is built from, so it is the input the publisher UI needs
+     * before any weight can be assigned. Ports {@code getGraphQLSchemaTypeListResponse}.
+     */
+    @When("I retrieve the publisher GraphQL schema type list of API {string}")
+    public void iRetrievePublisherGraphqlSchemaTypeList(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getGraphQLSchemaTypeListURL(Utils.getBaseUrl(), actualApiId), headers);
+    }
+
+    /**
+     * Reads an API's GraphQL complexity config from the DEVPORTAL
+     * (GET /apis/{id}/graphql-policies/complexity) as a consumer, publishing the response for assertion. A
+     * DISTINCT plane from the publisher read above: the devportal serves the weights read-only to a subscriber so
+     * a consumer can see what a query will cost. Ports the devportal half of
+     * {@code GraphQLQueryAnalysisTest.testRetrieveGraphQLComplexity}, which had no v2 coverage at all.
+     */
+    @When("I retrieve the devportal GraphQL complexity of API {string}")
+    public void iRetrieveDevportalGraphqlComplexity(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        Requests.get(Utils.getDevportalGraphQLComplexityURL(Utils.getBaseUrl(), actualApiId), headers);
+    }
+
+    /**
+     * Reads an API's GraphQL schema TYPE LIST from the DEVPORTAL
+     * (GET /apis/{id}/graphql-policies/complexity/types) as a consumer. Ports the schema-type-list half of
+     * {@code GraphQLQueryAnalysisTest.testRetrieveGraphQLComplexity}.
+     */
+    @When("I retrieve the devportal GraphQL schema type list of API {string}")
+    public void iRetrieveDevportalGraphqlSchemaTypeList(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        Requests.get(Utils.getDevportalGraphQLSchemaTypeListURL(Utils.getBaseUrl(), actualApiId), headers);
     }
 
     /** Advanced (API-level) throttling policy with a BANDWIDTH limit (KB/min). */
@@ -589,6 +692,28 @@ public class ApplicationBaseSteps {
         postConditionalAdvancedPolicy(policyBaseName, defaultLimit, groupLimit, condition);
     }
 
+    /**
+     * Advanced policy whose SINGLE conditional group carries ALL FOUR condition types at once — IPCONDITION
+     * (IPSPECIFIC), HEADERCONDITION, QUERYPARAMETERCONDITION and JWTCLAIMSCONDITION. The four steps above each
+     * exercise one condition in isolation for gateway enforcement; this one exists for the admin-plane
+     * ROUND TRIP of a multi-condition group (the shape legacy AdvancedThrottlingPolicyTestCase
+     * #testAddPolicyWithConditionalGroups stored and DTO-verified), which no single-condition policy can prove.
+     * The condition values are fixed to legacy's literals so the round-trip assertions in the feature can pin
+     * exact values; the group limit equals the default limit, as in legacy.
+     */
+    @When("I create an advanced throttling policy {string} allowing {int} requests per minute with a conditional group of all four condition types")
+    public void iCreateAdvancedFourConditionPolicy(String policyBaseName, int requestsPerMinute) throws IOException {
+        String conditions = "{\"type\":\"IPCONDITION\",\"invertCondition\":false,\"ipCondition\":"
+                + "{\"ipConditionType\":\"IPSPECIFIC\",\"specificIP\":\"10.100.1.22\"}},"
+                + "{\"type\":\"HEADERCONDITION\",\"invertCondition\":false,\"headerCondition\":"
+                + "{\"headerName\":\"Host\",\"headerValue\":\"10.100.7.77\"}},"
+                + "{\"type\":\"QUERYPARAMETERCONDITION\",\"invertCondition\":false,\"queryParameterCondition\":"
+                + "{\"parameterName\":\"claimUrl\",\"parameterValue\":\"claimAttribute\"}},"
+                + "{\"type\":\"JWTCLAIMSCONDITION\",\"invertCondition\":false,\"jwtClaimsCondition\":"
+                + "{\"claimUrl\":\"name\",\"attribute\":\"admin\"}}";
+        postConditionalAdvancedPolicy(policyBaseName, requestsPerMinute, requestsPerMinute, conditions);
+    }
+
     /** Generic retrieve of a throttling policy by type + id (admin API). Non-asserting. */
     @When("I retrieve the {string} throttling policy with id {string}")
     public void iRetrieveThrottlingPolicyByType(String policyType, String idKey) throws IOException {
@@ -619,13 +744,36 @@ public class ApplicationBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch " + policyType + " throttling policy '" + policyId + "' before updating it: expected a "
                         + "2xx response with a body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
                         + " / body=" + getResp.getData()));
         JSONObject policy = new JSONObject(getResp.getData());
         policy.put("description", description);
         Requests.put(url, headers, policy.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * PUTs a minimal CustomRuleDTO straight at a custom (Siddhi) rule id WITHOUT the read-modify-write round trip
+     * {@link #iUpdateThrottlingPolicyDescription} performs. A narrow negative-only counterpart, needed because the
+     * generic update step asserts its intermediate GET succeeded (§7) — and for a principal that is refused the
+     * whole custom-rule resource (a tenant admin, see the super-tenant guard in {@code ThrottlingApiServiceImpl
+     * #checkTenantDomainForCustomRules}) the GET half is refused too, so the PUT under test would never be issued.
+     * Non-asserting: the feature asserts the status.
+     */
+    @When("I attempt to update the custom throttling policy {string} with description {string}")
+    public void iAttemptToUpdateCustomThrottlingPolicy(String idKey, String description) throws IOException {
+        String policyId = TestContext.resolve(idKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        String payload = new JSONObject()
+                .put("policyName", "customUpdateAttempt")
+                .put("description", description)
+                .put("siddhiQuery", "FROM RequestStream SELECT userId, apiContext INSERT INTO EligibilityStream;")
+                .put("keyTemplate", "$apiContext")
+                .toString();
+        Requests.put(Utils.getCustomThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers, payload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Retrieve all throttling policies of a type (admin API). Non-asserting. */
@@ -636,25 +784,72 @@ public class ApplicationBaseSteps {
         Requests.get(Utils.getThrottlingPoliciesByTypeURL(Utils.getBaseUrl(), policyType), headers);
     }
 
+    /**
+     * Throttling-policy search across policy types ({@code query=type:all|type:sub|…}) — the only endpoint that
+     * returns application, subscription and advanced policies in ONE list, which the per-type collection step
+     * above cannot express. Non-asserting.
+     */
+    @When("I search throttling policies with query {string}")
+    public void iSearchThrottlingPolicies(String query) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        Requests.get(Utils.getThrottlingPolicySearchURL(Utils.getBaseUrl(),
+                Utils.resolveContextPlaceholders(query)), headers);
+    }
+
+    /**
+     * Reads a subscription throttling policy, replaces its {@code permissions} block with the given permission
+     * type + role, and PUTs it back — so a tier can be flipped from ALLOW to DENY for a role AFTER subscriptions
+     * already use it. The create steps fix the permission at creation time, and the generic description-only
+     * update cannot express this. Publishes the PUT for assertion.
+     */
+    @When("I set the {string} throttling policy {string} permission to {string} for role {string}")
+    public void iSetThrottlingPolicyPermission(String policyType, String idKey, String permissionType, String role)
+            throws IOException {
+        String policyId = TestContext.resolve(idKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        String url = Utils.getThrottlingPolicyByTypeURL(Utils.getBaseUrl(), policyType, policyId);
+        HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
+        Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
+                "Failed to fetch " + policyType + " throttling policy '" + policyId + "' before changing its "
+                        + "permission: expected a 2xx response with a body, got "
+                        + (getResp == null ? "no response" : getResp.getResponseCode() + " / body=" + getResp.getData()));
+        JSONObject policy = new JSONObject(getResp.getData());
+        policy.put("permissions", new JSONObject()
+                .put("permissionType", permissionType)
+                .put("roles", new JSONArray().put(role)));
+        Requests.put(url, headers, policy.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
     // ---- Admin gateway environment CRUD ----
 
     private void createGatewayEnvironment(String name, String displayName, String host, String gatewayType)
             throws IOException {
-        createGatewayEnvironment(name, displayName, host, gatewayType, null);
+        createGatewayEnvironment(name, displayName, host, gatewayType, null, null);
     }
 
+    /**
+     * @param displayName    the {@code displayName} to send, or {@code null} to OMIT the field entirely (the
+     *                       DTO's {@code @Size(min=1)} does not apply to a null, so a null display name is a
+     *                       distinct — and accepted — validation path from an empty string)
+     * @param permissionType {@code ALLOW}/{@code DENY}/{@code PUBLIC}, or {@code null} for no permissions block
+     */
     private void createGatewayEnvironment(String name, String displayName, String host, String gatewayType,
-                                          String allowRole) throws IOException {
+                                          String permissionType, String role) throws IOException {
         JSONObject env = new JSONObject()
                 .put("name", name)
-                .put("displayName", displayName)
                 .put("description", "Gateway environment CRUD test")
                 .put("provider", "wso2")
                 .put("isReadOnly", false);
-        if (allowRole != null && !allowRole.isBlank()) {
+        if (displayName != null) {
+            env.put("displayName", displayName);
+        }
+        if (permissionType != null && !permissionType.isBlank()) {
             env.put("permissions", new JSONObject()
-                    .put("permissionType", "ALLOW")
-                    .put("roles", new JSONArray().put(allowRole)));
+                    .put("permissionType", permissionType)
+                    .put("roles", new JSONArray().put(role)));
         }
         JSONArray vhosts = new JSONArray();
         boolean typedGateway = gatewayType != null && !gatewayType.isBlank();
@@ -699,13 +894,28 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Create a gateway environment with an ALLOW role permission (only users in that role may use it). Salvages
-     * the (legacy-commented) env-permissions test as an admin-plane CRUD assertion: the permission persists.
+     * Create a gateway environment carrying a role visibility permission. {@code permissionType} is one of the
+     * types {@code EnvironmentsApiServiceImpl#validatePermissions} accepts ({@code PUBLIC}/{@code ALLOW}/
+     * {@code DENY}) — parameterized rather than fixed to ALLOW because ALLOW and DENY are separate stored
+     * configurations and legacy asserted the create + DTO round-trip of BOTH.
      */
-    @When("I create a gateway environment {string} with vhost host {string} allowing role {string}")
-    public void iCreateGatewayEnvironmentAllowingRole(String nameBase, String host, String role) throws IOException {
+    @When("I create a gateway environment {string} with vhost host {string} with permission type {string} for role {string}")
+    public void iCreateGatewayEnvironmentWithPermission(String nameBase, String host, String permissionType,
+                                                        String role) throws IOException {
         String name = Utils.resolvePayloadPlaceholders(nameBase);
-        createGatewayEnvironment(name, name, host, null, role);
+        createGatewayEnvironment(name, name, host, null, permissionType, role);
+    }
+
+    /**
+     * Create a gateway environment with the {@code displayName} field OMITTED. A narrow variant of the
+     * name/displayName/vhost create step because a Gherkin {@code {string}} cannot express "absent": the
+     * generated {@code EnvironmentDTO} constrains {@code displayName} with {@code @Size(min=1,max=255)} and NO
+     * {@code @NotNull}, so an absent display name is accepted (201) while an empty one is rejected (400) — two
+     * different validation paths that both need pinning.
+     */
+    @When("I create a gateway environment {string} with vhost host {string} and no display name")
+    public void iCreateGatewayEnvironmentWithoutDisplayName(String nameBase, String host) throws IOException {
+        createGatewayEnvironment(Utils.resolvePayloadPlaceholders(nameBase), null, host, null);
     }
 
     /** Retrieve all gateway environments (admin API). */
@@ -736,10 +946,61 @@ public class ApplicationBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch gateway environment '" + id + "' before updating it: expected a 2xx response with a "
                         + "body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
                         + " / body=" + getResp.getData()));
+        JSONObject env = new JSONObject(getResp.getData());
+        env.put("description", description);
+        Requests.put(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Update a gateway environment's display name, description AND vhost in one PUT (GET → set → PUT), so the
+     * feature can assert the full DTO round-trip legacy verified — the description-only sibling above pins just
+     * one field and cannot show that a vhost replacement or a display-name change is persisted.
+     */
+    @When("I update the gateway environment {string} setting display name {string} description {string} and vhost host {string}")
+    public void iUpdateGatewayEnvironmentFully(String idKey, String displayName, String description, String host)
+            throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        String url = Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), id);
+        HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
+        // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
+        // opaque JSONException/NPE instead of a clear failure.
+        Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
+                "Failed to fetch gateway environment '" + id + "' before updating it: expected a 2xx response with a "
+                        + "body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
+                        + " / body=" + getResp.getData()));
+        JSONObject env = new JSONObject(getResp.getData());
+        env.put("displayName", displayName);
+        env.put("description", description);
+        env.put("vhosts", new JSONArray().put(regularVhost(host)));
+        Requests.put(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Attempt to update the built-in, config-provided {@code Default} gateway environment (GET → change the
+     * description → PUT). A dedicated step rather than a widening of the context-key-driven update steps above:
+     * {@code Default} is addressed by its literal id, and letting those steps fall back to treating an unknown
+     * context key as a literal id would turn a typo'd key into a silent 404 instead of a fast failure. The
+     * environment is read-only ({@code APIAdminImpl#updateEnvironment} → {@code READONLY_GATEWAY_ENVIRONMENT},
+     * 900508), so the feature asserts the rejection.
+     */
+    @When("I attempt to update the built-in Default gateway environment setting its description to {string}")
+    public void iAttemptToUpdateDefaultGatewayEnvironment(String description) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        String url = Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), "Default");
+        HttpResponse getResp = SimpleHTTPClient.getInstance().doGet(url, headers);
+        Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
+                "Failed to fetch the built-in Default gateway environment before attempting to update it: expected a "
+                        + "2xx response with a body, got " + (getResp == null ? "no response"
+                        : getResp.getResponseCode() + " / body=" + getResp.getData()));
         JSONObject env = new JSONObject(getResp.getData());
         env.put("description", description);
         Requests.put(url, headers, env.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -765,10 +1026,53 @@ public class ApplicationBaseSteps {
         Requests.get(Utils.getEnvironmentGatewaysURL(Utils.getBaseUrl(), id), headers);
     }
 
-    /** A vhost JSON object for a Regular (Synapse) gateway — http/https/ws/wss ports. */
+    /**
+     * Asserts the FULL contract of a gateway-instances listing ({@code GET environments/{id}/gateways}): at least
+     * one instance is registered, {@code count} agrees with the returned list's size, and every instance carries a
+     * non-blank {@code gatewayId} and a status of exactly {@code ACTIVE} or {@code EXPIRED} (the only two values
+     * {@code GatewayManagementUtils#validateGatewayStatus} can produce). A per-element check over a
+     * variable-length list cannot be expressed with the generic single-field assertion steps, hence this step.
+     */
+    @Then("The gateway instances response should report every instance with a gateway id and an ACTIVE or EXPIRED status")
+    public void theGatewayInstancesResponseShouldBeComplete() {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx gateway-instances response with a body, got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        JSONObject body = new JSONObject(response.getData());
+        Assert.assertTrue(body.has("count") && !body.isNull("count"),
+                "Gateway instance count is missing from the response: " + response.getData());
+        int count = body.getInt("count");
+        Assert.assertTrue(count > 0, "Expected at least one registered gateway instance, but count was " + count
+                + ": " + response.getData());
+        Assert.assertTrue(body.has("list") && !body.isNull("list"),
+                "Gateway instance list is missing from the response: " + response.getData());
+        JSONArray instances = body.getJSONArray("list");
+        Assert.assertEquals(instances.length(), count,
+                "Gateway instance count does not match the returned list size: " + response.getData());
+        for (int i = 0; i < instances.length(); i++) {
+            JSONObject instance = instances.getJSONObject(i);
+            String gatewayId = instance.optString("gatewayId", null);
+            Assert.assertTrue(gatewayId != null && !gatewayId.isBlank(),
+                    "Gateway instance at index " + i + " has no gatewayId: " + response.getData());
+            String status = instance.optString("status", null);
+            Assert.assertTrue("ACTIVE".equals(status) || "EXPIRED".equals(status),
+                    "Gateway instance '" + gatewayId + "' reported status [" + status + "]; expected exactly ACTIVE "
+                            + "or EXPIRED: " + response.getData());
+        }
+    }
+
+    /** A vhost JSON object for a Regular (Synapse) gateway on the product's default gateway ports. */
     private static JSONObject regularVhost(String host) {
+        return regularVhost(host, 8280, 8243, 9099, 8099);
+    }
+
+    /** A vhost JSON object for a Regular (Synapse) gateway with explicit http/https/ws/wss ports. */
+    private static JSONObject regularVhost(String host, int httpPort, int httpsPort, int wsPort, int wssPort) {
         return new JSONObject().put("host", host).put("httpContext", "")
-                .put("httpPort", 8280).put("httpsPort", 8243).put("wsPort", 9099).put("wssPort", 8099);
+                .put("httpPort", httpPort).put("httpsPort", httpsPort)
+                .put("wsPort", wsPort).put("wssPort", wssPort);
     }
 
     /** POST an environment payload, storing/registering the id on success. Non-asserting. */
@@ -807,19 +1111,91 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Searches applications via the ADMIN API filtered by owner (the {@code user} query param). Ports the
-     * owner-search of ApplicationsSearchByNameOrOwnerTestCase. (The v4 admin /applications endpoint supports
-     * only owner search — there is no name-search query param — so only the by-owner path is portable.)
-     * Non-asserting.
+     * Create a gateway environment whose single vhost advertises a NON-default host AND non-default gateway
+     * ports. This is how the advertised gateway URL is overridden on the v4 surface: the DevPortal builds an
+     * API's {@code endpointURLs} from the deployed environment's VHost
+     * ({@code APIMappingUtil#fromAPIRevisionToEndpoints} → {@code VHost#getHttpUrl}/{@code getWsUrl}), so the
+     * vhost's host and port are exactly what a consumer is told to call. The default-port helper above cannot
+     * express this because a URL whose port equals {@code VHost.DEFAULT_HTTP_PORT}/{@code DEFAULT_HTTPS_PORT} is
+     * rendered without a port at all. Non-asserting — the feature confirms 201.
+     */
+    @When("I create a gateway environment {string} with vhost host {string} and ports http {int} https {int} ws {int} wss {int}")
+    public void iCreateGatewayEnvironmentWithPorts(String nameBase, String host, int httpPort, int httpsPort,
+                                                   int wsPort, int wssPort) throws IOException {
+        String name = Utils.resolvePayloadPlaceholders(nameBase);
+        JSONObject env = new JSONObject()
+                .put("name", name).put("displayName", name)
+                .put("description", "Gateway environment advertising custom host and ports")
+                .put("provider", "wso2").put("isReadOnly", false)
+                .put("vhosts", new JSONArray().put(regularVhost(host, httpPort, httpsPort, wsPort, wssPort)));
+        postEnvironment(env);
+    }
+
+    /**
+     * Searches applications via the ADMIN API filtered by owner (the {@code user} query param) as the ACTING
+     * actor's admin token, so the searched-for owner may be someone OTHER than the caller. Ports the owner-search
+     * of ApplicationsSearchByNameOrOwnerTestCase. Non-asserting.
      *
-     * @param actorRef the owning actor (resolved to its username)
+     * <p>The owner goes on the wire as {@link Identity#apiUsername} (super-tenant users unqualified): the
+     * endpoint resolves the value against the user store, which rejects a {@code @carbon.super}-qualified name —
+     * so passing the raw bean username would silently search for a non-existent user and return an empty list.</p>
+     *
+     * @param actorRef the owning actor (resolved to its product-API username)
      */
     @When("I search admin applications owned by actor {string}")
     public void iSearchAdminApplicationsByOwner(String actorRef) throws IOException {
-        String owner = Identity.resolveActor(actorRef).getUserName();
+        String owner = Identity.apiUsername(Identity.resolveActor(actorRef));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         Requests.get(Utils.getAdminApplicationsByOwnerURL(Utils.getBaseUrl(), owner), headers);
+    }
+
+    /**
+     * Asserts that the admin application-search response (either search mode) holds an entry with EXACTLY the
+     * given application name AND that its {@code owner} is exactly the given actor — the identity half of the
+     * cross-owner search property. A plain "the response should contain <name>" cannot express this: it passes on
+     * the name appearing anywhere in the body, so it would equally pass if the search had returned the CALLER's
+     * own application, which is precisely the confusion this assertion exists to rule out.
+     *
+     * <p>Also logs every returned {@code name}/{@code owner} pair, so a failure (or a question such as "did the
+     * subscriber's DefaultApplication come back too?") is answerable from the run log alone.</p>
+     *
+     * @param appName   the exact application name to find ({@code {{contextKey}}} placeholders resolved)
+     * @param ownerRef  the actor expected to own it (compared as its product-API username)
+     */
+    @Then("The searched applications should include {string} owned by {string}")
+    public void searchedApplicationsShouldIncludeOwnedBy(String appName, String ownerRef) {
+
+        String expectedName = Utils.resolveContextPlaceholders(appName);
+        String expectedOwner = Identity.apiUsername(Identity.resolveActor(ownerRef));
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        // Guard before parsing: an error body must never be read as "no matching entry" (§7).
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx application-search response with a body to look for '" + expectedName + "' in, got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONArray applications = new JSONObject(response.getData()).optJSONArray("list");
+        Assert.assertNotNull(applications, "Application-search response carries no 'list' array: "
+                + response.getData());
+        StringBuilder returned = new StringBuilder();
+        String actualOwner = null;
+        for (int i = 0; i < applications.length(); i++) {
+            JSONObject application = applications.getJSONObject(i);
+            String name = application.optString("name", null);
+            String owner = application.optString("owner", null);
+            returned.append(returned.length() == 0 ? "" : ", ").append(name).append(" (owner=").append(owner)
+                    .append(')');
+            if (expectedName.equals(name)) {
+                actualOwner = owner;
+            }
+        }
+        log.info("Admin application search returned " + applications.length() + " application(s): " + returned);
+        Assert.assertNotNull(actualOwner, "Application-search response has no entry named '" + expectedName
+                + "'; it returned: " + returned + ". Body: " + response.getData());
+        Assert.assertEquals(actualOwner, expectedOwner, "Application '" + expectedName + "' was returned with owner ["
+                + actualOwner + "] but the search was expected to find it under [" + expectedOwner + "]. Body: "
+                + response.getData());
     }
 
     /**
@@ -847,7 +1223,7 @@ public class ApplicationBaseSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getResp != null && getResp.getResponseCode() >= 200 && getResp.getResponseCode() < 300
-                        && getResp.getData() != null && !getResp.getData().isEmpty(),
+                        && getResp.getData() != null && !getResp.getData().isBlank(),
                 "Failed to fetch gateway environment '" + id + "' before updating its vhost: expected a 2xx response "
                         + "with a body, got " + (getResp == null ? "no response" : getResp.getResponseCode()
                         + " / body=" + getResp.getData()));
@@ -1013,7 +1389,11 @@ public class ApplicationBaseSteps {
      * Attempts to create an application without asserting success, storing the raw response as
      * {@code httpResponse} for the feature to assert. For negative / access-control scenarios where the
      * create is expected to be rejected (e.g. a non-consumer actor lacking the app-management scope): unlike
-     * the positive step it neither extracts an id nor registers anything for cleanup.
+     * the positive step it asserts no status and stores no id under a caller-named key.
+     *
+     * <p>An unexpectedly-created application IS still registered — {@code registerIfCreated} enqueues the id only
+     * on a 2xx, so a refusal is a no-op while a create that unexpectedly succeeds is swept rather than leaked
+     * into the shared container (§5).</p>
      */
     @When("I attempt to create an application with payload {string}")
     public void iAttemptToCreateAnApplicationWithPayload(String payload) throws IOException {
@@ -1025,8 +1405,10 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_APPLICATION_IDS,
+                Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, jsonPayload,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "applicationId");
     }
 
     /**
@@ -1101,7 +1483,7 @@ public class ApplicationBaseSteps {
 
         HttpResponse response = Requests.get(Utils.getApplicationSearchURL(Utils.getBaseUrl(), applicationName), headers);
 
-        JSONObject responseJson = new JSONObject(response.getData());
+        JSONObject responseJson = Utils.requireJsonBody(response, "Fetching the application");
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
             String applicationId = responseJson
                     .getJSONArray("list")
@@ -1412,7 +1794,7 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), actualApiId, actualAppId, null, null,
                         null), headers);
 
-        JSONObject responseJson = new JSONObject(response.getData());
+        JSONObject responseJson = Utils.requireJsonBody(response, "Retrieving the subscription");
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
             String subscriptionId = responseJson
                     .getJSONArray("list")
@@ -1440,7 +1822,7 @@ public class ApplicationBaseSteps {
 
         HttpResponse response = Requests.get(Utils.getApplicationAllKeys(Utils.getBaseUrl(), actualAppId), headers);
 
-        JSONObject responseJson = new JSONObject(response.getData());
+        JSONObject responseJson = Utils.requireJsonBody(response, "Retrieving the application keys");
         if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
             JSONObject firstKey = responseJson
                     .getJSONArray("list")
@@ -1785,6 +2167,10 @@ public class ApplicationBaseSteps {
     @Then("The reflected backend JWT applicationAttributes claim should contain {string} with an empty value")
     public void theReflectedBackendJwtAttributeIsEmpty(String attributeName) {
         JSONObject attrs = reflectedApplicationAttributes();
+        // isEmpty, NOT isBlank: emptiness IS the contract here. The feature under test is that
+        // enable_empty_values_in_application_attributes surfaces an attribute whose value is "" — a
+        // whitespace-only value would be a DIFFERENT (and wrong) product behaviour, so it must not pass.
+        // Do not "sweep" this to isBlank; that reads correctly for body guards but weakens this assertion.
         Assert.assertTrue(attrs.has(attributeName) && attrs.optString(attributeName).isEmpty(),
                 "Decoded backend JWT applicationAttributes claim does not carry '" + attributeName
                         + "' with an empty value: " + attrs);
@@ -1960,20 +2346,71 @@ public class ApplicationBaseSteps {
      * (consumerKey/consumerSecret in context). The raw token response is stored as "httpResponse",
      * the access token as "generatedAccessToken", and the refresh token (if any) as "refreshToken".
      *
-     * @param scope OAuth scope to request (may be empty for no explicit scope)
+     * @param scope OAuth scope to request (may be empty for no explicit scope); {@code {{contextKey}}}
+     *              placeholders are resolved, so a scenario can request a uniquely-generated scope name
      */
     @When("I request an OAuth access token for the current user using password grant with scope {string}")
     public void iRequestOAuthAccessTokenWithScope(String scope) throws Exception {
 
         User currentUser = Identity.actingActor();
+        // Resolve any {{contextKey}} placeholders so a scenario can request a scope whose name is generated at
+        // runtime (per-URI-template API-local scopes must be unique per runner — CLAUDE.md §4). A literal scope
+        // name with no placeholder passes through unchanged, which is every other caller of this step.
+        String resolvedScope = scope == null ? null : Utils.resolveContextPlaceholders(scope);
 
         StringBuilder body = new StringBuilder("grant_type=password")
                 .append("&username=").append(Utils.urlEncode(currentUser.getUserName()))
                 .append("&password=").append(Utils.urlEncode(currentUser.getPassword()));
-        if (scope != null && !scope.isEmpty()) {
-            body.append("&scope=").append(Utils.urlEncode(scope));
+        if (resolvedScope != null && !resolvedScope.isBlank()) {
+            body.append("&scope=").append(Utils.urlEncode(resolvedScope));
         }
 
+        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
+                clientCredentialsHeader(), body.toString(), Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        captureTokens(response);
+    }
+
+    /**
+     * Requests an OAuth2 access token from APIM's own token endpoint using the password grant for an EXPLICIT
+     * username/password, authenticated with the application's generated client credentials. The acting-actor
+     * variant above can only mint a token for one of the block-seeded actors; this one mints a token for a user a
+     * scenario provisioned itself — needed to prove that changing THAT user's password invalidates the token
+     * already issued to them, without mutating a shared actor's credential (CLAUDE.md §4). Captures the tokens and
+     * the raw response the same way, so the gateway-invoke and status-assertion steps are unchanged.
+     *
+     * @param username context key holding, or a literal, username to authenticate as
+     * @param password the user's password
+     */
+    @When("I request an OAuth access token using password grant as user {string} with password {string}")
+    public void iRequestPasswordGrantTokenForUser(String username, String password) throws Exception {
+        requestPasswordGrantTokenForUser(username, password, null);
+    }
+
+    /**
+     * As the step above, but requesting an explicit SCOPE for that user's token. Needed where the scope is what
+     * the behaviour under test keys off — a one-time-token policy fires on the token's scope claim, so the
+     * scope has to be requested for a user the scenario provisioned itself, not for a block-seeded actor.
+     *
+     * @param username context key holding, or a literal, username to authenticate as
+     * @param password the user's password
+     * @param scope    OAuth scope to request; {@code {{contextKey}}} placeholders are resolved
+     */
+    @When("I request an OAuth access token using password grant as user {string} with password {string} requesting scope {string}")
+    public void iRequestPasswordGrantTokenForUserWithScope(String username, String password, String scope)
+            throws Exception {
+        requestPasswordGrantTokenForUser(username, password, scope);
+    }
+
+    /** Password grant at APIM's token endpoint for an explicit user, with an optional scope. */
+    private void requestPasswordGrantTokenForUser(String username, String password, String scope) throws Exception {
+
+        String resolvedUser = Utils.resolveContextPlaceholders(username);
+        StringBuilder body = new StringBuilder("grant_type=password")
+                .append("&username=").append(Utils.urlEncode(resolvedUser))
+                .append("&password=").append(Utils.urlEncode(Utils.resolveContextPlaceholders(password)));
+        if (scope != null && !scope.isBlank()) {
+            body.append("&scope=").append(Utils.urlEncode(Utils.resolveContextPlaceholders(scope)));
+        }
         HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 clientCredentialsHeader(), body.toString(), Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         captureTokens(response);
@@ -2022,12 +2459,17 @@ public class ApplicationBaseSteps {
     /**
      * Creates a user in the EXTERNAL key manager (IS) via SCIM2 and, when {@code isRoleKey} resolves to a
      * non-empty role name, assigns that IS role to the user (SCIM2 v2 Roles PATCH add-member). Authenticated as
-     * the IS super admin. Stores the created user id under {@code <username>UserId}. Used by the role-based
-     * authorization flow to mint a user that does (or does not) hold the scope-bound role.
+     * the IS super admin. Used by the role-based authorization flow to mint a user that does (or does not) hold
+     * the scope-bound role.
      *
-     * @param username  the IS user name to create (used verbatim; the ephemeral per-block IS makes it unique enough)
-     * @param password  the user's password (also used for the later password grant)
-     * @param isRoleKey context key holding the IS role to assign, or a literal empty string for no role
+     * <p>The name is NOT used verbatim: the external IS is a shared JVM-lifetime singleton and SCIM2 create 409s
+     * on a duplicate, so a unique name is derived from {@code usernameBase} (CLAUDE.md §4). That generated name is
+     * published under the BASE key, so features reference it as {@code {{<usernameBase>}}}, and the created user
+     * id is stored under {@code <generatedName>UserId} — not under the base.
+     *
+     * @param usernameBase base for the generated IS user name; also the context key the generated name is stored under
+     * @param password     the user's password (also used for the later password grant)
+     * @param isRoleKey    context key holding the IS role to assign, or a literal empty string for no role
      */
     @When("I create an IS user {string} with password {string} assigned the IS role stored as {string}")
     public void iCreateIsUserWithRole(String usernameBase, String password, String isRoleKey) throws Exception {
@@ -2060,16 +2502,16 @@ public class ApplicationBaseSteps {
         ISResourceCleanup.registerUser(userId);
 
         // Empty key => create the user with NO role (the "without the mapped role" actor).
-        if (isRoleKey == null || isRoleKey.trim().isEmpty()) {
+        if (isRoleKey == null || isRoleKey.isBlank()) {
             return;
         }
         String isRole = TestContext.resolve(isRoleKey).toString();
-        if (isRole.isEmpty()) {
+        if (isRole.isBlank()) {
             return;
         }
         // Find the role id (SCIM2 v2 Roles, via the shared asserted-query primitive), then add the user as a member.
         HttpResponse rolesResp = queryIs7Role(isRole);
-        JSONObject rolesBody = new JSONObject(rolesResp.getData());
+        JSONObject rolesBody = Utils.requireJsonBody(rolesResp, "Querying IS roles to create the user");
         Assert.assertTrue(rolesBody.optInt("totalResults", 0) >= 1,
                 "IS role '" + isRole + "' not found to assign to user '" + username + "': " + rolesResp.getData());
         String roleId = rolesBody.getJSONArray("Resources").getJSONObject(0).getString("id");
@@ -2122,11 +2564,9 @@ public class ApplicationBaseSteps {
 
     /**
      * Shared authorization_code grant flow for BOTH the resident and external key managers (the grant logic is
-     * identical; only endpoints, redirect URI, scope and consent differ). Headless: a cookie-jar HttpClient with
-     * auto-redirect disabled captures each 302 Location, and only query params are read from those Locations, so
-     * an internal hostname in a Location is never navigated. Steps: authorize -> 302 login -> POST /commonauth ->
-     * 302 back to authorize -> resume -> (CONDITIONAL) approve consent if the KM presents it -> code -> exchange
-     * at {@code tokenEndpoint} with Basic client auth. A null {@code scope} omits it; a non-null
+     * identical; only endpoints, redirect URI, scope and consent differ). Runs the browser leg via
+     * {@link #authorizeThroughLoginAndConsent}, then exchanges the returned {@code code} at
+     * {@code tokenEndpoint} with Basic client auth. A null {@code scope} omits it; a non-null
      * {@code codeVerifier} adds PKCE (S256). Captures generatedAccessToken and publishes the token response.
      */
     private void authorizationCodeToken(String base, String tokenEndpoint, String redirectUri, String username,
@@ -2135,7 +2575,6 @@ public class ApplicationBaseSteps {
         String key = TestContext.resolve("consumerKey").toString();
         java.net.http.HttpClient http = trustAllHttpClientWithCookies();
 
-        // Step 1: /oauth2/authorize -> 302 to login; carry sessionDataKey.
         StringBuilder authz = new StringBuilder(base).append("oauth2/authorize?response_type=code&client_id=")
                 .append(Utils.urlEncode(key)).append("&redirect_uri=").append(Utils.urlEncode(redirectUri));
         if (scope != null) {
@@ -2145,8 +2584,46 @@ public class ApplicationBaseSteps {
             authz.append("&code_challenge=").append(Utils.urlEncode(pkceS256Challenge(codeVerifier)))
                     .append("&code_challenge_method=S256");
         }
-        String sdk = Utils.queryParam(redirectLocation(http, "GET", authz.toString(), null), "sessionDataKey");
-        Assert.assertNotNull(sdk, "No sessionDataKey in the authorize redirect for the authorization_code flow");
+        String granted = authorizeThroughLoginAndConsent(http, base, authz.toString(), username, password);
+        String code = Utils.queryParam(granted, "code");
+        Assert.assertNotNull(code, "No authorization code in the final authorize redirect: " + granted);
+
+        // Exchange the code (Basic client auth) for a token and publish it.
+        String tokenForm = "grant_type=authorization_code&code=" + Utils.urlEncode(code)
+                + "&redirect_uri=" + Utils.urlEncode(redirectUri);
+        if (codeVerifier != null) {
+            tokenForm += "&code_verifier=" + Utils.urlEncode(codeVerifier);
+        }
+        HttpResponse response = Requests.post(tokenEndpoint, clientCredentialsHeader(), tokenForm,
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        captureTokens(response);
+    }
+
+    /**
+     * Runs the BROWSER leg of an OAuth2 authorization request headlessly and returns the final redirect Location
+     * — the one carrying the grant ({@code ?code=...} for authorization_code, {@code #access_token=...} for
+     * implicit). Response-type agnostic: the caller builds {@code authorizeUrl} and reads the grant out of the
+     * returned Location, so both grant flows share one implementation.
+     *
+     * <p>Headless: a cookie-jar HttpClient with auto-redirect disabled captures each 302 Location, and only
+     * query params are read from those Locations, so an internal hostname in a Location is never navigated.
+     * Steps: authorize -> 302 login -> POST /commonauth -> 302 back to authorize -> resume -> (CONDITIONAL)
+     * approve consent if the KM presents it (the resident KM does; an external-KM DCR client skips it).
+     *
+     * <p>Additively records, for scenarios that assert on them, without changing the flow: the authorize 302's
+     * {@code Set-Cookie} headers as {@code authorizeSetCookies}; and, when a consent page is presented, the
+     * application name the consent redirect carries as {@code consentApplicationName} plus the rendered consent
+     * page HTML as {@code consentPageBody}.
+     */
+    private String authorizeThroughLoginAndConsent(java.net.http.HttpClient http, String base, String authorizeUrl,
+            String username, String password) throws Exception {
+
+        // Step 1: /oauth2/authorize -> 302 to login; carry sessionDataKey.
+        java.net.http.HttpResponse<String> authzResp = sendNoRedirect(http, "GET", authorizeUrl, null);
+        String afterAuthz = locationHeader(authzResp, authorizeUrl);
+        TestContext.set("authorizeSetCookies", String.join("\n", authzResp.headers().allValues("Set-Cookie")));
+        String sdk = Utils.queryParam(afterAuthz, "sessionDataKey");
+        Assert.assertNotNull(sdk, "No sessionDataKey in the authorize redirect: " + afterAuthz);
 
         // Step 2: authenticate at /commonauth -> 302 back to /oauth2/authorize with a fresh sessionDataKey.
         String loginForm = "username=" + Utils.urlEncode(username) + "&password=" + Utils.urlEncode(password)
@@ -2158,36 +2635,60 @@ public class ApplicationBaseSteps {
         String sdk2 = Utils.queryParam(afterLogin, "sessionDataKey");
         Assert.assertNotNull(sdk2, "Login did not redirect back to /oauth2/authorize (bad credentials?)");
 
-        // Step 3: resume /oauth2/authorize -> either code=... directly, or a consent challenge.
+        // Step 3: resume /oauth2/authorize -> either the grant directly, or a consent challenge.
         String afterResume = redirectLocation(http, "GET",
                 base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null);
-        String code = Utils.queryParam(afterResume, "code");
-
-        // Step 4 (conditional): approve consent when the KM presents it (resident does; external DCR skips).
-        if (code == null) {
-            String consentKey = Utils.queryParam(afterResume, "sessionDataKeyConsent");
-            Assert.assertNotNull(consentKey,
-                    "Expected 'code' or 'sessionDataKeyConsent' resuming authorize: " + afterResume);
-            String consentForm = "consent=approve&hasApprovedAlways=false&sessionDataKeyConsent="
-                    + Utils.urlEncode(consentKey);
-            code = Utils.queryParam(redirectLocation(http, "POST", base + "oauth2/authorize", consentForm), "code");
-            Assert.assertNotNull(code, "No authorization code after consent approval");
+        String consentKey = Utils.queryParam(afterResume, "sessionDataKeyConsent");
+        if (consentKey == null) {
+            return afterResume;
         }
 
-        // Step 5: exchange the code (Basic client auth) for a token and publish it.
-        String tokenForm = "grant_type=authorization_code&code=" + Utils.urlEncode(code)
-                + "&redirect_uri=" + Utils.urlEncode(redirectUri);
-        if (codeVerifier != null) {
-            tokenForm += "&code_verifier=" + Utils.urlEncode(codeVerifier);
+        // Step 4: read the consent page the product would show the user, then approve it.
+        TestContext.set("consentApplicationName", Utils.queryParam(afterResume, "application"));
+        TestContext.set("consentPageBody", fetchConsentPage(http, base, afterResume));
+        String consentForm = "consent=approve&hasApprovedAlways=false&sessionDataKeyConsent="
+                + Utils.urlEncode(consentKey);
+        return redirectLocation(http, "POST", base + "oauth2/authorize", consentForm);
+    }
+
+    /**
+     * GETs the consent page the resume redirect points at and returns its HTML. The redirect carries the
+     * server's own INTERNAL origin ({@code https://localhost:9443/...}), which is unreachable from the test
+     * JVM, so only its path and query are used and the origin is rebuilt from the host-mapped {@code base} —
+     * the same rule the rest of this flow follows for Locations.
+     */
+    private String fetchConsentPage(java.net.http.HttpClient http, String base, String consentRedirect)
+            throws Exception {
+
+        java.net.URI redirect = java.net.URI.create(consentRedirect);
+        String url = base + redirect.getPath().replaceFirst("^/", "")
+                + (redirect.getRawQuery() == null ? "" : "?" + redirect.getRawQuery());
+        java.net.http.HttpResponse<String> resp = sendNoRedirect(http, "GET", url, null);
+        Assert.assertEquals(resp.statusCode(), 200,
+                "Consent page fetch failed at " + url + ": HTTP " + resp.statusCode());
+        return resp.body();
+    }
+
+    /** Reads one parameter out of a redirect URL FRAGMENT (the implicit grant returns its token there). */
+    private static String fragmentParam(String fragment, String name) {
+        for (String pair : fragment.split("&")) {
+            int eq = pair.indexOf('=');
+            if (eq > 0 && pair.substring(0, eq).equals(name)) {
+                return java.net.URLDecoder.decode(pair.substring(eq + 1), StandardCharsets.UTF_8);
+            }
         }
-        HttpResponse response = Requests.post(tokenEndpoint, clientCredentialsHeader(), tokenForm,
-                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        captureTokens(response);
+        return null;
     }
 
     /** Sends one request WITHOUT following redirects and returns its Location header (asserts a redirect). */
     private String redirectLocation(java.net.http.HttpClient http, String method, String url, String formBody)
             throws Exception {
+        return locationHeader(sendNoRedirect(http, method, url, formBody), url);
+    }
+
+    /** Sends one request WITHOUT following redirects and returns the raw response (headers included). */
+    private java.net.http.HttpResponse<String> sendNoRedirect(java.net.http.HttpClient http, String method,
+            String url, String formBody) throws Exception {
         java.net.http.HttpRequest.Builder b = java.net.http.HttpRequest.newBuilder(java.net.URI.create(url));
         if ("POST".equals(method)) {
             b.header("Content-Type", "application/x-www-form-urlencoded")
@@ -2195,8 +2696,11 @@ public class ApplicationBaseSteps {
         } else {
             b.GET();
         }
-        java.net.http.HttpResponse<String> resp =
-                http.send(b.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+        return http.send(b.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+    }
+
+    /** Returns a no-redirect response's Location header, asserting the response actually was a redirect. */
+    private String locationHeader(java.net.http.HttpResponse<String> resp, String url) {
         java.util.Optional<String> loc = resp.headers().firstValue("Location");
         Assert.assertTrue(loc.isPresent(), "Expected a redirect with a Location header from " + url
                 + " but got HTTP " + resp.statusCode() + " / body=" + resp.body());
@@ -2641,7 +3145,7 @@ public class ApplicationBaseSteps {
 
         String roleName = TestContext.resolve(isRoleKey).toString();
         HttpResponse resp = queryIs7Role(roleName);
-        int total = new JSONObject(resp.getData()).optInt("totalResults", 0);
+        int total = Utils.requireJsonBody(resp, "Querying the external KM role").optInt("totalResults", 0);
         Assert.assertTrue(total >= 1, "Expected the IS7 connector to have created role '" + roleName
                 + "' in IS, but SCIM2 Roles filter returned totalResults=" + total + ": " + resp.getData());
     }
@@ -2708,6 +3212,80 @@ public class ApplicationBaseSteps {
         User actor = Identity.actingActor();
         authorizationCodeToken(Utils.getBaseUrl(), Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 RESIDENT_AUTHZ_REDIRECT_URI, actor.getUserName(), actor.getPassword(), scope, null);
+    }
+
+    /**
+     * Obtains an access token from the RESIDENT key manager via the IMPLICIT grant
+     * ({@code response_type=token}): the browser leg returns the token in the redirect FRAGMENT and there is no
+     * token-endpoint exchange at all, which is exactly what distinguishes it from authorization_code. Captures
+     * the token as {@code generatedAccessToken} so the JWT-format and gateway-invoke steps work unchanged.
+     *
+     * <p>Because no token endpoint is called, this step publishes NO {@code httpResponse} — a scenario must
+     * assert on the token itself (format, gateway invocation), never on a response status after this step.
+     *
+     * @param scope OAuth scope to request; {@code {{contextKey}}} placeholders are resolved
+     */
+    @When("I request an OAuth access token via implicit grant with scope {string}")
+    public void iRequestOAuthAccessTokenViaImplicitGrant(String scope) throws Exception {
+
+        User actor = Identity.actingActor();
+        String base = Utils.getBaseUrl();
+        String authorizeUrl = base + "oauth2/authorize?response_type=token&client_id="
+                + Utils.urlEncode(TestContext.resolve("consumerKey").toString())
+                + "&redirect_uri=" + Utils.urlEncode(RESIDENT_AUTHZ_REDIRECT_URI)
+                + "&scope=" + Utils.urlEncode(Utils.resolveContextPlaceholders(scope));
+
+        String granted = authorizeThroughLoginAndConsent(trustAllHttpClientWithCookies(), base, authorizeUrl,
+                actor.getUserName(), actor.getPassword());
+        String fragment = java.net.URI.create(granted).getRawFragment();
+        Assert.assertNotNull(fragment, "The implicit grant redirect carried no fragment: " + granted);
+        String token = fragmentParam(fragment, "access_token");
+        Assert.assertNotNull(token, "No access_token in the implicit grant redirect fragment: " + granted);
+        TestContext.set("generatedAccessToken", token);
+        TestContext.set("implicitTokenType", fragmentParam(fragment, "token_type"));
+    }
+
+    /**
+     * Sends an OAuth2 authorization request for the application's client with an EXPLICIT {@code redirect_uri}
+     * (empty, or one that does not match the registered callback) and records the OAuth error the product
+     * redirects to, as {@code authorizeErrorCode} / {@code authorizeErrorMessage}. Unauthenticated on purpose:
+     * a redirect_uri fault is rejected before the login page, so no session is involved.
+     *
+     * @param redirectUri the redirect_uri to send; an empty string sends the parameter with no value
+     */
+    @When("I send an OAuth authorization request with redirect uri {string}")
+    public void iSendAuthorizeRequestWithRedirectUri(String redirectUri) throws Exception {
+
+        String url = Utils.getBaseUrl() + "oauth2/authorize?response_type=code&scope=PRODUCTION&client_id="
+                + Utils.urlEncode(TestContext.resolve("consumerKey").toString())
+                + "&redirect_uri=" + Utils.urlEncode(redirectUri);
+
+        String location = redirectLocation(trustAllHttpClientWithCookies(), "GET", url, null);
+        String errorCode = Utils.queryParam(location, "oauthErrorCode");
+        Assert.assertNotNull(errorCode, "The authorize request with redirect_uri '" + redirectUri
+                + "' was not redirected to an OAuth error page: " + location);
+        TestContext.set("authorizeErrorCode", errorCode);
+        TestContext.set("authorizeErrorMessage", Utils.queryParam(location, "oauthErrorMsg"));
+    }
+
+    /**
+     * Requests a client_credentials token with a DELIBERATELY CORRUPTED Basic client-auth header — the
+     * application's real {@code key:secret} credential base64-encoded and then truncated by two characters, the
+     * same corruption legacy {@code GrantTypeTokenGenerateTestCase} used. Publishes the raw response so the
+     * scenario can assert the exact OAuth error body and the {@code WWW-Authenticate} challenge.
+     */
+    @When("I request an OAuth access token using corrupted client credentials")
+    public void iRequestTokenWithCorruptedClientCredentials() throws Exception {
+
+        String credential = Base64.getEncoder().encodeToString(
+                (TestContext.resolve("consumerKey").toString() + ":"
+                        + TestContext.resolve("consumerSecret").toString()).getBytes(StandardCharsets.UTF_8));
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Basic " + credential.substring(0, credential.length() - 2));
+
+        Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()), headers, "grant_type=client_credentials",
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
     }
     /**
      * Revokes the given OAuth access token via the revocation endpoint, authenticated with the
@@ -2781,14 +3359,32 @@ public class ApplicationBaseSteps {
     @And("I request an api key for application id {string} using payload {string}")
     public void iRequestAnApiKeyForApplicationIdUsingPayload(String appId, String payload) throws IOException {
 
+        iRequestAnApiKeyOfTypeForApplicationId("PRODUCTION", appId, payload);
+    }
+
+    /**
+     * Generates an API Key of an explicit KEY TYPE (PRODUCTION / SANDBOX) for an application. The key type is
+     * part of the generate path and decides which endpoint the gateway routes the invocation to, so a sandbox
+     * api key is a genuinely different credential — not a naming variant. Ports the SANDBOX half of
+     * APISecurityTestCase#testInvocationWithApiKeysOnly. Stores the key under {@code apiKey}, like the
+     * PRODUCTION step, so the invocation steps are unchanged.
+     *
+     * @param keyType PRODUCTION or SANDBOX
+     * @param appId   Context key containing the application ID
+     * @param payload Context key containing the API key generation JSON payload
+     */
+    @And("I request an api key of type {string} for application id {string} using payload {string}")
+    public void iRequestAnApiKeyOfTypeForApplicationId(String keyType, String appId, String payload)
+            throws IOException {
+
         String actualAppId = TestContext.resolve(appId).toString();
         String jsonPayload = TestContext.resolve(payload).toString();
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.post(Utils.getGenerateAPIKeyURL(Utils.getBaseUrl(), actualAppId), headers, jsonPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse response = Requests.post(Utils.getGenerateAPIKeyURL(Utils.getBaseUrl(), actualAppId, keyType),
+                headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         String apikey = Utils.extractValueFromPayload(response.getData(), "apikey").toString();
         TestContext.set("apiKey", apikey);
     }
@@ -2811,12 +3407,51 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.get(Utils.getListAPIKeysURL(Utils.getBaseUrl(), actualAppId), headers);
         // The endpoint returns either a bare array [{...}] or a {"count":n,"list":[...]} wrapper depending on
         // the pack — handle both. Each scenario's app has a single key, so the first entry is the one to revoke.
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "Listing the API keys returned no body to read the key from; got "
+                        + (response == null ? "no response" : String.valueOf(response.getResponseCode())));
         String data = response.getData().trim();
         JSONArray list = data.startsWith("[")
                 ? new JSONArray(data)
                 : new JSONObject(data).getJSONArray("list");
         String uuid = list.getJSONObject(0).getString("keyUUID");
         TestContext.set(Utils.normalizeContextKey(ctxKey), uuid);
+    }
+
+    /**
+     * Lists an application's PRODUCTION API keys, publishing the raw response for the feature to assert.
+     * Unlike the sibling step that captures the first key's {@code keyUUID}, this makes no assumption that the
+     * list is non-empty — which is exactly the case a SHARED (group-member) caller hits: the endpoint
+     * authorises them for the application but then queries the keys scoped to the REQUESTING username, so a
+     * member sees none of the owner's keys.
+     *
+     * @param appId context key holding the application id
+     */
+    @When("I retrieve the api keys of application {string}")
+    public void iRetrieveApiKeys(String appId) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        Requests.get(Utils.getListAPIKeysURL(Utils.getBaseUrl(), TestContext.resolve(appId).toString()), headers);
+    }
+
+    /**
+     * Asserts the EXACT number of entries in the api-key listing published by the preceding step. Handles both
+     * response shapes the endpoint uses across packs (a bare array, or a {@code {"count":n,"list":[...]}}
+     * wrapper), like the keyUUID-capturing step does.
+     */
+    @Then("The api key list should contain exactly {int} entries")
+    public void theApiKeyListShouldContainExactly(int expectedCount) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "No api-key list response to count: got " + (response == null ? "no response"
+                        : response.getResponseCode() + " / body=" + response.getData()));
+        String data = response.getData().trim();
+        JSONArray list = data.startsWith("[")
+                ? new JSONArray(data)
+                : new JSONObject(data).getJSONArray("list");
+        Assert.assertEquals(list.length(), expectedCount,
+                "Unexpected api-key list size. Body: " + response.getData());
     }
 
     /**
@@ -3018,7 +3653,7 @@ public class ApplicationBaseSteps {
         String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         // Guard before parsing — a cleared/failed list retrieval must fail clearly, not as an NPE/JSONException.
-        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
                 "No subscription-list response with a body captured to search for subscription '"
                         + actualSubscriptionId + "' in");
         JSONArray subscriptionsList= new JSONObject(response.getData()).getJSONArray("list");
@@ -3158,7 +3793,7 @@ public class ApplicationBaseSteps {
 
         // generate access token
         String tokenPayload;
-        if (scope != null && !scope.isEmpty()) {
+        if (scope != null && !scope.isBlank()) {
             tokenPayload = "{\"consumerSecret\": \"{{appConsumerSecret}}\"," +
                     "\"validityPeriod\": 3600," +
                     "\"scopes\": [\"" + scope + "\"]}";
@@ -3202,7 +3837,7 @@ public class ApplicationBaseSteps {
             try {
                 response = SimpleHTTPClient.getInstance().doGet(url, headers);
                 boolean pending = response.getResponseCode() != 200
-                        || response.getData() == null || response.getData().isEmpty()
+                        || response.getData() == null || response.getData().isBlank()
                         || new JSONObject(response.getData()).optInt("count", 0) == 0;
                 if (!pending) {
                     break;
@@ -3456,7 +4091,8 @@ public class ApplicationBaseSteps {
 
         JSONObject payload = loadKeyManagerPayload(resourcePath);
         payload.remove("additionalProperties");
-        postKeyManager(payload);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_KEY_MANAGER_IDS, postKeyManager(payload), "id");
     }
 
     /**
@@ -3468,7 +4104,8 @@ public class ApplicationBaseSteps {
 
         JSONObject payload = loadKeyManagerPayload(resourcePath);
         payload.put("name", Utils.resolveContextPlaceholders(name));
-        postKeyManager(payload);
+        // Callers expect a refusal; an unexpected success still creates a real resource, so it is swept (§5).
+        ResourceCleanup.registerIfCreated(Constants.CREATED_KEY_MANAGER_IDS, postKeyManager(payload), "id");
     }
 
     /**
@@ -3479,21 +4116,24 @@ public class ApplicationBaseSteps {
     @When("I attempt to create a key manager from payload {string}")
     public void iAttemptToCreateKeyManager(String resourcePath) throws IOException {
 
-        postKeyManager(loadKeyManagerPayload(resourcePath));
+        ResourceCleanup.registerIfCreated(Constants.CREATED_KEY_MANAGER_IDS,
+                postKeyManager(loadKeyManagerPayload(resourcePath)), "id");
     }
 
     /**
      * Attempts to create a key manager using the acting actor's PUBLISHER token (which lacks {@code apim:admin}) —
-     * the non-admin-authorization negative. Non-asserting; the feature asserts the 401. On the expected rejection
-     * nothing is created, so no cleanup registration is needed.
+     * the non-admin-authorization negative. Non-asserting; the feature asserts the 401. An unexpectedly-created
+     * key manager IS registered for teardown (§5) — {@code registerIfCreated} is a no-op on the expected 401.
      */
     @When("I attempt to create a key manager from payload {string} using the publisher token")
     public void iAttemptToCreateKeyManagerAsPublisher(String resourcePath) throws IOException {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.post(Utils.getKeyManagersURL(Utils.getBaseUrl()), headers,
-                loadKeyManagerPayload(resourcePath).toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        ResourceCleanup.registerIfCreated(Constants.CREATED_KEY_MANAGER_IDS,
+                Requests.post(Utils.getKeyManagersURL(Utils.getBaseUrl()), headers,
+                        loadKeyManagerPayload(resourcePath).toString(),
+                        Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
     }
 
     /** Retrieves a single key manager by the id held under {@code idKey}. */
@@ -3524,7 +4164,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch key manager '" + kmId + "' before updating its description: expected a 2xx response "
                         + "with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));
@@ -3762,7 +4402,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch key manager '" + kmId + "' before updating its allowed organizations: expected a 2xx "
                         + "response with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));
@@ -3812,7 +4452,7 @@ public class ApplicationBaseSteps {
     @When("I create a deny policy of type {string} with value {string} as {string}")
     public void iCreateDenyPolicy(String conditionType, String conditionValue, String idKey) throws IOException {
 
-        HttpResponse response = postDenyPolicy(conditionType, Utils.resolveContextPlaceholders(conditionValue));
+        HttpResponse response = postDenyPolicy(conditionType, resolveDenyConditionValue(conditionValue));
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         registerCreatedDenyPolicy(response, idKey);
     }
@@ -3821,7 +4461,25 @@ public class ApplicationBaseSteps {
     @When("I attempt to create a deny policy of type {string} with value {string}")
     public void iAttemptToCreateDenyPolicy(String conditionType, String conditionValue) throws IOException {
 
-        postDenyPolicy(conditionType, Utils.resolveContextPlaceholders(conditionValue));
+        ResourceCleanup.registerIfCreated(Constants.CREATED_DENY_POLICY_IDS,
+                postDenyPolicy(conditionType, resolveDenyConditionValue(conditionValue)), "conditionId");
+    }
+
+    /**
+     * Resolves BOTH placeholder kinds in a deny-policy condition value: {@code {{contextKey}}} references (an
+     * API context or application owner captured earlier) and {@code ${UNIQUE:...}} tokens (a dangling
+     * user/application name that must still be unique per run so a rejected create cannot collide with, or be
+     * masked by, another scenario's condition).
+     */
+    private String resolveDenyConditionValue(String conditionValue) {
+        return Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(conditionValue));
+    }
+
+    /** Retrieves ALL deny policies of the acting admin's tenant (the collection GET with no search query). */
+    @When("I retrieve all deny policies")
+    public void iRetrieveAllDenyPolicies() throws IOException {
+
+        Requests.get(Utils.getDenyPoliciesURL(Utils.getBaseUrl()), Identity.adminHeaders());
     }
 
     /** Creates an IP deny policy for a fixed IP, asserts 201, stores + registers it. */
@@ -3837,20 +4495,34 @@ public class ApplicationBaseSteps {
     @When("I attempt to create an IP deny policy for fixed IP {string}")
     public void iAttemptToCreateIpDenyPolicy(String fixedIp) throws IOException {
 
-        postDenyPolicy("IP", ipConditionValue(fixedIp));
+        ResourceCleanup.registerIfCreated(Constants.CREATED_DENY_POLICY_IDS,
+                postDenyPolicy("IP", ipConditionValue(fixedIp)), "conditionId");
+    }
+
+    private JSONObject ipRangeConditionValue(String startingIp, String endingIp) {
+
+        JSONObject value = new JSONObject();
+        value.put("invert", false);
+        value.put("startingIp", startingIp);
+        value.put("endingIp", endingIp);
+        return value;
     }
 
     /** Creates an IP-range deny policy, asserts 201, stores + registers it. */
     @When("I create an IP range deny policy from {string} to {string} as {string}")
     public void iCreateIpRangeDenyPolicy(String startingIp, String endingIp, String idKey) throws IOException {
 
-        JSONObject value = new JSONObject();
-        value.put("invert", false);
-        value.put("startingIp", startingIp);
-        value.put("endingIp", endingIp);
-        HttpResponse response = postDenyPolicy("IPRANGE", value);
+        HttpResponse response = postDenyPolicy("IPRANGE", ipRangeConditionValue(startingIp, endingIp));
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         registerCreatedDenyPolicy(response, idKey);
+    }
+
+    /** Attempts to create an IP-range deny policy without asserting — for the malformed-boundary-IP negative. */
+    @When("I attempt to create an IP range deny policy from {string} to {string}")
+    public void iAttemptToCreateIpRangeDenyPolicy(String startingIp, String endingIp) throws IOException {
+
+        ResourceCleanup.registerIfCreated(Constants.CREATED_DENY_POLICY_IDS,
+                postDenyPolicy("IPRANGE", ipRangeConditionValue(startingIp, endingIp)), "conditionId");
     }
 
     /** Retrieves a single deny policy by the condition id held under {@code idKey}. */
@@ -3881,11 +4553,20 @@ public class ApplicationBaseSteps {
         Requests.delete(Utils.getDenyPolicyByIdURL(Utils.getBaseUrl(), id), Identity.adminHeaders());
     }
 
-    /** Searches deny policies by condition type and value (query grammar: conditionType:X&conditionValue:Y). */
+    /**
+     * Searches deny policies by condition type and value (query grammar: {@code conditionType:X&conditionValue:Y},
+     * both filters inside the ONE {@code query} parameter, which is why the whole expression — separator included
+     * — is percent-encoded as a single value). An unquoted {@code conditionValue} is a SUBSTRING match; wrapping
+     * it in double quotes makes it an exact match, so the value is passed through verbatim (quotes included)
+     * rather than normalized here. {@code {{contextKey}}} / {@code ${UNIQUE:...}} placeholders ARE resolved: a
+     * search value is nearly always a per-scenario API context captured earlier, and sending the unresolved
+     * literal would silently match nothing and read as "the search returned no hits".
+     */
     @When("I search deny policies of type {string} with value {string}")
     public void iSearchDenyPolicies(String conditionType, String conditionValue) throws IOException {
 
-        String query = Utils.urlEncode("conditionType:" + conditionType + "&conditionValue:" + conditionValue);
+        String query = Utils.urlEncode(
+                "conditionType:" + conditionType + "&conditionValue:" + resolveDenyConditionValue(conditionValue));
         Requests.get(Utils.getDenyPoliciesURL(Utils.getBaseUrl()) + "?query=" + query, Identity.adminHeaders());
     }
 
@@ -3984,6 +4665,49 @@ public class ApplicationBaseSteps {
         ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, appId);
     }
 
+    /**
+     * Creates a devportal application shared with a GROUP — the {@code groups} field of the create payload,
+     * which the server persists as the application's {@code groupId} when application sharing is enabled.
+     * Non-asserting (the feature asserts the 201 and that the created application echoes the group back), so it
+     * also serves the negative where a group at create time is expected to be dropped.
+     *
+     * <p>The group string must match what the configured group-ID extractor computes for the members, and the
+     * format depends on WHICH extractor method runs. {@code DefaultGroupIDExtractorImpl} implements
+     * {@code NewPostLoginExecutor}, so whenever application sharing is enabled
+     * {@code APIUtil.isMultiGroupAppSharingEnabled()} is true and {@code getGroupingIdentifierList} runs — and
+     * that method returns the {@code http://wso2.org/claims/organization} claim value VERBATIM, with no tenant
+     * prefix. (The single-group {@code getGroupingIdentifiers} would instead return
+     * {@code <tenantDomain>/<value>}. Passing that form here stores a groupId no member can ever match, and
+     * every sharing assertion silently degrades into "nobody can see it" — the negatives still pass, so the
+     * scenario looks strict rather than broken. Established empirically.) So pass the BARE claim value.
+     *
+     * @param name     application name (resolves {@code ${UNIQUE:...}})
+     * @param group    the group to share with (resolves {@code {{...}}})
+     * @param idKey    context key to store the created application id under
+     */
+    @When("I create an application {string} shared with group {string} as {string}")
+    public void iCreateApplicationSharedWithGroup(String name, String group, String idKey) throws IOException {
+
+        JSONObject app = new JSONObject();
+        app.put("name", Utils.resolvePayloadPlaceholders(name));
+        app.put("throttlingPolicy", "Unlimited");
+        app.put("description", "Group-shared test application");
+        app.put("tokenType", "JWT");
+        app.put("groups", new JSONArray().put(Utils.resolveContextPlaceholders(group)));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        HttpResponse response = Requests.post(Utils.getApplicationCreateURL(Utils.getBaseUrl()),
+                headers, app.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        // Capture the id only on a successful create; a failed create leaves the response for the feature to
+        // assert rather than throwing an opaque parse error here.
+        if (response.getResponseCode() == 201 && response.getData() != null && !response.getData().isBlank()) {
+            Object appId = Utils.extractValueFromPayload(response.getData(), "applicationId");
+            TestContext.set(idKey, appId);
+            ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, appId);
+        }
+    }
+
     /** Retrieves a devportal application by id as the acting actor (200 visible / 403 not). Non-asserting. */
     @When("I retrieve the application {string}")
     public void iRetrieveApplicationById(String idKey) throws IOException {
@@ -4006,7 +4730,7 @@ public class ApplicationBaseSteps {
         // Intermediate GET of a GET→mutate→PUT: confirm a 2xx response WITH a body before parsing, so a
         // failed/empty fetch fails clearly instead of throwing an opaque JSONException/NPE.
         Assert.assertTrue(current != null && current.getResponseCode() >= 200 && current.getResponseCode() < 300
-                        && current.getData() != null && !current.getData().isEmpty(),
+                        && current.getData() != null && !current.getData().isBlank(),
                 "Failed to fetch application '" + appId + "' before updating its visibility: expected a 2xx response "
                         + "with a body, got " + (current == null ? "no response" : current.getResponseCode()
                         + " / body=" + current.getData()));

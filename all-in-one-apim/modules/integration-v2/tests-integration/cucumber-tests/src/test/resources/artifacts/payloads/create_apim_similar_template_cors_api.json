@@ -1,0 +1,39 @@
+{
+  "name": "${UNIQUE:APIMSimilarTemplateCors}",
+  "context": "${UNIQUE:apimSimilarTemplateCorsContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3017/"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3017/"
+    }
+  },
+  "description": "A LITERAL resource (POST /payee/personal) sitting beside a TEMPLATED sibling (GET /payee/{id}) on the wildcard backend. No corsConfiguration, so the gateway computes Access-Control-Allow-Methods from the resource it RESOLVES for the pre-flight - which is what makes the resolution observable. The two resources also carry different authTypes (None vs Application & Application User) so the same path under a different verb resolves to a differently-secured resource.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "POST",
+      "target": "/payee/personal",
+      "authType": "None",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    },
+    {
+      "verb": "GET",
+      "target": "/payee/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": false,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

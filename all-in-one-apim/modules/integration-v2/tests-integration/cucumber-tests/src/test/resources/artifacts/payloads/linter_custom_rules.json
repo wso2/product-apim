@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "wso2-email-rule": {
+      "description": "Should be a WSO2 email.",
+      "given": "$",
+      "severity": "error",
+      "then": {
+        "field": "info.contact.email",
+        "function": "pattern",
+        "functionOptions": {
+          "match": "^[a-z]+@wso2.com$"
+        }
+      }
+    }
+  }
+}

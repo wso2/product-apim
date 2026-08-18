@@ -188,7 +188,7 @@ public class EndpointCertificateSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No endpoint-certificate search response captured");
         Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Endpoint-certificate search did not return a 2xx body: got " + response.getResponseCode()
                         + " / " + response.getData());
         int actual = new JSONObject(response.getData()).optInt("count", -1);
@@ -205,7 +205,7 @@ public class EndpointCertificateSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No endpoint-certificate usage response captured");
         Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "Endpoint-certificate usage did not return a 2xx body: got " + response.getResponseCode()
                         + " / " + response.getData());
         int actual = new JSONObject(response.getData()).optInt("count", -1);

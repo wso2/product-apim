@@ -611,6 +611,20 @@ public class WebSocketInvocationSteps {
                 "GraphQL subscription data did not contain '" + expectedData + "'; last message: " + data);
     }
 
+/**
+     * Query-parameter auth for graphql-ws: the token rides as {@code ?access_token=<token>} on the WS URL and NO
+     * {@code Authorization} header is sent — the {@code AUTH_IN.QUERY} mode of legacy
+     * {@code GraphqlSubscriptionTestCase.testGraphQLAPIInvocationWithJWTToken}, which invoked the subscription
+     * BOTH ways and whose query-param half had no v2 coverage. A distinct gateway path from the header form: the
+     * WS inbound must pull the credential off the handshake's query string before any header is available.
+     * Mirrors the plain-WebSocket {@code using access token query param} step for the same reason.
+     */
+    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token query param {string} expecting data containing {string} within {int} seconds")
+    public void invokeGraphqlSubscriptionTokenQueryParam(String context, String query, String accessToken,
+                                                        String expectedData, int timeoutSeconds) throws Exception {
+        graphqlSubscriptionExpectData(context, query, accessToken, expectedData, timeoutSeconds, true);
+    }
+
     /**
      * Regression assertion for the gateway WS tenant-flow leak (carbon-apimgt
      * {@code InboundWebSocketProcessor.handleHandshake} calls {@code startTenantFlow()}/{@code setTenantDomain()}
@@ -916,12 +930,22 @@ public class WebSocketInvocationSteps {
 
     /**
      * Opens a graphql-ws subscription, sends ONE start(query), and asserts the gateway returns a graphql-ws
-     * {@code error} message carrying {@code expectedCode} (e.g. 4021 QUERY TOO COMPLEX, 4020 QUERY TOO DEEP).
-     * Retries the whole flow for warm-up. Ports the complexity/depth rejection cases of GraphqlSubscriptionTestCase.
+     * {@code error} frame carrying BOTH {@code expectedCode} AND {@code expectedReason} in its payload message
+     * (e.g. 4021/"QUERY TOO COMPLEX", 4020/"QUERY TOO DEEP", 4022/"INVALID QUERY",
+     * 4002/"User NOT authorized to access the resource"). Retries the whole flow for warm-up.
+     *
+     * <p>The reason is asserted as well as the code deliberately. The gateway multiplexes EVERY frame-level
+     * rejection down one {@code type:error} channel whose shape is identical
+     * ({@code {"type":"error","id":"1","payload":[{"message":…,"code":…}]}}), so a code-only match cannot tell
+     * a complexity rejection from a scope rejection if the gateway ever renumbered or mis-mapped one — and
+     * matching on frame PRESENCE alone (which an earlier iteration of the throttling probe did) passes on any
+     * error at all. Code and message are set from the same
+     * {@code WebSocketApiConstants.FrameErrorConstants} pair, so requiring both pins that mapping.</p>
      */
-    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token {string} expecting error code {int} within {int} seconds")
+    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token {string} expecting error code {int} and reason {string} within {int} seconds")
     public void invokeGraphqlSubscriptionExpectErrorCode(String context, String query, String accessToken,
-                                                         int expectedCode, int timeoutSeconds) throws Exception {
+                                                         int expectedCode, String expectedReason,
+                                                         int timeoutSeconds) throws Exception {
         String wsUrl = joinBase(Utils.getBaseGatewayWsUrl(), context);
         String token = TestContext.resolve(accessToken).toString();
         long startedMillis = System.currentTimeMillis();
@@ -945,15 +969,21 @@ public class WebSocketInvocationSteps {
             }
             lastMsg.set(errorMsg);
             return errorMsg;
-        }, errorMsg -> carriesErrorCode(errorMsg, expectedCode));
-        if (carriesErrorCode(matched, expectedCode)) {
-            System.out.println("[GQL-SUB-ERR] expected=" + expectedCode + " msg=" + matched);
+        }, errorMsg -> carriesErrorCode(errorMsg, expectedCode) && carriesReason(errorMsg, expectedReason));
+        if (carriesErrorCode(matched, expectedCode) && carriesReason(matched, expectedReason)) {
             return;
         }
         // A refused handshake is NOT the expected outcome here: the expected error arrives as a graphql-ws frame
         // over an ESTABLISHED connection, so a 401 upgrade rejection is a genuine credential problem to report.
-        Assert.fail("Expected graphql-ws error code " + expectedCode + " for query [" + query
-                + "] but did not observe it; last error message: " + lastMsg.get()
+        // Report which HALF of the expectation missed — a frame with the right code but the wrong message (or
+        // vice versa) is a different defect from no frame at all, and the message must say which.
+        String observed = lastMsg.get();
+        Assert.fail("Expected a graphql-ws error frame carrying code " + expectedCode + " AND reason ["
+                + expectedReason + "] for query [" + query + "], but "
+                + (observed == null ? "no error frame arrived at all"
+                        : "observed code-match=" + carriesErrorCode(observed, expectedCode)
+                                + " reason-match=" + carriesReason(observed, expectedReason)
+                                + "; frame: " + observed)
                 + authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis));
     }
 
@@ -1189,8 +1219,14 @@ public class WebSocketInvocationSteps {
         CompletableFuture<String> data = new CompletableFuture<>();
         WebSocket ws;
         try {
-            ws = client.newWebSocketBuilder()
-                .header("Authorization", "Bearer " + token)
+            java.net.http.WebSocket.Builder builder = client.newWebSocketBuilder();
+            // Query-param mode passes a NULL token on purpose (the credential rides on the URL). Setting the header
+            // unconditionally sent the literal "Bearer null", which the gateway rejects as an invalid JWT — the
+            // query parameter was never consulted, so the whole AUTH_IN.QUERY arc was testing nothing.
+            if (token != null) {
+                builder = builder.header("Authorization", "Bearer " + token);
+            }
+            ws = builder
                 .subprotocols("graphql-ws")
                 .connectTimeout(java.time.Duration.ofSeconds(15))
                 .buildAsync(URI.create(wsUrl), new WebSocket.Listener() {
@@ -1317,5 +1353,61 @@ public class WebSocketInvocationSteps {
             }
             closeQuietly(client);
         }
+    }
+
+/**
+     * True when a graphql-ws error frame's payload message carries {@code expectedReason}. Substring rather than
+     * equality because the gateway appends detail to some reasons (the invalid-query frame is emitted as
+     * {@code "INVALID QUERY : <validation detail>"}), and that trailing detail is graphql-java's wording — not
+     * APIM's contract — so pinning it verbatim would break on a library bump while asserting nothing extra about
+     * the gateway. The APIM-owned constant prefix is what must hold.
+     */
+    private static boolean carriesReason(String message, String expectedReason) {
+        return message != null && message.contains(expectedReason);
+    }
+
+/**
+     * Shared body of the two graphql-ws data-subscription steps above; {@code tokenInQueryParam} selects whether
+     * the credential is presented as {@code ?access_token=} on the URL or as an {@code Authorization} header.
+     */
+    private void graphqlSubscriptionExpectData(String context, String query, String accessToken, String expectedData,
+                                               int timeoutSeconds, boolean tokenInQueryParam) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String token = TestContext.resolve(accessToken).toString();
+        String base = Utils.getBaseGatewayWsUrl();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        // Query-param mode: the token moves onto the URL and the header is suppressed (null), so the handshake
+        // carries the credential in exactly ONE place and the test cannot pass on the header path by accident.
+        String headerToken = tokenInQueryParam ? null : token;
+        if (tokenInQueryParam) {
+            wsUrl = appendQuery(wsUrl, "access_token", token);
+        }
+        final String finalWsUrl = wsUrl;
+
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String data = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            try {
+                return subscribeAndReceive(finalWsUrl, headerToken, query, lastFailure);
+            } catch (InterruptedException interrupted) {
+                // Cancellation is not a transient/expected outcome — restore the flag so the envelope's next
+                // pause rethrows it instead of reading this as a retryable attempt.
+                Thread.currentThread().interrupt();
+                return null;
+            } catch (Exception connectingWhileWarmup) {
+                lastFailure.set(connectingWhileWarmup);
+                return null;
+            }
+        }, message -> message != null && message.contains(expectedData));
+        String authDetail = data != null ? ""
+                : authRejectionDetail(finalWsUrl, accessToken, token, lastFailure, startedMillis);
+        Assert.assertNotNull(data, "GraphQL subscription returned no data message within the deadline; last error: "
+                + lastErrorOf(lastFailure) + authDetail);
+        Assert.assertTrue(data.contains(expectedData),
+                "GraphQL subscription data did not contain '" + expectedData + "'; last message: " + data);
     }
 }

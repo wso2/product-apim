@@ -1,0 +1,36 @@
+{
+  "name": "${UNIQUE:apisecBasicAuthOnly}",
+  "context": "${UNIQUE:apisecBasicAuthOnlyCtx}",
+  "version": "1.0.0",
+  "securityScheme": [
+    "basic_auth",
+    "oauth_basic_auth_api_key_mandatory"
+  ],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "description": "BASIC-AUTH-ONLY secured API - the target for the bearer/api-key cross-credential negatives and the internal-key bypass",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

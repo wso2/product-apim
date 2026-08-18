@@ -1,0 +1,10 @@
+# Extra overlay: devops logging block.
+#
+# Merged on top of `basic`. Neither logging API needs configuration of its own — correlation components are
+# toggled at runtime through /api/am/devops/v0/config/correlation and persisted in AM_CORRELATION_CONFIGS,
+# per-API log levels through /api/am/devops/v0/tenant-logs, and both the CORRELATION and API_LOGFILE
+# appenders are already in the distribution's log4j2.properties. The single key below exists only because
+# the correlation-persistence scenario has to bounce the server to prove the config survives a restart, and
+# the ServerAdmin restartGracefully API refuses unless it is enabled.
+[server]
+enable_restart_from_api = true

@@ -74,3 +74,81 @@ Feature: Approval workflow - subscription update
       | admin@tenant1.com |
       | subscriberUser |
       | subscriberUser@tenant1.com |
+
+  # B6 / ChangeSubscriptionBusinessPlanForcefullyTestCase#testUpdateSubscriptionBusinessPlanWhenSubscriptionIsIn
+  # TierUpdatePendingStatus. While an AM_SUBSCRIPTION_UPDATE task is parked, the subscription sits in
+  # TIER_UPDATE_PENDING, and the PUBLISHER-plane force-change endpoint
+  # (POST /subscriptions/{id}/subscription-policy/{policy}) must REFUSE — the pending approval is the authority
+  # on that subscription's tier, so letting a publisher overwrite it would silently strip the approver's
+  # decision out of the flow.
+  #
+  # LEGACY ASSERTED NOTHING HERE, and is deliberately not ported as written. Its body is
+  #     try { changeSubscriptionBusinessPlan(...); } catch (ApiException e) { assertEquals(e.getCode(), 409); }
+  # with the comment "this business plan update should not fail" — so it passes whether the call SUCCEEDS (no
+  # assertion runs at all) or is refused, and its comment contradicts its own catch. Porting that shape would
+  # import a test that cannot fail.
+  #
+  # The real behaviour was read off the shipped 9.33.162 bytecode rather than guessed:
+  # APIProviderImpl#updateSubscriptionTier compares the subscription's status to TIER_UPDATE_PENDING and throws
+  # ExceptionCodes.INVALID_STATE_FOR_BUSINESS_PLAN_CHANGE, whose constant carries errorCode 902022 and HTTP 409
+  # with message "Cannot change the business plan of the subscription." Those exact values are pinned below, so
+  # a future product change to either the code or the status is a failure rather than a silent pass.
+  #
+  # Asserted BEYOND legacy: that the pending change has not been applied on the publisher plane before the
+  # attempt, and that the refusal is total — the plan is still the original one afterwards, so a rejected
+  # force-change cannot have partially written.
+  @cap:admin @feat:workflows @dep:devportal @dep:publisher @type:negative @legacy:ChangeSubscriptionBusinessPlanForcefullyTestCase
+  Scenario Outline: A publisher force-change of the business plan is refused while the subscription is TIER_UPDATE_PENDING as requester <requester>
+    Given The system is ready with an admin approver and "<requester>" as the requester
+
+    Given I act as the tenant admin for "<requester>"
+    When I publish API from "artifacts/payloads/create_apim_test_api.json" through the approval workflow as "tupApiId"
+
+    Given I act as "<requester>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "tupApp"
+    And I create an application with payload "tupApp"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "createdAppName"
+    Given I act as the tenant admin for "<requester>"
+    When I capture the pending "AM_APPLICATION_CREATION" workflow reference where "applicationName" is "{{createdAppName}}" as "tupAppWfRef"
+    And I "APPROVED" the workflow with reference "tupAppWfRef"
+    Then The response status code should be 200
+    Given I act as "<requester>"
+    When I subscribe application "createdAppId" to API "tupApiId" retrying transient errors as "tupSubId"
+    Then The response status code should be 201
+    Given I act as the tenant admin for "<requester>"
+    When I capture the pending "AM_SUBSCRIPTION_CREATION" workflow reference where "applicationName" is "{{createdAppName}}" as "tupSubWfRef"
+    And I "APPROVED" the workflow with reference "tupSubWfRef"
+    Then The response status code should be 200
+
+    # Park an update task: the subscription enters TIER_UPDATE_PENDING and the tier is NOT yet applied.
+    Given I act as "<requester>"
+    When I get the subscription with id "tupSubId"
+    Then The response status code should be 200
+    And I put the response payload in context as "subscriptionPayload"
+    When I request a subscription plan change of "tupSubId" from "Unlimited" to "Gold"
+    Then The response status code should be 200
+
+    # The status is the precondition of this whole scenario — assert it, do not assume the request parked.
+    When I get the subscription with id "tupSubId"
+    Then The response status code should be 200
+    And The value of response field "status" should be "TIER_UPDATE_PENDING"
+    # ...and the requested tier has NOT been applied while the task is pending.
+    And The publisher subscription "tupSubId" of API "tupApiId" should have business plan "Unlimited"
+
+    # The subject: a publisher force-change to a THIRD plan, refused with the exact code the product defines.
+    Given I act as the tenant admin for "<requester>"
+    When I change the subscription business plan of "tupSubId" to "Silver"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "902022"
+    And The value of error response field "message" should be "Cannot change the business plan of the subscription."
+    # The description names the offending status; the subscription id in it varies, hence a contains-check here.
+    And The response should contain "TIER_UPDATE_PENDING"
+
+    # The refusal is total: neither the requested Gold nor the forced Silver was written.
+    And The publisher subscription "tupSubId" of API "tupApiId" should have business plan "Unlimited"
+
+    Examples:
+      | requester         |
+      | admin             |
+      | admin@tenant1.com |

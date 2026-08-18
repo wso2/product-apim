@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -51,6 +52,79 @@ public class AiApiSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         HttpResponse response = Requests.get(Utils.getAIServiceProvidersURL(Utils.getBaseUrl()), headers);
+    }
+
+    /**
+     * Asserts the captured {@code GET /ai-service-providers} listing carries EVERY named provider, each flagged
+     * {@code builtInSupport=true} and each carrying a non-blank {@code id}, {@code apiVersion} and
+     * {@code description}. Ports AIAPITestCase#testPredefinedAiServiceProviders, whose point is the whole shipped
+     * set (seven providers) and their summary fields — a substring check for one provider name would pass with the
+     * other six missing, and would say nothing about the fields.
+     *
+     * @param namesCsv comma-separated expected provider names
+     */
+    @Then("The AI service providers {string} should each be listed with built-in support, an id, an apiVersion and a description")
+    public void aiServiceProvidersShouldBeBuiltIn(String namesCsv) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 200 AI-service-provider listing with a body, got: "
+                        + (response == null ? "no response" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONArray list = new JSONObject(response.getData()).getJSONArray("list");
+        Map<String, JSONObject> byName = new HashMap<>();
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject provider = list.getJSONObject(i);
+            byName.put(provider.optString("name"), provider);
+        }
+
+        for (String rawName : namesCsv.split(",")) {
+            String name = rawName.trim();
+            JSONObject provider = byName.get(name);
+            Assert.assertNotNull(provider, "Built-in AI service provider '" + name + "' is missing from the listing; "
+                    + "listed names=" + byName.keySet());
+            Assert.assertTrue(provider.has("builtInSupport"),
+                    "Provider '" + name + "' carries no builtInSupport flag: " + provider);
+            Assert.assertTrue(provider.getBoolean("builtInSupport"),
+                    "Provider '" + name + "' is not flagged as built-in: " + provider);
+            for (String field : new String[] { "id", "apiVersion", "description" }) {
+                Assert.assertTrue(provider.has(field) && !provider.isNull(field)
+                                && !provider.getString(field).isBlank(),
+                        "Provider '" + name + "' has no " + field + ": " + provider);
+            }
+        }
+    }
+
+    /**
+     * Asserts the captured provider response's {@code configurations} is EXACTLY the given connector-configuration
+     * file, compared as JSON (order- and whitespace-insensitive) rather than as text. This is the assertion that
+     * makes a provider UPDATE meaningful: the description alone changing proves nothing about whether the new
+     * authentication configuration was applied, so the whole configurations body is pinned before and after.
+     * Ports the {@code getConfigurations()} equality of AIAPITestCase#updateCustomAiServiceProvider.
+     *
+     * @param configPath classpath path to the expected connector configuration JSON
+     */
+    @Then("The AI service provider configurations should match the file {string}")
+    public void aiServiceProviderConfigurationsShouldMatchFile(String configPath) throws Exception {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 200 AI-service-provider response with a body, got: "
+                        + (response == null ? "no response" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONObject provider = new JSONObject(response.getData());
+        Assert.assertTrue(provider.has("configurations") && !provider.isNull("configurations"),
+                "The AI service provider response carries no configurations: " + response.getData());
+        // The field is returned as a JSON *string* by the admin API; accept an inlined object too so the assertion
+        // does not hinge on that representation choice.
+        Object raw = provider.get("configurations");
+        JSONObject actual = raw instanceof JSONObject actualObject
+                ? actualObject : new JSONObject(raw.toString());
+        JSONObject expected = new JSONObject(readClasspath(configPath));
+
+        Assert.assertTrue(expected.similar(actual),
+                "The persisted AI service provider configurations differ from " + configPath
+                        + ".\nexpected=" + expected + "\nactual=" + actual);
     }
 
     /**
@@ -167,6 +241,82 @@ public class AiApiSteps {
     }
 
     /**
+     * Selects ONE built-in provider out of the captured {@code GET /ai-service-providers} listing by
+     * {@code name} AND {@code apiVersion}, asserts its {@code deprecated} flag is EXACTLY the expected boolean,
+     * and stores its id for the definition fetch that follows.
+     *
+     * <p>Name alone cannot address a shipped provider: {@code Gemini} ships twice (1.0.0 and 1.1.0) and so does
+     * {@code AzureOpenAI} (1.0.0 and 2.0.0). That is the whole point of this step —
+     * {@link #aiServiceProvidersShouldBeBuiltIn(String)} keys its map on {@code name} only, so the later of a
+     * duplicated pair silently overwrites the earlier one and a version-specific claim cannot be made through it.
+     * And the versions differ in a way this suite depends on: Gemini 1.0.0 is the deprecated one and its shipped
+     * OAS carries {@code x-throttling-tier: Unlimited} on every operation, while 1.1.0 carries no WSO2 extensions
+     * at all — so an API imported from 1.1.0 takes its operation tiers from the server's default, which is what
+     * the unlimited-tier-disabled scenarios assert.</p>
+     *
+     * <p>{@code deprecated} is compared as a boolean against the literal {@code "true"}/{@code "false"}, not
+     * merely checked for presence: "1.1.0 is not deprecated" is the assertion legacy made
+     * (GeminiAPIUnlimitedTierDisabledTestCase asserts {@code assertFalse(provider.get("deprecated"))}), and a
+     * presence check would pass on a provider the product had since deprecated.</p>
+     *
+     * @param name              the provider's name (e.g. {@code Gemini})
+     * @param apiVersion        the provider's apiVersion (e.g. {@code 1.1.0})
+     * @param expectedDeprecated {@code "true"} or {@code "false"} — the exact expected flag
+     * @param idKey             context key to store the matched provider's id under
+     */
+    @Then("The AI service provider {string} version {string} should be listed with deprecated {string} and stored as {string}")
+    public void aiServiceProviderVersionShouldBeListedWithDeprecated(String name, String apiVersion,
+            String expectedDeprecated, String idKey) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 200 AI-service-provider listing with a body, got: "
+                        + (response == null ? "no response" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONArray list = new JSONObject(response.getData()).getJSONArray("list");
+        JSONObject match = null;
+        StringBuilder seen = new StringBuilder();
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject provider = list.getJSONObject(i);
+            seen.append(provider.optString("name")).append('/').append(provider.optString("apiVersion")).append(' ');
+            if (name.equals(provider.optString("name")) && apiVersion.equals(provider.optString("apiVersion"))) {
+                Assert.assertNull(match, "AI service provider '" + name + "' version '" + apiVersion
+                        + "' is listed MORE THAN ONCE, so it cannot be addressed by name+version: " + list);
+                match = provider;
+            }
+        }
+        Assert.assertNotNull(match, "AI service provider '" + name + "' version '" + apiVersion
+                + "' is missing from the listing; listed name/apiVersion pairs=" + seen.toString().trim());
+        Assert.assertTrue(match.has("deprecated"),
+                "Provider '" + name + "' version '" + apiVersion + "' carries no deprecated flag: " + match);
+        Assert.assertEquals(String.valueOf(match.getBoolean("deprecated")), expectedDeprecated,
+                "Provider '" + name + "' version '" + apiVersion + "' deprecated flag mismatch: " + match);
+
+        String id = match.optString("id", null);
+        Assert.assertTrue(id != null && !id.isBlank(),
+                "Provider '" + name + "' version '" + apiVersion + "' has no id: " + match);
+        TestContext.set(Utils.normalizeContextKey(idKey), id);
+    }
+
+    /**
+     * Publisher — GET /ai-service-providers/{id}/api-definition. Retrieves the provider's OWN OpenAPI definition
+     * and publishes it as the response under test, so the feature asserts the 200 and then imports the retrieved
+     * body verbatim (see the {@code import openapi definition captured as} step). Ports the
+     * {@code getAIServiceProviderApiDefinition} half of GeminiAPIUnlimitedTierDisabledTestCase — the API under
+     * test must be built from the SHIPPED definition, not from a fixture copy, or the property being asserted
+     * (that 1.1.0's definition declares no throttling tiers) would be a property of the fixture instead.
+     */
+    @When("I retrieve the api definition of AI service provider {string}")
+    public void iRetrieveAiServiceProviderApiDefinition(String idKey) throws Exception {
+        Object id = TestContext.resolve(idKey);
+        Map<String, String> headers = new HashMap<>();
+        // apim:llm_provider_read — carried by the admin token, as for the models endpoint above.
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        Requests.get(Utils.getAIServiceProviderApiDefinitionURL(Utils.getBaseUrl(), id.toString()), headers);
+    }
+
+    /**
      * Publisher — GET /ai-service-providers/{id}/models. Retrieves a provider's registered model list. Ports
      * AIAPITestCase#testGetServiceProviderModels.
      */
@@ -222,7 +372,7 @@ public class AiApiSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(listResp != null && listResp.getResponseCode() >= 200 && listResp.getResponseCode() < 300
-                        && listResp.getData() != null && !listResp.getData().isEmpty(),
+                        && listResp.getData() != null && !listResp.getData().isBlank(),
                 "Failed to list common policies while resolving '" + policyName + "': expected a 2xx response with a "
                         + "body, got " + (listResp == null ? "no response" : listResp.getResponseCode()
                         + " / body=" + listResp.getData()));
@@ -245,7 +395,7 @@ public class AiApiSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' before applying the AI mediation policy: expected a 2xx "
                         + "response with a body, got " + (getApi == null ? "no response" : getApi.getResponseCode()
                         + " / body=" + getApi.getData()));
@@ -281,7 +431,7 @@ public class AiApiSteps {
         // Confirm the GET succeeded with a body BEFORE parsing — otherwise new JSONObject(null/"") throws an
         // opaque JSONException/NPE instead of a clear failure.
         Assert.assertTrue(getApi != null && getApi.getResponseCode() >= 200 && getApi.getResponseCode() < 300
-                        && getApi.getData() != null && !getApi.getData().isEmpty(),
+                        && getApi.getData() != null && !getApi.getData().isBlank(),
                 "Failed to fetch API '" + actualApiId + "' before setting its primary production endpoint: expected a "
                         + "2xx response with a body, got " + (getApi == null ? "no response" : getApi.getResponseCode()
                         + " / body=" + getApi.getData()));
