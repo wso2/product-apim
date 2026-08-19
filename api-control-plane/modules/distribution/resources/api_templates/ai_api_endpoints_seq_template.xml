@@ -52,6 +52,11 @@
     #end
 </class>
         #end
+        #if($endpoint.authenticationType == "gcp" || $endpoint.authenticationType == "GCP")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2TokenInjector">
+    <property name="serviceAccountKey" value="$util.escapeXml($endpoint.serviceAccountKey)" type="STRING"/>
+</class>
+        #end
         #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
 <property name="apiKeyIdentifier" value="$endpoint.apiKeyIdentifier" type="STRING"/>
