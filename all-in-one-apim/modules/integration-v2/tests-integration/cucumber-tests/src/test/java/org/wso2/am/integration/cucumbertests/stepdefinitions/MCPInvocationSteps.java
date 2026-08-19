@@ -29,8 +29,8 @@ import org.wso2.am.integration.cucumbertests.utils.Utils;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.net.URI;
 import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -706,6 +706,86 @@ public class MCPInvocationSteps {
             names.add(tools.getJSONObject(i).optString("name"));
         }
         return names;
+    }
+
+    /**
+     * Asserts the gateway {@code tools/list} advertises {@code toolName} with its full metadata
+     * (title/annotations/_meta/outputSchema) intact, not just name/description/inputSchema. Retries to ride
+     * out warm-up.
+     */
+    @Then("the MCP tools list at gateway context {string} version {string} using access token {string} advertises "
+            + "tool {string} with preserved metadata within {int} seconds")
+    public void toolsListPreservesToolMetadata(String context, String version, String accessToken, String toolName,
+                                               int timeoutSeconds) throws Exception {
+        String mcpUrl = buildMcpUrl(context, version);
+        String token = TestContext.resolve(accessToken).toString();
+        HttpClient client = newClient();
+        AtomicReference<String> lastError = new AtomicReference<>();
+
+        // Retry the handshake through the shared envelope (rides out warm-up); a freshly published server is
+        // briefly non-routable. Returns the advertised tool object, or null once the deadline elapses.
+        JSONObject tool = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            try {
+                HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
+                String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
+                if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
+                    lastError.set("init status=" + initResp.statusCode() + " body=" + initResp.body());
+                    return null;
+                }
+                post(client, mcpUrl, token, sessionId, INITIALIZED);
+                HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
+                String listBody = sseOrJson(listResp.body());
+                if (listResp.statusCode() != 200 || !listBody.trim().startsWith("{")) {
+                    lastError.set("tools/list status=" + listResp.statusCode() + " body=" + listBody);
+                    return null;
+                }
+                JSONObject root = new JSONObject(listBody);
+                JSONArray tools = root.has("result") ? root.getJSONObject("result").optJSONArray("tools") : null;
+                if (tools != null) {
+                    for (int i = 0; i < tools.length(); i++) {
+                        if (toolName.equals(tools.getJSONObject(i).optString("name"))) {
+                            return tools.getJSONObject(i);
+                        }
+                    }
+                }
+                lastError.set("tools/list did not advertise '" + toolName + "': " + listBody);
+                return null;
+            } catch (IOException | JSONException transientDuringWarmup) {
+                lastError.set(transientDuringWarmup.getMessage());
+                return null;
+            }
+        }, result -> true);
+
+        if (tool == null) {
+            Assert.fail("tools/list did not advertise '" + toolName + "' with preserved metadata within the deadline; "
+                    + "last: " + lastError.get());
+        }
+        // Exact assertions against the mock's get_weather definition (a mismatch is a hard failure, not warm-up).
+        Assert.assertTrue(tool.has("title"), "title must be preserved for '" + toolName + "': " + tool);
+        Assert.assertEquals(tool.optString("title"), "Weather Lookup", "tool title mismatch");
+        Assert.assertTrue(tool.has("annotations"),
+                "annotations must be preserved for '" + toolName + "': " + tool);
+        Assert.assertTrue(tool.getJSONObject("annotations").optBoolean("readOnlyHint", false),
+                "annotations.readOnlyHint must be true: " + tool);
+        Assert.assertEquals(tool.getJSONObject("annotations").optString("title"), "Weather Lookup",
+                "annotations.title mismatch");
+        Assert.assertTrue(tool.has("_meta"), "_meta must be preserved for '" + toolName + "': " + tool);
+        Assert.assertEquals(tool.getJSONObject("_meta").optString("category"), "weather",
+                "_meta.category mismatch");
+        // Full schemas, not just key presence: type, the property's type, and required must all survive.
+        assertObjectSchema(tool.getJSONObject("outputSchema"), "tempC", "number", "outputSchema", tool);
+        assertObjectSchema(tool.getJSONObject("inputSchema"), "city", "string", "inputSchema", tool);
+    }
+
+    /** Asserts a complete object schema: {@code type} object, {@code prop} present with {@code propType}, and required. */
+    private void assertObjectSchema(JSONObject schema, String prop, String propType, String label, Object ctx) {
+        Assert.assertEquals(schema.optString("type"), "object", label + ".type must be object: " + ctx);
+        JSONObject props = schema.getJSONObject("properties");
+        Assert.assertEquals(props.getJSONObject(prop).optString("type"), propType,
+                label + ".properties." + prop + ".type mismatch: " + ctx);
+        JSONArray required = schema.optJSONArray("required");
+        Assert.assertTrue(required != null && required.toList().contains(prop),
+                label + ".required must contain " + prop + ": " + ctx);
     }
 
     /** Builds the gateway MCP endpoint URL: {@code <gatewayWs-less base>/<context>/<version>/mcp}. */
