@@ -71,6 +71,32 @@ Feature: MCP tool invocation through the gateway
       | admin             |
       | admin@tenant1.com |
 
+  # Proxying must keep the full tool definition (title/annotations/_meta/outputSchema), both in storage and
+  # in the gateway tools/list.
+  @cap:gateway @feat:mcp-invocation @rule:proxy @type:regression @dep:publisher @legacy:MCPServerTestCase
+  Scenario Outline: A proxied MCP server preserves full tool metadata in tools/list as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "get_weather" as "mcpId"
+    Then The response status code should be 201
+    When I deploy the "mcp-servers" resource with id "mcpId"
+    When I publish the "mcp-servers" resource with id "mcpId"
+    Then The response status code should be 200
+    When I retrieve the "mcp-servers" resource with id "mcpId"
+    And I extract response field "context" and store it as "mcpContext"
+    # Persisted-side: the stored operation keeps the full metadata.
+    Then the stored MCP server "mcpId" tool "get_weather" retains full metadata
+    When I have set up application with keys, subscribed to API "mcpId" with plan "Unlimited", and obtained access token for "mcpSubId"
+    Then The response status code should be 200
+    # Gateway-side: tools/list advertises get_weather with the metadata intact.
+    Then the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" advertises tool "get_weather" with preserved metadata within 90 seconds
+    When I delete the MCP server "mcpId"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Enforcement: a scope-gated MCP tool is refused (403) without the scope and allowed (200) with it.
   @cap:gateway @feat:mcp-invocation @rule:proxy @type:regression @dep:publisher @legacy:MCPServerTestCase
   Scenario Outline: A scope-gated MCP tool is enforced (200 with the scope, 403 without) as <actor>

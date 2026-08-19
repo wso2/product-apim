@@ -115,6 +115,50 @@ public class MCPServerSteps {
     }
 
     /**
+     * Persisted-side check: fetches the MCP server and asserts the stored operation for {@code tool} keeps the
+     * full wrapped definition (inputSchema + title/annotations/_meta/outputSchema) — proving metadata survives
+     * to storage, independent of the gateway read path.
+     */
+    @Then("the stored MCP server {string} tool {string} retains full metadata")
+    public void storedMcpServerToolRetainsMetadata(String idKey, String tool) throws IOException {
+        String id = TestContext.resolve(idKey).toString();
+        JSONObject dto = fetchMcpServerDto(id, publisherHeaders(), "before checking preserved metadata");
+
+        JSONArray ops = dto.getJSONArray("operations");
+        JSONObject op = null;
+        for (int i = 0; i < ops.length(); i++) {
+            if (tool.equals(ops.getJSONObject(i).optString("target"))) {
+                op = ops.getJSONObject(i);
+                break;
+            }
+        }
+        Assert.assertNotNull(op, "No stored operation for tool '" + tool + "': " + ops);
+
+        // Assert exact VALUES (not just key presence) against the mock's get_weather definition.
+        JSONObject schema = new JSONObject(op.getString("schemaDefinition"));
+        Assert.assertEquals(schema.optString("title"), "Weather Lookup", "stored title mismatch: " + schema);
+        JSONObject annotations = schema.getJSONObject("annotations");
+        Assert.assertTrue(annotations.optBoolean("readOnlyHint", false),
+                "stored annotations.readOnlyHint must be true: " + schema);
+        Assert.assertEquals(annotations.optString("title"), "Weather Lookup",
+                "stored annotations.title mismatch: " + schema);
+        Assert.assertEquals(schema.getJSONObject("_meta").optString("category"), "weather",
+                "stored _meta.category mismatch: " + schema);
+        assertStoredObjectSchema(schema.getJSONObject("outputSchema"), "tempC", "number", "outputSchema", schema);
+        assertStoredObjectSchema(schema.getJSONObject("inputSchema"), "city", "string", "inputSchema", schema);
+    }
+
+    /** Asserts a stored object schema: {@code type} object, {@code prop} present with {@code propType}, in required. */
+    private void assertStoredObjectSchema(JSONObject schema, String prop, String propType, String label, Object ctx) {
+        Assert.assertEquals(schema.optString("type"), "object", "stored " + label + ".type must be object: " + ctx);
+        Assert.assertEquals(schema.getJSONObject("properties").getJSONObject(prop).optString("type"), propType,
+                "stored " + label + ".properties." + prop + ".type mismatch: " + ctx);
+        JSONArray required = schema.optJSONArray("required");
+        Assert.assertTrue(required != null && required.toList().contains(prop),
+                "stored " + label + ".required must contain " + prop + ": " + ctx);
+    }
+
+    /**
      * Gates an MCP tool with a scope (PUT /mcp-servers/{id}): defines the scope on the MCP server (name +
      * role binding) and assigns it to the operation whose backend target is {@code tool}. Ports the scope half
      * of testScopesForProxySubtype. Non-asserting. After redeploy, a token WITHOUT the scope is refused (403)
