@@ -99,6 +99,23 @@ Feature: Publisher API Products
       | publisherUser@tenant1.com |
 
   @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductCreationTestCase
+  Scenario: An API product context within the maximum allowed length is accepted
+    Given The system is ready and I have valid publisher access tokens as "publisherUser"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "longCtxApiId" and deployed it
+    # 150 chars: comfortably below the 232-char maximum, but far longer than a typical context.
+    When I create an API product "${UNIQUE:LongCtxProduct}" with context "${LENGTH:150}" from API "longCtxApiId" as "longCtxProductId"
+    Then The response status code should be 201
+
+  @cap:publisher @feat:products @type:negative @dep:publisher @legacy:APIProductCreationTestCase
+  Scenario: An API product context exceeding the maximum allowed length is rejected
+    Given The system is ready and I have valid publisher access tokens as "publisherUser"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "overCtxApiId" and deployed it
+    # 233 chars: one character past the 232-char maximum.
+    When I attempt to create an API product "${UNIQUE:OverCtxProduct}" with context "${LENGTH:233}" from API "overCtxApiId"
+    Then The response status code should be 400
+    And The response should contain "232"
+
+  @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductCreationTestCase
   Scenario Outline: Create a new version of an API product as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "verApiId" and deployed it
