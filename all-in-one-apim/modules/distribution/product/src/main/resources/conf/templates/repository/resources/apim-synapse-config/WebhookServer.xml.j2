@@ -3,7 +3,7 @@
                  name="WebhookServer"
                  sequence="main"
                  protocol="http"
-                 suspend="false">
+                 suspend="{{!apim.webhooks.http.enable}}">
     <parameters>
         <parameter name="inbound.http.port">9021</parameter>
     </parameters>
