@@ -1,0 +1,18 @@
+# Extra overlay for the IntegrationV2-WsProxyAuthRouting block.
+#
+# Tests end-to-end WS routing through the Basic-auth Squid proxy. A single profile matches
+# "nodebackend" WITHOUT bypass_hosts, pointing at squid-proxy:3129 (the authenticated instance).
+# The gateway attaches a Proxy-Authorization header carrying the credentials baked into the
+# Squid htpasswd file. Squid validates the credentials, resolves "nodebackend" on the shared
+# Docker network, and relays the tunnel.
+#
+# A passing echo + exactly one CONNECT entry in the Squid authenticated access log (asserted via
+# SquidProxyServer.getAuthConnectCount()) proves the gateway sent valid credentials and the
+# proxy accepted the connection.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3129
+proxy_username = "testproxyuser"
+proxy_password = "testproxypass"
