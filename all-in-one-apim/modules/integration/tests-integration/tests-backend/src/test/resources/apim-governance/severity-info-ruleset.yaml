@@ -1,0 +1,20 @@
+rules:
+  # Fails on an API created without contact details, and does so at INFO severity. This is the rule the whole
+  # per-policy severity feature is judged on: excluding INFO must stop it failing the ruleset while the violation
+  # stays visible in the response.
+  severity-test-contact-required:
+    description: "The 'info' object should carry contact details."
+    severity: info
+    given: "$.info"
+    then:
+      field: contact
+      function: truthy
+
+  # Passes for every generated API, so it can never mask the INFO result above.
+  severity-test-title-required:
+    description: "The 'info' object must have a title."
+    severity: error
+    given: "$.info"
+    then:
+      field: title
+      function: truthy

@@ -1188,6 +1188,19 @@ components:
           description: Timestamp when the governance policy was last updated.
           readOnly: true
           example: "2024-08-02T12:00:00Z"
+        complianceAffectingSeverities:
+          type: string
+          # Null is one of the three states this field reports, and OpenAPI 3.0 does not allow a null value for a
+          # typed property unless it is declared nullable. Kept in step with the server specification.
+          nullable: true
+          description: |
+            Comma separated rule severities that make this policy fail. Violations of other severities are still
+            reported but do not affect the policy adherence status.
+
+            Three states are meaningful. Null means per policy severity filtering is not enabled on this
+            deployment, and clients should not offer it. An empty string means it is enabled but nothing has been
+            configured for this policy, so every severity affects compliance. A value lists the severities that do.
+          example: "ERROR,WARN"
       required:
         - name
         - rulesets

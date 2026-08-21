@@ -128,6 +128,10 @@ public static GovernableStatesEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_UPDATED_TIME)
             private String updatedTime;
 
+        public static final String SERIALIZED_NAME_COMPLIANCE_AFFECTING_SEVERITIES = "complianceAffectingSeverities";
+        @SerializedName(SERIALIZED_NAME_COMPLIANCE_AFFECTING_SEVERITIES)
+            private String complianceAffectingSeverities;
+
 
         public APIMGovernancePolicyDTO id(String id) {
         
@@ -377,6 +381,29 @@ public static GovernableStatesEnum fromValue(String value) {
     }
 
 
+        public APIMGovernancePolicyDTO complianceAffectingSeverities(String complianceAffectingSeverities) {
+        
+        this.complianceAffectingSeverities = complianceAffectingSeverities;
+        return this;
+        }
+
+    /**
+        * Comma separated rule severities that make this policy fail. Violations of other severities are still reported but do not affect the policy adherence status.  Three states are meaningful. Null means per policy severity filtering is not enabled on this deployment, and clients should not offer it. An empty string means it is enabled but nothing has been configured for this policy, so every severity affects compliance. A value lists the severities that do. 
+    * @return complianceAffectingSeverities
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "ERROR,WARN", value = "Comma separated rule severities that make this policy fail. Violations of other severities are still reported but do not affect the policy adherence status.  Three states are meaningful. Null means per policy severity filtering is not enabled on this deployment, and clients should not offer it. An empty string means it is enabled but nothing has been configured for this policy, so every severity affects compliance. A value lists the severities that do. ")
+    
+    public String getComplianceAffectingSeverities() {
+        return complianceAffectingSeverities;
+    }
+
+
+    public void setComplianceAffectingSeverities(String complianceAffectingSeverities) {
+        this.complianceAffectingSeverities = complianceAffectingSeverities;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -396,12 +423,13 @@ public static GovernableStatesEnum fromValue(String value) {
             Objects.equals(this.createdBy, apIMGovernancePolicy.createdBy) &&
             Objects.equals(this.createdTime, apIMGovernancePolicy.createdTime) &&
             Objects.equals(this.updatedBy, apIMGovernancePolicy.updatedBy) &&
-            Objects.equals(this.updatedTime, apIMGovernancePolicy.updatedTime);
+            Objects.equals(this.updatedTime, apIMGovernancePolicy.updatedTime) &&
+            Objects.equals(this.complianceAffectingSeverities, apIMGovernancePolicy.complianceAffectingSeverities);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, governableStates, actions, rulesets, labels, createdBy, createdTime, updatedBy, updatedTime);
+        return Objects.hash(id, name, description, governableStates, actions, rulesets, labels, createdBy, createdTime, updatedBy, updatedTime, complianceAffectingSeverities);
     }
 
 
@@ -420,6 +448,7 @@ sb.append("class APIMGovernancePolicyDTO {\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    updatedBy: ").append(toIndentedString(updatedBy)).append("\n");
     sb.append("    updatedTime: ").append(toIndentedString(updatedTime)).append("\n");
+    sb.append("    complianceAffectingSeverities: ").append(toIndentedString(complianceAffectingSeverities)).append("\n");
 sb.append("}");
 return sb.toString();
 }
