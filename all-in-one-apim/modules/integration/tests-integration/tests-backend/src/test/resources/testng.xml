@@ -510,6 +510,7 @@
         </classes>
     </test>
     <test name="apim-tenant-validation" preserve-order="true" parallel="false">
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.other.TenantDomainValidationTestCase"/>
         </classes>
