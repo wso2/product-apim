@@ -41,7 +41,10 @@ Feature: Admin API Categories
     # the unique-constraint violation is not mapped to a 409) with a descriptive body, so we pin the real behaviour.
     When I attempt to create an API category with payload "catCreate"
     Then The response status code should be 500
-    And The response should contain "already exists"
+    # Exact composed message, not the bare "already exists" fragment: the REST layer wraps the cause as
+    # "Error while adding new API Category '<name>' - " + e.getMessage(). Naming the category proves the
+    # rejection is about THIS name, not some other collision.
+    And The response should contain "Error while adding new API Category '{{catName}}' - Category with name '{{catName}}' already exists"
 
     # Update the description
     When I put the following JSON payload in context as "catUpdate"
@@ -74,6 +77,73 @@ Feature: Admin API Categories
     Then The response status code should be 200
     When I delete the API category "catId"
     Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # A category attached to an API PRODUCT (rather than an API) and carried through publish onto the product's
+  # DevPortal representation. Ports APIProductCreationTestCase.testCreateAndInvokeApiProductWithAPICategoryAdded,
+  # which never ran (its @Test annotation is commented out) — implemented here because a silenced test is not
+  # evidence the scenario is invalid, and nothing else attaches a category to a product.
+  # Lives with the other api-categories coverage rather than in publisher/api_products.feature: the subject is the
+  # CATEGORY's attachability and propagation (@cap:admin @feat:api-categories), the same subject as the
+  # attach-to-an-API leg above, with the product being only the attach target. The product create/publish and the
+  # DevPortal read are prerequisites, hence @dep:publisher / @dep:devportal.
+  # Assertions are exact-set equality on the categories array (not a body substring): the property is that the
+  # product carries EXACTLY the attached category, so an extra or dropped element must fail.
+  # Legacy also created a revision and deployed the product before publishing; no assertion depended on the
+  # deployment (it asserted no invocation despite its name), so the deploy arc is omitted — the category is
+  # publisher/DevPortal metadata, not a gateway artifact.
+  # Teardown: no inline deletes. The cleanup hook sweeps categories LAST, after the product and then the API, so
+  # the category is already detached when it is deleted — the "deleting a still-attached category is
+  # non-deterministic" hazard noted on the scenario above cannot arise here.
+  @cap:admin @feat:api-categories @rule:product-attach @type:regression @dep:publisher @dep:devportal @legacy:APIProductCreationTestCase
+  Scenario Outline: An API category attached to an API product survives publish and reaches the devportal as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I generate a unique alphanumeric value and store it as "prodCatName"
+    When I put the following JSON payload in context as "prodCatCreate"
+    """
+    {"name": "{{prodCatName}}", "description": "Category attached to an API product"}
+    """
+    And I create an API category with payload "prodCatCreate" as "prodCatId"
+    Then The response status code should be 201
+
+    # An API product over one API — the attach target.
+    Given I have created an api from "artifacts/payloads/create_apim_test_api.json" as "prodCatApiId" and deployed it
+    When I create an API product "${UNIQUE:CatProduct}" with context "${UNIQUE:catProductCtx}" from API "prodCatApiId" as "prodCatProductId"
+    Then The response status code should be 201
+
+    # Attach the category to the PRODUCT (GET → set categories → PUT); the update echoes it back.
+    When I retrieve the "api-products" resource with id "prodCatProductId"
+    Then The response status code should be 200
+    And I put the response payload in context as "prodCatProductPayload"
+    When I update the "api-products" resource "prodCatProductId" and "prodCatProductPayload" with configuration type "categories" and value:
+      """
+      ["{{prodCatName}}"]
+      """
+    Then The response status code should be 200
+    And The response field "categories" should be exactly the list "{{prodCatName}}"
+
+    # Present on the product BEFORE publish.
+    When I retrieve the "api-products" resource with id "prodCatProductId"
+    Then The response status code should be 200
+    And The response field "categories" should be exactly the list "{{prodCatName}}"
+
+    # Still present AFTER publish.
+    When I publish the "api-products" resource with id "prodCatProductId"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "prodCatProductId"
+    Then The response status code should be 200
+    And The response field "categories" should be exactly the list "{{prodCatName}}"
+
+    # And on the product's DevPortal representation (the devportal exposes products under /apis/{id}). Polled:
+    # devportal visibility after publish is eventually consistent, so a single GET can read stale state.
+    When I retrieve the devportal API "prodCatProductId" until it contains "{{prodCatName}}" within 60 seconds
+    Then The response status code should be 200
+    And The response field "categories" should be exactly the list "{{prodCatName}}"
 
     Examples:
       | actor             |

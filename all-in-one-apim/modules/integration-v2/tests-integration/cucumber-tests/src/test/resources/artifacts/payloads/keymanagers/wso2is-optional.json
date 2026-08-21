@@ -1,8 +1,9 @@
 {
-  "name": "${UNIQUE:Wso2ISKM}",
+  "name": "${UNIQUE:Wso2ISKMOpt}",
   "displayName": "Test Key Manager WSO2 IS",
   "type": "WSO2-IS",
-  "description": "WSO2 IS key manager with optional parameters",
+  "description": "This is a test key manager",
+  "issuer": "https://localhost:9444/services",
   "introspectionEndpoint": "https://localhost:9444/oauth2/introspect",
   "clientRegistrationEndpoint": "https://localhost:9444/keymanager-operations/dcr/register",
   "tokenEndpoint": "https://wso2is.com:9444/oauth2/token",
@@ -14,10 +15,15 @@
   "enableTokenGeneration": true,
   "enableMapOAuthConsumerApps": true,
   "enableOAuthAppCreation": true,
-  "availableGrantTypes": [],
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "implicit",
+    "refresh_token"
+  ],
   "certificates": {
     "type": "JWKS",
-    "value": "https://wso2is.com:9444/oauth2/jwks"
+    "value": "https://localhost:9443/oauth2/jwks"
   },
   "additionalProperties": {
     "Username": "admin",

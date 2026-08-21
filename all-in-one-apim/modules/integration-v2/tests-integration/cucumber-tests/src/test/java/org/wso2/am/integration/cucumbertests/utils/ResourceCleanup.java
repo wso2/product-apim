@@ -98,6 +98,17 @@ public final class ResourceCleanup {
     public static final String CREATED_SERVICE_CATALOG_IDS = "createdServiceCatalogIds";
 
     /**
+     * Teardown list for carbon users a SCENARIO provisions at runtime (not the block-boot actors), holding each
+     * username. A scenario needs its own user whenever it MUTATES a user account — a password change, say — since
+     * mutating a shared block actor would break every parallel scenario that authenticates as it. Such a user is
+     * tenant-level state that nothing else removes, so it must be swept or it leaks across scenarios. It has no
+     * bearer-token REST delete in this pack, so it is swept by {@link #deleteUsers()} through the
+     * {@code RemoteUserStoreManagerService} SOAP admin service as the owner's TENANT ADMIN (the same principal
+     * that created it), not by the generic {@link #deleteResources}.
+     */
+    public static final String CREATED_USER_NAMES = "createdUserNames";
+
+    /**
      * Teardown list for users the PRODUCT created at runtime on a scenario's behalf — today the DevPortal
      * self-sign-up user ({@code AM_USER_SIGNUP} workflow), holding each user's tenant-aware username. A signed-up
      * user is a top-level user-store principal: nothing else removes it (the DevPortal has no delete-me endpoint
@@ -157,6 +168,33 @@ public final class ResourceCleanup {
         TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), Identity.actingActorRef()));
     }
 
+    /**
+     * Registers the id from a create response ONLY if it actually succeeded — the companion to {@code register} for
+     * non-asserting {@code I attempt to …} steps (§12), whose callers expect a refusal but must not leak the
+     * resource when the server unexpectedly accepts. A rejected response is a no-op, so the step's non-asserting
+     * contract is unchanged and the FEATURE still owns the status assertion.
+     *
+     * @param listKey  the {@code CREATED_*_IDS} list the resource is swept from
+     * @param response the raw create response (may be null / non-2xx)
+     * @param idField  the response field holding the new id (e.g. "id", "applicationId", "conditionId")
+     */
+    public static void registerIfCreated(String listKey, HttpResponse response, String idField) {
+        if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
+                || response.getData() == null || response.getData().isBlank()) {
+            return;
+        }
+        try {
+            Object id = Utils.extractValueFromPayload(response.getData(), idField);
+            if (id != null && !String.valueOf(id).isBlank()) {
+                register(listKey, id);
+            }
+        } catch (IOException unexpectedShape) {
+            // A 2xx whose body carries no id is itself odd; log it rather than masking a leak as success.
+            logger.warn("Created resource for '" + listKey + "' but could not read '" + idField
+                    + "' from the response; it may leak. Body: " + response.getData(), unexpectedShape);
+        }
+    }
+
     /** Registers a tenant configuration snapshot for failure-safe restoration by the cleanup hook. */
     public static void registerTenantConfiguration(Object payload) {
         TestContext.addToList(ORIGINAL_TENANT_CONFIGURATIONS,
@@ -195,7 +233,16 @@ public final class ResourceCleanup {
         // External-system resources first (independent of the APIM lists and of APIM actor/token resolution):
         // IS-side resources are swept as the IS integration actor via IS's own management APIs — an APIM actor
         // token cannot address them. See ISResourceCleanup / CLAUDE.md §14.
-        ISResourceCleanup.sweep();
+        // Isolated: a failure escaping the IS sweep would skip every APIM delete below. Logged, not swallowed (§5).
+        // Exception | AssertionError, NOT Throwable: that pair is what a sweep realistically throws (and is the
+        // idiom used by every other sweep in this class). Catching Throwable would also swallow an OutOfMemoryError
+        // or StackOverflowError, reporting a "successful" cleanup while the JVM is failing — those must propagate.
+        try {
+            ISResourceCleanup.sweep();
+        } catch (Exception | AssertionError t) {
+            logger.warn("External IS sweep failed; IS-side resources may have leaked. Continuing with the APIM sweep "
+                    + "so APIM resources are still removed.", t);
+        }
 
         Object baseUrlObj = TestContext.get("baseUrl");
         if (baseUrlObj == null) {
@@ -225,6 +272,7 @@ public final class ResourceCleanup {
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
                 && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()
                 && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
+                && TestContext.getList(CREATED_USER_NAMES).isEmpty()
                 && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()
                 && TestContext.getList(CREATED_SIGNUP_USERNAMES).isEmpty()
                 && TestContext.getList(CREATED_APPLICATION_KEY_MAPPINGS).isEmpty()
@@ -324,6 +372,10 @@ public final class ResourceCleanup {
             // BYO OAuth clients registered via DCR: swept separately because they authenticate with the owner's
             // Basic credentials (not a bearer token) and are not removed by the DevPortal application's deletion.
             deleteDcrClients(baseUrl);
+            // Scenario-provisioned carbon users LAST — the applications/APIs above are deleted as their creating
+            // actor (a block-boot admin, never one of these users), so removing the users first could not help,
+            // and doing it last keeps them available for any owner-token lookup above. Swept via SOAP.
+            deleteUsers();
             // Runtime-created users LAST: every resource a signed-up user owns (its applications, and the DCR
             // client above) is swept as that user with its own credentials first — deleting the principal before
             // its resources would strand them with no owner to delete them as.
@@ -349,6 +401,7 @@ public final class ResourceCleanup {
             TestContext.remove(CREATED_MCP_SERVER_IDS);
             TestContext.remove(CREATED_DCR_CLIENT_IDS);
             TestContext.remove(CREATED_ENDPOINT_CERTIFICATE_ALIASES);
+            TestContext.remove(CREATED_USER_NAMES);
             TestContext.remove(CREATED_SERVICE_CATALOG_IDS);
             TestContext.remove(CREATED_SIGNUP_USERNAMES);
             TestContext.remove(CREATED_APPLICATION_KEY_MAPPINGS);
@@ -481,20 +534,46 @@ public final class ResourceCleanup {
     }
 
     /**
+     * Deletes carbon users a scenario provisioned at runtime (registered under {@link #CREATED_USER_NAMES}).
+     * A scenario needs its own user whenever it MUTATES a user account — a password change, say — since
+     * mutating a shared block actor would break every parallel scenario that authenticates as it.
+     *
+     * <p>Delegates to {@link #sweepUsers}, the same verified path {@link #deleteSignedUpUsers()} uses: a user
+     * has no bearer-token REST delete, and the deleting principal is never the user itself, so the recorded
+     * owner serves only to resolve WHICH TENANT's admin performs the SOAP {@code deleteUser}.
+     */
+    private static void deleteUsers() {
+
+        sweepUsers(CREATED_USER_NAMES, "scenario-provisioned user");
+    }
+
+    /**
      * Deletes users the product created at runtime for a scenario (the DevPortal self-sign-up users registered
-     * under {@link #CREATED_SIGNUP_USERNAMES}). Bespoke, not {@link #deleteResources}, for two reasons: there is
+     * under {@link #CREATED_SIGNUP_USERNAMES}). A signed-up user is a top-level user-store principal that
+     * nothing else removes, so it would otherwise leak into the shared user store.
+     */
+    private static void deleteSignedUpUsers() {
+
+        sweepUsers(CREATED_SIGNUP_USERNAMES, "signed-up user");
+    }
+
+    /**
+     * Shared body of the two user sweeps. Bespoke rather than {@link #deleteResources} for two reasons: there is
      * no bearer-token REST delete for a user, and the deleting principal is not the resource's owner — a user
      * cannot delete itself, so the recorded owner is used only to resolve WHICH TENANT's admin performs the
      * {@code RemoteUserStoreManagerService.deleteUser} SOAP call.
      *
-     * <p>Self-verifying: the outcome is confirmed with {@code isExistingUser} AFTER the delete, so a SOAP fault or
-     * a silently ignored delete cannot look green while leaking. Three outcomes are logged distinctly —
-     * already-absent (the reject arc: the product itself deletes a rejected sign-up), deleted, and STILL PRESENT
-     * (a WARN naming the leak).
+     * <p>Self-verifying: the outcome is confirmed with {@code isExistingUser} AFTER the delete, so a SOAP fault
+     * or a silently ignored delete cannot look green while leaking. Three outcomes are logged distinctly —
+     * already-absent (e.g. the sign-up reject arc, where the product deletes the user itself), deleted, and
+     * STILL PRESENT (a WARN naming the leak).
+     *
+     * @param contextKey the teardown list to drain
+     * @param label      what to call these users in the log, so the two sweeps stay distinguishable
      */
-    private static void deleteSignedUpUsers() {
+    private static void sweepUsers(String contextKey, String label) {
 
-        for (Object o : TestContext.getList(CREATED_SIGNUP_USERNAMES)) {
+        for (Object o : TestContext.getList(contextKey)) {
             if (!(o instanceof OwnedResource res) || res.id() == null) {
                 continue;
             }
@@ -502,39 +581,55 @@ public final class ResourceCleanup {
             try {
                 String tenantDomain = Identity.resolveActor(res.actorRef()).getUserDomain();
                 if (!userExists(tenantDomain, username)) {
-                    // Expected on the rejection arc: UserSignUpApprovalWorkflowExecutor deletes a REJECTED
-                    // sign-up itself, so there is nothing left to sweep.
-                    logger.info("Cleanup: signed-up user '" + username + "' in tenant '" + tenantDomain
+                    // Nothing left to sweep — e.g. UserSignUpApprovalWorkflowExecutor deletes a REJECTED
+                    // sign-up itself.
+                    logger.info("Cleanup: " + label + " '" + username + "' in tenant '" + tenantDomain
                             + "' is already absent — nothing to delete.");
                     continue;
                 }
                 HttpResponse resp = TenantUserProvisioner.deleteUser(tenantDomain, username);
                 int code = resp == null ? -1 : resp.getResponseCode();
                 if (code < 200 || code >= 300) {
-                    logger.warn("Cleanup: deleteUser for signed-up user '" + username + "' in tenant '"
+                    logger.warn("Cleanup: deleteUser for " + label + " '" + username + "' in tenant '"
                             + tenantDomain + "' returned HTTP " + code + ": "
                             + trunc(resp == null ? null : resp.getData()));
                 }
                 if (userExists(tenantDomain, username)) {
-                    logger.warn("Cleanup: signed-up user '" + username + "' STILL EXISTS in tenant '" + tenantDomain
+                    logger.warn("Cleanup: " + label + " '" + username + "' STILL EXISTS in tenant '" + tenantDomain
                             + "' after deleteUser (HTTP " + code + ") — it leaks into the shared user store.");
                 } else {
-                    logger.info("Cleanup: deleted signed-up user '" + username + "' from tenant '" + tenantDomain
+                    logger.info("Cleanup: deleted " + label + " '" + username + "' from tenant '" + tenantDomain
                             + "' (HTTP " + code + ", verified absent).");
                 }
             } catch (IOException | RuntimeException | AssertionError e) {
                 // Best-effort per user: one unreachable/faulting delete must not abort the sweep for the rest.
                 // IOException covers the SOAP transport, RuntimeException an unresolvable actor ref, and
                 // AssertionError a failed existence probe.
-                logger.warn("Cleanup failed to delete signed-up user '" + username + "' for actor '"
+                logger.warn("Cleanup failed to delete " + label + " '" + username + "' for actor '"
                         + res.actorRef() + "': " + e);
             }
         }
     }
 
-    /** {@code isExistingUser} as a boolean — the only correct existence check (see SecondaryUserStoreSteps). */
+    /**
+     * {@code isExistingUser} as a boolean — the only correct existence check (see SecondaryUserStoreSteps).
+     *
+     * <p>Both outcomes must be recognised EXPLICITLY. Treating "not true" as "absent" would read a SOAP fault or a
+     * truncated body as "the user is already gone", silently skip the delete, and log a clean teardown for a user
+     * that actually leaked — the exact failure the sweep exists to prevent (§5). A body that says neither is
+     * therefore surfaced; {@code sweepUsers} catches it per user, so one bad response cannot abort the rest.</p>
+     */
     private static boolean userExists(String tenantDomain, String username) throws IOException {
-        return TenantUserProvisioner.isExistingUser(tenantDomain, username).contains("<ns:return>true</ns:return>");
+        String body = TenantUserProvisioner.isExistingUser(tenantDomain, username);
+        if (body != null && body.contains("<ns:return>true</ns:return>")) {
+            return true;
+        }
+        if (body != null && body.contains("<ns:return>false</ns:return>")) {
+            return false;
+        }
+        throw new IOException("isExistingUser for '" + username + "' in tenant '" + tenantDomain + "' returned"
+                + " neither <ns:return>true</ns:return> nor <ns:return>false</ns:return> — refusing to read that as"
+                + " 'already absent', which would skip the delete and leak the user. Body: " + trunc(body));
     }
 
     /**

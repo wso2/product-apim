@@ -5,12 +5,12 @@ Feature: Gateway GraphQL Endpoint Security
   requires authentication. The node /graphql-secured endpoint returns 401 without `Authorization: Bearer
   graphql-secret`; the API's endpoint_security.production carries that credential and the gateway injects it, so
   the query returns 200. Documented endpoint security applied to GraphQL (the analogue of the AI secured-provider
-  flow). Ports the backend-auth dimension of GraphqlTestCase. Single-tenant (super).
+  flow). Ports the backend-auth dimension of GraphqlTestCase in both organizations.
 
   @cap:gateway @feat:graphql-invocation @rule:endpoint-security @type:regression @dep:publisher @legacy:GraphqlTestCase
-  Scenario: A GraphQL API's required backend credential is injected by the gateway
+  Scenario Outline: A GraphQL API's required backend credential is injected by the gateway as <actor>
     Given The system is ready
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "<actor>"
     And I put JSON payload from file "artifacts/payloads/create_apim_graphql_secured_api.json" in context as "gqlSecPayload"
     And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "gqlSecPayload" as "gqlSecApiId"
     Then The response status code should be 201
@@ -43,3 +43,13 @@ Feature: Gateway GraphQL Endpoint Security
     # Reaching 200 PROVES injection: /graphql-secured returns 401 without the Bearer credential the gateway injects
     And I invoke the API at gateway context "{{gqlSecContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "gqlSecQuery" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    # Status alone is not enough for GraphQL: an error payload also travels at 200. The relayed body must be the
+    # SAME languages data the unsecured endpoint serves (the secured route reuses that handler behind the
+    # credential check), and it must NOT carry the `errors` envelope the 401 rejection body uses.
+    And The response body should equal the JSON file "artifacts/payloads/graphql_languages_expected_response.json"
+    And The response should not contain "errors"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

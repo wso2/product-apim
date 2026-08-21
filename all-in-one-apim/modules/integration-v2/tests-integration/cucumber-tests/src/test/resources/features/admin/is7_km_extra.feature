@@ -13,9 +13,9 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
   proceeds and fails later with an unrelated 409).
 
   @rule:coexistence @type:regression @dep:gateway
-  Scenario: An IS7-KM application and a resident-KM application both invoke the same API independently
+  Scenario Outline: An IS7-KM application and a resident-KM application both invoke the same API independently as <actor>
     Given The system is ready
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "<actor>"
     When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "coexKm"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "multiApiId" and deployed it
     When I publish the "apis" resource with id "multiApiId"
@@ -42,6 +42,7 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
     Then The response status code should be 200
     And I invoke the API at gateway context "{{multiApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+
     # --- Resident-KM application (token issued by APIM) ---
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app_oauth.json" in context as "resAppPayload"
     And I create an application with payload "resAppPayload"
@@ -66,15 +67,33 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
     And I invoke the API at gateway context "{{multiApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
-  @rule:km-permissions @type:negative
-  Scenario: A user in a role the WSO2-IS-7 key manager denies cannot generate keys against it
-    # The KM denies Internal/subscriber; subscriberUser (who holds that role) is refused key generation with 403.
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  @rule:km-permissions @type:negative @legacy:KeyManagersTestCase
+  Scenario Outline: A user in a role the WSO2-IS-7 key manager denies cannot generate keys against it as <appOwner>
+    # The KM denies Internal/subscriber; the subscriber (who holds that role) is refused key generation with 403.
     # The keygen references the KM by its UUID ({{denyKm}}) because the permission check resolves the KM by id.
+    #
+    # x2 tenant (ports the TENANT_ADMIN variant of KeyManagersTestCase.testKeyManagerPermissions): key-manager
+    # configs and their permission rows are ORG-SCOPED, so the tenant row registers its own KM in tenant1.com
+    # (same IS, unique name) and denies that org's own Internal/subscriber role — it does not reuse the super
+    # tenant's KM. The role-to-user resolution runs against the acting org's user store, so the tenant row is a
+    # genuinely separate enforcement path, not a re-run of the same one.
+    #
+    # Connector type: legacy registered a WSO2-IS key manager, this uses WSO2-IS-7. That is immaterial to what is
+    # under test — the generate-keys endpoint evaluates isKeyManagerAllowedForUser(kmUuid, user) against the
+    # stored permission row and returns 403 BEFORE any connector is invoked, so no IS-version-specific code runs
+    # on this path. Keeping WSO2-IS-7 also keeps the fixture consistent with the rest of this block (a reachable
+    # IS7 the other scenarios already depend on); switching to WSO2-IS would add an unreachable-connector
+    # variable to a test whose subject is the permission gate.
     Given The system is ready
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "<actor>"
     When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-permbase.json" denying role "Internal/subscriber" as "denyKm"
     Then The response status code should be 201
-    And The system is ready and I have valid devportal access token as "subscriberUser"
+    And The system is ready and I have valid devportal access token as "<appOwner>"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app_oauth.json" in context as "denyAppPayload"
     And I create an application with payload "denyAppPayload"
     Then The response status code should be 201
@@ -85,13 +104,18 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
     And I generate client credentials for application id "createdAppId" with payload "denyKeygenPayload"
     Then The response status code should be 403
 
+    Examples:
+      | actor             | appOwner                   |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |
+
   # Pins actual behavior: APIM does NOT enforce the KM's availableGrantTypes at key generation. Requesting a grant
   # the WSO2-IS-7 KM does not list (saml2-bearer) is accepted (200) and echoed back in supportedGrantTypes - the
   # grant list is not validated/filtered against the KM config at this point.
   @rule:grant-types @type:regression
-  Scenario: Key generation requesting a grant the WSO2-IS-7 key manager does not list is accepted
+  Scenario Outline: Key generation requesting a grant the WSO2-IS-7 key manager does not list is accepted as <actor>
     Given The system is ready
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "<actor>"
     # "wait until operational": this keygen runs seconds after the KM create, inside the async KM-holder
     # propagation window, where the registration workflow fails with "Key Manager not configured" AFTER
     # inserting the key-mapping row - the leaked row then surfaces as a misleading 901409 on the retry. The
@@ -108,3 +132,8 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
     And I generate client credentials for application id "createdAppId" with payload "gx21KeygenPayload"
     Then The response status code should be 200
     And The response should contain "urn:ietf:params:oauth:grant-type:saml2-bearer"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

@@ -549,3 +549,225 @@ Feature: Gateway WebSocket API Invocation
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # PER-URI-TEMPLATE scope discrimination — the substance of WebSocketAPIScopeTestCase, which the single shared
+  # scope on a single wildcard operation above does NOT exercise. FOUR distinct API-LOCAL scopes gate FOUR
+  # distinct SUBSCRIBE/PUBLISH templates (/products/catalog/{catalog-id}, /products/popular, /orders, and the
+  # wildcard /*), and a password-grant token carrying exactly ONE of them may open ONLY that template's sub-path;
+  # every other sub-path is REFUSED at the WS handshake. The refusals are the point — without them the test would
+  # only show that a correct token works, not that the gateway discriminates per template.
+  #
+  # Why this works on a WS API: scope validation is per-URL-MAPPING. DefaultKeyValidationHandler#validateScopes
+  # (carbon-apimgt @ 5964dc37a49, line 198 onward) finds the mapping whose urlPattern matches the resource the WS
+  # dispatcher elected — bypassing the verb comparison entirely for a WS API — and authorises only if the token
+  # carries one of THAT mapping's scopes. InboundWebSocketProcessor#setMatchingResource prefers an exact template
+  # over /*, which is what makes the wildcard row discriminate too (a /* token is refused on /orders, and an
+  # /orders token is refused on the wildcard path).
+  #
+  # Also pins the token response legacy asserted for each scope: the granted scope comes back in the `scope` field,
+  # and the token's advertised lifetime is exactly the server's configured user-access-token validity. Legacy
+  # asserted expires_in == 3600 and read that as "the 3600 the keys were generated with" — VERIFIED LIVE TO BE
+  # WRONG: with the keys generated as validityTime 3600 the password-grant token still came back
+  # expires_in = 86400, i.e. the value of [oauth.token_validation] user_access_token_validity in this block's
+  # config (artifacts/configFiles/basic/deployment.toml). A key-generation validityTime governs the APPLICATION
+  # (client_credentials) token, not the user token, so legacy's 3600 was simply the stock default of that same
+  # server setting. The assertion below therefore pins the configured value, which is the property legacy was
+  # actually observing.
+  @cap:gateway @feat:streaming-invocation @rule:per-template-scopes @type:regression @dep:publisher @legacy:WebSocketAPIScopeTestCase
+  Scenario Outline: Four per-template scopes on a WS API each open only their own sub-path as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    # Four API-local scope names, unique per runner so parallel lanes and both tenants never collide
+    And I generate a unique alphanumeric value and store it as "wsTplScopeA"
+    And I generate a unique alphanumeric value and store it as "wsTplScopeB"
+    And I generate a unique alphanumeric value and store it as "wsTplScopeC"
+    And I generate a unique alphanumeric value and store it as "wsTplScopeD"
+    And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsTplApiId" and deployed it
+    When I retrieve the "apis" resource with id "wsTplApiId"
+    And I put the response payload in context as "wsTplPayload"
+    And I extract response field "context" and store it as "wsTplContext"
+    # Register the four scopes on the API as API-LOCAL scopes (shared=false), each bound to the admin role
+    When I update the "apis" resource "wsTplApiId" and "wsTplPayload" with configuration type "scopes" and value:
+      """
+      [{"shared":false,"scope":{"name":"{{wsTplScopeA}}","displayName":"{{wsTplScopeA}}","description":"catalog template","bindings":["admin"]}},{"shared":false,"scope":{"name":"{{wsTplScopeB}}","displayName":"{{wsTplScopeB}}","description":"popular products","bindings":["admin"]}},{"shared":false,"scope":{"name":"{{wsTplScopeC}}","displayName":"{{wsTplScopeC}}","description":"orders","bindings":["admin"]}},{"shared":false,"scope":{"name":"{{wsTplScopeD}}","displayName":"{{wsTplScopeD}}","description":"wildcard","bindings":["admin"]}}]
+      """
+    Then The response status code should be 200
+    # Gate each template with its own scope
+    When I retrieve the "apis" resource with id "wsTplApiId"
+    And I put the response payload in context as "wsTplPayload"
+    When I update the "apis" resource "wsTplApiId" and "wsTplPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/products/catalog/{catalog-id}","verb":"SUBSCRIBE","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsTplScopeA}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/products/catalog/{catalog-id}","verb":"PUBLISH","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsTplScopeA}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/products/popular","verb":"SUBSCRIBE","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsTplScopeB}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/products/popular","verb":"PUBLISH","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsTplScopeB}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/orders","verb":"SUBSCRIBE","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsTplScopeC}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/orders","verb":"PUBLISH","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsTplScopeC}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/*","verb":"SUBSCRIBE","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsTplScopeD}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/*","verb":"PUBLISH","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsTplScopeD}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    # Redeploy the gated definition and publish
+    When I put the following JSON payload in context as "wsTplRevPayload"
+    """
+    {"description":"per-template scope revision"}
+    """
+    And I make a request to create a revision for "apis" resource "wsTplApiId" with payload "wsTplRevPayload"
+    When I put the following JSON payload in context as "wsTplDeployPayload"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
+    """
+    And I make a request to deploy revision "revisionId" of "apis" resource "wsTplApiId" with payload "wsTplDeployPayload"
+    When I publish the "apis" resource with id "wsTplApiId"
+    Then The lifecycle status of API "wsTplApiId" should be "Published"
+    # An application with password-grant keys, subscribed on the async plan, so a token can be minted per scope
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "wsTplKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "wsTplKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "wsTplSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "AsyncUnlimited"}
+    """
+    And I subscribe to API "wsTplApiId" using application "createdAppId" with payload "wsTplSubPayload" as "wsTplSubId"
+    Then The response status code should be 201
+
+    # --- ScopeA gates /products/catalog/{catalog-id}: opens /products/catalog/1, refused everywhere else ---
+    When I request an OAuth access token for the current user using password grant with scope "{{wsTplScopeA}}"
+    Then The response status code should be 200
+    And The response should contain "{{wsTplScopeA}}"
+    # 86400 = [oauth.token_validation] user_access_token_validity for this block (see the note above)
+    And The value of response field "expires_in" should be "86400"
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" using access token "generatedAccessToken" expecting rejection within 30 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/orders" using access token "generatedAccessToken" expecting rejection within 30 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/noexactmatch" using access token "generatedAccessToken" expecting rejection within 30 seconds
+
+    # --- ScopeB gates /products/popular ---
+    When I request an OAuth access token for the current user using password grant with scope "{{wsTplScopeB}}"
+    Then The response status code should be 200
+    And The response should contain "{{wsTplScopeB}}"
+    # 86400 = [oauth.token_validation] user_access_token_validity for this block (see the note above)
+    And The value of response field "expires_in" should be "86400"
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" using access token "generatedAccessToken" expecting rejection within 30 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/orders" using access token "generatedAccessToken" expecting rejection within 30 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/noexactmatch" using access token "generatedAccessToken" expecting rejection within 30 seconds
+
+    # --- ScopeC gates /orders ---
+    When I request an OAuth access token for the current user using password grant with scope "{{wsTplScopeC}}"
+    Then The response status code should be 200
+    And The response should contain "{{wsTplScopeC}}"
+    # 86400 = [oauth.token_validation] user_access_token_validity for this block (see the note above)
+    And The value of response field "expires_in" should be "86400"
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/orders" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" using access token "generatedAccessToken" expecting rejection within 30 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" using access token "generatedAccessToken" expecting rejection within 30 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/noexactmatch" using access token "generatedAccessToken" expecting rejection within 30 seconds
+
+    # --- ScopeD gates the wildcard /*: opens a path matching NO exact template, refused on all three exact ones ---
+    When I request an OAuth access token for the current user using password grant with scope "{{wsTplScopeD}}"
+    Then The response status code should be 200
+    And The response should contain "{{wsTplScopeD}}"
+    # 86400 = [oauth.token_validation] user_access_token_validity for this block (see the note above)
+    And The value of response field "expires_in" should be "86400"
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/noexactmatch" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" using access token "generatedAccessToken" expecting rejection within 30 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" using access token "generatedAccessToken" expecting rejection within 30 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/orders" using access token "generatedAccessToken" expecting rejection within 30 seconds
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Raw-WS frame throttling — formerly PARKED as an infrastructure gap ("0 of 10 frames throttled, needs a real
+  # Traffic Manager"). That park was WRONG on both counts and is retracted; the evidence is set out below.
+  #   * The mechanism is NOT absent: RequestProcessor#handleRequest calls
+  #     InboundWebsocketProcessorUtil#doThrottle(msgSize, null, ...) for EVERY non-control frame, and doThrottle
+  #     publishes an org.wso2.throttle.request.stream:1.0.0 event and reads the decision back from
+  #     ThrottleDataHolder — the very same Traffic-Manager round trip the HTTP ThrottleHandler uses, and the same
+  #     one the GraphQL subscription path uses (doThrottleForGraphQL just delegates to doThrottle). There is no
+  #     raw-WS-specific gate, so "GraphQL throttles but raw WS cannot" was not a real distinction.
+  #   * The re-probe measured the wrong thing: a throttled raw-WS frame is NOT dropped. With
+  #     closeConnection=false the gateway answers it with a TEXT frame carrying
+  #     InboundProcessorResponseDTO#getErrorResponseString() — "Error code: 4003 reason: Websocket frame throttled
+  #     out" — and the old detection step counted ANY inbound text frame as a successful echo, so ten throttled
+  #     frames were indistinguishable from ten echoes. The step now matches the 4003 error frame explicitly.
+  # The policy is attached BEFORE the API's first and only revision is deployed, so the assertion cannot depend on
+  # a second deploy event propagating.
+  @cap:gateway @feat:throttling-enforcement @rule:ws-request-count @type:regression @dep:admin @dep:publisher @legacy:WebSocketAPITestCase
+  Scenario Outline: A WS API is throttled once it exceeds its API-level request-count limit as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an advanced throttling policy "${UNIQUE:wsReq4perMin}" allowing 4 requests per minute
+    Then The response status code should be 201
+    # Attach the policy to the API definition BEFORE the first deploy, so one revision carries it
+    When I put JSON payload from file "artifacts/payloads/create_apim_ws_echo_api.json" in context as "wsThrPayload"
+    And I set the field "apiThrottlingPolicy" to "{{advThrottlePolicyName}}" in the payload "wsThrPayload"
+    And I create an "apis" resource with payload "wsThrPayload" as "wsThrApiId"
+    Then The response status code should be 201
+    And I extract response field "context" and store it as "wsThrContext"
+    And The value of response field "apiThrottlingPolicy" should be "{{advThrottlePolicyName}}"
+    When I deploy the API with id "wsThrApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "wsThrApiId"
+    Then The lifecycle status of API "wsThrApiId" should be "Published"
+    # The deployed revision must actually carry the policy — otherwise a "not throttled" outcome would only mean
+    # the policy never reached the gateway.
+    When I retrieve the "apis" resource with id "wsThrApiId"
+    Then The value of response field "apiThrottlingPolicy" should be "{{advThrottlePolicyName}}"
+    When I have set up application with keys, subscribed to API "wsThrApiId" with plan "AsyncUnlimited", and obtained access token for "wsThrSubId"
+    Then The response status code should be 200
+    When I invoke the WebSocket API at gateway ws context "{{wsThrContext}}/1.0.0" using access token "generatedAccessToken" expecting a throttled-out frame within 120 seconds
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Gateway-URL shape: the DevPortal advertises the gateway invocation URLs for a published API, and legacy
+  # APIMANAGER5869WSGayewatURLTestCase#testApiGatewayUrlsTest pins their FULL shape for both API types —
+  # http(s)://host:port/<CONTEXT>/<VERSION> for a REST API and ws://host:port/<CONTEXT>/<VERSION> for a WS API,
+  # with the /t/<tenant> prefix in the tenant case. The previous v2 assertion only checked that the substrings
+  # "ws://" and ":9099" appeared ANYWHERE in the devportal payload — which says nothing about the path, so it
+  # would have passed on a URL missing the context, the version or the tenant prefix entirely.
+  #
+  # Asserted here EXACTLY instead of by legacy's regex, on the built-in Default environment (vhost localhost,
+  # VHost.DEFAULT_WS_PORT 9099 / DEFAULT_WSS_PORT 8099, http 8280 / https 8243). The publisher `context` field
+  # already carries the /t/<tenant> prefix for a tenant API and does NOT carry the version, so the version is
+  # appended — which is precisely the CONTEXT/VERSION statement the legacy regex was reaching for.
+  #
+  # The disabled second half of that legacy class (testApiGatewayUrlsAfterConfigChangeTest — override the
+  # advertised gateway host/port and re-assert) is covered by devportal/environment_urls.feature, which drives the
+  # override through the live vhost mechanism and asserts all four URL flavours exactly.
+  # Devportal read only — no WebSocket connection.
+  @cap:gateway @feat:streaming-invocation @rule:gateway-url @type:regression @dep:publisher @legacy:APIMANAGER5869WSGatewayURLTestCase
+  Scenario Outline: The DevPortal advertises the full gateway URL shape for a WS API and a REST API as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+
+    # --- A WebSocket API: the ws/wss URLs carry the WS inbound ports and the full context/version path ---
+    And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsUrlApiId" and deployed it
+    When I publish the "apis" resource with id "wsUrlApiId"
+    Then The lifecycle status of API "wsUrlApiId" should be "Published"
+    When I retrieve the "apis" resource with id "wsUrlApiId"
+    And I extract response field "context" and store it as "wsUrlContext"
+    When I retrieve the devportal API "wsUrlApiId" until it contains "ws://" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "endpointURLs[0].URLs.ws" should be "ws://localhost:9099{{wsUrlContext}}/1.0.0"
+    And The value of response field "endpointURLs[0].URLs.wss" should be "wss://localhost:8099{{wsUrlContext}}/1.0.0"
+
+    # --- A REST API: the http/https URLs carry the passthrough ports and the same context/version path ---
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "restUrlApiId" and deployed it
+    When I publish the "apis" resource with id "restUrlApiId"
+    Then The lifecycle status of API "restUrlApiId" should be "Published"
+    When I retrieve the "apis" resource with id "restUrlApiId"
+    And I extract response field "context" and store it as "restUrlContext"
+    When I retrieve the devportal API "restUrlApiId" until it contains "http://" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "endpointURLs[0].URLs.http" should be "http://localhost:8280{{restUrlContext}}/1.0.0"
+    And The value of response field "endpointURLs[0].URLs.https" should be "https://localhost:8243{{restUrlContext}}/1.0.0"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

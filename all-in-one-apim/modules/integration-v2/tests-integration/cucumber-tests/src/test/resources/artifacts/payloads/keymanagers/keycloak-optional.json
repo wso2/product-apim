@@ -1,0 +1,35 @@
+{
+  "name": "${UNIQUE:KeycloakKMOpt}",
+  "displayName": "Test Key Manager Keycloak",
+  "type": "KeyCloak",
+  "description": "This is a test key manager",
+  "issuer": "https://localhost:8443/auth/realms/master",
+  "introspectionEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/token/introspect",
+  "clientRegistrationEndpoint": "https://localhost:8443/auth/realms/master/clients-registrations/openid-connect",
+  "tokenEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/token",
+  "revokeEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/revoke",
+  "userInfoEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/userinfo",
+  "authorizeEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/auth",
+  "scopeManagementEndpoint": "https://localhost:8443/auth/realms/master/protocol/openid-connect/scopes",
+  "consumerKeyClaim": "azp",
+  "scopesClaim": "scope",
+  "enabled": true,
+  "enableTokenGeneration": true,
+  "enableMapOAuthConsumerApps": true,
+  "enableOAuthAppCreation": true,
+  "availableGrantTypes": [
+    "client_credentials",
+    "password",
+    "implicit",
+    "refresh_token"
+  ],
+  "certificates": {
+    "type": "JWKS",
+    "value": "https://localhost:8443/auth/realms/master/protocol/openid-connect/certs"
+  },
+  "additionalProperties": {
+    "client_id": "clientIdValue",
+    "client_secret": "clientSecretValue",
+    "self_validate_jwt": true
+  }
+}

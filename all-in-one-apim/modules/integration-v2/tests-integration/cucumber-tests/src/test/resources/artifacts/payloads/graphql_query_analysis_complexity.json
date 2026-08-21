@@ -1,0 +1,27 @@
+{
+  "list": [
+    {"type": "Continent", "field": "code", "complexityValue": 1},
+    {"type": "Continent", "field": "name", "complexityValue": 1},
+    {"type": "Continent", "field": "countries", "complexityValue": 1},
+    {"type": "Country", "field": "code", "complexityValue": 1},
+    {"type": "Country", "field": "name", "complexityValue": 1},
+    {"type": "Country", "field": "native", "complexityValue": 1},
+    {"type": "Country", "field": "phone", "complexityValue": 1},
+    {"type": "Country", "field": "continent", "complexityValue": 1},
+    {"type": "Country", "field": "currency", "complexityValue": 1},
+    {"type": "Country", "field": "languages", "complexityValue": 1},
+    {"type": "Country", "field": "emoji", "complexityValue": 1},
+    {"type": "Country", "field": "emojiU", "complexityValue": 1},
+    {"type": "Language", "field": "code", "complexityValue": 1},
+    {"type": "Language", "field": "name", "complexityValue": 1},
+    {"type": "Language", "field": "native", "complexityValue": 1},
+    {"type": "Language", "field": "rtl", "complexityValue": 1},
+    {"type": "Query", "field": "continents", "complexityValue": 1},
+    {"type": "Query", "field": "continent", "complexityValue": 1},
+    {"type": "Query", "field": "countries", "complexityValue": 1},
+    {"type": "Query", "field": "country", "complexityValue": 1},
+    {"type": "Query", "field": "languages", "complexityValue": 1},
+    {"type": "Query", "field": "language", "complexityValue": 1},
+    {"type": "Query", "field": "limitLanguage", "complexityValue": 1}
+  ]
+}

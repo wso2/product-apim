@@ -29,7 +29,7 @@ Feature: Gateway Default Version Routing
     # G1: the versionless context (no /1.0.0 segment) routes to the default version → the File 1 backend.
     When I invoke the API at gateway context "{{dvContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 1" within 60 seconds
     Then The response status code should be 200
-    And The response should contain "File 1"
+    And The response should contain "Hello WSO2 from File 1"
 
     # Create v2.0.0 as the new default version, repoint it at the "File 2" backend, then deploy + publish it.
     When I create a new version "2.0.0" of "apis" resource "dvV1Id" with default version "true" as "dvV2Id"
@@ -42,7 +42,7 @@ Feature: Gateway Default Version Routing
     # default route before the new version becomes routable.
     When I invoke the API at gateway context "{{dvContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 1" within 60 seconds
     Then The response status code should be 200
-    And The response should contain "File 1"
+    And The response should contain "Hello WSO2 from File 1"
 
     When I retrieve the "apis" resource with id "dvV2Id"
     And I put the response payload in context as "dvV2Payload"
@@ -66,7 +66,7 @@ Feature: Gateway Default Version Routing
     # G2: the SAME versionless context now routes to the new default (v2) → the File 2 backend.
     When I invoke the API at gateway context "{{dvContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 2" within 60 seconds
     Then The response status code should be 200
-    And The response should contain "File 2"
+    And The response should contain "Hello WSO2 from File 2"
 
     # Clear the default entirely (no version is default) and redeploy so the gateway drops the default route.
     When I retrieve the "apis" resource with id "dvV2Id"

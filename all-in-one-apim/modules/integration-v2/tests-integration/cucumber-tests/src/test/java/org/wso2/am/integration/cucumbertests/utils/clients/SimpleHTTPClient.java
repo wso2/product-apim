@@ -393,6 +393,42 @@ public class SimpleHTTPClient {
         }
     }
 
+    /** JKS magic (SUN provider): 0xFEEDFEED. */
+    private static final int MAGIC_JKS = 0xFEEDFEED;
+
+    /** JCEKS magic (SunJCE provider): 0xCECECECE. Distinct from JKS and NOT loadable as it. */
+    private static final int MAGIC_JCEKS = 0xCECECECE;
+
+    /**
+     * The keystore type of {@code path}, chosen from the file's own MAGIC BYTES rather than its extension —
+     * fixtures here are named {@code .jks} or {@code .p12} but the name is not authoritative.
+     *
+     * <p>Hardcoding {@code "JKS"} worked only through the JDK's {@code keystore.type.compat} shim, which silently
+     * accepts a PKCS#12 file for a JKS request. Choosing explicitly means a hardened {@code java.security} that
+     * disables that shim cannot break these tests.</p>
+     *
+     * <p>JKS and JCEKS are the two magic-prefixed formats; anything else is DER (PKCS#12 begins 0x30 0x82).
+     * JCEKS is enumerated because it is NOT interchangeable with JKS — treating it as PKCS#12 would fail to load.
+     */
+    private static String keystoreTypeOf(String path) throws IOException {
+        try (InputStream in = new FileInputStream(path)) {
+            byte[] magic = in.readNBytes(4);
+            if (magic.length < 4) {
+                throw new IOException("Keystore '" + path + "' is too short to identify (" + magic.length
+                        + " bytes); expected a JKS, JCEKS or PKCS#12 file.");
+            }
+            int header = ((magic[0] & 0xFF) << 24) | ((magic[1] & 0xFF) << 16)
+                    | ((magic[2] & 0xFF) << 8) | (magic[3] & 0xFF);
+            if (header == MAGIC_JKS) {
+                return "JKS";
+            }
+            if (header == MAGIC_JCEKS) {
+                return "JCEKS";
+            }
+            return "PKCS12";
+        }
+    }
+
     /**
      * Send a HTTPS GET presenting a CLIENT CERTIFICATE (mutual SSL). Builds a transient HttpClient whose
      * SSLContext loads the given JKS keystore's KEY material (the client cert + private key) — so the client
@@ -415,7 +451,7 @@ public class SimpleHTTPClient {
             String clientKeyStorePath, String keyStorePassword, String url, Map<String, String> headers)
             throws IOException {
         try {
-            KeyStore clientKeyStore = KeyStore.getInstance("JKS");
+            KeyStore clientKeyStore = KeyStore.getInstance(keystoreTypeOf(clientKeyStorePath));
             try (InputStream in = new FileInputStream(clientKeyStorePath)) {
                 clientKeyStore.load(in, keyStorePassword.toCharArray());
             }

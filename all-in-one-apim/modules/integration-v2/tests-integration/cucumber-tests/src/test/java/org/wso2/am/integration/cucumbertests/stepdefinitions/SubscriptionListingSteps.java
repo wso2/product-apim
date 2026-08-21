@@ -66,7 +66,7 @@ public class SubscriptionListingSteps {
     public void theSubscriptionListShouldContainExactly(int expectedCount) {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                        && response.getData() != null && !response.getData().isEmpty(),
+                        && response.getData() != null && !response.getData().isBlank(),
                 "No successful subscription-list response to assert on, got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONObject body = new JSONObject(response.getData());

@@ -1,0 +1,19 @@
+# Extra overlay for the IntegrationV2-SingleClientSecret block, merged on top of the shared `basic` overlay.
+# ONE key, and it selects a different CREDENTIAL MODEL for the whole container.
+#
+# With multiple client secrets enabled (the product DEFAULT, covered by the KeyManager block's
+# multiple_client_secrets.feature) an application key mapping may carry several secrets, each independently
+# generated and revoked. With it disabled, the application has exactly ONE consumer secret, and the operation
+# that matters is ROTATION — replacing that secret in place.
+#
+# WHY THIS IS A SEPARATE BLOCK AND NOT A TOGGLE INSIDE ANOTHER ONE. The two models are mutually exclusive at
+# runtime, and the rotation endpoint is only functional in this one: on default config
+# POST /applications/{appId}/oauth-keys/{keyMappingId}/regenerate-secret answers 500 (900967), because
+# AMDefaultKeyManagerImpl#getNewApplicationConsumerSecret passes Base64.getUrlEncoder().encodeToString(clientId)
+# where keymanager-operations' /dcr/register/{clientId}/regenerate-consumer-secret documents its path parameter
+# as the RAW client identifier. Measured, not inferred: the same call returns 200 under this overlay.
+#
+# So a sibling runner expecting the multiple-secret model would be reinterpreted here, and the rotation coverage
+# cannot live on the default block at all.
+[oauth.multiple_client_secrets]
+enable = false

@@ -17,12 +17,12 @@ Feature: Publisher Service Catalog
 
     # Create a service (multipart metadata + OAS3 definition).
     When I create a service catalog entry named "{{svcName}}" version "v1" key "{{svcKey}}" from definition "artifacts/service-catalog/definition1.yaml" as "svcId"
-    Then The response should contain "{{svcName}}"
+    Then The value of response field "name" should be "{{svcName}}"
 
     # Retrieve it by id, and its definition.
     When I retrieve the service catalog entry "svcId"
     Then The response status code should be 200
-    And The response should contain "{{svcName}}"
+    And The value of response field "name" should be "{{svcName}}"
     When I retrieve the definition of service catalog entry "svcId"
     Then The response status code should be 200
     # definition1.yaml is a Swagger 2.0 document, so the returned definition carries the "swagger" key.

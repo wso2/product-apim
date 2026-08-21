@@ -21,7 +21,7 @@ Feature: Key Manager API Key
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
-    Then The response should contain "api_key"
+    Then The response field "securityScheme[*]" should be exactly the list "api_key,oauth_basic_auth_api_key_mandatory,oauth2"
     And I extract response field "context" and store it as "apiContext"
 
     When I deploy the API with id "createdApiId"
@@ -48,9 +48,13 @@ Feature: Key Manager API Key
     And I request an api key for application id "createdAppId" using payload "apiKeyGenerationPayload"
     Then The response status code should be 200
 
-    # Invoke through the gateway using the API key (full context path, no tenant re-prefix)
+    # Invoke through the gateway using the API key (full context path, no tenant re-prefix). The backend payload
+    # is pinned, as the key-type scenario at the end of this file already does: this scenario's whole claim is
+    # that the generated API key is honoured, and only the body shows the key carried the request through to
+    # node-customer-service (the API's other operation, DELETE /customers/{id}, answers 200 with an empty body).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
@@ -138,6 +142,32 @@ Feature: Key Manager API Key
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "5.6.7.8" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
 
+    # A permittedIP list carrying a CIDR RANGE and an IPv6 range — the three matching forms legacy exercises and
+    # which a single exact-address key cannot: an exact IPv4 literal, an IPv4 inside a /24 CIDR, and an IPv6 inside
+    # a /23 CIDR — each with its own outside-the-range forbidden counterpart. Ports the full permittedIP matrix of
+    # APISecurityTestCase#testInvocationWithApiKeysWithIPCondition ("152.23.5.6, 192.168.1.2/24, 2001:c00::/23").
+    When I put the following JSON payload in context as "ipRangeApiKeyGenPayload"
+    """
+    {"keyName": "IpRangeRestrictedKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "152.23.5.6, 192.168.1.2/24, 2001:c00::/23", "permittedReferer": ""}}
+    """
+    And I request an api key for application id "createdAppId" using payload "ipRangeApiKeyGenPayload"
+    Then The response status code should be 200
+    # The exact IPv4 literal in the list → 200
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "152.23.5.6" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # An IPv4 INSIDE the 192.168.1.2/24 range → 200
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "192.168.1.6" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # An IPv4 OUTSIDE that /24 → 403
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "192.168.5.6" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    # An IPv6 INSIDE the 2001:c00::/23 range → 200
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "2001:c00:0:0:0:0:c:4" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # An IPv6 OUTSIDE that range → 403
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "2061:c00:0:0:0:0:0:0" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+
     Examples:
       | actor             |
       | admin             |
@@ -204,6 +234,10 @@ Feature: Key Manager API Key
     # A non-matching referer is forbidden (403)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "www.abc.com/path2" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    # A SPECIFIC-subdomain wildcard ("sub.cds.com/*") matches any path UNDER that exact host — a distinct pattern
+    # form from the any-subdomain "*.gef.com/*" below, and a multi-segment path at that (200).
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "sub.cds.com/path1/path2" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
     # A wildcard subdomain pattern matches (200)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "example.gef.com/path1" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
@@ -385,6 +419,64 @@ Feature: Key Manager API Key
     # The API key invokes the subscriptionless API with NO subscription -> 200 (gateway checks key->API, not a sub).
     When I invoke the API at gateway context "{{slApiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # An api_key-ONLY API (no oauth2, no basic_auth) exercised with BOTH key types, plus the Basic-scheme negative.
+  # Ports testInvocationWithApiKeysOnly — where legacy asserts a PRODUCTION api key 200 AND a SANDBOX api key 200
+  # whose body carries the expected customer payload (the key type is part of the generate path and decides which
+  # endpoint the gateway routes to, so a sandbox key is a different credential, not a naming variant) — and
+  # testInvocationWithBasicAuthFoAPIKeyNegative, whose legacy form is hollow: it sent "Authorization: Basic abcce",
+  # which is not valid base64 of any user:password, so its 401 only proved "a garbage header is refused" and never
+  # that the Basic SCHEME is refused where it is not permitted. Here the Basic credential is a WELL-FORMED base64
+  # of a REAL existing user (the same credential that returns 200 on a basic_auth-permitting API), so the refusal
+  # is genuinely about the scheme. Both api-key legs are positive controls for that negative.
+  # OBSERVED: that refusal is 401 with code 900902 "Missing Credentials", not 900901 - on an api_key-only API the
+  # Authorization header is not a candidate credential at all, so the gateway reports no credential rather than a bad
+  # one. Legacy's malformed "Basic abcce" would have produced the same bare 401 even if the Basic scheme were fully
+  # honoured, which is precisely why the code is pinned here.
+  @cap:key-manager @feat:api-key @rule:key-type @type:regression @dep:gateway @legacy:APISecurityTestCase
+  Scenario Outline: An api_key-only API is invocable with production and sandbox api keys but refuses Basic as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_apikey_only_api.json" as "koApiId" and deployed it
+    When I publish the "apis" resource with id "koApiId"
+    Then The lifecycle status of API "koApiId" should be "Published"
+    When I retrieve the "apis" resource with id "koApiId"
+    And I extract response field "context" and store it as "koContext"
+    When I have set up application with keys, subscribed to API "koApiId", and obtained access token for "koSubId"
+    Then The response status code should be 200
+
+    # A PRODUCTION api key invokes the API, and the body is the backend's customer payload (not merely a 200).
+    When I put the following JSON payload in context as "koApiKeyGenPayload"
+    """
+    {"keyName": "KeyTypeProdKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
+    """
+    And I request an api key of type "PRODUCTION" for application id "createdAppId" using payload "koApiKeyGenPayload"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    # A SANDBOX api key on the SAME application also invokes it (routed to the sandbox endpoint), same body.
+    When I put the following JSON payload in context as "koSandboxKeyGenPayload"
+    """
+    {"keyName": "KeyTypeSandboxKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
+    """
+    And I request an api key of type "SANDBOX" for application id "createdAppId" using payload "koSandboxKeyGenPayload"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    # A WELL-FORMED Basic credential for a real user, on an API that does not permit basic_auth → refused (401).
+    When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900902"
+    And The response should contain "Missing Credentials"
 
     Examples:
       | actor             |

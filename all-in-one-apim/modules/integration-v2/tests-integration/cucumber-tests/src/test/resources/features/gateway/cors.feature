@@ -334,3 +334,62 @@ Feature: Gateway CORS
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # A LITERAL resource sitting next to a TEMPLATED sibling — POST /payee/personal beside GET /payee/{id}. Ports
+  # APILoggingTest#testSimilarTemplateInvocationWithLoggingTestcase, which sent both pre-flights and both real
+  # calls and asserted only "200" four times (and, despite its name, never read the api.log it enabled, so it
+  # asserted nothing whatever about logging). A bare 200 cannot tell WHICH resource served the call,
+  # which is the only interesting property here, so each call's resolution is asserted directly:
+  #   * The pre-flight's Access-Control-Allow-Methods is computed from the resolved resource's own verbs
+  #     (CORSRequestHandler#setCORSHeaders → selectedResource.getMethods()), so it NAMES the resolution: the
+  #     pre-flight for POST /payee/personal answers POST-and-not-GET (the literal), while the pre-flight for
+  #     GET /payee/123 answers GET-and-not-POST (the template).
+  #   * The two resources carry different authTypes (None on the literal, Application & Application User on the
+  #     template), so the SAME path under a different verb proves the split: an unauthenticated POST
+  #     /payee/personal is 200 (literal, unsecured) while an unauthenticated GET /payee/personal is 401 (it
+  #     resolved to the secured template, not to the literal that happens to share the path).
+  # Default CORS (no corsConfiguration on the API) is required for this: with a configured CORS block the
+  # allow-methods header comes from the config, not from the resolved resource.
+  @cap:gateway @feat:cors @rule:similar-template @type:regression @dep:publisher @dep:devportal @legacy:APILoggingTest
+  Scenario Outline: A pre-flight and the real calls resolve to the right sibling when a literal resource sits next to a template as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_similar_template_cors_api.json" as "stApiId" and deployed it
+    When I publish the "apis" resource with id "stApiId"
+    Then The lifecycle status of API "stApiId" should be "Published"
+    When I retrieve the "apis" resource with id "stApiId"
+    And I extract response field "context" and store it as "stContext"
+    When I have set up application with keys, subscribed to API "stApiId", and obtained access token for "stSubId"
+    Then The response status code should be 200
+
+    # Pre-flight for POST on the LITERAL path → resolves to POST /payee/personal, so allow-methods names POST only.
+    When I send a CORS preflight to gateway context "{{stContext}}/1.0.0/payee/personal" with origin "https://localhost:9443" and request method "POST" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain the header "Access-Control-Allow-Origin" with value "*"
+    And The response header "Access-Control-Allow-Methods" should contain "POST"
+    And The response header "Access-Control-Allow-Methods" should not contain "GET"
+
+    # Pre-flight for GET on a TEMPLATED path → resolves to GET /payee/{id}, so allow-methods names GET only.
+    When I send a CORS preflight to gateway context "{{stContext}}/1.0.0/payee/123" with origin "https://localhost:9443" and request method "GET" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain the header "Access-Control-Allow-Origin" with value "*"
+    And The response header "Access-Control-Allow-Methods" should contain "GET"
+    And The response header "Access-Control-Allow-Methods" should not contain "POST"
+
+    # The real calls: both siblings are invocable with a token.
+    When I invoke the API at gateway context "{{stContext}}/1.0.0/payee/personal" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{stContext}}/1.0.0/payee/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # Which resource served it: the literal is authType None, so POST /payee/personal needs no credential (200)…
+    When I invoke the API at gateway context "{{stContext}}/1.0.0/payee/personal" with method "POST" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # …while a GET on the very same path resolves to the SECURED template and is rejected without a credential.
+    When I invoke the API at gateway context "{{stContext}}/1.0.0/payee/personal" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
