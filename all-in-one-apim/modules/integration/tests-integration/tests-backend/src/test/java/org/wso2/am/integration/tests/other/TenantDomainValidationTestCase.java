@@ -52,6 +52,7 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
     private final String TENANT_ADMIN_USER = TENANT_ADMIN_USERNAME + "@" + TENANT_DOMAIN;
     private final String API_CONTEXT = "testABC_API";
     private final String INVALID_TENANT_DOMAIN = "Abc.com";
+    private final String RESOURCE_NOT_AVAILABLE_MESSAGE = "The requested resource is not available";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiProductionEndPointUrl;
     private String apiID;
@@ -126,9 +127,12 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
         gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + INVALID_TENANT_DOMAIN + "/";
         response = invokeAPI(accessToken, gatewayUrl);
 
-        assertEquals(response.getResponseCode(), 500,
-                "Expected response code 500 but received " + response.getResponseCode() + " when invoking API with " +
+        assertEquals(response.getResponseCode(), 404,
+                "Expected response code 404 but received " + response.getResponseCode() + " when invoking API with " +
                         "invalid tenant domain");
+        assertTrue(response.getData().contains(RESOURCE_NOT_AVAILABLE_MESSAGE),
+                "Expected the message '" + RESOURCE_NOT_AVAILABLE_MESSAGE + "' when invoking API with invalid tenant " +
+                        "domain but received : " + response.getData());
 
         // Invoke the API with a valid tenant domain again to check nothing have broken
         gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + TENANT_DOMAIN + "/";
