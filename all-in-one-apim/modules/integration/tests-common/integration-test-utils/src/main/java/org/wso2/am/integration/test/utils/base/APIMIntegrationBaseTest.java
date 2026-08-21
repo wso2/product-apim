@@ -684,7 +684,8 @@ public class APIMIntegrationBaseTest {
      * Uses the default timeout ({@code WAIT_TIME}).
      *
      * @param apiId            - API UUID
-     * @param revisionUUID     - UUID of the revision expected to be deployed
+     * @param revisionUUID     - UUID of the revision expected to be deployed, or {@code null} to accept any
+     *                         revision of the API
      * @param restAPIPublisher - Instance of RestAPIPublisherImpl
      * @return {@code true} if the revision was acknowledged as deployed within the wait window, else {@code false}
      */
@@ -698,7 +699,8 @@ public class APIMIntegrationBaseTest {
      * configurable timeout.
      *
      * @param apiId            - API UUID
-     * @param revisionUUID     - UUID of the revision expected to be deployed
+     * @param revisionUUID     - UUID of the revision expected to be deployed, or {@code null} to accept any
+     *                         revision of the API
      * @param restAPIPublisher - Instance of RestAPIPublisherImpl
      * @param waitTime         - Overall time budget in milliseconds
      * @return {@code true} if the revision was acknowledged as deployed within the wait window, else {@code false}
@@ -721,7 +723,7 @@ public class APIMIntegrationBaseTest {
                 List<APIRevisionDeploymentDTO> deploymentList = deploymentResponse.getData();
                 if (deploymentList != null) {
                     for (APIRevisionDeploymentDTO deployment : deploymentList) {
-                        if (revisionUUID.equals(deployment.getRevisionUuid())
+                        if ((revisionUUID == null || revisionUUID.equals(deployment.getRevisionUuid()))
                                 && deployment.getSuccessDeployedTime() != null
                                 && deployment.getDeployedGatewayCount() != null
                                 && deployment.getLiveGatewayCount() != null
@@ -731,7 +733,7 @@ public class APIMIntegrationBaseTest {
                                         >= deployment.getLiveGatewayCount().intValue()
                                 && (deployment.getFailedGatewayCount() == null
                                         || deployment.getFailedGatewayCount() == 0)) {
-                            log.info("Revision " + revisionUUID + " of API " + apiId
+                            log.info("Revision " + deployment.getRevisionUuid() + " of API " + apiId
                                     + " acknowledged as deployed. deployedGatewayCount="
                                     + deployment.getDeployedGatewayCount() + ", liveGatewayCount="
                                     + deployment.getLiveGatewayCount() + ", successDeployedTime="
@@ -743,7 +745,8 @@ public class APIMIntegrationBaseTest {
             } catch (ApiException e) {
                 log.warn("Failed to retrieve revision deployment status for API " + apiId + ": " + e.getMessage());
             }
-            log.info("WAIT for revision deployment sync of API: " + apiId + " revision: " + revisionUUID);
+            log.info("WAIT for revision deployment sync of API: " + apiId + " revision: "
+                    + (revisionUUID == null ? "<any>" : revisionUUID));
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -751,7 +754,7 @@ public class APIMIntegrationBaseTest {
                 break;
             }
         }
-        log.warn("Revision " + revisionUUID + " of API " + apiId
+        log.warn("Revision " + (revisionUUID == null ? "<any>" : revisionUUID) + " of API " + apiId
                 + " was not acknowledged as deployed within the wait window.");
         return false;
     }
@@ -776,7 +779,7 @@ public class APIMIntegrationBaseTest {
 
         String tenantIdentifier = getTenantIdentifier(apiProvider);
         String colonSeparatedHeader = user.getUserName()+":"+user.getPassword();
-        String authorizationHeader = "Basic "+Base64.encodeBase64(colonSeparatedHeader.getBytes()).toString();
+        String authorizationHeader = "Basic "+new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
         Map headerMap = new HashMap();
         headerMap.put("Authorization",authorizationHeader);
         boolean apiUndeployed = false;

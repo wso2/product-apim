@@ -136,6 +136,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminKeyManagerConfigRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminDenyPolicyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminTenantConfigRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminTenantDomainValidationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminSystemScopesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlePolicyExportImportRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApiCategoriesRunner"/>

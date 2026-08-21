@@ -39,6 +39,7 @@ import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest {
 
@@ -47,7 +48,6 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
     private final String TENANT_ADMIN_PASSWORD = "password1";
     private final String API_NAME = "ABC_API";
     private final String API_VERSION = "1.0.0";
-    private final String API_DESC = "This is a test API Created by API Manager Integration Test";
     private final String APP_NAME = "TenantABCApp";
     private final String TENANT_ADMIN_USER = TENANT_ADMIN_USERNAME + "@" + TENANT_DOMAIN;
     private final String API_CONTEXT = "testABC_API";
@@ -56,6 +56,7 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
     private String apiProductionEndPointUrl;
     private String apiID;
     private String appID;
+    private boolean invalidTenantDomainCreated;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -71,6 +72,11 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
         try {
             tenantManagementServiceClient.addTenant(INVALID_TENANT_DOMAIN, TENANT_ADMIN_PASSWORD, TENANT_ADMIN_USERNAME,
                     "demo");
+            // Recorded before failing so destroy() can remove the tenant this call should never have created;
+            // the server is shared for the whole module run, so it would otherwise persist.
+            invalidTenantDomainCreated = true;
+            fail("Tenant creation was expected to be rejected for the invalid domain " + INVALID_TENANT_DOMAIN
+                    + ", but it succeeded.");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("The tenant domain " + INVALID_TENANT_DOMAIN + " contains one or more illegal " +
                             "characters. The valid characters are lowercase letters, numbers, '.', '-' and '_'."));
@@ -100,8 +106,17 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
         apiRequest.setVersion(API_VERSION);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiID = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, appID,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiID = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+
+        // Not createPublishAndSubscribeToAPIUsingRest(): its waitForAPIDeploymentSync() probe is scoped to the
+        // tenant fixed at init() (carbon.super), so it can never see an API in this runtime-created tenant.
+        assertTrue(waitForAPIRevisionDeploymentSync(apiID, null, restAPIPublisher),
+                "API " + API_NAME + " was not deployed to the gateway of tenant " + TENANT_DOMAIN);
+
+        HttpResponse subscriptionResponse = subscribeToAPIUsingRest(apiID, appID,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
+        assertEquals(subscriptionResponse.getResponseCode(), 200,
+                "Failed to subscribe to API " + API_NAME + " : " + subscriptionResponse.getData());
 
         //Create the JWT access token
         List<String> grantTypes = new ArrayList<>();
@@ -161,5 +176,9 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
             restAPIPublisher.deleteAPI(apiID);
         }
         tenantManagementServiceClient.deleteTenant(TENANT_DOMAIN);
+        // Last, so a failure here cannot skip the cleanup above. Only reachable if domain validation regressed.
+        if (invalidTenantDomainCreated) {
+            tenantManagementServiceClient.deleteTenant(INVALID_TENANT_DOMAIN);
+        }
     }
 }
