@@ -122,6 +122,14 @@ public class PublisherBaseSteps {
                 return Constants.CREATED_API_IDS;
             case "api-products":
                 return Constants.CREATED_API_PRODUCT_IDS;
+            // Reached only from the DELETE path, which additionally takes these two. Mapping them here rather
+            // than defaulting matters: a delete that deregisters from the wrong list is a no-op, so the id stays
+            // queued, the sweep deletes it a second time, and the resulting "may leak" WARN reads as a product
+            // defect (it was filed as one — "deleting an already-deleted API product returns 500, not 404").
+            case "operation-policies":
+                return Constants.CREATED_OPERATION_POLICY_IDS;
+            case "mcp-servers":
+                return ResourceCleanup.CREATED_MCP_SERVER_IDS;
             default:
                 throw new IllegalArgumentException("No cleanup list is wired for resource type '" + resourceType
                         + "' — add one before creating it here, or the resource will leak (CLAUDE.md §5).");
@@ -343,9 +351,7 @@ public class PublisherBaseSteps {
         // on a confirmed 2xx delete — a failed delete (negative test) means the resource still exists and must
         // stay registered.
         if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
-            String listKey = "mcp-servers".equals(resourceType)
-                    ? ResourceCleanup.CREATED_MCP_SERVER_IDS : Constants.CREATED_API_IDS;
-            ResourceCleanup.deregister(listKey, actualResourceId);
+            ResourceCleanup.deregister(cleanupListFor(resourceType), actualResourceId);
         }
     }
 
@@ -2853,12 +2859,17 @@ public class PublisherBaseSteps {
      * uniquely named/contexted by {@code prefix}0..N-1. No publish/deploy — used by the endpoint-certificate usage
      * test, where "usage" is computed from the endpoint config, not from deployment. The endpoint URL resolves
      * {@code {{...}}} placeholders; each API is registered for teardown by the create primitive.
+     *
+     * <p>Publishes the created ids BOTH ways: {@code epUsageApiId} holds the last one (as before) and
+     * {@code epUsageApiIds} the comma-separated set — the latter is what lets the usage assertion check WHICH APIs
+     * are listed and not merely how many (a count-only assertion passes on three unrelated APIs).
      */
     @Given("I create {int} APIs with production endpoint {string} named {string}")
     public void iCreateApisWithProductionEndpoint(int count, String endpointUrl, String namePrefixRef)
             throws IOException {
         String prefix = Utils.resolveContextPlaceholders(namePrefixRef);
         String resolvedEndpoint = Utils.resolveContextPlaceholders(endpointUrl);
+        List<String> createdIds = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_api.json", "<epApiPayload>");
             JSONObject json = new JSONObject(TestContext.resolve("<epApiPayload>").toString());
@@ -2871,7 +2882,9 @@ public class PublisherBaseSteps {
             json.put("endpointConfig", endpointConfig);
             baseSteps.putJsonPayloadInContext("<epApiPayload>", json.toString());
             iCreateAnAPIWithPayloadAs("apis", "<epApiPayload>", "epUsageApiId");
+            createdIds.add(TestContext.resolve("epUsageApiId").toString());
         }
+        TestContext.set("epUsageApiIds", String.join(",", createdIds));
     }
 
     /**
@@ -4045,6 +4058,136 @@ public class PublisherBaseSteps {
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         Object apiKey = Utils.extractValueFromPayload(response.getData(), "apikey");
         TestContext.set(Utils.normalizeContextKey(keyContextKey), apiKey);
+    }
+
+    /**
+     * Reads the SOAP-to-REST conversion sequences ("resource policies") of ONE resource path + verb and publishes
+     * the response for the feature to assert. {@code sequenceType} is {@code in} or {@code out}. The id may be an
+     * API id OR a revision UUID — a revision's sequences are read through the same endpoint.
+     *
+     * @param sequenceType {@code in} or {@code out}
+     * @param apiIdKey     context key holding the API (or revision) id
+     * @param resourcePath the generated REST resource path (e.g. {@code sayHello})
+     * @param verb         the HTTP verb of that resource (e.g. {@code post})
+     */
+    @When("I retrieve the {string} resource policies of API {string} for resource {string} verb {string}")
+    public void iRetrieveResourcePolicies(String sequenceType, String apiIdKey, String resourcePath, String verb)
+            throws IOException {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        Requests.get(Utils.getApiResourcePoliciesURL(Utils.getBaseUrl(), apiId, sequenceType, resourcePath, verb),
+                headers);
+    }
+
+    /**
+     * Snapshots the sequences of one resource path + verb into context as a canonical
+     * {@code {"<resourcePath> <httpVerb>": "<content>"}} map, so a later read can be compared BYTE-IDENTICALLY.
+     * That exact comparison is what catches silent sequence loss/rewrite across a provider change — a mere
+     * "non-empty" check would pass on a regenerated-but-different sequence. Asserts the list is non-empty so the
+     * baseline itself can never be vacuous. Intermediate read: consumed locally, never published as
+     * {@code httpResponse} (§7).
+     */
+    @When("I snapshot the {string} resource policies of API {string} for resource {string} verb {string} as {string}")
+    public void iSnapshotResourcePolicies(String sequenceType, String apiIdKey, String resourcePath, String verb,
+                                          String snapshotKey) throws IOException {
+
+        JSONObject snapshot = readResourcePolicyContents(sequenceType, apiIdKey, resourcePath, verb);
+        Assert.assertTrue(snapshot.length() > 0, "No " + sequenceType + " resource policies returned for resource "
+                + resourcePath + " " + verb + " — the byte-identical baseline would be vacuous");
+        TestContext.set(Utils.normalizeContextKey(snapshotKey), snapshot.toString());
+    }
+
+    /**
+     * Asserts the sequences of one resource path + verb are BYTE-IDENTICAL to an earlier snapshot — same set of
+     * resource/verb keys and, for each, exactly the same content. Deliberately an equality assertion, not a
+     * presence one.
+     */
+    @Then("The {string} resource policies of API {string} for resource {string} verb {string} should be byte-identical to snapshot {string}")
+    public void theResourcePoliciesShouldMatchSnapshot(String sequenceType, String apiIdKey, String resourcePath,
+                                                       String verb, String snapshotKey) throws IOException {
+
+        JSONObject expected = new JSONObject(TestContext.resolve(snapshotKey).toString());
+        JSONObject actual = readResourcePolicyContents(sequenceType, apiIdKey, resourcePath, verb);
+        Assert.assertEquals(actual.keySet(), expected.keySet(),
+                "The set of " + sequenceType + "-sequences changed for resource " + resourcePath + " " + verb);
+        for (String key : expected.keySet()) {
+            Assert.assertEquals(actual.getString(key), expected.getString(key),
+                    "The " + sequenceType + "-sequence of [" + key + "] is not byte-identical to the snapshot");
+        }
+    }
+
+    /**
+     * Appends a marker comment to EVERY sequence of one resource path + verb (GET the list, then PUT each policy
+     * back with the marker), proving the sequences remain UPDATABLE by the API's current owner. Each PUT is
+     * asserted to return 200 with the marker echoed back; the last PUT is published as {@code httpResponse}.
+     */
+    @When("I append {string} to each {string} resource policy of API {string} for resource {string} verb {string}")
+    public void iAppendToEachResourcePolicy(String marker, String sequenceType, String apiIdKey, String resourcePath,
+                                            String verb) throws IOException {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        JSONArray policies = fetchResourcePolicyList(sequenceType, apiId, resourcePath, verb);
+        Assert.assertTrue(policies.length() > 0, "No " + sequenceType + " resource policies to update for resource "
+                + resourcePath + " " + verb);
+        for (int i = 0; i < policies.length(); i++) {
+            JSONObject policy = policies.getJSONObject(i);
+            JSONObject body = new JSONObject();
+            body.put("id", policy.getString("id"));
+            body.put("resourcePath", policy.getString("resourcePath"));
+            body.put("httpVerb", policy.getString("httpVerb"));
+            body.put("content", policy.getString("content") + "\n" + marker);
+
+            HttpResponse response = Requests.put(
+                    Utils.getApiResourcePolicyByIdURL(Utils.getBaseUrl(), apiId, policy.getString("id")),
+                    headers, body.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+            Assert.assertEquals(response.getResponseCode(), 200, "Updating the " + sequenceType + "-sequence "
+                    + policy.getString("id") + " failed: " + response.getData());
+            Assert.assertTrue(response.getData() != null && response.getData().contains(marker),
+                    "The updated " + sequenceType + "-sequence did not echo the marker: " + response.getData());
+        }
+    }
+
+    /** Sequences of one resource path + verb as a canonical {@code {"<resourcePath> <httpVerb>": content}} map. */
+    private JSONObject readResourcePolicyContents(String sequenceType, String apiIdKey, String resourcePath,
+                                                  String verb) throws IOException {
+
+        JSONArray policies = fetchResourcePolicyList(sequenceType, TestContext.resolve(apiIdKey).toString(),
+                resourcePath, verb);
+        JSONObject contents = new JSONObject();
+        for (int i = 0; i < policies.length(); i++) {
+            JSONObject policy = policies.getJSONObject(i);
+            String key = policy.getString("resourcePath") + " " + policy.getString("httpVerb");
+            // A duplicate key would silently overwrite and hide a lost sequence — fail instead.
+            Assert.assertFalse(contents.has(key), "Duplicate resource policy key [" + key + "] in the "
+                    + sequenceType + "-sequence list; the canonical snapshot would drop one");
+            contents.put(key, policy.getString("content"));
+        }
+        return contents;
+    }
+
+    /**
+     * Raw GET of the resource-policy list, guarded before parsing (§7). An intermediate read consumed inside the
+     * calling step, so it uses the raw client and does NOT publish {@code httpResponse}.
+     */
+    private JSONArray fetchResourcePolicyList(String sequenceType, String apiId, String resourcePath, String verb)
+            throws IOException {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = SimpleHTTPClient.getInstance().doGet(
+                Utils.getApiResourcePoliciesURL(Utils.getBaseUrl(), apiId, sequenceType, resourcePath, verb), headers);
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Reading the " + sequenceType + " resource policies of " + apiId + " (" + resourcePath + " " + verb
+                        + ") failed; got=" + (response == null ? "null"
+                        : response.getResponseCode() + "/" + response.getData()));
+        return new JSONObject(response.getData()).getJSONArray("list");
     }
 
 }

@@ -20,8 +20,15 @@ Feature: Gateway REST Artifact Retrieval
     And I extract response field "name" and store it as "gwArtApiName"
 
     # Attach an addHeader operation policy to the request, response and fault flows so all three mediation
-    # sequences are generated for the deployed API.
-    When I attach the common operation policy "addHeader" to operation 0 of API "gwArtApiId" in flows "request,response,fault" with parameters "{\"headerName\":\"GatewayArtifactTestHeader\",\"headerValue\":\"GatewayArtifactTestValue\"}"
+    # sequences are generated for the deployed API — with a DISTINCT header per flow. One shared header name would
+    # make the per-flow assertions below indistinguishable: any single generated sequence would satisfy all three,
+    # so a missing Out or Fault sequence would still pass. The attach step merges into the API's existing
+    # operationPolicies, so three successive single-flow calls leave all three flows populated.
+    When I attach the common operation policy "addHeader" to operation 0 of API "gwArtApiId" in flows "request" with parameters "{\"headerName\":\"GwArtRequestHeader\",\"headerValue\":\"GwArtRequestValue\"}"
+    Then The response status code should be 200
+    When I attach the common operation policy "addHeader" to operation 0 of API "gwArtApiId" in flows "response" with parameters "{\"headerName\":\"GwArtResponseHeader\",\"headerValue\":\"GwArtResponseValue\"}"
+    Then The response status code should be 200
+    When I attach the common operation policy "addHeader" to operation 0 of API "gwArtApiId" in flows "fault" with parameters "{\"headerName\":\"GwArtFaultHeader\",\"headerValue\":\"GwArtFaultValue\"}"
     Then The response status code should be 200
     When I publish the "apis" resource with id "gwArtApiId"
     Then The lifecycle status of API "gwArtApiId" should be "Published"
@@ -33,19 +40,31 @@ Feature: Gateway REST Artifact Retrieval
     Then The response status code should be 200
     And The response should contain "{{gwArtApiName}}"
     And The response should contain "{{gwArtApiId}}"
-    # The endpoints artifact carries the production and sandbox endpoints.
+    # The endpoints artifact carries EXACTLY the two endpoints (production and sandbox), each pointing at the
+    # API's configured backend URL. The count is what matters: a substring check for "production"/"sandbox" passes
+    # just as well if the gateway materialised one endpoint, three, or a stale extra from a previous revision.
     When I retrieve the gateway "end-points" for API "{{gwArtApiName}}" version "1.0.0" in tenant "<tenant>"
     Then The response status code should be 200
+    And The response array field "endpoints" should have exactly 2 entries
     And The response should contain "production"
     And The response should contain "sandbox"
-    # The local entry carries the API id.
+    # The backend URL the publisher configured is the address inside the deployed endpoint artifacts.
+    And The response should contain "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice"
+    # The local entry: EXACTLY one, carrying the API id.
     When I retrieve the gateway "local-entry" for API "{{gwArtApiName}}" version "1.0.0" in tenant "<tenant>"
     Then The response status code should be 200
+    And The response array field "localEntries" should have exactly 1 entries
     And The response should contain "{{gwArtApiId}}"
-    # The sequences carry the injected header name (request/response/fault mediation).
+    # EXACTLY three mediation sequences (In, Out, Fault) — one per attached flow — and each one carries ITS OWN
+    # header, matched by the synapse sequence name's --In/--Out/--Fault suffix. This is the assertion that proves
+    # all three flows were generated: the per-flow step requires exactly one sequence per flow, so a missing Out or
+    # Fault sequence (or two sequences colliding on one flow) fails.
     When I retrieve the gateway "sequence" for API "{{gwArtApiName}}" version "1.0.0" in tenant "<tenant>"
     Then The response status code should be 200
-    And The response should contain "GatewayArtifactTestHeader"
+    And The response array field "sequences" should have exactly 3 entries
+    And The gateway sequence for flow "In" should contain "GwArtRequestHeader"
+    And The gateway sequence for flow "Out" should contain "GwArtResponseHeader"
+    And The gateway sequence for flow "Fault" should contain "GwArtFaultHeader"
 
     Examples:
       | tenant       | suffix       |

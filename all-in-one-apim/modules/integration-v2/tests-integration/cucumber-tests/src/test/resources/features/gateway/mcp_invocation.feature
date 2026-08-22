@@ -131,7 +131,7 @@ Feature: MCP tool invocation through the gateway
     # A token WITH the scope calls the gated tool (200).
     When I request an OAuth access token for the current user using password grant with scope "mcpScopeEnf"
     Then The response status code should be 200
-    When I invoke the MCP tool "echo" with arguments "{\"message\":\"scoped\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 200 within 90 seconds
+    When I invoke the MCP tool "echo" with arguments "{\"message\":\"scoped\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "scoped" within 90 seconds
     # A token WITHOUT the scope is refused at the tool call (403).
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
@@ -352,7 +352,7 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 201
     When I request an OAuth access token for the current user using password grant with scope "mcpOasScopeEnf"
     Then The response status code should be 200
-    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 200 within 90 seconds
+    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 403 within 90 seconds
@@ -482,7 +482,7 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 201
     When I request an OAuth access token for the current user using password grant with scope "mcpApiScopeEnf"
     Then The response status code should be 200
-    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 200 within 90 seconds
+    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 403 within 90 seconds

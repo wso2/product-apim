@@ -45,9 +45,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public class ApplicationBaseSteps {
@@ -1777,7 +1783,18 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Retrieves a subscription between a specific API and application.
+     * Retrieves the subscription binding ONE api to ONE application, and publishes that application's
+     * subscription list as the step's assertion target.
+     *
+     * <p>Queries by APPLICATION and filters the api out client-side, because the devportal DROPS
+     * {@code applicationId} whenever {@code apiId} is also supplied — {@code
+     * SubscriptionsApiServiceImpl.subscriptionsGet} branches {@code if (apiId) … else if (applicationId)}
+     * (verified live). Sending both, as this step used to, returned EVERY subscription of the api. That made the
+     * step's name a lie, and worse: it stored {@code list[0]}'s id into {@code subscriptionId}, so with two
+     * applications on one api a caller could be handed ANOTHER application's subscription and act on it.
+     *
+     * <p>Fails clearly when this application has no subscription to this api, rather than reporting the first
+     * subscription of whoever else is subscribed.
      *
      * @param apiId Context key containing the API ID
      * @param appId Context key containing the application ID
@@ -1791,19 +1808,37 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), actualApiId, actualAppId, null, null,
-                        null), headers);
+        HttpResponse response = Requests.get(
+                Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), null, actualAppId, null, null, null), headers);
 
+        // Guarded through the shared helper rather than a local copy of the 2xx-with-body check (§15).
         JSONObject responseJson = Utils.requireJsonBody(response, "Retrieving the subscription");
-        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
-            String subscriptionId = responseJson
-                    .getJSONArray("list")
-                    .getJSONObject(0)
-                    .getString("subscriptionId");
-            TestContext.set("subscriptionId", subscriptionId);
-        } else {
-            throw new IOException("No subscription found");
+        JSONArray list = responseJson.optJSONArray("list");
+        String subscriptionId = null;
+        for (int i = 0; list != null && i < list.length(); i++) {
+            JSONObject subscription = list.getJSONObject(i);
+            if (actualApiId.equals(subscriptionIdOfApi(subscription))) {
+                subscriptionId = subscription.optString("subscriptionId", null);
+                break;
+            }
         }
+        Assert.assertNotNull(subscriptionId, "Application '" + actualAppId
+                + "' has no subscription to API '" + actualApiId + "'; its subscriptions: " + responseJson);
+        TestContext.set("subscriptionId", subscriptionId);
+    }
+
+    /**
+     * The api a devportal subscription entry refers to, tolerating both shapes the DTO can take: the flat
+     * {@code apiId} field, or the nested {@code apiInfo.id} the list projection uses.
+     */
+    private static String subscriptionIdOfApi(JSONObject subscription) {
+
+        String flat = subscription.optString("apiId", null);
+        if (flat != null && !flat.isBlank()) {
+            return flat;
+        }
+        JSONObject apiInfo = subscription.optJSONObject("apiInfo");
+        return apiInfo == null ? null : apiInfo.optString("apiId", apiInfo.optString("id", null));
     }
 
     /**
@@ -1845,17 +1880,26 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Updates the keys (OAuth2 credentials) for an application.
-     * The update payload should be stored in the test context under the key "updateKeysPayload".
+     * Updates an application key mapping's OAuth2 key configuration ({@code PUT
+     * applications/{id}/oauth-keys/{keyMappingId}}) with the given payload, as the acting actor. Non-asserting.
      *
-     * @param appId Context key containing the application ID
+     * <p>The key mapping and payload are EXPLICIT context keys rather than the implicit {@code keyMappingId} /
+     * {@code updateKeysPayload} this step previously read: a scenario that generates keys for TWO applications
+     * (the cross-owner callback-URL isolation regression) overwrites {@code keyMappingId} on each key-gen, so an
+     * implicit read silently updates whichever key was generated last. It had no feature callers when made
+     * explicit.
+     *
+     * @param appId           context key holding the application id
+     * @param keyMappingIdKey context key holding the key-mapping id to update
+     * @param payloadKey      context key holding the key-update JSON payload
      */
-    @And("I update the keys for application with {string}")
-    public void iUpdateTheKeysForApplicationWith(String appId) throws IOException {
+    @And("I update the keys for application {string} with key mapping {string} using payload {string}")
+    public void iUpdateTheKeysForApplicationWith(String appId, String keyMappingIdKey, String payloadKey)
+            throws IOException {
 
         String actualAppId = TestContext.resolve(appId).toString();
-        String keyMappingId = TestContext.resolve("keyMappingId").toString();
-        String jsonPayload =TestContext.resolve("updateKeysPayload").toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
+        String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payloadKey).toString());
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
@@ -2353,22 +2397,31 @@ public class ApplicationBaseSteps {
     public void iRequestOAuthAccessTokenWithScope(String scope) throws Exception {
 
         User currentUser = Identity.actingActor();
-        // Resolve any {{contextKey}} placeholders so a scenario can request a scope whose name is generated at
-        // runtime (per-URI-template API-local scopes must be unique per runner — CLAUDE.md §4). A literal scope
-        // name with no placeholder passes through unchanged, which is every other caller of this step.
-        String resolvedScope = scope == null ? null : Utils.resolveContextPlaceholders(scope);
-
-        StringBuilder body = new StringBuilder("grant_type=password")
-                .append("&username=").append(Utils.urlEncode(currentUser.getUserName()))
-                .append("&password=").append(Utils.urlEncode(currentUser.getPassword()));
-        if (resolvedScope != null && !resolvedScope.isBlank()) {
-            body.append("&scope=").append(Utils.urlEncode(resolvedScope));
-        }
-
-        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
-                clientCredentialsHeader(), body.toString(), Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        captureTokens(response);
+        requestPasswordGrantTokenForUser(currentUser.getUserName(), currentUser.getPassword(), scope);
     }
+
+    /**
+     * As the acting-actor password-grant step, but for a NAMED actor (resolved through {@link Identity}) — so the
+     * resource owner of the token is somebody OTHER than whoever the scenario is acting as, while the request is
+     * still authenticated with the acting scenario's application credentials. This is the shape legacy
+     * APIScopeTestCase uses: ONE keyed application mints tokens for several users of different roles so the
+     * per-role scope filtering and the gateway's role-bound-scope enforcement can be compared on identical
+     * credentials. Resolving through {@code Identity} (rather than passing a literal username) keeps the
+     * tenant-qualification correct for a {@code <actor>@<domain>} reference.
+     *
+     * @param actorRef actor reference (e.g. {@code subscriberUser}, {@code publisherUser@tenant1.com})
+     * @param scope    OAuth scope to request (may be empty; may carry {@code {{contextKey}}} placeholders)
+     */
+    @When("I request an OAuth access token using password grant as {string} with scope {string}")
+    public void iRequestOAuthAccessTokenAsActorWithScope(String actorRef, String scope) throws Exception {
+
+        User actor = Identity.resolveActor(Utils.resolveContextPlaceholders(actorRef));
+        // The scope MUST be placeholder-resolved: a scenario-unique API scope name only exists in context, and IS
+        // echoes an unregistered scope back verbatim in the token, so an unresolved "{{key}}" is granted silently
+        // and the role-filtering assertion then compares against a scope that was never the API's.
+        requestPasswordGrantTokenForUser(actor.getUserName(), actor.getPassword(), scope);
+    }
+
 
     /**
      * Requests an OAuth2 access token from APIM's own token endpoint using the password grant for an EXPLICIT
@@ -2646,6 +2699,7 @@ public class ApplicationBaseSteps {
         // Step 4: read the consent page the product would show the user, then approve it.
         TestContext.set("consentApplicationName", Utils.queryParam(afterResume, "application"));
         TestContext.set("consentPageBody", fetchConsentPage(http, base, afterResume));
+        TestContext.set("spOwnerName", serviceProviderOwnerName());
         String consentForm = "consent=approve&hasApprovedAlways=false&sessionDataKeyConsent="
                 + Utils.urlEncode(consentKey);
         return redirectLocation(http, "POST", base + "oauth2/authorize", consentForm);
@@ -2699,6 +2753,28 @@ public class ApplicationBaseSteps {
         return http.send(b.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
     }
 
+    /**
+     * The owner prefix APIM builds a service-provider name from, for the ACTING actor — published as
+     * {@code spOwnerName} so a consent-page assertion never hardcodes it.
+     *
+     * <p>Derived, not literal, because it varies along two axes a feature cannot see: the TENANT suffix is
+     * dropped (a {@code tenant1.com} admin still owns SPs as plain {@code admin}), and in email-username mode
+     * the physical name carries an {@code @email.com} local part which the registry encodes as {@code -AT-}
+     * (the same encoding as {@code apiProviderEncoded}). A static value is therefore right in at most one
+     * block: {@code admin} normally, {@code admin-AT-email.com} under {@code emailUserMode}.
+     */
+    private static String serviceProviderOwnerName() {
+
+        User actor = Identity.actingActor();
+        String userName = actor.getUserName();
+        String tenantSuffix = "@" + actor.getUserDomain();
+        if (userName != null && userName.toLowerCase(java.util.Locale.ROOT)
+                .endsWith(tenantSuffix.toLowerCase(java.util.Locale.ROOT))) {
+            userName = userName.substring(0, userName.length() - tenantSuffix.length());
+        }
+        return userName == null ? null : userName.replace("@", "-AT-");
+    }
+
     /** Returns a no-redirect response's Location header, asserting the response actually was a redirect. */
     private String locationHeader(java.net.http.HttpResponse<String> resp, String url) {
         java.util.Optional<String> loc = resp.headers().firstValue("Location");
@@ -2709,10 +2785,22 @@ public class ApplicationBaseSteps {
 
     /** Builds an HttpClient that trusts IS's self-signed cert, keeps a cookie jar, and never auto-redirects. */
     private java.net.http.HttpClient trustAllHttpClientWithCookies() throws Exception {
+        // X509ExtendedTrustManager, not X509TrustManager: the JDK performs HOSTNAME verification inside the
+        // extended check, so a plain trust-all manager still rejects a host the certificate does not name (e.g.
+        // an IP, as when TESTCONTAINERS_HOST_OVERRIDE hands out the VM address). Supplying SSLParameters with a
+        // null endpoint-identification algorithm does NOT work — HttpClient overrides it.
         javax.net.ssl.TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
-                new javax.net.ssl.X509TrustManager() {
+                new javax.net.ssl.X509ExtendedTrustManager() {
                     public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) { }
                     public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) { }
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a,
+                            java.net.Socket s) { }
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a,
+                            java.net.Socket s) { }
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a,
+                            javax.net.ssl.SSLEngine e) { }
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a,
+                            javax.net.ssl.SSLEngine e) { }
                     public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                         return new java.security.cert.X509Certificate[0];
                     }
@@ -3351,6 +3439,70 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Asserts the WHOLE-TOKEN membership of the {@code scope} field in the last token-endpoint response: every
+     * scope in {@code included} is present and every scope in {@code excluded} is absent, comparing against the
+     * response's space-delimited scope list split into exact entries.
+     *
+     * <p>Whole-entry comparison (not substring) is the point: {@code The response should contain "apim:api_create"}
+     * would also be satisfied by a hypothetical {@code apim:api_create_x}, and a "should not contain" written that
+     * way is even worse — it can be defeated by any scope that merely embeds the name. Legacy APIScopeTestCase
+     * asserts exactly this per-role filtering of the requested {@code apim:*} scopes, so the granted/withheld
+     * distinction must be exact.
+     *
+     * @param included comma-separated scopes that MUST appear (may be empty)
+     * @param excluded comma-separated scopes that MUST NOT appear (may be empty)
+     */
+    @Then("The issued token scope list should include {string} and exclude {string}")
+    public void theIssuedTokenScopeListShouldIncludeAndExclude(String included, String excluded) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful token response to read 'scope' from, got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        JSONObject body = new JSONObject(response.getData());
+        Assert.assertTrue(body.has("scope"), "Token response carries no 'scope' field: " + response.getData());
+        Set<String> granted = new HashSet<>(Arrays.asList(body.getString("scope").trim().split("\\s+")));
+
+        // Resolve {{contextKey}} placeholders so a scenario-unique scope name can be asserted by reference.
+        for (String scope : splitScopeList(Utils.resolveContextPlaceholders(included))) {
+            Assert.assertTrue(granted.contains(scope),
+                    "Expected scope '" + scope + "' to be granted, but the issued scope list is " + granted);
+        }
+        for (String scope : splitScopeList(Utils.resolveContextPlaceholders(excluded))) {
+            Assert.assertFalse(granted.contains(scope),
+                    "Expected scope '" + scope + "' to be WITHHELD, but the issued scope list is " + granted);
+        }
+    }
+
+    /** Splits a comma-separated scope list from a feature argument, tolerating an empty argument. */
+    private static List<String> splitScopeList(String csv) {
+
+        if (csv == null || csv.isBlank()) {
+            return Collections.emptyList();
+        }
+        List<String> scopes = new ArrayList<>();
+        for (String entry : csv.split(",")) {
+            if (!entry.isBlank()) {
+                scopes.add(entry.trim());
+            }
+        }
+        return scopes;
+    }
+
+    /**
+     * Retrieves the Developer Portal application collection ({@code GET devportal/applications}) with the ACTING
+     * actor's devportal token. Non-asserting — the feature asserts the status, which is the point: legacy
+     * APIScopeTestCase#testRESTAPIScopes proves a CREATOR-role user's devportal token cannot list applications
+     * (it carries no {@code apim:subscribe}/{@code apim:app_manage}), so this step must be usable as a negative.
+     */
+    @When("I retrieve all applications from the Developer Portal")
+    public void iRetrieveAllApplicationsFromDevPortal() throws IOException {
+
+        Requests.get(Utils.getApplicationCreateURL(Utils.getBaseUrl()), Identity.devportalHeaders());
+    }
+
+    /**
      * Generates an API Key for an application.
      *
      * @param appId Context key containing the application ID
@@ -3876,11 +4028,20 @@ public class ApplicationBaseSteps {
     /**
      * Adds a system-scope role-alias mapping (admin REST {@code PUT /role-aliases}): maps {@code role} to include
      * {@code alias}. Ports APISystemScopesTestCase#testAddScopeMapping. Non-asserting.
+     *
+     * <p>{@code alias} may be a COMMA-SEPARATED list, because the PUT replaces the whole mapping list — aliasing
+     * two roles onto one system role therefore has to happen in a single call (calling this step twice would
+     * discard the first mapping). The role-alias-derived-subscriber scenario needs exactly that. A single alias
+     * (every pre-existing caller) is the one-element case and is unaffected.
      */
     @When("I set the role alias {string} for role {string}")
     public void iSetRoleAlias(String alias, String role) throws IOException {
 
-        JSONObject entry = new JSONObject().put("role", role).put("aliases", new JSONArray().put(alias));
+        JSONArray aliases = new JSONArray();
+        for (String single : alias.split("\\s*,\\s*")) {
+            aliases.put(Utils.resolveContextPlaceholders(single));
+        }
+        JSONObject entry = new JSONObject().put("role", role).put("aliases", aliases);
         JSONObject payload = new JSONObject().put("count", 1).put("list", new JSONArray().put(entry));
         Requests.put(Utils.getRoleAliasesURL(Utils.getBaseUrl()), Identity.adminHeaders(), payload.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -4913,29 +5074,180 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String url = Utils.getApiSearchURLWithLimit(Utils.getBaseUrl(), resolvedQuery, limit);
+        // Funnelled through Utils.retryUntil rather than a hand-rolled deadline loop (§7/§15): the envelope owns
+        // the max(timeout, RUNTIME_PROPAGATION_TIMEOUT) ceiling so this call site cannot silently cap itself, and
+        // retries ONLY IOException. Requests.get publishes each attempt, so the last one is the assertion target.
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                result -> pageCountOf(result) == expectedCount);
+        Assert.assertNotNull(response, "No paginated search response");
+        Assert.assertEquals(pageCountOf(response), expectedCount,
+                "DevPortal paginated page count did not reach the expected value");
+    }
+
+    /**
+     * UNIFIED SEARCH ({@code /search}) on either plane, polled until the result count settles on the expected
+     * value, then asserted exactly. This is the ONLY search surface that can report a match inside a DOCUMENT's
+     * content — {@code /apis?query=} returns API objects, so a document hit cannot appear there (see
+     * {@link Utils#getUnifiedSearchURL}). Indexing is asynchronous, hence the poll.
+     *
+     * @param plane {@code "devportal"} or {@code "publisher"}
+     */
+    @When("I unified-search the {string} plane for {string} until the result count is {int} within {int} seconds")
+    public void iUnifiedSearchUntilCount(String plane, String query, int expectedCount, int seconds)
+            throws InterruptedException {
+
+        String url = Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane,
+                Utils.resolveContextPlaceholders(query));
+        Map<String, String> headers = "publisher".equals(plane)
+                ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                result -> pageCountOf(result) == expectedCount);
+        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
+        Assert.assertEquals(pageCountOf(response), expectedCount,
+                "Unified search on the " + plane + " plane for '" + query
+                        + "' did not reach the expected count; last body: " + response.getData());
+    }
+
+    /**
+     * One unified-search call, published for assertion without any expectation of its own — for inspecting the
+     * result SHAPE (a {@code DocumentSearchResult} carries {@code type}, {@code docType}, {@code sourceType}) or a
+     * status this step must not presume, such as an unsupported query prefix.
+     */
+    @When("I unified-search the {string} plane once for {string}")
+    public void iUnifiedSearchOnce(String plane, String query) throws IOException {
+
+        Requests.get(Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane,
+                        Utils.resolveContextPlaceholders(query)),
+                "publisher".equals(plane) ? Identity.publisherHeaders() : Identity.devportalHeaders());
+    }
+
+    /**
+     * The {@code count} of a DevPortal search page, or {@code -1} when the response has no usable body — so a
+     * non-2xx or empty answer can never be mistaken for a real count (in particular never for an expected 0,
+     * which would let a failed request satisfy a count-0 assertion). Guards before parsing, per §7.
+     */
+    private static int pageCountOf(HttpResponse response) {
+
+        if (response == null || response.getResponseCode() != 200
+                || response.getData() == null || response.getData().isBlank()) {
+            return -1;
+        }
+        return new JSONObject(response.getData()).optInt("count", -1);
+    }
+
+    /**
+     * Asserts the DevPortal's UNFILTERED API listing ({@code GET /apis} with an EMPTY query) lists an API name
+     * exactly {@code expectedOccurrences} times, and that the matching entry carries {@code expectedVersion}.
+     *
+     * <p>This is the ONE devportal read path that honours the {@code DisplayMultipleVersions} configuration. With
+     * the product default ({@code false}), {@code RegistrySearchUtil.getDevPortalSearchQuery} appends
+     * {@code &group=true&group.field=name&group.sort=versionComparable desc} to the Solr query — but ONLY when the
+     * effective query is empty or is exactly the devportal type-filter constant. The devportal REST layer
+     * ({@code ApisApiServiceImpl.apisGet}) APPENDS that constant to any user-supplied query, so a
+     * {@code ?query=<name>} search never satisfies the equality check and never groups: that is why a name search
+     * legitimately returns BOTH versions while this listing returns only the latest. Hence the empty query here —
+     * sending a name would silently test the ungrouped path.
+     *
+     * <p>Counts OCCURRENCES OF THIS API's NAME rather than the listing's total {@code count}, which is what the
+     * legacy test pinned ({@code count == 1} for a whole tenant). A total-count assertion is only valid in an
+     * otherwise-empty tenant and can never hold under parallel execution; per-name occurrences are exact by
+     * construction because the API name is uniquely generated (CLAUDE.md §4).
+     *
+     * <p>Polls because publishing propagates to the Solr index asynchronously; the assertions run after the loop so
+     * a persistent mismatch fails the step itself. Each sweep walks EVERY page of the listing, so a busy tenant
+     * cannot push the API onto a later page and have it counted as absent.
+     *
+     * @param apiName             the API name to count (resolves {@code {{...}}})
+     * @param expectedOccurrences exact number of listing entries expected for that name
+     * @param expectedVersion     the version the matching entry must carry
+     * @param seconds             poll window
+     */
+    @Then("the devportal API listing should list API {string} exactly {int} time(s) with version {string} within {int} seconds")
+    public void theDevportalListingShouldListApiOnce(String apiName, int expectedOccurrences,
+            String expectedVersion, int seconds) throws IOException, InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        String resolvedName = Utils.resolveContextPlaceholders(apiName);
+        String resolvedVersion = Utils.resolveContextPlaceholders(expectedVersion);
         long endTimeStart = System.currentTimeMillis();
         long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        int actual = -1;
+        List<String> matchedVersions = new ArrayList<>();
         while (true) {
-            try {
-                response = Requests.get(url, headers);
-                if (response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isBlank()) {
-                    actual = new JSONObject(response.getData()).optInt("count", -1);
-                }
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
+            List<String> thisSweep = versionsListedForName(headers, resolvedName);
+            if (thisSweep != null) {
+                matchedVersions = thisSweep;
             }
-            if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
+            if ((thisSweep != null && thisSweep.size() == expectedOccurrences)
+                    || System.currentTimeMillis() >= endTime) {
                 break;
             }
             Utils.pollPause(endTimeStart, 2000);
         }
-        Assert.assertNotNull(response, "No paginated search response");
-        Assert.assertEquals(actual, expectedCount,
-                "DevPortal paginated page count did not reach the expected value");
+        Assert.assertEquals(matchedVersions.size(), expectedOccurrences,
+                "The unfiltered devportal listing carried " + matchedVersions.size() + " entr(ies) for API '"
+                        + resolvedName + "' (versions " + matchedVersions + ") but exactly " + expectedOccurrences
+                        + " was expected (counted across EVERY page of the listing)");
+        if (!matchedVersions.isEmpty()) {
+            Assert.assertEquals(matchedVersions.get(0), resolvedVersion,
+                    "The listed entry for API '" + resolvedName + "' was version " + matchedVersions.get(0)
+                            + " but " + resolvedVersion + " was expected (the grouped listing must surface the "
+                            + "LATEST version)");
+        }
     }
+
+    /**
+     * Walks EVERY page of the unfiltered devportal listing and returns the versions of the entries whose name is
+     * {@code apiName}. Returns null when a page is unreadable so the caller's poll keeps waiting rather than
+     * treating a failed read as "zero occurrences".
+     *
+     * <p>Pages rather than sending one large {@code limit}: a single page can only claim "exactly N in this page",
+     * so an API sitting later in a busy tenant's collection would be counted as zero and time the poll out as a
+     * false failure. Mirrors the paging contract of
+     * {@code PublisherBaseSteps#countAcrossAllPages} — stop on a short/empty page, or once the reported
+     * {@code pagination.total} has been consumed (the offset guard also stops a total that never shrinks).
+     *
+     * <p>The URL carries no {@code query} parameter, which is what keeps the version GROUPING path active (see the
+     * calling step's javadoc); a name query would silently exercise the ungrouped path instead.
+     */
+    private static List<String> versionsListedForName(Map<String, String> headers, String apiName)
+            throws IOException {
+        List<String> versions = new ArrayList<>();
+        int offset = 0;
+        while (true) {
+            HttpResponse page = Requests.get(
+                    Utils.getDevportalApiListURL(Utils.getBaseUrl(), UNFILTERED_LISTING_PAGE_SIZE, offset), headers);
+            if (page == null || page.getResponseCode() != 200
+                    || page.getData() == null || page.getData().isBlank()) {
+                return null;
+            }
+            int onThisPage;
+            int total;
+            try {
+                JSONObject body = new JSONObject(page.getData());
+                JSONArray list = body.optJSONArray("list");
+                onThisPage = list == null ? 0 : list.length();
+                for (int i = 0; i < onThisPage; i++) {
+                    JSONObject entry = list.getJSONObject(i);
+                    if (apiName.equals(entry.optString("name"))) {
+                        versions.add(entry.optString("version"));
+                    }
+                }
+                JSONObject pagination = body.optJSONObject("pagination");
+                total = pagination == null ? -1 : pagination.optInt("total", -1);
+            } catch (JSONException malformedDuringWarmup) {
+                return null;
+            }
+            offset += onThisPage;
+            if (onThisPage == 0 || onThisPage < UNFILTERED_LISTING_PAGE_SIZE || (total >= 0 && offset >= total)) {
+                return versions;
+            }
+        }
+    }
+
+    /** Page size used when walking the whole unfiltered devportal listing. */
+    private static final int UNFILTERED_LISTING_PAGE_SIZE = 200;
 
     /**
      * Retrieves the DevPortal tag cloud (GET /tags), polling until it contains the expected value — the tag cloud

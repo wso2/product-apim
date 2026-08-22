@@ -14,6 +14,10 @@ Feature: Gateway Mediation Policies
     # Register the common operation policy first so the API can reference it by name.
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/custom_add_common_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_common_header.yaml" as "medCommonPolicyId"
     And I have created an api from "artifacts/payloads/create_apim_oppolicy_api.json" as "medApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "medApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "medApiId"
     Then The lifecycle status of API "medApiId" should be "Published"
     When I retrieve the "apis" resource with id "medApiId"
@@ -43,6 +47,10 @@ Feature: Gateway Mediation Policies
     # Register the common operation policy first so the API can reference it by name.
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/custom_add_common_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_common_header.yaml" as "rootCommonPolicyId"
     And I have created an api from "artifacts/payloads/create_apim_rootpath_oppolicy_api.json" as "rootApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "rootApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "rootApiId"
     Then The lifecycle status of API "rootApiId" should be "Published"
     When I retrieve the "apis" resource with id "rootApiId"
@@ -69,6 +77,10 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_claimvalidator_match_api.json" as "cvMatchApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "cvMatchApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "cvMatchApiId"
     Then The lifecycle status of API "cvMatchApiId" should be "Published"
     When I retrieve the "apis" resource with id "cvMatchApiId"
@@ -77,6 +89,8 @@ Feature: Gateway Mediation Policies
     Then The response status code should be 200
     When I invoke the API at gateway context "{{cvMatchContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -90,6 +104,10 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_claimvalidator_mismatch_api.json" as "cvMissApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "cvMissApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "cvMissApiId"
     Then The lifecycle status of API "cvMissApiId" should be "Published"
     When I retrieve the "apis" resource with id "cvMissApiId"
@@ -112,6 +130,10 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_claimvalidator_regexmatch_api.json" as "cvRxMatchApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "cvRxMatchApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "cvRxMatchApiId"
     Then The lifecycle status of API "cvRxMatchApiId" should be "Published"
     When I retrieve the "apis" resource with id "cvRxMatchApiId"
@@ -120,6 +142,8 @@ Feature: Gateway Mediation Policies
     Then The response status code should be 200
     When I invoke the API at gateway context "{{cvRxMatchContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -134,6 +158,10 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_claimvalidator_regexmiss_api.json" as "cvRxMissApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "cvRxMissApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "cvRxMissApiId"
     Then The lifecycle status of API "cvRxMissApiId" should be "Published"
     When I retrieve the "apis" resource with id "cvRxMissApiId"
@@ -156,6 +184,10 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_claimvalidator_inverted_api.json" as "cvInvApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "cvInvApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "cvInvApiId"
     Then The lifecycle status of API "cvInvApiId" should be "Published"
     When I retrieve the "apis" resource with id "cvInvApiId"
@@ -164,6 +196,8 @@ Feature: Gateway Mediation Policies
     Then The response status code should be 200
     When I invoke the API at gateway context "{{cvInvContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -180,6 +214,10 @@ Feature: Gateway Mediation Policies
     And I have valid access tokens as "<actor>"
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/add_secret_headers.j2" and "artifacts/payloads/policySpecFiles/add_secret_headers.yaml" as "secretPolicyId"
     And I have created an api from "artifacts/payloads/create_apim_secretpolicy_api.json" as "secretApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "secretApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "secretApiId"
     Then The lifecycle status of API "secretApiId" should be "Published"
     When I retrieve the "apis" resource with id "secretApiId"
@@ -209,6 +247,10 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_jsontoxml_api.json" as "jxApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "jxApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "jxApiId"
     Then The lifecycle status of API "jxApiId" should be "Published"
     When I retrieve the "apis" resource with id "jxApiId"
@@ -241,6 +283,10 @@ Feature: Gateway Mediation Policies
     And I have valid access tokens as "<actor>"
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/js_script_header.j2" and "artifacts/payloads/policySpecFiles/js_script_header.yaml" as "jsPolicyId"
     And I have created an api from "artifacts/payloads/create_apim_jsscript_api.json" as "jsApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "jsApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "jsApiId"
     Then The lifecycle status of API "jsApiId" should be "Published"
     When I retrieve the "apis" resource with id "jsApiId"
@@ -277,6 +323,10 @@ Feature: Gateway Mediation Policies
     # Deploy + publish the NEW VERSION in its own right.
     When I deploy the API with id "verV2Id"
     Then The response status code should be 201
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "verV2Id" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "verV2Id"
     Then The lifecycle status of API "verV2Id" should be "Published"
     When I retrieve the "apis" resource with id "verV2Id"
@@ -316,6 +366,10 @@ Feature: Gateway Mediation Policies
     # Deploy + publish the NEW VERSION in its own right.
     When I deploy the API with id "secVerV3Id"
     Then The response status code should be 201
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "secVerV3Id" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "secVerV3Id"
     Then The lifecycle status of API "secVerV3Id" should be "Published"
     When I retrieve the "apis" resource with id "secVerV3Id"
@@ -344,6 +398,10 @@ Feature: Gateway Mediation Policies
     # The shipped addHeader policy is referenced inline; register only the custom one first.
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/custom_add_common_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_common_header.yaml" as "multiCommonPolicyId"
     And I have created an api from "artifacts/payloads/create_apim_multipolicy_api.json" as "multiApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "multiApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "multiApiId"
     Then The lifecycle status of API "multiApiId" should be "Published"
     When I retrieve the "apis" resource with id "multiApiId"
@@ -373,6 +431,10 @@ Feature: Gateway Mediation Policies
     And I have valid access tokens as "<actor>"
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/content_aware_property_policy.j2" and "artifacts/payloads/policySpecFiles/content_aware_property_policy.yaml" as "caPolicyId"
     And I have created an api from "artifacts/payloads/create_content_aware_empty_body_api.json" as "caApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
+    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
+    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And the "apis" resource "caApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "caApiId"
     Then The lifecycle status of API "caApiId" should be "Published"
     When I retrieve the "apis" resource with id "caApiId"

@@ -21,13 +21,22 @@ Feature: Publisher API Documentation
     And I add the document to API "docApiId"
     Then The response status code should be 201
 
-    # List all documents
+    # List all documents — EXACTLY the one document just added. APIM714GetAllDocumentationTestCase pins the list
+    # size (its assertion is list.size() == 1, not a bare 200), so a stray/duplicated document fails here.
     When I retrieve all available documents for "docApiId"
     Then The response status code should be 200
+    And The response should contain "\"count\":1"
 
     # Retrieve the specific document
     When I retrieve document with "documentID" for "docApiId"
     Then The response status code should be 200
+
+    # Update the document's CONTENT (the /content resource — separate from the create payload's inlineContent
+    # metadata), then its metadata. This is APIM714's exact order: content update, then document update, then list.
+    # Pinned live: the content POST answers 201 (with the document DTO as its body), not the 200 the
+    # publisher-api.yaml spec documents for this operation.
+    When I add inline content "updated documentation content" to document "documentID" of API "docApiId"
+    Then The response status code should be 201
 
     # Update the document
     When I prepare a new document payload with type "SAMPLES", sourceType "INLINE", and inlineContent "updated content"
@@ -35,6 +44,16 @@ Feature: Publisher API Documentation
     Then The response status code should be 200
     And The response should contain "SAMPLES"
 
+    # Neither update created a second document: the listing still carries EXACTLY one, now of type SAMPLES. This
+    # is the assertion APIM714 exists for — an update that inserted instead of replacing would show count 2 here
+    # while every individual call still returned its happy-path status.
+    When I retrieve all available documents for "docApiId"
+    Then The response status code should be 200
+    And The response should contain "\"count\":1"
+    And The response should contain "SAMPLES"
+    And The response should not contain "HOWTO"
+
+    # Delete the document
     # Delete the document, then RE-LIST to confirm the deletion actually took effect — the documents list must be
     # empty. Ports the second half of APIM627.testRemoveDocumentationOtherTheAPI; without this re-read a delete
     # that answered 200 while leaving the document in place would pass unnoticed.
@@ -44,6 +63,11 @@ Feature: Publisher API Documentation
     Then The response status code should be 200
     And The value of response field "count" should be "0"
     And The response field "list[*].documentId" should be exactly the list ""
+
+    # The listing is empty after the delete — the counterpart of the count-1 pin above.
+    When I retrieve all available documents for "docApiId"
+    Then The response status code should be 200
+    And The response should contain "\"count\":0"
 
     Examples:
       | label     | payloadFile                                            | actor                     |
@@ -198,8 +222,16 @@ Feature: Publisher API Documentation
   # each subscribe an application, so the publisher subscriptions list carries BOTH subscribers (count 2); two
   # documents are added, so the documents list carries both (count 2). Spans the provider plane (admin publishes,
   # lists subscriptions + docs) and the consumer plane (two subscribers), so it runs as the admin actor. ×2 tenant.
+  #
+  # The THIRD row makes the second subscriber a SECONDARY.COM user-store consumer (CLAUDE.md §12), closing the
+  # legacy SUPER_TENANT_USER_STORE_USER mode for the subscriber-identity facet. It belongs here, on this scenario,
+  # because this is the one place in the corpus that asserts a server-returned username EXACTLY: a store user's
+  # physical name carries its store domain (SECONDARY.COM/subscriberUser1), so the subscriptions list naming it
+  # verbatim proves the store-qualified identity survives the whole subscribe → publisher-read round trip. The
+  # row stays in the super tenant: it is the store identity, not the tenant, that is the variable here, and the
+  # ×2-tenant rows above already vary the tenant.
   @cap:publisher @feat:docs @type:regression @rule:api-overview @dep:devportal @legacy:UsersAndDocsInAPIOverviewTestCase
-  Scenario Outline: An API overview reflects its subscription and documentation counts as <actor>
+  Scenario Outline: An API overview reflects its subscription and documentation counts as <actor> for <subscriber>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ovApiId" and deployed it
@@ -218,6 +250,18 @@ Feature: Publisher API Documentation
     And I subscribe to API "ovApiId" using application "ovApp1Id" with payload "ovSub1" as "ovSub1Id"
     Then The response status code should be 201
 
+    # Intermediate count: after the FIRST subscriber only, the publisher subscriptions list carries exactly one
+    # entry, and it is attributed to that subscriber. Without this the final count-2 assertion cannot distinguish
+    # "two subscribers arrived" from "one subscriber counted twice".
+    # The subscriber recorded on the subscription is the application OWNER. Resolved from the actor registry
+    # rather than hardcoded: the actor reference is not the username (admin vs admin@tenant1.com, and the
+    # email-username mode adds an @email.com local part), so a literal would be wrong in at least one mode.
+    When I store the username of actor "<actor>" as "ovSubscriber1Name"
+    And I retrieve the subscriptions of API "ovApiId"
+    Then The response status code should be 200
+    And The response should contain "\"count\":1"
+    And The value of response field "list[0].applicationInfo.subscriber" should be "{{ovSubscriber1Name}}"
+
     # Second subscriber (a different consumer): switch actor, register its DCR client, mint its devportal token,
     # subscribe its own app.
     Given I act as "<subscriber>"
@@ -234,11 +278,16 @@ Feature: Publisher API Documentation
     And I subscribe to API "ovApiId" using application "ovApp2Id" with payload "ovSub2" as "ovSub2Id"
     Then The response status code should be 201
 
-    # The publisher subscriptions list now carries BOTH subscriptions (count 2).
+    # The publisher subscriptions list now carries BOTH subscriptions (count 2) and names BOTH subscribers. The
+    # per-subscriber assertion is what makes the count meaningful: a count of 2 alone is satisfied by one
+    # subscriber holding two applications, which is not what this scenario set up.
     Given I act as "<actor>"
-    When I retrieve the subscriptions of API "ovApiId"
+    When I store the username of actor "<subscriber>" as "ovSubscriber2Name"
+    And I retrieve the subscriptions of API "ovApiId"
     Then The response status code should be 200
     And The response should contain "\"count\":2"
+    And The response should contain "\"subscriber\":\"{{ovSubscriber1Name}}\""
+    And The response should contain "\"subscriber\":\"{{ovSubscriber2Name}}\""
 
     # Add two documents; the documents list carries both (count 2).
     When I prepare a document named "${UNIQUE:OverviewDoc1}" of type "HOWTO" with sourceType "INLINE" and content "test doc 1"
@@ -252,6 +301,7 @@ Feature: Publisher API Documentation
     And The response should contain "\"count\":2"
 
     Examples:
-      | actor             | subscriber         |
-      | admin             | subscriberUser     |
-      | admin@tenant1.com | subscriberUser@tenant1.com |
+      | actor             | subscriber                     |
+      | admin             | subscriberUser                 |
+      | admin@tenant1.com | subscriberUser@tenant1.com     |
+      | admin             | SECONDARY.COM/subscriberUser1  |

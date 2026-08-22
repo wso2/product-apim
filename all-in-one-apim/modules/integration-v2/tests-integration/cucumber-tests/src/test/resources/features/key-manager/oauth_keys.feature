@@ -106,3 +106,86 @@ Feature: Key Manager OAuth Application Keys
   # (generate / list / revoke extras) — a different endpoint. The PRIMARY secret's rotation is uncovered.
   # OBSERVED TODAY: the endpoint answers 500 (900967) on that happy path against the resident key manager, so
   # there is nothing stable to pin. Settle the intended behaviour first rather than encoding today's response.
+
+  # Ports the ASSERTION of CAPIMGT12CallBackURLOverwriteTestCase (the CAPIMGT-12 regression) — the half
+  # devportal/applications.feature's owner-isolation scenario cannot reach. That scenario proves only that two
+  # owners may hold same-named applications (both 201, distinct ids); it never sets, updates or re-reads a KEY
+  # callbackUrl, so the actual defect CAPIMGT-12 guards — updating one owner's key callbackUrl overwriting the
+  # similarly-named application's row of ANOTHER owner in IDN_OAUTH_CONSUMER_APPS — would go undetected.
+  # Here each owner generates a PRODUCTION key with its OWN distinct callbackUrl on a SAME-NAMED application;
+  # owner1's value is asserted BEFORE owner2's update (the baseline, without which the after-value proves
+  # nothing), then re-asserted after, and the two owners' final values must differ.
+  # NOTE the application-level callbackUrl of ApplicationCallbackURLTestCase is NOT portable — ApplicationDTO has
+  # no callbackUrl field on this build (see the report); callbackUrl exists only on the KEY, which is what this
+  # scenario pins.
+  @cap:key-manager @feat:oauth-keys @rule:owner-isolation @type:regression @dep:devportal @legacy:CAPIMGT12CallBackURLOverwriteTestCase
+  Scenario Outline: One owner's key callbackUrl update does not overwrite another owner's same-named application as <owner>
+    Given The system is ready
+    And I have valid access tokens as "<owner>"
+
+    # Owner 1 (the acting admin): a same-named application with a PRODUCTION key carrying ITS OWN callbackUrl.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "cbOwner1App"
+    And I set the field "name" to "CbSharedApp${UNIQUE:Cb}" in the payload "cbOwner1App"
+    And I create an application with payload "cbOwner1App"
+    Then The response status code should be 201
+    And I extract response field "applicationId" and store it as "cbOwner1AppId"
+    And I extract response field "name" and store it as "cbSharedName"
+    When I put the following JSON payload in context as "cbOwner1KeysPayload"
+    """
+    {"keyType": "PRODUCTION", "callbackUrl": "https://owner1.callback.example.com/cb", "grantTypesToBeSupported": ["client_credentials", "authorization_code"]}
+    """
+    And I generate client credentials for application id "cbOwner1AppId" with payload "cbOwner1KeysPayload"
+    Then The response status code should be 200
+    And I extract response field "keyMappingId" and store it as "cbOwner1KeyMappingId"
+
+    # Owner 2 (a different user in the same tenant): an application with the SAME name and its own key/callbackUrl.
+    Given I have a valid DCR application as "<otherOwner>"
+    And I have a valid Devportal access token as "<otherOwner>"
+    And I act as "<otherOwner>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "cbOwner2App"
+    And I set the field "name" to "{{cbSharedName}}" in the payload "cbOwner2App"
+    And I create an application with payload "cbOwner2App"
+    Then The response status code should be 201
+    And I extract response field "applicationId" and store it as "cbOwner2AppId"
+    When I put the following JSON payload in context as "cbOwner2KeysPayload"
+    """
+    {"keyType": "PRODUCTION", "callbackUrl": "https://owner2.callback.example.com/cb", "grantTypesToBeSupported": ["client_credentials", "authorization_code"]}
+    """
+    And I generate client credentials for application id "cbOwner2AppId" with payload "cbOwner2KeysPayload"
+    Then The response status code should be 200
+    And I extract response field "keyMappingId" and store it as "cbOwner2KeyMappingId"
+
+    # BASELINE — owner 1's key callbackUrl, read as owner 1, BEFORE owner 2 updates anything.
+    Given I act as "<owner>"
+    When I fetch the oauth key details for application "cbOwner1AppId" with key mapping "cbOwner1KeyMappingId"
+    Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "https://owner1.callback.example.com/cb"
+
+    # Owner 2 UPDATES its own key's callbackUrl.
+    Given I act as "<otherOwner>"
+    When I put the following JSON payload in context as "cbOwner2UpdatePayload"
+    """
+    {"keyType": "PRODUCTION", "callbackUrl": "https://owner2-updated.callback.example.com/cb", "supportedGrantTypes": ["client_credentials", "authorization_code"]}
+    """
+    And I update the keys for application "cbOwner2AppId" with key mapping "cbOwner2KeyMappingId" using payload "cbOwner2UpdatePayload"
+    Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "https://owner2-updated.callback.example.com/cb"
+
+    # Owner 1's key callbackUrl is UNCHANGED — the CAPIMGT-12 regression assertion.
+    Given I act as "<owner>"
+    When I fetch the oauth key details for application "cbOwner1AppId" with key mapping "cbOwner1KeyMappingId"
+    Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "https://owner1.callback.example.com/cb"
+    And I extract response field "callbackUrl" and store it as "cbOwner1FinalCallback"
+
+    # ...and the two owners' final callback URLs differ (neither was collapsed onto the other).
+    Given I act as "<otherOwner>"
+    When I fetch the oauth key details for application "cbOwner2AppId" with key mapping "cbOwner2KeyMappingId"
+    Then The response status code should be 200
+    And I extract response field "callbackUrl" and store it as "cbOwner2FinalCallback"
+    And The stored value "cbOwner1FinalCallback" should not equal "cbOwner2FinalCallback"
+
+    Examples:
+      | owner             | otherOwner                 |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |

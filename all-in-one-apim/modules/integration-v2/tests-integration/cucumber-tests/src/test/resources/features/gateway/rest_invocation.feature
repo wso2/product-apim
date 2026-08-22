@@ -29,7 +29,8 @@ Feature: Gateway REST API Invocation
     # node-customer-service" from "the gateway dispatched to the wrong operation".
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -59,7 +60,8 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{ieInvContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Export → delete → re-import the archive. The subscription must be removed first — an API with an active
     # subscription cannot be deleted (409 "active subscriptions exist").
@@ -84,7 +86,8 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{ieInvImportedContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -145,7 +148,8 @@ Feature: Gateway REST API Invocation
     # here, so a 200 that never reached node-customer-service would be a vacuous pass.
     When I invoke the API at gateway context "{{vfContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -173,7 +177,8 @@ Feature: Gateway REST API Invocation
     # As above: the mid-path {version} resolution is only proven if the call reaches the backend, so pin the body.
     When I invoke the API at gateway context "{{dcContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -198,7 +203,8 @@ Feature: Gateway REST API Invocation
     # "some other operation on the same template matched".
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # POST to an as-yet-undefined resource is refused (405 — path matches GET /customers/{id}, POST not allowed).
     # Body pinned too: the gateway distinguishes "URI matched, verb did not" from "no URI matched" with two
     # different messages, so status alone cannot tell the two dispatch outcomes apart (CORSRequestHandler
@@ -568,13 +574,15 @@ Feature: Gateway REST API Invocation
     # WITHOUT a trailing slash → 200 carrying the backend payload.
     When I invoke the API at gateway context "{{tsContext}}/1.0.0/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # WITH a trailing slash → routes to the SAME resource → the SAME backend payload. Equivalence is the subject,
     # so both forms must be shown to produce the same backend response; two bare 200s would not establish that
     # (the API's DELETE /customers/{id} also answers 200, with an empty body).
     When I invoke the API at gateway context "{{tsContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -687,9 +695,11 @@ Feature: Gateway REST API Invocation
     # GET on the shared path resolves to the GET operation.
     When I invoke the API at gateway context "{{svContext}}/1.0.0/comp/cartes/op/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "Hello World"
     # POST on the same path resolves to the POST operation.
     When I invoke the API at gateway context "{{svContext}}/1.0.0/comp/cartes/op/123" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "Hello World"
 
     Examples:
       | actor             |
@@ -714,6 +724,7 @@ Feature: Gateway REST API Invocation
 
     When I invoke the API at gateway context "{{scContext}}/1.0.0/special,-._~resource" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "Hello World"
 
     Examples:
       | actor             |
@@ -722,10 +733,16 @@ Feature: Gateway REST API Invocation
 
   # Ports LoadBalancedEndPointTestCase (commented-out in the legacy suite) — an API with a load-balanced production
   # endpoint (endpoint_type "load_balance", RoundRobin) distributes requests across THREE distinguishable backends
-  # (File 1 / File 2 / File 3). Rather than assert a brittle exact round-robin ORDER (the gateway's RR cursor start
-  # and concurrent warm-up requests are non-deterministic), we assert that repeated invocations reach ALL THREE
-  # backends — each "until response body contains File N" poll drives the round-robin until that backend answers,
-  # proving the load is distributed across every endpoint. Uses name-checkOne/Two/Three (ports 3014/3015/3016).
+  # (File 1 / File 2 / File 3). Uses name-checkOne/Two/Three (ports 3014/3015/3016).
+  #
+  # Two assertions of increasing strength. First, reachability: each "until response body contains File N" poll
+  # drives the round-robin until that backend answers, so all three are shown to serve traffic. Second — and this is
+  # what closes the legacy's ORDER assertion — nine consecutive counted calls must round-robin, i.e. EVERY window of
+  # three consecutive responses hits three DISTINCT members. That is strictly stronger than reachability (which a
+  # degenerate 7:1:1 split would satisfy) while remaining start-offset independent, so it does not inherit the
+  # flakiness of the legacy's fixed 1,2,3,1,2,3 sequence: the preceding polls have already moved the RR cursor to an
+  # unknown position, and the sliding-window property holds for every rotation. The API is unique to this scenario,
+  # so no sibling scenario shares its RR cursor.
   @cap:gateway @feat:rest-invocation @rule:load-balance @type:regression @dep:publisher @legacy:LoadBalancedEndPointTestCase
   Scenario Outline: A load-balanced endpoint distributes requests across all backends as <actor>
     Given The system is ready
@@ -745,6 +762,101 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{lbContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 3" within 60 seconds
     Then The response status code should be 200
+
+    # ORDER: over nine consecutive calls every window of three hits three DISTINCT members — real round-robin, not
+    # merely "all three are reachable".
+    When I invoke the API at gateway context "{{lbContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" 9 times round-robin across backend markers "File 1,File 2,File 3"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The SANDBOX axis of LoadBalancedEndPointTestCase#testRoundRobinAlgorithmInProductionAndSandboxEndpoints, which
+  # the corpus never touched — the three `_SB` load-balance members (ports 3009/3011/3013) existed but no feature
+  # referenced them, so nothing proved a load-balanced SANDBOX endpoint group is round-robinned at all. The API
+  # carries BOTH groups with per-member AND per-key-type distinguishable bodies (production answers "File N",
+  # sandbox "File N_Sandbox"), so a SANDBOX-key token asserted against the "_Sandbox" markers proves two things at
+  # once: the key type selected the sandbox group, and that group is round-robinned across all three of its members.
+  # The same nine-call sliding-window property as the production axis pins the ORDER.
+  @cap:gateway @feat:rest-invocation @rule:load-balance @type:regression @dep:publisher @legacy:LoadBalancedEndPointTestCase
+  Scenario Outline: A load-balanced SANDBOX endpoint group round-robins across all sandbox members as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_loadbalanced_sandbox_api.json" as "lbsApiId" and deployed it
+    When I publish the "apis" resource with id "lbsApiId"
+    Then The lifecycle status of API "lbsApiId" should be "Published"
+    When I retrieve the "apis" resource with id "lbsApiId"
+    And I extract response field "context" and store it as "lbsContext"
+
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "lbsApp"
+    And I create an application with payload "lbsApp"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "lbsSub"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "lbsApiId" using application "createdAppId" with payload "lbsSub" as "lbsSubId"
+    Then The response status code should be 201
+
+    # A SANDBOX key + token — the key type is what routes to the sandbox endpoint group.
+    When I put the following JSON payload in context as "lbsSandboxKeys"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "lbsSandboxKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "lbsSandboxToken"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "lbsSandboxToken"
+    Then The response status code should be 200
+
+    # Each of the three SANDBOX members is reached (and the "_Sandbox" suffix proves it is the sandbox group, not
+    # the production one, that answered).
+    When I invoke the API at gateway context "{{lbsContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 1_Sandbox" within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lbsContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 2_Sandbox" within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lbsContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 3_Sandbox" within 60 seconds
+    Then The response status code should be 200
+
+    # ORDER across the sandbox group: nine consecutive calls, every window of three distinct.
+    When I invoke the API at gateway context "{{lbsContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" 9 times round-robin across backend markers "File 1_Sandbox,File 2_Sandbox,File 3_Sandbox"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports APIMANAGER5326CustomStatusMsgTestCase — the gateway must relay the BACKEND's HTTP status line verbatim,
+  # including a NON-STANDARD reason phrase, rather than regenerating the canonical phrase for the status code. The
+  # upstream is the raw-socket backend on :3024, which answers every request with the literal status line
+  # "HTTP/1.1 400 Custom response".
+  #
+  # The reason phrase is the whole point: the status code alone (400) is what a gateway that had normalised the
+  # phrase to "Bad Request" would also return, so a code-only assertion is blind to exactly the regression this
+  # test exists for. The body is asserted too, proving the backend's response reached the client intact rather than
+  # being replaced by a gateway-generated 400 fault.
+  @cap:gateway @feat:rest-invocation @rule:status-line @type:regression @dep:publisher @legacy:APIMANAGER5326CustomStatusMsgTestCase
+  Scenario Outline: The gateway relays a backend's non-standard status reason phrase as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_custom_status_api.json" as "csApiId" and deployed it
+    When I publish the "apis" resource with id "csApiId"
+    Then The lifecycle status of API "csApiId" should be "Published"
+    When I retrieve the "apis" resource with id "csApiId"
+    And I extract response field "context" and store it as "csContext"
+    When I have set up application with keys, subscribed to API "csApiId", and obtained access token for "csSub"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{csContext}}/1.0.0/custom-status" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 400 within 60 seconds
+    Then The response status code should be 400
+    # The backend's own reason phrase, NOT the canonical "Bad Request".
+    And The response reason phrase should be "Custom response"
+    # The backend's body arrived intact — this is not a gateway-generated fault.
+    And The response should contain "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test></test>"
 
     Examples:
       | actor             |

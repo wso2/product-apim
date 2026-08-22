@@ -35,9 +35,13 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Gateway runtime-invocation steps. Invokes deployed APIs through the block's gateway (REST/SOAP/SSE, by access
@@ -245,6 +249,74 @@ public class APIInvocationSteps {
     }
 
     /**
+     * Invokes a load-balanced API {@code times} times back-to-back and asserts the responses ROUND-ROBIN across
+     * the given comma-separated backend markers (a distinguishing substring of each member's body, e.g.
+     * {@code File 1,File 2,File 3}). Asserts three things, in increasing strength:
+     * <ol>
+     *   <li>every call is 200 and its body matches EXACTLY ONE marker (an ambiguous marker set is a test bug,
+     *       not a product result, so it fails loudly);</li>
+     *   <li>every marker is reached at least once — the load really is distributed across all members;</li>
+     *   <li>every window of N CONSECUTIVE responses (N = marker count) contains all N distinct markers.</li>
+     * </ol>
+     * (3) is the order property, and it is deliberately phrased to be START-OFFSET INDEPENDENT: the gateway's
+     * round-robin cursor position when the counted calls begin is not knowable (a preceding readiness poll has
+     * already advanced it), so asserting a fixed sequence would be flaky. The sliding-window property holds for
+     * ANY rotation of a round-robin sequence, yet fails immediately if the distribution degenerates to one or two
+     * endpoints or repeats a member within a cycle — which "all members are reachable" alone does not catch.
+     * Each call is retried only until it COMPLETES (transient warm-up IOException), never until it matches, so a
+     * wrong body is never polled away.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} {int} times round-robin across backend markers {string}")
+    public void invokeApiByContextRoundRobin(String context, String httpMethod, String accessToken, int times,
+                                             String markersCsv) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String[] markers = Utils.resolveContextPlaceholders(markersCsv).split("\\s*,\\s*");
+        Assert.assertTrue(markers.length >= 2, "A round-robin assertion needs at least two backend markers, got: "
+                + markersCsv);
+        Assert.assertTrue(times >= markers.length, "Need at least as many invocations (" + times + ") as markers ("
+                + markers.length + ") to observe a full round-robin cycle.");
+
+        String[] observed = new String[times];
+        for (int i = 0; i < times; i++) {
+            final int call = i + 1;
+            HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                    () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, ""),
+                    completed -> true);
+            Assert.assertNotNull(response, "Invocation " + call + " of " + times + " never completed (gateway "
+                    + "unreachable within the warmup window).");
+            Assert.assertEquals(response.getResponseCode(), 200, "Invocation " + call + " of " + times
+                    + " was not 200; body: " + response.getData());
+            String body = response.getData() == null ? "" : response.getData();
+            String matched = null;
+            for (String marker : markers) {
+                if (body.contains(marker)) {
+                    Assert.assertNull(matched, "Invocation " + call + " body matches MORE THAN ONE backend marker ('"
+                            + matched + "' and '" + marker + "') — the markers are not mutually exclusive: " + body);
+                    matched = marker;
+                }
+            }
+            Assert.assertNotNull(matched, "Invocation " + call + " of " + times + " reached no known backend; "
+                    + "expected the body to carry one of " + String.join(", ", markers) + " but got: " + body);
+            observed[i] = matched;
+        }
+
+        List<String> trail = Arrays.asList(observed);
+        String trace = String.join(" -> ", observed);
+        for (String marker : markers) {
+            Assert.assertTrue(trail.contains(marker),
+                    "Backend '" + marker + "' was never reached over " + times + " calls — the load is NOT "
+                            + "distributed across every member. Observed: " + trace);
+        }
+        int window = markers.length;
+        for (int start = 0; start + window <= times; start++) {
+            Set<String> inWindow = new HashSet<>(trail.subList(start, start + window));
+            Assert.assertEquals(inWindow.size(), window, "Round-robin broke down: calls " + (start + 1) + ".."
+                    + (start + window) + " did not reach " + window + " DISTINCT backends. Observed: " + trace);
+        }
+    }
+
+    /**
      * Invokes a deployed API using an access token, addressing it by its full gateway context path (the
      * {@code context} field returned by the Publisher API, which already carries the {@code /t/<tenant>}
      * prefix for tenant APIs) — so no tenant prefix is added here. Use this when the path was captured from
@@ -260,6 +332,50 @@ public class APIInvocationSteps {
         // value can still request MORE than the floor.
         invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds,
                 () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload));
+    }
+
+    /**
+     * SETTLE-WINDOW counterpart of the until-status invoke: re-invokes throughout the window and asserts EVERY
+     * response is {@code expectedStatus}, failing on the first deviation. An until-status poll cannot express this
+     * — it stops at the first matching response, so a status that is merely *transiently* right (a backend still
+     * quiescing, an endpoint suspension about to lapse) passes it. Where the claim is "this status is now the
+     * ENFORCED steady state", the assertion has to survive time.
+     *
+     * <p>Used by the endpoint-certificate arc after the certificate is deleted: legacy re-probed 3 times, 2s apart,
+     * to be sure the post-delete 500 was enforcement and not a transient. Paces with {@link Utils#pollPause} (never
+     * a bare {@code Thread.sleep} — §4/§15) and publishes each response, so the feature may also assert on the last.
+     * Probes at both ENDS of the window inclusive (t=0 and t={@code seconds}), so the asserted span is the full
+     * window the step name promises rather than one pause-interval short of it.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and the response status code should remain {int} for {int} seconds")
+    public void invokeApiByContextStatusShouldRemain(String context, String httpMethod, String accessToken,
+                                                     int expectedStatus, int seconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        long pollStart = System.currentTimeMillis();
+        long end = pollStart + seconds * 1000L;
+        int probe = 0;
+        while (true) {
+            probe++;
+            // A transient connectivity blip during the window is not a status deviation, so each probe is retried
+            // only until it COMPLETES (any status) — the same warm-up guard the burst steps use.
+            HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                    () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, ""),
+                    completed -> true);
+            Assert.assertNotNull(response, "Probe " + probe + " of the settle window never completed (gateway "
+                    + "unreachable).");
+            Assert.assertEquals(response.getResponseCode(), expectedStatus, "Probe " + probe + " of the "
+                    + seconds + "s settle window returned " + response.getResponseCode() + " instead of "
+                    + expectedStatus + " — the status is NOT the enforced steady state; body: "
+                    + response.getData());
+            // Deadline checked BEFORE pausing, so the pause only ever precedes a probe that will actually run.
+            // Pausing first (a do/while on the same deadline) both idled out the tail of the window and left the
+            // LAST probe one interval short of it — a "remains for 10s" claim verified only to t=8s.
+            if (System.currentTimeMillis() >= end) {
+                break;
+            }
+            Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
+        }
     }
 
     /**
@@ -334,6 +450,48 @@ public class APIInvocationSteps {
     }
 
     /**
+     * Pre-flight variant of {@link #sendCorsPreflightUntilStatus} that retries until a given RESPONSE HEADER
+     * carries an expected value, not merely until a status. Needed when a CORS config CHANGE is under test: the
+     * pre-flight answers 200 both before and after the change, so an until-status poll would return the STALE
+     * response the instant it fired and the following assertions would race the gateway's artifact propagation.
+     * Accepting on the header value is the only condition that actually observes the new config arriving. The
+     * header lookup is case-insensitive and the last response is published, so the feature re-asserts it (and every
+     * other header of the same response) itself.
+     */
+    @When("I send a CORS preflight to gateway context {string} with origin {string} and request method {string} until response header {string} becomes {string} within {int} seconds")
+    public void sendCorsPreflightUntilHeader(String context, String origin, String requestMethod, String headerName,
+                                             String expectedValue, int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String expected = Utils.resolveContextPlaceholders(expectedValue);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Origin", origin);
+        headers.put("Access-Control-Request-Method", requestMethod);
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> execute(CurlOption.HttpMethod.OPTIONS, endpointUrl, new HashMap<>(headers), ""),
+                response -> response.getResponseCode() == 200
+                        && expected.equals(headerValueIgnoringCase(response, headerName)));
+        assertReachedExpectedStatus(last, 200);
+        Assert.assertEquals(headerValueIgnoringCase(last, headerName), expected,
+                "Pre-flight response header '" + headerName + "' never became '" + expected
+                        + "' within the deadline (the CORS config change did not reach the gateway).");
+    }
+
+    /** Case-insensitive response-header lookup (null when absent) — HTTP header names are not case-sensitive. */
+    private static String headerValueIgnoringCase(HttpResponse response, String headerName) {
+        if (response == null || response.getHeaders() == null) {
+            return null;
+        }
+        for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
+            if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(headerName)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Invokes a deployed API at its full gateway context, sending the bearer token in a CUSTOM authorization
      * header instead of the standard {@code Authorization} one, retrying until the expected status. Used by the
      * custom-auth-header feature, whose container sets {@code [apim.oauth_config] auth_header} so the gateway
@@ -355,6 +513,11 @@ public class APIInvocationSteps {
      * test, where a resource declares a REQUIRED request header (X-Request-ID): omitting it is rejected by the
      * gateway's request schema validation (400), while sending it lets the call through (200). Distinct from the
      * {@code in header} variant, which places the TOKEN in a custom header rather than adding an arbitrary one.
+     *
+     * <p>{@code {{contextKey}}} placeholders in the header VALUE are resolved, so the value can be something a
+     * previous step computed — e.g. the base64 certificate sent in {@code X-WSO2-CLIENT-CERTIFICATE} to prove that
+     * header cannot substitute for a real mutual-SSL handshake. A literal without {@code {{}}} passes through
+     * unchanged.
      */
     @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with request header {string} set to {string} until response status code becomes {int} within {int} seconds")
     public void invokeApiByContextWithHeaderUntilStatus(String context, String httpMethod, String accessToken,
@@ -362,6 +525,7 @@ public class APIInvocationSteps {
                                                         int expectedStatus, int timeoutSeconds) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String resolvedHeaderValue = Utils.resolveContextPlaceholders(headerValue);
         invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds, () -> {
             String actualAccessToken = TestContext.resolve(accessToken).toString();
             String actualPayload = (payload == null || payload.isEmpty())
@@ -370,7 +534,7 @@ public class APIInvocationSteps {
                     + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
             Map<String, String> headers = new HashMap<>();
             headers.put("Authorization", "Bearer " + actualAccessToken);
-            headers.put(headerName, headerValue);
+            headers.put(headerName, resolvedHeaderValue);
             return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
                     actualPayload);
         });
@@ -809,6 +973,13 @@ public class APIInvocationSteps {
 
     /**
      * Invokes the OpenID Connect userinfo endpoint with the given access token and stores the response.
+     *
+     * <p>The endpoint is resolved TENANT-AWARE from the acting actor's tenant: a tenant user's token must be
+     * presented at {@code t/<tenant>/oauth2/userinfo} (see
+     * {@link Utils#getUserInfoEndpointURL(String, String)}). This step previously always built the unprefixed
+     * super-tenant path, so the tenant row of the OpenID scenario never actually exercised the tenant path its
+     * comment claimed — and presenting a tenant token at the super path intermittently answered 400
+     * {@code "Error in getting AccessTokenDO"}, a real flake this resolves.
      *
      * @param accessToken Context key containing the access token
      */

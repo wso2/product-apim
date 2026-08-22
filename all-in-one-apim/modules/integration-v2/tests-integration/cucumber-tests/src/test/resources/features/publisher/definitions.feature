@@ -7,7 +7,7 @@ Feature: Publisher API Definition Import
   down by the per-scenario cleanup hook.
 
   @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
-  Scenario Outline: Import an OpenAPI definition and publish it as <actor>
+  Scenario Outline: Import the OpenAPI definition <apiDefinition> and publish it as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I import open api definition from "<apiDefinition>" , additional properties from "<additionalProperty>" and create api as "importedApiId"
     Then The response status code should be 201
@@ -856,3 +856,63 @@ Feature: Publisher API Definition Import
       | sourceActor       | targetActor       |
       | admin             | admin@tenant1.com |
       | admin@tenant1.com | admin             |
+
+  # Ports CORSHeadersTestCase#AddCORSHeadersToAPIAndVerify — the PUBLISHER-plane half of the CORS contract (the
+  # gateway-plane halves live in gateway/cors.feature). Enabling corsConfiguration on an existing API by UPDATE is
+  # (a) reflected in the updated API DTO and (b) carried into the API's OpenAPI definition as the x-wso2-cors
+  # vendor extension, whose corsConfigurationEnabled is true. (b) is the assertion that matters: the swagger is the
+  # portable artifact, so a CORS config that lives only in the DTO would silently be lost on export/import.
+  # The pre-update reads are the baseline — corsConfigurationEnabled is false BEFORE the update, in the DTO AND in
+  # the definition's x-wso2-cors — so neither post-update assertion can pass vacuously.
+  @cap:publisher @feat:definitions @rule:cors-config @type:regression @legacy:CORSHeadersTestCase
+  Scenario Outline: Enabling CORS on an API is reflected in its retrieved OpenAPI definition as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "corsSwaggerPayload"
+    And I create an "apis" resource with payload "corsSwaggerPayload" as "corsSwApiId"
+    Then The response status code should be 201
+    # BASELINE: CORS is off on the freshly created API, and the definition's x-wso2-cors is not enabled.
+    And The value of response field "corsConfiguration.corsConfigurationEnabled" should be "false"
+    And I put the response payload in context as "corsSwPayload"
+    When I retrieve the swagger of "apis" resource "corsSwApiId"
+    Then The response status code should be 200
+    And The value of response field "$['x-wso2-cors']['corsConfigurationEnabled']" should be "false"
+
+    # Enable CORS by UPDATE.
+    When I update the "apis" resource "corsSwApiId" and "corsSwPayload" with configuration type "corsConfiguration" and value:
+      """
+      {"corsConfigurationEnabled":true,"accessControlAllowOrigins":["*"],"accessControlAllowCredentials":false,"accessControlAllowHeaders":["Access-Control-Allow-Origin","Content-Type"],"accessControlAllowMethods":["GET","PUT","POST"]}
+      """
+    Then The response status code should be 200
+    And The value of response field "corsConfiguration.corsConfigurationEnabled" should be "true"
+
+    # The retrieved definition now carries the x-wso2-cors extension with the config enabled.
+    When I retrieve the swagger of "apis" resource "corsSwApiId"
+    Then The response status code should be 200
+    And The value of response field "$['x-wso2-cors']['corsConfigurationEnabled']" should be "true"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Ports CORSHeadersTestCase#CreateAPIWithSwaggerwithCORSHeadersAndVerify — importing an OpenAPI definition that
+  # declares an x-wso2-cors extension yields an API whose corsConfiguration is ENABLED, i.e. the extension is read
+  # on import rather than dropped. The imported definition's allow-headers/origins are asserted too, so the import
+  # is shown to carry the WHOLE config across and not merely flip the boolean.
+  @cap:publisher @feat:definitions @rule:cors-config @type:regression @legacy:CORSHeadersTestCase
+  Scenario Outline: An imported OpenAPI definition declaring CORS yields a CORS-enabled API as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import open api definition from "artifacts/payloads/OAS/oas_v3_cors.json" , additional properties from "artifacts/payloads/OAS/oas_v3_cors_add_props.json" and create api as "corsImpApiId"
+    Then The response status code should be 201
+
+    When I retrieve the "apis" resource with id "corsImpApiId"
+    Then The response status code should be 200
+    And The value of response field "corsConfiguration.corsConfigurationEnabled" should be "true"
+    And The value of response field "corsConfiguration.accessControlAllowCredentials" should be "false"
+    And The value of response field "corsConfiguration.accessControlAllowOrigins[0]" should be "http://localhost"
+    And The response should contain "X-BrowserSessionID"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |

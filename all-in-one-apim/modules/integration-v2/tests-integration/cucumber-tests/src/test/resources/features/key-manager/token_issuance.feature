@@ -2,9 +2,12 @@
 Feature: Key Manager Token Issuance
 
   Key-manager-plane token issuance across grant/scope variants: JWT-format production tokens, OpenID-scoped
-  tokens (+ userinfo), refresh-token re-issuance, and sandbox-key tokens. Runs as admin in both the super
-  tenant and tenant1.com. The refresh and sandbox variants invoke the gateway to prove the issued token works
-  end-to-end. Teardown via the per-scenario cleanup hook.
+  tokens (+ userinfo, at the tenant-qualified path for a tenant actor), refresh-token re-issuance, sandbox-key
+  tokens for both a JWT-tokenType and an OAUTH-tokenType application, key-generation validation of the application's
+  token-expiry additionalProperties, authorization-code grants, and per-role filtering of the scopes actually
+  granted in an issued token. Runs as admin in both the super tenant and tenant1.com. The refresh, sandbox,
+  token-expiry and role-filtering variants invoke the gateway to prove the issued token works end-to-end.
+  Teardown via the per-scenario cleanup hook.
 
   @cap:key-manager @feat:token-issuance @type:smoke @rule:jwt-format @legacy:JWTTokenFormatTestCase
   Scenario Outline: Generate a production OAuth token in JWT format as <actor>
@@ -64,6 +67,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -91,7 +97,8 @@ Feature: Key Manager Token Issuance
     # newly-minted token carried the call through to the upstream rather than merely producing a 200.
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -106,6 +113,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -133,12 +143,147 @@ Feature: Key Manager Token Issuance
     # endpoint-routing scenario, which uses two path-echoing endpoints.)
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Ports TokenAPITestCase#testInfiniteTokenAPITestCase — the key-generation validation of the application's
+  # `additionalProperties.application_access_token_expiry_time`, which no other scenario exercises (no scenario
+  # passed additionalProperties to key generation at all, and error code 900970 appeared nowhere in the corpus).
+  # Two halves in ONE scenario because the negative needs the positive control on the SAME application: a
+  # NEGATIVE expiry is refused with 400 + the exact 900970 envelope, while Long.MAX_VALUE is accepted and BOTH
+  # the sandbox and the production token it issues invoke the gateway successfully. Pinning code AND message AND
+  # description matters here: 400 is the management API's catch-all for a dozen unrelated validation faults, so a
+  # status-only assertion would pass for the wrong reason.
+  @cap:key-manager @feat:token-issuance @rule:token-expiry @type:regression @dep:gateway @legacy:TokenAPITestCase
+  Scenario Outline: Application token-expiry additionalProperties are validated at key generation as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "infTokenApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "infTokenApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "infTokenApiId"
+    Then The lifecycle status of API "infTokenApiId" should be "Published"
+    When I retrieve the "apis" resource with id "infTokenApiId"
+    And I extract response field "context" and store it as "infTokenApiContext"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "infTokenAppPayload"
+    And I set the field "tokenType" to "JWT" in the payload "infTokenAppPayload"
+    And I create an application with payload "infTokenAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "infTokenSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "infTokenApiId" using application "createdAppId" with payload "infTokenSubPayload" as "infTokenSubId"
+    Then The response status code should be 201
+
+    # A NEGATIVE application-token expiry is refused — exactly 400 with the 900970 envelope.
+    When I put the following JSON payload in context as "negativeExpiryKeysPayload"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials", "password"], "additionalProperties": {"application_access_token_expiry_time": "-1"}}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "negativeExpiryKeysPayload"
+    Then The response status code should be 400
+    And The error response should have code "900970" message "Invalid application additional properties" and description containing "cannot have negative values"
+
+    # Long.MAX_VALUE is accepted for the SANDBOX key, and the token it issues invokes the gateway.
+    When I put the following JSON payload in context as "infiniteSandboxKeysPayload"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials", "password"], "additionalProperties": {"application_access_token_expiry_time": "9223372036854775807"}}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "infiniteSandboxKeysPayload"
+    Then The response status code should be 200
+    And I extract response field "token.accessToken" and store it as "infiniteSandboxToken"
+    When I invoke the API at gateway context "{{infTokenApiContext}}/1.0.0/customers/123/" with method "GET" using access token "infiniteSandboxToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    # ...and likewise for the PRODUCTION key — legacy asserts both key types independently.
+    When I put the following JSON payload in context as "infiniteProductionKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"], "additionalProperties": {"application_access_token_expiry_time": "9223372036854775807"}}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "infiniteProductionKeysPayload"
+    Then The response status code should be 200
+    And I extract response field "token.accessToken" and store it as "infiniteProductionToken"
+    When I invoke the API at gateway context "{{infTokenApiContext}}/1.0.0/customers/123/" with method "GET" using access token "infiniteProductionToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports the scope-FILTERING half of APIScopeTestCase#testSetScopeToResourceTestCase plus #testRESTAPIScopes.
+  # Requesting the SAME full apim:* management scope set on ONE keyed application, as three principals of
+  # different roles, proves the key manager grants only the scopes each user's roles map to (the tenant-conf
+  # RESTAPIScopes role bindings). The two REST legs are the management-plane consequence legacy pins and v2
+  # missed: a SUBSCRIBER token cannot list publisher APIs, and a CREATOR token cannot list devportal
+  # applications — each with its positive control in the same scenario, so a blanket 401 cannot pass it.
+  # Scope membership is compared WHOLE-ENTRY against the response's space-delimited list, not by substring
+  # (see "The issued token scope list should include ... and exclude ...").
+  @cap:key-manager @feat:scope-issuance @rule:role-filtering @type:regression @dep:publisher @dep:devportal @legacy:APIScopeTestCase
+  Scenario Outline: Management scopes granted in a token are filtered by the requesting user's roles in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    # The block seeds subscriberUser (Internal/subscriber) and publisherUser (Internal/creator,publisher) but no
+    # creator-WITHOUT-publisher user — the row that proves apim:api_publish needs the PUBLISHER role rather than
+    # merely the creator one.
+    And I provision user "roleScopeCreator" with roles "Internal/creator" in tenant "<tenant>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "roleScopeAppPayload"
+    And I create an application with payload "roleScopeAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "roleScopeKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "roleScopeKeysPayload"
+    Then The response status code should be 200
+
+    # A SUBSCRIBER receives the consumer scopes and none of the publisher-plane ones.
+    When I request an OAuth access token using password grant as "subscriberUser<suffix>" with scope "openid apim:api_view apim:api_create apim:api_publish apim:subscribe apim:app_update"
+    Then The response status code should be 200
+    And The issued token scope list should include "openid,apim:subscribe,apim:app_update" and exclude "apim:api_view,apim:api_create,apim:api_publish"
+
+    # A CREATOR receives apim:api_create but NOT apim:api_publish, and no consumer scopes.
+    When I request an OAuth access token using password grant as "roleScopeCreator<suffix>" with scope "openid apim:api_view apim:api_create apim:api_publish apim:subscribe apim:app_update"
+    Then The response status code should be 200
+    And The issued token scope list should include "openid,apim:api_view,apim:api_create" and exclude "apim:api_publish,apim:subscribe,apim:app_update"
+
+    # A CREATOR+PUBLISHER receives both publisher-plane scopes, still no consumer scopes.
+    When I request an OAuth access token using password grant as "publisherUser<suffix>" with scope "openid apim:api_view apim:api_create apim:api_publish apim:subscribe apim:app_update"
+    Then The response status code should be 200
+    And The issued token scope list should include "openid,apim:api_view,apim:api_create,apim:api_publish" and exclude "apim:subscribe,apim:app_update"
+
+    # Publisher plane: a subscriber's token is unauthenticated for the API listing (401 — the management API's
+    # answer for a token lacking the required scope, NOT 403); the creator+publisher's token is the control.
+    Given The system is ready and I have valid publisher access tokens as "subscriberUser<suffix>"
+    When I retrieve all APIs created through the Publisher REST API
+    Then The response status code should be 401
+    Given The system is ready and I have valid publisher access tokens as "publisherUser<suffix>"
+    When I retrieve all APIs created through the Publisher REST API
+    Then The response status code should be 200
+
+    # Devportal plane, symmetrically: a creator's token cannot list applications; a subscriber's can.
+    Given The system is ready and I have valid devportal access token as "roleScopeCreator<suffix>"
+    When I retrieve all applications from the Developer Portal
+    Then The response status code should be 401
+    Given The system is ready and I have valid devportal access token as "subscriberUser<suffix>"
+    When I retrieve all applications from the Developer Portal
+    Then The response status code should be 200
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
 
   @cap:key-manager @feat:token-issuance @rule:authcode @type:regression @legacy:GrantTypeTokenGenerateTestCase
   Scenario Outline: Generate an access token via authorization code grant as <actor>
@@ -179,6 +324,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -207,17 +355,17 @@ Feature: Key Manager Token Issuance
     # Pinned live: this response carries that cookie alone — it does NOT set a JSESSIONID.
     And The stored value "authorizeSetCookies" should contain "sessionNonceCookie-"
     # The consent page the user would have been shown names THIS application.
-    And The stored value "consentApplicationName" should be "<spOwner>_{{createdAppId}}_PRODUCTION"
-    And The stored value "consentPageBody" should contain "<spOwner>_{{createdAppId}}_PRODUCTION"
+    And The stored value "consentApplicationName" should be "{{spOwnerName}}_{{createdAppId}}_PRODUCTION"
+    And The stored value "consentPageBody" should contain "{{spOwnerName}}_{{createdAppId}}_PRODUCTION"
     # The authorization_code token is a real gateway credential, not just a well-formed JWT.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
 
     Examples:
-      | actor             | spOwner              |
-      | admin             | admin                |
-      | admin@tenant1.com | admin                |
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
 
   # Ports GrantTypeTokenGenerateTestCase#testImplicit — v2 had NO implicit-grant coverage at all. The implicit
   # grant returns its token in the redirect FRAGMENT with no token-endpoint exchange, so the token itself is the
@@ -227,6 +375,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"

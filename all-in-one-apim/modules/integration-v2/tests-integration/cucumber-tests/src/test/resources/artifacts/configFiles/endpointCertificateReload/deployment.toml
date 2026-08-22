@@ -1,0 +1,29 @@
+# Feature-specific TOML overlay for the IntegrationV2-EndpointCertificateTls block, merged ON TOP of the shared
+# `basic` overlay via tomlExtraOverlayPath — only the two keys the endpoint-certificate INVOCATION arc needs.
+#
+# Why this overlay is unavoidable (measured against the product defaults, do not "simplify" it away):
+#
+#   1. transport.passthru_https.sender.ssl_profile.interval — renders to the passthrough HTTPS *SENDER*'s
+#      dynamicSSLProfilesConfig/fileReadInterval (axis2.xml.j2). The product default is 600000 ms (10 minutes):
+#      the sender only re-reads its trust store that often, so a certificate uploaded through the publisher
+#      /endpoint-certificates API is not honoured by the gateway's outbound TLS for up to ten minutes. The
+#      post-upload 200 leg of the arc is therefore UNREACHABLE inside any sane test window at the default.
+#
+#   2. apim.certificate_reloader.period — renders to CertificateReLoaderConfiguration/Period
+#      (api-manager.xml.j2). The product default is 600 (seconds): the reloader is what actually writes a newly
+#      uploaded certificate into the gateway trust store file that (1) then re-reads. Both stages must be
+#      shortened or the arc still waits out the slower one.
+#
+# Together these bound the upload->trust propagation at roughly one minute instead of twenty, which is what makes
+# the 500 -> upload -> 200 -> delete -> 500 transition observable. The values match the legacy
+# APIEndpointCertificateTestCase config (endpointCertificate/deployment.toml: interval = 30000, period = "1m").
+#
+# NOTE — this is the SENDER (outbound / backend-facing) side. Do NOT confuse it with
+# transport.http.listener.ssl_profile.read_interval (the mtlsWsCors overlay), which is the LISTENER /
+# client-certificate side and has no effect on endpoint (backend) certificates.
+
+[transport.passthru_https.sender.ssl_profile]
+interval = 30000
+
+[apim.certificate_reloader]
+period = "1m"

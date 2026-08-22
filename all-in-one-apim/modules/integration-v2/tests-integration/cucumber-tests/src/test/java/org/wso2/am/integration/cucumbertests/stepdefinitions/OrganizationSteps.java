@@ -119,6 +119,9 @@ public class OrganizationSteps {
     private void setOrganizationClaim(String username, String orgId, String adminUser, String adminPass)
             throws IOException {
 
+        // The claim is set on the PHYSICAL username, which in an email-mode block carries the mail domain the
+        // provisioner appended — so pass the base name through the same single-owner transform addUser used.
+        username = TenantUserProvisioner.physicalUserName(username);
         String payload =
                 "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                         + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"

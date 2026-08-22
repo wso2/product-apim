@@ -1,0 +1,9 @@
+{
+  "name": "custom-status-backend",
+  "version": "1.0.0",
+  "description": "Raw-socket backend answering with a custom HTTP reason phrase (no dependencies, node net only)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

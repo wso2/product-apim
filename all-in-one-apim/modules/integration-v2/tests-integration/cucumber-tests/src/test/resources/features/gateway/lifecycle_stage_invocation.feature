@@ -26,26 +26,46 @@ Feature: Gateway Lifecycle-Stage Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revContext}}/1.0.0/customers/123/" with method "GET" using internal key "internalKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # PUBLISHED: invocable via an application subscription token.
     When I publish the "apis" resource with id "revApiId"
     Then The lifecycle status of API "revApiId" should be "Published"
+
+    # The internal key minted while the API was CREATED still authenticates AFTER the publish — publishing does
+    # not invalidate an already-issued internal key (APISecurityTestCase asserts this explicitly).
+    When I invoke the API at gateway context "{{revContext}}/1.0.0/customers/123/" with method "GET" using internal key "internalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
     When I have set up application with keys, subscribed to API "revApiId", and obtained access token for "revSub"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
-    # BLOCKED: the gateway refuses the invocation with 503.
+    # BLOCKED: the gateway refuses the invocation with 503 AND returns the API-blocked fault payload. The FAULT CODE
+    # is asserted, not just the status: 503 is also what an unreachable/suspended backend returns (303001), so the
+    # code is what distinguishes "the gateway deliberately blocked this API" from "the upstream is down" — and it is
+    # the assertion AccessibilityOfBlockAPITestCase makes (HTTP_RESPONSE_DATA_API_BLOCK, code 700700).
     When I change the lifecycle of API "revApiId" with action "Block"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 503 within 60 seconds
     Then The response status code should be 503
+    And The response should contain "700700"
+    And The response should contain "API blocked"
+    And The response should contain "This API has been blocked temporarily. Please try again later or contact the system administrators."
 
     # DEPRECATED: still invocable (200).
     When I change the lifecycle of API "revApiId" with action "Deprecate"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # RETIRED: undeployed from the gateway → 404.
     When I change the lifecycle of API "revApiId" with action "Retire"
@@ -95,8 +115,12 @@ Feature: Gateway Lifecycle-Stage Invocation
     # Both versions invocable at their version-specific gateway paths.
     When I invoke the API at gateway context "{{oldContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{oldContext}}/2.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -132,6 +156,8 @@ Feature: Gateway Lifecycle-Stage Invocation
     # The v1 token invokes v2 successfully — no re-subscription required.
     When I invoke the API at gateway context "{{noResubContext}}/2.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -174,8 +200,12 @@ Feature: Gateway Lifecycle-Stage Invocation
     # require re-subscription), so the SAME token invokes v2 directly (200) — no re-subscription needed.
     When I invoke the API at gateway context "{{depContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{depContext}}/2.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -213,6 +243,8 @@ Feature: Gateway Lifecycle-Stage Invocation
     # The v1 token still invokes v1 (200) but is refused on v2 (403) — re-subscription is required.
     When I invoke the API at gateway context "{{resubContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{resubContext}}/2.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
 
@@ -227,6 +259,8 @@ Feature: Gateway Lifecycle-Stage Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{resubContext}}/2.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -257,6 +291,8 @@ Feature: Gateway Lifecycle-Stage Invocation
     # Original context is invocable.
     When I invoke the API at gateway context "{{ctxOldContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Submit an update that changes the context to a fresh unique value; redeploy so any routing change would
     # take effect. The candidate new context is captured up-front so it can be invoked verbatim afterwards.
@@ -270,6 +306,8 @@ Feature: Gateway Lifecycle-Stage Invocation
     # The original context still serves (context is immutable); the attempted new context is never routable (404).
     When I invoke the API at gateway context "{{ctxOldContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API resource at path "/{{ctxNewContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
     Then The response status code should be 404
 

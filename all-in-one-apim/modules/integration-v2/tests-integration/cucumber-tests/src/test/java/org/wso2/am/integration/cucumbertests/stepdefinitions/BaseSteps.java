@@ -46,10 +46,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -824,22 +827,52 @@ public class BaseSteps {
     }
 
     /**
-     * Asserts a response field is PRESENT and holds JSON {@code null} — the one value
-     * {@link #theValueOfResponseFieldShouldBe} deliberately cannot express, because it rejects null so a MISSING
-     * field can never silently satisfy an expected {@code "null"} literal. That distinction is exactly why this
-     * exists as its own step rather than as a magic expected-value: "the server returns the field as null" and
-     * "the server omits the field" are different contracts, and a test that pins one must fail on the other.
-     * A field that is absent fails here too (the path lookup throws), so this cannot degrade into "either way".
+     * Asserts the standard product ERROR envelope of a non-2xx response: {@code code} and {@code message} EXACTLY,
+     * and {@code description} by substring (descriptions embed request-specific text). The counterpart of
+     * {@code The value of response field ... should be ...}, which deliberately requires a 2xx and so cannot
+     * express this.
      *
-     * <p>First consumer: a plain API's {@code apiThrottlingPolicy}, which is JSON {@code null} — not
-     * {@code "Unlimited"} — on an API created without an API-level policy.</p>
+     * <p>Why a dedicated step rather than {@code The response should contain "900970"}: a bare 4xx status is a
+     * catch-all — the management API answers 400 for a dozen unrelated validation faults — so a negative that
+     * pins only the status passes for the WRONG reason. Legacy pins the error code, message and description text
+     * (e.g. TokenAPITestCase's {@code 900970 / "Invalid application additional properties"} for a negative
+     * application-token expiry), and a substring search for the code alone can be satisfied by the code appearing
+     * anywhere in the body.
      *
-     * @param fieldName field name or JSONPath expected to resolve to JSON null
+     * @param expectedCode        exact {@code code} value
+     * @param expectedMessage     exact {@code message} value
+     * @param descriptionFragment text the {@code description} must contain
+     */
+    @Then("The error response should have code {string} message {string} and description containing {string}")
+    public void theErrorResponseShouldHave(String expectedCode, String expectedMessage, String descriptionFragment) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "No response body to assert the error envelope on, got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        JSONObject error = new JSONObject(response.getData());
+        Assert.assertEquals(String.valueOf(error.opt("code")), expectedCode,
+                "Error 'code' mismatch: " + response.getData());
+        Assert.assertEquals(String.valueOf(error.opt("message")), expectedMessage,
+                "Error 'message' mismatch: " + response.getData());
+        String description = String.valueOf(error.opt("description"));
+        Assert.assertTrue(description.contains(descriptionFragment),
+                "Error 'description' [" + description + "] does not contain '" + descriptionFragment + "'");
+    }
+
+    /**
+     * Asserts a field of the stored JSON response is PRESENT and its value is JSON {@code null} — the exact
+     * counterpart of {@code The value of response field ... should be ...}, which deliberately REFUSES a null
+     * (it cannot distinguish an absent field from one literally equal to the text {@code "null"}) and so cannot
+     * express this. Needed wherever null-ness is the product contract rather than an absence, e.g. a root
+     * comment's {@code parentCommentId}, which the comments API renders explicitly as
+     * {@code "parentCommentId":null}. Present-but-null and absent are held apart: a missing path fails.
+     *
+     * @param fieldName field name or JSONPath expected to be present with a null value
      */
     @Then("The response field {string} should be null")
     public void theResponseFieldShouldBeNull(String fieldName) throws IOException {
 
-        fieldName = Utils.resolveContextPlaceholders(fieldName);
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
                         && response.getData() != null && !response.getData().isBlank(),
@@ -966,10 +999,35 @@ public class BaseSteps {
                 "Expected a 2xx response with a body to read array field '" + fieldName + "' from, but got: "
                         + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
         Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
-        Assert.assertTrue(actual instanceof java.util.List,
-                "Response field '" + fieldName + "' is not an array: " + actual);
-        Assert.assertEquals(((java.util.List<?>) actual).size(), expectedCount,
+        Assert.assertNotNull(actual, "Array '" + fieldName + "' not present in response: " + response.getData());
+        // Both shapes are accepted because extractValueFromPayload returns a List for a JSONPath match but a
+        // JSONArray for a plain top-level field, and a cardinality assertion should not depend on which lookup
+        // route the caller's path happened to take.
+        int actualCount;
+        if (actual instanceof java.util.List) {
+            actualCount = ((java.util.List<?>) actual).size();
+        } else if (actual instanceof JSONArray) {
+            actualCount = ((JSONArray) actual).length();
+        } else {
+            throw new AssertionError("Field '" + fieldName + "' is not a JSON array but a "
+                    + actual.getClass().getSimpleName() + " (" + actual + "). Response: " + response.getData());
+        }
+        Assert.assertEquals(actualCount, expectedCount,
                 "Array field '" + fieldName + "' size mismatch. Data: " + response.getData());
+    }
+
+    /**
+     * Asserts the stored response carries NO body. A 200 with an empty body is a real product contract in places
+     * (a comment PATCH that changes nothing answers 200 with no payload), and no contain/not-contain assertion
+     * can prove emptiness — only that some particular text is absent.
+     */
+    @Then("The response body should be empty")
+    public void theResponseBodyShouldBeEmpty() {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No HTTP response found in TestContext.");
+        Assert.assertTrue(response.getData() == null || response.getData().isBlank(),
+                "Expected an empty response body but got: " + response.getData());
     }
 
     /**
@@ -1201,6 +1259,25 @@ public class BaseSteps {
                 "Response header '" + headerName + "' unexpectedly present with value '" + actual + "'");
     }
 
+    /**
+     * Asserts the response's status-line REASON PHRASE exactly — the half of the status line that
+     * {@code The response status code should be N} cannot see. Needed because a backend may answer with a
+     * NON-STANDARD reason phrase that the gateway must relay verbatim rather than normalise to the canonical
+     * phrase for the code: the custom-status backend answers {@code HTTP/1.1 400 Custom response}, and a gateway
+     * that rewrote it to {@code Bad Request} would still satisfy every status-code assertion. The phrase is
+     * captured for every response by {@code SimpleHTTPClient.constructResponse}.
+     *
+     * @param expectedPhrase the exact reason phrase expected on the status line
+     */
+    @Then("The response reason phrase should be {string}")
+    public void theResponseReasonPhraseShouldBe(String expectedPhrase) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No response captured");
+        Assert.assertEquals(response.getResponseMessage(), expectedPhrase,
+                "Status-line reason phrase mismatch (status code was " + response.getResponseCode() + ")");
+    }
+
     /** Case-insensitive lookup of a response header value from the stored httpResponse (null if absent). */
     private String responseHeaderValue(String headerName) {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
@@ -1224,7 +1301,32 @@ public class BaseSteps {
      * @param expectedConfigValue The expected configuration value
      */
     @And("The {string} resource should reflect the updated {string} as:")
-    public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String expectedConfigValue) throws IOException, InterruptedException {
+    public void theResourceShouldReflectTheUpdatedAs(String resourceType, String config, String expectedConfigValue)
+            throws IOException, InterruptedException {
+        reflectUpdatedConfiguration(resourceType, config, expectedConfigValue, false);
+    }
+
+    /**
+     * As {@link #theResourceShouldReflectTheUpdatedAs} but compares an ARRAY-valued field as an UNORDERED SET.
+     *
+     * <p>Use this — and only this — for a field whose element order the product does not promise: {@code policies},
+     * {@code visibleRoles}, {@code accessControlRoles}, {@code securityScheme}, CORS header lists. The default step
+     * stays ORDER-SENSITIVE on purpose, because for {@code operations}/{@code operationPolicies} the sequence IS the
+     * behaviour (a request-flow policy chain executes in order), and comparing those as sets would silently stop
+     * asserting it.
+     *
+     * <p>Picking between the two steps is the statement of intent, like {@code TestContext.resolve/get/contains}.
+     * The alternative — one comparison that ignores order everywhere — reads as convenience but weakens every
+     * ordered assertion in the suite.
+     */
+    @And("The {string} resource should reflect the updated {string} as an unordered set:")
+    public void theResourceShouldReflectTheUpdatedAsUnorderedSet(String resourceType, String config,
+                String expectedConfigValue) throws IOException, InterruptedException {
+        reflectUpdatedConfiguration(resourceType, config, expectedConfigValue, true);
+    }
+
+    private void reflectUpdatedConfiguration(String resourceType, String config, String expectedConfigValue,
+                boolean unorderedArray) throws IOException, InterruptedException {
         // Get the API ID from the update response — guard before parsing (a cleared/failed update leaves no
         // response, and an empty body would throw an opaque JSONException instead of a clear failure).
         HttpResponse updateResponse = (HttpResponse) TestContext.get("httpResponse");
@@ -1252,7 +1354,7 @@ public class BaseSteps {
         }
 
         if (resourceId == null || resourceId.isBlank()) {
-            verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
+            verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue, unorderedArray);
             return;
         }
 
@@ -1274,7 +1376,7 @@ public class BaseSteps {
 
             if (retrievedResponse.getResponseCode() == 200) {
                 try {
-                    verifyConfigurationInResponse(retrievedResponse, config, normalizedConfigValue);
+                    verifyConfigurationInResponse(retrievedResponse, config, normalizedConfigValue, unorderedArray);
                     configMatches = true;
                     break;
                 } catch (AssertionError e) {
@@ -1287,7 +1389,7 @@ public class BaseSteps {
                 }
             } else {
                 if (i == 0) {
-                    verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
+                    verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue, unorderedArray);
                     return;
                 }
                 Thread.sleep(delayMs);
@@ -1297,7 +1399,7 @@ public class BaseSteps {
         // Final fall back
         if (!configMatches) {
             log.warn("Criteria not met. Falling back to initial update response verification.");
-            verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue);
+            verifyConfigurationInResponse(updateResponse, config, normalizedConfigValue, unorderedArray);
         }
     }
 
@@ -1309,6 +1411,56 @@ public class BaseSteps {
         theResourceShouldReflectTheUpdatedAs(resourceType, config, ctxValue.toString());
     }
 
+
+    /**
+     * Compares an array-valued configuration field, either as an ordered sequence (the default) or as an unordered
+     * set (opted into by the caller's step).
+     *
+     * <p>The ordered path uses {@link JSONArray#similar} — which walks INDEX BY INDEX and is therefore
+     * order-SENSITIVE. Its failure message used to claim "(order-insensitive)", which was simply false and
+     * actively misdirecting: a reader shown the same elements in a different order under that wording reasonably
+     * concludes the product returned something wrong and goes hunting an ordering bug that does not exist. That
+     * cost a debug cycle once already. The message now states the comparison's real semantics, and when the
+     * elements match but the order does not it says so explicitly and names the step to use if order is not part
+     * of the contract — turning the most confusing failure into a self-explaining one.
+     */
+    private static void assertJsonArrayMatches(JSONArray expected, JSONArray actual, String config,
+                boolean unorderedArray) {
+
+        if (unorderedArray) {
+            List<String> expectedElements = sortedElements(expected);
+            List<String> actualElements = sortedElements(actual);
+            Assert.assertEquals(actualElements, expectedElements,
+                    "Array '" + config + "' does not match as an unordered set. Expected elements "
+                            + expectedElements + " but got " + actualElements
+                            + " (raw expected " + expected + ", raw actual " + actual + ")");
+            return;
+        }
+        if (actual.similar(expected)) {
+            return;
+        }
+        // Same elements, different order is the failure that the old message made unreadable — call it out.
+        String hint = sortedElements(expected).equals(sortedElements(actual))
+                ? " The two arrays hold the SAME elements in a DIFFERENT order, and this comparison is"
+                        + " ORDER-SENSITIVE (JSONArray.similar compares index by index). If element order is not"
+                        + " part of the contract for '" + config + "', use the \"... as an unordered set:\" step"
+                        + " rather than restating the server's order in the expectation."
+                : "";
+        Assert.fail("Array '" + config + "' does not match (compared in order). Expected " + expected
+                + " but got " + actual + "." + hint);
+    }
+
+    /** An array's elements as sorted strings, for set-wise comparison and for the same-elements-different-order test. */
+    private static List<String> sortedElements(JSONArray array) {
+
+        List<String> elements = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) {
+            elements.add(String.valueOf(array.get(i)));
+        }
+        Collections.sort(elements);
+        return elements;
+    }
+
     /**
      * Helper method that verifies a specific configuration field in the HTTP response matches the expected value.
      *
@@ -1316,7 +1468,8 @@ public class BaseSteps {
      * @param config The configuration field name to check
      * @param configValue The expected configuration value
      */
-    private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue) {
+    private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue,
+                boolean unorderedArray) {
         Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
                 "No response with a body to verify configuration '" + config + "' in; got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
@@ -1336,9 +1489,7 @@ public class BaseSteps {
             JSONArray expectedArray = new JSONArray(configValue);
             JSONArray actualArray = (JSONArray) actualValue;
 
-            Assert.assertTrue(actualArray.similar(expectedArray),
-                    "JSON Arrays do not match. Expected (order-insensitive): " + expectedArray
-                            + "But got: " + actualArray);
+            assertJsonArrayMatches(expectedArray, actualArray, config, unorderedArray);
 
         } else if (actualValue instanceof JSONObject) {
             JSONObject expectedObject = new JSONObject(configValue);
@@ -1599,5 +1750,34 @@ public class BaseSteps {
             throw new AssertionError("Response body is not valid JSON or could not be compared against '"
                     + jsonFilePath + "': " + response.getData(), e);
         }
+    }
+
+
+    /**
+     * Stores an actor's username in the form the PRODUCT records it, so a feature can assert a server-returned
+     * username (e.g. a subscription's {@code subscriber}) EXACTLY without hardcoding it. Necessary because an actor
+     * reference is not the username: {@code subscriberUser} is provisioned as {@code subscriberUser1} in the super
+     * tenant and {@code subscriberUser11@tenant1.com} in tenant1.com (and carries an {@code @email.com} local part
+     * in email-username mode), so a literal in the feature would be wrong in at least one tenant/mode.
+     *
+     * <p>The {@code @carbon.super} suffix is STRIPPED: the actor registry's {@code User} bean carries the fully
+     * qualified {@code subscriberUser1@carbon.super}, but APIM stores and returns super-tenant usernames
+     * unqualified (verified live against a subscription's {@code applicationInfo.subscriber}). A tenant actor's
+     * {@code @tenant1.com} suffix IS part of the stored username and is kept.
+     *
+     * @param actorRef  actor reference (e.g. {@code subscriberUser@tenant1.com})
+     * @param outputKey context key to store the resolved username under
+     */
+    @When("I store the username of actor {string} as {string}")
+    public void iStoreTheUsernameOfActor(String actorRef, String outputKey) {
+
+        User actor = Identity.resolveActor(Utils.resolveContextPlaceholders(actorRef));
+        String userName = actor.getUserName();
+        String superTenantSuffix = "@" + Constants.SUPER_TENANT_DOMAIN;
+        if (userName != null && userName.toLowerCase(java.util.Locale.ROOT)
+                .endsWith(superTenantSuffix.toLowerCase(java.util.Locale.ROOT))) {
+            userName = userName.substring(0, userName.length() - superTenantSuffix.length());
+        }
+        TestContext.set(Utils.normalizeContextKey(outputKey), userName);
     }
 }

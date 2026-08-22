@@ -27,6 +27,8 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     # gateway's SSL-profile read interval — shrunk to 10s by the overlay — picks it up)
     When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" until response status code becomes 200 within 150 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # No client certificate on a mutualssl_mandatory API → rejected with 401
     When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" with no client certificate until response status code becomes 401 within 60 seconds
     Then The response status code should be 401

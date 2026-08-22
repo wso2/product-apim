@@ -79,6 +79,8 @@ Feature: Gateway Throttling Enforcement
     # (APPLICATION-level throttling), not a 429 from any other dimension.
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900803"
@@ -135,6 +137,8 @@ Feature: Gateway Throttling Enforcement
     # throttling), distinguishing it from the application-level 900803.
     And I invoke the API at gateway context "{{subApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{subApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900804"
@@ -190,6 +194,8 @@ Feature: Gateway Throttling Enforcement
     # 900807 (BURST control), which is what proves the burst limit fired rather than the subscription quota (900804).
     And I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900807"
@@ -247,6 +253,8 @@ Feature: Gateway Throttling Enforcement
     # applied across the whole API), not the app/subscription codes.
     And I invoke the API at gateway context "{{advApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{advApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900800"
@@ -333,6 +341,8 @@ Feature: Gateway Throttling Enforcement
     # Siddhi rule fired and not one of the policy-tier dimensions.
     And I invoke the API at gateway context "{{custApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{custApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 90 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900806"
@@ -387,6 +397,8 @@ Feature: Gateway Throttling Enforcement
     # throttling), distinct from the whole-API 900800 above.
     And I invoke the API at gateway context "{{opApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{opApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900802"
