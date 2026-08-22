@@ -1,0 +1,16 @@
+{
+  "category": "Mediation",
+  "name": "contentAwareResponsePolicy",
+  "version": "v1",
+  "displayName": "Content Aware Response Policy",
+  "description": "Adds a content-aware property using json-eval in the response flow. Used to verify JSON stream handling after message building in the out sequence.",
+  "applicableFlows": [
+    "response"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
