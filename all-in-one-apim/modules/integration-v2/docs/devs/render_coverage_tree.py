@@ -141,22 +141,34 @@ def feature_rel(path):
 
 
 def executed_feature_files(testng_path, runners_dir):
-    """Feature files reachable from a REGISTERED runner, or None when the chain can't be resolved.
+    """Feature files reachable from a REGISTERED runner.
 
-    None means "unknown" and disables the check (so the tree still renders on a partial checkout)
+    Returns (executed, registered, unresolved). `executed` is None when the chain can't be resolved at
+    all -- meaning "unknown", which disables the check (so the tree still renders on a partial checkout)
     rather than silently declaring everything unexecuted.
+
+    `unresolved` is the registered class names for which NO runner source was found. These must be
+    reported SEPARATELY from parked scenarios: a registration whose class cannot be located contributes
+    zero features, so its scenarios surface as `✗ NOT RUN` and read as "no runner runs this feature"
+    when the truth is "the suite names a runner this scan could not resolve" -- a renamed/moved class, or
+    a `--runners` path narrower than the suite. Those two diagnoses have OPPOSITE fixes (register the
+    feature vs. fix the registration/path), so conflating them sends the reader the wrong way.
     """
     registered = parse_registered_runners(testng_path)
     if registered is None:
-        return None, None
+        return None, None, set()
     runner_features = parse_runner_features(runners_dir)
     if not runner_features:
-        return None, None
+        return None, None, set()
     executed = set()
+    unresolved = set()
     for cls in registered:
-        for f in runner_features.get(cls, []):
+        if cls not in runner_features:
+            unresolved.add(cls)
+            continue
+        for f in runner_features[cls]:
             executed.add(feature_rel(f))
-    return executed, registered
+    return executed, registered, unresolved
 
 
 def scan_features(root):
@@ -347,7 +359,7 @@ def main():
 
     caps = parse_capability_map(args.map)
     scenarios = scan_features(args.features)
-    executed, registered = executed_feature_files(args.testng, args.runners)
+    executed, registered, unresolved = executed_feature_files(args.testng, args.runners)
     placed, excluded, invalid, unrun = classify(scenarios, caps, executed)
     with open(args.out, "w", encoding="utf-8") as fh:
         fh.write(render(caps, placed, excluded, invalid, unrun))
@@ -361,9 +373,20 @@ def main():
         print("WARNING: could not resolve the testng-v2.xml -> runner -> feature chain; execution was "
               "NOT verified and every tagged scenario is counted as covered", file=sys.stderr)
     else:
-        print(f"execution verified against {len(registered)} registered runner(s) "
-              f"covering {len(executed)} feature file(s)")
+        print(f"execution verified against {len(registered) - len(unresolved)} registered runner(s) "
+              f"covering {len(executed)} feature file(s)"
+              + (f" | {len(unresolved)} registration(s) UNRESOLVED" if unresolved else ""))
     print(f"wrote {os.path.relpath(args.out)}")
+    if unresolved:
+        # Printed before the NOT-RUN note because it is a cause of it. Warning, not lint failure: a
+        # --runners path narrower than the suite is a legitimate way to run this script.
+        shown = sorted(unresolved)[:10]
+        print(f"WARNING: {len(unresolved)} registered runner(s) could not be resolved to a source file "
+              f"under {os.path.relpath(args.runners)} and contributed NO features: "
+              + ", ".join(shown)
+              + (f" (+{len(unresolved) - len(shown)} more)" if len(unresolved) > len(shown) else "")
+              + ". Any 'Not executed' scenario below may be a consequence of this, not a parked test.",
+              file=sys.stderr)
     if unrun_n:
         # Deliberately NOT a lint failure: parking a scenario pending a product fix is legitimate. It is
         # loud on stderr and excluded from the count, which is what stops it being mistaken for coverage.

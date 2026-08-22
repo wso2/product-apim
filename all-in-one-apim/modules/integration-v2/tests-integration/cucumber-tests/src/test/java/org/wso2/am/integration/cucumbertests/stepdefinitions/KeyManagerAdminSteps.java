@@ -19,6 +19,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
@@ -122,7 +123,9 @@ public class KeyManagerAdminSteps {
         // On a SUCCESSFUL transfer the application now belongs to the new owner, so teardown must delete it AS the
         // new owner (CLAUDE.md §5): the DevPortal delete is scoped to the requesting subscriber, so sweeping it with
         // the original creator's token would 404 and leak the application while looking like an already-gone id.
-        if (response.getResponseCode() == 200) {
+        // 200 exactly: change-owner declares only 200/400/404, so a 2xx range check would accept a code the
+        // contract does not define. Null-guarded like every other deregister site.
+        if (response != null && response.getResponseCode() == 200) {
             ResourceCleanup.deregister(Constants.CREATED_APPLICATION_IDS, appId);
             ResourceCleanup.registerFor(Constants.CREATED_APPLICATION_IDS, appId, newOwnerRef);
         }
@@ -263,7 +266,7 @@ public class KeyManagerAdminSteps {
     public void theListedSecretShouldHaveDescription(String secretIdKey, String expectedDescription) {
         String secretId = TestContext.resolve(secretIdKey).toString();
         JSONObject body = successBody("consumer secrets list");
-        org.json.JSONArray list = body.getJSONArray("list");
+        JSONArray list = body.getJSONArray("list");
         for (int i = 0; i < list.length(); i++) {
             JSONObject secret = list.getJSONObject(i);
             if (secretId.equals(secret.optString("secretId"))) {

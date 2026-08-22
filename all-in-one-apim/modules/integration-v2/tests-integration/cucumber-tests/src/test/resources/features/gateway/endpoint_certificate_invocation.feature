@@ -20,7 +20,7 @@ Feature: Gateway Endpoint Certificate TLS Invocation
   testInvokeAPI and testInvokeAPIAfterRemovingCertificate.
 
   @cap:gateway @feat:security-enforcement @rule:endpoint-certificates @type:regression @dep:publisher @legacy:APIEndpointCertificateTestCase
-  Scenario Outline: An endpoint certificate upload and delete flip gateway trust of a TLS backend
+  Scenario Outline: An endpoint certificate upload and delete flip gateway trust of a TLS backend as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I generate a unique value and store it as "tlsCertAlias"
@@ -45,7 +45,8 @@ Feature: Gateway Endpoint Certificate TLS Invocation
     When I invoke the API at gateway context "{{tlsCertApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 240 seconds
     Then The response status code should be 200
     # The BACKEND's body, so a gateway-generated 200 (a CORS/fault response, a cached error page) cannot pass.
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # LEG 3 — delete the certificate: trust is withdrawn and the handshake fails again.
     When I delete the endpoint certificate with alias "{{tlsCertAlias}}"

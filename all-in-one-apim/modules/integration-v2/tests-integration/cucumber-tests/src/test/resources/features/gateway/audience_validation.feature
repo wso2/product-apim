@@ -25,7 +25,8 @@ Feature: Gateway Audience Validation
     # No audiences configured -> the token is accepted (200).
     When I invoke the API at gateway context "{{audApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Configure audiences that do NOT include the token's audience -> the gateway rejects it with 403 + 900914.
     When I retrieve the "apis" resource with id "audApiId"
@@ -53,7 +54,8 @@ Feature: Gateway Audience Validation
     Then The response status code should be 201
     When I invoke the API at gateway context "{{audApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -108,7 +110,8 @@ Feature: Gateway Audience Validation
     # No audiences configured on the product -> the sandbox token is accepted (200).
     When I invoke the API at gateway context "{{audProductContext}}/1.0.0/customers/123/" with method "GET" using access token "audProdSandboxToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Audiences that do NOT include the token's audience -> the gateway rejects it with 403 + 900914.
     When I retrieve the "api-products" resource with id "audProductId"
@@ -136,7 +139,8 @@ Feature: Gateway Audience Validation
     Then The response status code should be 201
     When I invoke the API at gateway context "{{audProductContext}}/1.0.0/customers/123/" with method "GET" using access token "audProdSandboxToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |

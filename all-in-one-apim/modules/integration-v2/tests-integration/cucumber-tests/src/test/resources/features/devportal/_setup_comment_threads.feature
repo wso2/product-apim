@@ -25,7 +25,7 @@ Feature: Setup comment threads for the plane-parity suite
   AfterClass sweep (NOT per-scenario cleanup — the consumer features run off this fixture); comments are
   sub-resources of the API and cascade away with it.
 
-  Scenario Outline: Publish three APIs and build a publisher-plane and a devportal-plane comment thread
+  Scenario Outline: Publish three APIs and build a publisher-plane and a devportal-plane comment thread as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
 

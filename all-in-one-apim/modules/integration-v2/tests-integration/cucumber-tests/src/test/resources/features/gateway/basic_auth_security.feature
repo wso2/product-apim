@@ -59,20 +59,25 @@ Feature: Gateway Basic-Auth Application Security
     # (tenant admin, all-roles, creator+publisher, subscriber-only) plus the email-style runtime principal.
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "admin@<tenant>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "userKey1@<tenant>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "publisherUser@<tenant>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "subscriberUser@<tenant>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # The email-style username: the "@" in the LOCAL part must not be mistaken for the tenant separator.
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{baUsr}}@wso2.com@<tenant>" password "Basic@Pass123" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # The SAME wrong password is STILL rejected after all those successes -> 401.
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "admin@<tenant>" with password "totallyWrongPassword" until response status code becomes 401 within 60 seconds
@@ -119,7 +124,8 @@ Feature: Gateway Basic-Auth Application Security
     # principal-lookup miss and not a dead route or a misconfigured scheme.
     When I invoke the API at gateway context "{{bnContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "admin@<tenant>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # A username that was never provisioned, qualified to this tenant -> 401.
     When I generate a unique alphanumeric value and store it as "bnUsr"
@@ -138,7 +144,7 @@ Feature: Gateway Basic-Auth Application Security
   #
   # Runs x2 tenants so the scheme gate is verified in each tenant.
   @cap:gateway @feat:security-enforcement @rule:scheme-mismatch @type:negative @dep:publisher @dep:key-manager @legacy:APISecurityTestCase
-  Scenario Outline: A basic_auth-only API refuses a valid OAuth2 bearer token and a valid API key
+  Scenario Outline: A basic_auth-only API refuses a valid OAuth2 bearer token and a valid API key as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "bsApiId" and deployed it
@@ -171,7 +177,8 @@ Feature: Gateway Basic-Auth Application Security
     # Positive control: Basic credentials ARE accepted, so the API is live and its scheme took effect.
     When I invoke the API at gateway context "{{bsContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # A valid OAuth2 bearer token of the subscribed application -> 401 (testInvokeBearerTokenForBasicNegative).
     When I invoke the API at gateway context "{{bsContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
@@ -180,6 +187,11 @@ Feature: Gateway Basic-Auth Application Security
     When I invoke the API at gateway context "{{bsContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
+    Examples:
+      | actor |
+      | admin |
+      | admin@tenant1.com |
+
   # Ports testInvokeInternalKeyForBasicAuthOnlyAPI — a deliberate POSITIVE, not a negative. The publisher's
   # internal API key BYPASSES the API's declared application-security scheme: it invokes a basic_auth-ONLY API
   # successfully (200), even though the OAuth token and API key above are both refused on the same API. That is
@@ -187,14 +199,8 @@ Feature: Gateway Basic-Auth Application Security
   # asserting it keeps a future change that "fixed" the internal key into a 401 from passing silently.
   #
   # Runs x2 tenants so the internal-key scheme bypass is verified in each tenant.
-
-    Examples:
-      | actor |
-      | admin |
-      | admin@tenant1.com |
-
   @cap:gateway @feat:security-enforcement @rule:internal-key-bypass @type:regression @dep:publisher @legacy:APISecurityTestCase
-  Scenario Outline: An internal API key invokes a basic_auth-only API, bypassing the declared scheme
+  Scenario Outline: An internal API key invokes a basic_auth-only API, bypassing the declared scheme as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "bkApiId" and deployed it
     When I retrieve the "apis" resource with id "bkApiId"
@@ -218,7 +224,8 @@ Feature: Gateway Basic-Auth Application Security
     Then The response status code should be 200
     When I invoke the API at gateway context "{{bkContext}}/1.0.0/customers/123/" with method "GET" using internal key "bkInternalKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor |

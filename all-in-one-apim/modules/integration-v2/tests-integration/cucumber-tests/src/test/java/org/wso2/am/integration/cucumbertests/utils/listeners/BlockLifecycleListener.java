@@ -118,8 +118,10 @@ public class BlockLifecycleListener implements ITestListener {
      *
      * <p>The username regexes are deliberately NOT touched: this build's {@code database_unique_id} defaults are
      * {@code UsernameJavaRegEx}/{@code UsernameJavaScriptRegEx} = {@code ^[\S]{3,30}$}, which already admit
-     * {@code @}, so both the plain and the email form validate. Applies to the {@code default} tenant set only —
-     * the {@code adpsample} set's users ship fixed inside the migration dataset.
+     * {@code @}, so both the plain and the email form validate. Usable with the {@code default} tenant set ONLY:
+     * the {@code adpsample} set's users ship fixed inside the migration dataset and cannot carry the email form, so
+     * pairing this flag with {@code tenantSet=adpsample} is REJECTED at boot (see {@code provisionTenantUsers})
+     * rather than quietly provisioning an identity the dataset does not contain.
      *
      * <p>The flag is published into the block's shared scope under
      * {@link TenantUserProvisioner#EMAIL_USER_MODE_KEY} BEFORE any provisioning, and the mail-domain transform
@@ -465,8 +467,23 @@ public class BlockLifecycleListener implements ITestListener {
     private void provisionTenantUsers(String label, String tenantSet, boolean emailUserMode)
             throws java.io.IOException, JaxenException {
 
+        // The adpsample set's identities ship FIXED inside the migration dataset, so the mail-domain transform must
+        // never reach them: it would provision `testTenantUser11@email.com` while the dataset only ever contains
+        // `testTenantUser11`, and every login as the migrated user would then fail against a user that does not
+        // exist. The two parameters are therefore incoherent together — reject the combination at boot rather than
+        // silently ignoring whichever one loses, so a misconfigured block fails with this message instead of an
+        // unexplained authentication failure deep inside a migration scenario.
+        if (TENANT_SET_ADPSAMPLE.equalsIgnoreCase(tenantSet) && emailUserMode) {
+            throw new IllegalArgumentException("Block '" + label + "' sets tenantSet=" + TENANT_SET_ADPSAMPLE
+                    + " together with " + PARAM_EMAIL_USER_MODE + "=true, which cannot be honoured: the adpsample "
+                    + "users are fixed in the migration dataset and cannot carry the email-form username. Drop "
+                    + PARAM_EMAIL_USER_MODE + " from this block, or use the default tenant set.");
+        }
+
         // Published BEFORE the first addUser so the provisioner's physicalUserName transform is in force for the
         // boot-time set, and stays in shared scope so a scenario's own `I provision user …` gets the same form.
+        // For adpsample this is necessarily false (guarded above), so the fixed migration identities are
+        // provisioned verbatim — matching the per-call-site transform this flag replaced.
         TestContext.setShared(TenantUserProvisioner.EMAIL_USER_MODE_KEY, emailUserMode);
 
         // Gateway readiness can pass before the SOAP admin services finish deploying; gate on the Tenant Mgt

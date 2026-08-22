@@ -36,7 +36,8 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
     # Warm up with a non-matching request (uses the 100/min default) so the route is confirmed up.
     When I invoke the API at gateway context "{{condIpContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # Drive a request whose X-Forwarded-For matches the IP condition → the 3/min group limit trips a 429.
     When I invoke the API at gateway context "{{condIpContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "X-Forwarded-For" set to "10.100.7.99" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
@@ -70,7 +71,8 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
     Then The response status code should be 200
     When I invoke the API at gateway context "{{condHdrContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # Drive a request carrying the X-Tier: gold header → the 3/min group limit trips a 429.
     When I invoke the API at gateway context "{{condHdrContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "X-Tier" set to "gold" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429

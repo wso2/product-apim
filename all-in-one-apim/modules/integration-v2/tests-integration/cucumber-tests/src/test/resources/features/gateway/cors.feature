@@ -22,7 +22,8 @@ Feature: Gateway CORS
     # enables allow-credentials, returns Access-Control-Allow-Credentials: true.
     When I invoke the API at gateway context "{{corsContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
     And The response should contain the header "Access-Control-Allow-Credentials" with value "true"
 
@@ -67,7 +68,8 @@ Feature: Gateway CORS
     # pre-flight-only Access-Control-Allow-Methods / -Allow-Headers response headers.
     When I invoke the API at gateway context "{{corsPfContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should not contain the header "Access-Control-Allow-Methods"
     And The response should not contain the header "Access-Control-Allow-Headers"
 
@@ -127,7 +129,8 @@ Feature: Gateway CORS
     # allow-credentials is STILL absent.
     When I invoke the API at gateway context "{{dcContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should contain the header "Access-Control-Allow-Origin" with value "*"
     And The response should not contain the header "Access-Control-Allow-Credentials"
 
@@ -165,7 +168,8 @@ Feature: Gateway CORS
     # And on a normal request too: origin echoed, no allow-credentials.
     When I invoke the API at gateway context "{{ncContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
     And The response should not contain the header "Access-Control-Allow-Credentials"
 

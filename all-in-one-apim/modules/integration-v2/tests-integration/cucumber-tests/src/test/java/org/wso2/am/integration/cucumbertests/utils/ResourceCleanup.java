@@ -647,10 +647,28 @@ public final class ResourceCleanup {
     }
 
     /**
-     * Deregisters DCR-registered ("bring your own") OAuth clients. These are NOT deleted with a bearer token:
-     * the DCR endpoint authenticates with the OWNER's Basic credentials (the same way {@code iRegisterOAuthClient}
-     * created them), and a DCR client is a standalone service provider that the DevPortal application's deletion
-     * does not remove — so it must be swept explicitly or it leaks. Best-effort: a 404 (already gone) is fine.
+     * Deregisters DCR-registered ("bring your own") OAuth clients. These are NOT deleted with a bearer token: a DCR
+     * client is a standalone service provider that the DevPortal application's deletion does not remove, and the DCR
+     * REST endpoint's own {@code DELETE} is a STUB on this build — it answers "Dynamic Client Registration Service's
+     * resource deletion not implemented" (verified by decompiling {@code RegistrationServiceImpl.unRegister} in the
+     * shipped {@code client-registration#v0.17.war}). So the only working removal is the {@code OAuthAdminService}
+     * SOAP admin service. Best-effort: a 404 (already gone) is fine.
+     *
+     * <p>Authenticated as the OWNER'S TENANT ADMIN, not as the owner. {@code OAuthAdminService} is a Carbon admin
+     * service, so a non-admin principal is rejected with a SOAP fault ({@code faultcode 50978},
+     * {@code "Access Denied."}) carried on an HTTP 500 — and DCR registration deliberately succeeds for a non-admin
+     * (the endpoint self-registers with the caller's own Basic credentials), so an owner who cannot delete their own
+     * client is the NORMAL case, not an edge one. Sweeping as the owner therefore leaked every client created by a
+     * least-privilege actor: observed as 8 {@code may leak} WARNs from the two OAUTH endpoint-security outlines in
+     * {@code gateway/security_enforcement.feature}, whose Examples include {@code publisherUser} and
+     * {@code publisherUser@tenant1.com} creator rows (2 outlines x 2 non-admin rows x 2 clients).
+     *
+     * <p>The tenant admin is the right principal rather than a widening of the rule: the client lives in the owner's
+     * TENANT, and the admin service is tenant-scoped, so each client is still removed by a principal with authority
+     * over exactly that tenant — {@code publisherUser} -> {@code admin}, {@code publisherUser@tenant1.com} ->
+     * {@code admin@tenant1.com}. For an admin-owned client this resolves to the owner itself, so the path that
+     * already worked is unchanged. Same rationale as {@link Identity#actingTenantAdmin()}, but keyed off the
+     * RECORDED OWNER rather than whoever happens to be acting when teardown runs.
      */
     private static void deleteDcrClients(String baseUrl) {
         String serviceUrl = baseUrl + "services/OAuthAdminService";
@@ -662,17 +680,20 @@ public final class ResourceCleanup {
             }
             try {
                 User owner = Identity.resolveActor(res.actorRef());
+                User tenantAdmin = Identity.tenantOf(owner).getTenantAdmin();
                 String removeEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                         + "xmlns:xsd=\"" + ns + "\"><soapenv:Header/><soapenv:Body>"
                         + "<xsd:removeOAuthApplicationData><xsd:consumerKey>" + Utils.escapeXml(res.id())
                         + "</xsd:consumerKey></xsd:removeOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
                 HttpResponse resp = SimpleHTTPClient.getInstance().sendSoapRequest(serviceUrl, removeEnvelope,
-                        "urn:removeOAuthApplicationData", owner.getUserName(), owner.getPassword());
+                        "urn:removeOAuthApplicationData", tenantAdmin.getUserName(), tenantAdmin.getPassword());
                 int code = resp.getResponseCode();
                 if (code >= 200 && code < 300) {
-                    logger.info("Cleanup: deregistered DCR client " + res.id() + " (HTTP " + code + ").");
+                    logger.info("Cleanup: deregistered DCR client " + res.id() + " owned by '" + res.actorRef()
+                            + "' as tenant admin '" + tenantAdmin.getUserName() + "' (HTTP " + code + ").");
                 } else {
-                    logger.warn("Cleanup: deregister of DCR client " + res.id() + " returned HTTP " + code
+                    logger.warn("Cleanup: deregister of DCR client " + res.id() + " (owner '" + res.actorRef()
+                            + "', as tenant admin '" + tenantAdmin.getUserName() + "') returned HTTP " + code
                             + " — it may leak: " + trunc(resp.getData()));
                 }
             } catch (Exception | AssertionError e) {

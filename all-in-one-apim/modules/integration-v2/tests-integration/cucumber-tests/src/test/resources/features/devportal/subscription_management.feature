@@ -120,7 +120,7 @@ Feature: DevPortal Subscription Management
       | tenant1.com  | @tenant1.com |
 
   @cap:devportal @feat:subscription-management @type:negative @rule:blocking @legacy:SubscriptionBlockingTestCase
-  Scenario Outline: A subscriber-role user cannot block a subscription as <actor>
+  Scenario Outline: A subscriber-role user cannot block a subscription as subscriberUser<tenantSuffix>
     # Admin sets up the API + subscription, then a subscriber-role user (no subscription_block scope) attempts
     # to block it and is rejected.
     Given The system is ready

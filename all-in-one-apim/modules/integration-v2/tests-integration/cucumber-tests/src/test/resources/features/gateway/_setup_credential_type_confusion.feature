@@ -24,7 +24,7 @@ Feature: Setup credential-type confusion APIs
   surfaces here rather than as a "No value found in context" cascade later. Resources are registered for the
   runner's AfterClass sweep (NOT per-scenario cleanup — the matrix scenarios consume this fixture).
 
-  Scenario Outline: Publish the two application-security APIs, subscribe an application and mint all three credential kinds
+  Scenario Outline: Publish the two application-security APIs, subscribe an application and mint all three credential kinds as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     # --- oauth2 + api_key, application security MANDATORY: both an OAuth bearer and an API key are legitimate here.
     When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ctcApiId<suffix>" and deployed it

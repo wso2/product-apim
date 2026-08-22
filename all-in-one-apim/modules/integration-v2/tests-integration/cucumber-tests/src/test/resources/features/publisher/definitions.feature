@@ -7,7 +7,7 @@ Feature: Publisher API Definition Import
   down by the per-scenario cleanup hook.
 
   @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
-  Scenario Outline: Import an OpenAPI definition and publish it as <actor>
+  Scenario Outline: Import the OpenAPI definition <apiDefinition> and publish it as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I import open api definition from "<apiDefinition>" , additional properties from "<additionalProperty>" and create api as "importedApiId"
     Then The response status code should be 201

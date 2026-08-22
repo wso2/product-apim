@@ -143,12 +143,14 @@ public class GatewayRestArtifactsSteps {
             String sequenceXml = sequences.getString(i);
             String sequenceName = synapseSequenceName(sequenceXml);
             allNames.add(String.valueOf(sequenceName));
-            if (sequenceName != null && sequenceName.contains(flowMarker)) {
+            // endsWith, not contains: `--` also precedes the API name, so contains("--In") would match an API
+            // whose name merely starts with "In" (admin--Invoice:v1.0.0--Out).
+            if (sequenceName != null && sequenceName.endsWith(flowMarker)) {
                 matches.add(sequenceXml);
             }
         }
         Assert.assertEquals(matches.size(), 1, "Expected exactly ONE deployed sequence for flow '" + flow
-                + "' (synapse name containing '" + flowMarker + "') but found " + matches.size()
+                + "' (synapse name ending with '" + flowMarker + "') but found " + matches.size()
                 + ". Sequence names: " + allNames);
         Assert.assertTrue(matches.get(0).contains(expected), "The '" + flow + "' flow sequence did not contain '"
                 + expected + "': " + matches.get(0));

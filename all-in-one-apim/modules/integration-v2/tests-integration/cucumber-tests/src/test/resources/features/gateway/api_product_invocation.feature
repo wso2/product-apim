@@ -49,15 +49,18 @@ Feature: Gateway API Product Invocation
     # …and so do the SANDBOX application token and the password-grant user tokens of both key mappings.
     When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxAppToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should not contain "Hello World"
     When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should not contain "Hello World"
     When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxUserToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should not contain "Hello World"
     # The SECOND member API's resource is reachable through the same product context, i.e. the product really
     # aggregates both APIs and routes each resource to its own source backend — the mirrored assertion pair.
@@ -210,7 +213,8 @@ Feature: Gateway API Product Invocation
     # PUBLISHED → invocable.
     When I invoke the API at gateway context "{{lcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # BLOCKED → gateway refuses (503). The transition itself is auto-approved.
     When I change the lifecycle of "api-products" resource "lcProductId" with action "Block"
@@ -233,7 +237,8 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{lcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # (RETIRED is a publisher/delete concern for products — see publisher/api_products "lifecycle … deleted when
     #  retired". Unlike a retired API (404), a retired product's key validation fails with 900900/500, which the
     #  legacy never asserted, so it is deliberately not asserted at the gateway here.)
@@ -310,7 +315,8 @@ Feature: Gateway API Product Invocation
     # The scoped token is the subject: pin the backend payload so "the scope let the call THROUGH to the gated
     # operation" is distinguishable from any other 200 (the API's DELETE /customers/{id} is ungated and answers
     # 200 with an empty body).
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
     And I invoke the API at gateway context "{{scopeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
@@ -360,15 +366,18 @@ Feature: Gateway API Product Invocation
     And The response should not contain "Hello World"
     When I invoke the API at gateway context "{{restrictedProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxAppToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should not contain "Hello World"
     When I invoke the API at gateway context "{{restrictedProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should not contain "Hello World"
     When I invoke the API at gateway context "{{restrictedProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxUserToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     And The response should not contain "Hello World"
 
     Examples:
@@ -415,13 +424,16 @@ Feature: Gateway API Product Invocation
     And The response should contain "\"name\":\"John\""
     When I invoke the API at gateway context "{{advertiseProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxAppToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{advertiseProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{advertiseProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxUserToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |

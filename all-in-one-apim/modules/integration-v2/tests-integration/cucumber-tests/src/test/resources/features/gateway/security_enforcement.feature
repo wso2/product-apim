@@ -101,7 +101,8 @@ Feature: Gateway Security Enforcement
     # Subscribed -> invocation succeeds
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Block the subscription -> gateway refuses the same token (401, code 900907 "temporarily blocked")
     When I block the subscription with "subscriptionId" for the resource
@@ -114,7 +115,8 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -231,7 +233,8 @@ Feature: Gateway Security Enforcement
     # against.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Email-form usernames as a gateway Basic credential (legacy's users[] fan-out, apisecUser2@wso2.com /
     # apisecUser2@abc.com) are COVERED in gateway/basic_auth_email_username.feature, not here: they need
@@ -435,7 +438,8 @@ Feature: Gateway Security Enforcement
     # unauthenticated call went through to node-customer-service" from any gateway-produced 200.
     When I invoke the API at gateway context "{{atContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -1555,7 +1559,7 @@ Feature: Gateway Security Enforcement
   # Runs x2 tenants, extending the legacy class's single SUPER_TENANT_ADMIN data provider, so byte-level escaping
   # in the artifact and header is pinned independently for each tenant.
   @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:ChangeEndPointSecurityOfAPITestCase
-  Scenario Outline: Endpoint-security passwords containing special characters are injected intact
+  Scenario Outline: Endpoint-security passwords containing special characters are injected intact as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_endpoint_basicauth_api.json" as "spApiId" and deployed it
@@ -1630,6 +1634,11 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     And The response should not contain "dXNlcjphYmNkKy89ZWZn"
 
+    Examples:
+      | actor |
+      | admin |
+      | admin@tenant1.com |
+
   # Ports the role-bound-scope ENFORCEMENT half of APIScopeTestCase#testSetScopeToResourceTestCase, which v2 had
   # only in its publisher-plane form (a scope can be attached to an operation) with no runtime consequence and no
   # second principal. Here ONE scope bound to ONE scenario-unique role is requested by TWO users of DIFFERENT
@@ -1638,12 +1647,6 @@ Feature: Gateway Security Enforcement
   # and is refused with 403. Because every other variable is shared between the two legs, the 403 can only be
   # caused by the role -> scope binding. The role, the scope and both users are scenario-unique (roles and scopes
   # are tenant-global).
-
-    Examples:
-      | actor |
-      | admin |
-      | admin@tenant1.com |
-
   @cap:gateway @feat:security-enforcement @rule:role-bound-scope @type:regression @dep:publisher @legacy:APIScopeTestCase
   Scenario Outline: A role-bound operation scope is granted to one user and withheld from another in <tenant>
     Given The system is ready
@@ -1700,7 +1703,8 @@ Feature: Gateway Security Enforcement
     And The issued token scope list should include "{{rbsScope}}" and exclude ""
     And I invoke the API at gateway context "{{rbsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # WITHHELD — the user without the role gets EXACTLY the default scope and is refused at the gateway.
     When I request an OAuth access token using password grant as "rbsWithoutRole<suffix>" with scope "{{rbsScope}}"

@@ -37,7 +37,7 @@ const https = require('https');
 const path = require('path');
 
 const app = express();
-const port = 3023;
+const port = process.env.PORT || 3023;
 
 // Same customer fixture as node-customer-service (ids 123.. over these names), so an API pointed here returns
 // the ordinary customer body a test already knows how to assert: GET /customers/123 -> {"id":123,"name":"John"}.

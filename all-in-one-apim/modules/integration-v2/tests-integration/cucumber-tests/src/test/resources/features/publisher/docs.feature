@@ -231,7 +231,7 @@ Feature: Publisher API Documentation
   # row stays in the super tenant: it is the store identity, not the tenant, that is the variable here, and the
   # ×2-tenant rows above already vary the tenant.
   @cap:publisher @feat:docs @type:regression @rule:api-overview @dep:devportal @legacy:UsersAndDocsInAPIOverviewTestCase
-  Scenario Outline: An API overview reflects its subscription and documentation counts as <actor>
+  Scenario Outline: An API overview reflects its subscription and documentation counts as <actor> for <subscriber>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ovApiId" and deployed it
@@ -253,14 +253,14 @@ Feature: Publisher API Documentation
     # Intermediate count: after the FIRST subscriber only, the publisher subscriptions list carries exactly one
     # entry, and it is attributed to that subscriber. Without this the final count-2 assertion cannot distinguish
     # "two subscribers arrived" from "one subscriber counted twice".
-    When I retrieve the subscriptions of API "ovApiId"
-    Then The response status code should be 200
-    And The response should contain "\"count\":1"
     # The subscriber recorded on the subscription is the application OWNER. Resolved from the actor registry
     # rather than hardcoded: the actor reference is not the username (admin vs admin@tenant1.com, and the
     # email-username mode adds an @email.com local part), so a literal would be wrong in at least one mode.
     When I store the username of actor "<actor>" as "ovSubscriber1Name"
-    Then The value of response field "list[0].applicationInfo.subscriber" should be "{{ovSubscriber1Name}}"
+    And I retrieve the subscriptions of API "ovApiId"
+    Then The response status code should be 200
+    And The response should contain "\"count\":1"
+    And The value of response field "list[0].applicationInfo.subscriber" should be "{{ovSubscriber1Name}}"
 
     # Second subscriber (a different consumer): switch actor, register its DCR client, mint its devportal token,
     # subscribe its own app.

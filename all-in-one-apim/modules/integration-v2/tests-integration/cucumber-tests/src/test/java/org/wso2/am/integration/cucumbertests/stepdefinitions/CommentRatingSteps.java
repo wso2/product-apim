@@ -31,8 +31,11 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Step definitions for API comments and per-user ratings — features not previously ported to integration-v2.
@@ -124,7 +127,11 @@ public class CommentRatingSteps {
         // check). Asserting the grant here turns that misleading 403 into a clear "the actor cannot hold this scope".
         if (asModerator) {
             String granted = String.valueOf(Utils.extractValueFromPayload(response.getData(), "scope"));
-            Assert.assertTrue(granted.contains(MODERATOR_SCOPE), "The " + MODERATOR_SCOPE + " scope was NOT granted "
+            // Exact membership over the space-separated list, not a substring: `apim:admin` is a prefix of
+            // `apim:admin_settings`, `apim:admin_operations` and 8 more real scopes, any of which would satisfy
+            // a contains() check while bare `apim:admin` was actually withheld.
+            Set<String> grantedScopes = new HashSet<>(Arrays.asList(granted.trim().split("\\s+")));
+            Assert.assertTrue(grantedScopes.contains(MODERATOR_SCOPE), "The " + MODERATOR_SCOPE + " scope was NOT granted "
                     + "to " + actor.getUserName() + " — comment moderation cannot be exercised with this token. "
                     + "Granted scopes: " + granted);
         }

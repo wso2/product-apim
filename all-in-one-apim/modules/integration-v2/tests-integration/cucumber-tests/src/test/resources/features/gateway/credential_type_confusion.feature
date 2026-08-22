@@ -26,19 +26,22 @@ Feature: Gateway Credential-Type Confusion
   # credential kind) and the cells share one fixture. The three positive controls come FIRST and are load-bearing:
   # without them a broken/expired credential would make every negative pass for the wrong reason.
   @cap:gateway @feat:security-enforcement @rule:credential-type-confusion @type:negative @dep:publisher @dep:key-manager @legacy:APISecurityTestCase
-  Scenario Outline: Each credential kind is accepted only in its own auth header
+  Scenario Outline: Each credential kind is accepted only in its own auth header as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
 
     # --- POSITIVE CONTROLS: all three credentials are live and each works in its OWN header.
     When I invoke the API at gateway context "{{ctcContext<suffix>}}/1.0.0/customers/123/" with method "GET" using access token "ctcAccessToken<suffix>" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{ctcContext<suffix>}}/1.0.0/customers/123/" with method "GET" using api key "ctcApiKey<suffix>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{ctcContext<suffix>}}/1.0.0/customers/123/" with method "GET" using internal key "ctcInternalKey<suffix>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # --- The "ApiKey" header accepts ONLY an API key.
     # An OAuth2 access token in the apikey header (testInvokeApiKeyAsJWTNegative / testInvokeJWTAsAPIKeyNegative).
@@ -65,38 +68,44 @@ Feature: Gateway Credential-Type Confusion
     When I invoke the API at gateway context "{{ctcContext<suffix>}}/1.0.0/customers/123/" with method "GET" using internal key "ctcApiKey<suffix>" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
+    Examples:
+      | actor                     | suffix       |
+      | admin                     |              |
+      | admin@tenant1.com         | @tenant1.com |
+
   # Ports testInvocationWithBasicAuthForOauthOnlyAPINegative. The legacy sent a literal "Authorization: Basic
   # abcce" (not even valid base64), which is indistinguishable from the garbage-credential negative already in
   # the corpus. This sends the VALID carbon credentials of a real user — the very credentials a basic_auth API
   # accepts (proven in gateway/basic_auth_security.feature) — so the 401 is attributable to the API not
   # declaring basic_auth, not to the credentials being bad.
-
-    Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
   @cap:gateway @feat:security-enforcement @rule:scheme-mismatch @type:negative @dep:publisher @legacy:APISecurityTestCase
-  Scenario Outline: Valid HTTP Basic credentials are refused on an oauth2 + api_key API that does not declare basic_auth
+  Scenario Outline: Valid HTTP Basic credentials are refused on an oauth2 + api_key API that does not declare basic_auth as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I invoke the API at gateway context "{{ctcContext<suffix>}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "admin" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
+    Examples:
+      | actor                     | suffix       |
+      | admin                     |              |
+      | admin@tenant1.com         | @tenant1.com |
+
   # Ports testInvocationWithBasicAuthFoAPIKeyNegative — the same scheme mismatch against an API whose ONLY
   # declared application-security scheme is api_key. The api-key positive control first proves the API is live
   # and routable, so the following 401 is the scheme gate and not a dead route.
+  @cap:gateway @feat:security-enforcement @rule:scheme-mismatch @type:negative @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: Valid HTTP Basic credentials are refused on an api_key-only API as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I invoke the API at gateway context "{{ctcKeyOnlyContext<suffix>}}/1.0.0/customers/123/" with method "GET" using api key "ctcApiKey<suffix>" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{ctcKeyOnlyContext<suffix>}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "admin" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
 
     Examples:
       | actor                     | suffix       |
       | admin                     |              |
       | admin@tenant1.com         | @tenant1.com |
-  @cap:gateway @feat:security-enforcement @rule:scheme-mismatch @type:negative @dep:publisher @legacy:APISecurityTestCase
-  Scenario Outline: Valid HTTP Basic credentials are refused on an api_key-only API
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I invoke the API at gateway context "{{ctcKeyOnlyContext<suffix>}}/1.0.0/customers/123/" with method "GET" using api key "ctcApiKey<suffix>" until response status code becomes 200 within 60 seconds
-    Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
-    When I invoke the API at gateway context "{{ctcKeyOnlyContext<suffix>}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "admin" until response status code becomes 401 within 60 seconds
-    Then The response status code should be 401
 
   # Ports testWWWAuthorizationHeaderForApiWithApiKeys: an UNAUTHENTICATED request to an API with api_key enabled
   # must advertise the API-key challenge in the WWW-Authenticate response header. The legacy asserts the header
@@ -107,13 +116,8 @@ Feature: Gateway Credential-Type Confusion
   # The legacy's "second leg" (a repeat request with requestHeaders2.put("Authorization", null)) is deliberately
   # NOT ported: a null HashMap value is not a header at all, so that leg re-sends the identical request as the
   # first and asserts nothing new.
-
-    Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
   @cap:gateway @feat:security-enforcement @rule:www-authenticate @type:negative @dep:publisher @legacy:APISecurityTestCase
-  Scenario Outline: An unauthenticated request to an api_key-enabled API advertises the API Key realm
+  Scenario Outline: An unauthenticated request to an api_key-enabled API advertises the API Key realm as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I invoke the API at gateway context "{{ctcContext<suffix>}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401

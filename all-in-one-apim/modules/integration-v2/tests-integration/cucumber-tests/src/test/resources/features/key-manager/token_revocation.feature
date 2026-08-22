@@ -36,7 +36,8 @@ Feature: Key Manager Token Revocation
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     When I revoke the OAuth access token "generatedAccessToken"
     Then The response status code should be 200
@@ -184,7 +185,7 @@ Feature: Key Manager Token Revocation
   #
   # Runs x2 tenants so token invalidation on credential change is verified in each tenant's key-manager context.
   @cap:key-manager @feat:token-revocation @rule:password-change @type:regression @dep:gateway @dep:admin @legacy:APISecurityTestCase
-  Scenario Outline: An already-issued access token is rejected after its user's password is reset
+  Scenario Outline: An already-issued access token is rejected after its user's password is reset as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pcApiId" and deployed it
@@ -219,7 +220,8 @@ Feature: Key Manager Token Revocation
     Then The response status code should be 200
     And I invoke the API at gateway context "{{pcApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # The admin resets that user's password. The token is not touched, and nothing is revoked explicitly.
     When I change the password of user "pcUsr" to "NewPass@456" as the tenant admin
@@ -237,7 +239,8 @@ Feature: Key Manager Token Revocation
     Then The response status code should be 200
     And I invoke the API at gateway context "{{pcApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Remove the runtime principal (the step's deleteUser is store-agnostic; this name is in the primary store).
     When I remove the secondary user store user "{{pcUsr}}" in tenant "<tenant>"

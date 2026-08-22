@@ -36,9 +36,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -272,23 +276,50 @@ public class EndpointCertificateSteps {
     }
 
     /**
-     * Asserts the exact validity window of the last content read. The product renders both bounds with
-     * {@code java.util.Date#toString()} in the SERVER's default time zone, so the expected strings are the
-     * container's rendering of the fixture's notBefore/notAfter — not the local machine's.
+     * Asserts the exact validity window of the last content read — as INSTANTS, not as rendered text.
+     *
+     * <p>The product emits both bounds as {@code java.util.Date#toString()} in the SERVER's default time zone
+     * ({@code validity.from}/{@code to} are untyped strings in the publisher OAS, so there is no epoch or
+     * ISO-8601 field to read instead). Comparing that text verbatim would pin the CONTAINER's zone: the same
+     * certificate renders {@code "Fri May 06 18:11:14 UTC 2022"} on a UTC container and
+     * {@code "Fri May 06 23:41:14 IST 2022"} on an IST one, and the assertion would fail on the latter for no
+     * product reason. Parsing BOTH sides with the same formatter and comparing epoch millis keeps the assertion
+     * exact while making it independent of the zone either side was rendered in.
      */
     @Then("The endpoint certificate validity should be from {string} to {string}")
     public void theCertificateValidityShouldBe(String expectedFrom, String expectedTo) {
         JSONObject validity = lastResponseBody().getJSONObject("validity");
-        Assert.assertEquals(validity.optString("from", null), expectedFrom,
-                "Certificate validity 'from' mismatch; body: " + validity);
-        Assert.assertEquals(validity.optString("to", null), expectedTo,
-                "Certificate validity 'to' mismatch; body: " + validity);
+        assertSameInstant("from", validity.optString("from", null), expectedFrom, validity);
+        assertSameInstant("to", validity.optString("to", null), expectedTo, validity);
+    }
+
+    /** Parses both sides as {@code Date#toString()} text and asserts they name the same instant. */
+    private static void assertSameInstant(String bound, String actual, String expected, JSONObject validity) {
+
+        Date actualDate = parseDateToString(actual, "certificate validity '" + bound + "' from the server");
+        Date expectedDate = parseDateToString(expected, "expected certificate validity '" + bound + "'");
+        Assert.assertEquals(actualDate.getTime(), expectedDate.getTime(),
+                "Certificate validity '" + bound + "' mismatch: server returned '" + actual + "' which is "
+                        + actualDate.toInstant() + ", expected '" + expected + "' which is "
+                        + expectedDate.toInstant() + "; body: " + validity);
     }
 
     /**
-     * The last published response's body as JSON, guarded so a failed/empty response fails with the status and body
-     * rather than an opaque JSONException from the parse (§7).
+     * {@code Date#toString()} text -> Date. Locale.US is pinned because that method always renders English day
+     * and month names regardless of the default locale, so a non-English default must not change the parse.
      */
+    private static Date parseDateToString(String text, String what) {
+
+        Assert.assertTrue(text != null && !text.isBlank(), "No " + what + " to compare (got: " + text + ")");
+        SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
+        try {
+            return format.parse(text);
+        } catch (ParseException notDateToString) {
+            throw new AssertionError("Could not parse " + what + " as a java.util.Date#toString() value: '"
+                    + text + "'", notDateToString);
+        }
+    }
+
     /**
      * The last published response as JSON, guarded. Delegates to {@link Utils#requireJsonBody} rather than
      * repeating the 2xx-with-a-body check: that guard is the shared one every plane uses (§15), and a second
